@@ -108,7 +108,8 @@ navigation:
       <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
 
       <p class='space-bottom4 quiet small'>Key:
-        <a class='icon levels quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
+        <a class='icon smooth-ramp quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
+        <a class='icon step-ramp quiet micro space-right inline' href='#function' title='Supports piecewise constant functions'>supports piecewise constant functions</a>
         <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
       </p>
     </div>
@@ -518,14 +519,18 @@ navigation:
               where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
               ascending zoom order.
           </p>
-          <p>Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
-              interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
-              and the next stop. By default, linear interpolation is used, but you can use a different exponential base
-              for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
-              stop or greater than the last stop, the result is the value from the first or last stop respectively.
+          <p>
+            <span class='icon smooth-ramp quiet micro space-right inline' title='interpolated'></span>
+            Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
+            interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
+            and the next stop. By default, linear interpolation is used, but you can use a different exponential base
+            for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
+            stop or greater than the last stop, the result is the value from the first or last stop respectively.
           </p>
-          <p>For properties that do not support interpolated functions, the result is the value of the last
-              stop whose zoom value is less than or equal to the current zoom level.
+          <p>
+            <span class='icon step-ramp quiet micro space-right inline' title='piecewise constant'></span>
+            All other properties support <em>piecewise constant</em> functions. The result of a piecewise constant
+            function is the value of the last stop whose zoom value is less than or equal to the current zoom level.
           </p>
           <div class='col12 clearfix'>
             <div class='col6'>

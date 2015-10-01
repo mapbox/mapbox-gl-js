@@ -1,7 +1,8 @@
 <div class='col12 clearfix pad0y'>
   <div>
     <span class='code space-right'><%= name %></span>
-    <% if (prop.function == "interpolated" ) { %><span class='icon levels inline quiet'></span><% } %>
+    <% if (prop.function == "interpolated" ) { %><span class='icon smooth-ramp inline quiet'></span><% } %>
+    <% if (prop.function == "piecewise-constant" ) { %><span class='icon step-ramp inline quiet'></span><% } %>
     <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
   </div>
   <div class='small pad2x'>
