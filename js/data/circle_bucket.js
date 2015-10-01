@@ -32,7 +32,7 @@ CircleBucket.prototype.addFeatures = function() {
             // Do not include points that are outside the tile boundaries.
             if (x < 0 || x >= extent || y < 0 || y >= extent) continue;
 
-            var idx = this.buffers.circleVertex.index -
+            var idx = this.buffers.circleVertex.length -
                 this.elementGroups.current.vertexStartIndex;
 
             // this geometry will be of the Point type, and we'll derive

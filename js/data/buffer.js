@@ -3,7 +3,6 @@
 // Note: all "sizes" are measured in bytes
 
 var util = require('../util/util');
-var assert = require('assert');
 
 /**
  * The `Buffer` class is responsible for managing one instance of `ArrayBuffer`. `ArrayBuffer`s
@@ -65,29 +64,18 @@ function Buffer(options) {
 }
 
 // Start Buffer1 compatability code
+
 Buffer.prototype = {
-
-    get pos() { return this.length * this.itemSize; },
-    get index() { return this.length; },
-
-    get arrayType() { return this.type; },
-
-    get array() { return this.arrayBuffer; },
-    set array(value) {
-        assert(value === null);
-        this.arrayBuffer = null;
-    },
-
     // binds the buffer to a webgl context
     bind: function(gl) {
-        var type = gl[this.arrayType];
+        var type = gl[this.type];
         if (!this.buffer) {
             this.buffer = gl.createBuffer();
             gl.bindBuffer(type, this.buffer);
-            gl.bufferData(type, this.array.slice(0, this.pos), gl.STATIC_DRAW);
+            gl.bufferData(type, this.arrayBuffer.slice(0, this.length * this.itemSize), gl.STATIC_DRAW);
 
             // dump array buffer once it's bound to gl
-            this.array = null;
+            this.arrayBuffer = null;
         } else {
             gl.bindBuffer(type, this.buffer);
         }
@@ -97,10 +85,7 @@ Buffer.prototype = {
         if (this.buffer) {
             gl.deleteBuffer(this.buffer);
         }
-    },
-
-    setupViews: function() { /* intentional no-op */ }
-
+    }
 };
 // End Buffer1 compatability code
 

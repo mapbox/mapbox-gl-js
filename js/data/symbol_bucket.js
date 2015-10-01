@@ -349,7 +349,7 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var triangleIndex = vertex.index - elementGroup.vertexStartIndex;
+        var triangleIndex = vertex.length - elementGroup.vertexStartIndex;
 
         addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
         addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
