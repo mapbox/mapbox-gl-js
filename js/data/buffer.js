@@ -70,33 +70,36 @@ function Buffer(options) {
     this._createPushMethod();
 }
 
-// Start Buffer1 compatability code
+/**
+ * Bind this buffer to a WebGL context.
+ * @private
+ * @param gl The WebGL context
+ */
+Buffer.prototype.bind = function(gl) {
+    var type = gl[this.type];
 
-Buffer.prototype = {
-    // binds the buffer to a webgl context
-    bind: function(gl) {
-        var type = gl[this.type];
+    if (!this.buffer) {
+        this.buffer = gl.createBuffer();
+        gl.bindBuffer(type, this.buffer);
+        gl.bufferData(type, this.arrayBuffer.slice(0, this.length * this.itemSize), gl.STATIC_DRAW);
 
-        if (!this.buffer) {
-            this.buffer = gl.createBuffer();
-            gl.bindBuffer(type, this.buffer);
-            gl.bufferData(type, this.arrayBuffer.slice(0, this.length * this.itemSize), gl.STATIC_DRAW);
-
-            // dump array buffer once it's bound to gl
-            this.arrayBuffer = null;
-        } else {
-            gl.bindBuffer(type, this.buffer);
-        }
-    },
-
-    destroy: function(gl) {
-        if (this.buffer) {
-            gl.deleteBuffer(this.buffer);
-        }
+        // dump array buffer once it's bound to gl
+        this.arrayBuffer = null;
+    } else {
+        gl.bindBuffer(type, this.buffer);
     }
 };
-// End Buffer1 compatability code
 
+/**
+ * Destroy the GL buffer bound to the given WebGL context
+ * @private
+ * @param gl The WebGL context
+ */
+Buffer.prototype.destroy = function(gl) {
+    if (this.buffer) {
+        gl.deleteBuffer(this.buffer);
+    }
+};
 
 /**
  * Set the attribute pointers in a WebGL context according to the buffer's attribute layout
