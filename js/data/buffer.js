@@ -3,6 +3,7 @@
 // Note: all "sizes" are measured in bytes
 
 var util = require('../util/util');
+var assert = require('assert');
 
 /**
  * The `Buffer` class is responsible for managing one instance of `ArrayBuffer`. `ArrayBuffer`s
@@ -46,16 +47,22 @@ function Buffer(options) {
         var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : 1;
 
         for (var i = 0; i < options.attributes.length; i++) {
-            var attribute = util.extend({}, options.attributes[i]);
-            this.attributes.push(attribute);
+            var attribute = util.extend({
+                components: 1,
+                type: Buffer.AttributeType.UNSIGNED_BYTE
+            }, options.attributes[i]);
 
-            attribute.name = attribute.name;
-            attribute.components = attribute.components || 1;
-            attribute.type = attribute.type || Buffer.AttributeType.UNSIGNED_BYTE;
+            assert(attribute.type.name in Buffer.AttributeType);
+
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
 
+            assert(!isNaN(attribute.size));
+
+            this.attributes.push(attribute);
+
             this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+            assert(!isNaN(this.itemSize));
         }
     }
 
@@ -172,23 +179,22 @@ Buffer.prototype._createPushMethod = function() {
     var argNames = [];
 
     body += 'var index = this.length++;\n';
-    body += 'var offset = index * ' + checkNumber(this.itemSize) + ';\n';
-    body += 'if (offset + ' + checkNumber(this.itemSize) + ' > this.capacity) { this._resize(this.capacity * 1.5); }\n';
+    body += 'var offset = index * ' + this.itemSize + ';\n';
+    body += 'if (offset + ' + this.itemSize + ' > this.capacity) { this._resize(this.capacity * 1.5); }\n';
 
     for (var i = 0; i < this.attributes.length; i++) {
         var attribute = this.attributes[i];
-        var attributeOffsetIdentifier = 'offset' + i;
+        var offsetId = 'offset' + i;
 
-        body += '\nvar ' + attributeOffsetIdentifier + ' = (offset + ' + checkNumber(attribute.offset) + ') / ' + checkNumber(attribute.type.size) + ';\n';
+        body += '\nvar ' + offsetId + ' = (offset + ' + attribute.offset + ') / ' + attribute.type.size + ';\n';
 
         for (var j = 0; j < attribute.components; j++) {
-            var componentValueIdentifier = 'value' + i + '_' + j;
+            var valueId = 'value' + i + '_' + j;
+            var lvalue = 'this.views.' + attribute.type.name + '[' + offsetId + ' + ' + j + ']';
 
-            var lvalue = 'this.views.' + checkAttributeTypeName(attribute.type.name) + '[' + attributeOffsetIdentifier + ' + ' + checkNumber(j) + ']';
-            var rvalue = componentValueIdentifier;
-            body += lvalue + ' = ' + rvalue + ';\n';
+            body += lvalue + ' = ' + valueId + ';\n';
 
-            argNames.push(componentValueIdentifier);
+            argNames.push(valueId);
         }
     }
 
@@ -269,22 +275,6 @@ function align(value, alignment) {
         value += (alignment - remainder);
     }
     return value;
-}
-
-function checkNumber(input) {
-    if (!isNaN(parseFloat(input)) && isFinite(input)) {
-        return input;
-    } else {
-        throw new Error('Validation failure in buffer push method creation');
-    }
-}
-
-function checkAttributeTypeName(input) {
-    if (Object.keys(Buffer.AttributeType).indexOf(input) === -1) {
-        throw new Error('Validation failure in buffer push method creation');
-    } else {
-        return input;
-    }
 }
 
 module.exports = Buffer;
