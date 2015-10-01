@@ -40,7 +40,7 @@
     "url": "git@github.com:mapbox/mapbox-gl-style-spec.git"
   },
   "scripts": {
-    "build": "npm run docs",
+    "build": "./minify.js && npm run docs",
     "cov": "istanbul cover ./node_modules/.bin/tape test/*.js test/migrations/*.js && coveralls < ./coverage/lcov.info",
     "docs": "cat lib/*.js lib/*/*.js | dox --raw --skipSingleStar | doxme > API.md && cd docs/_generate && node generate.js",
     "test": "eslint lib/*.js lib/*/*.js migrations/*.js && tape test/*.js test/migrations/*.js"
