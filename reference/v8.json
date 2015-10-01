@@ -20,12 +20,12 @@
     "center": {
       "type": "array",
       "value": "number",
-      "doc": "Default centerpoint in longitude and latitude.",
+      "doc": "Default map center in longitude and latitude.  The style center will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": [-73.9749, 40.7736]
     },
     "zoom": {
       "type": "number",
-      "doc": "Default zoom level.",
+      "doc": "Default zoom level.  The style zoom will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": 12.5
     },
     "bearing": {
@@ -33,14 +33,14 @@
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "doc": "Default bearing, in degrees.",
+      "doc": "Default bearing, in degrees.  The style bearing will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": 29
     },
     "pitch": {
       "type": "number",
       "default": 0,
       "units": "degrees",
-      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface",
+      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface.  The style pitch will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": 50
     },
     "sources": {
