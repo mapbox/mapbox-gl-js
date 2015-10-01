@@ -110,7 +110,7 @@
         "vector",
         "raster"
       ],
-      "doc": "The data type of the source."
+      "doc": "The data type of the tile source."
     },
     "url": {
       "type": "string",
@@ -148,10 +148,12 @@
       "type": "enum",
       "values": [
         "geojson"
-      ]
+      ],
+      "doc": "The data type of the GeoJSON source."
     },
     "data": {
-      "type": "*"
+      "type": "*",
+      "doc": "A URL to a GeoJSON file, or inline GeoJSON."
     },
     "maxzoom": {
       "type": "number",
@@ -175,7 +177,8 @@
       "type": "enum",
       "values": [
         "video"
-      ]
+      ],
+      "doc": "The data type of the video source."
     },
     "urls": {
       "required": true,
@@ -191,7 +194,8 @@
       "value": {
         "type": "array",
         "length": 2,
-        "value": "number"
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
       }
     }
   },
@@ -201,7 +205,8 @@
       "type": "enum",
       "values": [
         "image"
-      ]
+      ],
+      "doc": "The data type of the image source."
     },
     "url": {
       "required": true,
@@ -216,7 +221,8 @@
       "value": {
         "type": "array",
         "length": 2,
-        "value": "number"
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
       }
     }
   },
@@ -763,7 +769,8 @@
   },
   "filter": {
     "type": "array",
-    "value": "*"
+    "value": "*",
+    "doc": "A filter selects specific features from a layer."
   },
   "filter_operator": {
     "type": "enum",
@@ -779,7 +786,8 @@
       "all",
       "any",
       "none"
-    ]
+    ],
+    "doc": "The filter operator."
   },
   "geometry_type": {
     "type": "enum",
@@ -787,7 +795,8 @@
       "Point",
       "LineString",
       "Polygon"
-    ]
+    ],
+    "doc": "The geometry type for the filter to select."
   },
   "color_operation": {
     "type": "enum",
@@ -797,7 +806,8 @@
       "spin",
       "fade",
       "mix"
-    ]
+    ],
+    "doc": "A color operation to apply."
   },
   "function": {
     "stops": {

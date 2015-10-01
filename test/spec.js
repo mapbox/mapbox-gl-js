@@ -91,6 +91,8 @@ function validSchema(k, t, obj, ref) {
       if (obj.doc !== undefined) {
         t.equal('string', typeof obj.doc, k + '.doc (string)');
         if (minified) t.fail('minified file should not have ' + k + '.doc');
+      } else {
+        if (t.name === 'latest') t.fail('doc missing for ' + k);
       }
       if (minified && obj.example !== undefined) {
         t.fail('minified file should not have ' + k + '.example');
