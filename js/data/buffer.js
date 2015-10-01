@@ -69,6 +69,7 @@ Buffer.prototype = {
     // binds the buffer to a webgl context
     bind: function(gl) {
         var type = gl[this.type];
+
         if (!this.buffer) {
             this.buffer = gl.createBuffer();
             gl.bindBuffer(type, this.buffer);
@@ -88,6 +89,24 @@ Buffer.prototype = {
     }
 };
 // End Buffer1 compatability code
+
+
+/**
+ * Set the attribute pointers in a WebGL context according to the buffer's attribute layout
+ * @private
+ * @param gl The WebGL context
+ * @param shader The active WebGL shader
+ * @param {number} offset The offset of the attrubute data in the currently bound GL buffer.
+ */
+Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
+    for (var i = 0; i < this.attributes.length; i++) {
+        var attrib = this.attributes[i];
+
+        gl.vertexAttribPointer(
+            shader['a_' + attrib.name], attrib.components, gl[attrib.type.name],
+            false, this.itemSize, offset + attrib.offset);
+    }
+};
 
 /**
  * Get an item from the `ArrayBuffer`.

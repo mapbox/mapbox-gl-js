@@ -14,14 +14,6 @@ function CircleVertexBuffer(options) {
     });
 }
 
-CircleVertexBuffer.prototype = util.inherit(Buffer, {
-    bind: function(gl, shader, offset) {
-        Buffer.prototype.bind.call(this, gl);
-
-        gl.vertexAttribPointer(shader.a_pos, 2,
-            gl.SHORT, false,
-            this.itemSize, offset + 0);
-    }
-});
+CircleVertexBuffer.prototype = util.inherit(Buffer);
 
 module.exports = CircleVertexBuffer;
