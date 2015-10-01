@@ -14,10 +14,6 @@ function FillVertexBuffer(options) {
     });
 }
 
-FillVertexBuffer.prototype = util.inherit(Buffer, {
-    add: function(x, y) {
-        this.push(x, y);
-    }
-});
+FillVertexBuffer.prototype = util.inherit(Buffer);
 
 module.exports = FillVertexBuffer;

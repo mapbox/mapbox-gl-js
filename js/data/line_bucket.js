@@ -290,9 +290,9 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, 
 
     extrude = normal.mult(flip);
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-    this.e3 = lineVertex.add(currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
+    this.e3 = addVertex(lineVertex, currentVertex, extrude, tx, 0, distance) - vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
-        lineElement.add(this.e1, this.e2, this.e3);
+        lineElement.push(this.e1, this.e2, this.e3);
         elementGroup.elementLength++;
     }
     this.e1 = this.e2;
@@ -300,9 +300,9 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, 
 
     extrude = normal.mult(-flip);
     if (endRight) extrude._sub(normal.perp()._mult(endRight));
-    this.e3 = lineVertex.add(currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
+    this.e3 = addVertex(lineVertex, currentVertex, extrude, tx, 1, distance) - vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
-        lineElement.add(this.e1, this.e2, this.e3);
+        lineElement.push(this.e1, this.e2, this.e3);
         elementGroup.elementLength++;
     }
     this.e1 = this.e2;
@@ -331,11 +331,11 @@ LineBucket.prototype.addPieSliceVertex = function(currentVertex, flip, distance,
     var ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(flip * (lineTurnsLeft ? -1 : 1));
 
-    this.e3 = lineVertex.add(currentVertex, extrude, 0, ty, distance) - vertexStartIndex;
+    this.e3 = addVertex(lineVertex, currentVertex, extrude, 0, ty, distance) - vertexStartIndex;
     elementGroup.vertexLength += 1;
 
     if (this.e1 >= 0 && this.e2 >= 0) {
-        lineElement.add(this.e1, this.e2, this.e3);
+        lineElement.push(this.e1, this.e2, this.e3);
         elementGroup.elementLength++;
     }
 
@@ -346,3 +346,22 @@ LineBucket.prototype.addPieSliceVertex = function(currentVertex, flip, distance,
         this.e1 = this.e3;
     }
 };
+
+// NOTE ON EXTRUDE SCALE:
+// scale the extrusion vector so that the normal length is this value.
+// contains the "texture" normals (-1..1). this is distinct from the extrude
+// normals for line joins, because the x-value remains 0 for the texture
+// normal array, while the extrude normal actually moves the vertex to create
+// the acute/bevelled line join.
+var EXTRUDE_SCALE = 63;
+
+function addVertex(buffer, point, extrude, tx, ty, linesofar) {
+    return buffer.push(
+        (point.x << 1) | tx,
+        (point.y << 1) | ty,
+        Math.round(EXTRUDE_SCALE * extrude.x),
+        Math.round(EXTRUDE_SCALE * extrude.y),
+        linesofar / 128,
+        linesofar % 128
+    );
+}

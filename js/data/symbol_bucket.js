@@ -351,14 +351,14 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 
         var triangleIndex = vertex.index - elementGroup.vertexStartIndex;
 
-        vertex.add(anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
-        vertex.add(anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        vertex.add(anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        vertex.add(anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
+        addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        addSymbolVertex(vertex, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
         elementGroup.vertexLength += 4;
 
-        element.add(triangleIndex, triangleIndex + 1, triangleIndex + 2);
-        element.add(triangleIndex + 1, triangleIndex + 2, triangleIndex + 3);
+        element.push(triangleIndex, triangleIndex + 1, triangleIndex + 2);
+        element.push(triangleIndex + 1, triangleIndex + 2, triangleIndex + 3);
         elementGroup.elementLength += 2;
     }
 
@@ -449,20 +449,47 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
                 var maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                 var placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                buffer.add(anchorPoint, tl, maxZoom, placementZoom);
-                buffer.add(anchorPoint, tr, maxZoom, placementZoom);
-                buffer.add(anchorPoint, tr, maxZoom, placementZoom);
-                buffer.add(anchorPoint, br, maxZoom, placementZoom);
-                buffer.add(anchorPoint, br, maxZoom, placementZoom);
-                buffer.add(anchorPoint, bl, maxZoom, placementZoom);
-                buffer.add(anchorPoint, bl, maxZoom, placementZoom);
-                buffer.add(anchorPoint, tl, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, tl, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, tr, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, tr, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, br, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, br, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, bl, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, bl, maxZoom, placementZoom);
+                addCollisionVertex(buffer, anchorPoint, tl, maxZoom, placementZoom);
 
                 this.elementGroups.collisionBox.current.vertexLength += 8;
             }
         }
     }
 };
+
+function addCollisionVertex(buffer, point, extrude, maxZoom, placementZoom) {
+    buffer.push(
+        point.x,
+        point.y,
+        Math.round(extrude.x),
+        Math.round(extrude.y),
+        maxZoom * 10,
+        placementZoom * 10
+    );
+}
+
+function addSymbolVertex(buffer, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+    buffer.push(
+        x, y,
+        Math.round(ox * 64), // use 1/64 pixels for placement
+        Math.round(oy * 64),
+        tx / 4, /* tex */
+        ty / 4, /* tex */
+        (labelminzoom || 0) * 10, /* labelminzoom */
+        0,
+        (minzoom || 0) * 10, /* minzoom */
+        Math.min(maxzoom || 25, 25) * 10, /* minzoom */
+        0,
+        0
+    );
+}
 
 function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers,
                         textBoxScale, textPadding, textAlongLine,

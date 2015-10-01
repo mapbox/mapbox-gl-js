@@ -15,11 +15,6 @@ function CircleVertexBuffer(options) {
 }
 
 CircleVertexBuffer.prototype = util.inherit(Buffer, {
-    add: function(x, y, extrudeX, extrudeY) {
-        this.push(
-            (x * 2) + ((extrudeX + 1) / 2),
-            (y * 2) + ((extrudeY + 1) / 2));
-    },
     bind: function(gl, shader, offset) {
         Buffer.prototype.bind.call(this, gl);
 

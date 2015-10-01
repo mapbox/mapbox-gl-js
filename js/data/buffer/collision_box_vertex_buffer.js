@@ -22,20 +22,6 @@ function CollisionBoxVertexBuffer(options) {
     });
 }
 
-CollisionBoxVertexBuffer.prototype = util.inherit(Buffer, {
-    // add a vertex to this buffer;
-    // x, y - vertex position
-    // ex, ey - extrude normal
-    add: function(point, extrude, maxZoom, placementZoom) {
-        this.push(
-            point.x,
-            point.y,
-            Math.round(extrude.x),
-            Math.round(extrude.y),
-            Math.floor(maxZoom * 10),
-            Math.floor(placementZoom * 10)
-        );
-    }
-});
+CollisionBoxVertexBuffer.prototype = util.inherit(Buffer);
 
 module.exports = CollisionBoxVertexBuffer;

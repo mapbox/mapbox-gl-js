@@ -14,10 +14,6 @@ function OutlineElementBuffer(options) {
     });
 }
 
-OutlineElementBuffer.prototype = util.inherit(Buffer, {
-    add: function(a, b) {
-        this.push(a, b);
-    }
-});
+OutlineElementBuffer.prototype = util.inherit(Buffer);
 
 module.exports = OutlineElementBuffer;

@@ -44,15 +44,15 @@ CircleBucket.prototype.addFeatures = function() {
             // │ 1     2 │
             // └─────────┘
             //
-            this.buffers.circleVertex.add(x, y, -1, -1); // 1
-            this.buffers.circleVertex.add(x, y, 1, -1); // 2
-            this.buffers.circleVertex.add(x, y, 1, 1); // 3
-            this.buffers.circleVertex.add(x, y, -1, 1); // 4
+            this.buffers.circleVertex.push(x * 2,     y * 2); // 1
+            this.buffers.circleVertex.push(x * 2 + 1, y * 2); // 2
+            this.buffers.circleVertex.push(x * 2 + 1, y * 2 + 1); // 3
+            this.buffers.circleVertex.push(x * 2,     y * 2 + 1); // 4
 
             // 1, 2, 3
             // 1, 4, 3
-            this.elementGroups.elementBuffer.add(idx, idx + 1, idx + 2);
-            this.elementGroups.elementBuffer.add(idx, idx + 3, idx + 2);
+            this.elementGroups.elementBuffer.push(idx, idx + 1, idx + 2);
+            this.elementGroups.elementBuffer.push(idx, idx + 3, idx + 2);
 
             this.elementGroups.current.vertexLength += 4;
             this.elementGroups.current.elementLength += 2;

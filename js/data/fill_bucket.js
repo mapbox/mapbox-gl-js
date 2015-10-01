@@ -54,17 +54,17 @@ FillBucket.prototype.addFill = function(vertices) {
         currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
         currentVertex = vertices[i];
 
-        fillVertex.add(currentVertex.x, currentVertex.y);
+        fillVertex.push(currentVertex.x, currentVertex.y);
         elementGroup.vertexLength++;
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            fillElement.add(firstIndex, prevIndex, currentIndex);
+            fillElement.push(firstIndex, prevIndex, currentIndex);
             elementGroup.elementLength++;
         }
 
         if (i >= 1) {
-            outlineElement.add(prevIndex, currentIndex);
+            outlineElement.push(prevIndex, currentIndex);
             elementGroup.secondElementLength++;
         }
 

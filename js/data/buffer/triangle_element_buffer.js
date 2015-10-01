@@ -14,10 +14,6 @@ function TriangleElementBuffer(options) {
     });
 }
 
-TriangleElementBuffer.prototype = util.inherit(Buffer, {
-    add: function(a, b, c) {
-        this.push(a, b, c);
-    }
-});
+TriangleElementBuffer.prototype = util.inherit(Buffer);
 
 module.exports = TriangleElementBuffer;
