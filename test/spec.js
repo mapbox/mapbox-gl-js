@@ -3,21 +3,25 @@
 var test = require('tape');
 var spec = require('../');
 
-['v6', 'v7', 'v8', 'latest'].forEach(function(v) {
-  test(v, function(t) {
-    for (var k in spec[v]) {
-      // Exception for version.
-      if (k === '$version') {
-        t.equal(typeof spec[v].$version, 'number', '$version (number)');
-      } else {
-        validSchema(k, t, spec[v][k], spec[v]);
+['v6', 'v7', 'v8', 'latest'].forEach(function(version) {
+  ['', 'min'].forEach(function(kind) {
+    var v = version + kind;
+    test(v, function(t) {
+      for (var k in spec[v]) {
+        // Exception for version.
+        if (k === '$version') {
+          t.equal(typeof spec[v].$version, 'number', '$version (number)');
+        } else {
+          validSchema(k, t, spec[v][k], spec[v]);
+        }
       }
-    }
-    t.end();
+      t.end();
+    });
   });
 });
 
 function validSchema(k, t, obj, ref) {
+  var minified = t.name.match(/min$/) !== null;
   var scalar = ['boolean', 'string', 'number'];
   var types = Object.keys(ref).concat(['boolean', 'string', 'number',
     'array', 'enum', 'color', '*',
@@ -36,6 +40,7 @@ function validSchema(k, t, obj, ref) {
   var keys = [
     'default',
     'doc',
+    'example',
     'function',
     'function-output',
     'length',
@@ -83,8 +88,13 @@ function validSchema(k, t, obj, ref) {
       }
 
       // schema key type checks
-      if (obj.doc !== undefined)
+      if (obj.doc !== undefined) {
         t.equal('string', typeof obj.doc, k + '.doc (string)');
+        if (minified) t.fail('minified file should not have ' + k + '.doc');
+      }
+      if (minified && obj.example !== undefined) {
+        t.fail('minified file should not have ' + k + '.example');
+      }
       if (obj.function !== undefined) {
         if (ref.$version >= 7) {
           t.equal(true, ['interpolated', 'piecewise-constant'].indexOf(obj.function) >= 0, 'function: ' + obj.function);
