@@ -47,22 +47,20 @@ function Buffer(options) {
         var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : 1;
 
         for (var i = 0; i < options.attributes.length; i++) {
-            var attribute = util.extend({
-                components: 1,
-                type: Buffer.AttributeType.UNSIGNED_BYTE
-            }, options.attributes[i]);
+            var attribute = util.extend({}, options.attributes[i]);
 
-            assert(attribute.type.name in Buffer.AttributeType);
+            attribute.components = attribute.components || 1;
+            attribute.type = attribute.type || Buffer.AttributeType.UNSIGNED_BYTE;
 
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
 
-            assert(!isNaN(attribute.size));
-
             this.attributes.push(attribute);
-
             this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+
             assert(!isNaN(this.itemSize));
+            assert(!isNaN(attribute.size));
+            assert(attribute.type.name in Buffer.AttributeType);
         }
     }
 
@@ -106,7 +104,7 @@ Buffer.prototype.destroy = function(gl) {
  * @private
  * @param gl The WebGL context
  * @param shader The active WebGL shader
- * @param {number} offset The offset of the attrubute data in the currently bound GL buffer.
+ * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
  */
 Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
     for (var i = 0; i < this.attributes.length; i++) {
