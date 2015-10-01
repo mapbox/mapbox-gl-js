@@ -126,38 +126,18 @@ Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
  */
 Buffer.prototype.get = function(index) {
     var item = {};
+    var offset = index * this.itemSize;
+
     for (var i = 0; i < this.attributes.length; i++) {
         var attribute = this.attributes[i];
-        item[attribute.name] = [];
+        var values = item[attribute.name] = [];
 
         for (var j = 0; j < attribute.components; j++) {
-            var offset = this.getOffset(index, i, j) / attribute.type.size;
-            var view = this.views[attribute.type.name];
-            var value = view[offset];
-            item[attribute.name][j] = value;
+            var componentOffset = ((offset + attribute.offset) / attribute.type.size) + j;
+            values.push(this.views[attribute.type.name][componentOffset]);
         }
     }
     return item;
-};
-
-/**
- * Get the byte offset of a location in the array buffer.
- * @private
- * @param {number} index
- * @param {number} [attributeIndex]
- * @param {number} [componentIndex]
- */
-Buffer.prototype.getOffset = function(index, attributeIndex, componentIndex) {
-    if (attributeIndex === undefined) {
-        return index * this.itemSize;
-    } else {
-        var attribute = this.attributes[attributeIndex];
-        return (
-            index * this.itemSize +
-            attribute.offset +
-            attribute.type.size * (componentIndex || 0)
-        );
-    }
 };
 
 Buffer.prototype._resize = function(capacity) {
