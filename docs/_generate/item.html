@@ -42,9 +42,9 @@
   <% } %>
   <% if (prop.example) { %>
   <div class='space-bottom1 pad2x clearfix'>
-  {% highlight json %}
-  <%= '"' + name + '": ' + JSON.stringify(prop.example, null, 2) %>
-  {% endhighlight %}
+{% highlight json %}
+<%= '"' + name + '": ' + JSON.stringify(prop.example, null, 2) %>
+{% endhighlight %}
   </div>
   <% } %>
 </div>
