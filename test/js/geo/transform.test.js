@@ -4,7 +4,6 @@ var test = require('prova');
 var Point = require('point-geometry');
 var Transform = require('../../../js/geo/transform');
 var LngLat = require('../../../js/geo/lng_lat');
-var VertexBuffer = require('../../../js/data/buffer/line_vertex_buffer');
 
 var fixed = require('../../testutil/fixed');
 var fixedLngLat = fixed.LngLat;
@@ -133,15 +132,6 @@ test('transform', function(t) {
         transform.center = new LngLat(-50, -30);
         t.same(transform.center, new LngLat(-4.828338623046875, -4.828969771321582));
 
-        t.end();
-    });
-});
-
-test('vertex buffer', function(t) {
-    t.test('is initialized', function(t) {
-        var buf = new VertexBuffer();
-        t.deepEqual(buf.length, 0);
-        t.deepEqual(buf.capacity, 8192);
         t.end();
     });
 });

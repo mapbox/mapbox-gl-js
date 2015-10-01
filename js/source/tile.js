@@ -4,7 +4,7 @@ var glmatrix = require('gl-matrix');
 var mat2 = glmatrix.mat2;
 var mat4 = glmatrix.mat4;
 var util = require('../util/util');
-var BufferSet = require('../data/buffer/buffer_set');
+var BufferSet = require('../data/buffer_set');
 
 module.exports = Tile;
 
