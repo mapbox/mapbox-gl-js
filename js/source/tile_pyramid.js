@@ -35,6 +35,8 @@ function TilePyramid(options) {
 
     this._tiles = {};
     this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
+
+    this._filterRendered = this._filterRendered.bind(this);
 }
 
 TilePyramid.prototype = {
@@ -57,15 +59,15 @@ TilePyramid.prototype = {
      * @private
      */
     orderedIDs: function() {
-        return Object.keys(this._tiles)
-            .sort(function(a, b) { return (b % 32) - (a % 32); })
-            .map(function(id) { return +id; });
+        return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     },
 
     renderedIDs: function() {
-        return this.orderedIDs().filter(function(id) {
-            return this._tiles[id].loaded && !this._coveredTiles[id];
-        }.bind(this));
+        return this.orderedIDs().filter(this._filterRendered);
+    },
+
+    _filterRendered: function(id) {
+        return this._tiles[id].loaded && !this._coveredTiles[id];
     },
 
     reload: function() {
@@ -374,3 +376,7 @@ TilePyramid.prototype = {
         return result;
     }
 };
+
+function compareKeyZoom(a, b) {
+    return (b % 32) - (a % 32);
+}
