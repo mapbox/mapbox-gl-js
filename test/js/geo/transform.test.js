@@ -13,8 +13,7 @@ test('transform', function(t) {
 
     t.test('creates a transform', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         t.equal(transform.tileSize, 512, 'tileSize');
         t.equal(transform.worldSize, 512, 'worldSize');
         t.equal(transform.width, 500, 'width');
@@ -45,8 +44,7 @@ test('transform', function(t) {
 
     t.test('panBy', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         transform.latRange = undefined;
         t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.panBy(new Point(10, 10)), undefined);
@@ -56,8 +54,7 @@ test('transform', function(t) {
 
     t.test('setZoomAround', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         t.deepEqual(transform.center, { lng: 0, lat: 0 });
         t.equal(transform.zoom, 0);
         t.equal(transform.setZoomAround(10, transform.pointLocation(new Point(10, 10))), undefined);
@@ -68,8 +65,7 @@ test('transform', function(t) {
 
     t.test('setZoomAround tilted', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         transform.pitch = 50;
         transform.zoom = 4;
         t.deepEqual(transform.center, { lng: 0, lat: 0 });
@@ -82,8 +78,7 @@ test('transform', function(t) {
 
     t.test('setLocationAt', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         transform.zoom = 4;
         t.deepEqual(transform.center, { lng: 0, lat: 0 });
         transform.setLocationAtPoint({ lng: 13, lat: 10 }, new Point(15, 45));
@@ -93,8 +88,7 @@ test('transform', function(t) {
 
     t.test('setLocationAt tilted', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         transform.zoom = 4;
         transform.pitch = 50;
         t.deepEqual(transform.center, { lng: 0, lat: 0 });
@@ -105,8 +99,7 @@ test('transform', function(t) {
 
     t.test('has a default zoom', function(t) {
         var transform = new Transform();
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
         t.equal(transform.tileZoom, 0);
         t.equal(transform.tileZoom, transform.zoom);
         t.end();
@@ -116,8 +109,7 @@ test('transform', function(t) {
         var transform = new Transform();
         transform.center = new LngLat(0, 0);
         transform.zoom = 10;
-        transform.width = 500;
-        transform.height = 500;
+        transform.resize(500, 500);
 
         transform.lngRange = [-5, 5];
         transform.latRange = [-5, 5];

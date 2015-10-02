@@ -13,8 +13,7 @@ test('camera', function(t) {
         var camera = new Camera();
 
         var transform = camera.transform = new Transform(0, 20);
-        transform.width = 512;
-        transform.height = 512;
+        transform.resize(512, 512);
 
         util.extend(camera, Evented);
 

@@ -16,9 +16,7 @@ test('TilePyramid#coveringTiles', function(t) {
     });
 
     var transform = new Transform();
-
-    transform.width = 200;
-    transform.height = 200;
+    transform.resize(200, 200);
 
     transform.zoom = 0;
     t.deepEqual(pyramid.coveringTiles(transform), []);
@@ -237,8 +235,7 @@ test('TilePyramid#removeTile', function(t) {
 test('TilePyramid#update', function(t) {
     t.test('loads no tiles if used is false', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.resize(512, 512);
         transform.zoom = 0;
 
         var pyramid = createPyramid({});
@@ -250,8 +247,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('loads covering tiles', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({});
@@ -263,8 +259,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('removes unused tiles', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -290,8 +285,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -318,8 +312,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children (wrapped)', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
         transform.center = new LngLat(360, 0);
 
@@ -375,8 +368,7 @@ test('TilePyramid#clearTiles', function(t) {
 
 test('TilePyramid#tilesIn', function (t) {
     var transform = new Transform();
-    transform.width = 511;
-    transform.height = 511;
+    transform.resize(511, 511);
     transform.zoom = 1;
 
     var pyramid = createPyramid({

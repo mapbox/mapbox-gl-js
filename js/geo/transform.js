@@ -97,6 +97,12 @@ Transform.prototype = {
         this._constrain();
     },
 
+    resize: function(width, height) {
+        this.width = width;
+        this.height = height;
+        this._constrain();
+    },
+
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 

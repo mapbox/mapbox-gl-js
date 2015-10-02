@@ -243,11 +243,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         this._canvas.resize(width, height);
-
-        this.transform.width = width;
-        this.transform.height = height;
-        this.transform._constrain();
-
+        this.transform.resize(width, height);
         this.painter.resize(width, height);
 
         return this
