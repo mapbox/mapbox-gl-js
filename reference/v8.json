@@ -4,14 +4,14 @@
     "version": {
       "required": true,
       "type": "enum",
-      "values": [
-        8
-      ],
-      "doc": "Stylesheet version number. Must be 8."
+      "values": [8],
+      "doc": "Stylesheet version number. Must be 8.",
+      "example": 8
     },
     "name": {
       "type": "string",
-      "doc": "A human-readable name for the style."
+      "doc": "A human-readable name for the style.",
+      "example": "Bright"
     },
     "metadata": {
       "type": "*",
@@ -20,47 +20,74 @@
     "center": {
       "type": "array",
       "value": "number",
-      "doc": "Default centerpoint in longitude and latitude."
+      "doc": "Default map center in longitude and latitude.  The style center will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": [-73.9749, 40.7736]
     },
     "zoom": {
       "type": "number",
-      "doc": "Default zoom level."
+      "doc": "Default zoom level.  The style zoom will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 12.5
     },
     "bearing": {
       "type": "number",
       "default": 0,
       "period": 360,
       "units": "degrees",
-      "doc": "Default bearing, in degrees."
+      "doc": "Default bearing, in degrees.  The style bearing will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 29
     },
     "pitch": {
       "type": "number",
       "default": 0,
       "units": "degrees",
-      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface"
+      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface.  The style pitch will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 50
     },
     "sources": {
       "required": true,
       "type": "sources",
-      "doc": "Data source specifications."
+      "doc": "Data source specifications.",
+      "example": {
+        "mapbox-streets": {
+          "type": "vector",
+          "url": "mapbox://mapbox.mapbox-streets-v6"
+        }
+      }
     },
     "sprite": {
       "type": "string",
-      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended."
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended.",
+      "example": "mapbox://sprites/mapbox/bright-v8"
     },
     "glyphs": {
       "type": "string",
-      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}."
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. Valid tokens are {fontstack} and {range}.",
+      "example": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
     },
     "transition": {
       "type": "transition",
-      "doc": "A global transition definition to use as a default across properties."
+      "doc": "A global transition definition to use as a default across properties.",
+      "example": {
+        "duration": 300,
+        "delay": 0
+      }
     },
     "layers": {
       "required": true,
       "type": "array",
       "value": "layer",
-      "doc": "Layers will be drawn in the order of this array."
+      "doc": "Layers will be drawn in the order of this array.",
+      "example": [
+        {
+          "id": "water",
+          "source": "mapbox-streets",
+          "source-layer": "water",
+          "type": "fill",
+          "paint": {
+            "fill-color": "#00ffff"
+          }
+        }
+      ]
     }
   },
   "sources": {
@@ -83,7 +110,7 @@
         "vector",
         "raster"
       ],
-      "doc": "The data type of the source."
+      "doc": "The data type of the tile source."
     },
     "url": {
       "type": "string",
@@ -121,10 +148,12 @@
       "type": "enum",
       "values": [
         "geojson"
-      ]
+      ],
+      "doc": "The data type of the GeoJSON source."
     },
     "data": {
-      "type": "*"
+      "type": "*",
+      "doc": "A URL to a GeoJSON file, or inline GeoJSON."
     },
     "maxzoom": {
       "type": "number",
@@ -148,7 +177,8 @@
       "type": "enum",
       "values": [
         "video"
-      ]
+      ],
+      "doc": "The data type of the video source."
     },
     "urls": {
       "required": true,
@@ -164,7 +194,8 @@
       "value": {
         "type": "array",
         "length": 2,
-        "value": "number"
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
       }
     }
   },
@@ -174,7 +205,8 @@
       "type": "enum",
       "values": [
         "image"
-      ]
+      ],
+      "doc": "The data type of the image source."
     },
     "url": {
       "required": true,
@@ -189,7 +221,8 @@
       "value": {
         "type": "array",
         "length": 2,
-        "value": "number"
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
       }
     }
   },
@@ -736,7 +769,8 @@
   },
   "filter": {
     "type": "array",
-    "value": "*"
+    "value": "*",
+    "doc": "A filter selects specific features from a layer."
   },
   "filter_operator": {
     "type": "enum",
@@ -752,7 +786,8 @@
       "all",
       "any",
       "none"
-    ]
+    ],
+    "doc": "The filter operator."
   },
   "geometry_type": {
     "type": "enum",
@@ -760,7 +795,8 @@
       "Point",
       "LineString",
       "Polygon"
-    ]
+    ],
+    "doc": "The geometry type for the filter to select."
   },
   "color_operation": {
     "type": "enum",
@@ -770,7 +806,8 @@
       "spin",
       "fade",
       "mix"
-    ]
+    ],
+    "doc": "A color operation to apply."
   },
   "function": {
     "stops": {
