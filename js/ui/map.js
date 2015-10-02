@@ -90,7 +90,7 @@ var Map = module.exports = function(options) {
     this._setupContainer();
     this._setupPainter();
 
-    this.on('move', this.update);
+    this.on('move', this.update.bind(this, false));
     this.on('zoom', this.update.bind(this, true));
     this.on('moveend', function() {
         this.animationLoop.set(300); // text fading
