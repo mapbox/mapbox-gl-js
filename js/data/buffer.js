@@ -62,10 +62,10 @@ function Buffer(options) {
             assert(!isNaN(attribute.size));
             assert(attribute.type.name in Buffer.AttributeType);
         }
-    }
 
-    this._refreshViews();
-    this._createPushMethod();
+        this._createPushMethod();
+        this._refreshViews();
+    }
 }
 
 /**
