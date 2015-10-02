@@ -248,16 +248,19 @@ Transform.prototype = {
         if (targetZ === undefined) targetZ = 0;
 
         var matrix = this.coordinatePointMatrix(this.tileZoom);
-        var inverted = mat4.invert(new Float64Array(16), matrix);
+        mat4.invert(matrix, matrix);
 
-        if (!inverted) throw new Error("failed to invert matrix");
+        if (!matrix) throw new Error("failed to invert matrix");
 
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
         // line with z=0
 
-        var coord0 = vec4.transformMat4([], [p.x, p.y, 0, 1], inverted);
-        var coord1 = vec4.transformMat4([], [p.x, p.y, 1, 1], inverted);
+        var coord0 = [p.x, p.y, 0, 1];
+        var coord1 = [p.x, p.y, 1, 1];
+
+        vec4.transformMat4(coord0, coord0, matrix);
+        vec4.transformMat4(coord1, coord1, matrix);
 
         var w0 = coord0[3];
         var w1 = coord1[3];
@@ -285,7 +288,8 @@ Transform.prototype = {
      */
     coordinatePoint: function(coord) {
         var matrix = this.coordinatePointMatrix(coord.zoom);
-        var p = vec4.transformMat4([], [coord.column, coord.row, 0, 1], matrix);
+        var p = [coord.column, coord.row, 0, 1];
+        vec4.transformMat4(p, p, matrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
