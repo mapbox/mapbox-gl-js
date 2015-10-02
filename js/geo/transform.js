@@ -5,8 +5,11 @@ var LngLat = require('./lng_lat'),
     Coordinate = require('./coordinate'),
     wrap = require('../util/util').wrap,
     interp = require('../util/interpolate'),
-    vec4 = require('gl-matrix').vec4,
-    mat4 = require('gl-matrix').mat4;
+    glmatrix = require('gl-matrix');
+
+var vec4 = glmatrix.vec4,
+    mat4 = glmatrix.mat4,
+    mat2 = glmatrix.mat2;
 
 module.exports = Transform;
 
@@ -65,6 +68,10 @@ Transform.prototype = {
     },
     set bearing(bearing) {
         this.angle = -wrap(bearing, -180, 180) * Math.PI / 180;
+
+        // 2x2 matrix for rotating points
+        this.rotationMatrix = mat2.create();
+        mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
     },
 
     get pitch() {
@@ -100,6 +107,10 @@ Transform.prototype = {
     resize: function(width, height) {
         this.width = width;
         this.height = height;
+
+        // The extrusion matrix
+        this.exMatrix = mat4.create();
+        mat4.ortho(this.exMatrix, 0, width, height, 0, 0, -1);
         this._constrain();
     },
 
