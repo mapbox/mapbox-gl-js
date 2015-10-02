@@ -396,17 +396,18 @@ SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
 };
 
 SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
-    var features = this.features;
-    var fontstack = this.layoutProperties['text-font'];
+    var fontstack = this.layoutProperties['text-font'],
+        stacks = this.stacks = tile.stacks,
+        stack = stacks[fontstack] = stacks[fontstack] || {};
 
-    var stacks = this.stacks = tile.stacks;
-    if (stacks[fontstack] === undefined) {
-        stacks[fontstack] = {};
-    }
-    var stack = stacks[fontstack];
+    var data = resolveText(this.features, this.layoutProperties, stack);
 
-    var data = resolveText(features, this.layoutProperties, stack);
     this.textFeatures = data.textFeatures;
+
+    if (!data.codepoints.length) {
+        setTimeout(callback, 0);
+        return;
+    }
 
     actor.send('get glyphs', {
         uid: tile.uid,
