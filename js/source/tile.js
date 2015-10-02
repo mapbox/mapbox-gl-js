@@ -51,7 +51,7 @@ Tile.prototype = {
         mat4.identity(this.posMatrix);
         mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
+        mat4.multiply(this.posMatrix, transform.projMatrix, this.posMatrix);
 
         this.posMatrix = new Float32Array(this.posMatrix);
 
