@@ -59,9 +59,5 @@ Actor.prototype.send = function(type, data, callback, buffers) {
  * @private
  */
 Actor.prototype.postMessage = function(message, transferList) {
-    try {
-        this.target.postMessage(message, transferList);
-    } catch (e) {
-        this.target.postMessage(message); // No support for transferList on IE
-    }
+    this.target.postMessage(message, transferList);
 };
