@@ -23,7 +23,7 @@ glob.sync(__dirname + '/fixture/*.input.json').forEach(function(file) {
 
 var fixtures = glob.sync(__dirname + '/fixture/*.input.json');
 var style = JSON.parse(fs.readFileSync(fixtures[0]));
-var reference = require('../reference/latest');
+var reference = require('../reference/latest.min');
 
 t('validate.parsed exists', function(t) {
     t.equal(typeof validate.parsed, 'function');
