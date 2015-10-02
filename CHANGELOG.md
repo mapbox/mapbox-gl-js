@@ -1,6 +1,15 @@
 ## master
 
-* Removed gl-style-spritify. Mapbox GL sprites are now created automatically by
+## 8.2.0
+
+v8.0.0 styles are fully compatible with v8.2.0.
+
+* Add inline `example` property.
+* Enforce that all style properties must have documentation in `doc` property.
+* Create minified style specs with `doc` and `example` properties removed.
+* `validate` now validates against minified style spec.
+* `format` now accepts `space` option to use with `JSON.stringify`.
+* Remove `gl-style-spritify`. Mapbox GL sprites are now created automatically by
   the Mapbox style APIs, or for hand-crafted styles, by [spritezero-cli](https://github.com/mapbox/spritezero-cli).
 
 ## 8.1.0
@@ -18,7 +27,7 @@ v8.0.0 styles are fully compatible with v8.1.0.
 ## 8.0.0
 
 Introduction of Mapbox GL style specification v8. To migrate a v7 style to v8,
-use the gl-style-migrate script as described in the README.
+use the `gl-style-migrate` script as described in the README.
 
 * [BREAKING] The value of the `text-font` property is now an array of
   strings, rather than a single comma separated string.
