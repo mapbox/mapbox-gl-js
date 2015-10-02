@@ -39,7 +39,8 @@
     </span><% } %>
   </div>
   <% if (prop.doc) { %>
-  <div class='space-bottom1 small pad2x'><%= prop.doc %></div>
+  {% capture prop_doc %}<%= prop.doc %>{% endcapture %}
+  <div class='space-bottom1 small pad2x'>{{prop_doc | markdownify}}</div>
   <% } %>
   <% if (prop.example) { %>
   <div class='space-bottom1 pad2x clearfix'>
