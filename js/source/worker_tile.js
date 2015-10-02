@@ -216,7 +216,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             elementGroups = {};
 
         for (k in buffers) {
-            transferables.push(buffers[k].array);
+            transferables.push(buffers[k].arrayBuffer);
 
             // The Buffer::push method is generated with "new Function(...)"
             // and not transferrable.
@@ -260,7 +260,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     for (var k in buffers) {
-        transferables.push(buffers[k].array);
+        transferables.push(buffers[k].arrayBuffer);
 
         // The Buffer::push method is generated with "new Function(...)"
         // and not transferrable.
