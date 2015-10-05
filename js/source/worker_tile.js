@@ -35,7 +35,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         buffers = new BufferSet(),
         collisionTile = new CollisionTile(this.angle, this.pitch),
         buckets = {},
-        bucketsInOrder = this.bucketsInOrder = [],
+        symbolBuckets = this.symbolBuckets = [],
+        otherBuckets = [],
         bucketsBySourceLayer = {};
 
     // Map non-ref layers to buckets.
@@ -64,7 +65,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket.layers = [layer.id];
 
         buckets[bucket.id] = bucket;
-        bucketsInOrder.push(bucket);
+
+        if (bucket.type === 'symbol')
+            symbolBuckets.push(bucket);
+        else
+            otherBuckets.push(bucket);
 
         if (data.layers) {
             // vectortile
@@ -123,81 +128,52 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
     }
 
-    var prevPlacementBucket;
-    var remaining = bucketsInOrder.length;
-
-    /*
-     *  The async parsing here is a bit tricky.
-     *  Some buckets depend on resources that may need to be loaded async (glyphs).
-     *  Some buckets need to be parsed in order (to get collision priorities right).
-     *
-     *  Dependencies calls are initiated first to get those rolling.
-     *  Buckets that don't need to be parsed in order, aren't to save time.
-     */
-
-    for (i = bucketsInOrder.length - 1; i >= 0; i--) {
-        bucket = bucketsInOrder[i];
-
-        // Link buckets that need to be parsed in order
-        if (bucket.needsPlacement) {
-            if (prevPlacementBucket) {
-                prevPlacementBucket.next = bucket;
-            } else {
-                bucket.previousPlaced = true;
-            }
-            prevPlacementBucket = bucket;
-        }
-
-        if (bucket.getDependencies) {
-            bucket.getDependencies(this, actor, dependenciesDone(bucket));
-        }
-
-        // immediately parse buckets where order doesn't matter and no dependencies
-        if (!bucket.needsPlacement && !bucket.getDependencies) {
-            parseBucket(tile, bucket);
-        }
+    // immediately parse non-symbol buckets (they have no dependencies)
+    for (i = otherBuckets.length - 1; i >= 0; i--) {
+        parseBucket(tile, otherBuckets[i]);
     }
 
-    function dependenciesDone(bucket) {
-        return function(err) {
-            bucket.dependenciesLoaded = true;
-            parseBucket(tile, bucket, err);
-        };
+    var remaining = symbolBuckets.length;
+
+    if (remaining === 0)
+        done();
+
+    // Get dependencies for symbol buckets
+    for (i = symbolBuckets.length - 1; i >= 0; i--) {
+        symbolBuckets[i].getDependencies(this, actor, symbolBucketDone);
     }
 
-    function parseBucket(tile, bucket, skip) {
-        if (bucket.getDependencies && !bucket.dependenciesLoaded) return;
-        if (bucket.needsPlacement && !bucket.previousPlaced) return;
-
-        if (!skip) {
-            var now = Date.now();
-            if (bucket.features.length) bucket.addFeatures(collisionTile);
-            var time = Date.now() - now;
-            if (bucket.interactive) {
-                for (var i = 0; i < bucket.features.length; i++) {
-                    var feature = bucket.features[i];
-                    tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
-                }
-            }
-            if (typeof self !== 'undefined') {
-                self.bucketStats = self.bucketStats || {_total: 0};
-                self.bucketStats._total += time;
-                self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
-            }
-            bucket.features = null;
-        }
-
+    function symbolBucketDone(err) {
         remaining--;
+        if (err) console.error(err);
 
-        if (!remaining) {
+        if (remaining === 0) {
+            // all symbol bucket dependencies fetched; parse them in proper order
+            for (var i = symbolBuckets.length - 1; i >= 0; i--) {
+                parseBucket(tile, symbolBuckets[i]);
+            }
             done();
-            return;
+        }
+    }
+
+    function parseBucket(tile, bucket) {
+        var now = Date.now();
+        if (bucket.features.length) bucket.addFeatures(collisionTile);
+        var time = Date.now() - now;
+
+        if (bucket.interactive) {
+            for (var i = 0; i < bucket.features.length; i++) {
+                var feature = bucket.features[i];
+                tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
+            }
         }
 
-        // try parsing the next bucket, if it is ready
-        if (bucket.next) {
-            bucket.next.previousPlaced = true;
-            parseBucket(tile, bucket.next);
+        bucket.features = null;
+
+        if (typeof self !== 'undefined') {
+            self.bucketStats = self.bucketStats || {_total: 0};
+            self.bucketStats._total += time;
+            self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
         }
     }
 
@@ -249,14 +225,12 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     var elementGroups = {};
     var collisionTile = new CollisionTile(angle, pitch);
 
-    var bucketsInOrder = this.bucketsInOrder;
-    for (var i = bucketsInOrder.length - 1; i >= 0; i--) {
-        var bucket = bucketsInOrder[i];
+    var symbolBuckets = this.symbolBuckets;
+    for (var i = symbolBuckets.length - 1; i >= 0; i--) {
+        var bucket = symbolBuckets[i];
 
-        if (bucket.type === 'symbol') {
-            bucket.placeFeatures(collisionTile, buffers, collisionDebug);
-            elementGroups[bucket.id] = bucket.elementGroups;
-        }
+        bucket.placeFeatures(collisionTile, buffers, collisionDebug);
+        elementGroups[bucket.id] = bucket.elementGroups;
     }
 
     for (var k in buffers) {

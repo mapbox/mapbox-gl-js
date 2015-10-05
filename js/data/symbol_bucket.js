@@ -31,10 +31,7 @@ function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDeb
     this.tilePixelRatio = tileExtent / tileSize;
     this.compareText = {};
     this.symbolInstances = [];
-
 }
-
-SymbolBucket.prototype.needsPlacement = true;
 
 SymbolBucket.prototype.addFeatures = function(collisionTile) {
     var layout = this.layoutProperties;
