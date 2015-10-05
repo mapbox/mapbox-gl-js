@@ -13,7 +13,10 @@ FillBucket.prototype.addFeatures = function() {
     var features = this.features;
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
-        this.addFeature(feature.loadGeometry());
+        var geom = feature.loadGeometry();
+        if (geom) {
+            this.addFeature(geom);
+        }
     }
 };
 
