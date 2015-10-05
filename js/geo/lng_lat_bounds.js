@@ -12,10 +12,9 @@ var LngLat = require('./lng_lat');
  * @param {LngLat} sw southwest
  * @param {LngLat} ne northeast
  * @example
- * var sw = new mapboxgl.LngLat(0, 0);
- * var ne = new mapboxgl.LngLat(-10, 10);
- * var bounds = new mapboxgl.LngLatBounds(sw, ne);
- *
+ * var sw = new mapboxgl.LngLat(-73.9876, 40.7661);
+ * var ne = new mapboxgl.LngLat(-73.9397, 40.8002);
+ * var llb = new mapboxgl.LngLatBounds(sw, ne);
  */
 function LngLatBounds(sw, ne) {
     if (!sw) return;
@@ -72,10 +71,8 @@ LngLatBounds.prototype = {
      * Get the point equidistant from this box's corners
      * @returns {LngLat} centerpoint
      * @example
-     * var bounds = new mapboxgl.LngLatBounds(
-     *   new mapboxgl.LngLat(10, 10),
-     *   new mapboxgl.LngLat(-10, -10);
-     * bounds.getCenter(); // equals mapboxgl.LngLat(0, 0)
+     * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
+     * llb.getCenter(); // = LngLat {lng: -73.96365, lat: 40.78315}
      */
     getCenter: function() {
         return new LngLat((this._sw.lng + this._ne.lng) / 2, (this._sw.lat + this._ne.lat) / 2);
@@ -131,13 +128,17 @@ LngLatBounds.prototype = {
 };
 
 /**
- * constructs LngLatBounds from an array if necessary
- * @param {LngLatBounds|*} a any input
- * @returns {LngLatBounds|false}
+ * Convert an array to a `LngLatBounds` object, or return an existing
+ * `LngLatBounds` object unchanged.
+ *
+ * Calls `LngLat#convert` internally to convert arrays as `LngLat` values.
+ *
+ * @param {LngLatBounds|Array<Array<number>>} input input to convert to a LngLatBounds
+ * @returns {LngLatBounds} LngLatBounds object or original input
  * @example
- * // calls LngLat.convert internally to
- * // support arrays as lnglat values
- * LngLatBounds.convert([[-10, -10], [10, 10]]);
+ * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
+ * var llb = mapboxgl.LngLatBounds.convert(arr);
+ * llb;   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
  */
 LngLatBounds.convert = function (a) {
     if (!a || a instanceof LngLatBounds) return a;
