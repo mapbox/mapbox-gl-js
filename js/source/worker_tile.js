@@ -128,26 +128,51 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
     }
 
+    var icons = {},
+        stacks = {};
+
+    if (symbolBuckets.length > 0) {
+
+        // Get dependencies for symbol buckets
+        for (i = symbolBuckets.length - 1; i >= 0; i--) {
+            symbolBuckets[i].updateIcons(icons);
+            symbolBuckets[i].updateFont(stacks);
+        }
+
+        for (var fontName in stacks) {
+            stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
+        }
+        icons = Object.keys(icons);
+
+        var deps = 0;
+
+        actor.send('get glyphs', {uid: tile.uid, stacks: stacks}, function(err, newStacks) {
+            stacks = newStacks;
+            gotDependency(err);
+        });
+
+        if (icons.length) {
+            actor.send('get icons', {icons: icons}, function(err, newIcons) {
+                icons = newIcons;
+                gotDependency(err);
+            });
+        } else {
+            gotDependency();
+        }
+    }
+
     // immediately parse non-symbol buckets (they have no dependencies)
     for (i = otherBuckets.length - 1; i >= 0; i--) {
         parseBucket(tile, otherBuckets[i]);
     }
 
-    var remaining = symbolBuckets.length;
+    if (symbolBuckets.length === 0)
+        return done();
 
-    if (remaining === 0)
-        done();
-
-    // Get dependencies for symbol buckets
-    for (i = symbolBuckets.length - 1; i >= 0; i--) {
-        symbolBuckets[i].getDependencies(this, actor, symbolBucketDone);
-    }
-
-    function symbolBucketDone(err) {
-        remaining--;
-        if (err) console.error(err);
-
-        if (remaining === 0) {
+    function gotDependency(err) {
+        if (err) return callback(err);
+        deps++;
+        if (deps === 2) {
             // all symbol bucket dependencies fetched; parse them in proper order
             for (var i = symbolBuckets.length - 1; i >= 0; i--) {
                 parseBucket(tile, symbolBuckets[i]);
@@ -158,7 +183,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function parseBucket(tile, bucket) {
         var now = Date.now();
-        if (bucket.features.length) bucket.addFeatures(collisionTile);
+        if (bucket.features.length) bucket.addFeatures(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
         if (bucket.interactive) {

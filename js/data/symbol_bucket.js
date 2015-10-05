@@ -7,7 +7,6 @@ var resolveTokens = require('../util/token');
 var Quads = require('../symbol/quads');
 var Shaping = require('../symbol/shaping');
 var resolveText = require('../symbol/resolve_text');
-var resolveIcons = require('../symbol/resolve_icons');
 var mergeLines = require('../symbol/mergelines');
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
@@ -33,7 +32,7 @@ function SymbolBucket(buffers, layoutProperties, overscaling, zoom, collisionDeb
     this.symbolInstances = [];
 }
 
-SymbolBucket.prototype.addFeatures = function(collisionTile) {
+SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     var layout = this.layoutProperties;
     var features = this.features;
     var textFeatures = this.textFeatures;
@@ -99,7 +98,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
         if (!geometries[k]) continue;
 
         if (textFeatures[k]) {
-            shapedText = shapeText(textFeatures[k], this.stacks[fontstack], maxWidth,
+            shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
         } else {
             shapedText = null;
@@ -107,7 +106,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
 
         if (layout['icon-image']) {
             var iconName = resolveTokens(features[k].properties, layout['icon-image']);
-            var image = this.icons[iconName];
+            var image = icons[iconName];
             shapedIcon = shapeIcon(image, layout);
 
             if (image) {
@@ -371,54 +370,22 @@ SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
     }
 };
 
-SymbolBucket.prototype.getIconDependencies = function(tile, actor, callback) {
-    if (this.layoutProperties['icon-image']) {
-        var features = this.features;
-        var icons = resolveIcons(features, this.layoutProperties);
+SymbolBucket.prototype.updateIcons = function(icons) {
+    var iconValue = this.layoutProperties['icon-image'];
+    if (!iconValue) return;
 
-        if (icons.length) {
-            actor.send('get icons', { icons: icons }, setIcons.bind(this));
-        } else {
-            callback();
-        }
-    } else {
-        callback();
-    }
-
-    function setIcons(err, newicons) {
-        if (err) return callback(err);
-        this.icons = newicons;
-        callback();
+    for (var i = 0; i < this.features.length; i++) {
+        var iconName = resolveTokens(this.features[i].properties, iconValue);
+        if (iconName)
+            icons[iconName] = true;
     }
 };
 
-SymbolBucket.prototype.getTextDependencies = function(tile, actor, callback) {
-    var fontstack = this.layoutProperties['text-font'],
-        stacks = this.stacks = tile.stacks,
-        stack = stacks[fontstack] = stacks[fontstack] || {};
+SymbolBucket.prototype.updateFont = function(stacks) {
+    var fontName = this.layoutProperties['text-font'],
+        stack = stacks[fontName] = stacks[fontName] || {};
 
-    var data = resolveText(this.features, this.layoutProperties, stack);
-
-    this.textFeatures = data.textFeatures;
-
-    if (!data.codepoints.length) {
-        setTimeout(callback, 0);
-        return;
-    }
-
-    actor.send('get glyphs', {
-        uid: tile.uid,
-        fontstack: fontstack,
-        codepoints: data.codepoints
-    }, function(err, newstack) {
-        if (err) return callback(err);
-
-        for (var codepoint in newstack) {
-            stack[codepoint] = newstack[codepoint];
-        }
-
-        callback();
-    });
+    this.textFeatures = resolveText(this.features, this.layoutProperties, stack);
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {

@@ -27,10 +27,11 @@ test('SymbolBucket', function(t) {
         glyphs[id].rect = atlas.addGlyph(id, 'Test', glyphs[id], 3);
     }
 
+    var stacks = { 'Test': glyphs };
+
     function bucketSetup() {
         var bucket = new SymbolBucket(buffers, info, 1, 0);
         bucket.textFeatures = ['abcde'];
-        bucket.stacks = { 'Test': glyphs };
         bucket.features = [feature];
         t.ok(bucket, 'bucketSetup');
         return bucket;
@@ -41,13 +42,13 @@ test('SymbolBucket', function(t) {
 
     // add feature from bucket A
     var a = JSON.stringify(collision);
-    t.equal(bucketA.addFeatures(collision), undefined);
+    t.equal(bucketA.addFeatures(collision, stacks), undefined);
     var b = JSON.stringify(collision);
     t.notEqual(a, b, 'places feature');
 
     // add same feature from bucket B
     a = JSON.stringify(collision);
-    t.equal(bucketB.addFeatures(collision), undefined);
+    t.equal(bucketB.addFeatures(collision, stacks), undefined);
     b = JSON.stringify(collision);
     t.equal(a, b, 'detects collision and does not place feature');
 
