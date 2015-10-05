@@ -83,6 +83,10 @@ SpriteAtlas.prototype.resize = function(newRatio) {
 };
 
 function copyBitmap(src, srcStride, srcX, srcY, dst, dstStride, dstX, dstY, width, height, wrap) {
+    // floor values for non-integer pixelRatio
+    dstStride = dstStride << 0;
+    dstX = dstX << 0;
+    dstY = dstY << 0;
     var srcI = srcY * srcStride + srcX;
     var dstI = dstY * dstStride + dstX;
     var x, y;
