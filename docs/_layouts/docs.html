@@ -22,20 +22,16 @@ options: full
           {% endfor %}
         {% else %}
           <div class='space-bottom1'>
-            <span class='block truncate strong'>{% if page.navtitle %}{{page.navtitle}}{% else %}{{page.title}}{% endif %}</span>
+            <span class='block truncate strong'>API</span>
           </div>
-          {% for item in site.categories[page.category] reversed %}
-            {% if item.navigation %}
-              {% for navitem in item.navigation%}
-                <div class='space-bottom1'>
-                  <a class='block truncate strong quiet' href='{{site.baseurl}}{{navitem.url}}/#{{navitem.id}}'>{{navitem.title}}</a>
-                  {% for subitem in navitem.subnav %}
-                  <a class='block truncate' href='{{site.baseurl}}{{subitem.url}}/#{{subitem.id}}'>{{subitem.title}}</a>
-                  {% endfor %}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
+            {% for navitem in page.navigation %}
+              <div class='space-bottom1'>
+                <a class='block truncate strong quiet' href='{{site.baseurl}}{{navitem.url}}/#{{navitem.id}}'>{{navitem.title}}</a>
+                {% for subitem in navitem.subnav %}
+                <a class='block truncate' href='{{site.baseurl}}{{subitem.url}}/#{{subitem.id}}'>{{subitem.title}}</a>
+                {% endfor %}
+              </div>
+            {% endfor %}
         {% endif %}
       </nav>
     </div>
