@@ -49,7 +49,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             continue;
 
         var minzoom = layer.minzoom;
-        if (minzoom && this.zoom < minzoom && minzoom < this.maxZoom)
+        if (minzoom && this.zoom < minzoom)
             continue;
 
         var maxzoom = layer.maxzoom;
