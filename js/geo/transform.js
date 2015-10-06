@@ -201,7 +201,6 @@ Transform.prototype = {
         var translate = coordAtPoint._sub(c);
         this._unmodified = false;
         this.center = this.coordinateLocation(coordCenter._sub(translate));
-        this._constrain();
     },
 
     setZoomAround: function(zoom, center) {
@@ -341,10 +340,12 @@ Transform.prototype = {
 
     _constrain: function() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
-        this._constraining = { unmodified: this._unmodified };   // recursion breaker
+
+        this._constraining = true;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
-            size = this.size;
+            size = this.size,
+            unmodified = this._unmodified;
 
         if (this.latRange) {
             minY = this.latY(this.latRange[1]);
@@ -366,8 +367,8 @@ Transform.prototype = {
                 sx ? (maxX + minX) / 2 : this.x,
                 sy ? (maxY + minY) / 2 : this.y));
             this.zoom += this.scaleZoom(s);
-            this._unmodified = this._constraining.unmodified;
-            this._constraining = undefined;
+            this._unmodified = unmodified;
+            this._constraining = false;
             return;
         }
 
@@ -394,8 +395,8 @@ Transform.prototype = {
                 y2 !== undefined ? y2 : this.y));
         }
 
-        this._unmodified = this._constraining.unmodified;
-        this._constraining = undefined;
+        this._unmodified = unmodified;
+        this._constraining = false;
     },
 
     _calcProjMatrix: function() {
