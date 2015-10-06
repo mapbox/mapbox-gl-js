@@ -3,6 +3,7 @@
 var util = require('../util/util');
 var Evented = require('../util/evented');
 var Source = require('./source');
+var TileCoord = require('./tile_coord');
 
 module.exports = VectorTileSource;
 
@@ -72,8 +73,14 @@ VectorTileSource.prototype = util.inherit(Evented, {
             overscaling: overscaling,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,
-            collisionDebug: this.map.collisionDebug
+            collisionDebug: this.map.collisionDebug,
+            parentId: tile.parentId
         };
+
+        // request the tile parentID if it exists
+        if (tile.parentId) {
+            params.url = TileCoord.fromID(tile.parentId).url(this.tiles, this.maxzoom);
+        }
 
         if (tile.workerID) {
             this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);

@@ -6,6 +6,7 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
+var TileCoord = require('./tile_coord');
 
 var geojsonvt = require('geojson-vt');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -47,7 +48,18 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, callback);
+
+            // if a parentTile is defined it means the index is missing a tile for this coord
+            // here the difference between the requested tile and its indexed parent is found
+            // we pass the dz, x/y pos of the tile's relationship to its parent
+            if (params.parentId && tile.data.layers)  {
+                var childPos = this.getChildPosition(params.coord.id, params.parentId);
+
+                // chelm - i'd prefer to not just tack on params here...
+                tile.parse(tile.data, this.layers, this.actor, callback, childPos.dz, childPos.xPos, childPos.yPos);
+            } else {
+                tile.parse(tile.data, this.layers, this.actor, callback);
+            }
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -145,5 +157,18 @@ util.extend(Worker.prototype, {
         } else {
             callback(null, []);
         }
+    },
+
+    'getChildPosition': function(childId, parentId) {
+        var tilePos = TileCoord.fromID(childId);
+        var parentPos = TileCoord.fromID(parentId);
+        var dz = tilePos.z - parentPos.z;
+        var xPos = tilePos.x & ((1 << dz) - 1);
+        var yPos = tilePos.y & ((1 << dz) - 1);
+        return {
+            dz: dz,
+            xPos: xPos,
+            yPos: yPos
+        };
     }
 });

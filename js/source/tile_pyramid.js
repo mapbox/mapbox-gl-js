@@ -25,6 +25,8 @@ function TilePyramid(options) {
     this.maxzoom = options.maxzoom;
     this.roundZoom = options.roundZoom;
     this.reparseOverscaled = options.reparseOverscaled;
+    // esri/chelm
+    this.index = options.index;
 
     this._load = options.load;
     this._abort = options.abort;
@@ -273,6 +275,10 @@ TilePyramid.prototype = {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
             tile = new Tile(wrapped, this.tileSize * overscaling);
+            // esri/chelm
+            if (this.index) {
+              tile.parentId = this.indexSearch(coord.id);
+            }
             this._load(tile);
         }
 
@@ -374,6 +380,55 @@ TilePyramid.prototype = {
         }
 
         return result;
+    },
+
+    /**
+     * For a given tile id find its parent tile from the index
+     * @param {string|number} id tile id
+     * @returns {Object} tile
+     * @private
+     */
+    indexSearch: function (id) {
+        var tile = TileCoord.fromID(id);
+
+        var ids = [id];
+
+        var parentTile = tile;
+        while (parentTile.z !== 0) {
+            parentTile = parentTile.parent();
+            ids.push(parentTile.id);
+        }
+
+        var cursor = this.index,
+            cursorId = ids.pop(),
+            index;
+
+        var pluckId = function (coord) {
+            return coord.id;
+        };
+
+        while (ids.length) {
+            id = ids.pop();
+            tile = TileCoord.fromID(cursorId);
+            index = tile.children(this.maxzoom).map(pluckId).indexOf(id);
+            if (cursor) {
+                if (cursor[index] === 0) {
+                    cursorId = id;
+                    break;
+                } else if (cursor[index] === 1) {
+                    cursorId = id;
+                    break;
+                } else {
+                    cursorId = id;
+                    cursor = cursor[index];
+                }
+            }
+        }
+
+        // don't return a parentId if we found the original tile
+        if (ids.length === 0) return null;
+
+        return cursorId;
     }
 };
 

@@ -46,6 +46,9 @@ module.exports = function (features, textFeatures, geometries) {
         var geom = geometries[k],
             text = textFeatures[k];
 
+        if (!geom)
+            continue;
+
         if (!text) {
             add(k);
             continue;

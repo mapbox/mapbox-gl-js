@@ -22,7 +22,7 @@ function WorkerTile(params) {
     this.stacks = {};
 }
 
-WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+WorkerTile.prototype.parse = function(data, layers, actor, callback, dz, xPos, yPos) {
 
     this.status = 'parsing';
 
@@ -104,16 +104,22 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             layer = data.layers[k];
             if (!layer) continue;
             if (layer.extent) extent = layer.extent;
-            sortLayerIntoBuckets(layer, bucketsBySourceLayer[k]);
+            sortLayerIntoBuckets(layer, bucketsBySourceLayer[k], dz, xPos, yPos);
         }
     } else {
         // geojson
         sortLayerIntoBuckets(data, bucketsBySourceLayer);
     }
 
-    function sortLayerIntoBuckets(layer, buckets) {
+    function sortLayerIntoBuckets(layer, buckets, dz, xPos, yPos) {
         for (var i = 0; i < layer.length; i++) {
-            var feature = layer.feature(i);
+          var feature = layer.feature(i);
+
+            // propagate clipped position in tile at the feature level
+            feature.dz = dz;
+            feature.xPos = xPos;
+            feature.yPos = yPos;
+
             for (var key in buckets) {
                 var bucket = buckets[key];
                 if (bucket.filter(feature)) {

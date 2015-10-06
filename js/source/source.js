@@ -8,16 +8,10 @@ var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
-    var loaded = function(err, tileJSON) {
-        if (err) {
-            this.fire('error', {error: err});
-            return;
-        }
 
-        util.extend(this, util.pick(tileJSON,
-            ['tiles', 'minzoom', 'maxzoom', 'attribution']));
-
+    var buildPyramid = function (index) {
         this._pyramid = new TilePyramid({
+            index: index,
             tileSize: this.tileSize,
             cacheSize: 20,
             minzoom: this.minzoom,
@@ -31,8 +25,34 @@ exports._loadTileJSON = function(options) {
             remove: this._removeTile.bind(this),
             redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
         });
+    }.bind(this);
 
-        this.fire('load');
+    var loaded = function(err, tileJSON) {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
+        util.extend(this, util.pick(tileJSON,
+            ['tiles', 'minzoom', 'maxzoom', 'attribution']));
+
+        // if index is defined, fetch the index json, then extend the pyramid
+        if (tileJSON.index) {
+            ajax.getJSON(normalizeURL(tileJSON.index), function (err, index) {
+                if (err) {
+                  this.fire('error', {error: err});
+                  return;
+                }
+
+                buildPyramid(index.index);
+                this.fire('load');
+
+            }.bind(this));
+        } else {
+            buildPyramid();
+            this.fire('load');
+        }
+
     }.bind(this);
 
     if (options.url) {
@@ -60,6 +80,10 @@ exports._renderTiles = function(layers, painter) {
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         z = Math.min(z, this.maxzoom);
+
+        // leaf tiles and clipped tiles always use 4096
+        if (tile.tileExtent > 4096 || tile.parentId)
+            tile.tileExtent = 4096;
 
         x += w * (1 << z);
         tile.calculateMatrices(z, x, y, painter.transform, painter);
