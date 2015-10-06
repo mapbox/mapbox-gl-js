@@ -66,7 +66,6 @@ VectorTileSource.prototype = util.inherit(Evented, {
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
-            maxZoom: this.maxzoom,
             tileSize: this.tileSize * overscaling,
             source: this.id,
             overscaling: overscaling,
