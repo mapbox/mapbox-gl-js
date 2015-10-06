@@ -1,23 +1,29 @@
 'use strict';
 
 module.exports = {
+    Num: fixedNum,
     LngLat: fixedLngLat,
     Coord: fixedCoord
 };
 
+function fixedNum(n, precision) {
+    if (precision === undefined) precision = 10;
+    return parseFloat(n.toFixed(precision), 10);
+}
+
 function fixedLngLat(l, precision) {
     if (precision === undefined) precision = 10;
     return {
-        lng: parseFloat(l.lng.toFixed(precision), 10),
-        lat: parseFloat(l.lat.toFixed(precision), 10)
+        lng: fixedNum(l.lng, precision),
+        lat: fixedNum(l.lat, precision)
     };
 }
 
 function fixedCoord(coord, precision) {
     if (precision === undefined) precision = 10;
     return {
-        column: parseFloat(coord.column.toFixed(precision), 10),
-        row: parseFloat(coord.row.toFixed(precision), 10),
+        column: fixedNum(coord.column, precision),
+        row: fixedNum(coord.row, precision),
         zoom: coord.zoom
     };
 }
