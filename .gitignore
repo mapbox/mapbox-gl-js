@@ -4,6 +4,7 @@
 /dist/mapbox-gl.js
 /dist/mapbox-gl.js.map
 /node_modules
+npm-debug.log
 *.sublime-*
 coverage
 .DS_Store
