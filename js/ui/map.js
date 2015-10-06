@@ -514,6 +514,16 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Return the style layer object with the given `id`.
+     *
+     * @param {string} id layer ID
+     * @returns {Object}
+     */
+    getLayer: function(id) {
+        return this.style.getLayer(id);
+    },
+
+    /**
      * Set the filter for a given style layer.
      *
      * @param {string} layer ID of a layer

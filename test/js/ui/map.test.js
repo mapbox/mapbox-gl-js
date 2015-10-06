@@ -209,7 +209,7 @@ test('Map', function(t) {
             map.batch(function(batch) {
                 batch.addLayer({ id: 'background', type: 'background' });
             });
-            t.ok(map.style.getLayer('background'), 'has background');
+            t.ok(map.getLayer('background'), 'has background');
 
             t.end();
         });
