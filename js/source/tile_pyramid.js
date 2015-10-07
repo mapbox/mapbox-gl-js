@@ -146,22 +146,36 @@ TilePyramid.prototype = {
      * @private
      */
     findLoadedChildren: function(coord, maxCoveringZoom, retain) {
-        var complete = true;
-        var z = coord.z;
-        var coords = coord.children(this.maxzoom);
-        for (var i = 0; i < coords.length; i++) {
-            var id = coords[i].id;
-            if (this._tiles[id] && this._tiles[id].loaded) {
-                retain[id] = true;
-            } else {
-                complete = false;
-                if (z < maxCoveringZoom) {
-                    // Go further down the hierarchy to find more unloaded children.
-                    this.findLoadedChildren(coords[i], maxCoveringZoom, retain);
+        var found = false;
+
+        for (var id in this._tiles) {
+            var tile = this._tiles[id];
+
+            // only consider loaded tiles on higher zoom levels (up to maxCoveringZoom)
+            if (retain[id] || !tile.loaded || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
+
+            // disregard tiles that are not descendants of the given tile coordinate
+            var z2 = Math.pow(2, Math.min(tile.coord.z, this.maxzoom) - Math.min(coord.z, this.maxzoom));
+            if (Math.floor(tile.coord.x / z2) !== coord.x ||
+                Math.floor(tile.coord.y / z2) !== coord.y)
+                continue;
+
+            // found loaded child
+            retain[id] = true;
+            found = true;
+
+            // loop through parents; retain the topmost loaded one if found
+            while (tile && tile.coord.z - 1 > coord.z) {
+                var parentId = tile.coord.parent(this.maxzoom).id;
+                tile = this._tiles[parentId];
+
+                if (tile && tile.loaded) {
+                    delete retain[id];
+                    retain[parentId] = true;
                 }
             }
         }
-        return complete;
+        return found;
     },
 
     /**
@@ -198,7 +212,7 @@ TilePyramid.prototype = {
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
         var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
-        var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
+        var maxCoveringZoom = util.clamp(zoom + 3,  this.minzoom, this.maxzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
