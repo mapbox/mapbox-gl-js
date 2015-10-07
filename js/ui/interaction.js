@@ -16,6 +16,28 @@ var DOM = require('../util/dom'),
 module.exports = Interaction;
 
 /**
+ * Mouse down event.
+ *
+ * @event mousedown
+ * @memberof Map
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Mouse up event.
+ *
+ * @event mouseup
+ * @memberof Map
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
  * Mouse move event.
  *
  * @event mousemove
@@ -151,6 +173,7 @@ Interaction.prototype = {
 
     _onMouseDown: function (e) {
         this._startPos = DOM.mousePos(this._el, e);
+        this._fireEvent('mousedown', e);
     },
 
     _onMouseUp: function (e) {
@@ -158,6 +181,7 @@ Interaction.prototype = {
             this._fireEvent('contextmenu', e);
 
         this._contextMenuFired = null;
+        this._fireEvent('mouseup', e);
     },
 
     _onTouchStart: function (e) {
