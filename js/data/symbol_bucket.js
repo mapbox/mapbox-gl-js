@@ -360,16 +360,6 @@ SymbolBucket.prototype.addSymbols = function(vertex, element, elementGroups, qua
 
 };
 
-SymbolBucket.prototype.getDependencies = function(tile, actor, callback) {
-    var firstdone = false;
-    this.getTextDependencies(tile, actor, done);
-    this.getIconDependencies(tile, actor, done);
-    function done(err) {
-        if (err || firstdone) return callback(err);
-        firstdone = true;
-    }
-};
-
 SymbolBucket.prototype.updateIcons = function(icons) {
     var iconValue = this.layoutProperties['icon-image'];
     if (!iconValue) return;
