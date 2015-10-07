@@ -1,6 +1,6 @@
 var urls = [
-    '/debug/mapbox-gl.js',
-    '/debug/mapbox-gl.js'
+    '/dist/mapbox-gl.js',
+    '/dist/mapbox-gl.js'
 ];
 
 var duration = 30 * 1000;

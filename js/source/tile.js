@@ -1,10 +1,8 @@
 'use strict';
 
-var glmatrix = require('gl-matrix');
-var mat2 = glmatrix.mat2;
-var mat4 = glmatrix.mat4;
+var mat4 = require('gl-matrix').mat4;
 var util = require('../util/util');
-var BufferSet = require('../data/buffer/buffer_set');
+var BufferSet = require('../data/buffer_set');
 
 module.exports = Tile;
 
@@ -49,22 +47,16 @@ Tile.prototype = {
 
         // The position matrix
         this.posMatrix = new Float64Array(16);
+
         mat4.identity(this.posMatrix);
         mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
-
         mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
-
-        // The extrusion matrix.
-        this.exMatrix = mat4.create();
-        mat4.ortho(this.exMatrix, 0, transform.width, transform.height, 0, 0, -1);
-        //mat4.rotateZ(this.exMatrix, this.exMatrix, -transform.angle);
-
-        // 2x2 matrix for rotating points
-        this.rotationMatrix = mat2.create();
-        mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
+        mat4.multiply(this.posMatrix, transform.projMatrix, this.posMatrix);
 
         this.posMatrix = new Float32Array(this.posMatrix);
+
+        this.exMatrix = transform.exMatrix;
+        this.rotationMatrix = transform.rotationMatrix;
     },
 
     /**

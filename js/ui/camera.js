@@ -388,13 +388,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             bearingChanged = false,
             pitchChanged = false;
 
-        if ('center' in options) {
-            tr.center = LngLat.convert(options.center);
-        }
-
         if ('zoom' in options && tr.zoom !== +options.zoom) {
             zoomChanged = true;
             tr.zoom = +options.zoom;
+        }
+
+        if ('center' in options) {
+            tr.center = LngLat.convert(options.center);
         }
 
         if ('bearing' in options && tr.bearing !== +options.bearing) {

@@ -471,6 +471,22 @@ Style.prototype = util.inherit(Evented, {
     },
 
     'get glyphs': function(params, callback) {
-        this.glyphSource.getSimpleGlyphs(params.fontstack, params.codepoints, params.uid, callback);
+        var stacks = params.stacks,
+            remaining = Object.keys(stacks).length,
+            allGlyphs = {};
+
+        for (var fontName in stacks) {
+            this.glyphSource.getSimpleGlyphs(fontName, stacks[fontName], params.uid, done);
+        }
+
+        function done(err, glyphs, fontName) {
+            if (err) console.error(err);
+
+            allGlyphs[fontName] = glyphs;
+            remaining--;
+
+            if (remaining === 0)
+                callback(null, allGlyphs);
+        }
     }
 });

@@ -13,8 +13,7 @@ test('camera', function(t) {
         var camera = new Camera();
 
         var transform = camera.transform = new Transform(0, 20);
-        transform.width = 512;
-        transform.height = 512;
+        transform.resize(512, 512);
 
         util.extend(camera, Evented);
 
@@ -549,6 +548,38 @@ test('camera', function(t) {
             var camera = createCamera({bearing: 180});
             camera.easeTo({ center: [100, 0], offset: [100, 0], duration: 0 });
             t.deepEqual(camera.getCenter(), { lng: 170.3125, lat: 0 });
+            t.end();
+        });
+
+        t.test('zooms with specified offset', function(t) {
+            var camera = createCamera();
+            camera.easeTo({ zoom: 3.2, offset: [100, 0], duration: 0 });
+            t.equal(camera.getZoom(), 3.2);
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 62.66117668978015, lat: 0 }));
+            t.end();
+        });
+
+        t.test('zooms with specified offset relative to viewport on a rotated camera', function(t) {
+            var camera = createCamera({bearing: 180});
+            camera.easeTo({ zoom: 3.2, offset: [100, 0], duration: 0 });
+            t.equal(camera.getZoom(), 3.2);
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -62.66117668978012, lat: 0 }));
+            t.end();
+        });
+
+        t.test('rotates with specified offset', function(t) {
+            var camera = createCamera();
+            camera.easeTo({ bearing: 90, offset: [100, 0], duration: 0 });
+            t.equal(camera.getBearing(), 90);
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 70.3125, lat: 57.32652122521708 }));
+            t.end();
+        });
+
+        t.test('rotates with specified offset relative to viewport on a rotated camera', function(t) {
+            var camera = createCamera({bearing: 180});
+            camera.easeTo({ bearing: 90, offset: [100, 0], duration: 0 });
+            t.equal(camera.getBearing(), 90);
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: -70.3125, lat: 57.32652122521708 }));
             t.end();
         });
 

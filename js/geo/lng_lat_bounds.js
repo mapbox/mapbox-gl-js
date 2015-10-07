@@ -124,7 +124,31 @@ LngLatBounds.prototype = {
      * Get north edge latitude
      * @returns {number} north
      */
-    getNorth: function() { return this._ne.lat; }
+    getNorth: function() { return this._ne.lat; },
+
+    /**
+     * Return a `LngLatBounds` as an array
+     *
+     * @returns {array} [lng, lat]
+     * @example
+     * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
+     * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
+     */
+    toArray: function () {
+        return [this._sw.toArray(), this._ne.toArray()];
+    },
+
+    /**
+     * Return a `LngLatBounds` as a string
+     *
+     * @returns {string} "LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))"
+     * @example
+     * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
+     * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
+     */
+    toString: function () {
+        return 'LngLatBounds(' + this._sw.toString() + ', ' + this._ne.toString() + ')';
+    }
 };
 
 /**

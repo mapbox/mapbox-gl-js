@@ -47,6 +47,30 @@ LngLat.prototype.wrap = function () {
 };
 
 /**
+ * Return a `LngLat` as an array
+ *
+ * @returns {array} [lng, lat]
+ * @example
+ * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+ * ll.toArray(); // = [-73.9749, 40.7736]
+ */
+LngLat.prototype.toArray = function () {
+    return [this.lng, this.lat];
+};
+
+/**
+ * Return a `LngLat` as a string
+ *
+ * @returns {string} "LngLat(lng, lat)"
+ * @example
+ * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+ * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
+ */
+LngLat.prototype.toString = function () {
+    return 'LngLat(' + this.lng + ', ' + this.lat + ')';
+};
+
+/**
  * Convert an array to a `LngLat` object, or return an existing `LngLat` object
  * unchanged.
  *

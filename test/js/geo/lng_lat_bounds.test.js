@@ -66,4 +66,16 @@ test('LngLatBounds', function(t) {
         t.deepEqual(LngLatBounds.convert([sw, ne]), bounds);
         t.end();
     });
+
+    t.test('#toArray', function(t) {
+        var llb = new LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
+        t.deepEqual(llb.toArray(), [[-73.9876, 40.7661], [-73.9397, 40.8002]]);
+        t.end();
+    });
+
+    t.test('#toString', function(t) {
+        var llb = new LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
+        t.deepEqual(llb.toString(), 'LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))');
+        t.end();
+    });
 });

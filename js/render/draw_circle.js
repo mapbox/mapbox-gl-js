@@ -39,8 +39,10 @@ function drawCircles(painter, layer, posMatrix, tile) {
         var group = elementGroups.groups[k];
         var offset = group.vertexStartIndex * vertex.itemSize;
 
-        vertex.bind(gl, shader, offset);
-        elements.bind(gl, shader, offset);
+        vertex.bind(gl);
+        vertex.setAttribPointers(gl, shader, offset);
+
+        elements.bind(gl);
 
         var count = group.elementLength * 3;
         var elementOffset = group.elementStartIndex * elements.itemSize;

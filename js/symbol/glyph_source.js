@@ -55,7 +55,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
         }
     }
 
-    if (!remaining) callback(undefined, glyphs);
+    if (!remaining) callback(undefined, glyphs, fontstack);
 
     var onRangeLoaded = function(err, range, data) {
         // TODO not be silent about errors
@@ -69,7 +69,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
             }
         }
         remaining--;
-        if (!remaining) callback(undefined, glyphs);
+        if (!remaining) callback(undefined, glyphs, fontstack);
     }.bind(this);
 
     for (var r in missing) {

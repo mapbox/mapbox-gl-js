@@ -38,6 +38,8 @@ SpriteAtlas.prototype = {
 };
 
 SpriteAtlas.prototype.resize = function(newRatio) {
+    newRatio = newRatio > 1 ? 2 : 1;
+
     if (this.pixelRatio === newRatio) return false;
 
     var oldRatio = this.pixelRatio;

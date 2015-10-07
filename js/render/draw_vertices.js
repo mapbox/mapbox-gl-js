@@ -17,29 +17,31 @@ function drawVertices(painter, layer, posMatrix, tile) {
 
     // Draw all buffers
     if (layer.type === 'fill') {
-        drawPoints(tile.buffers.fillVertex, elementGroups.groups, posMatrix, 4);
+        drawPoints(tile.buffers.fillVertex, elementGroups.groups, posMatrix);
     } else if (layer.type === 'symbol') {
-        drawPoints(tile.buffers.iconVertex, elementGroups.icon.groups, posMatrix, 16);
-        drawPoints(tile.buffers.glyphVertex, elementGroups.text.groups, posMatrix, 16);
+        drawPoints(tile.buffers.iconVertex, elementGroups.icon.groups, posMatrix);
+        drawPoints(tile.buffers.glyphVertex, elementGroups.text.groups, posMatrix);
     } else if (layer.type === 'line') {
         var newPosMatrix = mat4.clone(posMatrix);
         mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);
-        drawPoints(tile.buffers.lineVertex, elementGroups.groups, newPosMatrix, 8);
+        drawPoints(tile.buffers.lineVertex, elementGroups.groups, newPosMatrix);
     }
 
-    function drawPoints(vertex, groups, matrix, stride) {
+    function drawPoints(vertex, groups, matrix) {
         gl.switchShader(painter.dotShader, matrix);
 
         gl.uniform1f(painter.dotShader.u_size, 4 * browser.devicePixelRatio);
         gl.uniform1f(painter.dotShader.u_blur, 0.25);
         gl.uniform4fv(painter.dotShader.u_color, [0.1, 0, 0, 0.1]);
 
-        vertex.bind(gl, painter.dotShader, 0);
+        vertex.bind(gl);
         for (var i = 0; i < groups.length; i++) {
             var group = groups[i];
             var begin = group.vertexStartIndex;
             var count = group.vertexLength;
-            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, stride, 0);
+
+            gl.vertexAttribPointer(painter.dotShader.a_pos, 2, gl.SHORT, false, vertex.itemSize, 0);
+
             gl.drawArrays(gl.POINTS, begin, count);
         }
     }

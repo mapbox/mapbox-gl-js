@@ -139,7 +139,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         for (var i = 0; i < elementGroups.groups.length; i++) {
             group = elementGroups.groups[i];
             offset = group.vertexStartIndex * vertex.itemSize;
-            vertex.bind(gl, shader, offset);
+            vertex.bind(gl);
+            vertex.setAttribPointers(gl, shader, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;
@@ -155,7 +156,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
             for (var j = 0; j < elementGroups.groups.length; j++) {
                 group = elementGroups.groups[j];
                 offset = group.vertexStartIndex * vertex.itemSize;
-                vertex.bind(gl, shader, offset);
+                vertex.bind(gl);
+                vertex.setAttribPointers(gl, shader, offset);
 
                 count = group.elementLength * 3;
                 elementOffset = group.elementStartIndex * elements.itemSize;
@@ -167,7 +169,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
-            vertex.bind(gl, shader, offset);
+            vertex.bind(gl);
+            vertex.setAttribPointers(gl, shader, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;

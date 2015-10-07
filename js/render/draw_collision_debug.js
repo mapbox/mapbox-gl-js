@@ -14,13 +14,10 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     gl.enable(gl.STENCIL_TEST);
 
     gl.switchShader(shader, posMatrix);
-    buffer.bind(gl, shader);
-    gl.lineWidth(1);
+    buffer.bind(gl);
+    buffer.setAttribPointers(gl, shader, 0);
 
-    var stride = 12;
-    gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, stride, 0);
-    gl.vertexAttribPointer(shader.a_extrude, 2, gl.SHORT, false, stride, 4);
-    gl.vertexAttribPointer(shader.a_data, 2, gl.UNSIGNED_BYTE, false, stride, 8);
+    gl.lineWidth(1);
 
     gl.uniform1f(shader.u_scale, Math.pow(2, painter.transform.zoom - tile.coord.z));
     gl.uniform1f(shader.u_zoom, painter.transform.zoom * 10);

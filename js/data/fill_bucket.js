@@ -47,24 +47,24 @@ FillBucket.prototype.addFill = function(vertices) {
     var outlineElement = this.buffers.outlineElement;
 
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
-    var firstIndex = fillVertex.index - elementGroup.vertexStartIndex,
+    var firstIndex = fillVertex.length - elementGroup.vertexStartIndex,
         prevIndex, currentIndex, currentVertex;
 
     for (var i = 0; i < vertices.length; i++) {
-        currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
+        currentIndex = fillVertex.length - elementGroup.vertexStartIndex;
         currentVertex = vertices[i];
 
-        fillVertex.add(currentVertex.x, currentVertex.y);
+        fillVertex.push(currentVertex.x, currentVertex.y);
         elementGroup.vertexLength++;
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            fillElement.add(firstIndex, prevIndex, currentIndex);
+            fillElement.push(firstIndex, prevIndex, currentIndex);
             elementGroup.elementLength++;
         }
 
         if (i >= 1) {
-            outlineElement.add(prevIndex, currentIndex);
+            outlineElement.push(prevIndex, currentIndex);
             elementGroup.secondElementLength++;
         }
 

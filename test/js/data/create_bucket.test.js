@@ -2,7 +2,7 @@
 
 var test = require('prova');
 var createBucket = require('../../../js/data/create_bucket');
-var BufferSet = require('../../../js/data/buffer/buffer_set');
+var BufferSet = require('../../../js/data/buffer_set');
 var LineBucket = require('../../../js/data/line_bucket');
 var FillBucket = require('../../../js/data/fill_bucket');
 var SymbolBucket = require('../../../js/data/symbol_bucket');

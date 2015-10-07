@@ -6,6 +6,10 @@ var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 
+var fixed = require('../../testutil/fixed');
+var fixedNum = fixed.Num;
+var fixedLngLat = fixed.LngLat;
+
 test('Map', function(t) {
     function createMap(options) {
         return new Map(extend({
@@ -95,6 +99,77 @@ test('Map', function(t) {
 
             t.end();
         });
+
+        t.test('style transform overrides unmodified map transform', function (t) {
+            var map = createMap();
+            map.transform.lngRange = [-120, 140];
+            map.transform.latRange = [-60, 80];
+            map.transform.resize(600, 400);
+            t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
+            t.ok(map.transform.unmodified, 'map transform is not modified');
+            map.setStyle({
+                version: 8,
+                center: [-73.9749, 40.7736],
+                zoom: 12.5,
+                bearing: 29,
+                pitch: 50,
+                sources: {},
+                layers: []
+            });
+            map.on('style.load', function () {
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -73.9749, lat: 40.7736 }));
+                t.equal(fixedNum(map.transform.zoom), 12.5);
+                t.equal(fixedNum(map.transform.bearing), 29);
+                t.equal(fixedNum(map.transform.pitch), 50);
+                t.end();
+            });
+        });
+
+        t.test('style transform does not override map transform modified via options', function (t) {
+            var map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
+            t.notOk(map.transform.unmodified, 'map transform is modified by options');
+            map.setStyle({
+                version: 8,
+                center: [-73.9749, 40.7736],
+                zoom: 12.5,
+                bearing: 29,
+                pitch: 50,
+                sources: {},
+                layers: []
+            });
+            map.on('style.load', function () {
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
+                t.equal(fixedNum(map.transform.zoom), 10);
+                t.equal(fixedNum(map.transform.bearing), 0);
+                t.equal(fixedNum(map.transform.pitch), 0);
+                t.end();
+            });
+        });
+
+        t.test('style transform does not override map transform modified via setters', function (t) {
+            var map = createMap();
+            t.ok(map.transform.unmodified);
+            map.setZoom(10);
+            map.setCenter([-77.0186, 38.8888]);
+            t.notOk(map.transform.unmodified, 'map transform is modified via setters');
+            map.setStyle({
+                version: 8,
+                center: [-73.9749, 40.7736],
+                zoom: 12.5,
+                bearing: 29,
+                pitch: 50,
+                sources: {},
+                layers: []
+            });
+            map.on('style.load', function () {
+                t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
+                t.equal(fixedNum(map.transform.zoom), 10);
+                t.equal(fixedNum(map.transform.bearing), 0);
+                t.equal(fixedNum(map.transform.pitch), 0);
+                t.end();
+            });
+        });
+
     });
 
     t.test('#resize', function(t) {
@@ -209,7 +284,7 @@ test('Map', function(t) {
             map.batch(function(batch) {
                 batch.addLayer({ id: 'background', type: 'background' });
             });
-            t.ok(map.style.getLayer('background'), 'has background');
+            t.ok(map.getLayer('background'), 'has background');
 
             t.end();
         });

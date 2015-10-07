@@ -90,7 +90,7 @@ var Map = module.exports = function(options) {
     this._setupContainer();
     this._setupPainter();
 
-    this.on('move', this.update);
+    this.on('move', this.update.bind(this, false));
     this.on('zoom', this.update.bind(this, true));
     this.on('moveend', function() {
         this.animationLoop.set(300); // text fading
@@ -243,11 +243,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         this._canvas.resize(width, height);
-
-        this.transform.width = width;
-        this.transform.height = height;
-        this.transform._constrain();
-
+        this.transform.resize(width, height);
         this.painter.resize(width, height);
 
         return this
@@ -515,6 +511,16 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.style.removeLayer(id);
         this.style._cascade(this._classes);
         return this;
+    },
+
+    /**
+     * Return the style layer object with the given `id`.
+     *
+     * @param {string} id layer ID
+     * @returns {Object}
+     */
+    getLayer: function(id) {
+        return this.style.getLayer(id);
     },
 
     /**
@@ -816,16 +822,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleLoad: function(e) {
-        var unset = new Transform(),
-            tr = this.transform;
-
-        if (tr.center.lng === unset.center.lng && tr.center.lat === unset.center.lat &&
-            tr.zoom === unset.zoom &&
-            tr.bearing === unset.bearing &&
-            tr.pitch === unset.pitch) {
+        if (this.transform.unmodified) {
             this.jumpTo(this.style.stylesheet);
         }
-
         this.style._cascade(this._classes, {transition: false});
         this._forwardStyleEvent(e);
     },

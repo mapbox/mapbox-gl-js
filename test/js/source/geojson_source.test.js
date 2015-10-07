@@ -71,9 +71,7 @@ test('GeoJSONSource#reload', function(t) {
 
 test('GeoJSONSource#update', function(t) {
     var transform = new Transform();
-
-    transform.width = 200;
-    transform.height = 200;
+    transform.resize(200, 200);
     transform.setZoomAround(15, LngLat.convert([-122.486052, 37.830348]));
 
     t.test('sends parse request to dispatcher', function(t) {
@@ -162,12 +160,9 @@ test('GeoJSONSource#update', function(t) {
             transform: new Transform()
         };
 
-        source.map.transform.width = 512;
-        source.map.transform.height = 512;
+        source.map.transform.resize(512, 512);
 
-        source.style = {
-
-        };
+        source.style = {};
         source.glyphAtlas = {
             removeGlyphs: function() {}
         };
