@@ -6,6 +6,28 @@ module.exports = {
 
     name: 'circle',
 
+    uniforms: [{
+        name: 'color',
+        components: 4,
+        value: function() {
+            var color = this.paint['circle-color'];
+            var opacity = this.paint['circle-opacity'];
+            return color.map(function(colorComponent) {
+                return colorComponent * opacity * 255;
+            });
+        }
+    }, {
+        name: 'size',
+        value: function() {
+            return [this.paint['circle-radius']];
+        }
+    }, {
+        name: 'blur',
+        value: function() {
+            return [this.paint['circle-blur']];
+        }
+    }],
+
     attributes: [{
         name: 'pos',
         components: 2,
