@@ -51,10 +51,19 @@ exports.suppressClick = function() {
     }, 0);
 };
 
-exports.mousePos = function (el, e) {
+var cachedOffset;
+exports.setOffset = function (el) {
     var rect = el.getBoundingClientRect();
+    cachedOffset = new Point(
+        rect.left - el.clientLeft,
+        rect.top - el.clientTop
+    );
+    return cachedOffset;
+};
+exports.mousePos = function (el, e) {
+    var offset = cachedOffset || exports.setOffset(el);
     e = e.touches ? e.touches[0] : e;
     return new Point(
-        e.clientX - rect.left - el.clientLeft,
-        e.clientY - rect.top - el.clientTop);
+        e.clientX - offset.x,
+        e.clientY - offset.y);
 };
