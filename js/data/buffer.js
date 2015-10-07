@@ -2,7 +2,6 @@
 
 // Note: all "sizes" are measured in bytes
 
-var util = require('../util/util');
 var assert = require('assert');
 
 /**
@@ -46,22 +45,23 @@ function Buffer(options) {
         // element buffer attributes do not need to be aligned.
         var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : 1;
 
-        for (var i = 0; i < options.attributes.length; i++) {
-            var attribute = util.extend({}, options.attributes[i]);
+        this.attributes = options.attributes.map(function(attributeOptions) {
+            var attribute = {};
 
-            attribute.components = attribute.components || 1;
-            attribute.type = attribute.type || Buffer.AttributeType.UNSIGNED_BYTE;
-
+            attribute.name = attributeOptions.name;
+            attribute.components = attributeOptions.components || 1;
+            attribute.type = attributeOptions.type || Buffer.AttributeType.UNSIGNED_BYTE;
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
-
-            this.attributes.push(attribute);
-            this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
 
             assert(!isNaN(this.itemSize));
             assert(!isNaN(attribute.size));
             assert(attribute.type.name in Buffer.AttributeType);
-        }
+
+            this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+
+            return attribute;
+        }, this);
 
         this._createPushMethod();
         this._refreshViews();

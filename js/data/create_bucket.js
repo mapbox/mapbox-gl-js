@@ -1,11 +1,13 @@
 'use strict';
 
+// TODO deprecate this whole file, use the Bucket2 constructor
+
 module.exports = createBucket;
 
 var LineBucket = require('./line_bucket');
 var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
-var CircleBucket = require('./circle_bucket');
+var Bucket2 = require('./bucket2');
 var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
@@ -34,22 +36,35 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
         }
     }
 
-    var BucketClass =
-        layer.type === 'line' ? LineBucket :
-        layer.type === 'fill' ? FillBucket :
-        layer.type === 'symbol' ? SymbolBucket :
-        layer.type === 'circle' ? CircleBucket : null;
+    if (layer.type === 'circle') {
 
-    var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), overscaling, z, collisionDebug);
+        return new Bucket2(buffers, {
+            z: z,
+            layer: layer,
+            overscaling: overscaling,
+            collisionDebug: collisionDebug
+        });
 
-    bucket.id = layer.id;
-    bucket.type = layer.type;
-    bucket['source-layer'] = layer['source-layer'];
-    bucket.interactive = layer.interactive;
-    bucket.minZoom = layer.minzoom;
-    bucket.maxZoom = layer.maxzoom;
-    bucket.filter = featureFilter(layer.filter);
-    bucket.features = [];
+    } else {
 
-    return bucket;
+        var BucketClass =
+            layer.type === 'line' ? LineBucket :
+            layer.type === 'fill' ? FillBucket :
+            layer.type === 'symbol' ? SymbolBucket : null;
+
+        var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), overscaling, z, collisionDebug);
+
+        bucket.id = layer.id;
+        bucket.type = layer.type;
+        bucket['source-layer'] = layer['source-layer'];
+        bucket.interactive = layer.interactive;
+        bucket.minZoom = layer.minzoom;
+        bucket.maxZoom = layer.maxzoom;
+        bucket.filter = featureFilter(layer.filter);
+        bucket.features = [];
+
+        return bucket;
+
+    }
+
 }

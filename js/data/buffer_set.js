@@ -1,6 +1,7 @@
 'use strict';
 
 var Buffer = require('./buffer');
+var LayerType = require('../layer_type');
 
 module.exports = BufferSet;
 
@@ -39,8 +40,8 @@ var bufferOptions = {
     glyphElement: triangleElementOptions,
     iconVertex: symbolVertexOptions,
     iconElement: triangleElementOptions,
-    circleVertex: fillVertexOptions,
-    circleElement: triangleElementOptions,
+    circleVertex: createVertexOptions(LayerType.circle),
+    circleElement: createElementOptions(LayerType.circle),
     fillVertex: fillVertexOptions,
     fillElement: triangleElementOptions,
     outlineElement: outlineElementOptions,
@@ -57,4 +58,22 @@ function BufferSet(bufferset) {
     }
 
     return bufferset;
+}
+
+function createElementOptions(type) {
+    return {
+        type: Buffer.BufferType.ELEMENT,
+        attributes: [{
+            name: 'vertices',
+            components: type.elementBufferComponents || 3,
+            type: Buffer.ELEMENT_ATTRIBUTE_TYPE
+        }]
+    };
+}
+
+function createVertexOptions(type) {
+    return {
+        type: Buffer.BufferType.VERTEX,
+        attributes: type.attributes
+    };
 }
