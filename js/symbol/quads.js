@@ -68,7 +68,12 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
     var angle = layout['icon-rotate'] * Math.PI / 180;
     if (alongLine) {
         var prev = line[anchor.segment];
-        angle += Math.atan2(anchor.y - prev.y, anchor.x - prev.x);
+        if (anchor.y === prev.y && anchor.x === prev.x && anchor.segment + 1 < line.length) {
+            var next = line[anchor.segment + 1];
+            angle += Math.atan2(anchor.y - next.y, anchor.x - next.x) + Math.PI;
+        } else {
+            angle += Math.atan2(anchor.y - prev.y, anchor.x - prev.x);
+        }
     }
 
     if (angle) {
