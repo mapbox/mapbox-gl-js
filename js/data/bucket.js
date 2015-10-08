@@ -124,6 +124,7 @@ Bucket.prototype.populateBuffers = function() {
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
+ * @returns The current element group
  */
 Bucket.prototype.makeRoomFor = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];

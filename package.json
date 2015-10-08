@@ -11,6 +11,7 @@
   "dependencies": {
     "brfs": "^1.4.0",
     "csscolorparser": "^1.0.2",
+    "earcut": "^2.0.3",
     "envify": "^3.4.0",
     "feature-filter": "^2.1.0",
     "geojson-rewind": "^0.1.0",
