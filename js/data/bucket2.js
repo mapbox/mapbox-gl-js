@@ -28,26 +28,5 @@ function Bucket2(buffers, options) {
 }
 
 Bucket2.prototype.addFeatures = function() {
-    var pushVertex = (function() {
-        var vertexValue = [];
-        for (var i = 0; i < this.type.attributes.length; i++) {
-            var attribute = this.type.attributes[i];
-            var attributeValue = attribute.value.apply(attribute, arguments);
-            assert(attributeValue.length === attribute.components);
-            vertexValue = vertexValue.concat(attributeValue);
-        }
-        this.elementGroups.current.vertexLength++;
-        var index = this.buffers.circleVertex.push.apply(this.buffers.circleVertex, vertexValue);
-        return index - this.elementGroups.current.vertexStartIndex;
-    }).bind(this);
-
-    var pushElement = (function(one, two, three) {
-        this.elementGroups.current.elementLength++;
-        return this.elementGroups.elementBuffer.push(one, two, three);
-    }).bind(this);
-
-    // TODO replace makeRoomFor with a sort of transactional system
-    var makeRoomFor = this.elementGroups.makeRoomFor.bind(this.elementGroups);
-
-    this.type.iterator(this.features, pushElement, pushVertex, makeRoomFor);
+    this.type.iterator.call(this, this.features);
 };

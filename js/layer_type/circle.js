@@ -1,6 +1,7 @@
 'use strict';
 
 var Buffer = require('../data/buffer');
+var assert = require('assert');
 
 module.exports = {
 
@@ -31,23 +32,25 @@ module.exports = {
     attributes: [{
         name: 'pos',
         components: 2,
-        type: Buffer.AttributeType.SHORT,
-        value: function(x, y, extrudeX, extrudeY) {
-            return [
-                (x * 2) + ((extrudeX + 1) / 2),
-                (y * 2) + ((extrudeY + 1) / 2)
-            ];
-        }
+        type: Buffer.AttributeType.SHORT
     }],
 
-    iterator: function(features, pushElement, pushVertex, makeRoomFor) {
+    iterator: function(features) {
         var EXTENT = 4096;
+
+        var that = this;
+        function pushVertex(x, y, extrudeX, extrudeY) {
+            return that.buffers.circleVertex.push(
+                (x * 2) + ((extrudeX + 1) / 2),
+                (y * 2) + ((extrudeY + 1) / 2)
+            ) - that.elementGroups.current.vertexStartIndex;
+        }
 
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var geometries = feature.loadGeometry()[0];
             for (var j = 0; j < geometries.length; j++) {
-                makeRoomFor(6);
+                this.elementGroups.makeRoomFor(6);
 
                 var x = geometries[j].x;
                 var y = geometries[j].y;
@@ -68,9 +71,11 @@ module.exports = {
                 var vertex1 = pushVertex(x, y, 1, -1);
                 var vertex2 = pushVertex(x, y, 1, 1);
                 var vertex3 = pushVertex(x, y, -1, 1);
+                this.elementGroups.current.vertexLength += 4;
 
-                pushElement(vertex0, vertex1, vertex2);
-                pushElement(vertex0, vertex3, vertex2);
+                this.buffers.circleElement.push(vertex0, vertex1, vertex2);
+                this.buffers.circleElement.push(vertex0, vertex3, vertex2);
+                this.elementGroups.current.elementLength += 2;
             }
         }
     }
