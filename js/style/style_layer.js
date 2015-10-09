@@ -184,8 +184,8 @@ StyleLayer.prototype = {
                 'layout', 'paint']));
     },
 
-    getUniformValues: function() {
-        var uniforms = LayerType[this.type].uniforms;
+    getUniformValues: function(shader) {
+        var uniforms = LayerType[this.type].shaders[shader].uniforms;
 
         var output = {};
         for (var i = 0; i < uniforms.length; i++) {

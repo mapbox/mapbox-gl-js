@@ -40,8 +40,8 @@ var bufferOptions = {
     glyphElement: triangleElementOptions,
     iconVertex: symbolVertexOptions,
     iconElement: triangleElementOptions,
-    circleVertex: createVertexOptions(LayerType.circle),
-    circleElement: createElementOptions(LayerType.circle),
+    circleVertex: createVertexOptions(LayerType.circle, 'circle'),
+    circleElement: createElementOptions(LayerType.circle, 'circle'),
     fillVertex: fillVertexOptions,
     fillElement: triangleElementOptions,
     outlineElement: outlineElementOptions,
@@ -60,20 +60,20 @@ function BufferSet(bufferset) {
     return bufferset;
 }
 
-function createElementOptions(type) {
+function createElementOptions(type, shader) {
     return {
         type: Buffer.BufferType.ELEMENT,
         attributes: [{
             name: 'vertices',
-            components: type.elementBufferComponents || 3,
+            components: type.shaders[shader].elementBufferComponents || 3,
             type: Buffer.ELEMENT_ATTRIBUTE_TYPE
         }]
     };
 }
 
-function createVertexOptions(type) {
+function createVertexOptions(type, shader) {
     return {
         type: Buffer.BufferType.VERTEX,
-        attributes: type.attributes
+        attributes: type.shaders[shader].attributes
     };
 }

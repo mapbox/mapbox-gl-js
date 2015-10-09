@@ -31,7 +31,7 @@ function drawCircles(painter, layer, posMatrix, tile) {
     // are inversely related.
     var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
 
-    var uniformValues = layer.getUniformValues();
+    var uniformValues = layer.getUniformValues('circle');
     gl.uniform4fv(shader.u_color, uniformValues.color);
      // TODO move the antialias upstream
     gl.uniform1f(shader.u_blur, Math.max(uniformValues.blur, antialias));

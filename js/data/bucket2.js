@@ -27,6 +27,38 @@ function Bucket2(buffers, options) {
     this.elementGroups = new ElementGroups(buffers[this.type.name + 'Vertex'], buffers[this.type.name + 'Element']);
 }
 
+Bucket2.prototype.createVertexBufferItem = function(shaderName, args) {
+    var shaderOptions = this.type.shaders[shaderName];
+
+    var value = [];
+    for (var i = 0; i < shaderOptions.attributes.length; i++) {
+        var attributeOptions = shaderOptions.attributes[i];
+        value = value.concat(attributeOptions.value.apply(this, args));
+    }
+    return value;
+}
+
 Bucket2.prototype.addFeatures = function() {
-    this.type.iterator.call(this, this.features);
+    var push = {};
+    var bucket = this;
+
+    Object.keys(bucket.type.shaders).forEach(function(shaderName) {
+        var shaderOptions = bucket.type.shaders[shaderName];
+        var vertexBufferName = shaderOptions.vertexBuffer;
+        var vertexBuffer = bucket.buffers[vertexBufferName];
+
+        var elementBufferName = shaderOptions.elementBuffer;
+        var elementBuffer = bucket.buffers[elementBufferName];
+
+        push[vertexBufferName] = function() {
+            var item = bucket.createVertexBufferItem(shaderName, arguments);
+            return vertexBuffer.push.apply(vertexBuffer, item);
+        }
+
+        push[elementBufferName] = function() {
+            return elementBuffer.push.apply(elementBuffer, arguments);
+        }
+    }, bucket);
+
+    bucket.type.iterator.call(bucket, bucket.features, push);
 };
