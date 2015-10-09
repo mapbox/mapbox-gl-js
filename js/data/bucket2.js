@@ -51,11 +51,13 @@ Bucket2.prototype.addFeatures = function() {
         var elementBuffer = bucket.buffers[elementBufferName];
 
         push[vertexBufferName] = function() {
+            bucket.elementGroups.current.vertexLength++;
             var item = bucket.createVertexBufferItem(shaderName, arguments);
-            return vertexBuffer.push.apply(vertexBuffer, item);
+            return vertexBuffer.push.apply(vertexBuffer, item) - bucket.elementGroups.current.vertexStartIndex;
         }
 
         push[elementBufferName] = function() {
+            bucket.elementGroups.current.elementLength++;
             return elementBuffer.push.apply(elementBuffer, arguments);
         }
     }, bucket);

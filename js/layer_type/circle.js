@@ -80,11 +80,9 @@ module.exports = {
                 var vertex1 = push.circleVertex(x, y, 1, -1);
                 var vertex2 = push.circleVertex(x, y, 1, 1);
                 var vertex3 = push.circleVertex(x, y, -1, 1);
-                this.elementGroups.current.vertexLength += 4;
 
                 push.circleElement(vertex0, vertex1, vertex2);
                 push.circleElement(vertex0, vertex3, vertex2);
-                this.elementGroups.current.elementLength += 2;
             }
         }
     }
