@@ -36,7 +36,7 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
         }
     }
 
-    if (layer.type === 'circle') {
+    if (layer.type === 'circle' || layer.type === 'fill') {
 
         return new Bucket2(buffers, {
             z: z,

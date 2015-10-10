@@ -1,5 +1,6 @@
 'use strict';
 
 module.exports = {
-    circle: require('./circle')
+    circle: require('./circle'),
+    fill: require('./fill')
 };

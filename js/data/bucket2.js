@@ -26,21 +26,17 @@ function Bucket2(buffers, options) {
 
     util.extend(this, LayerType[options.layer.type]);
 
+    this.elementGroups = new ElementGroups(buffers[this.type + 'Vertex'], buffers[this.type + 'Element']);
+
     Object.keys(this.shaders).forEach(function(shaderName) {
         var shaderOptions = this.shaders[shaderName];
         var vertexBufferName = shaderOptions.vertexBuffer;
         var vertexBuffer = this.buffers[vertexBufferName];
 
-        var elementBufferName = shaderOptions.elementBuffer;
-        var elementBuffer = this.buffers[elementBufferName];
-
-        // TODO automatically handle element groups
-
-        this.elementGroups = new ElementGroups(buffers[this.type + 'Vertex'], buffers[this.type + 'Element']);
-
         this['add' + capitalize(vertexBufferName)] = function() {
             this.elementGroups.current.vertexLength++;
 
+            // TODO automatically handle makeRoomFor
             // TODO insert into element buffer directly?
             var value = [];
             for (var i = 0; i < shaderOptions.attributes.length; i++) {
@@ -51,9 +47,20 @@ function Bucket2(buffers, options) {
             return vertexBuffer.push.apply(vertexBuffer, value) - this.elementGroups.current.vertexStartIndex;
         }
 
+        var elementBufferName = shaderOptions.elementBuffer;
+        var elementBuffer = this.buffers[elementBufferName];
         this['add' + capitalize(elementBufferName)] = function(one, two, three) {
             this.elementGroups.current.elementLength++;
             return elementBuffer.push(one, two, three);
+        }
+
+        var secondElementBufferName = shaderOptions.secondElementBuffer;
+        if (secondElementBufferName) {
+            var secondElementBuffer = this.buffers[secondElementBufferName];
+            this['add' + capitalize(secondElementBufferName)] = function(one, two, three) {
+                this.elementGroups.current.secondElementLength++;
+                return secondElementBuffer.push(one, two, three);
+            }
         }
     }, this);
 
