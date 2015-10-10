@@ -5,7 +5,7 @@ var assert = require('assert');
 
 module.exports = {
 
-    name: 'circle',
+    type: 'circle',
 
     shaders: {
         circle: {
@@ -52,11 +52,11 @@ module.exports = {
     },
 
 
-    iterator: function(features, push) {
+    addFeatures: function() {
         var EXTENT = 4096;
 
-        for (var i = 0; i < features.length; i++) {
-            var feature = features[i];
+        for (var i = 0; i < this.features.length; i++) {
+            var feature = this.features[i];
             var geometries = feature.loadGeometry()[0];
             for (var j = 0; j < geometries.length; j++) {
                 this.elementGroups.makeRoomFor(6);
@@ -76,13 +76,13 @@ module.exports = {
                 // │ 0     1 │
                 // └─────────┘
 
-                var vertex0 = push.circleVertex(x, y, -1, -1);
-                var vertex1 = push.circleVertex(x, y, 1, -1);
-                var vertex2 = push.circleVertex(x, y, 1, 1);
-                var vertex3 = push.circleVertex(x, y, -1, 1);
+                var vertex0 = this.addCircleVertex(x, y, -1, -1);
+                var vertex1 = this.addCircleVertex(x, y, 1, -1);
+                var vertex2 = this.addCircleVertex(x, y, 1, 1);
+                var vertex3 = this.addCircleVertex(x, y, -1, 1);
 
-                push.circleElement(vertex0, vertex1, vertex2);
-                push.circleElement(vertex0, vertex3, vertex2);
+                this.addCircleElement(vertex0, vertex1, vertex2);
+                this.addCircleElement(vertex0, vertex3, vertex2);
             }
         }
     }
