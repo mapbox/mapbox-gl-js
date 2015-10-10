@@ -79,26 +79,27 @@ function saturationFactor(saturation) {
 }
 
 function getOpacities(tile, parentTile, layer, transform) {
-    if (!tile.source) return [1, 0];
+    var opacity = [1, 0];
 
-    var now = new Date().getTime();
+    if (tile.source) {
+        var now = new Date().getTime();
 
-    var fadeDuration = layer.paint['raster-fade-duration'];
-    var sinceTile = (now - tile.timeAdded) / fadeDuration;
-    var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
+        var fadeDuration = layer.paint['raster-fade-duration'];
+        var sinceTile = (now - tile.timeAdded) / fadeDuration;
+        var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-    var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
-    var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
+        var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
+        var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
-    var opacity = [];
-    if (!parentTile || parentFurther) {
-        // if no parent or parent is older
-        opacity[0] = util.clamp(sinceTile, 0, 1);
-        opacity[1] = 1 - opacity[0];
-    } else {
-        // parent is younger, zooming out
-        opacity[0] = util.clamp(1 - sinceParent, 0, 1);
-        opacity[1] = 1 - opacity[0];
+        if (!parentTile || parentFurther) {
+            // if no parent or parent is older
+            opacity[0] = util.clamp(sinceTile, 0, 1);
+            opacity[1] = 1 - opacity[0];
+        } else {
+            // parent is younger, zooming out
+            opacity[0] = util.clamp(1 - sinceParent, 0, 1);
+            opacity[1] = 1 - opacity[0];
+        }
     }
 
     var op = layer.paint['raster-opacity'];
