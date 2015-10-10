@@ -678,17 +678,34 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.painter = new Painter(gl, this.transform);
     },
 
+    /**
+     * WebGL Context Lost event.
+     *
+     * @event webglcontextlost
+     * @memberof Map
+     * @type {Object}
+     * @property {Event} originalEvent the original DOM event
+     */
     _contextLost: function(event) {
         event.preventDefault();
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
+        this.fire("webglcontextlost", {originalEvent: event});
     },
 
-    _contextRestored: function() {
+    /**
+     * WebGL Context Restored event.
+     *
+     * @event webglcontextrestored
+     * @memberof Map
+     * @type {Object}
+     */
+    _contextRestored: function(event) {
         this._setupPainter();
         this.resize();
         this.update();
+        this.fire("webglcontextrestored", {originalEvent: event});
     },
 
     /**
