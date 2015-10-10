@@ -683,12 +683,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
+        this.fire("webglcontextlost", event);
     },
 
     _contextRestored: function() {
         this._setupPainter();
         this.resize();
         this.update();
+        this.fire("webglcontextrestored");
     },
 
     /**
