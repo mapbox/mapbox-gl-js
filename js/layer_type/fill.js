@@ -1,7 +1,6 @@
 'use strict';
 
 var Buffer = require('../data/buffer');
-var assert = require('assert');
 
 module.exports = {
 
@@ -35,10 +34,10 @@ module.exports = {
                 }
             }]
 
-        },
+        }
     },
 
-    addFeatures: function(features, push) {
+    addFeatures: function() {
         var features = this.features;
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
@@ -72,8 +71,6 @@ module.exports = {
         var elementGroup = this.elementGroups.current;
 
         var fillVertex = this.buffers.fillVertex;
-        var fillElement = this.buffers.fillElement;
-        var outlineElement = this.buffers.outlineElement;
 
         // We're generating triangle fans, so we always start with the first coordinate in this polygon.
         var firstIndex = fillVertex.length - elementGroup.vertexStartIndex,

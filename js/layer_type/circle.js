@@ -1,7 +1,6 @@
 'use strict';
 
 var Buffer = require('../data/buffer');
-var assert = require('assert');
 
 module.exports = {
 
@@ -48,7 +47,7 @@ module.exports = {
                 }
             }]
 
-        },
+        }
     },
 
 

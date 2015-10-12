@@ -2,5 +2,6 @@
 
 module.exports = {
     circle: require('./circle'),
-    fill: require('./fill')
+    fill: require('./fill'),
+    line: require('./line')
 };

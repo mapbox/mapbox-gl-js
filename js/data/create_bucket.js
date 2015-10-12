@@ -4,8 +4,6 @@
 
 module.exports = createBucket;
 
-var LineBucket = require('./line_bucket');
-var FillBucket = require('./fill_bucket');
 var SymbolBucket = require('./symbol_bucket');
 var Bucket2 = require('./bucket2');
 var LayoutProperties = require('../style/layout_properties');
@@ -36,23 +34,23 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
         }
     }
 
-    if (layer.type === 'circle' || layer.type === 'fill') {
+    var layoutProperties = new LayoutProperties[layer.type](layout);
+
+    if (layer.type === 'circle' || layer.type === 'fill' || layer.type === 'line') {
 
         return new Bucket2(buffers, {
             z: z,
             layer: layer,
             overscaling: overscaling,
-            collisionDebug: collisionDebug
+            collisionDebug: collisionDebug,
+            layoutProperties: new LayoutProperties[layer.type](layout)
         });
 
     } else {
 
-        var BucketClass =
-            layer.type === 'line' ? LineBucket :
-            layer.type === 'fill' ? FillBucket :
-            layer.type === 'symbol' ? SymbolBucket : null;
+        var BucketClass = layer.type === 'symbol' ? SymbolBucket : null;
 
-        var bucket = new BucketClass(buffers, new LayoutProperties[layer.type](layout), overscaling, z, collisionDebug);
+        var bucket = new BucketClass(buffers, layoutProperties, overscaling, z, collisionDebug);
 
         bucket.id = layer.id;
         bucket.type = layer.type;

@@ -1,7 +1,6 @@
 'use strict';
 
 var ElementGroups = require('./element_groups');
-var assert = require('assert');
 var featureFilter = require('feature-filter');
 var LayerType = require('../layer_type');
 var util = require('../util/util');
@@ -23,6 +22,7 @@ function Bucket2(buffers, options) {
     this.maxZoom = options.layer.maxzoom;
     this.filter = featureFilter(options.layer.filter);
     this.features = [];
+    this.layoutProperties = options.layoutProperties;
 
     util.extend(this, LayerType[options.layer.type]);
 
@@ -45,14 +45,14 @@ function Bucket2(buffers, options) {
             }
 
             return vertexBuffer.push.apply(vertexBuffer, value) - this.elementGroups.current.vertexStartIndex;
-        }
+        };
 
         var elementBufferName = shaderOptions.elementBuffer;
         var elementBuffer = this.buffers[elementBufferName];
         this['add' + capitalize(elementBufferName)] = function(one, two, three) {
             this.elementGroups.current.elementLength++;
             return elementBuffer.push(one, two, three);
-        }
+        };
 
         var secondElementBufferName = shaderOptions.secondElementBuffer;
         if (secondElementBufferName) {
@@ -60,7 +60,7 @@ function Bucket2(buffers, options) {
             this['add' + capitalize(secondElementBufferName)] = function(one, two, three) {
                 this.elementGroups.current.secondElementLength++;
                 return secondElementBuffer.push(one, two, three);
-            }
+            };
         }
     }, this);
 
