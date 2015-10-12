@@ -67,8 +67,8 @@ module.exports = {
         var len = vertices.length;
 
         // Check whether this geometry buffer can hold all the required vertices.
-        this.elementGroups.makeRoomFor(len + 1);
-        var elementGroup = this.elementGroups.current;
+        this.elementGroups.fill.makeRoomFor(len + 1);
+        var elementGroup = this.elementGroups.fill.current;
 
         var fillVertex = this.buffers.fillVertex;
 

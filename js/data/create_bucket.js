@@ -4,7 +4,6 @@
 
 module.exports = createBucket;
 
-var SymbolBucket = require('./symbol_bucket');
 var Bucket2 = require('./bucket2');
 var LayoutProperties = require('../style/layout_properties');
 var featureFilter = require('feature-filter');
@@ -36,33 +35,12 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
 
     var layoutProperties = new LayoutProperties[layer.type](layout);
 
-    if (layer.type === 'circle' || layer.type === 'fill' || layer.type === 'line') {
-
-        return new Bucket2(buffers, {
-            z: z,
-            layer: layer,
-            overscaling: overscaling,
-            collisionDebug: collisionDebug,
-            layoutProperties: new LayoutProperties[layer.type](layout)
-        });
-
-    } else {
-
-        var BucketClass = layer.type === 'symbol' ? SymbolBucket : null;
-
-        var bucket = new BucketClass(buffers, layoutProperties, overscaling, z, collisionDebug);
-
-        bucket.id = layer.id;
-        bucket.type = layer.type;
-        bucket['source-layer'] = layer['source-layer'];
-        bucket.interactive = layer.interactive;
-        bucket.minZoom = layer.minzoom;
-        bucket.maxZoom = layer.maxzoom;
-        bucket.filter = featureFilter(layer.filter);
-        bucket.features = [];
-
-        return bucket;
-
-    }
+    return new Bucket2(buffers, {
+        z: z,
+        layer: layer,
+        overscaling: overscaling,
+        collisionDebug: collisionDebug,
+        layoutProperties: new LayoutProperties[layer.type](layout)
+    });
 
 }

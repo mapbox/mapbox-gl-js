@@ -8,8 +8,8 @@ module.exports = drawFill;
 function drawFill(painter, layer, posMatrix, tile) {
     // No data
     if (!tile.buffers) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id];
-    if (!elementGroups) return;
+    if (!tile.elementGroups[layer.ref || layer.id]) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
     var gl = painter.gl;
     var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);

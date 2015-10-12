@@ -67,7 +67,7 @@ module.exports = {
             var feature = this.features[i];
             var geometries = feature.loadGeometry()[0];
             for (var j = 0; j < geometries.length; j++) {
-                this.elementGroups.makeRoomFor(6);
+                this.elementGroups.circle.makeRoomFor(6);
 
                 var x = geometries[j].x;
                 var y = geometries[j].y;

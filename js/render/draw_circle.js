@@ -8,8 +8,8 @@ function drawCircles(painter, layer, posMatrix, tile) {
 
     posMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
 
-    var elementGroups = tile.elementGroups[layer.ref || layer.id];
-    if (!elementGroups) return;
+    if (!tile.elementGroups[layer.ref || layer.id]) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id].circle;
 
     var gl = painter.gl;
 

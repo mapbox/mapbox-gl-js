@@ -3,5 +3,6 @@
 module.exports = {
     circle: require('./circle'),
     fill: require('./fill'),
-    line: require('./line')
+    line: require('./line'),
+    symbol: require('./symbol')
 };

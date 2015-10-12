@@ -27,8 +27,8 @@ function drawSymbols(painter, layer, posMatrix, tile) {
         gl.disable(gl.STENCIL_TEST);
     }
 
-    if (elementGroups.text.groups.length) {
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.text, 'text', true);
+    if (elementGroups.glyph.groups.length) {
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
     }
     if (elementGroups.icon.groups.length) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);

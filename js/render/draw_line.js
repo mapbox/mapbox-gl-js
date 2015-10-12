@@ -16,8 +16,8 @@ var mat2 = require('gl-matrix').mat2;
 module.exports = function drawLine(painter, layer, posMatrix, tile) {
     // No data
     if (!tile.buffers) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id];
-    if (!elementGroups) return;
+    if (!tile.elementGroups[layer.ref || layer.id]) return;
+    var elementGroups = tile.elementGroups[layer.ref || layer.id].line;
 
     var gl = painter.gl;
 
