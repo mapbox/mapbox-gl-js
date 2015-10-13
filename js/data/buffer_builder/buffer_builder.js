@@ -29,7 +29,7 @@ function BufferBuilder(options) {
 
     this.buffers = options.buffers;
     this.layer = options.layer;
-    this.layers = [this.layer];
+    this.layers = [this.layer.id];
     this.z = options.zoom;
     this.zoom = options.zoom;
     this.overscaling = options.overscaling;
