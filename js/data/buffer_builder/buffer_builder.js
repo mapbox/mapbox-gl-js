@@ -12,16 +12,14 @@ var util = require('../../util/util');
 module.exports = BufferBuilder;
 
 BufferBuilder.create = function(options) {
-
-    var classes = {
+    var Classes = {
         fill: require('./fill_buffer_builder'),
         line: require('./line_buffer_builder'),
         circle: require('./circle_buffer_builder'),
         symbol: require('./symbol_buffer_builder')
     };
 
-    return new classes[options.layer.type](options);
-
+    return new Classes[options.layer.type](options);
 };
 
 function BufferBuilder(options) {
@@ -47,6 +45,7 @@ function BufferBuilder(options) {
 
     this.layoutProperties = createLayoutProperties(this.layer, this.zoom);
     this.elementGroups = createElementGroups(this.shaders, this.buffers);
+
     util.extend(this, createAddMethods(this.shaders));
 
 }
@@ -150,7 +149,6 @@ function createElementGroups(shaders, buffers) {
 }
 
 function createAddMethods(shaders) {
-
     var methods = {};
 
     Object.keys(shaders).forEach(function(shaderName) {
@@ -177,7 +175,6 @@ function createAddMethods(shaders) {
     });
 
     return methods;
-
 }
 
 function capitalize(string) {
