@@ -6,8 +6,6 @@ var StyleDeclarationSet = require('./style_declaration_set');
 var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
 
-// TODO make this.layer an instance of LayerType
-
 module.exports = StyleLayer;
 
 function StyleLayer(layer) {

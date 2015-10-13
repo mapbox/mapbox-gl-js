@@ -218,7 +218,7 @@ SymbolBufferBuilder.prototype.placeFeatures = function(collisionTile, buffers, c
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
-    this.buffers = BufferBuilder.createBuffers(this.type.shaders, buffers);
+    this.buffers = BufferBuilder._createBuffers(this.type.shaders, buffers);
 
     var elementGroups = this.elementGroups = {
         glyph: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
@@ -345,15 +345,13 @@ SymbolBufferBuilder.prototype.addSymbols = function(shaderName, quads, scale, ke
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var indicies = [
-            addVertex([anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom]),
-            addVertex([anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom]),
-            addVertex([anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom]),
-            addVertex([anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom])
-        ];
+        var index0 = addVertex([anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom]);
+        var index1 = addVertex([anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom]);
+        var index2 = addVertex([anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom]);
+        var index3 = addVertex([anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom]);
 
-        addElement([indicies[0], indicies[1], indicies[2]]);
-        addElement([indicies[1], indicies[2], indicies[3]]);
+        addElement([index0, index1, index2]);
+        addElement([index1, index2, index3]);
     }
 
 };

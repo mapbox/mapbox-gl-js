@@ -90,7 +90,7 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
-        this.buffers = unserializeBufferSet(data.buffers);
+        this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
         this.tileExtent = data.extent;
     },
@@ -116,7 +116,7 @@ Tile.prototype = {
         this.buffers.iconElement.destroy(painter.gl);
         this.buffers.collisionBoxVertex.destroy(painter.gl);
 
-        var buffers = unserializeBufferSet(data.buffers);
+        var buffers = unserializeBuffers(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
         this.buffers.glyphElement = buffers.glyphElement;
         this.buffers.iconVertex = buffers.iconVertex;
@@ -173,7 +173,7 @@ Tile.prototype = {
     }
 };
 
-function unserializeBufferSet(input) {
+function unserializeBuffers(input) {
     var output = {};
     for (var k in input) {
         output[k] = new Buffer(input[k]);

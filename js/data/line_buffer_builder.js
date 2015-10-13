@@ -264,7 +264,17 @@ LineBufferBuilder.prototype.addLine = function(vertices, join, cap, miterLimit, 
 
 };
 
-
+/**
+ * Add two vertices to the buffers.
+ *
+ * @param {Object} currentVertex the line vertex to add buffer vertices for
+ * @param {number} flip -1 if the vertices should be flipped, 1 otherwise
+ * @param {number} distance the distance from the beggining of the line to the vertex
+ * @param {number} endLeft extrude to shift the left vertex along the line
+ * @param {number} endRight extrude to shift the left vertex along the line
+ * @param {boolean} round whether this is a round cap
+ * @private
+ */
 LineBufferBuilder.prototype.addCurrentVertex = function(currentVertex, flip, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;
     var extrude;
@@ -289,6 +299,17 @@ LineBufferBuilder.prototype.addCurrentVertex = function(currentVertex, flip, dis
 
 };
 
+/**
+ * Add a single new vertex and a triangle using two previous vertices.
+ * This adds a pie slice triangle near a join to simulate round joins
+ *
+ * @param {Object} currentVertex the line vertex to add buffer vertices for
+ * @param {number} flip -1 if the vertices should be flipped, 1 otherwise
+ * @param {number} distance the distance from the beggining of the line to the vertex
+ * @param {Object} extrude the offset of the new vertex from the currentVertex
+ * @param {boolean} whether the line is turning left or right at this angle
+ * @private
+ */
 LineBufferBuilder.prototype.addPieSliceVertex = function(currentVertex, flip, distance, extrude, lineTurnsLeft) {
     var ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(flip * (lineTurnsLeft ? -1 : 1));

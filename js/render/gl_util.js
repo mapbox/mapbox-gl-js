@@ -102,9 +102,6 @@ exports.extend = function(context) {
         }
     };
 
-    context.vertexAttrib1fv = function(attribute, values) {
-        context.vertexAttrib1f(attribute, values[0]);
-    };
 
     context.vertexAttrib2fv = function(attribute, values) {
         context.vertexAttrib2f(attribute, values[0], values[1]);

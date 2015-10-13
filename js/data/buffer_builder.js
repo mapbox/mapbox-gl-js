@@ -40,10 +40,10 @@ function BufferBuilder(options) {
     this.filter = featureFilter(options.layer.filter);
     this.features = [];
 
-    this.buffers = BufferBuilder.createBuffers(this.type.shaders, options.buffers);
-    this.layoutProperties = BufferBuilder.createLayoutProperties(this.layer, this.zoom);
-    this.elementGroups = BufferBuilder.createElementGroups(this.type.shaders, this.buffers);
-    util.extend(this, BufferBuilder.createAddMethods(this.type.shaders));
+    this.buffers = BufferBuilder._createBuffers(this.type.shaders, options.buffers);
+    this.layoutProperties = BufferBuilder._createLayoutProperties(this.layer, this.zoom);
+    this.elementGroups = BufferBuilder._createElementGroups(this.type.shaders, this.buffers);
+    util.extend(this, BufferBuilder._createAddMethods(this.type.shaders));
 
 }
 
@@ -74,27 +74,27 @@ BufferBuilder.prototype.addVertex = function(shaderName, args) {
 
 };
 
-BufferBuilder.prototype.addElement = function(shaderName, verticies, isSecondElementBuffer) {
+BufferBuilder.prototype.addElement = function(shaderName, vertices, isSecondElementBuffer) {
 
     var shaderOptions = this.type.shaders[shaderName];
     var elementGroups = this.elementGroups[shaderName];
 
     var elementBuffer;
     if (isSecondElementBuffer) {
-        assert(verticies.length === (shaderOptions.secondElementBufferComponents || 3));
+        assert(vertices.length === (shaderOptions.secondElementBufferComponents || 3));
         elementBuffer = this.buffers[shaderOptions.secondElementBuffer];
         elementGroups.current.secondElementLength++;
     } else {
-        assert(verticies.length === (shaderOptions.elementBufferComponents || 3));
+        assert(vertices.length === (shaderOptions.elementBufferComponents || 3));
         elementBuffer = this.buffers[shaderOptions.elementBuffer];
         elementGroups.current.elementLength++;
     }
 
-    for (var i = 0; i < verticies.length; i++) {
-        assert(!isNaN(verticies[i]));
+    for (var i = 0; i < vertices.length; i++) {
+        assert(!isNaN(vertices[i]));
     }
 
-    return elementBuffer.push({vertices: verticies});
+    return elementBuffer.push({vertices: vertices});
 
 };
 
@@ -105,7 +105,7 @@ BufferBuilder.prototype.addFeatures = function() {
 };
 
 
-BufferBuilder.createLayoutProperties = function(layer, zoom) {
+BufferBuilder._createLayoutProperties = function(layer, zoom) {
     var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
     var fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 
@@ -132,7 +132,7 @@ BufferBuilder.createLayoutProperties = function(layer, zoom) {
     return new LayoutProperties[layer.type](layout);
 };
 
-BufferBuilder.createElementGroups = function(shaders, buffers) {
+BufferBuilder._createElementGroups = function(shaders, buffers) {
     var elementGroups = {};
     Object.keys(shaders).forEach(function(shaderName) {
         var shader = shaders[shaderName];
@@ -145,7 +145,7 @@ BufferBuilder.createElementGroups = function(shaders, buffers) {
     return elementGroups;
 };
 
-BufferBuilder.createAddMethods = function(shaders) {
+BufferBuilder._createAddMethods = function(shaders) {
     var methods = {};
 
     Object.keys(shaders).forEach(function(shaderName) {
@@ -174,7 +174,7 @@ BufferBuilder.createAddMethods = function(shaders) {
     return methods;
 };
 
-BufferBuilder.createBuffers = function(shaders, buffers) {
+BufferBuilder._createBuffers = function(shaders, buffers) {
     buffers = buffers || {};
 
     Object.keys(shaders).forEach(function(shaderName) {
