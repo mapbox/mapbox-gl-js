@@ -8,11 +8,11 @@ var LayerType = require('../layer_type');
 var util = require('../util/util');
 var assert = require('assert');
 
-module.exports = Bucket2;
+module.exports = Bucket;
 
 // TODO simplify the heck out of this
 // TODO rename
-function Bucket2(buffers, options) {
+function Bucket(buffers, options) {
 
     this.buffers = buffers;
     this.layer = options.layer;
