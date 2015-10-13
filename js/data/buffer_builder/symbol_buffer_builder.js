@@ -218,7 +218,7 @@ SymbolBufferBuilder.prototype.placeFeatures = function(collisionTile, buffers, c
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
-    this.buffers = buffers;
+    this.buffers = BufferBuilder.createBuffers(this.shaders, buffers);
 
     var elementGroups = this.elementGroups = {
         glyph: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),

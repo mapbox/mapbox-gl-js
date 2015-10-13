@@ -8,6 +8,7 @@ var LayoutProperties = require('../../style/layout_properties');
 var ElementGroups = require('../element_groups');
 var LayerType = require('../../layer_type');
 var util = require('../../util/util');
+var Buffer = require('../buffer');
 
 module.exports = BufferBuilder;
 
@@ -27,7 +28,6 @@ function BufferBuilder(options) {
     // TODO remove this
     util.extend(this, LayerType[options.layer.type]);
 
-    this.buffers = options.buffers;
     this.layer = options.layer;
     this.layers = [this.layer.id];
     this.z = options.zoom;
@@ -41,11 +41,10 @@ function BufferBuilder(options) {
     this.maxZoom = options.layer.maxzoom;
     this.filter = featureFilter(options.layer.filter);
     this.features = [];
-    this.elementGroups = {};
 
+    this.buffers = BufferBuilder.createBuffers(this.shaders, options.buffers);
     this.layoutProperties = createLayoutProperties(this.layer, this.zoom);
     this.elementGroups = createElementGroups(this.shaders, this.buffers);
-
     util.extend(this, createAddMethods(this.shaders));
 
 }
@@ -176,6 +175,48 @@ function createAddMethods(shaders) {
 
     return methods;
 }
+
+BufferBuilder.createBuffers = function(shaders, buffers) {
+    buffers = buffers || {};
+
+    Object.keys(shaders).forEach(function(shaderName) {
+        var shader = shaders[shaderName];
+
+        var vertexBufferName = shader.vertexBuffer;
+        if (vertexBufferName && !buffers[vertexBufferName]) {
+            buffers[shader.vertexBuffer] = new Buffer({
+                type: Buffer.BufferType.VERTEX,
+                attributes: shader.attributes
+            });
+        }
+
+        var elementBufferName = shader.elementBuffer;
+        if (elementBufferName && !buffers[elementBufferName]) {
+            buffers[elementBufferName] = new Buffer({
+                type: Buffer.BufferType.ELEMENT,
+                attributes: [{
+                    name: 'vertices',
+                    components: shader.elementBufferComponents || 3,
+                    type: Buffer.ELEMENT_ATTRIBUTE_TYPE
+                }]
+            });
+        }
+
+        var secondElementBufferName = shader.secondElementBuffer;
+        if (secondElementBufferName && !buffers[secondElementBufferName]) {
+            buffers[secondElementBufferName] = new Buffer({
+                type: Buffer.BufferType.ELEMENT,
+                attributes: [{
+                    name: 'vertices',
+                    components: shader.secondElementBufferComponents || 3,
+                    type: Buffer.ELEMENT_ATTRIBUTE_TYPE
+                }]
+            });
+        }
+    });
+
+    return buffers;
+};
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
