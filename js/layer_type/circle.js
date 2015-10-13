@@ -4,7 +4,7 @@ var Buffer = require('../data/buffer');
 
 module.exports = {
 
-    type: 'circle',
+    name: 'circle',
 
     shaders: {
         circle: {

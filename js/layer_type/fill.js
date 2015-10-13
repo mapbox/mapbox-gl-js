@@ -4,7 +4,7 @@ var Buffer = require('../data/buffer');
 
 module.exports = {
 
-    type: 'fill',
+    name: 'fill',
 
     shaders: {
 

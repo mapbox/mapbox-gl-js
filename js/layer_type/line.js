@@ -12,7 +12,7 @@ var EXTRUDE_SCALE = 63;
 
 module.exports = {
 
-    type: 'line',
+    name: 'line',
 
     shaders: {
 

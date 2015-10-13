@@ -101,7 +101,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
         buckets.push(bucket);
 
-        if (bucket.type === 'symbol')
+        if (bucket.type.name === 'symbol')
             symbolBuckets.push(bucket);
         else
             otherBuckets.push(bucket);

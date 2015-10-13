@@ -45,7 +45,7 @@ var SYMBOL_ATTRIBUTES = [{
 
 module.exports = {
 
-    type: 'symbol',
+    name: 'symbol',
 
     shaders: {
 
