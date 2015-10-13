@@ -24,7 +24,6 @@ BufferBuilder.create = function(options) {
 };
 
 function BufferBuilder(options) {
-
     this.type = LayerType[options.layer.type];
     this.layer = options.layer;
     this.layers = [this.layer.id];
@@ -44,11 +43,9 @@ function BufferBuilder(options) {
     this.layoutProperties = BufferBuilder._createLayoutProperties(this.layer, this.zoom);
     this.elementGroups = BufferBuilder._createElementGroups(this.type.shaders, this.buffers);
     util.extend(this, BufferBuilder._createAddMethods(this.type.shaders));
-
 }
 
 BufferBuilder.prototype.addVertex = function(shaderName, args) {
-
     var shaderOptions = this.type.shaders[shaderName];
     var elementGroups = this.elementGroups[shaderName];
     var vertexBuffer = this.buffers[shaderOptions.vertexBuffer];
@@ -69,11 +66,9 @@ BufferBuilder.prototype.addVertex = function(shaderName, args) {
     elementGroups.current.vertexLength++;
 
     return vertexBuffer.push(value) - elementGroups.current.vertexStartIndex;
-
 };
 
 BufferBuilder.prototype.addElement = function(shaderName, vertices, isSecondElementBuffer) {
-
     var shaderOptions = this.type.shaders[shaderName];
     var elementGroups = this.elementGroups[shaderName];
 
@@ -93,7 +88,6 @@ BufferBuilder.prototype.addElement = function(shaderName, vertices, isSecondElem
     }
 
     return elementBuffer.push({vertices: vertices});
-
 };
 
 BufferBuilder.prototype.addFeatures = function() {
