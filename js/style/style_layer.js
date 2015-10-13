@@ -5,7 +5,6 @@ var StyleTransition = require('./style_transition');
 var StyleDeclarationSet = require('./style_declaration_set');
 var LayoutProperties = require('./layout_properties');
 var PaintProperties = require('./paint_properties');
-var LayerType = require('../layer_type');
 
 // TODO make this.layer an instance of LayerType
 
@@ -182,18 +181,6 @@ StyleLayer.prototype = {
                 ['type', 'source', 'source-layer',
                 'minzoom', 'maxzoom', 'filter',
                 'layout', 'paint']));
-    },
-
-    getUniformValues: function(shader) {
-        var uniforms = LayerType[this.type].shaders[shader].uniforms;
-
-        var output = {};
-        for (var i = 0; i < uniforms.length; i++) {
-            var uniform = uniforms[i];
-            output[uniform.name] = uniform.value.call(this);
-        }
-
-        return output;
     }
 };
 

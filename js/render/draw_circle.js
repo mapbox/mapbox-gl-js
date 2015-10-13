@@ -1,5 +1,7 @@
 'use strict';
 
+var browser = require('../util/browser.js');
+
 module.exports = drawCircles;
 
 function drawCircles(painter, layer, posMatrix, tile) {
@@ -23,11 +25,15 @@ function drawCircles(painter, layer, posMatrix, tile) {
     var shader = painter.circleShader;
     var elements = tile.buffers.circleElement;
 
-    var uniformValues = layer.getUniformValues('circle');
+    // antialiasing factor: this is a minimum blur distance that serves as
+    // a faux-antialiasing for the circle. since blur is a ratio of the circle's
+    // size and the intent is to keep the blur at roughly 1px, the two
+    // are inversely related.
+    var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
 
-    gl.uniform4fv(shader.u_color, uniformValues.color);
-    gl.uniform1f(shader.u_blur, uniformValues.blur[0]);
-    gl.uniform1f(shader.u_size, uniformValues.size[0]);
+    gl.uniform4fv(shader.u_color, layer.paint['circle-color']);
+    gl.uniform1f(shader.u_blur, Math.max(layer.paint['circle-blur'], antialias));
+    gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
 
     for (var k = 0; k < elementGroups.groups.length; k++) {
         var group = elementGroups.groups[k];
