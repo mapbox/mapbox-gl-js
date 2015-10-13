@@ -24,7 +24,7 @@ CircleBufferBuilder.prototype.addFeature = function(feature) {
 
     var geometries = feature.loadGeometry()[0];
     for (var j = 0; j < geometries.length; j++) {
-        this.elementGroups.circle.makeRoomFor(6);
+        this.makeRoomFor('circle', 6);
 
         var x = geometries[j].x;
         var y = geometries[j].y;

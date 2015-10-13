@@ -34,7 +34,7 @@ FillBufferBuilder.prototype.addFill = function(vertices) {
     var len = vertices.length;
 
     // Expand this geometry buffer to hold all the required vertices.
-    this.elementGroups.fill.makeRoomFor(len + 1);
+    this.elementGroups.fill.makeRoomFor('fill', len + 1);
 
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
     var firstIndex, prevIndex;

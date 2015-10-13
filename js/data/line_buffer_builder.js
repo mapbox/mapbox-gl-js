@@ -45,7 +45,7 @@ LineBufferBuilder.prototype.addLine = function(vertices, join, cap, miterLimit, 
         closed = firstVertex.equals(lastVertex);
 
     // we could be more precise, but it would only save a negligible amount of space
-    this.elementGroups.line.makeRoomFor(len * 10);
+    this.elementGroups.line.makeRoomFor('line', len * 10);
 
     if (len === 2 && closed) {
         // console.warn('a line may not have coincident points');

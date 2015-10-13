@@ -313,7 +313,7 @@ SymbolBufferBuilder.prototype.placeFeatures = function(collisionTile, buffers, c
 SymbolBufferBuilder.prototype.addSymbols = function(shaderName, quads, scale, keepUpright, alongLine, placementAngle) {
 
     var elementGroups = this.elementGroups[shaderName];
-    elementGroups.makeRoomFor(4 * quads.length);
+    elementGroups.makeRoomFor(shaderName, 4 * quads.length);
 
     var addElement = this.addElement.bind(this, shaderName);
     var addVertex = this.addVertex.bind(this, shaderName);
@@ -376,7 +376,7 @@ SymbolBufferBuilder.prototype.updateFont = function(stacks) {
 
 SymbolBufferBuilder.prototype.addToDebugBuffers = function(collisionTile) {
     this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
-    this.elementGroups.collisionBox.makeRoomFor(0);
+    this.elementGroups.collisionBox.makeRoomFor('collisionBox', 0);
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
 

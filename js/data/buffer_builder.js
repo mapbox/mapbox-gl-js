@@ -104,6 +104,10 @@ BufferBuilder.prototype.addFeatures = function() {
     }
 };
 
+BufferBuilder.prototype.makeRoomFor = function(shaderName, count) {
+    this.elementGroups[shaderName].makeRoomFor(count);
+};
+
 
 BufferBuilder._createLayoutProperties = function(layer, zoom) {
     var values = new StyleDeclarationSet('layout', layer.type, layer.layout, {}).values();
