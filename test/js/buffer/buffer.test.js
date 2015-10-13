@@ -45,13 +45,13 @@ test('Buffer', function(t) {
     t.test('pushes items', function(t) {
         var buffer = create();
 
-        t.equal(0, buffer.push(1, 7, 3));
-        t.equal(1, buffer.push(4, 2, 5));
+        t.equal(0, buffer.push({map: [1], box: [7, 3]}));
+        t.equal(1, buffer.push({map: [4], box: [2, 5]}));
 
         t.equal(buffer.length, 2);
 
-        t.deepEqual(buffer.get(0), {"map": [1], "box": [7, 3]});
-        t.deepEqual(buffer.get(1), {"map": [4], "box": [2, 5]});
+        t.deepEqual(buffer.get(0), {map: [1], box: [7, 3]});
+        t.deepEqual(buffer.get(1), {map: [4], box: [2, 5]});
 
         t.end();
     });
@@ -61,11 +61,11 @@ test('Buffer', function(t) {
         var capacityInitial = buffer.capacity;
 
         while (capacityInitial > buffer.length * buffer.itemSize) {
-            buffer.push(1, 1, 1);
+            buffer.push({map: [1], box: [1, 1]});
         }
         t.equal(buffer.capacity, capacityInitial);
 
-        buffer.push(1, 1, 1);
+        buffer.push({map: [1], box: [1, 1]});
         t.ok(buffer.capacity > capacityInitial);
 
         t.end();
