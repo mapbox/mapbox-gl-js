@@ -30,36 +30,6 @@ function Bucket2(buffers, options) {
 
     this.elementGroups = {};
 
-    Object.keys(this.shaders).forEach(function(shaderName) {
-        var shaderOptions = this.shaders[shaderName];
-
-        var vertexBufferName = shaderOptions.vertexBuffer;
-        var elementBufferName = shaderOptions.elementBuffer;
-        var secondElementBufferName = shaderOptions.secondElementBuffer;
-
-        this.elementGroups[shaderName] = new ElementGroups(
-            this.buffers[vertexBufferName],
-            this.buffers[elementBufferName],
-            this.buffers[secondElementBufferName]
-        );
-
-        this['add' + capitalize(vertexBufferName)] = function() {
-            return addVertex(shaderName, arguments);
-        };
-
-        if (elementBufferName) {
-            this['add' + capitalize(elementBufferName)] = function(one, two, three) {
-                return addElement(shaderName, one, two, three);
-            };
-        }
-
-        if (secondElementBufferName) {
-            this['add' + capitalize(secondElementBufferName)] = function(one, two, three) {
-                return addSecondElement(shaderName, one, two, three);
-            };
-        }
-    }, this);
-
     var addVertex = (function(shaderName, args) {
         var shaderOptions = this.shaders[shaderName];
 
@@ -72,6 +42,12 @@ function Bucket2(buffers, options) {
         for (var i = 0; i < shaderOptions.attributes.length; i++) {
             var attributeOptions = shaderOptions.attributes[i];
             var subvalue = attributeOptions.value.apply(this, args);
+
+            assert(subvalue.length === attributeOptions.components);
+            for (var j = 0; j < subvalue.length; j++) {
+                assert(!isNaN(subvalue[j]), attributeOptions.name);
+            }
+
             value = value.concat(subvalue);
         }
 
@@ -107,6 +83,36 @@ function Bucket2(buffers, options) {
 
         return secondElementBuffer.push(one, two, three);
     }).bind(this);
+
+    Object.keys(this.shaders).forEach(function(shaderName) {
+        var shaderOptions = this.shaders[shaderName];
+
+        var vertexBufferName = shaderOptions.vertexBuffer;
+        var elementBufferName = shaderOptions.elementBuffer;
+        var secondElementBufferName = shaderOptions.secondElementBuffer;
+
+        this.elementGroups[shaderName] = new ElementGroups(
+            this.buffers[vertexBufferName],
+            this.buffers[elementBufferName],
+            this.buffers[secondElementBufferName]
+        );
+
+        this['add' + capitalize(vertexBufferName)] = function() {
+            return addVertex(shaderName, arguments);
+        };
+
+        if (elementBufferName) {
+            this['add' + capitalize(elementBufferName)] = function(one, two, three) {
+                return addElement(shaderName, one, two, three);
+            };
+        }
+
+        if (secondElementBufferName) {
+            this['add' + capitalize(secondElementBufferName)] = function(one, two, three) {
+                return addSecondElement(shaderName, one, two, three);
+            };
+        }
+    }, this);
 }
 
 

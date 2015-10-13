@@ -139,6 +139,10 @@ module.exports = {
             // of the segments between the previous line and the next line.
             var joinNormal = prevNormal.add(nextNormal)._unit();
 
+            if (isNaN(joinNormal.x) || isNaN(joinNormal.y)) {
+                return;
+            }
+
             /*  joinNormal     prevNormal
              *             ↖      ↑
              *                .________. prevVertex
@@ -182,6 +186,7 @@ module.exports = {
             }
 
             if (currentJoin === 'miter') {
+
                 joinNormal._mult(miterLength);
                 this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
 

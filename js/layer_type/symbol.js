@@ -15,7 +15,6 @@ var getIconQuads = Quads.getIconQuads;
 var clipLine = require('../symbol/clip_line');
 var Point = require('point-geometry');
 var Buffer = require('../data/buffer');
-var assert = require('assert');
 
 var CollisionFeature = require('../symbol/collision_feature');
 
@@ -23,14 +22,14 @@ var SYMBOL_ATTRIBUTES = [{
     name: 'pos',
     components: 2,
     type: Buffer.AttributeType.SHORT,
-    value: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
-        return [x, y]
+    value: function(x, y) {
+        return [x, y];
     }
 }, {
     name: 'offset',
     components: 2,
     type: Buffer.AttributeType.SHORT,
-    value: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+    value: function(x, y, ox, oy) {
         return [
             Math.round(ox * 64), // use 1/64 pixels for placement
             Math.round(oy * 64)
@@ -52,12 +51,10 @@ var SYMBOL_ATTRIBUTES = [{
     name: 'data2',
     components: 2,
     type: Buffer.AttributeType.UNSIGNED_BYTE,
-    value: function(x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+    value: function(x, y, ox, oy, tx, ty, minzoom, maxzoom) {
         return [
             (minzoom || 0) * 10, /* minzoom */
-            Math.min(maxzoom || 25, 25) * 10, /* minzoom */
-            0,
-            0
+            Math.min(maxzoom || 25, 25) * 10 /* minzoom */
         ];
     }
 }];
@@ -85,14 +82,14 @@ module.exports = {
                 name: 'pos',
                 components: 2,
                 type: Buffer.AttributeType.SHORT,
-                value: function(point, extrude, maxZoom, placementZoom) {
+                value: function(point) {
                     return [ point.x, point.y ];
                 }
             }, {
                 name: 'extrude',
                 components: 2,
                 type: Buffer.AttributeType.SHORT,
-                value: function(point, extrude, maxZoom, placementZoom) {
+                value: function(point, extrude) {
                     return [
                         Math.round(extrude.x),
                         Math.round(extrude.y)
@@ -397,13 +394,11 @@ module.exports = {
     addSymbols: function(shaderName, quads, scale, keepUpright, alongLine, placementAngle) {
 
         var elementGroups = this.elementGroups[shaderName];
-        assert(elementGroups);
+        elementGroups.makeRoomFor(4 * quads.length);
 
         var addElement = this['add' + capitalize(shaderName) + 'Element'].bind(this);
         var addVertex = this.addSymbolVertex.bind(this, shaderName);
 
-        elementGroups.makeRoomFor(4 * quads.length);
-        var elementGroup = elementGroups.current;
 
         var zoom = this.zoom;
         var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -466,7 +461,6 @@ module.exports = {
     addToDebugBuffers: function(collisionTile) {
         this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
         this.elementGroups.collisionBox.makeRoomFor(0);
-        var buffer = this.buffers.collisionBoxVertex;
         var angle = -collisionTile.angle;
         var yStretch = collisionTile.yStretch;
 

@@ -6,7 +6,6 @@ module.exports = createBucket;
 
 var Bucket2 = require('./bucket2');
 var LayoutProperties = require('../style/layout_properties');
-var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 
 function createBucket(layer, buffers, z, overscaling, collisionDebug) {
@@ -32,8 +31,6 @@ function createBucket(layer, buffers, z, overscaling, collisionDebug) {
             layout['icon-size'] = values['icon-size'].calculate(z + 1, fakeZoomHistory);
         }
     }
-
-    var layoutProperties = new LayoutProperties[layer.type](layout);
 
     return new Bucket2(buffers, {
         z: z,
