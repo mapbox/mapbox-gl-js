@@ -157,7 +157,6 @@ Buffer.prototype._refreshViews = function() {
 
 Buffer.prototype._createPushMethod = function() {
     var body = '';
-    var argNames = [];
 
     body += 'var index = this.length++;\n';
     body += 'var offset = index * ' + this.itemSize + ';\n';
@@ -170,18 +169,16 @@ Buffer.prototype._createPushMethod = function() {
         body += '\nvar ' + offsetId + ' = (offset + ' + attribute.offset + ') / ' + attribute.type.size + ';\n';
 
         for (var j = 0; j < attribute.components; j++) {
-            var valueId = 'value' + i + '_' + j;
+            var rvalue = 'value.' + attribute.name + '[' + j + ']';
             var lvalue = 'this.views.' + attribute.type.name + '[' + offsetId + ' + ' + j + ']';
 
-            body += lvalue + ' = ' + valueId + ';\n';
-
-            argNames.push(valueId);
+            body += lvalue + ' = ' + rvalue + ';\n';
         }
     }
 
     body += '\nreturn index;\n';
 
-    this.push = new Function(argNames, body);
+    this.push = new Function('value', body);
 };
 
 /**

@@ -52,7 +52,6 @@ function Bucket(buffers, options) {
     }
     this.layoutProperties = new LayoutProperties[this.layer.type](layout);
 
-
     var addVertex = (function(shaderName, args) {
         var shaderOptions = this.shaders[shaderName];
 
@@ -61,7 +60,7 @@ function Bucket(buffers, options) {
 
         // TODO automatically handle makeRoomFor
         // TODO insert into element buffer directly?
-        var value = [];
+        var value = {};
         for (var i = 0; i < shaderOptions.attributes.length; i++) {
             var attributeOptions = shaderOptions.attributes[i];
             var subvalue = attributeOptions.value.apply(this, args);
@@ -71,12 +70,12 @@ function Bucket(buffers, options) {
                 assert(!isNaN(subvalue[j]), attributeOptions.name);
             }
 
-            value = value.concat(subvalue);
+            value[attributeOptions.name] = subvalue;
         }
 
         var vertexBufferName = shaderOptions.vertexBuffer;
         var vertexBuffer = this.buffers[vertexBufferName];
-        return vertexBuffer.push.apply(vertexBuffer, value) - elementGroups.current.vertexStartIndex;
+        return vertexBuffer.push(value) - elementGroups.current.vertexStartIndex;
     }).bind(this);
 
     var addElement = (function(shaderName, one, two, three) {
@@ -90,7 +89,7 @@ function Bucket(buffers, options) {
 
         assert(!isNaN(one) && !isNaN(two));
 
-        return elementBuffer.push(one, two, three);
+        return elementBuffer.push({vertices: [one, two, three]});
     }).bind(this);
 
     var addSecondElement = (function(shaderName, one, two, three) {
@@ -104,7 +103,7 @@ function Bucket(buffers, options) {
 
         assert(!isNaN(one) && !isNaN(two));
 
-        return secondElementBuffer.push(one, two, three);
+        return secondElementBuffer.push({vertices: [one, two, three]});
     }).bind(this);
 
     Object.keys(this.shaders).forEach(function(shaderName) {
