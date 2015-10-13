@@ -3,7 +3,7 @@
 var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var BufferSet = require('../data/buffer_set');
-var Bucket = require('../data/buffer_builder/buffer_builder');
+var BufferBuilder = require('../data/buffer_builder/buffer_builder');
 
 module.exports = WorkerTile;
 
@@ -43,7 +43,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
                 layer.layout.visibility === 'none')
             continue;
 
-        bucket = new Bucket(buffers, {
+        bucket = BufferBuilder.create({
+            buffers: buffers,
             layer: layer,
             zoom: this.zoom,
             overscaling: this.overscaling,
