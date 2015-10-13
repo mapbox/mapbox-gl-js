@@ -48,17 +48,19 @@ module.exports = {
     type: 'symbol',
 
     shaders: {
+
         glyph: {
             vertexBuffer: 'glyphVertex',
             elementBuffer: 'glyphElement',
             attributes: SYMBOL_ATTRIBUTES
         },
+
         icon: {
             vertexBuffer: 'iconVertex',
             elementBuffer: 'iconElement',
-
             attributes: SYMBOL_ATTRIBUTES
         },
+
         collisionBox: {
             vertexBuffer: 'collisionBoxVertex',
 
