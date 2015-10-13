@@ -1,5 +1,7 @@
 'use strict';
 
+var StyleDeclarationSet = require('../style/style_declaration_set');
+var LayoutProperties = require('../style/layout_properties');
 var ElementGroups = require('./element_groups');
 var featureFilter = require('feature-filter');
 var LayerType = require('../layer_type');
@@ -8,15 +10,16 @@ var assert = require('assert');
 
 module.exports = Bucket2;
 
+// TODO simplify the heck out of this
+// TODO rename
 function Bucket2(buffers, options) {
-    this.buffers = buffers;
 
-    // TODO simplify, remove as many of these as possible
-    this.z = options.z;
-    this.zoom = options.z;
+    this.buffers = buffers;
+    this.layer = options.layer;
+    this.z = options.zoom;
+    this.zoom = options.zoom;
     this.overscaling = options.overscaling;
     this.collisionDebug = options.collisionDebug;
-    this.layer = options.layer;
     this.id = options.layer.id;
     this['source-layer'] = options.layer['source-layer'];
     this.interactive = options.layer.interactive;
@@ -24,11 +27,31 @@ function Bucket2(buffers, options) {
     this.maxZoom = options.layer.maxzoom;
     this.filter = featureFilter(options.layer.filter);
     this.features = [];
-    this.layoutProperties = options.layoutProperties;
-
+    this.elementGroups = {};
     util.extend(this, LayerType[options.layer.type]);
 
-    this.elementGroups = {};
+    var values = new StyleDeclarationSet('layout', this.layer.type, this.layer.layout, {}).values();
+    var fakeZoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+    var layout = {};
+    for (var k in values) {
+        layout[k] = values[k].calculate(this.zoom, fakeZoomHistory);
+    }
+    if (this.layer.type === 'symbol') {
+        // To reduce the number of labels that jump around when zooming we need
+        // to use a text-size value that is the same for all zoom levels.
+        // This calculates text-size at a high zoom level so that all tiles can
+        // use the same value when calculating anchor positions.
+        if (values['text-size']) {
+            layout['text-max-size'] = values['text-size'].calculate(18, fakeZoomHistory);
+            layout['text-size'] = values['text-size'].calculate(this.zoom + 1, fakeZoomHistory);
+        }
+        if (values['icon-size']) {
+            layout['icon-max-size'] = values['icon-size'].calculate(18, fakeZoomHistory);
+            layout['icon-size'] = values['icon-size'].calculate(this.zoom + 1, fakeZoomHistory);
+        }
+    }
+    this.layoutProperties = new LayoutProperties[this.layer.type](layout);
+
 
     var addVertex = (function(shaderName, args) {
         var shaderOptions = this.shaders[shaderName];
