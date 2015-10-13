@@ -53,8 +53,6 @@ BufferBuilder.prototype.addVertex = function(shaderName, args) {
     var elementGroups = this.elementGroups[shaderName];
     var vertexBuffer = this.buffers[shaderOptions.vertexBuffer];
 
-    // TODO automatically handle makeRoomFor?
-    // TODO insert into element buffer directly?
     var value = {};
     for (var i = 0; i < shaderOptions.attributes.length; i++) {
         var attributeOptions = shaderOptions.attributes[i];
