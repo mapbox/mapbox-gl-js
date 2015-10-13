@@ -1,7 +1,7 @@
 'use strict';
 
 var BufferBuilder = require('./buffer_builder');
-var util = require('../../util/util');
+var util = require('../util/util');
 
 module.exports = LineBufferBuilder;
 

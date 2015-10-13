@@ -3,12 +3,12 @@
 var featureFilter = require('feature-filter');
 var assert = require('assert');
 
-var StyleDeclarationSet = require('../../style/style_declaration_set');
-var LayoutProperties = require('../../style/layout_properties');
-var ElementGroups = require('../element_groups');
-var LayerType = require('../../layer_type');
-var util = require('../../util/util');
-var Buffer = require('../buffer');
+var StyleDeclarationSet = require('../style/style_declaration_set');
+var LayoutProperties = require('../style/layout_properties');
+var ElementGroups = require('./element_groups');
+var LayerType = require('../layer_type');
+var util = require('../util/util');
+var Buffer = require('./buffer');
 
 module.exports = BufferBuilder;
 
@@ -147,35 +147,6 @@ function createElementGroups(shaders, buffers) {
     return elementGroups;
 }
 
-function createAddMethods(shaders) {
-    var methods = {};
-
-    Object.keys(shaders).forEach(function(shaderName) {
-        var shader = shaders[shaderName];
-
-        var vertexBufferName = shader.vertexBuffer;
-        methods['add' + capitalize(vertexBufferName)] = function() {
-            return this.addVertex(shaderName, arguments);
-        };
-
-        var elementBufferName = shader.elementBuffer;
-        if (elementBufferName) {
-            methods['add' + capitalize(elementBufferName)] = function() {
-                return this.addElement(shaderName, arguments);
-            };
-        }
-
-        var secondElementBufferName = shader.secondElementBuffer;
-        if (secondElementBufferName) {
-            methods['add' + capitalize(secondElementBufferName)] = function() {
-                return this.addElement(shaderName, arguments, true);
-            };
-        }
-    });
-
-    return methods;
-}
-
 BufferBuilder.createBuffers = function(shaders, buffers) {
     buffers = buffers || {};
 
@@ -217,6 +188,35 @@ BufferBuilder.createBuffers = function(shaders, buffers) {
 
     return buffers;
 };
+
+BufferBuilder.createAddMethods(shaders) {
+    var methods = {};
+
+    Object.keys(shaders).forEach(function(shaderName) {
+        var shader = shaders[shaderName];
+
+        var vertexBufferName = shader.vertexBuffer;
+        methods['add' + capitalize(vertexBufferName)] = function() {
+            return this.addVertex(shaderName, arguments);
+        };
+
+        var elementBufferName = shader.elementBuffer;
+        if (elementBufferName) {
+            methods['add' + capitalize(elementBufferName)] = function() {
+                return this.addElement(shaderName, arguments);
+            };
+        }
+
+        var secondElementBufferName = shader.secondElementBuffer;
+        if (secondElementBufferName) {
+            methods['add' + capitalize(secondElementBufferName)] = function() {
+                return this.addElement(shaderName, arguments, true);
+            };
+        }
+    });
+
+    return methods;
+}
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);

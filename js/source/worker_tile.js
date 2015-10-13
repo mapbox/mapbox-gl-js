@@ -2,7 +2,7 @@
 
 var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
-var BufferBuilder = require('../data/buffer_builder/buffer_builder');
+var BufferBuilder = require('../data/buffer_builder');
 
 module.exports = WorkerTile;
 
