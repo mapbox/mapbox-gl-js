@@ -96,8 +96,8 @@ BufferBuilder.prototype.addFeatures = function() {
     }
 };
 
-BufferBuilder.prototype.makeRoomFor = function(shaderName, count) {
-    this.elementGroups[shaderName].makeRoomFor(count);
+BufferBuilder.prototype.makeRoomFor = function(shaderName, vertexLength) {
+    this.elementGroups[shaderName].makeRoomFor(vertexLength);
 };
 
 
