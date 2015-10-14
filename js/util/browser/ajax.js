@@ -1,5 +1,18 @@
 'use strict';
 
+exports.isOK = function (xhr)
+{
+    var file;
+    var ret;
+
+    file = 0 == xhr.responseURL.indexOf ("file:");
+    ret = !!xhr.response;
+    if (!file)
+        ret = ret && ((xhr.status >= 200) && (xhr.status < 300));
+
+    return (ret);
+};
+
 exports.getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -8,7 +21,7 @@ exports.getJSON = function(url, callback) {
         callback(e);
     };
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        if (exports.isOK (xhr)) {
             var data;
             try {
                 data = JSON.parse(xhr.response);
@@ -32,7 +45,7 @@ exports.getArrayBuffer = function(url, callback) {
         callback(e);
     };
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        if (exports.isOK (xhr)) {
             callback(null, xhr.response);
         } else {
             callback(new Error(xhr.statusText));
