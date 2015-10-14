@@ -178,7 +178,7 @@ BufferBuilder._createBuffers = function(shaders, buffers) {
 
         var vertexBufferName = shader.vertexBuffer;
         if (vertexBufferName && !buffers[vertexBufferName]) {
-            buffers[shader.vertexBuffer] = new Buffer({
+            buffers[vertexBufferName] = new Buffer({
                 type: Buffer.BufferType.VERTEX,
                 attributes: shader.attributes
             });
@@ -186,31 +186,28 @@ BufferBuilder._createBuffers = function(shaders, buffers) {
 
         var elementBufferName = shader.elementBuffer;
         if (elementBufferName && !buffers[elementBufferName]) {
-            buffers[elementBufferName] = new Buffer({
-                type: Buffer.BufferType.ELEMENT,
-                attributes: [{
-                    name: 'vertices',
-                    components: shader.elementBufferComponents || 3,
-                    type: Buffer.ELEMENT_ATTRIBUTE_TYPE
-                }]
-            });
+            buffers[elementBufferName] = createElementBuffer(shader.elementBufferComponents);
         }
 
         var secondElementBufferName = shader.secondElementBuffer;
         if (secondElementBufferName && !buffers[secondElementBufferName]) {
-            buffers[secondElementBufferName] = new Buffer({
-                type: Buffer.BufferType.ELEMENT,
-                attributes: [{
-                    name: 'vertices',
-                    components: shader.secondElementBufferComponents || 3,
-                    type: Buffer.ELEMENT_ATTRIBUTE_TYPE
-                }]
-            });
+            buffers[secondElementBufferName] = createElementBuffer(shader.secondElementBufferComponents);
         }
     });
 
     return buffers;
 };
+
+function createElementBuffer(components) {
+    return new Buffer({
+        type: Buffer.BufferType.ELEMENT,
+        attributes: [{
+            name: 'vertices',
+            components: components || 3,
+            type: Buffer.ELEMENT_ATTRIBUTE_TYPE
+        }]
+    });
+}
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
