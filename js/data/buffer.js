@@ -32,6 +32,8 @@ function Buffer(options) {
         this.itemSize = options.itemSize;
         this.length = options.length;
 
+        assert(this.arrayBuffer instanceof ArrayBuffer);
+
     // Create a new Buffer
     } else {
 
@@ -62,10 +64,10 @@ function Buffer(options) {
 
             return attribute;
         }, this);
-
-        this._createPushMethod();
-        this._refreshViews();
     }
+
+    this._createPushMethod();
+    this._refreshViews();
 }
 
 /**
@@ -155,8 +157,20 @@ Buffer.prototype._refreshViews = function() {
     };
 };
 
+Buffer.prototype.validate = function(args) {
+    assert(args.length === this.attributes.length);
+    for (var i = 0; i < args.length; i++) {
+        var attribute = this.attributes[i];
+        assert(args[i].length === attribute.components);
+        for (var j = 0; j < attribute.components; j++) {
+            assert(!isNaN(args[i][j]));
+        }
+    }
+};
+
 Buffer.prototype._createPushMethod = function() {
     var body = '';
+    var argIds = [];
 
     body += 'var index = this.length++;\n';
     body += 'var offset = index * ' + this.itemSize + ';\n';
@@ -165,11 +179,13 @@ Buffer.prototype._createPushMethod = function() {
     for (var i = 0; i < this.attributes.length; i++) {
         var attribute = this.attributes[i];
         var offsetId = 'offset' + i;
+        var argId = 'value' + i;
+        argIds.push(argId);
 
         body += '\nvar ' + offsetId + ' = (offset + ' + attribute.offset + ') / ' + attribute.type.size + ';\n';
 
         for (var j = 0; j < attribute.components; j++) {
-            var rvalue = 'value[' + i + '][' + j + ']';
+            var rvalue = argId + '[' + j + ']';
             var lvalue = 'this.views.' + attribute.type.name + '[' + offsetId + ' + ' + j + ']';
             body += lvalue + ' = ' + rvalue + ';\n';
         }
@@ -177,7 +193,7 @@ Buffer.prototype._createPushMethod = function() {
 
     body += '\nreturn index;\n';
 
-    this.push = new Function('value', body);
+    this.push = new Function(argIds, body);
 };
 
 /**
