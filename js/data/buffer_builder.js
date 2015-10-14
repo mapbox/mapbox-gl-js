@@ -50,17 +50,17 @@ BufferBuilder.prototype.addVertex = function(shaderName, args) {
     var elementGroups = this.elementGroups[shaderName];
     var vertexBuffer = this.buffers[shaderOptions.vertexBuffer];
 
-    var value = {};
+    var value = [];
     for (var i = 0; i < shaderOptions.attributes.length; i++) {
         var attributeOptions = shaderOptions.attributes[i];
         var subvalue = attributeOptions.value.apply(this, args);
 
         assert(subvalue.length === attributeOptions.components);
         for (var j = 0; j < subvalue.length; j++) {
-            assert(!isNaN(subvalue[j]), attributeOptions.name);
+            assert(!isNaN(subvalue[j]));
         }
 
-        value[attributeOptions.name] = subvalue;
+        value[i] = subvalue;
     }
 
     elementGroups.current.vertexLength++;
@@ -87,7 +87,7 @@ BufferBuilder.prototype.addElement = function(shaderName, vertices, isSecondElem
         assert(!isNaN(vertices[i]));
     }
 
-    return elementBuffer.push({vertices: vertices});
+    return elementBuffer.push([vertices]);
 };
 
 BufferBuilder.prototype.addFeatures = function() {

@@ -169,9 +169,8 @@ Buffer.prototype._createPushMethod = function() {
         body += '\nvar ' + offsetId + ' = (offset + ' + attribute.offset + ') / ' + attribute.type.size + ';\n';
 
         for (var j = 0; j < attribute.components; j++) {
-            var rvalue = 'value.' + attribute.name + '[' + j + ']';
+            var rvalue = 'value[' + i + '][' + j + ']';
             var lvalue = 'this.views.' + attribute.type.name + '[' + offsetId + ' + ' + j + ']';
-
             body += lvalue + ' = ' + rvalue + ';\n';
         }
     }
