@@ -65,7 +65,7 @@ BufferBuilder.prototype._createVertexAddMethod = function(shaderName) {
     }
 
     var body = '';
-    body += 'var elementGroups = this.elementGroups.' + shaderName + ';\n'
+    body += 'var elementGroups = this.elementGroups.' + shaderName + ';\n';
     body += 'elementGroups.current.vertexLength++;\n';
     body += 'var attributes = this.type.shaders.' + shaderName + '.attributes;\n';
     body += 'return this.buffers.' + shader.vertexBuffer + '.push(\n';
@@ -91,11 +91,10 @@ BufferBuilder.prototype._createElementAddMethod = function(shaderName, isSecond)
     var shader = this.type.shaders[shaderName];
     var bufferName = isSecond ? shader.secondElementBuffer : shader.elementBuffer;
     if (!bufferName) return;
+    var lengthName = isSecond ? 'secondElementLength' : 'elementLength';
 
     this[this.getAddElementMethodName(shaderName, isSecond)] = function() {
-        var elementGroups = this.elementGroups[shaderName];
-        if (isSecond) elementGroups.current.secondElementLength++;
-        else elementGroups.current.elementLength++;
+        this.elementGroups[shaderName].current[lengthName]++;
         return this.buffers[bufferName].push(arguments);
     };
 };
