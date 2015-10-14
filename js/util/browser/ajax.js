@@ -63,7 +63,7 @@ function sameOrigin(url) {
 
 exports.getImage = function(url, callback) {
     return exports.getArrayBuffer(url, function(err, imgData) {
-        if (err) callback(err);
+        if (err) return callback(err);
         var img = new Image();
         img.onload = function() {
             callback(null, img);

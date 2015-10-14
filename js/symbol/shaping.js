@@ -52,7 +52,23 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     return shaping;
 }
 
-var breakable = { 32: true }; // Currently only breaks at regular spaces
+var invisible = {
+    0x20:   true, // space
+    0x200b: true  // zero-width space
+};
+
+var breakable = {
+    0x20:   true, // space
+    0x26:   true, // ampersand
+    0x2b:   true, // plus sign
+    0x2d:   true, // hyphen-minus
+    0x2f:   true, // solidus
+    0xad:   true, // soft hyphen
+    0xb7:   true, // middle dot
+    0x200b: true, // zero-width space
+    0x2010: true, // hyphen
+    0x2013: true  // en dash
+};
 
 function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify) {
     var lastSafeBreak = null;
@@ -83,7 +99,13 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 }
 
                 if (justify) {
-                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lastSafeBreak - 1, justify);
+                    // Collapse invisible characters.
+                    var lineEnd = lastSafeBreak;
+                    if (invisible[positionedGlyphs[lastSafeBreak].codePoint]) {
+                        lineEnd--;
+                    }
+
+                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lineEnd, justify);
                 }
 
                 lineStartIndex = lastSafeBreak + 1;
