@@ -54,11 +54,11 @@ function Buffer(options) {
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
 
+            this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
+
             assert(!isNaN(this.itemSize));
             assert(!isNaN(attribute.size));
             assert(attribute.type.name in Buffer.AttributeType);
-
-            this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
 
             return attribute;
         }, this);
