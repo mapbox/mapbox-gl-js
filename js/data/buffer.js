@@ -64,9 +64,13 @@ function Buffer(options) {
 
             return attribute;
         }, this);
+
+        // This is an expensive call. Because we only push things to buffers in
+        // the worker thread, we can skip this call in the "clone an existing
+        // buffer" case.
+        this._createPushMethod();
     }
 
-    this._createPushMethod();
     this._refreshViews();
 }
 
