@@ -122,14 +122,14 @@ Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
 };
 
 /**
- * Get an item from the `ArrayBuffer`.
+ * Get an item from the `ArrayBuffer`. Only used for debugging.
  * @private
  * @param {number} index The index of the item to get
  * @returns {Object.<string, Array.<number>>}
  */
 Buffer.prototype.get = function(index) {
     this._refreshViews();
-    
+
     var item = {};
     var offset = index * this.itemSize;
 
@@ -143,6 +143,23 @@ Buffer.prototype.get = function(index) {
         }
     }
     return item;
+};
+
+/**
+ * Check that a buffer item is well formed and throw an error if not. Only
+ * used for debugging.
+ * @private
+ * @param {number} args The "arguments" object from Buffer::push
+ */
+Buffer.prototype.validate = function(args) {
+    assert(args.length === this.attributes.length);
+    for (var i = 0; i < args.length; i++) {
+        var attribute = this.attributes[i];
+        assert(args[i].length === attribute.components);
+        for (var j = 0; j < attribute.components; j++) {
+            assert(!isNaN(args[i][j]));
+        }
+    }
 };
 
 Buffer.prototype._resize = function(capacity) {
@@ -160,17 +177,6 @@ Buffer.prototype._refreshViews = function() {
         UNSIGNED_SHORT: new Uint16Array(this.arrayBuffer),
         SHORT:          new Int16Array(this.arrayBuffer)
     };
-};
-
-Buffer.prototype.validate = function(args) {
-    assert(args.length === this.attributes.length);
-    for (var i = 0; i < args.length; i++) {
-        var attribute = this.attributes[i];
-        assert(args[i].length === attribute.components);
-        for (var j = 0; j < attribute.components; j++) {
-            assert(!isNaN(args[i][j]));
-        }
-    }
 };
 
 Buffer.prototype._createPushMethod = function() {
