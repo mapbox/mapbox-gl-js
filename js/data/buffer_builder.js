@@ -37,7 +37,8 @@ function BufferBuilder(options) {
     this.filter = featureFilter(options.layer.filter);
     this.features = [];
 
-    this.buffers = createBuffers(this.type.shaders, options.buffers);
+    this.resetBuffers(options.buffers);
+
     this.layoutProperties = createLayoutProperties(this.layer, this.zoom);
     this.elementGroups = createElementGroups(this.type.shaders, this.buffers);
 
@@ -48,11 +49,11 @@ function BufferBuilder(options) {
         var elementName = this.getAddElementMethodName(shaderName, false);
         var secondElementName = this.getAddElementMethodName(shaderName, true);
 
-        this[vertexName] = createVertexAddMethod(shader);
-        this[elementName] = createElementAddMethod(shader);
-        this[secondElementName] = createElementAddMethod(shader, true);
+        this[vertexName] = createVertexAddMethod(shaderName, shader);
+        this[elementName] = createElementAddMethod(shaderName, shader);
+        this[secondElementName] = createElementAddMethod(shaderName, shader, true);
     }
-};
+}
 
 BufferBuilder.prototype.getAddVertexMethodName = function(shaderName) {
     var shader = this.type.shaders[shaderName];
@@ -75,6 +76,37 @@ BufferBuilder.prototype.addFeatures = function() {
 
 BufferBuilder.prototype.makeRoomFor = function(shaderName, vertexLength) {
     this.elementGroups[shaderName].makeRoomFor(vertexLength);
+};
+
+BufferBuilder.prototype.resetBuffers = function(buffers) {
+    buffers = buffers || {};
+
+    // TODO use for in
+    Object.keys(this.type.shaders).forEach(function(shaderName) {
+        var shader = this.type.shaders[shaderName];
+
+        var vertexBufferName = shader.vertexBuffer;
+        if (vertexBufferName && !buffers[vertexBufferName]) {
+            buffers[vertexBufferName] = new Buffer({
+                type: Buffer.BufferType.VERTEX,
+                attributes: shader.attributes
+            });
+        }
+
+        var elementBufferName = shader.elementBuffer;
+        if (elementBufferName && !buffers[elementBufferName]) {
+            buffers[elementBufferName] = createElementBuffer(shader.elementBufferComponents);
+        }
+
+        var secondElementBufferName = shader.secondElementBuffer;
+        if (secondElementBufferName && !buffers[secondElementBufferName]) {
+            buffers[secondElementBufferName] = createElementBuffer(shader.secondElementBufferComponents);
+        }
+    }, this);
+
+    this.buffers = buffers;
+
+    return buffers;
 };
 
 function createLayoutProperties(layer, zoom) {
@@ -102,10 +134,10 @@ function createLayoutProperties(layer, zoom) {
     }
 
     return new LayoutProperties[layer.type](layout);
-};
+}
 
-function createVertexAddMethod(shader) {
-    if (!shader.vertexBuffer) return;
+function createVertexAddMethod(shaderName, shader) {
+    if (!shader.vertexBuffer) return null;
 
     // Find max arg length of all attribute value functions
     var argCount = 0;
@@ -125,28 +157,28 @@ function createVertexAddMethod(shader) {
     body += 'return this.buffers.' + shader.vertexBuffer + '.push(\n';
 
     for (var k = 0; k < shader.attributes.length; k++) {
-        var attribute = shader.attributes[k];
         body += '  attributes[' + k + '].value(' + argIds.join(', ') + ')';
         body += (k !== shader.attributes.length - 1) ? ',\n' : '';
     }
     body += '\n) - elementGroups.current.vertexStartIndex;';
 
     return new Function(argIds, body);
-};
+}
 
-function createElementAddMethod(shaderName, isSecond) {
+function createElementAddMethod(shaderName, shader, isSecond) {
     var bufferName = isSecond ? shader.secondElementBuffer : shader.elementBuffer;
-    if (!bufferName) return;
+    if (!bufferName) return null;
     var lengthName = isSecond ? 'secondElementLength' : 'elementLength';
 
     return function() {
         this.elementGroups[shaderName].current[lengthName]++;
         return this.buffers[bufferName].push(arguments);
     };
-};
+}
 
 function createElementGroups(shaders, buffers) {
     var elementGroups = {};
+    // TODO use for in
     Object.keys(shaders).forEach(function(shaderName) {
         var shader = shaders[shaderName];
         elementGroups[shaderName] = new ElementGroups(
@@ -156,35 +188,7 @@ function createElementGroups(shaders, buffers) {
         );
     });
     return elementGroups;
-};
-
-function createBuffers(shaders, buffers) {
-    buffers = buffers || {};
-
-    Object.keys(shaders).forEach(function(shaderName) {
-        var shader = shaders[shaderName];
-
-        var vertexBufferName = shader.vertexBuffer;
-        if (vertexBufferName && !buffers[vertexBufferName]) {
-            buffers[vertexBufferName] = new Buffer({
-                type: Buffer.BufferType.VERTEX,
-                attributes: shader.attributes
-            });
-        }
-
-        var elementBufferName = shader.elementBuffer;
-        if (elementBufferName && !buffers[elementBufferName]) {
-            buffers[elementBufferName] = createElementBuffer(shader.elementBufferComponents);
-        }
-
-        var secondElementBufferName = shader.secondElementBuffer;
-        if (secondElementBufferName && !buffers[secondElementBufferName]) {
-            buffers[secondElementBufferName] = createElementBuffer(shader.secondElementBufferComponents);
-        }
-    });
-
-    return buffers;
-};
+}
 
 function createElementBuffer(components) {
     return new Buffer({
