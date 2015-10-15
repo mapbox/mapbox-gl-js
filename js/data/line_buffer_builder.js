@@ -2,6 +2,7 @@
 
 var BufferBuilder = require('./buffer_builder');
 var util = require('../util/util');
+var LineLayerType = require('../layer_type/line_layer_type');
 
 module.exports = LineBufferBuilder;
 
@@ -10,6 +11,8 @@ function LineBufferBuilder() {
 }
 
 LineBufferBuilder.prototype = util.inherit(BufferBuilder, {});
+
+LineBufferBuilder.prototype.type = LineLayerType;
 
 LineBufferBuilder.prototype.addFeature = function(feature) {
     var lines = feature.loadGeometry();

@@ -2,6 +2,7 @@
 
 var BufferBuilder = require('./buffer_builder');
 var util = require('../util/util');
+var FillLayerType = require('../layer_type/fill_layer_type');
 
 module.exports = FillBufferBuilder;
 
@@ -10,6 +11,8 @@ function FillBufferBuilder() {
 }
 
 FillBufferBuilder.prototype = util.inherit(BufferBuilder, {});
+
+FillBufferBuilder.prototype.type = FillLayerType;
 
 FillBufferBuilder.prototype.addFeature = function(feature) {
     var lines = feature.loadGeometry();

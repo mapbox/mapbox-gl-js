@@ -14,6 +14,7 @@ var mergeLines = require('../symbol/mergelines');
 var clipLine = require('../symbol/clip_line');
 var CollisionFeature = require('../symbol/collision_feature');
 var util = require('../util/util');
+var SymbolLayerType = require('../layer_type/symbol_layer_type');
 
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
@@ -27,6 +28,8 @@ function SymbolBufferBuilder() {
 }
 
 SymbolBufferBuilder.prototype = util.inherit(BufferBuilder, {});
+
+SymbolBufferBuilder.prototype.type = SymbolLayerType;
 
 SymbolBufferBuilder.prototype.addFeatures = function(collisionTile, stacks, icons) {
     var tileSize = 512 * this.overscaling;

@@ -5,7 +5,6 @@ var featureFilter = require('feature-filter');
 var StyleDeclarationSet = require('../style/style_declaration_set');
 var LayoutProperties = require('../style/layout_properties');
 var ElementGroups = require('./element_groups');
-var LayerType = require('../layer_type');
 var Buffer = require('./buffer');
 
 module.exports = BufferBuilder;
@@ -21,7 +20,6 @@ BufferBuilder.create = function(options) {
 };
 
 function BufferBuilder(options) {
-    this.type = LayerType[options.layer.type];
     this.layer = options.layer;
     this.layers = [this.layer.id];
     this.zoom = options.zoom;
