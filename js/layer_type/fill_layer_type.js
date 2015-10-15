@@ -22,20 +22,7 @@ module.exports = {
                 value: function(x, y) {
                     return [x, y];
                 }
-            }],
-
-            uniforms: [{
-                name: 'color',
-                components: 4,
-                value: function() {
-                    var color = this.paint['fill-color'];
-                    var opacity = this.paint['fill-opacity'];
-                    return color.map(function(colorComponent) {
-                        return colorComponent * opacity * 255;
-                    });
-                }
             }]
-
         }
     }
 
