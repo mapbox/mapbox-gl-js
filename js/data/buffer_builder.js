@@ -36,7 +36,6 @@ function BufferBuilder(options) {
     this.resetBuffers(options.buffers);
 
     this.layoutProperties = createLayoutProperties(this.layer, this.zoom);
-    this.elementGroups = createElementGroups(this.type.shaders, this.buffers);
 
     for (var shaderName in this.type.shaders) {
         var shader = this.type.shaders[shaderName];
@@ -100,6 +99,7 @@ BufferBuilder.prototype.resetBuffers = function(buffers) {
     }
 
     this.buffers = buffers;
+    this.elementGroups = createElementGroups(this.type.shaders, this.buffers);
 
     return buffers;
 };
