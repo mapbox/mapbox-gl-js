@@ -27,11 +27,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     var tile = this,
         buffers = {},
         collisionTile = new CollisionTile(this.angle, this.pitch),
-        bucketsById = {},
-        bucketsBySourceLayer = {},
-        i, layer, sourceLayerId, bucket;
+        buildersById = {},
+        buildersBySourceLayer = {},
+        i, layer, sourceLayerId;
 
-    // Map non-ref layers to buckets.
+    // Map non-ref layers to builders.
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
 
@@ -42,7 +42,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
                 layer.layout.visibility === 'none')
             continue;
 
-        bucket = BufferBuilder.create({
+        var builder = BufferBuilder.create({
             buffers: buffers,
             layer: layer,
             zoom: this.zoom,
@@ -50,61 +50,61 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             collisionDebug: this.collisionDebug
         });
 
-        bucketsById[layer.id] = bucket;
+        buildersById[layer.id] = builder;
 
         if (data.layers) { // vectortile
             sourceLayerId = layer['source-layer'];
-            bucketsBySourceLayer[sourceLayerId] = bucketsBySourceLayer[sourceLayerId] || {};
-            bucketsBySourceLayer[sourceLayerId][layer.id] = bucket;
+            buildersBySourceLayer[sourceLayerId] = buildersBySourceLayer[sourceLayerId] || {};
+            buildersBySourceLayer[sourceLayerId][layer.id] = builder;
         }
     }
 
     // Index ref layers.
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
-        if (layer.source === this.source && layer.ref && bucketsById[layer.ref]) {
-            bucketsById[layer.ref].layers.push(layer.id);
+        if (layer.source === this.source && layer.ref && buildersById[layer.ref]) {
+            buildersById[layer.ref].layers.push(layer.id);
         }
     }
 
     var extent = 4096;
 
-    // read each layer, and sort its features into buckets
+    // read each layer, and sort its features into builders
     if (data.layers) { // vectortile
-        for (sourceLayerId in bucketsBySourceLayer) {
+        for (sourceLayerId in buildersBySourceLayer) {
             layer = data.layers[sourceLayerId];
             if (!layer) continue;
             if (layer.extent) extent = layer.extent;
-            sortLayerIntoBuckets(layer, bucketsBySourceLayer[sourceLayerId]);
+            sortLayerIntoBuckets(layer, buildersBySourceLayer[sourceLayerId]);
         }
     } else { // geojson
-        sortLayerIntoBuckets(data, bucketsById);
+        sortLayerIntoBuckets(data, buildersById);
     }
 
-    function sortLayerIntoBuckets(layer, buckets) {
+    function sortLayerIntoBuckets(layer, builders) {
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
-            for (var id in buckets) {
-                if (buckets[id].filter(feature))
-                    buckets[id].features.push(feature);
+            for (var id in builders) {
+                if (builders[id].filter(feature))
+                    builders[id].features.push(feature);
             }
         }
     }
 
-    var buckets = [],
+    var builders = [],
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    for (var id in bucketsById) {
-        bucket = bucketsById[id];
-        if (bucket.features.length === 0) continue;
+    for (var id in buildersById) {
+        builder = buildersById[id];
+        if (builder.features.length === 0) continue;
 
-        buckets.push(bucket);
+        builders.push(builder);
 
-        if (bucket.type.name === 'symbol')
-            symbolBuckets.push(bucket);
+        if (builder.type.name === 'symbol')
+            symbolBuckets.push(builder);
         else
-            otherBuckets.push(bucket);
+            otherBuckets.push(builder);
     }
 
     var icons = {},
@@ -112,7 +112,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     if (symbolBuckets.length > 0) {
 
-        // Get dependencies for symbol buckets
+        // Get dependencies for symbol builders
         for (i = symbolBuckets.length - 1; i >= 0; i--) {
             symbolBuckets[i].updateIcons(icons);
             symbolBuckets[i].updateFont(stacks);
@@ -140,7 +140,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
     }
 
-    // immediately parse non-symbol buckets (they have no dependencies)
+    // immediately parse non-symbol builders (they have no dependencies)
     for (i = otherBuckets.length - 1; i >= 0; i--) {
         parseBucket(this, otherBuckets[i]);
     }
@@ -152,7 +152,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         if (err) return callback(err);
         deps++;
         if (deps === 2) {
-            // all symbol bucket dependencies fetched; parse them in proper order
+            // all symbol builder dependencies fetched; parse them in proper order
             for (var i = symbolBuckets.length - 1; i >= 0; i--) {
                 parseBucket(tile, symbolBuckets[i]);
             }
@@ -160,24 +160,24 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
     }
 
-    function parseBucket(tile, bucket) {
+    function parseBucket(tile, builder) {
         var now = Date.now();
-        bucket.addFeatures(collisionTile, stacks, icons);
+        builder.addFeatures(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
-        if (bucket.interactive) {
-            for (var i = 0; i < bucket.features.length; i++) {
-                var feature = bucket.features[i];
-                tile.featureTree.insert(feature.bbox(), bucket.layers, feature);
+        if (builder.interactive) {
+            for (var i = 0; i < builder.features.length; i++) {
+                var feature = builder.features[i];
+                tile.featureTree.insert(feature.bbox(), builder.layers, feature);
             }
         }
 
-        bucket.features = null;
+        builder.features = null;
 
         if (typeof self !== 'undefined') {
-            self.bucketStats = self.bucketStats || {_total: 0};
-            self.bucketStats._total += time;
-            self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
+            self.bufferStats = self.bufferStats || {_total: 0};
+            self.bufferStats._total += time;
+            self.bufferStats[builder.id] = (self.bufferStats[builder.id] || 0) + time;
         }
     }
 
@@ -193,10 +193,10 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
 
         callback(null, {
-            elementGroups: getElementGroups(buckets),
+            elementGroups: getElementGroups(builders),
             buffers: buffers,
             extent: extent,
-            bucketStats: typeof self !== 'undefined' ? self.bucketStats : null
+            bufferStats: typeof self !== 'undefined' ? self.bufferStats : null
         }, getTransferables(buffers));
     }
 };
@@ -225,11 +225,11 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     };
 };
 
-function getElementGroups(buckets) {
+function getElementGroups(builders) {
     var elementGroups = {};
 
-    for (var i = 0; i < buckets.length; i++) {
-        elementGroups[buckets[i].id] = buckets[i].elementGroups;
+    for (var i = 0; i < builders.length; i++) {
+        elementGroups[builders[i].id] = builders[i].elementGroups;
     }
     return elementGroups;
 }

@@ -6,7 +6,7 @@ var Wrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('basic', function(t) {
-    var buckets = [{
+    var builders = [{
         id: 'test',
         source: 'source',
         type: 'fill',
@@ -24,7 +24,7 @@ test('basic', function(t) {
         coord: new TileCoord(1, 1, 1), overscaling: 1 });
 
     t.test('basic worker tile', function(t) {
-        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+        tile.parse(new Wrapper(features), builders, {}, function(err, result) {
             t.equal(err, null);
             t.ok(result.buffers, 'buffers');
             t.ok(result.elementGroups, 'element groups');
@@ -33,14 +33,14 @@ test('basic', function(t) {
     });
 
     t.test('hidden layers', function(t) {
-        buckets.push({
+        builders.push({
             id: 'test-hidden',
             source: 'source',
             type: 'fill',
             layout: { visibility: 'none' },
             compare: function () { return true; }
         });
-        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+        tile.parse(new Wrapper(features), builders, {}, function(err, result) {
             t.equal(err, null);
             t.equal(Object.keys(result.elementGroups).length, 1, 'element groups exclude hidden layer');
             t.end();

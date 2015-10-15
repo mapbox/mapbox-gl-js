@@ -91,7 +91,7 @@ ImageSource.prototype = util.inherit(Evented, {
         ]);
 
         this.tile = new Tile();
-        this.tile.buckets = {};
+        this.tile.builders = {};
 
         this.tile.boundsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);

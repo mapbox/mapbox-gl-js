@@ -120,7 +120,7 @@ SymbolBufferBuilder.prototype.addFeatures = function(collisionTile, stacks, icon
                 if (this.sdfIcons === undefined) {
                     this.sdfIcons = image.sdf;
                 } else if (this.sdfIcons !== image.sdf) {
-                    console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one bucket');
+                    console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                 }
             }
         } else {
