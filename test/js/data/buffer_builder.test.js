@@ -55,12 +55,6 @@ test('BufferBuilder', function(t) {
         return Class;
     }
 
-    function createLayer() {
-        return {
-            type: 'circle'
-        };
-    }
-
     function createFeature(x, y) {
         return {
             loadGeometry: function() {
@@ -72,7 +66,7 @@ test('BufferBuilder', function(t) {
     function create() {
         var Class = createClass();
         return new Class({
-            layer: createLayer(),
+            layer: { type: 'circle' },
             buffers: {}
         });
     }

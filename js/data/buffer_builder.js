@@ -9,6 +9,12 @@ var Buffer = require('./buffer');
 
 module.exports = BufferBuilder;
 
+/**
+ * Instantiate the appropriate subclass of `BufferBuilder` for `options`.
+ * @private
+ * @param options See `BufferBuilder` constructor options
+ * @returns {BufferBuilder}
+ */
 BufferBuilder.create = function(options) {
     var Classes = {
         fill: require('./fill_buffer_builder'),
@@ -19,19 +25,39 @@ BufferBuilder.create = function(options) {
     return new Classes[options.layer.type](options);
 };
 
+/**
+ * The `BufferBuilder` class builds a set of `Buffer`s for a set of vector tile
+ * features.
+ *
+ * `BufferBuilder` is an abstract class. A subclass exists for each Mapbox GL
+ * style spec layer type. Because `BufferBuilder` is an abstract class,
+ * instances should be created via the `BufferBuilder.create` method.
+ *
+ * For performance reasons, `BufferBuilder` creates its "add"s methods at
+ * runtime using `new Function(...)`.
+ *
+ * @class BufferBuilder
+ * @private
+ * @param options
+ * @param {number} options.zoom Zoom level of the buffers being built. May be
+ *     a fractional zoom level.
+ * @param options.layer A Mapbox GL style layer object
+ * @param {Object.<string, Buffer>} options.buffers The set of `Buffer`s being
+ *     built for this tile. This object facilitates sharing of `Buffer`s be
+       between `BufferBuilder`s.
+ */
 function BufferBuilder(options) {
     this.layer = options.layer;
-    this.layers = [this.layer.id];
     this.zoom = options.zoom;
-    this.overscaling = options.overscaling;
-    this.collisionDebug = options.collisionDebug;
-    this.id = options.layer.id;
-    this['source-layer'] = options.layer['source-layer'];
-    this.interactive = options.layer.interactive;
-    this.minZoom = options.layer.minzoom;
-    this.maxZoom = options.layer.maxzoom;
-    this.filter = featureFilter(options.layer.filter);
+
+    this.layers = [this.layer.id];
     this.features = [];
+    this.id = this.layer.id;
+    this['source-layer'] = this.layer['source-layer'];
+    this.interactive = this.layer.interactive;
+    this.minZoom = this.layer.minzoom;
+    this.maxZoom = this.layer.maxzoom;
+    this.filter = featureFilter(this.layer.filter);
 
     this.resetBuffers(options.buffers);
 
@@ -50,11 +76,46 @@ function BufferBuilder(options) {
     }
 }
 
+/**
+ * Build the buffers! Features are set directly to the `features` property.
+ * @private
+ */
+BufferBuilder.prototype.addFeatures = function() {
+    for (var i = 0; i < this.features.length; i++) {
+        this.addFeature(this.features[i]);
+    }
+};
+
+/**
+ * Check if there is enough space available in the current element group for
+ * `vertexLength` vertices. If not, append a new elementGroup. Should be called
+ * by `addFeatures` and its callees.
+ * @private
+ * @param {string} shaderName the name of the shader associated with the buffer that will receive the vertices
+ * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
+ */
+BufferBuilder.prototype.makeRoomFor = function(shaderName, vertexLength) {
+    this.elementGroups[shaderName].makeRoomFor(vertexLength);
+};
+
+/**
+ * Get the name of the generated "add vertex" method for a particular shader.
+ * @private
+ * @param {string} shaderName The name of the shader
+ * @returns {string} The name of the method
+ */
 BufferBuilder.prototype.getAddVertexMethodName = function(shaderName) {
     var shader = this.type.shaders[shaderName];
     return 'add' + capitalize(shader.vertexBuffer);
 };
 
+/**
+ * Get the name of the generated "add element" method for a particular shader.
+ * @private
+ * @param {string} shaderName The name of the shader
+ * @param {bool} isSecond If true, return the name of the method for the second element buffer.
+ * @returns {string} The name of the method
+ */
 BufferBuilder.prototype.getAddElementMethodName = function(shaderName, isSecond) {
     var shader = this.type.shaders[shaderName];
     var bufferName = isSecond ? shader.secondElementBuffer : shader.elementBuffer;
@@ -63,18 +124,14 @@ BufferBuilder.prototype.getAddElementMethodName = function(shaderName, isSecond)
     else return null;
 };
 
-BufferBuilder.prototype.addFeatures = function() {
-    for (var i = 0; i < this.features.length; i++) {
-        this.addFeature(this.features[i]);
-    }
-};
-
-BufferBuilder.prototype.makeRoomFor = function(shaderName, vertexLength) {
-    this.elementGroups[shaderName].makeRoomFor(vertexLength);
-};
-
+/**
+ * Start using a new shared `buffers` object and recreate instances of `Buffer`
+ * as necessary.
+ * @private
+ * @param {Object.<string, Buffer>} buffers
+ */
 BufferBuilder.prototype.resetBuffers = function(buffers) {
-    buffers = buffers || {};
+    this.buffers = buffers;
 
     for (var shaderName in this.type.shaders) {
         var shader = this.type.shaders[shaderName];
@@ -98,10 +155,7 @@ BufferBuilder.prototype.resetBuffers = function(buffers) {
         }
     }
 
-    this.buffers = buffers;
     this.elementGroups = createElementGroups(this.type.shaders, this.buffers);
-
-    return buffers;
 };
 
 function createLayoutProperties(layer, zoom) {

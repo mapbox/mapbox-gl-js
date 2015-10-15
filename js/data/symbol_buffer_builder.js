@@ -23,8 +23,10 @@ var getIconQuads = Quads.getIconQuads;
 
 module.exports = SymbolBufferBuilder;
 
-function SymbolBufferBuilder() {
+function SymbolBufferBuilder(options) {
     BufferBuilder.apply(this, arguments);
+    this.collisionDebug = options.collisionDebug;
+    this.overscaling = options.overscaling;
 }
 
 SymbolBufferBuilder.prototype = util.inherit(BufferBuilder, {});
