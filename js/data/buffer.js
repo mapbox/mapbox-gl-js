@@ -65,13 +65,12 @@ function Buffer(options) {
             return attribute;
         }, this);
 
-        // This is an expensive call. Because we only push things to buffers in
-        // the worker thread, we can skip this call in the "clone an existing
-        // buffer" case.
+        // These are expensive calls. Because we only push things to buffers in
+        // the worker thread, we can skip in the "clone an existing buffer" case.
         this._createPushMethod();
+        this._refreshViews();
     }
 
-    this._refreshViews();
 }
 
 /**
@@ -129,6 +128,8 @@ Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
  * @returns {Object.<string, Array.<number>>}
  */
 Buffer.prototype.get = function(index) {
+    this._refreshViews();
+    
     var item = {};
     var offset = index * this.itemSize;
 
