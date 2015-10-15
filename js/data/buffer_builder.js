@@ -139,7 +139,8 @@ function createVertexAddMethod(shaderName, shader) {
     // Find max arg length of all attribute value functions
     var argCount = 0;
     for (var i = 0; i < shader.attributes.length; i++) {
-        argCount = Math.max(shader.attributes[i].value.length, argCount);
+        var attribute = shader.attributes[i];
+        argCount = Math.max(attribute.value.length, argCount);
     }
 
     var argIds = [];
@@ -148,9 +149,9 @@ function createVertexAddMethod(shaderName, shader) {
     }
 
     var body = '';
+    body += 'var attributes = this.type.shaders.' + shaderName + '.attributes;\n';
     body += 'var elementGroups = this.elementGroups.' + shaderName + ';\n';
     body += 'elementGroups.current.vertexLength++;\n';
-    body += 'var attributes = this.type.shaders.' + shaderName + '.attributes;\n';
     body += 'return this.buffers.' + shader.vertexBuffer + '.push(\n';
 
     for (var k = 0; k < shader.attributes.length; k++) {
