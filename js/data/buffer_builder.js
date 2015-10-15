@@ -17,7 +17,6 @@ BufferBuilder.create = function(options) {
         circle: require('./circle_buffer_builder'),
         symbol: require('./symbol_buffer_builder')
     };
-
     return new Classes[options.layer.type](options);
 };
 
@@ -25,7 +24,6 @@ function BufferBuilder(options) {
     this.type = LayerType[options.layer.type];
     this.layer = options.layer;
     this.layers = [this.layer.id];
-    this.z = options.zoom;
     this.zoom = options.zoom;
     this.overscaling = options.overscaling;
     this.collisionDebug = options.collisionDebug;
@@ -50,7 +48,7 @@ function BufferBuilder(options) {
         var secondElementName = this.getAddElementMethodName(shaderName, true);
 
         this[vertexName] = createVertexAddMethod(shaderName, shader);
-        this[elementName] = createElementAddMethod(shaderName, shader);
+        this[elementName] = createElementAddMethod(shaderName, shader, false);
         this[secondElementName] = createElementAddMethod(shaderName, shader, true);
     }
 }
@@ -81,8 +79,7 @@ BufferBuilder.prototype.makeRoomFor = function(shaderName, vertexLength) {
 BufferBuilder.prototype.resetBuffers = function(buffers) {
     buffers = buffers || {};
 
-    // TODO use for in
-    Object.keys(this.type.shaders).forEach(function(shaderName) {
+    for (var shaderName in this.type.shaders) {
         var shader = this.type.shaders[shaderName];
 
         var vertexBufferName = shader.vertexBuffer;
@@ -102,7 +99,7 @@ BufferBuilder.prototype.resetBuffers = function(buffers) {
         if (secondElementBufferName && !buffers[secondElementBufferName]) {
             buffers[secondElementBufferName] = createElementBuffer(shader.secondElementBufferComponents);
         }
-    }, this);
+    }
 
     this.buffers = buffers;
 
@@ -178,15 +175,14 @@ function createElementAddMethod(shaderName, shader, isSecond) {
 
 function createElementGroups(shaders, buffers) {
     var elementGroups = {};
-    // TODO use for in
-    Object.keys(shaders).forEach(function(shaderName) {
+    for (var shaderName in shaders) {
         var shader = shaders[shaderName];
         elementGroups[shaderName] = new ElementGroups(
             buffers[shader.vertexBuffer],
             buffers[shader.elementBuffer],
             buffers[shader.secondElementBuffer]
         );
-    });
+    }
     return elementGroups;
 }
 
