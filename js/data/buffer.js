@@ -32,8 +32,6 @@ function Buffer(options) {
         this.itemSize = options.itemSize;
         this.length = options.length;
 
-        assert(this.arrayBuffer instanceof ArrayBuffer);
-
     // Create a new Buffer
     } else {
 

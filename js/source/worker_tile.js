@@ -75,13 +75,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             layer = data.layers[sourceLayerId];
             if (!layer) continue;
             if (layer.extent) extent = layer.extent;
-            sortLayerIntoBuckets(layer, buildersBySourceLayer[sourceLayerId]);
+            sortLayerIntoBuilders(layer, buildersBySourceLayer[sourceLayerId]);
         }
     } else { // geojson
-        sortLayerIntoBuckets(data, buildersById);
+        sortLayerIntoBuilders(data, buildersById);
     }
 
-    function sortLayerIntoBuckets(layer, builders) {
+    function sortLayerIntoBuilders(layer, builders) {
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
             for (var id in builders) {
@@ -92,8 +92,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 
     var builders = [],
-        symbolBuckets = this.symbolBuckets = [],
-        otherBuckets = [];
+        symbolBuilders = this.symbolBuilders = [],
+        otherBuilders = [];
 
     for (var id in buildersById) {
         builder = buildersById[id];
@@ -102,20 +102,20 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         builders.push(builder);
 
         if (builder.type.name === 'symbol')
-            symbolBuckets.push(builder);
+            symbolBuilders.push(builder);
         else
-            otherBuckets.push(builder);
+            otherBuilders.push(builder);
     }
 
     var icons = {},
         stacks = {};
 
-    if (symbolBuckets.length > 0) {
+    if (symbolBuilders.length > 0) {
 
         // Get dependencies for symbol builders
-        for (i = symbolBuckets.length - 1; i >= 0; i--) {
-            symbolBuckets[i].updateIcons(icons);
-            symbolBuckets[i].updateFont(stacks);
+        for (i = symbolBuilders.length - 1; i >= 0; i--) {
+            symbolBuilders[i].updateIcons(icons);
+            symbolBuilders[i].updateFont(stacks);
         }
 
         for (var fontName in stacks) {
@@ -141,11 +141,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 
     // immediately parse non-symbol builders (they have no dependencies)
-    for (i = otherBuckets.length - 1; i >= 0; i--) {
-        parseBucket(this, otherBuckets[i]);
+    for (i = otherBuilders.length - 1; i >= 0; i--) {
+        build(this, otherBuilders[i]);
     }
 
-    if (symbolBuckets.length === 0)
+    if (symbolBuilders.length === 0)
         return done();
 
     function gotDependency(err) {
@@ -153,14 +153,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         deps++;
         if (deps === 2) {
             // all symbol builder dependencies fetched; parse them in proper order
-            for (var i = symbolBuckets.length - 1; i >= 0; i--) {
-                parseBucket(tile, symbolBuckets[i]);
+            for (var i = symbolBuilders.length - 1; i >= 0; i--) {
+                build(tile, symbolBuilders[i]);
             }
             done();
         }
     }
 
-    function parseBucket(tile, builder) {
+    function build(tile, builder) {
         var now = Date.now();
         builder.addFeatures(collisionTile, stacks, icons);
         var time = Date.now() - now;
@@ -212,13 +212,13 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     var buffers = {},
         collisionTile = new CollisionTile(angle, pitch);
 
-    for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
-        this.symbolBuckets[i].placeFeatures(collisionTile, buffers, collisionDebug);
+    for (var i = this.symbolBuilders.length - 1; i >= 0; i--) {
+        this.symbolBuilders[i].placeFeatures(collisionTile, buffers, collisionDebug);
     }
 
     return {
         result: {
-            elementGroups: getElementGroups(this.symbolBuckets),
+            elementGroups: getElementGroups(this.symbolBuilders),
             buffers: buffers
         },
         transferables: getTransferables(buffers)
