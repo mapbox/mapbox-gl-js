@@ -7,19 +7,32 @@ function Benchmark(urls, duration, setup, teardown) {
         settings.innerHTML = 'duration: ' + duration;
         document.body.appendChild(settings);
 
+        var table = document.createElement('table');
+
+        var trHead = document.createElement('tr');
+        trHead.innerHTML = (
+            '<th>url</th>' +
+            '<th>95% time</th>' +
+            '<th>average time</th>' +
+            '<th># samples</th>'
+        );
+        table.appendChild(trHead);
+
         for (var i = 0; i < urls.length; i++) {
             var runResults = globalResults[i].map(function(value) { return parseInt(value.toString().trim()) });
             var average = Math.round(Benchmark.util.average(runResults));
             var percentile = Math.round(Benchmark.util.precentile(runResults, 0.95));
-            var div = document.createElement('div');
-            div.innerHTML = (
-                '<strong>' + urls[i] + '</strong> -- ' +
-                '95%: ' + percentile + ' ms, ' +
-                'average: ' + average + ' ms, ' +
-                '# samples: '  + runResults.length + ' '
+            var tr = document.createElement('tr');
+            tr.innerHTML = (
+                '<td>' + urls[i] + '</td>' +
+                '<td>' + percentile + 'ms </td>' +
+                '<td>' + average + 'ms </td>' +
+                '<td>' + runResults.length + '</td>'
             );
-            document.body.appendChild(div);
+            table.appendChild(tr);
         }
+
+        document.body.appendChild(table);
     }
 }
 
