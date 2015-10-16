@@ -16,19 +16,19 @@
             left:0;
             padding:10px;
         }
-        #bucket-stats {
+        #buffer {
             position: absolute;
             top:100px;
             left:0;
             pointer-events: none;
         }
-        #bucket-stats div {
+        #buffer div {
             background-color: #fff;
             padding: 5px 0;
             text-indent: 10px;
             white-space: nowrap;
             text-shadow:
-               -1px -1px 0 #fff,  
+               -1px -1px 0 #fff,
                 1px -1px 0 #fff,
                 -1px 1px 0 #fff,
                  1px 1px 0 #fff;
@@ -41,10 +41,10 @@
 <div id='checkboxes'>
   <input id='debug-checkbox' name='debug' type='checkbox'> <label for='debug'>debug</label><br />
   <input id='collision-debug-checkbox' name='collision-debug' type='checkbox'> <label for='collision-debug'>collision debug</label><br />
-  <input id='bucket-stats-checkbox' name='bucket-stats' type='checkbox'> <label for='bucket-stats'>bucket stats</label>
+  <input id='buffer-checkbox' name='buffer' type='checkbox'> <label for='buffer'>buffer stats</label>
 </div>
 
-<div id='bucket-stats' style="display:none">
+<div id='buffer' style="display:none">
     <em>Waiting for data...</em>
 </div>
 
