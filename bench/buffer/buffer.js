@@ -7,11 +7,17 @@ function Benchmark(urls, duration, setup, teardown) {
         settings.innerHTML = 'duration: ' + duration;
         document.body.appendChild(settings);
 
-        for (var i = 0; i < globalResults.length; i++) {
-            var runResults = globalResults[i];
-            var mean = Math.round(Benchmark.util.mean(runResults));
+        for (var i = 0; i < urls.length; i++) {
+            var runResults = globalResults[i].map(function(value) { return parseInt(value.toString().trim()) });
+            var average = Math.round(Benchmark.util.average(runResults));
+            var percentile = Math.round(Benchmark.util.precentile(runResults, 0.95));
             var div = document.createElement('div');
-            div.innerHTML = mean + ' ms, ' + runResults.length + ' samples for ' + urls[i];
+            div.innerHTML = (
+                '<strong>' + urls[i] + '</strong> -- ' +
+                '95%: ' + percentile + ' ms, ' +
+                'average: ' + average + ' ms, ' +
+                '# samples: '  + runResults.length + ' '
+            );
             document.body.appendChild(div);
         }
     }
@@ -32,7 +38,13 @@ Benchmark.util.scalePixels = function(scale) {
     window.devicePixelRatio *= scale;
 };
 
-Benchmark.util.mean = function(values) {
+Benchmark.util.precentile = function(values, percentile) {
+    var sortedValues = values.slice(0).sort(function(a, b) { return a - b });
+    var index = Math.round(sortedValues.length * percentile);
+    return sortedValues[index];
+};
+
+Benchmark.util.average = function(values) {
     var sum = 0;
     for (var i = 0; i < values.length; i++) {
         sum += values[i];
