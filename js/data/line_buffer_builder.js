@@ -272,7 +272,7 @@ LineBufferBuilder.prototype.addLine = function(vertices, join, cap, miterLimit, 
  *
  * @param {Object} currentVertex the line vertex to add buffer vertices for
  * @param {number} flip -1 if the vertices should be flipped, 1 otherwise
- * @param {number} distance the distance from the beggining of the line to the vertex
+ * @param {number} distance the distance from the beginning of the line to the vertex
  * @param {number} endLeft extrude to shift the left vertex along the line
  * @param {number} endRight extrude to shift the left vertex along the line
  * @param {boolean} round whether this is a round cap
