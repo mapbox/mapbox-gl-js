@@ -2,12 +2,15 @@ var urls = [
     '/dist/mapbox-gl.js',
     'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js',
     '/dist/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js',
+    '/dist/mapbox-gl.js',
     'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js'
 ];
 
-var duration = 30 * 1000;
+var TEST_DURATION = 35 * 1000;
+var WARMUP_DURATION = 5 * 1000;
 
-Benchmark(urls, duration, setup, teardown);
+Benchmark(urls, TEST_DURATION, setup, teardown);
 
 function setup(state, callback) {
 
@@ -29,12 +32,14 @@ function setup(state, callback) {
     state.map = map;
 
     map.on('load', function() {
-        callback();
+        setTimeout(function() {
+            callback();
+        }, WARMUP_DURATION);
     });
 }
 
 function teardown(state, callback) {
-    state.map.repaint = false;
+    state.map.style._remove();
     callback();
 }
 
