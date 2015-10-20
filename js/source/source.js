@@ -17,6 +17,11 @@ exports._loadTileJSON = function(options) {
         util.extend(this, util.pick(tileJSON,
             ['tiles', 'minzoom', 'maxzoom', 'attribution']));
 
+        if (tileJSON.vector_layers) {
+            this.vectorLayers = tileJSON.vector_layers;
+            this.vectorLayerIds = this.vectorLayers.map(function(layer) { return layer.id; });
+        }
+
         this._pyramid = new TilePyramid({
             tileSize: this.tileSize,
             cacheSize: 20,

@@ -76,10 +76,40 @@ function Style(stylesheet, animationLoop) {
     } else {
         browser.frame(loaded.bind(this, null, stylesheet));
     }
+
+    this.on('source.load', function(event) {
+        var source = event.source;
+        if (source && source.vectorLayerIds) {
+            for (var layerId in this._layers) {
+                var layer = this._layers[layerId];
+                if (layer.source === source.id) {
+                    this._validateLayer(layer);
+                }
+            }
+        }
+    });
 }
 
 Style.prototype = util.inherit(Evented, {
     _loaded: false,
+
+    _validateLayer: function(layer) {
+        var source = this.sources[layer.source];
+
+        if (!layer['source-layer']) return;
+        if (!source) return;
+        if (!source.vectorLayerIds) return;
+
+        if (source.vectorLayerIds.indexOf(layer['source-layer']) === -1) {
+            this.fire('error', {
+                error: new Error(
+                    'Source layer "' + layer['source-layer'] + '" ' +
+                    'does not exist on source "' + source.id + '" ' +
+                    'as specified by style layer "' + layer.id + '"'
+                )
+            });
+        }
+    },
 
     loaded: function() {
         if (!this._loaded)

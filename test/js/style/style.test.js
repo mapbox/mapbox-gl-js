@@ -75,6 +75,39 @@ test('Style', function(t) {
         });
     });
 
+    t.test('throws on non-existant vector source layer', function(t) {
+        var style = new Style(createStyleJSON({
+            sources: {
+                '-source-id-': { type: "vector", tiles: [] }
+            },
+            layers: [{
+                'id': '-layer-id-',
+                'type': 'circle',
+                'source': '-source-id-',
+                'source-layer': '-source-layer-'
+            }]
+        }));
+
+        style.on('load', function() {
+            style.removeSource('-source-id-');
+
+            var source = createSource();
+            style.addSource('-source-id-', source);
+            source.vectorLayerIds = ['green'];
+        });
+
+        style.on('error', function(event) {
+            var err = event.error;
+
+            t.ok(err);
+            t.ok(err.toString().indexOf('-source-layer-') !== -1);
+            t.ok(err.toString().indexOf('-source-id-') !== -1);
+            t.ok(err.toString().indexOf('-layer-id-') !== -1);
+
+            t.end();
+        });
+    });
+
     t.test('after', function(t) {
         server.close(t.end);
     });
@@ -315,6 +348,38 @@ test('Style#addLayer', function(t) {
             style.addLayer(layer);
         }, Error, /load/i);
         style.on('load', function() {
+            t.end();
+        });
+    });
+
+    t.test('throws on non-existant vector source layer', function(t) {
+        var style = new Style(createStyleJSON({
+            sources: {
+                // At least one source must be added to trigger the load event
+                dummy: { type: "vector", tiles: [] }
+            }
+        }));
+
+        style.on('load', function() {
+            var source = createSource();
+            style.addSource('-source-id-', source);
+            style.addLayer({
+                'id': '-layer-id-',
+                'type': 'circle',
+                'source': '-source-id-',
+                'source-layer': '-source-layer-'
+            });
+            source.vectorLayerIds = ['green'];
+        });
+
+        style.on('error', function(event) {
+            var err = event.error;
+
+            t.ok(err);
+            t.ok(err.toString().indexOf('-source-layer-') !== -1);
+            t.ok(err.toString().indexOf('-source-id-') !== -1);
+            t.ok(err.toString().indexOf('-layer-id-') !== -1);
+
             t.end();
         });
     });
