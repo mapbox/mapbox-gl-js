@@ -48,6 +48,8 @@ footer:
       path: /maps
     - title: Mapbox Studio
       path: /mapbox-studio
+    - title: Mapbox Studio Classic
+      path: /mapbox-studio-classic
     - title: Mapbox Editor
       path: /editor
     - title: Vector tiles
@@ -62,7 +64,7 @@ footer:
     - title: iOS SDK
       path: /ios-sdk
     - title: Android SDK
-      path: /mapbox-android-sdk
+      path: /android-sdk
     - title: Mapbox GL for JS
       path: /mapbox-gl-js
   industries:
@@ -171,11 +173,25 @@ footer:
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PQR37Z" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PQR37Z');</script>
 <!-- End Google Tag Manager -->
+
+
+
 <div class='page-content'>
+
+{% if page.title == 'Mapbox Studio' %}
+  <div class='fill-cyan dark pad1y pad8x small center hide-mobile' id='classic-download'>
+    <div class='pad0y'>
+      <span class='icon info quiet'></span>Mapbox Studio for desktop is now Mapbox Studio Classic. <a href='/mapbox-studio-classic'>Looking to upgrade Mapbox Studio Classic?</a>
+      <a class='fr' onclick="document.getElementById('classic-download').style.display='none'; return false" href=''><span class='icon close'></span></a>
+    </div>
+  </div>
+
+{% endif %}
+
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %}' data-swiftype-index='false'>
+<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.url contains '/welcome' %}light-nav keyline-bottom{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -189,7 +205,7 @@ footer:
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
 
-{% unless page.url contains '/hello/directions' %}
+{% unless page.url contains '/hello/directions'  or page.url contains '/welcome'  %}
 <div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
 
   <div class='limiter clearfix'>
@@ -265,7 +281,7 @@ footer:
 </div>
 {% endunless %}
 
-{% if page.url contains '/hello/directions' %}
+{% if page.url contains '/hello/directions' or  page.url contains '/welcome' %}
 
 <div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
     <a href='{{site.url}}/tos'>Terms</a> +
