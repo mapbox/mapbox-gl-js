@@ -110,11 +110,11 @@ Tile.prototype = {
             return;
         }
 
-        this.buffers.glyphVertex.destroy(painter.gl);
-        this.buffers.glyphElement.destroy(painter.gl);
-        this.buffers.iconVertex.destroy(painter.gl);
-        this.buffers.iconElement.destroy(painter.gl);
-        this.buffers.collisionBoxVertex.destroy(painter.gl);
+        if (this.buffers.glyphVertex) this.buffers.glyphVertex.destroy(painter.gl);
+        if (this.buffers.glyphElement) this.buffers.glyphElement.destroy(painter.gl);
+        if (this.buffers.iconVertex) this.buffers.iconVertex.destroy(painter.gl);
+        if (this.buffers.iconElement) this.buffers.iconElement.destroy(painter.gl);
+        if (this.buffers.collisionBoxVertex) this.buffers.collisionBoxVertex.destroy(painter.gl);
 
         var buffers = unserializeBuffers(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
