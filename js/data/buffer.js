@@ -2,7 +2,6 @@
 
 // Note: all "sizes" are measured in bytes
 
-var util = require('../util/util');
 var assert = require('assert');
 
 /**
@@ -46,26 +45,30 @@ function Buffer(options) {
         // element buffer attributes do not need to be aligned.
         var attributeAlignment = this.type === Buffer.BufferType.VERTEX ? Buffer.VERTEX_ATTRIBUTE_ALIGNMENT : 1;
 
-        for (var i = 0; i < options.attributes.length; i++) {
-            var attribute = util.extend({}, options.attributes[i]);
+        this.attributes = options.attributes.map(function(attributeOptions) {
+            var attribute = {};
 
-            attribute.components = attribute.components || 1;
-            attribute.type = attribute.type || Buffer.AttributeType.UNSIGNED_BYTE;
-
+            attribute.name = attributeOptions.name;
+            attribute.components = attributeOptions.components || 1;
+            attribute.type = attributeOptions.type || Buffer.AttributeType.UNSIGNED_BYTE;
             attribute.size = attribute.type.size * attribute.components;
             attribute.offset = this.itemSize;
 
-            this.attributes.push(attribute);
             this.itemSize = align(attribute.offset + attribute.size, attributeAlignment);
 
             assert(!isNaN(this.itemSize));
             assert(!isNaN(attribute.size));
             assert(attribute.type.name in Buffer.AttributeType);
-        }
 
+            return attribute;
+        }, this);
+
+        // These are expensive calls. Because we only push things to buffers in
+        // the worker thread, we can skip in the "clone an existing buffer" case.
         this._createPushMethod();
         this._refreshViews();
     }
+
 }
 
 /**
@@ -117,12 +120,14 @@ Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
 };
 
 /**
- * Get an item from the `ArrayBuffer`.
+ * Get an item from the `ArrayBuffer`. Only used for debugging.
  * @private
  * @param {number} index The index of the item to get
  * @returns {Object.<string, Array.<number>>}
  */
 Buffer.prototype.get = function(index) {
+    this._refreshViews();
+
     var item = {};
     var offset = index * this.itemSize;
 
@@ -136,6 +141,23 @@ Buffer.prototype.get = function(index) {
         }
     }
     return item;
+};
+
+/**
+ * Check that a buffer item is well formed and throw an error if not. Only
+ * used for debugging.
+ * @private
+ * @param {number} args The "arguments" object from Buffer::push
+ */
+Buffer.prototype.validate = function(args) {
+    assert(args.length === this.attributes.length);
+    for (var i = 0; i < args.length; i++) {
+        var attribute = this.attributes[i];
+        assert(args[i].length === attribute.components);
+        for (var j = 0; j < attribute.components; j++) {
+            assert(!isNaN(args[i][j]));
+        }
+    }
 };
 
 Buffer.prototype._resize = function(capacity) {
@@ -157,7 +179,7 @@ Buffer.prototype._refreshViews = function() {
 
 Buffer.prototype._createPushMethod = function() {
     var body = '';
-    var argNames = [];
+    var argIds = [];
 
     body += 'var index = this.length++;\n';
     body += 'var offset = index * ' + this.itemSize + ';\n';
@@ -166,22 +188,21 @@ Buffer.prototype._createPushMethod = function() {
     for (var i = 0; i < this.attributes.length; i++) {
         var attribute = this.attributes[i];
         var offsetId = 'offset' + i;
+        var argId = 'value' + i;
+        argIds.push(argId);
 
         body += '\nvar ' + offsetId + ' = (offset + ' + attribute.offset + ') / ' + attribute.type.size + ';\n';
 
         for (var j = 0; j < attribute.components; j++) {
-            var valueId = 'value' + i + '_' + j;
+            var rvalue = argId + '[' + j + ']';
             var lvalue = 'this.views.' + attribute.type.name + '[' + offsetId + ' + ' + j + ']';
-
-            body += lvalue + ' = ' + valueId + ';\n';
-
-            argNames.push(valueId);
+            body += lvalue + ' = ' + rvalue + ';\n';
         }
     }
 
     body += '\nreturn index;\n';
 
-    this.push = new Function(argNames, body);
+    this.push = new Function(argIds, body);
 };
 
 /**

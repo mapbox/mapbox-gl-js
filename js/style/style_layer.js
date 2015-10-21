@@ -132,7 +132,9 @@ StyleLayer.prototype = {
 
         this.hidden = (this.minzoom && z < this.minzoom) ||
                       (this.maxzoom && z >= this.maxzoom) ||
-                      // include visibility check for non-bucketed background layers
+                      // include visibility check for background layers, which
+                      // is not done in the worker because it does not require
+                      // any buffers.
                       (this.layout.visibility === 'none');
 
         if (type === 'symbol') {

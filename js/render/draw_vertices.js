@@ -20,7 +20,7 @@ function drawVertices(painter, layer, posMatrix, tile) {
         drawPoints(tile.buffers.fillVertex, elementGroups.groups, posMatrix);
     } else if (layer.type === 'symbol') {
         drawPoints(tile.buffers.iconVertex, elementGroups.icon.groups, posMatrix);
-        drawPoints(tile.buffers.glyphVertex, elementGroups.text.groups, posMatrix);
+        drawPoints(tile.buffers.glyphVertex, elementGroups.glyph.groups, posMatrix);
     } else if (layer.type === 'line') {
         var newPosMatrix = mat4.clone(posMatrix);
         mat4.scale(newPosMatrix, newPosMatrix, [0.5, 0.5, 1]);

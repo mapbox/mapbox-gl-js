@@ -2,7 +2,7 @@
 
 var mat4 = require('gl-matrix').mat4;
 var util = require('../util/util');
-var BufferSet = require('../data/buffer_set');
+var Buffer = require('../data/buffer');
 
 module.exports = Tile;
 
@@ -90,7 +90,7 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
-        this.buffers = new BufferSet(data.buffers);
+        this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
         this.tileExtent = data.extent;
     },
@@ -110,13 +110,13 @@ Tile.prototype = {
             return;
         }
 
-        this.buffers.glyphVertex.destroy(painter.gl);
-        this.buffers.glyphElement.destroy(painter.gl);
-        this.buffers.iconVertex.destroy(painter.gl);
-        this.buffers.iconElement.destroy(painter.gl);
-        this.buffers.collisionBoxVertex.destroy(painter.gl);
+        if (this.buffers.glyphVertex) this.buffers.glyphVertex.destroy(painter.gl);
+        if (this.buffers.glyphElement) this.buffers.glyphElement.destroy(painter.gl);
+        if (this.buffers.iconVertex) this.buffers.iconVertex.destroy(painter.gl);
+        if (this.buffers.iconElement) this.buffers.iconElement.destroy(painter.gl);
+        if (this.buffers.collisionBoxVertex) this.buffers.collisionBoxVertex.destroy(painter.gl);
 
-        var buffers = new BufferSet(data.buffers);
+        var buffers = unserializeBuffers(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
         this.buffers.glyphElement = buffers.glyphElement;
         this.buffers.iconVertex = buffers.iconVertex;
@@ -172,3 +172,11 @@ Tile.prototype = {
 
     }
 };
+
+function unserializeBuffers(input) {
+    var output = {};
+    for (var k in input) {
+        output[k] = new Buffer(input[k]);
+    }
+    return output;
+}
