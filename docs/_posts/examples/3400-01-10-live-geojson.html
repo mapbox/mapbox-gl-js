@@ -1,0 +1,35 @@
+---
+layout: example
+category: example
+title: GeoJSON from live realtime data
+description: Moving a marker based on an API response of GeoJSON data.
+---
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    zoom: 0
+});
+
+var url = 'https://wanderdrone.appspot.com/';
+var source = new mapboxgl.GeoJSONSource({
+    data: url
+});
+window.setInterval(function() {
+    source.setData(url);
+}, 2000);
+
+map.on('style.load', function () {
+    map.addSource('drone', source);
+    map.addLayer({
+        "id": "drone",
+        "type": "symbol",
+        "source": "drone",
+        "layout": {
+            "icon-image": "rocket-15",
+        }
+    });
+});
+</script>
