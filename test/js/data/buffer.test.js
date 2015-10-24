@@ -50,8 +50,8 @@ test('Buffer', function(t) {
 
         t.equal(buffer.length, 2);
 
-        t.deepEqual(buffer.get(0), {"map": [1], "box": [7, 3]});
-        t.deepEqual(buffer.get(1), {"map": [4], "box": [2, 5]});
+        t.deepEqual(buffer.get(0), {map: [1], box: [7, 3]});
+        t.deepEqual(buffer.get(1), {map: [4], box: [2, 5]});
 
         t.end();
     });

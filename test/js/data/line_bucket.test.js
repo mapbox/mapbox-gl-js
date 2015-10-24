@@ -7,15 +7,16 @@ var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
 var LineBucket = require('../../../js/data/line_bucket');
-var BufferSet = require('../../../js/data/buffer_set');
 
 // Load a line feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
 var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
-    var buffers = new BufferSet();
-    var bucket = new LineBucket(buffers, {});
+    var bucket = new LineBucket({
+        buffers: {},
+        layer: { id: 'test', type: 'line', layout: {} }
+    });
     t.ok(bucket);
 
     var pointWithScale = new Point(0, 0);
@@ -46,7 +47,7 @@ test('LineBucket', function(t) {
         new Point(0, 0)
     ]), undefined);
 
-    t.equal(bucket.addFeature(feature.loadGeometry()), undefined);
+    t.equal(bucket.addFeature(feature), undefined);
 
     t.end();
 });

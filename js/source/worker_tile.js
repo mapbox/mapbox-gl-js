@@ -2,8 +2,7 @@
 
 var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
-var BufferSet = require('../data/buffer_set');
-var createBucket = require('../data/create_bucket');
+var Bucket = require('../data/bucket');
 
 module.exports = WorkerTile;
 
@@ -26,7 +25,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
     var tile = this,
-        buffers = new BufferSet(),
+        buffers = {},
         collisionTile = new CollisionTile(this.angle, this.pitch),
         bucketsById = {},
         bucketsBySourceLayer = {},
@@ -43,7 +42,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
                 layer.layout.visibility === 'none')
             continue;
 
-        bucket = createBucket(layer, buffers, this.zoom, this.overscaling, this.collisionDebug);
+        bucket = Bucket.create({
+            layer: layer,
+            buffers: buffers,
+            zoom: this.zoom,
+            overscaling: this.overscaling,
+            collisionDebug: this.collisionDebug
+        });
         bucket.layers = [layer.id];
 
         bucketsById[layer.id] = bucket;
@@ -205,7 +210,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
         return {};
     }
 
-    var buffers = new BufferSet(),
+    var buffers = {},
         collisionTile = new CollisionTile(angle, pitch);
 
     for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
