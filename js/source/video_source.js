@@ -13,7 +13,7 @@ module.exports = VideoSource;
  * Create a Video data source instance given an options object
  * @class VideoSource
  * @param {Object} [options]
- * @param {string|Array} options.url A string or array of URL(s) to video files
+ * @param {Array<string>} options.urls An array of URLs to video files
  * @param {Array} options.coordinates lng, lat coordinates in order clockwise starting at the top left: tl, tr, br, bl
  * @example
  * var sourceObj = new mapboxgl.VideoSource({
