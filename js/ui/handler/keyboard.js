@@ -4,7 +4,8 @@ module.exports = Keyboard;
 
 
 var panDelta = 80,
-    rotateDelta = 2;
+    rotateDelta = 2,
+    pitchDelta = 5;
 
 /**
  * The `Keyboard` handler responds to keyboard input by zooming, rotating, or panning the
@@ -76,11 +77,19 @@ Keyboard.prototype = {
             break;
 
         case 38:
-            map.panBy([0, -panDelta]);
+            if (e.shiftKey) {
+                map.setPitch(map.getPitch() + pitchDelta);
+            } else {
+                map.panBy([0, -panDelta]);
+            }
             break;
 
         case 40:
-            map.panBy([0, panDelta]);
+            if (e.shiftKey) {
+                map.setPitch(Math.max(map.getPitch() - pitchDelta, 0));
+            } else {
+                map.panBy([0, panDelta]);
+            }
             break;
         }
     }
