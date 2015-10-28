@@ -75,6 +75,7 @@ map.on('style.load', function() {
 });
 
 map.on('click', function(e) {
+    if (e.originalEvent.shiftKey) return;
     (new mapboxgl.Popup())
         .setLngLat(map.unproject(e.point))
         .setHTML("<h1>Hello World!</h1>")

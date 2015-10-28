@@ -66,6 +66,8 @@ BoxZoom.prototype = {
 
         this._finish();
 
+        if (p0.x === p1.x && p0.y === p1.y) return;
+
         this._map
             .fitBounds(bounds, {linear: true})
             .fire('boxzoomend', {boxZoomBounds: bounds});
@@ -79,8 +81,6 @@ BoxZoom.prototype = {
     },
 
     _finish: function () {
-        if (!this._box) return;
-
         this.active = false;
 
         document.removeEventListener('mousemove', this._onMouseMove, false);
@@ -89,8 +89,10 @@ BoxZoom.prototype = {
 
         this._container.classList.remove('mapboxgl-crosshair');
 
-        this._box.parentNode.removeChild(this._box);
-        this._box = null;
+        if (this._box) {
+            this._box.parentNode.removeChild(this._box);
+            this._box = null;
+        }
 
         DOM.enableDrag();
     }
