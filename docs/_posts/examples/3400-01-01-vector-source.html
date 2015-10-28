@@ -14,14 +14,14 @@ var map = new mapboxgl.Map({
 });
 
 map.on('style.load', function () {
-    map.addSource('contours', {
+    map.addSource('terrain-data', {
         type: 'vector',
         url: 'mapbox://mapbox.mapbox-terrain-v2'
     });
     map.addLayer({
-        "id": "contours",
+        "id": "terrain-data",
         "type": "line",
-        "source": "contours",
+        "source": "terrain-data",
         "source-layer": "contour",
         "layout": {
             "line-join": "round",
