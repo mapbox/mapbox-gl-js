@@ -17,6 +17,8 @@ var panDelta = 80,
  *  * Arrow keys: pan by 80 pixels
  *  * `Shift+⇢`: increase rotation by 2 degrees
  *  * `Shift+⇠`: decrease rotation by 2 degrees
+ *  * `Shift+⇡`: increase pitch by 5 degrees
+ *  * `Shift+⇣`: decrease pitch by 5 degrees
  * @class Keyboard
  * @example
  *   // Disable the keyboard handler
