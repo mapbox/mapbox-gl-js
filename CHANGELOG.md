@@ -12,6 +12,7 @@ An in-progress version being developed in the `master` branch.
 * Fix layer minZoom being ignored if not less than source maxZoom
 * Fix symbol placement at the start of a line (#1461)
 * Fix `raster-opacity` on non-tile sources (#1270)
+* Ignore boxzoom on shift-click (#1655)
 
 #### UX Improvements
 
