@@ -64,7 +64,7 @@ Keyboard.prototype = {
 
         case 37:
             if (e.shiftKey) {
-                map.setBearing(map.getBearing() - rotateDelta);
+                map.easeTo({ bearing: map.getBearing() - rotateDelta });
             } else {
                 map.panBy([-panDelta, 0]);
             }
@@ -72,7 +72,7 @@ Keyboard.prototype = {
 
         case 39:
             if (e.shiftKey) {
-                map.setBearing(map.getBearing() + rotateDelta);
+                map.easeTo({ bearing: map.getBearing() + rotateDelta });
             } else {
                 map.panBy([panDelta, 0]);
             }
@@ -80,7 +80,7 @@ Keyboard.prototype = {
 
         case 38:
             if (e.shiftKey) {
-                map.setPitch(map.getPitch() + pitchDelta);
+                map.easeTo({ pitch: map.getPitch() + pitchDelta });
             } else {
                 map.panBy([0, -panDelta]);
             }
@@ -88,7 +88,7 @@ Keyboard.prototype = {
 
         case 40:
             if (e.shiftKey) {
-                map.setPitch(Math.max(map.getPitch() - pitchDelta, 0));
+                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) });
             } else {
                 map.panBy([0, panDelta]);
             }
