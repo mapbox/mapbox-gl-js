@@ -68,6 +68,33 @@ module.exports = Interaction;
  * @type {Object}
  */
 
+/**
+ * Move start event. This event is emitted just before the map begins a transition from one
+ * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event movestart
+ * @memberof Map
+ * @type {Object}
+ */
+
+/**
+ * Move event. This event is emitted repeatedly during animated transitions from one view to
+ * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event move
+ * @memberof Map
+ * @type {Object}
+ */
+
+/**
+ * Move end event. This event is emitted just after the map completes a transition from one
+ * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event moveend
+ * @memberof Map
+ * @type {Object}
+ */
+
 function Interaction(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
