@@ -30,21 +30,16 @@ Navigation.prototype = util.inherit(Control, {
 
         this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
-        this._compass = this._createButton(className + '-compass', map.resetNorth.bind(map));
+        this._compass = this._createButton(className + '-icon ' + className + '-compass', map.resetNorth.bind(map));
 
-        var compassCanvas = this._compassCanvas = DOM.create('canvas', className + '-compass-canvas', this._compass);
-        compassCanvas.style.cssText = 'width:30px; height:30px;';
-        compassCanvas.width = 26 * 2;
-        compassCanvas.height = 26 * 2;
+        this._compassArrow = DOM.create('div', 'arrow', this._compass);
 
         this._compass.addEventListener('mousedown', this._onCompassDown.bind(this));
         this._onCompassMove = this._onCompassMove.bind(this);
         this._onCompassUp = this._onCompassUp.bind(this);
 
-        this._compassCtx = compassCanvas.getContext('2d');
-
-        map.on('rotate', this._drawNorth.bind(this));
-        this._drawNorth();
+        map.on('rotate', this._rotateCompassArrow.bind(this));
+        this._rotateCompassArrow();
 
         return container;
     },
@@ -93,38 +88,8 @@ Navigation.prototype = util.inherit(Control, {
         return a;
     },
 
-    _drawNorth: function() {
-        var rad = 20,
-            width = 8,
-            center = 26,
-            angle = this._map.transform.angle + (Math.PI / 2),
-            ctx = this._compassCtx;
-
-        this._compassCanvas.width = this._compassCanvas.width;
-
-        ctx.translate(center, center);
-        ctx.rotate(angle);
-
-        ctx.beginPath();
-        ctx.fillStyle = '#000';
-        ctx.lineTo(0, -width);
-        ctx.lineTo(-rad, 0);
-        ctx.lineTo(0, width);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.fillStyle = '#bbb';
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, width);
-        ctx.lineTo(rad, 0);
-        ctx.lineTo(0, -width);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        ctx.moveTo(0, -width);
-        ctx.lineTo(0, width);
-        ctx.stroke();
+    _rotateCompassArrow: function() {
+        var rotate = 'rotate(' + (this._map.transform.angle * (180 / Math.PI)) + 'deg)';
+        this._compassArrow.style.transform = rotate;
     }
 });

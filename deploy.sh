@@ -18,5 +18,3 @@ gzipped_cp mapbox-gl.js     application/javascript
 gzipped_cp mapbox-gl.js.map application/octet-stream
 gzipped_cp mapbox-gl-dev.js application/javascript
 gzipped_cp mapbox-gl.css    text/css
-
-aws s3 cp --recursive --acl public-read --cache-control max-age=2592000 dist/font/ s3://mapbox/mapbox-gl-js/$1/font/
