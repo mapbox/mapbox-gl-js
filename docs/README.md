@@ -4,7 +4,7 @@ Mapbox GL JS has [API documentation](#api-documentation) and [examples](#example
 
 API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with [documentationjs](http://documentation.js.org/). We aim to document all classes and methods, public and private. Mark private classes and methods with `@private`.
 
-Any interface not explicitly marked as `@private` will be displayed on the official [Mapbox GL JS documentation page](https://www.mapbox.com/mapbox-gl-js/api/). Internal interfaces can and should be documentated with JSDoc comments but must be marked as `@private`.
+Any interface not explicitly marked as `@private` will be displayed on the official [Mapbox GL JS documentation page](https://www.mapbox.com/mapbox-gl-js/api/). Internal interfaces can and should be documented with JSDoc comments but must be marked as `@private`.
 
 References:
 

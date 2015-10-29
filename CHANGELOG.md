@@ -24,7 +24,7 @@ An in-progress version being developed in the `master` branch.
 * Add `Transform#resize` method
 * Add `Map#getLayer` method (#1183)
 * Add `Transform#unmodified` property (#1452)
-* Propogate WebGL context events (#1612)
+* Propagate WebGL context events (#1612)
 
 ## 0.11.1 (Sep 30 2015)
 
@@ -73,7 +73,7 @@ An in-progress version being developed in the `master` branch.
 
 * Switched to [longitude, latitude] coordinate order, matching GeoJSON. We anticipate that mapbox-gl-js will be widely used
   with GeoJSON, and in the long term having a coordinate order that is consistent with GeoJSON will lead to less confusion
-  and impedence mismatch than will a [latitude, longitude] order.
+  and impedance mismatch than will a [latitude, longitude] order.
 
   The following APIs were renamed:
 
@@ -104,7 +104,7 @@ An in-progress version being developed in the `master` branch.
 * Mapbox default styles are now hosted via the Styles API rather than www.mapbox.com. You can make use of the Styles API
   with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://styles/mapbox/streets-v8`.
 * The v8 satellite style (`mapbox://styles/mapbox/satellite-v8`) is now a plain satellite style, and not longer supports labels
-  or countour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
+  or contour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
 
 * Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
 * Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
@@ -214,7 +214,7 @@ An in-progress version being developed in the `master` branch.
 * Fix cracks between fill patterns (#972)
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
-* Fix icon artifacts caused by sprite neighbours (#1195)
+* Fix icon artifacts caused by sprite neighbors (#1195)
 
 #### API Bugfixes
 
@@ -396,7 +396,7 @@ An in-progress version being developed in the `master` branch.
 - Added support for remote, non-Mapbox TileJSON sources and inline TileJSON sources (#535, #698).
 - Added support for `symbol-avoid-edges` property to allow labels to be placed across tile edges.
 - Fixed mkdir issue on Windows (#674).
-- Fixed drawing bevelled line joins without overlap.
+- Fixed drawing beveled line joins without overlap.
 
 #### Bugfixes
 
@@ -458,7 +458,7 @@ and gets added with `map.addControl(nav)` or `nav.addTo(map)`.
 - Fixed compass control to rotate its icon with the map.
 - Fixed navigation control cursors.
 - Fixed inertia going to the wrong direction in a rotated map.
-- Fixed inertia race condition where error was sometimes throwed after erratic panning/zooming.
+- Fixed inertia race condition where error was sometimes thrown after erratic panning/zooming.
 
 
 ## 0.2.0 (Aug 6 2014)
