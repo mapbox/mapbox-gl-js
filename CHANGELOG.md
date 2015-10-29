@@ -2,6 +2,29 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.11.2 (Oct 29 2015)
+
+* Misc performance improvements
+
+#### Bugfixes
+
+* Fix sprites on systems with non-integer `devicePixelRatio`s (#1029 #1475 #1476)
+* Fix layer minZoom being ignored if not less than source maxZoom
+* Fix symbol placement at the start of a line (#1461)
+* Fix `raster-opacity` on non-tile sources (#1270)
+
+#### UX Improvements
+
+* Enable line breaks on common punctuation (#1115)
+
+#### API Improvements
+
+* Add toString and toArray methods to LngLat, LngLatBounds (#1571)
+* Add `Transform#resize` method
+* Add `Map#getLayer` method (#1183)
+* Add `Transform#unmodified` property (#1452)
+* Propogate WebGL context events (#1612)
+
 ## 0.11.1 (Sep 30 2015)
 
 #### Bugfixes
