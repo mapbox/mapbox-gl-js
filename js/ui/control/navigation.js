@@ -80,6 +80,8 @@ Navigation.prototype = util.inherit(Control, {
         if (this._moved) {
             this._moved = false;
             DOM.suppressClick();
+        } else {
+            this._map.setPitch(0);
         }
 
         this._map.snapToNorth();
