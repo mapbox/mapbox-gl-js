@@ -1,8 +1,8 @@
 var urls = [
     '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js',
     '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.js'
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js'
 ];
 
 var duration = 30 * 1000;
