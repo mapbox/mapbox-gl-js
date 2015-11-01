@@ -7,8 +7,8 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.0/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
@@ -72,14 +72,9 @@ $ npm start &
 $ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
 ```
 
-## [API Documentation](https://www.mapbox.com/mapbox-gl-js/)
+## Writing Documentation
 
-API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with
-[documentationjs](http://documentation.js.org/). We aim to document all classes and methods,
-public and private. Mark private classes and methods with `@private`.
-
-To generate the HTML documentation from JSDoc, run `npm run docs`. To view the result, run
-`jekyll serve` (requires [Jekyll](http://jekyllrb.com/)).
+See [docs/README.md](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
 ## Releasing
 

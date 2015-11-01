@@ -45,29 +45,29 @@ SymbolBucket.prototype.addFeatures = function(collisionTile) {
         verticalAlign = 0.5;
 
     switch (layout['text-anchor']) {
-        case 'right':
-        case 'top-right':
-        case 'bottom-right':
-            horizontalAlign = 1;
-            break;
-        case 'left':
-        case 'top-left':
-        case 'bottom-left':
-            horizontalAlign = 0;
-            break;
+    case 'right':
+    case 'top-right':
+    case 'bottom-right':
+        horizontalAlign = 1;
+        break;
+    case 'left':
+    case 'top-left':
+    case 'bottom-left':
+        horizontalAlign = 0;
+        break;
     }
 
     switch (layout['text-anchor']) {
-        case 'bottom':
-        case 'bottom-right':
-        case 'bottom-left':
-            verticalAlign = 1;
-            break;
-        case 'top':
-        case 'top-right':
-        case 'top-left':
-            verticalAlign = 0;
-            break;
+    case 'bottom':
+    case 'bottom-right':
+    case 'bottom-left':
+        verticalAlign = 1;
+        break;
+    case 'top':
+    case 'top-right':
+    case 'top-left':
+        verticalAlign = 0;
+        break;
     }
 
     var justify = layout['text-justify'] === 'right' ? 1 :

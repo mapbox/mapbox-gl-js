@@ -2,7 +2,7 @@
 
 var Map = require('../js/ui/map');
 var browser = require('../js/util/browser');
-var suite = require('mapbox-gl-test-suite').render;
+var suite = require('mapbox-gl-test-suite').query;
 
 var tests;
 
@@ -29,8 +29,6 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
         interactive: false,
         attributionControl: false
     });
-
-    var gl = map.painter.gl;
 
     map.painter.prepareBuffers = function() {
         var gl = this.gl;
@@ -67,26 +65,18 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
     };
 
     map.once('load', function() {
-        var w = options.width * browser.devicePixelRatio,
-            h = options.height * browser.devicePixelRatio;
-
-        var data = new Buffer(w * h * 4);
-        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-        map.remove();
-        gl.destroy();
-
-        // Flip the scanlines.
-        var stride = w * 4;
-        var tmp = new Buffer(stride);
-        for (var i = 0, j = h - 1; i < j; i++, j--) {
-            var start = i * stride;
-            var end = j * stride;
-            data.copy(tmp, 0, start, start + stride);
-            data.copy(data, start, end, end + stride);
-            tmp.copy(data, end);
+        function done(err, results) {
+            if (err) return callback(err);
+            callback(null, results.map(function (r) {
+                delete r.layer;
+                return r;
+            }));
         }
 
-        callback(null, data);
+        if (options.at) {
+            map.featuresAt(options.at, options, done);
+        } else {
+            map.featuresIn(options.in, options, done);
+        }
     });
 });

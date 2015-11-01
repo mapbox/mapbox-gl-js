@@ -102,7 +102,7 @@ test('featuretree rect query', function(t) {
         source: "mapbox.mapbox-streets-v5",
         scale: 724.0773439350247,
         params: {
-          includeGeometry: true
+            includeGeometry: true
         },
         minX: 0,
         minY: 3072,
@@ -118,12 +118,12 @@ test('featuretree rect query', function(t) {
             t.notEqual(f.properties.osm_id, undefined, 'properties has osm_id by default');
             var points = Array.prototype.concat.apply([], f.geometry.coordinates);
             var isInBox = points.reduce(function (isInBox, point) {
-              return isInBox || (
-                point[0] >= -78.9
-                && point[0] <= -72.6
-                && point[1] >= 40.7
-                && point[1] <= 43.2
-              );
+                return isInBox || (
+                    point[0] >= -78.9 &&
+                    point[0] <= -72.6 &&
+                    point[1] >= 40.7 &&
+                    point[1] <= 43.2
+                );
             }, false);
             t.ok(isInBox, 'feature has at least one point in queried box');
         });

@@ -424,39 +424,39 @@ test('TilePyramid#tilesIn', function (t) {
     ]);
 
     var tiles = pyramid.tilesIn([
-      new Coordinate(0.5, 0.25, 1),
-      new Coordinate(1.5, 0.75, 1)
+        new Coordinate(0.5, 0.25, 1),
+        new Coordinate(1.5, 0.75, 1)
     ]);
 
     tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
     tiles.forEach(function (result) { delete result.tile.uid; });
 
     t.deepEqual(tiles, [
-    {
-      tile: {
-        coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
-        loaded: true,
-        uses: 1,
-        tileSize: 512
-      },
-      minX: 2048,
-      maxX: 6144,
-      minY: 1024,
-      maxY: 3072
-    },
-    {
-      tile: {
-        coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
-        loaded: true,
-        uses: 1,
-        tileSize: 512
-      },
-      minX: -2048,
-      maxX: 2048,
-      minY: 1024,
-      maxY: 3072
-    }
-  ]);
+        {
+            tile: {
+                coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
+                loaded: true,
+                uses: 1,
+                tileSize: 512
+            },
+            minX: 2048,
+            maxX: 6144,
+            minY: 1024,
+            maxY: 3072
+        },
+        {
+            tile: {
+                coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
+                loaded: true,
+                uses: 1,
+                tileSize: 512
+            },
+            minX: -2048,
+            maxX: 2048,
+            minY: 1024,
+            maxY: 3072
+        }
+    ]);
 
     t.end();
 });

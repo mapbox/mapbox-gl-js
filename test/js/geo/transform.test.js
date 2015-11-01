@@ -113,14 +113,26 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('lngRange', function(t) {
+    t.test('lngRange & latRange constrain zoom and center', function(t) {
         var transform = new Transform();
+        transform.center = new LngLat(0, 0);
+        transform.zoom = 10;
         transform.width = 500;
         transform.height = 500;
-        transform.lngRange = [-10, 10];
-        t.equal(transform.tileZoom, 0);
-        t.equal(transform.tileZoom, transform.zoom);
-        t.equal(transform.zoom, 0);
+
+        transform.lngRange = [-5, 5];
+        transform.latRange = [-5, 5];
+
+        transform.zoom = 0;
+        t.equal(transform.zoom, 5.135709286104402);
+
+        transform.center = new LngLat(-50, -30);
+        t.same(transform.center, new LngLat(0, -0.006358305286099153));
+
+        transform.zoom = 10;
+        transform.center = new LngLat(-50, -30);
+        t.same(transform.center, new LngLat(-4.828338623046875, -4.828969771321582));
+
         t.end();
     });
 });

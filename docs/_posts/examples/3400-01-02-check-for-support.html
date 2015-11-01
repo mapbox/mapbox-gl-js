@@ -4,17 +4,16 @@ category: example
 title: Check for support
 description: Check for Mapbox GL browser support
 ---
-
 <div id='map'></div>
 <script>
 if (!mapboxgl.supported()) {
-  alert('Your browser does not support Mapbox GL');
+    alert('Your browser does not support Mapbox GL');
 } else {
-  var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
-    center: [-74.50, 40],
-    zoom: 9
-  });
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v8',
+        center: [-74.50, 40],
+        zoom: 9
+    });
 }
 </script>

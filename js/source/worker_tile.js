@@ -190,6 +190,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, dz, xPos, y
                 self.bucketStats._total += time;
                 self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
             }
+            bucket.features = null;
         }
 
         remaining--;
@@ -231,7 +232,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, dz, xPos, y
         callback(null, {
             elementGroups: elementGroups,
             buffers: buffers,
-            extent: extent
+            extent: extent,
+            bucketStats: typeof self !== 'undefined' ? self.bucketStats : null
         }, transferables);
     }
 };

@@ -49,6 +49,8 @@ DragPan.prototype = {
         var map = this._map;
         if (map.boxZoom.active || map.dragRotate.active || (e.touches && e.touches.length > 1)) return;
 
+        this.active = true;
+
         var pos = DOM.mousePos(this._el, e),
             inertia = this._inertia,
             now = Date.now();
@@ -95,6 +97,8 @@ DragPan.prototype = {
             easing: inertiaEasing,
             noMoveStart: true
         });
+
+        this.active = false;
     },
 
     _onMouseUp: function () {

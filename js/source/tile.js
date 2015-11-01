@@ -77,8 +77,8 @@ Tile.prototype = {
     positionAt: function(coord, sourceMaxZoom) {
         coord = coord.zoomTo(Math.min(this.coord.z, sourceMaxZoom));
         return {
-            x: (coord.column - this.coord.x) * 4096,
-            y: (coord.row - this.coord.y) * 4096,
+            x: (coord.column - this.coord.x) * this.tileExtent,
+            y: (coord.row - this.coord.y) * this.tileExtent,
             scale: this.scale
         };
     },

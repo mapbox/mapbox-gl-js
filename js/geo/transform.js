@@ -91,6 +91,12 @@ Transform.prototype = {
         this._constrain();
     },
 
+    get center() { return this._center; },
+    set center(center) {
+        this._center = center;
+        this._constrain();
+    },
+
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
 
@@ -144,7 +150,6 @@ Transform.prototype = {
     panBy: function(offset) {
         var point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
-        this._constrain();
     },
 
     setLocationAtPoint: function(lnglat, point) {
@@ -154,8 +159,6 @@ Transform.prototype = {
 
         var translate = coordAtPoint._sub(c);
         this.center = this.coordinateLocation(coordCenter._sub(translate));
-
-        this._constrain();
     },
 
     setZoomAround: function(zoom, center) {
@@ -230,7 +233,7 @@ Transform.prototype = {
         var matrix = this.coordinatePointMatrix(this.tileZoom);
         var inverted = mat4.invert(new Float64Array(16), matrix);
 
-        if (!inverted) throw "failed to invert matrix";
+        if (!inverted) throw new Error("failed to invert matrix");
 
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
@@ -290,7 +293,9 @@ Transform.prototype = {
     },
 
     _constrain: function() {
-        if (!this.center) return;
+        if (!this.center || !this.width || !this.height || this._constraining) return;
+
+        this._constraining = true;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
             size = this.size;
@@ -315,6 +320,7 @@ Transform.prototype = {
                 sx ? (maxX + minX) / 2 : this.x,
                 sy ? (maxY + minY) / 2 : this.y));
             this.zoom += this.scaleZoom(s);
+            this._constraining = false;
             return;
         }
 
@@ -340,6 +346,8 @@ Transform.prototype = {
                 x2 !== undefined ? x2 : this.x,
                 y2 !== undefined ? y2 : this.y));
         }
+
+        this._constraining = false;
     },
 
     getProjMatrix: function() {

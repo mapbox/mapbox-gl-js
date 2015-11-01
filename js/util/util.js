@@ -79,16 +79,17 @@ exports.clamp = function (n, min, max) {
 };
 
 /*
- * constrain n to the given range via modular arithmetic
- * @param {number} n
- * @param {number} min
- * @param {number} max
+ * constrain n to the given range, excluding the minimum, via modular arithmetic
+ * @param {number} n value
+ * @param {number} min the minimum value to be returned, exclusive
+ * @param {number} max the maximum value to be returned, inclusive
  * @returns {number} constrained number
  * @private
  */
 exports.wrap = function (n, min, max) {
     var d = max - min;
-    return n === max ? n : ((n - min) % d + d) % d + min;
+    var w = ((n - min) % d + d) % d + min;
+    return (w === min) ? max : w;
 };
 
 /*
@@ -138,11 +139,11 @@ exports.asyncAll = function (array, fn, callback) {
     var results = new Array(array.length);
     var error = null;
     array.forEach(function (item, i) {
-      fn(item, function (err, result) {
-        if (err) error = err;
-        results[i] = result;
-        if (--remaining === 0) callback(error, results);
-      });
+        fn(item, function (err, result) {
+            if (err) error = err;
+            results[i] = result;
+            if (--remaining === 0) callback(error, results);
+        });
     });
 };
 
@@ -341,6 +342,13 @@ exports.bindAll = function(fns, context) {
     });
 };
 
+/**
+ * Given a class, bind all of the methods that look like handlers: that
+ * begin with _on, and bind them to the class.
+ *
+ * @param {Object} context an object with methods
+ * @private
+ */
 exports.bindHandlers = function(context) {
     for (var i in context) {
         if (typeof context[i] === 'function' && i.indexOf('_on') === 0) {

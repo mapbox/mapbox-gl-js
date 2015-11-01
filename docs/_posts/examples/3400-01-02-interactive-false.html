@@ -4,16 +4,15 @@ category: example
 title: Non-interactive map
 description: "Setting interactive: false to create a static map"
 ---
-
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v8',
-  center: [-74.50, 40],
-  zoom: 9,
-  // causes pan & zoom handlers not to be applied, similar to
-  // .dragging.disable() and other handler .disable() funtions in Leaflet.
-  interactive: false
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-74.50, 40],
+    zoom: 9,
+    // causes pan & zoom handlers not to be applied, similar to
+    // .dragging.disable() and other handler .disable() funtions in Leaflet.
+    interactive: false
 });
 </script>

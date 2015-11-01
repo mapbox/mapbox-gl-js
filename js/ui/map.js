@@ -347,21 +347,21 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     featuresIn: function(bounds, params, callback) {
         if (typeof callback === 'undefined') {
-          callback = params;
-          params = bounds;
+            callback = params;
+            params = bounds;
           // bounds was omitted: use full viewport
-          bounds = [
-            Point.convert([0, 0]),
-            Point.convert([this.transform.width, this.transform.height])
-          ];
+            bounds = [
+                Point.convert([0, 0]),
+                Point.convert([this.transform.width, this.transform.height])
+            ];
         }
         bounds = bounds.map(Point.convert.bind(Point));
         bounds = [
-          new Point(
+            new Point(
             Math.min(bounds[0].x, bounds[1].x),
             Math.min(bounds[0].y, bounds[1].y)
           ),
-          new Point(
+            new Point(
             Math.max(bounds[0].x, bounds[1].x),
             Math.max(bounds[0].y, bounds[1].y)
           )
@@ -373,6 +373,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Apply multiple style mutations in a batch
      *
+     * @param {function} work Function which accepts the StyleBatch interface
+     *
+     * @example
      * map.batch(function (batch) {
      *     batch.addLayer(layer1);
      *     batch.addLayer(layer2);
@@ -380,7 +383,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *     batch.addLayer(layerN);
      * });
      *
-     * @param {function} work Function which accepts the StyleBatch interface
      */
     batch: function(work) {
         this.style.batch(work);
@@ -412,6 +414,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this.update)
                 .off('tile.error', this._forwardTileEvent)
+                .off('tile.stats', this._forwardTileEvent)
                 ._remove();
 
             this.off('rotate', this.style._redoPlacement);
@@ -441,7 +444,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this.update)
-            .on('tile.error', this._forwardTileEvent);
+            .on('tile.error', this._forwardTileEvent)
+            .on('tile.stats', this._forwardTileEvent);
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
@@ -697,9 +701,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Update this map's style and re-render the map.
+     * Update this map's style and sources, and re-render the map.
      *
-     * @param {Object} updateStyle new style
+     * @param {boolean} updateStyle mark the map's style for reprocessing as
+     * well as its sources
      * @returns {Map} this
      */
     update: function(updateStyle) {
@@ -877,10 +882,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
     get collisionDebug() { return this._collisionDebug; },
     set collisionDebug(value) {
         this._collisionDebug = value;
-        for (var i in this.style.sources) {
-            this.style.sources[i].reload();
-        }
-        this.update();
+        this.style._redoPlacement();
     },
 
     /**

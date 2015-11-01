@@ -91,19 +91,19 @@ test('GeoJSONSource#update', function(t) {
 
     t.test('forwards geojson-vt options with worker request', function(t) {
         var source = new GeoJSONSource({
-          data: {},
-          maxzoom: 10,
-          tolerance: 2,
-          buffer: 128
+            data: {},
+            maxzoom: 10,
+            tolerance: 2,
+            buffer: 128
         });
 
         source.dispatcher = {
             send: function(message, params) {
                 t.equal(message, 'parse geojson');
                 t.deepEqual(params.geojsonVtOptions, {
-                  maxZoom: 10,
-                  tolerance: 2,
-                  buffer: 128
+                    maxZoom: 10,
+                    tolerance: 2,
+                    buffer: 128
                 });
                 t.end();
             }

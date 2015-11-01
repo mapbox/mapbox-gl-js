@@ -45,7 +45,7 @@ function drawBackground(painter, layer, posMatrix) {
         mat3.rotate(matrixA, matrixA, -transform.angle);
         mat3.scale(matrixA, matrixA, [
             scale * transform.width  / 2,
-           -scale * transform.height / 2
+            -scale * transform.height / 2
         ]);
 
         var matrixB = mat3.create();
@@ -60,7 +60,7 @@ function drawBackground(painter, layer, posMatrix) {
         mat3.rotate(matrixB, matrixB, -transform.angle);
         mat3.scale(matrixB, matrixB, [
             scale * transform.width  / 2,
-           -scale * transform.height / 2
+            -scale * transform.height / 2
         ]);
 
         gl.uniformMatrix3fv(shader.u_patternmatrix_a, false, matrixA);

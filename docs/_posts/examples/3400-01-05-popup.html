@@ -4,20 +4,17 @@ category: example
 title: Popup
 description: Add a popup to the map
 ---
-
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
-  container: 'map',
-  style: 'mapbox://styles/mapbox/streets-v8',
-  center: [-96, 37.8],
-  zoom: 3
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-96, 37.8],
+    zoom: 3
 });
 
-var tooltip = new mapboxgl.Popup({
-    closeOnClick: false
-  })
-  .setLngLat([-96, 37.8])
-  .setHTML('<h1>Hello World!</h1>')
-  .addTo(map);
+var tooltip = new mapboxgl.Popup({closeOnClick: false})
+    .setLngLat([-96, 37.8])
+    .setHTML('<h1>Hello World!</h1>')
+    .addTo(map);
 </script>

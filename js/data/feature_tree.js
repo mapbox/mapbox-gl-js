@@ -39,10 +39,9 @@ FeatureTree.prototype.query = function(args, callback) {
     var radius, bounds;
     if (typeof x !== 'undefined' && typeof y !== 'undefined') {
         // a point (or point+radius) query
-        radius = (params.radius || 0) * 4096 / args.scale;
+        radius = (params.radius || 0) * (args.tileExtent || 4096) / args.scale;
         bounds = [x - radius, y - radius, x + radius, y + radius];
-    }
-    else {
+    } else {
         // a rectangle query
         bounds = [ args.minX, args.minY, args.maxX, args.maxY ];
     }
@@ -87,11 +86,11 @@ function geometryIntersectsBox(rings, type, bounds) {
 // Tests whether any of the four corners of the bbox are contained in the
 // interior of the polygon.  Otherwise, defers to lineIntersectsBox.
 function polyIntersectsBox(rings, bounds) {
-    if (polyContainsPoint(rings, new Point(bounds[0], bounds[1]))
-    || polyContainsPoint(rings, new Point(bounds[0], bounds[3]))
-    || polyContainsPoint(rings, new Point(bounds[2], bounds[1]))
-    || polyContainsPoint(rings, new Point(bounds[2], bounds[3])))
-      return true;
+    if (polyContainsPoint(rings, new Point(bounds[0], bounds[1])) ||
+        polyContainsPoint(rings, new Point(bounds[0], bounds[3])) ||
+        polyContainsPoint(rings, new Point(bounds[2], bounds[1])) ||
+        polyContainsPoint(rings, new Point(bounds[2], bounds[3])))
+        return true;
 
     return lineIntersectsBox(rings, bounds);
 }
@@ -110,11 +109,11 @@ function lineIntersectsBox(rings, bounds) {
             var i0 = new Point(p0.y, p0.x);
             var i1 = new Point(p1.y, p1.x);
 
-            if (segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[1])
-            || segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[3])
-            || segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[0])
-            || segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[2]))
-              return true;
+            if (segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[1]) ||
+                segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[3]) ||
+                segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[0]) ||
+                segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[2]))
+                return true;
         }
     }
 
@@ -127,9 +126,9 @@ function lineIntersectsBox(rings, bounds) {
  */
 function segmentCrossesHorizontal(p0, p1, x1, x2, y) {
     if (p1.y === p0.y)
-      return (p1.y === y
-      && Math.min(p0.x, p1.x) <= x2
-      && Math.max(p0.x, p1.x) >= x1);
+        return p1.y === y &&
+            Math.min(p0.x, p1.x) <= x2 &&
+            Math.max(p0.x, p1.x) >= x1;
 
     var r = (y - p0.y) / (p1.y - p0.y);
     var x = p0.x + r * (p1.x - p0.x);
@@ -140,10 +139,10 @@ function pointIntersectsBox(rings, bounds) {
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
         for (var j = 0; j < ring.length; j++) {
-            if (ring[j].x >= bounds[0]
-            && ring[j].y >= bounds[1]
-            && ring[j].x <= bounds[2]
-            && ring[j].y <= bounds[3]) return true;
+            if (ring[j].x >= bounds[0] &&
+                ring[j].y >= bounds[1] &&
+                ring[j].x <= bounds[2] &&
+                ring[j].y <= bounds[3]) return true;
         }
     }
     return false;

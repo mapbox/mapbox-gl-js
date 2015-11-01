@@ -12,10 +12,10 @@ var _self = {
 
 var server = http.createServer(function(request, response) {
     switch (request.url) {
-        case "/error":
-            response.writeHead(404, {"Content-Type": "text/plain"});
-            response.end();
-            break;
+    case "/error":
+        response.writeHead(404, {"Content-Type": "text/plain"});
+        response.end();
+        break;
     }
 });
 

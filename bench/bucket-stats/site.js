@@ -1,13 +1,9 @@
 var urls = [
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.js',
     '/debug/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.10.0/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.1/mapbox-gl.js',
     '/debug/mapbox-gl.js'
 ];
 
-var duration = 3000;
+var duration = 30 * 1000;
 
 Benchmark(urls, duration, setup, teardown);
 
@@ -25,13 +21,12 @@ function setup(state, callback) {
         zoom: 15,
         center: [-77.032194, 38.912753],
         style: 'mapbox://styles/mapbox/bright-v8',
-        hash: true
+        hash: false
     });
 
     state.map = map;
 
     map.on('load', function() {
-        map.repaint = true;
         callback();
     });
 }

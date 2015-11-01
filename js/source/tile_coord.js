@@ -1,13 +1,23 @@
 'use strict';
 
+var assert = require('assert');
+
 module.exports = TileCoord;
 
 function TileCoord(z, x, y, w) {
-    if (w === undefined) w = 0;
-    this.z = z;
-    this.x = x;
-    this.y = y;
-    this.w = w;
+    assert(!isNaN(z));
+    assert(!isNaN(x));
+    assert(!isNaN(y));
+    assert(z >= 0);
+    assert(x >= 0);
+    assert(y >= 0);
+
+    if (isNaN(w)) w = 0;
+
+    this.z = +z;
+    this.x = +x;
+    this.y = +y;
+    this.w = +w;
 
     // calculate id
     w *= 2;
@@ -135,11 +145,11 @@ TileCoord.cover = function(z, bounds, actualZ) {
     var t = {};
 
     function scanLine(x0, x1, y) {
-        var x, wx;
+        var x, wx, coord;
         if (y >= 0 && y <= tiles) {
             for (x = x0; x < x1; x++) {
-                wx = (x + tiles) % tiles;
-                var coord = new TileCoord(actualZ, wx, y, Math.floor(x / tiles));
+                wx = (x % tiles + tiles) % tiles;
+                coord = new TileCoord(actualZ, wx, y, Math.floor(x / tiles));
                 t[coord.id] = coord;
             }
         }

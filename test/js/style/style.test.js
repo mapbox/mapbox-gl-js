@@ -221,13 +221,13 @@ test('Style#removeSource', function(t) {
 
     t.test('throw before loaded', function(t) {
         var style = new Style(createStyleJSON({
-                "sources": {
-                    "source-id": {
-                        "type": "vector",
-                        "tiles": []
-                    }
+            "sources": {
+                "source-id": {
+                    "type": "vector",
+                    "tiles": []
                 }
-            }));
+            }
+        }));
         t.throws(function () {
             style.removeSource('source-id');
         }, Error, /load/i);
@@ -460,14 +460,14 @@ test('Style#removeLayer', function(t) {
 
     t.test('removes from the order', function(t) {
         var style = new Style(createStyleJSON({
-                layers: [{
-                    id: 'a',
-                    type: 'background'
-                }, {
-                    id: 'b',
-                    type: 'background'
-                }]
-            }));
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                type: 'background'
+            }]
+        }));
 
         style.on('load', function() {
             style.removeLayer('a');
