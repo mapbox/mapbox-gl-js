@@ -683,6 +683,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @event webglcontextlost
      * @memberof Map
+     * @instance
      * @type {Object}
      * @property {Event} originalEvent the original DOM event
      */
@@ -699,6 +700,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @event webglcontextrestored
      * @memberof Map
+     * @instance
      * @type {Object}
      */
     _contextRestored: function(event) {
