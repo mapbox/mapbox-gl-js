@@ -21,7 +21,7 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
                 add: function() {}
             }
         },
-        center: [options.center[1], options.center[0]],
+        center: options.center,
         zoom: options.zoom,
         pitch: options.pitch,
         bearing: options.bearing,
