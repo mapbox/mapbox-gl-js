@@ -23,6 +23,7 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
         },
         center: [options.center[1], options.center[0]],
         zoom: options.zoom,
+        pitch: options.pitch,
         bearing: options.bearing,
         style: style,
         classes: options.classes,
