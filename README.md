@@ -84,14 +84,10 @@ To prepare a release:
   * `git checkout master && git merge origin/mb-pages`
 * Update `CHANGELOG.md`
 * Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
-* Publish the build to the CDN (see below)
+* Tag the release (`git tag vX.Y.Z && git push origin --tags`). The CI server will automatically publish tagged builds to the Mapbox CDN.
 * Publish the build to npm (`npm publish`)
 * Merge `master` into `mb-pages` and publish documentation:
   * `git checkout mb-pages && git merge master && git push origin mb-pages`
-
-The CI server publishes builds to the Mapbox CDN automatically, but it does not currently support building tags. Therefore,
-to release a new version, push a _branch_ with a name of the form `vX.Y.Z`, with version matching package.json. Once the
-build is successful, delete the branch and replace it with a tag.
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
