@@ -1,46 +1,46 @@
-var urls = [
-    '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js',
-    '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js',
-    '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.2/mapbox-gl.js'
-];
+if (!window.bufferBenchmark) {
+    var url = 'http://localhost:6699/bench/buffer?access_token=' + getAccessToken();
+    log('red', 'In order to run this benchmark, you must start a different server.');
+    log('orange', ' 1) start the buffer benchmark server as <span class="mono">npm run start-buffer</span>');
+    log('orange', ' 2) navigate to <a href="' + url + '">http://localhost:6699/bench/buffer</a>');
 
-var TEST_DURATION = 35 * 1000;
-var WARMUP_DURATION = 5 * 1000;
+} else {
+    try {
+        var evented = bufferBenchmark(getAccessToken());
+    } catch (err) {
+        log('red', 'Error: ' + err.toString());
+        throw err;
+    }
 
-Benchmark(urls, TEST_DURATION, setup, teardown);
+    log('dark', 'preloading assets');
 
-function setup(state, callback) {
-
-    mapboxgl.accessToken = getAccessToken();
-
-    // change the area covered by the map map or the pixel density to check if cpu or fill bound
-    //Benchmark.util.scaleArea('map', 2);
-    //Benchmark.util.scalePixels(2);
-
-    document.getElementById('map').innerHTML = '';
-    var map = new mapboxgl.Map({
-        container: 'map',
-        zoom: 15,
-        center: [-77.032194, 38.912753],
-        style: 'mapbox://styles/mapbox/bright-v8',
-        hash: false
+    evented.on('start', function(event) {
+        log('dark', 'starting first test');
     });
 
-    state.map = map;
-
-    map.on('load', function() {
-        setTimeout(function() {
-            callback();
-        }, WARMUP_DURATION);
+    evented.on('result', function(event) {
+        log('blue', formatNumber(event.time) + ' ms');
+        scrollToBottom();
     });
+
+    evented.on('end', function(event) {
+        log('green', '<strong class="prose-big">' + formatNumber(event.time) + ' ms</strong>');
+        scrollToBottom();
+    });
+
+    evented.on('error', function(event) {
+        log('red', 'Error: ' + event.error);
+        scrollToBottom();
+    });
+
 }
 
-function teardown(state, callback) {
-    state.map.style._remove();
-    callback();
+function scrollToBottom() {
+    window.scrollTo(0,document.body.scrollHeight);
+}
+
+function log(color, message) {
+    document.getElementById('log').innerHTML += '<div class="log dark fill-' + color + '"><p>' + message + '</p></div>';
 }
 
 function getAccessToken() {
@@ -54,4 +54,8 @@ function getAccessToken() {
     }
 
     return accessToken;
+}
+
+function formatNumber(x) {
+    return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

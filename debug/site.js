@@ -67,7 +67,7 @@ map.on('style.load', function() {
 
         var html = '';
         for (var i in _stats) {
-            html += '<div style="width:' + _stats[i].width + 'px">' + _stats[i].value + 'ms - ' + _stats[i].name + '</div>';
+            html += '<div style="width:' + _stats[i].width * 2 + 'px">' + _stats[i].value + 'ms - ' + _stats[i].name + '</div>';
         }
 
         document.getElementById('buffer').innerHTML = html;
