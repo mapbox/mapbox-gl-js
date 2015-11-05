@@ -2,11 +2,11 @@
 
 set -e
 
-TAG=$1
+TAG=$CIRCLE_TAG
 
 if [ -z $TAG ]; then
-    echo "Usage: deploy.sh <tag>"
-    exit
+    echo '$CIRCLE_TAG must be set'
+    exit 1
 fi
 
 function gzipped_cp {
