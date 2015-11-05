@@ -16,7 +16,7 @@
                                     ],
                                     "Effect": "Allow",
                                     "Resource": [
-                                        "arn:aws:s3:::mapbox/mapbox-gl-js"
+                                        "arn:aws:s3:::mapbox-gl-js"
                                     ]
                                 }
                             ]
@@ -35,7 +35,7 @@
                                     ],
                                     "Effect": "Allow",
                                     "Resource": [
-                                        "arn:aws:s3:::mapbox/mapbox-gl-js/*"
+                                        "arn:aws:s3:::mapbox-gl-js/*"
                                     ]
                                 }
                             ]
