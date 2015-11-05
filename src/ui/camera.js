@@ -304,22 +304,32 @@ class Camera extends Evented {
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
      * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
+     * @param {number|Array} options.padding how much padding there is around the given bounds on each side in pixels. Accepts a number for all padding edges or an array [n, e, s, w]
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+	 * @example
+     * var bbox = [[-79, 43], [-73, 45]];
+     * map.fitBounds(bbox, {
+     *   padding: [10, 40, 10, 40]
+     * });
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds, options, eventData) {
 
         options = util.extend({
-            padding: 0,
+            padding: [0, 0, 0, 0],
             offset: [0, 0],
             maxZoom: this.getMaxZoom()
         }, options);
+
+        if (typeof options.padding === 'number') {
+            var p = options.padding;
+            options.padding = [p, p, p, p];
+        }
 
         bounds = LngLatBounds.convert(bounds);
 
@@ -328,8 +338,8 @@ class Camera extends Evented {
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - (options.padding[1] + options.padding[3]) * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - (options.padding[0] + options.padding[2]) * 2 - Math.abs(offset.y) * 2) / size.y;
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
