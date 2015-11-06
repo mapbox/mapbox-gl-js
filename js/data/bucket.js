@@ -202,6 +202,7 @@ function createLayoutProperties(layer, zoom) {
     return new LayoutProperties[layer.type](layout);
 }
 
+var createVertexAddMethodCache = {};
 function createVertexAddMethod(shaderName, shader, bufferName) {
     var pushArgs = [];
     for (var i = 0; i < shader.attributes.length; i++) {
@@ -213,7 +214,11 @@ function createVertexAddMethod(shaderName, shader, bufferName) {
     body += 'e.vertexLength++;\n';
     body += 'return this.buffers.' + bufferName + '.push(\n    ' + pushArgs.join(',\n    ') + '\n) - e.vertexStartIndex;';
 
-    return new Function(shader.attributeArgs, body);
+    if (!createVertexAddMethodCache[body]) {
+        createVertexAddMethodCache[body] = new Function(shader.attributeArgs, body);
+    }
+
+    return createVertexAddMethodCache[body];
 }
 
 function createElementAddMethod(shaderName, bufferName, lengthName) {
