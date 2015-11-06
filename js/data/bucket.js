@@ -78,17 +78,15 @@ function Bucket(options) {
 
         if (shader.elementBuffer) {
             this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(
-                shaderName,
-                this.getBufferName(shaderName, 'element'),
-                'elementLength'
+                this.buffers,
+                this.getBufferName(shaderName, 'element')
             );
         }
 
         if (shader.secondElementBuffer) {
             this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(
-                shaderName,
-                this.getBufferName(shaderName, 'secondElement'),
-                'secondElementLength'
+                this.buffers,
+                this.getBufferName(shaderName, 'secondElement')
             );
         }
     }
@@ -113,7 +111,7 @@ Bucket.prototype.addFeatures = function() {
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
  */
 Bucket.prototype.makeRoomFor = function(shaderName, vertexLength) {
-    this.elementGroups[shaderName].makeRoomFor(vertexLength);
+    return this.elementGroups[shaderName].makeRoomFor(vertexLength);
 };
 
 /**
@@ -209,10 +207,7 @@ function createVertexAddMethod(shaderName, shader, bufferName) {
         pushArgs = pushArgs.concat(shader.attributes[i].value);
     }
 
-    var body = '';
-    body += 'var e = this.elementGroups.' + shaderName + '.current;\n';
-    body += 'e.vertexLength++;\n';
-    body += 'return this.buffers.' + bufferName + '.push(\n    ' + pushArgs.join(',\n    ') + '\n) - e.vertexStartIndex;';
+    var body = 'return this.buffers.' + bufferName + '.push(' + pushArgs.join(', ') + ');';
 
     if (!createVertexAddMethodCache[body]) {
         createVertexAddMethodCache[body] = new Function(shader.attributeArgs, body);
@@ -221,10 +216,10 @@ function createVertexAddMethod(shaderName, shader, bufferName) {
     return createVertexAddMethodCache[body];
 }
 
-function createElementAddMethod(shaderName, bufferName, lengthName) {
+function createElementAddMethod(buffers, bufferName) {
+    var buffer = buffers[bufferName];
     return function(one, two, three) {
-        this.elementGroups[shaderName].current[lengthName]++;
-        return this.buffers[bufferName].push(one, two, three);
+        return buffer.push(one, two, three);
     };
 }
 

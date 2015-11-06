@@ -43,7 +43,7 @@ CircleBucket.prototype.addFeature = function(feature) {
 
     var geometries = feature.loadGeometry()[0];
     for (var j = 0; j < geometries.length; j++) {
-        this.makeRoomFor('circle', 6);
+        var group = this.makeRoomFor('circle', 4);
 
         var x = geometries[j].x;
         var y = geometries[j].y;
@@ -60,13 +60,15 @@ CircleBucket.prototype.addFeature = function(feature) {
         // │ 0     1 │
         // └─────────┘
 
-        var vertex0 = this.addCircleVertex(x, y, -1, -1);
-        var vertex1 = this.addCircleVertex(x, y, 1, -1);
-        var vertex2 = this.addCircleVertex(x, y, 1, 1);
-        var vertex3 = this.addCircleVertex(x, y, -1, 1);
+        var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
+        this.addCircleVertex(x, y, 1, -1);
+        this.addCircleVertex(x, y, 1, 1);
+        this.addCircleVertex(x, y, -1, 1);
+        group.vertexLength += 4;
 
-        this.addCircleElement(vertex0, vertex1, vertex2);
-        this.addCircleElement(vertex0, vertex3, vertex2);
+        this.addCircleElement(index, index + 1, index + 2);
+        this.addCircleElement(index, index + 3, index + 2);
+        group.elementLength += 2;
     }
 
 };

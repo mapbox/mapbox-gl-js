@@ -17,6 +17,7 @@ ElementGroups.prototype.makeRoomFor = function(numVertices) {
                 this.secondElementBuffer && this.secondElementBuffer.length);
         this.groups.push(this.current);
     }
+    return this.current;
 };
 
 function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartIndex) {

@@ -83,12 +83,6 @@ test('Bucket', function(t) {
         t.equal(testSecondElement.length, 1);
         t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
 
-        var elementGroups = builder.elementGroups.test;
-        t.equal(elementGroups.groups.length, 1);
-        t.equal(elementGroups.current.vertexLength, 1);
-        t.equal(elementGroups.current.elementLength, 1);
-        t.equal(elementGroups.current.secondElementLength, 1);
-
         t.end();
     });
 

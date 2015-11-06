@@ -52,23 +52,26 @@ FillBucket.prototype.addFill = function(vertices) {
     var len = vertices.length;
 
     // Expand this geometry buffer to hold all the required vertices.
-    this.makeRoomFor('fill', len + 1);
+    var group = this.makeRoomFor('fill', len + 1);
 
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
     var firstIndex, prevIndex;
     for (var i = 0; i < vertices.length; i++) {
         var currentVertex = vertices[i];
 
-        var currentIndex = this.addFillVertex(currentVertex.x, currentVertex.y);
+        var currentIndex = this.addFillVertex(currentVertex.x, currentVertex.y) - group.vertexStartIndex;
+        group.vertexLength++;
         if (i === 0) firstIndex = currentIndex;
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
             this.addFillElement(firstIndex, prevIndex, currentIndex);
+            group.elementLength++;
         }
 
         if (i >= 1) {
             this.addFillSecondElement(prevIndex, currentIndex);
+            group.secondElementLength++;
         }
 
         prevIndex = currentIndex;
