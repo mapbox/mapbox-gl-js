@@ -175,6 +175,7 @@ Buffer.prototype._refreshViews = function() {
     };
 };
 
+var createPushMethodCache = {};
 Buffer.prototype._createPushMethod = function() {
     var body = '';
     var argNames = [];
@@ -199,7 +200,11 @@ Buffer.prototype._createPushMethod = function() {
 
     body += '\nreturn i;\n';
 
-    this.push = new Function(argNames, body);
+    if (!createPushMethodCache[body]) {
+        createPushMethodCache[body] = new Function(argNames, body);
+    }
+
+    this.push = createPushMethodCache[body];
 };
 
 /**
