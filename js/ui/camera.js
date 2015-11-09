@@ -342,6 +342,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * var bbox = [[-79, 43], [-73, 45]];
+     * map.fitBounds(bbox, {
+     *   padding: [10, 40, 10, 40]
+     * });
      */
     fitBounds: function(bounds, options) {
 
