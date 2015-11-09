@@ -5,6 +5,8 @@ dependencies:
   pre:
     - sudo apt-get update; sudo apt-get -y install python-pip libglew-dev gdb
     - sudo pip install awscli
+  override:
+    - npm run preinstall && npm update && npm run postinstall && npm run prepublish
 test:
   override:
     - ./ci.sh
