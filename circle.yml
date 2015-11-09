@@ -9,10 +9,10 @@ test:
   override:
     - ./ci.sh
 deployment:
-  any:
-    branch: /.*/
+  release:
+    tag: /v[0-9]+\.[0-9]+\.[0-9]+/
     commands:
-      - 'if [[ -z $CIRCLE_PR_NUMBER ]]; then ./deploy.sh $CIRCLE_BRANCH; fi'
+      - ./deploy.sh
 general:
   artifacts:
     - "node_modules/mapbox-gl-test-suite/render-tests/index.html"

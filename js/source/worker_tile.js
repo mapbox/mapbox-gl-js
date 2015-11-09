@@ -24,6 +24,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.featureTree = new FeatureTree(this.coord, this.overscaling);
 
+    var stats = { _total: 0 };
+
     var tile = this,
         buffers = {},
         collisionTile = new CollisionTile(this.angle, this.pitch),
@@ -175,11 +177,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
         bucket.features = null;
 
-        if (typeof self !== 'undefined') {
-            self.bucketStats = self.bucketStats || {_total: 0};
-            self.bucketStats._total += time;
-            self.bucketStats[bucket.id] = (self.bucketStats[bucket.id] || 0) + time;
-        }
+        stats._total += time;
+        stats[bucket.id] = (stats[bucket.id] || 0) + time;
     }
 
     function done() {
@@ -197,7 +196,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             elementGroups: getElementGroups(buckets),
             buffers: buffers,
             extent: extent,
-            bucketStats: typeof self !== 'undefined' ? self.bucketStats : null
+            bucketStats: stats
         }, getTransferables(buffers));
     }
 };
