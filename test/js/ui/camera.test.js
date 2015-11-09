@@ -734,5 +734,45 @@ test('camera', function(t) {
         t.end();
     });
 
+    t.test('#fitBounds', function(t) {
+        t.test('no options passsed', function(t) {
+            var camera = createCamera();
+            var bb = [[-79, 43], [-73, 45]];
+
+            camera.fitBounds(bb);
+
+            camera.on('moveend', function() {
+                t.deepEqual(camera.getCenter(), { lng: -76.00000000000006, lat: 44.008428892836804 }, 'pans to coordinates based on fitBounds');
+                t.end();
+            });
+        });
+
+        t.test('padding number', function(t) {
+            var camera = createCamera();
+            var bb = [[-79, 43], [-73, 45]];
+
+            camera.fitBounds(bb, { padding: 80 });
+
+            camera.on('moveend', function() {
+                t.deepEqual(camera.getCenter(), { lng: -76.00000000000001, lat: 44.008428892836804 }, 'pans to coordinates based on fitBounds with padding option as number applied');
+                t.end();
+            });
+        });
+
+        t.test('padding array', function(t) {
+            var camera = createCamera();
+            var bb = [[-79, 43], [-73, 45]];
+
+            camera.fitBounds(bb, { padding: [10, 50, 10, 20] });
+
+            camera.on('moveend', function() {
+                t.deepEqual(camera.getCenter(), { lng: -75.99999999999997, lat: 44.008428892836776 }, 'pans to coordinates based on fitBounds with padding option as array applied');
+                t.end();
+            });
+        });
+
+        t.end();
+    });
+
     t.end();
 });
