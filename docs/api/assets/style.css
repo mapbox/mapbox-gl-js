@@ -1,0 +1,54 @@
+.documentation a {
+  color: #416381;
+}
+
+.container-small {
+  max-width: 58rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.font-smaller {
+  font-size:80%;
+}
+
+.fade {
+  opacity:0.50;
+}
+
+.button-indent {
+  padding: .25rem 1.5rem;
+  font-size: 90%;
+}
+
+.section-indent {
+  border-left: 2px solid #eee;
+}
+
+.bg-cloudy {
+  background: rgba(230, 235, 237, 1);
+}
+
+.bg-cloudy-light {
+  background: rgba(230, 235, 237, 0.5);
+}
+
+.keyline-top {
+  border-top:5px solid #eee;
+}
+
+.keyline-top:first-child {
+  border-top:0;
+}
+
+.force-inline * {
+  display:inline;
+}
+
+section:target {
+  background: #fcfbf2;
+}
+
+.documentation-sidebar a:active {
+  background: #fcfbf2;
+}
