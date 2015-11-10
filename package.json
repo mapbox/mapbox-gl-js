@@ -35,7 +35,7 @@
     "bistre": "^1.0.1",
     "browserify": "^10.2.4",
     "budo": "^4.0.0",
-    "documentation": "^3.0.0",
+    "documentation": "3.0.0",
     "eslint": "^1.5.0",
     "eslint-config-mourner": "^1.0.0",
     "istanbul": "^0.3.15",
