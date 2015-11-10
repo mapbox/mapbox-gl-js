@@ -1,9 +1,6 @@
 ---
 layout: docs
-category: api
 title: Mapbox GL JS API
-navtitle: API
-permalink: /api
 navigation:
 {{#each docs}}
   - title: {{name}}
@@ -16,14 +13,15 @@ navigation:
         id: {{permalink}}
     {{/each}}
     {{#each members.instance}}
+    {{#if event}}
+      - title: 'ⓔ {{name}}'
+        url: /api
+        id: {{permalink}}
+    {{else}}
       - title: '#{{name}}'
         url: /api
         id: {{permalink}}
-    {{/each}}
-    {{#each events}}
-      - title: ⓔ {{name}}
-        url: /api
-        id: {{permalink}}
+    {{/if}}
     {{/each}}
 {{/each}}
 ---

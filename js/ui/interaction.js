@@ -20,6 +20,7 @@ module.exports = Interaction;
  *
  * @event mousemove
  * @memberof Map
+ * @instance
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {LngLat} lngLat the geographic location of the event
@@ -31,6 +32,7 @@ module.exports = Interaction;
  *
  * @event click
  * @memberof Map
+ * @instance
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {LngLat} lngLat the geographic location of the event
@@ -42,6 +44,7 @@ module.exports = Interaction;
  *
  * @event dblclick
  * @memberof Map
+ * @instance
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {LngLat} lngLat the geographic location of the event
@@ -53,6 +56,7 @@ module.exports = Interaction;
  *
  * @event contextmenu
  * @memberof Map
+ * @instance
  * @type {Object}
  * @property {Point} point the pixel location of the event
  * @property {LngLat} lngLat the geographic location of the event
@@ -65,6 +69,7 @@ module.exports = Interaction;
  *
  * @event load
  * @memberof Map
+ * @instance
  * @type {Object}
  */
 
@@ -74,6 +79,7 @@ module.exports = Interaction;
  *
  * @event movestart
  * @memberof Map
+ * @instance
  * @type {Object}
  */
 
@@ -83,6 +89,7 @@ module.exports = Interaction;
  *
  * @event move
  * @memberof Map
+ * @instance
  * @type {Object}
  */
 
@@ -92,6 +99,7 @@ module.exports = Interaction;
  *
  * @event moveend
  * @memberof Map
+ * @instance
  * @type {Object}
  */
 
