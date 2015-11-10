@@ -2,6 +2,17 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.11.3 (Nov 10 2015)
+
+#### Bugfixes
+
+* Fix GeoJSON rendering and performance (#1685)
+
+#### UX Improvements
+
+* Use SVG assets for UI controls (#1657)
+* Zoom out with shift + dblclick (#1666)
+
 ## 0.11.2 (Oct 29 2015)
 
 * Misc performance improvements
