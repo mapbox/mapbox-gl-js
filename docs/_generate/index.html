@@ -119,6 +119,19 @@ navigation:
     <div class='pad2 prose'>
       <a id='root' class='anchor'></a>
       <h2><a href='#root' title='link to root'>Root Properties</a></h2>
+      <p>Top level properties on the Mapbox GL style object specify the map's appearance, sources, and layers.</p>
+      <div class='space-bottom1 clearfix'>
+{% highlight json%}
+{
+    "version": <%= ref.$version %>,
+    "name": "Mapbox Streets",
+    "sprite": "mapbox://sprites/mapbox/streets-v<%= ref.$version %>",
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "sources": {...},
+    "layers": [...]
+}
+{% endhighlight %}
+      </div>
       <div class='pad2 keyline-all fill-white'>
         <% _(ref.$root).each(function(prop, name) { %>
         <%= item({prop: prop, name: name}) %>
