@@ -88,6 +88,7 @@ To prepare a release:
 * Publish the build to npm (`npm publish`)
 * Merge `master` into `mb-pages` and publish documentation:
   * `git checkout mb-pages && git merge master && git push origin mb-pages`
+* [Create a GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new)
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
