@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform mat4 u_matrix;
 uniform mat3 u_patternmatrix_a;
 uniform mat3 u_patternmatrix_b;

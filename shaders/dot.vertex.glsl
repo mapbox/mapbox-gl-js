@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform mat4 u_matrix;
 uniform float u_size;
 

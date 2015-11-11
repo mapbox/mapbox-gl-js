@@ -15,7 +15,6 @@
     "feature-filter": "^1.0.2",
     "geojson-vt": "^2.1.0",
     "gl-matrix": "^2.3.1",
-    "glify": "^0.5.1",
     "mapbox-gl-function": "^1.0.0",
     "mapbox-gl-style-spec": "^8.2.0",
     "minifyify": "^7.0.1",
@@ -52,7 +51,6 @@
   "browserify": {
     "transform": [
       "envify",
-      "glify",
       "brfs"
     ]
   },
