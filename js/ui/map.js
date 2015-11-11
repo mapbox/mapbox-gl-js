@@ -293,11 +293,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
      * @param {string} params.type Optional. Either `raster` or `vector`
      * @param {boolean} [params.includeGeometry=false] Optional. If `true`, geometry of features will be included in the results at the expense of a much slower query time.
-     * @param {featuresAtCallback} callback function that returns the response
-     *
-     * @callback featuresAtCallback
-     * @param {Object|null} err Error _If any_
-     * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
+     * @param {featuresAtCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
@@ -327,11 +323,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} params
      * @param {string} params.layer Optional. Only return features from a given layer
      * @param {string} params.type Optional. Either `raster` or `vector`
-     * @param {featuresAtCallback} callback function that receives the response
-     *
-     * @callback featuresInCallback
-     * @param {Object|null} err Error _If any_
-     * @param {Array} features A JSON array of features given the passed parameters of `featuresIn`
+     * @param {featuresInCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
@@ -876,6 +868,25 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.stop().resize().update();
     }
 });
+
+
+/**
+ * Callback to receive `featuresAt` results.
+ *
+ * @callback featuresAtCallback
+ * @param {Object} err Error _If any_
+ * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
+ */
+
+/**
+ * Callback to receive `featuresIn` results
+ *
+ * @callback featuresInCallback
+ * @param {Object} err Error _If any_
+ * @param {Array} features A JSON array of features given the passed parameters of `featuresIn`
+ */
+
+
 
 util.extendAll(Map.prototype, /** @lends Map.prototype */{
 
