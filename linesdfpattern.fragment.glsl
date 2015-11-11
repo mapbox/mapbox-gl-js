@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform vec2 u_linewidth;
 uniform vec4 u_color;
 uniform float u_blur;

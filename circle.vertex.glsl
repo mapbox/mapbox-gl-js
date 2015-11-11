@@ -1,3 +1,5 @@
+precision mediump float;
+
 // set by gl_util
 uniform float u_size;
 

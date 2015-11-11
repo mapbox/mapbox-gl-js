@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform float u_opacity0;
 uniform float u_opacity1;
 uniform sampler2D u_image0;

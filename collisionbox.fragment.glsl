@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform float u_zoom;
 uniform float u_maxzoom;
 
