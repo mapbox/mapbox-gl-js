@@ -9,8 +9,6 @@ function drawRaster(painter, layer, posMatrix, tile) {
 
     gl.disable(gl.STENCIL_TEST);
 
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-
     var shader = painter.rasterShader;
     gl.switchShader(shader, posMatrix);
 
