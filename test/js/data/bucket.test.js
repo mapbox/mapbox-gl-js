@@ -89,7 +89,8 @@ test('Bucket', function(t) {
     t.test('reset buffers', function(t) {
         var builder = create();
 
-        builder.addFeatures([createFeature(17, 42)]);
+        builder.features = [createFeature(17, 42)];
+        builder.addFeatures();
 
         var buffers = {};
         builder.resetBuffers(buffers);
@@ -98,6 +99,30 @@ test('Bucket', function(t) {
         t.equal(buffers.testElement.length, 0);
         t.equal(buffers.testSecondElement.length, 0);
         t.equal(builder.elementGroups.test.groups.length, 0);
+
+        t.end();
+    });
+
+    t.test('add features after resetting buffers', function(t) {
+        var builder = create();
+
+        builder.features = [createFeature(1, 5)];
+        builder.addFeatures();
+        builder.resetBuffers({});
+        builder.features = [createFeature(17, 42)];
+        builder.addFeatures();
+
+        var testVertex = builder.buffers.testVertex;
+        t.equal(testVertex.length, 1);
+        t.deepEqual(testVertex.get(0), { map: [17], box: [34, 84] });
+
+        var testElement = builder.buffers.testElement;
+        t.equal(testElement.length, 1);
+        t.deepEqual(testElement.get(0), { vertices: [1, 2, 3] });
+
+        var testSecondElement = builder.buffers.testSecondElement;
+        t.equal(testSecondElement.length, 1);
+        t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
 
         t.end();
     });
