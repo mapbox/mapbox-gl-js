@@ -336,7 +336,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      *
      * @example
-     * map.featuresIn([[10, 20], [30, 50], { layer: 'my-layer-name' },
+     * map.featuresIn([[10, 20], [30, 50]], { layer: 'my-layer-name' },
      * function(err, features) {
      *   console.log(features);
      * });
