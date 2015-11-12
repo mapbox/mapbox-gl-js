@@ -491,7 +491,7 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
                 this.addCollisionBoxVertex(anchorPoint, bl, maxZoom, placementZoom);
                 this.addCollisionBoxVertex(anchorPoint, bl, maxZoom, placementZoom);
                 this.addCollisionBoxVertex(anchorPoint, tl, maxZoom, placementZoom);
-                group.vertexLength++;
+                group.vertexLength += 8;
             }
         }
     }
