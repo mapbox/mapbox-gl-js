@@ -145,6 +145,16 @@ test('util', function(t) {
         }));
     });
 
+    t.test('asyncAll - empty', function(t) {
+        t.equal(util.asyncAll([], function(data, callback) {
+            callback(null, 'foo');
+        }, function(err, results) {
+            t.ifError(err);
+            t.deepEqual(results, []);
+            t.end();
+        }));
+    });
+
     t.test('coalesce', function(t) {
         t.equal(util.coalesce(undefined, 1), 1);
         t.equal(util.coalesce(2, 1), 2);

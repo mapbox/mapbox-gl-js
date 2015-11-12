@@ -135,6 +135,7 @@ exports.asyncEach = function (array, fn, callback) {
  * @private
  */
 exports.asyncAll = function (array, fn, callback) {
+    if (!array.length) { return callback(null, []); }
     var remaining = array.length;
     var results = new Array(array.length);
     var error = null;
