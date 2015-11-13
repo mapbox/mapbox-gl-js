@@ -26,7 +26,6 @@ function drawFillTile(painter, layer, posMatrix, tile) {
         !painter.opaquePass :
         painter.opaquePass === (color[3] === 1);
 
-
     var gl = painter.gl;
     var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
