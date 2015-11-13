@@ -362,7 +362,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Apply multiple style mutations in a batch
      *
-     * @param {function} work Function which accepts the StyleBatch interface
+     * @param {function} work Function which accepts a `StyleBatch` object,
+     *      a subset of `Map`, with `addLayer`, `removeLayer`,
+     *      `setPaintProperty`, `setLayoutProperty`, `setFilter`,
+     *      `setLayerZoomRange`, `addSource`, and `removeSource`
      *
      * @example
      * map.batch(function (batch) {
