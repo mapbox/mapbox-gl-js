@@ -125,6 +125,33 @@ module.exports = Interaction;
  * @type {Object}
  */
 
+/**
+ * Drag start event. This event is emitted at the start of a user-initiated pan or rotate interaction.
+ *
+ * @event dragstart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ */
+
+/**
+ * Drag event. This event is emitted repeatedly during a user-initiated pan or rotate interaction.
+ *
+ * @event drag
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ */
+
+/**
+ * Drag end event. This event is emitted at the end of a user-initiated pan or rotate interaction.
+ *
+ * @event dragend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ */
+
 function Interaction(map) {
     this._map = map;
     this._el = map.getCanvasContainer();

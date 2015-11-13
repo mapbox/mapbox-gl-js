@@ -31,6 +31,7 @@ DragPan.prototype = {
     },
 
     _onDown: function (e) {
+        this.active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._inertia = [[Date.now(), this._pos]];
 
@@ -50,6 +51,7 @@ DragPan.prototype = {
 
         if (!this.active) {
             this.active = true;
+            this._map.fire('dragstart');
             this._map.fire('movestart');
         }
 
@@ -62,6 +64,7 @@ DragPan.prototype = {
 
         map.stop();
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
+        map.fire('drag');
         map.fire('move');
 
         this._pos = pos;
@@ -70,8 +73,10 @@ DragPan.prototype = {
     },
 
     _onUp: function () {
+        if (!this.active) return;
+
         this.active = false;
-        if (this._pos.equals(this._startPos)) return;
+        this._map.fire('dragend');
 
         var inertia = this._inertia;
         if (inertia.length < 2) {
