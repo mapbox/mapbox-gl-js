@@ -5,6 +5,10 @@ var browser = require('../util/browser.js');
 module.exports = drawCircles;
 
 function drawCircles(painter, layer, tiles) {
+
+    painter.setSublayer(0);
+    painter.depthMask(false);
+
     for (var t = 0; t < tiles.length; t++) {
         var tile = tiles[t];
 
@@ -22,7 +26,10 @@ function drawCircles(painter, layer, tiles) {
         // large circles are not clipped to tiles
         gl.disable(gl.STENCIL_TEST);
 
-        gl.switchShader(painter.circleShader, posMatrix, tile.exMatrix);
+        var shader = painter.circleShader;
+        gl.switchShader(shader);
+        gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+        gl.uniformMatrix4fv(shader.u_exmatrix, false, tile.exMatrix);
 
         var vertex = tile.buffers.circleVertex;
         var shader = painter.circleShader;
