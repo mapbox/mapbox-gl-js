@@ -33,7 +33,7 @@ var Attribution = require('./control/attribution');
  * Creates a map instance.
  * @class Map
  * @param {Object} options
- * @param {string} options.container HTML element to initialize the map in (or element id as string)
+ * @param {string|Element} options.container HTML element to initialize the map in (or element id as string)
  * @param {number} [options.minZoom=0] Minimum zoom of the map
  * @param {number} [options.maxZoom=20] Maximum zoom of the map
  * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the predefined Mapbox styles:
