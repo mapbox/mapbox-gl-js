@@ -34,7 +34,6 @@ DragRotate.prototype = {
     },
 
     _onMouseMove: function (e) {
-
         var p0 = this._startPos,
             p1 = this._pos,
             p2 = DOM.mousePos(this._el, e),
@@ -47,7 +46,7 @@ DragRotate.prototype = {
         this.active = true;
 
         if (!map.rotating) {
-            map.fire('movestart');
+            this._fireEvent('movestart', e);
             map.rotating = true;
         }
 
@@ -60,7 +59,8 @@ DragRotate.prototype = {
         var bearingDiff = p1.sub(center).angleWith(p2.sub(center)) / Math.PI * 180;
         map.transform.bearing = map.getBearing() - bearingDiff;
 
-        map.fire('move').fire('rotate');
+        this._fireEvent('move', e);
+        this._fireEvent('rotate', e);
 
         clearTimeout(this._timeout);
         this._timeout = setTimeout(this._onTimeout, 200);
@@ -68,7 +68,7 @@ DragRotate.prototype = {
         this._pos = p2;
     },
 
-    _onTimeout: function () {
+    _onTimeout: function (e) {
         var map = this._map;
 
         map.rotating = false;
@@ -76,7 +76,7 @@ DragRotate.prototype = {
 
         if (!map.rotating) {
             map._rerender();
-            map.fire('moveend');
+            this._fireEvent('moveend', e);
         }
     },
 
@@ -85,5 +85,10 @@ DragRotate.prototype = {
 
         document.removeEventListener('mousemove', this._onMouseMove, false);
         document.removeEventListener('mouseup', this._onMouseUp, false);
+    },
+
+    _fireEvent: function (type, e) {
+        return this._map.fire(type, { originalEvent: e });
     }
+
 };

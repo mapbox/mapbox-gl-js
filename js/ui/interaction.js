@@ -261,7 +261,7 @@ Interaction.prototype = {
     _fireEvent: function (type, e) {
         var pos = DOM.mousePos(this._el, e);
 
-        this._map.fire(type, {
+        return this._map.fire(type, {
             lngLat: this._map.unproject(pos),
             point: pos,
             originalEvent: e

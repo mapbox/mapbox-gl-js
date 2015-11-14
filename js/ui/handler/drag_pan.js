@@ -51,8 +51,8 @@ DragPan.prototype = {
 
         if (!this.active) {
             this.active = true;
-            this._map.fire('dragstart');
-            this._map.fire('movestart');
+            this._fireEvent('dragstart', e);
+            this._fireEvent('movestart', e);
         }
 
         var pos = DOM.mousePos(this._el, e),
@@ -64,23 +64,23 @@ DragPan.prototype = {
 
         map.stop();
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
-        map.fire('drag');
-        map.fire('move');
+        this._fireEvent('drag', e);
+        this._fireEvent('move', e);
 
         this._pos = pos;
 
         e.preventDefault();
     },
 
-    _onUp: function () {
+    _onUp: function (e) {
         if (!this.active) return;
 
         this.active = false;
-        this._map.fire('dragend');
+        this._fireEvent('dragend', e);
 
         var inertia = this._inertia;
         if (inertia.length < 2) {
-            this._map.fire('moveend');
+            this._fireEvent('moveend', e);
             return;
         }
 
@@ -109,15 +109,20 @@ DragPan.prototype = {
 
     },
 
-    _onMouseUp: function () {
-        this._onUp();
+    _onMouseUp: function (e) {
+        this._onUp(e);
         document.removeEventListener('mousemove', this._onMove, false);
         document.removeEventListener('mouseup', this._onMouseUp, false);
     },
 
-    _onTouchEnd: function () {
-        this._onUp();
+    _onTouchEnd: function (e) {
+        this._onUp(e);
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onTouchEnd);
+    },
+
+    _fireEvent: function (type, e) {
+        return this._map.fire(type, { originalEvent: e });
     }
+
 };
