@@ -5,6 +5,7 @@ var Tile = require('./tile');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
+var TileCoord = require('./tile_coord');
 var ajax = require('../util/ajax');
 
 module.exports = ImageSource;
@@ -90,7 +91,7 @@ ImageSource.prototype = util.inherit(Evented, {
             tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
         ]);
 
-        this.tile = new Tile();
+        this.tile = new Tile(new TileCoord(center.zoom, center.column, center.row), 512, Infinity);
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = gl.createBuffer();
@@ -112,13 +113,14 @@ ImageSource.prototype = util.inherit(Evented, {
         // noop
     },
 
-    renderedTiles: function(layers, painter) {
+    renderedTiles: function() {
         if (!this._loaded || !this.loaded()) return [];
 
-        var c = this.center;
-        this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
-
+        var painter = this.map.painter;
         var gl = painter.gl;
+        var center = this.center;
+
+        this.tile.calculateMatrices(center.zoom, center.column, center.row, this.map.transform, painter);
 
         if (!this.tile.texture) {
             this.tile.texture = gl.createTexture();

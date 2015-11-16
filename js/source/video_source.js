@@ -97,7 +97,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
-        var center = util.getCoordinatesCenter(coords);
+        var center = this.center = util.getCoordinatesCenter(coords);
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(center.zoom);
