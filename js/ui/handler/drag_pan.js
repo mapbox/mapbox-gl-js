@@ -60,7 +60,7 @@ DragPan.prototype = {
             now = Date.now();
 
         inertia.push([now, pos]);
-        while (inertia.length > 2 && now - inertia[0][0] > 50) inertia.shift();
+        while (inertia.length > 1 && now - inertia[0][0] > 50) inertia.shift();
 
         map.stop();
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
@@ -78,7 +78,10 @@ DragPan.prototype = {
         this.active = false;
         this._fireEvent('dragend', e);
 
-        var inertia = this._inertia;
+        var inertia = this._inertia,
+            now = Date.now();
+
+        while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
         if (inertia.length < 2) {
             this._fireEvent('moveend', e);
             return;
