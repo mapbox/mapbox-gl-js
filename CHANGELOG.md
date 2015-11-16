@@ -2,6 +2,12 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.11.4 (Nov 16 2015)
+
+#### Bugfixes
+
+* Fix alpha blending of alpha layers  (#1684)
+
 ## 0.11.3 (Nov 10 2015)
 
 #### Bugfixes
