@@ -127,5 +127,35 @@ DragPan.prototype = {
     _fireEvent: function (type, e) {
         return this._map.fire(type, { originalEvent: e });
     }
-
 };
+
+
+/**
+ * Drag start event. This event is emitted at the start of a user-initiated pan or rotate interaction.
+ *
+ * @event dragstart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Drag event. This event is emitted repeatedly during a user-initiated pan or rotate interaction.
+ *
+ * @event drag
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Drag end event. This event is emitted at the end of a user-initiated pan or rotate interaction.
+ *
+ * @event dragend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
