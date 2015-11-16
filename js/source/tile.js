@@ -179,7 +179,7 @@ Tile.prototype = {
      * @returns {boolean}
      */
     hasLayerData: function(layer) {
-        return Boolean(this.buffers && this.elementGroups[layer.ref || layer.id]);
+        return Boolean(this.buffers && this.elementGroups[layer.ref || layer.id] && Object.keys(this.elementGroups[layer.ref || layer.id]).length);
     }
 };
 
