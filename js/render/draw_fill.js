@@ -32,9 +32,8 @@ function drawFillTile(painter, layer, posMatrix, tile) {
     var vertex, elements, group, count;
 
     if (drawFillThisPass) {
-        painter.setSublayer(0);
-
         // Draw the stencil mask.
+        painter.setSublayer(1);
 
         // We're only drawing to the first seven bits (== support a maximum of
         // 8 overlapping polygons in one place before we get rendering errors).
