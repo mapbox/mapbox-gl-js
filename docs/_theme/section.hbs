@@ -24,31 +24,31 @@
   </div>
 
   {{#if params}}
-    <table class='prose space-bottom1'>
-      <thead>
-        <th>parameter</th>
-        <th>type</th>
-        <th>description</th>
-      </thead>
+    <h3 class='space-bottom1 space-top1'>Parameters</h3>
+    <table class='prose space-bottom1 small'>
       {{#params}}
         <tr>
-          <td>{{name}}</td>
-          <td>
+          <td class="fill-light">
+            <div class="code strong">{{name}}</div>
+            <div class="quiet">
             {{{format_type type}}}
-            {{#default}}
-              (default <code>{{.}}</code>)
-            {{/default}}
+                {{#default}}
+                  (default <code>{{.}}</code>)
+                {{/default}}
+            </div>
           </td>
           <td>{{{md description}}}</td>
         </tr>
         {{#properties}}
           <tr>
-            <td>{{name}}</td>
-            <td>
-              {{{format_type type}}}
-              {{#default}}
-              (default <code>{{.}}</code>)
-              {{/default}}
+            <td class="fill-light">
+              <div class="code strong">{{name}}</div>
+              <div class="quiet">
+                {{{format_type type}}}
+                {{#default}}
+                  (default <code>{{.}}</code>)
+                {{/default}}
+              </div>
             </td>
             <td>{{{md description}}}</td>
           </tr>
@@ -58,20 +58,18 @@
   {{/if}}
 
   {{#if properties}}
-    <table class='prose space-bottom1'>
-      <thead>
-        <th>property</th>
-        <th>type</th>
-        <th>description</th>
-      </thead>
+    <h3 class='space-bottom1 space-top1'>Properties</h3>
+    <table class='prose space-bottom1 small'>
       {{#properties}}
         <tr>
-          <td>{{name}}</td>
-          <td>
-            {{{format_type type}}}
-            {{#default}}
-              (default <code>{{.}}</code>)
-            {{/default}}
+          <td class="fill-light">
+            <div class="code strong">{{name}}</div>
+            <div class="quiet">
+              {{{format_type type}}}
+              {{#default}}
+                (default <code>{{.}}</code>)
+              {{/default}}
+            </div>
           </td>
           <td>{{{md description}}}</td>
         </tr>
@@ -81,7 +79,7 @@
 
   {{#if returns}}
     {{#returns}}
-      <h4 class='space-bottom1'>Returns</h4>
+      <h3 class='space-bottom1 space-top1'>Returns</h3>
       <code>{{{format_type type}}}</code>
       {{#if description}}:{{/if}}
       <span class='inline'>
@@ -91,7 +89,7 @@
   {{/if}}
 
   {{#if throws}}
-    <h4>Throws</h4>
+    <h3>Throws</h3>
     <table class='prose space-bottom1'>
       <thead>
         <th>exception</th>
@@ -109,7 +107,7 @@
   {{/if}}
 
   {{#if examples}}
-    <h4 class='space-bottom1'>Examples</h4>
+    <h3 class='space-bottom1 space-top1'>Examples</h3>
 <div class='prose'>
 {{#each examples ~}}
 <pre>

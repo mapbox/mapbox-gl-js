@@ -33,7 +33,7 @@ var Attribution = require('./control/attribution');
  * Creates a map instance.
  * @class Map
  * @param {Object} options
- * @param {string} options.container HTML element to initialize the map in (or element id as string)
+ * @param {string|Element} options.container HTML element to initialize the map in (or element id as string)
  * @param {number} [options.minZoom=0] Minimum zoom of the map
  * @param {number} [options.maxZoom=20] Maximum zoom of the map
  * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the predefined Mapbox styles:
@@ -49,6 +49,7 @@ var Attribution = require('./control/attribution');
  * @param {boolean} [options.attributionControl=true] If `true`, an attribution control will be added to the map.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, The maps canvas can be exported to a PNG using `map.getCanvas().toDataURL();`. This is false by default as a performance optimization.
+ * @param {LngLatBounds|Array<Array<number>>} [options.maxBounds] If set, the map is constrained to the given bounds.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -361,7 +362,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Apply multiple style mutations in a batch
      *
-     * @param {function} work Function which accepts the StyleBatch interface
+     * @param {function} work Function which accepts a `StyleBatch` object,
+     *      a subset of `Map`, with `addLayer`, `removeLayer`,
+     *      `setPaintProperty`, `setLayoutProperty`, `setFilter`,
+     *      `setLayerZoomRange`, `addSource`, and `removeSource`
      *
      * @example
      * map.batch(function (batch) {

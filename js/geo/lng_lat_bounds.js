@@ -164,7 +164,7 @@ LngLatBounds.prototype = {
  * var llb = mapboxgl.LngLatBounds.convert(arr);
  * llb;   // = LngLatBounds {_sw: LngLat {lng: -73.9876, lat: 40.7661}, _ne: LngLat {lng: -73.9397, lat: 40.8002}}
  */
-LngLatBounds.convert = function (a) {
-    if (!a || a instanceof LngLatBounds) return a;
-    return new LngLatBounds(a);
+LngLatBounds.convert = function (input) {
+    if (!input || input instanceof LngLatBounds) return input;
+    return new LngLatBounds(input);
 };
