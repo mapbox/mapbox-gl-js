@@ -6,6 +6,11 @@ var DOM = require('../../util/dom'),
 
 module.exports = DragRotate;
 
+var inertiaLinearity = 0.25,
+    inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
+    inertiaMaxSpeed = 180, // deg/s
+    inertiaDeceleration = 720; // deg/s^2
+
 
 function DragRotate(map) {
     this._map = map;
@@ -16,75 +21,121 @@ function DragRotate(map) {
 
 DragRotate.prototype = {
     enable: function () {
-        this._el.addEventListener('contextmenu', this._onContextMenu, false);
+        this._el.addEventListener('mousedown', this._onDown);
     },
 
     disable: function () {
-        this._el.removeEventListener('contextmenu', this._onContextMenu);
+        this._el.removeEventListener('mousedown', this._onDown);
     },
 
-    _onContextMenu: function (e) {
-        this._map.stop();
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
+    _onDown: function (e) {
+        if (e.which !== 3) return;
 
-        document.addEventListener('mousemove', this._onMouseMove, false);
-        document.addEventListener('mouseup', this._onMouseUp, false);
+        this.active = false;
+        this._inertia = [[Date.now(), this._map.getBearing()]];
+        this._startPos = this._pos = DOM.mousePos(this._el, e);
+        this._center = this._map.transform.centerPoint;  // Center of rotation
+
+        // If the first click was too close to the center, move the center of rotation by 200 pixels
+        // in the direction of the click.
+        var startToCenter = this._startPos.sub(this._center),
+            startToCenterDist = startToCenter.mag();
+
+        if (startToCenterDist < 200) {
+            this._center = this._startPos.add(new Point(-200, 0)._rotate(startToCenter.angle()));
+        }
+
+        document.addEventListener('mousemove', this._onMove);
+        document.addEventListener('mouseup', this._onUp);
 
         e.preventDefault();
     },
 
-    _onMouseMove: function (e) {
-        var p0 = this._startPos,
-            p1 = this._pos,
-            p2 = DOM.mousePos(this._el, e),
+    _onMove: function (e) {
+        var map = this._map;
 
-            map = this._map,
-            center = map.transform.centerPoint, // Center of rotation
-            startToCenter = p0.sub(center),
-            startToCenterDist = startToCenter.mag();
+        if (e.which !== 3) return;
+        if (map.boxZoom && map.boxZoom.active) return;
+        if (map.dragPan && map.dragPan.active) return;
 
-        this.active = true;
-
-        if (!map.rotating) {
+        if (!this.active) {
+            this.active = true;
+            this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
-            map.rotating = true;
         }
 
-        // If the first click was too close to the center, move the center of rotation by 200 pixels
-        // in the direction of the click.
-        if (startToCenterDist < 200) {
-            center = p0.add(new Point(-200, 0)._rotate(startToCenter.angle()));
-        }
+        map.stop();
 
-        var bearingDiff = p1.sub(center).angleWith(p2.sub(center)) / Math.PI * 180;
-        map.transform.bearing = map.getBearing() - bearingDiff;
+        var p1 = this._pos,
+            p2 = DOM.mousePos(this._el, e),
+            center = this._center,
+            bearingDiff = p1.sub(center).angleWith(p2.sub(center)) / Math.PI * 180,
+            bearing = map.getBearing() - bearingDiff,
+            inertia = this._inertia,
+            last = inertia[inertia.length - 1],
+            now = Date.now();
 
-        this._fireEvent('move', e);
+        map.transform.bearing = bearing;
+        inertia.push([now, map._normalizeBearing(bearing, last[1])]);
+        while (inertia.length > 1 && now - inertia[0][0] > 50) inertia.shift();
+
         this._fireEvent('rotate', e);
-
-        clearTimeout(this._timeout);
-        this._timeout = setTimeout(this._onTimeout, 200);
+        this._fireEvent('move', e);
 
         this._pos = p2;
     },
 
-    _onTimeout: function (e) {
-        var map = this._map;
+    _onUp: function (e) {
+        if (!(this.active && e.which === 3)) return;
+        document.removeEventListener('mousemove', this._onMove);
+        document.removeEventListener('mouseup', this._onUp);
 
-        map.rotating = false;
-        map.snapToNorth();
-
-        if (!map.rotating) {
-            map._rerender();
-            this._fireEvent('moveend', e);
-        }
-    },
-
-    _onMouseUp: function () {
         this.active = false;
+        this._fireEvent('rotateend', e);
 
-        document.removeEventListener('mousemove', this._onMouseMove, false);
-        document.removeEventListener('mouseup', this._onMouseUp, false);
+        var map = this._map,
+            mapBearing = map.getBearing(),
+            inertia = this._inertia,
+            now = Date.now();
+
+        while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
+        if (inertia.length < 2) {
+            if (Math.abs(mapBearing) < map.options.bearingSnap) {
+                map.resetNorth({noMoveStart: true});
+            } else {
+                this._fireEvent('moveend', e);
+            }
+            return;
+        }
+
+        var first = inertia[0],
+            last = inertia[inertia.length - 1],
+            previous = inertia[inertia.length - 2],
+            bearing = map._normalizeBearing(mapBearing, previous[1]),
+            flingDiff = last[1] - first[1],
+            sign = flingDiff < 0 ? -1 : 1,
+            flingDuration = (last[0] - first[0]) / 1000,
+            speed = Math.abs(flingDiff * (inertiaLinearity / flingDuration));  // deg/s
+
+        if (speed > inertiaMaxSpeed) {
+            speed = inertiaMaxSpeed;
+        }
+
+        var duration = speed / (inertiaDeceleration * inertiaLinearity),
+            offset = sign * speed * (duration / 2);
+
+        bearing += offset;
+
+        if (Math.abs(map._normalizeBearing(bearing, 0)) < map.options.bearingSnap) {
+            bearing = map._normalizeBearing(0, bearing);
+        }
+
+        this._map.rotateTo(bearing, {
+            duration: duration * 1000,
+            easing: inertiaEasing,
+            noMoveStart: true
+        });
+
     },
 
     _fireEvent: function (type, e) {
@@ -92,3 +143,34 @@ DragRotate.prototype = {
     }
 
 };
+
+
+/**
+ * Rotate start event. This event is emitted at the start of a user-initiated rotate interaction.
+ *
+ * @event rotatestart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Rotate event. This event is emitted repeatedly during a user-initiated rotate interaction.
+ *
+ * @event rotate
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Rotate end event. This event is emitted at the end of a user-initiated rotate interaction.
+ *
+ * @event rotateend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
