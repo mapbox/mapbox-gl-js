@@ -68,7 +68,7 @@ function drawBackground(painter, layer, posMatrix) {
         var coord = coveringTiles[c];
 
         var tile = new Tile(coord, transform.tileSize);
-        tile.calculateMatrices(coord.z, coord.x, coord.y, transform);
+        tile.calculateMatrices(coord.z, coord.x + Math.pow(2, coord.z) * coord.w, coord.y, transform);
 
         gl.uniformMatrix4fv(shader.u_matrix, false, tile.posMatrix);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
