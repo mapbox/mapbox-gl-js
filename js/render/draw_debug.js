@@ -5,13 +5,18 @@ var browser = require('../util/browser');
 
 module.exports = drawDebug;
 
-function drawDebug(painter, tile) {
+function drawDebug(painter, layer, tiles) {
+    for (var i = 0; i < tiles.length; i++) {
+        drawDebugTile(painter, layer, tiles[i]);
+    }
+}
+
+function drawDebugTile(painter, layer, tile) {
     var gl = painter.gl;
 
-    // Blend to the front, not the back.
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
-    gl.switchShader(painter.debugShader, tile.posMatrix);
+    var shader = painter.debugShader;
+    gl.switchShader(shader);
+    gl.uniformMatrix4fv(shader.u_matrix, false, tile.posMatrix);
 
     // draw bounding rectangle
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);
@@ -31,7 +36,4 @@ function drawDebug(painter, tile) {
     gl.lineWidth(2 * browser.devicePixelRatio);
     gl.uniform4f(painter.debugShader.u_color, 0, 0, 0, 1);
     gl.drawArrays(gl.LINES, 0, vertices.length / painter.debugTextBuffer.itemSize);
-
-    // Revert blending mode to blend to the back.
-    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 }

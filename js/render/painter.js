@@ -349,6 +349,10 @@ Painter.prototype.render = function(style, options) {
 
         this.setTranslucent();
 
+        if (this.options.debug) {
+            draw.debug(this, layer, tiles);
+        }
+
         for (var k = 0; k < group.length; k++) {
             layer = group[k];
             this.currentLayer++;
