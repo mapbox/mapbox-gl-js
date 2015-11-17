@@ -62,15 +62,20 @@ Interaction.prototype = {
     },
 
     _onMouseDown: function (e) {
+        this._map.stop();
         this._startPos = DOM.mousePos(this._el, e);
         this._fireEvent('mousedown', e);
     },
 
     _onMouseUp: function (e) {
-        if (this._contextMenuFired && !this._map.dragRotate.active && !this._map.dragPan.active)
-            this._fireEvent('contextmenu', e);
+        var map = this._map,
+            rotating = map.dragRotate && map.dragRotate.active;
 
-        this._contextMenuFired = null;
+        if (this._contextMenuEvent && !rotating) {
+            this._fireEvent('contextmenu', this._contextMenuEvent);
+        }
+
+        this._contextMenuEvent = null;
         this._fireEvent('mouseup', e);
     },
 
@@ -95,7 +100,8 @@ Interaction.prototype = {
         var map = this._map,
             el = this._el;
 
-        if (map.dragPan.active || map.dragRotate.active) return;
+        if (map.dragPan && map.dragPan.active) return;
+        if (map.dragRotate && map.dragRotate.active) return;
 
         var target = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
@@ -117,8 +123,9 @@ Interaction.prototype = {
         e.preventDefault();
     },
 
-    _onContextMenu: function () {
-        this._contextMenuFired = true;
+    _onContextMenu: function (e) {
+        this._contextMenuEvent = e;
+        e.preventDefault();
     },
 
     _fireEvent: function (type, e) {
