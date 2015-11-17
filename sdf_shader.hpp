@@ -22,7 +22,6 @@ public:
     Uniform<GLfloat>                u_maxfadezoom = {"u_maxfadezoom", *this};
     Uniform<GLfloat>                u_fadezoom    = {"u_fadezoom",    *this};
     Uniform<GLint>                  u_skewed      = {"u_skewed",      *this};
-    Uniform<GLfloat>                u_extra       = {"u_extra",       *this};
 
 protected:
     GLint a_offset = -1;
