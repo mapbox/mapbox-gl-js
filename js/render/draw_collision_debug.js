@@ -1,11 +1,12 @@
 'use strict';
 
-module.exports = drawPlacementDebug;
+module.exports = drawCollisionDebug;
 
-function drawPlacementDebug(painter, layer, posMatrix, tile) {
-
+function drawCollisionDebug(painter, layer, posMatrix, tile) {
+    if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].collisionBox;
     if (!elementGroups) return;
+    if (!tile.buffers) return;
 
     var gl = painter.gl;
     var buffer = tile.buffers.collisionBoxVertex;
@@ -14,7 +15,9 @@ function drawPlacementDebug(painter, layer, posMatrix, tile) {
     gl.enable(gl.STENCIL_TEST);
     painter.setClippingMask(tile);
 
-    gl.switchShader(shader, posMatrix);
+    gl.switchShader(shader);
+    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+
     buffer.bind(gl);
     buffer.setAttribPointers(gl, shader, 0);
 

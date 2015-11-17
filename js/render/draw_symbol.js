@@ -62,9 +62,6 @@ function drawSymbols(painter, layer, tiles) {
 
     for (var n = 0; n < tiles.length; n++) {
         tile = tiles[n];
-        if (!tile.buffers) continue;
-        elementGroups = tile.elementGroups[layer.ref || layer.id];
-        if (!elementGroups) continue;
         drawCollisionDebug(painter, layer, tile.posMatrix, tile);
     }
 
