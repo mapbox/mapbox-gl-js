@@ -5,7 +5,6 @@ var DOM = require('../../util/dom'),
 
 module.exports = DragPan;
 
-
 var inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 3000, // px/s
@@ -21,8 +20,8 @@ function DragPan(map) {
 
 DragPan.prototype = {
     enable: function () {
-        this._el.addEventListener('mousedown', this._onDown, false);
-        this._el.addEventListener('touchstart', this._onDown, false);
+        this._el.addEventListener('mousedown', this._onDown);
+        this._el.addEventListener('touchstart', this._onDown);
     },
 
     disable: function () {
@@ -38,12 +37,12 @@ DragPan.prototype = {
         this._inertia = [[Date.now(), this._pos]];
 
         if (!e.touches) {
-            document.addEventListener('mousemove', this._onMove, false);
-            document.addEventListener('mouseup', this._onMouseUp, false);
+            document.addEventListener('mousemove', this._onMove);
+            document.addEventListener('mouseup', this._onMouseUp);
 
         } else if (e.touches.length === 1) {
-            document.addEventListener('touchmove', this._onMove, false);
-            document.addEventListener('touchend', this._onTouchEnd, false);
+            document.addEventListener('touchmove', this._onMove);
+            document.addEventListener('touchend', this._onTouchEnd);
         }
     },
 
@@ -70,6 +69,7 @@ DragPan.prototype = {
 
         map.stop();
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
+
         this._fireEvent('drag', e);
         this._fireEvent('move', e);
 
@@ -119,8 +119,8 @@ DragPan.prototype = {
     _onMouseUp: function (e) {
         if (!(this.active && e.which === 1)) return;
         this._onUp(e);
-        document.removeEventListener('mousemove', this._onMove, false);
-        document.removeEventListener('mouseup', this._onMouseUp, false);
+        document.removeEventListener('mousemove', this._onMove);
+        document.removeEventListener('mouseup', this._onMouseUp);
     },
 
     _onTouchEnd: function (e) {
@@ -137,7 +137,7 @@ DragPan.prototype = {
 
 
 /**
- * Drag start event. This event is emitted at the start of a user-initiated pan or rotate interaction.
+ * Drag start event. This event is emitted at the start of a user-initiated pan interaction.
  *
  * @event dragstart
  * @memberof Map
@@ -147,7 +147,7 @@ DragPan.prototype = {
  */
 
 /**
- * Drag event. This event is emitted repeatedly during a user-initiated pan or rotate interaction.
+ * Drag event. This event is emitted repeatedly during a user-initiated pan interaction.
  *
  * @event drag
  * @memberof Map
@@ -157,7 +157,7 @@ DragPan.prototype = {
  */
 
 /**
- * Drag end event. This event is emitted at the end of a user-initiated pan or rotate interaction.
+ * Drag end event. This event is emitted at the end of a user-initiated pan interaction.
  *
  * @event dragend
  * @memberof Map
