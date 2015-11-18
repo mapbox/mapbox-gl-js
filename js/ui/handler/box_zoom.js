@@ -25,7 +25,7 @@ BoxZoom.prototype = {
     },
 
     _onMouseDown: function (e) {
-        if (!(e.shiftKey && e.which === 1)) return;
+        if (!(e.shiftKey && e.button === 0)) return;
 
         document.addEventListener('mousemove', this._onMouseMove, false);
         document.addEventListener('keydown', this._onKeyDown, false);
@@ -60,7 +60,7 @@ BoxZoom.prototype = {
     },
 
     _onMouseUp: function (e) {
-        if (e.which !== 1) return;
+        if (e.button !== 0) return;
 
         var p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),

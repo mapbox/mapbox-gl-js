@@ -30,29 +30,30 @@ DragPan.prototype = {
     },
 
     _onDown: function (e) {
-        if (e.which !== 1) return;
+        if (this.active) return;
+
+        if (e.touches && e.touches.length === 1) {
+            document.addEventListener('touchmove', this._onMove);
+            document.addEventListener('touchend', this._onTouchEnd);
+        } else if (e.button === 0) {
+            document.addEventListener('mousemove', this._onMove);
+            document.addEventListener('mouseup', this._onMouseUp);
+        } else {
+            return;
+        }
 
         this.active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._inertia = [[Date.now(), this._pos]];
-
-        if (!e.touches) {
-            document.addEventListener('mousemove', this._onMove);
-            document.addEventListener('mouseup', this._onMouseUp);
-
-        } else if (e.touches.length === 1) {
-            document.addEventListener('touchmove', this._onMove);
-            document.addEventListener('touchend', this._onTouchEnd);
-        }
     },
 
     _onMove: function (e) {
         var map = this._map;
 
-        if (e.which !== 1) return;
         if (map.boxZoom && map.boxZoom.active) return;
         if (map.dragRotate && map.dragRotate.active) return;
         if (e.touches && e.touches.length > 1) return;
+        if (!e.touches && e.buttons & 1 === 0) return;
 
         if (!this.active) {
             this.active = true;
@@ -79,6 +80,14 @@ DragPan.prototype = {
     },
 
     _onUp: function (e) {
+        var map = this._map;
+
+        if (!this.active) return;
+        if (map.boxZoom && map.boxZoom.active) return;
+        if (map.dragRotate && map.dragRotate.active) return;
+        if (e.touches && e.touches.length > 1) return;
+        if (!e.touches && e.button !== 0) return;
+
         this.active = false;
         this._fireEvent('dragend', e);
 
@@ -108,23 +117,21 @@ DragPan.prototype = {
         var duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = velocity.mult(-duration / 2);
 
-        this._map.panBy(offset, {
+        map.panBy(offset, {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
         });
-
     },
 
     _onMouseUp: function (e) {
-        if (!(this.active && e.which === 1)) return;
+        if (e.button !== 0) return;
         this._onUp(e);
         document.removeEventListener('mousemove', this._onMove);
         document.removeEventListener('mouseup', this._onMouseUp);
     },
 
     _onTouchEnd: function (e) {
-        if (!(this.active && e.which === 1)) return;
         this._onUp(e);
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onTouchEnd);

@@ -29,7 +29,11 @@ DragRotate.prototype = {
     },
 
     _onDown: function (e) {
-        if (e.which !== 3) return;
+        if (this.active) return;
+        if (e.button !== 2) return;
+
+        document.addEventListener('mousemove', this._onMove);
+        document.addEventListener('mouseup', this._onUp);
 
         this.active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
@@ -45,16 +49,13 @@ DragRotate.prototype = {
             this._center = this._startPos.add(new Point(-200, 0)._rotate(startToCenter.angle()));
         }
 
-        document.addEventListener('mousemove', this._onMove);
-        document.addEventListener('mouseup', this._onUp);
-
         e.preventDefault();
     },
 
     _onMove: function (e) {
         var map = this._map;
 
-        if (e.which !== 3) return;
+        if (e.buttons & 2 === 0) return;
         if (map.boxZoom && map.boxZoom.active) return;
         if (map.dragPan && map.dragPan.active) return;
 
@@ -86,10 +87,11 @@ DragRotate.prototype = {
     },
 
     _onUp: function (e) {
-        if (!(this.active && e.which === 3)) return;
+        if (e.button !== 2) return;
         document.removeEventListener('mousemove', this._onMove);
         document.removeEventListener('mouseup', this._onUp);
 
+        if (!this.active) return;
         this.active = false;
         this._fireEvent('rotateend', e);
 
@@ -130,12 +132,11 @@ DragRotate.prototype = {
             bearing = map._normalizeBearing(0, bearing);
         }
 
-        this._map.rotateTo(bearing, {
+        map.rotateTo(bearing, {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
         });
-
     },
 
     _fireEvent: function (type, e) {
