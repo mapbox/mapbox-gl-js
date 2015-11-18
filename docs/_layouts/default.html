@@ -50,6 +50,8 @@ footer:
       path: /mapbox-studio-classic
     - title: Mapbox Editor
       path: /editor
+    - title: Map Gallery
+      path: /gallery
     - title: Vector tiles
       path: /developers/vector-tiles
     - title: Maki icons
@@ -189,13 +191,81 @@ footer:
 {% if page.app %}
 {{content}}
 {% else %}
-<div class='masthead show-in-loaded col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.url contains '/welcome' %}light-nav keyline-bottom{% endif %}' data-swiftype-index='false'>
+<div class='masthead col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.url contains '/welcome' %}light-nav keyline-bottom{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right pad2y contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
       <h4 class='logo-enterpriseaddon pin-topleft text-aqua block-in-enterprise'>Enterprise</h4>
-      <div id='nav'>
+
+      <!-- Desktop nav -->
+      <div class='text-right z10 strong small pad0y primary hide-mobile'>
+        <div class='inline align-top'>
+          <a href='/products/'      class='primary-nav-button fl pad1x pad0y round {% if page.url contains '/products' %}active{% endif %}'>Products</a>
+          <a href='/data-platform/' class='primary-nav-button fl pad1x pad0y round {% if page.url contains '/data-platform' %}active{% endif %}'>Data</a>
+          <a href='/industries'     class='primary-nav-button fl pad1x pad0y round {% if page.url contains '/industries' %}active{% endif %}'>Industries</a>
+          <a href='/plans/'         class='primary-nav-button fl pad1x pad0y round {% if page.url contains '/plans' %}active{% endif %}'>Pricing</a>
+          <a href='/help/'          class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/help' %}active{% endif %}'>Help</a>
+          <a href='/developers/'    class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/developers' %}active{% endif %}'>Developers</a>
+          <a href='/blog/'          class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a>
+        </div>
+        <!-- Hardcoded width so content doesn't jump -->
+        <div style='width:130px' class='unfloat inline align-top' id='nav'>
+        </div>
       </div>
+
+      <!-- Mobile nav -->
+      <div class='show-mobile contain dropdown-container pin-topright'>
+        <a href='#menu' class='dark contain z1 big inline icon menu round quiet dropdown-button js-dropdown-button pin-right'></a>
+        <div id='menu' class='js-dropdown-menu scroll-v dropdown-menu offcanvas-top fill-midnight clip col12 pin-top animate'>
+      <div class="keyline-bottom clearfix">
+          <div class="mobile-cols pad4y keyline-bottom clearfix">
+            <a class="pad1 block strong col6" href="/products/">Products</a>
+            <a class="pad1 block strong col6" href="/mapbox-studio/">Mapbox Studio</a>
+            <a class="pad1 block strong col6" href="/data-platform/">Data</a>
+            <a class="pad1 block strong col6" href="/industries/">Industries</a>
+            <a class="pad1 block strong col6" href="/help/">Help</a>
+            <a class="pad1 block strong col6" href="/developers/">Developers</a>
+            <a class="pad1 block strong col6" href="/blog/">Blog</a>
+            <a class="pad1 block strong col6" href="/pricing/">Pricing</a>
+          </div>
+          <div id="mobile-nav" class="pad2y clearfix mobile-cols">
+              <a class="pad1 block strong col6 signin" href="#signin">Log in</a>
+              <a class="pad1 block strong col6" href="/signup/">Sign up</a>
+            </div>
+          </div>
+          <div class='clearfix  small'>
+
+         <div class="col12 clearfix pad4y keyline-bottom">
+            <h3 class="pad0y pad1x strong space-bottom1">Products</h3>
+            <div class="col12 pad1x clearfix  mobile-cols ">
+              <a class='pad0y block quiet col6' href='/maps/'>Maps</a>
+              <a class='pad0y block quiet col6' href='/geocoding/'>Geocoding</a>
+              <a class='pad0y block quiet col6' href='/directions/'>Directions</a>
+              <a class='pad0y block quiet col6' href='/developers/'>Developer tools</a>
+              <a class='pad0y block quiet col6' href='/satellite/'>Satellite</a>
+              <a class='pad0y block quiet col6' href='/analysis/'>Analysis</a>
+              <a class='pad0y block quiet col6' href='/atlas/'>Atlas</a>
+              <a class='pad0y block quiet col6' href='/highvolume/'>High Volume</a>
+            </div>
+          </div>
+
+          <div class="col12 pad1x clearfix  mobile-cols pad4y ">
+            <a class='pad0y block strong quiet col6' href='/about/'>About</a>
+            <a class='pad0y block strong quiet col6' href='/about/team/'>Team</a>
+            <a class='pad0y block strong quiet col6' href='/jobs/'>Jobs</a>
+            <a class='pad0y block strong quiet col6' href='/about/press/'>Press</a>
+            <a class='pad0y block strong quiet col6' href='/tos/'>Legal</a>
+            <a class='pad0y block strong quiet col6' href='/contact/'>Contact</a>
+            <a class='pad0y block strong quiet col6' href='/education/'>Education</a>
+            <a class='pad0y block strong quiet col6' href='/security/'>Security</a>
+            <a class='pad0y block strong quiet col6' href='/about/board'>Board</a>
+          </div>
+
+          </div>
+        </div>
+      </div>
+
+
     </nav>
   </div>
 </div>
@@ -203,7 +273,7 @@ footer:
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
 
-{% unless page.url contains '/hello/directions'  or page.url contains '/welcome'  %}
+{% unless page.url contains '/hello/directions' or page.url contains '/welcome'  %}
 <div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
 
   <div class='limiter clearfix'>
