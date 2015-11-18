@@ -111,8 +111,8 @@ footer:
   <meta property='og:url' content='{{page.permalink}}' />
   <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;"}}' />
   <meta property='og:title' content='{{page.title | replace:"'","&rsquo;"}}' />
-  <meta name='twitter:description' content='{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" | replace: '&#39;',"&rsquo;" }}{% endif %}' />
-  <meta property='og:description' content='{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | markdownify | strip_html | trim_spaces | truncatewords: 30 | escape | replace:"'","&rsquo;" | replace: '&#39;',"&rsquo;" }}{% endif %}' />
+  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
   {% if page.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
