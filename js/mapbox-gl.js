@@ -17,6 +17,7 @@ mapboxgl.Navigation = require('./ui/control/navigation');
 mapboxgl.Attribution = require('./ui/control/attribution');
 mapboxgl.Popup = require('./ui/popup');
 
+mapboxgl.VectorTileSource = require('./source/vector_tile_source');
 mapboxgl.GeoJSONSource = require('./source/geojson_source');
 mapboxgl.VideoSource = require('./source/video_source');
 mapboxgl.ImageSource = require('./source/image_source');
