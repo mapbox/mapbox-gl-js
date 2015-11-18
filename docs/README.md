@@ -29,7 +29,14 @@ In the post body, write the HTML and JavaScript constituting the example.
 
 ## Generating Documentation
 
-To generate new docs run
+To generate new docs ensure you are running [Jekyll](http://jekyllrb.com) version `2.5.x`
+
+```bash
+jekyll -v
+ > jekyll 2.5.3
+```
+
+Then run
 
 ```bash
 npm run docs
