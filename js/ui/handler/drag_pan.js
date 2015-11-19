@@ -95,18 +95,28 @@ DragPan.prototype = {
             now = Date.now();
 
         while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
-        if (inertia.length < 2) {
+
+        var finish = function() {
             this._fireEvent('moveend', e);
+        }.bind(this);
+
+        if (inertia.length < 2) {
+            finish();
             return;
         }
 
         var last = inertia[inertia.length - 1],
             first = inertia[0],
             flingOffset = last[1].sub(first[1]),
-            flingDuration = (last[0] - first[0]) / 1000,
+            flingDuration = (last[0] - first[0]) / 1000;
 
-            // calculate px/s velocity & adjust for increased initial animation speed when easing out
-            velocity = flingOffset.mult(inertiaLinearity / flingDuration),
+        if (flingDuration === 0 || last[1].equals(first[1])) {
+            finish();
+            return;
+        }
+
+        // calculate px/s velocity & adjust for increased initial animation speed when easing out
+        var velocity = flingOffset.mult(inertiaLinearity / flingDuration),
             speed = velocity.mag(); // px/s
 
         if (speed > inertiaMaxSpeed) {

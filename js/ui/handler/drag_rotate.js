@@ -101,12 +101,17 @@ DragRotate.prototype = {
             now = Date.now();
 
         while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
-        if (inertia.length < 2) {
+
+        var finish = function() {
             if (Math.abs(mapBearing) < map.options.bearingSnap) {
                 map.resetNorth({noMoveStart: true});
             } else {
                 this._fireEvent('moveend', e);
             }
+        }.bind(this);
+
+        if (inertia.length < 2) {
+            finish();
             return;
         }
 
@@ -116,9 +121,14 @@ DragRotate.prototype = {
             bearing = map._normalizeBearing(mapBearing, previous[1]),
             flingDiff = last[1] - first[1],
             sign = flingDiff < 0 ? -1 : 1,
-            flingDuration = (last[0] - first[0]) / 1000,
-            speed = Math.abs(flingDiff * (inertiaLinearity / flingDuration));  // deg/s
+            flingDuration = (last[0] - first[0]) / 1000;
 
+        if (flingDiff === 0 || flingDuration === 0) {
+            finish();
+            return;
+        }
+
+        var speed = Math.abs(flingDiff * (inertiaLinearity / flingDuration));  // deg/s
         if (speed > inertiaMaxSpeed) {
             speed = inertiaMaxSpeed;
         }
