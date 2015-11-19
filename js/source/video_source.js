@@ -137,9 +137,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
     renderedTiles: function() {
         // not enough data for current position
-        if (!this._loaded || this.video.readyState < 2) return [];
-
-        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
+        if (!this._loaded || this.video.readyState < 2) return {};
 
         var gl = this.map.painter.gl;
         if (!this.tile.texture) {
@@ -157,6 +155,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
         this._currentTime = this.video.currentTime;
 
+        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
         var tiles = {};
         tiles[coord.id] = this.tile;
         return tiles;

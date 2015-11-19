@@ -114,7 +114,7 @@ ImageSource.prototype = util.inherit(Evented, {
     },
 
     renderedTiles: function() {
-        if (!this._loaded || !this.loaded()) return [];
+        if (!this._loaded || !this.loaded()) return {};
 
         var painter = this.map.painter;
         var gl = painter.gl;
