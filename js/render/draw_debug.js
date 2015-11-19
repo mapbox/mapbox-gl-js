@@ -6,19 +6,23 @@ var TileCoord = require('../source/tile_coord');
 
 module.exports = drawDebug;
 
-function drawDebug(painter, tiles) {
-    for (var coordID in tiles) {
-        var coord = TileCoord.fromID(coordID);
-        var tile = tiles[coordID];
-        drawDebugTile(painter, coord, tile.sourceMaxZoom);
+var TilePyramid = require('../source/tile_pyramid');
+
+var pyramid = new TilePyramid({ tileSize: 512 });
+
+function drawDebug(painter) {
+    var coords = pyramid.coveringTiles(painter.transform);
+    for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
+        drawDebugTile(painter, coord);
     }
 }
 
-function drawDebugTile(painter, coord, maxZoom) {
+function drawDebugTile(painter, coord) {
     var gl = painter.gl;
 
     var shader = painter.debugShader;
-    gl.switchShader(shader, painter.calculateMatrix(coord, maxZoom));
+    gl.switchShader(shader, painter.calculateMatrix(coord, Infinity));
 
     // draw bounding rectangle
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);
