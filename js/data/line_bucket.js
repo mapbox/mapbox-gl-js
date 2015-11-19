@@ -56,7 +56,7 @@ LineBucket.prototype.shaders = {
 LineBucket.prototype.addFeature = function(feature) {
     var lines = feature.loadGeometry();
     var layoutProperties = this.layoutProperties;
-    for (var i = 0; i < lines.length; i++) {
+    for (var i = lines.length - 1; i >= 0; i--) {
         this.addLine(
             lines[i],
             layoutProperties['line-join'],
