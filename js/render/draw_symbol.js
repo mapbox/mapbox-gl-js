@@ -1,15 +1,13 @@
 'use strict';
 
-var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 
+var browser = require('../util/browser');
 var drawCollisionDebug = require('./draw_collision_debug');
 
 module.exports = drawSymbols;
 
-
 function drawSymbols(painter, layer, tiles) {
-
     if (painter.opaquePass) return;
 
     var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
@@ -32,37 +30,39 @@ function drawSymbols(painter, layer, tiles) {
 
     var tile, elementGroups;
 
-    for (var t = 0; t < tiles.length; t++) {
-        tile = tiles[t];
+    for (var coordID1 in tiles) {
+        tile = tiles[coordID1];
 
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
         if (elementGroups.icon.groups.length) {
-            drawSymbol(painter, layer, tile.posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
+            drawSymbol(painter, layer, painter.calculateMatrix(coordID1, tile.sourceMaxZoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
         }
     }
 
-    for (var k = 0; k < tiles.length; k++) {
-        tile = tiles[k];
+    for (var coordID2 in tiles) {
+        tile = tiles[coordID2];
 
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
+        var posMatrix = painter.calculateMatrix(coordID2, tile.sourceMaxZoom);
+
         if (elementGroups.glyph.groups.length) {
-            drawSymbol(painter, layer, tile.posMatrix, tile, elementGroups.glyph, 'text', true);
+            drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
         }
 
         if (elementGroups.glyph.groups.length) {
-            drawSymbol(painter, layer, tile.posMatrix, tile, elementGroups.glyph, 'text', true);
+            drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
         }
     }
 
-    for (var n = 0; n < tiles.length; n++) {
-        tile = tiles[n];
-        drawCollisionDebug(painter, layer, tile.posMatrix, tile);
+    for (var coordID3 in tiles) {
+        tile = tiles[coordID3];
+        drawCollisionDebug(painter, layer, coordID3, tile);
     }
 
     if (drawAcrossEdges) {
@@ -91,7 +91,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         s = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.coord.z);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
-        exMatrix = mat4.clone(tile.exMatrix);
+        exMatrix = mat4.clone(painter.transform.exMatrix);
         s = painter.transform.altitude;
         gammaScale = 1;
     }

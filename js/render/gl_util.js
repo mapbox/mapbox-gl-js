@@ -60,7 +60,7 @@ exports.extend = function(context) {
     };
 
     // Switches to a different shader program.
-    context.switchShader = function(shader) {
+    context.switchShader = function(shader, posMatrix) {
 
         if (this.currentShader !== shader) {
             this.useProgram(shader.program);
@@ -85,6 +85,8 @@ exports.extend = function(context) {
 
             this.currentShader = shader;
         }
+
+        if (posMatrix) this.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
     };
 
 

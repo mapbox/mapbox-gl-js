@@ -9,12 +9,13 @@ function drawCircles(painter, layer, tiles) {
     painter.depthMask(false);
     painter.gl.switchShader(painter.circleShader);
 
-    for (var i = 0; i < tiles.length; i++) {
-        drawCirclesTile(painter, layer, tiles[i]);
+    for (var coordID in tiles) {
+        var tile = tiles[coordID];
+        drawCirclesTile(painter, layer, painter.calculateMatrix(coordID, tile.sourceMaxZoom), tiles[coordID].sourceMaxZoom);
     }
 }
 
-function drawCirclesTile(painter, layer, tile) {
+function drawCirclesTile(painter, layer, posMatrix, tile) {
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
 
@@ -28,9 +29,9 @@ function drawCirclesTile(painter, layer, tile) {
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
-    var posMatrix = painter.translateMatrix(tile.posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
-    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
-    gl.uniformMatrix4fv(shader.u_exmatrix, false, tile.exMatrix);
+    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
+    gl.uniformMatrix4fv(shader.u_matrix, false, translatedPosMatrix);
+    gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);
 
     // antialiasing factor: this is a minimum blur distance that serves as
     // a faux-antialiasing for the circle. since blur is a ratio of the circle's

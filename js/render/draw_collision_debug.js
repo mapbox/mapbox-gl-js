@@ -2,7 +2,7 @@
 
 module.exports = drawCollisionDebug;
 
-function drawCollisionDebug(painter, layer, posMatrix, tile) {
+function drawCollisionDebug(painter, layer, coordID, tile) {
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].collisionBox;
     if (!elementGroups) return;
@@ -11,9 +11,10 @@ function drawCollisionDebug(painter, layer, posMatrix, tile) {
     var gl = painter.gl;
     var buffer = tile.buffers.collisionBoxVertex;
     var shader = painter.collisionBoxShader;
+    var posMatrix = painter.calculateMatrix(coordID, Infinity);
 
     gl.enable(gl.STENCIL_TEST);
-    painter.setClippingMask(tile);
+    painter.setClippingMask(coordID);
 
     gl.switchShader(shader);
     gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);

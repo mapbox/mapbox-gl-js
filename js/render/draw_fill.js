@@ -1,17 +1,18 @@
 'use strict';
 
 var browser = require('../util/browser');
+var TileCoord = require('../source/tile_coord');
 
 module.exports = drawFill;
 
 function drawFill(painter, layer, tiles) {
-    for (var n = 0; n < tiles.length; n++) {
-        var tile = tiles[n];
-        drawFillTile(painter, layer, tile.posMatrix, tile);
+    for (var coordID in tiles) {
+        var tile = tiles[coordID];
+        drawFillTile(painter, layer, TileCoord.fromID(coordID), tile);
     }
 }
 
-function drawFillTile(painter, layer, posMatrix, tile) {
+function drawFillTile(painter, layer, coord, tile) {
 
     // No data
     if (!tile.buffers) return;
@@ -21,6 +22,9 @@ function drawFillTile(painter, layer, posMatrix, tile) {
     var color = layer.paint['fill-color'];
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'] || 1;
+
+    var posMatrix = painter.calculateMatrix(coord, 15);
+    var clipID = painter.clipIDs[coord.id];
 
     var drawFillThisPass = image ?
         !painter.opaquePass :
@@ -44,7 +48,7 @@ function drawFillTile(painter, layer, posMatrix, tile) {
         // increasing the lower 7 bits by one if the triangle is a front-facing
         // triangle. This means that all visible polygons should be in CCW
         // orientation, while all holes (see below) are in CW orientation.
-        gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
+        gl.stencilFunc(gl.EQUAL, clipID, 0xF8);
 
         // When we do a nonzero fill, we count the number of times a pixel is
         // covered by a counterclockwise polygon, and subtract the number of
@@ -136,7 +140,7 @@ function drawFillTile(painter, layer, posMatrix, tile) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
         gl.stencilMask(0x00);
-        gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
+        gl.stencilFunc(gl.EQUAL, clipID, 0xF8);
     }
 
     var strokeColor = layer.paint['fill-outline-color'];

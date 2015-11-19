@@ -1,7 +1,6 @@
 'use strict';
 
 var TilePyramid = require('../source/tile_pyramid');
-var Tile = require('../source/tile');
 
 var pyramid = new TilePyramid({ tileSize: 512 });
 
@@ -51,7 +50,6 @@ function drawBackground(painter, layer, posMatrix) {
 
     } else {
         // Draw filling rectangle.
-
         if (painter.opaquePass !== (color[3] === 1)) return;
 
         shader = painter.fillShader;
@@ -63,14 +61,9 @@ function drawBackground(painter, layer, posMatrix) {
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
 
-    var coveringTiles = pyramid.coveringTiles(transform);
-    for (var c = 0; c < coveringTiles.length; c++) {
-        var coord = coveringTiles[c];
-
-        var tile = new Tile(coord, transform.tileSize);
-        tile.calculateMatrices(coord.z, coord.x + Math.pow(2, coord.z) * coord.w, coord.y, transform);
-
-        gl.uniformMatrix4fv(shader.u_matrix, false, tile.posMatrix);
+    var coords = pyramid.coveringTiles(transform);
+    for (var c = 0; c < coords.length; c++) {
+        gl.uniformMatrix4fv(shader.u_matrix, false, painter.calculateMatrix(coords[c], Infinity));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 

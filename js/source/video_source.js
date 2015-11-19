@@ -139,8 +139,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         // not enough data for current position
         if (!this._loaded || this.video.readyState < 2) return [];
 
-        var c = this.center;
-        this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, this.map.painter);
+        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
 
         var gl = this.map.painter.gl;
         if (!this.tile.texture) {
@@ -158,7 +157,9 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
         this._currentTime = this.video.currentTime;
 
-        return [this.tile];
+        var tiles = {};
+        tiles[coord.id] = this.tile;
+        return tiles;
     },
 
     featuresAt: function(point, params, callback) {

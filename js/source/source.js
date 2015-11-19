@@ -59,14 +59,15 @@ exports.redoPlacement = function() {
 };
 
 exports._renderedTiles = function() {
-    var tiles = [];
+    var tiles = {};
 
     if (!this._pyramid)
         return tiles;
 
     var ids = this._pyramid.renderedIDs();
     for (var i = 0; i < ids.length; i++) {
-        tiles.push(this._pyramid.getTile(ids[i]));
+        var id = ids[i];
+        tiles[id] = this._pyramid.getTile(id);
     }
 
     return tiles;

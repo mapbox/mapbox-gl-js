@@ -4,6 +4,8 @@ var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
+var TileCoord = require('../source/tile_coord');
+var assert = require('assert');
 
 /*
  * Initialize a new painter object.
@@ -17,6 +19,7 @@ function Painter(gl, transform) {
 
     this.reusableTextures = {};
     this.preFbos = {};
+    this.clipIDs = {};
 
     this.frameHistory = new FrameHistory();
 
@@ -213,12 +216,13 @@ Painter.prototype._drawClippingMasks = function(tiles) {
     // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    var clipID = 1;
-    for (var i = 0; i < tiles.length; i++) {
-        var tile = tiles[i];
-        tile.clipID = clipID << 3;
-        this._drawClippingMask(tile);
-        clipID++;
+    var nextClipID = 1;
+    for (var coordID in tiles) {
+        var tile = tiles[coordID];
+        var coord = TileCoord.fromID(coordID);
+        var clipID = this.clipIDs[coord.id] = nextClipID << 3;
+        this._drawClippingMask(clipID, coord, tile.sourceMaxZoom);
+        nextClipID++;
     }
 
     gl.stencilMask(0x00);
@@ -227,12 +231,12 @@ Painter.prototype._drawClippingMasks = function(tiles) {
     gl.enable(gl.DEPTH_TEST);
 };
 
-Painter.prototype._drawClippingMask = function(tile) {
+Painter.prototype._drawClippingMask = function(clipID, coord, maxZoom) {
     var gl = this.gl;
-    gl.stencilFunc(gl.ALWAYS, tile.clipID, 0xF8);
+    gl.stencilFunc(gl.ALWAYS, clipID, 0xF8);
 
     gl.switchShader(this.fillShader);
-    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, tile.posMatrix);
+    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculateMatrix(coord, maxZoom));
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -240,35 +244,17 @@ Painter.prototype._drawClippingMask = function(tile) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 };
 
-Painter.prototype.setClippingMask = function(tile) {
+// TODO revamp this
+Painter.prototype.setClippingMask = function(coordID) {
     var gl = this.gl;
-    gl.stencilFunc(gl.EQUAL, tile.clipID, 0xF8);
-};
-
-Painter.prototype._prepareTile = function(tile) {
-    var coord = tile.coord,
-        z = coord.z,
-        x = coord.x,
-        y = coord.y,
-        w = coord.w;
-
-    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-    // so calculate the matrix the maxzoom tile would use.
-    z = Math.min(z, tile.sourceMaxZoom);
-
-    x += w * (1 << z);
-    tile.calculateMatrices(z, x, y, this.transform, this);
+    gl.stencilFunc(gl.EQUAL, this.clipIDs[coordID], 0xF8);
 };
 
 Painter.prototype._prepareSource = function(source) {
-    if (!source) return [];
+    if (!source) return {};
 
     this.clearStencil();
     var tiles = source.renderedTiles();
-
-    for (var t = 0; t < tiles.length; t++) {
-        this._prepareTile(tiles[t]);
-    }
 
     if (source.useStencilClipping) {
         this.clearStencil();
@@ -350,7 +336,7 @@ Painter.prototype.render = function(style, options) {
         this.setTranslucent();
 
         if (this.options.debug) {
-            draw.debug(this, layer, tiles);
+            draw.debug(this, tiles);
         }
 
         for (var k = 0; k < group.length; k++) {
@@ -388,7 +374,7 @@ Painter.prototype.depthMask = function(mask) {
 };
 
 Painter.prototype.drawLayer = function(layer, tiles) {
-    if (!tiles.length) return;
+    if (!Object.keys(tiles).length) return;
     draw[layer.type](this, layer, tiles);
 };
 // Draws non-opaque areas. This is for debugging purposes.
@@ -440,6 +426,41 @@ Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
     var translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
+};
+
+/**
+ * Calculate the posMatrix that this tile uses to display itself in a map,
+ * given a coordinate as (z, x, y) and a transform
+ * @param {Object} transform
+ * @private
+ */
+Painter.prototype.calculateMatrix = function(coord, maxZoom) {
+    var tileExtent = 4096;
+    if (!isNaN(coord)) { coord = TileCoord.fromID(coord); }
+    var transform = this.transform;
+
+    assert(maxZoom !== undefined);
+
+    // Initialize model-view matrix that converts from the tile coordinates
+    // to screen coordinates.
+
+    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
+    // so calculate the matrix the maxzoom tile would use.
+    var z = Math.min(coord.z, maxZoom);
+    var tileScale = Math.pow(2, z);
+    var x = coord.x + tileScale * coord.w;
+    var y = coord.y;
+    var scale = transform.worldSize / tileScale;
+
+    // The position matrix
+    var posMatrix = new Float64Array(16);
+
+    mat4.identity(posMatrix);
+    mat4.translate(posMatrix, posMatrix, [x * scale, y * scale, 0]);
+    mat4.scale(posMatrix, posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.multiply(posMatrix, transform.projMatrix, posMatrix);
+
+    return new Float32Array(posMatrix);
 };
 
 Painter.prototype.saveTexture = function(texture) {

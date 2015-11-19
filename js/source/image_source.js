@@ -135,7 +135,9 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
 
-        return [this.tile];
+        var tiles = {};
+        tiles[this.tile.id] = this.tile;
+        return tiles;
     },
 
     /**

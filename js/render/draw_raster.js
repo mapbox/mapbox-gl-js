@@ -1,16 +1,17 @@
 'use strict';
 
 var util = require('../util/util');
+var TileCoord = require('../source/tile_coord');
 
 module.exports = drawRaster;
 
 function drawRaster(painter, layer, tiles) {
-    for (var t = 0; t < tiles.length; t++) {
-        drawRasterTile(painter, layer, tiles[t].posMatrix, tiles[t]);
+    for (var coordID in tiles) {
+        drawRasterTile(painter, layer, TileCoord.fromID(coordID), tiles[coordID]);
     }
 }
 
-function drawRasterTile(painter, layer, posMatrix, tile) {
+function drawRasterTile(painter, layer, coord, tile) {
     if (painter.opaquePass) return;
 
     painter.setSublayer(0);
@@ -18,6 +19,8 @@ function drawRasterTile(painter, layer, posMatrix, tile) {
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);
+
+    var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
 
     var shader = painter.rasterShader;
     gl.switchShader(shader);
@@ -30,7 +33,7 @@ function drawRasterTile(painter, layer, posMatrix, tile) {
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(tile.coord, 0, {}),
+    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(coord, 0, {}),
         opacities = getOpacities(tile, parentTile, layer, painter.transform);
 
     var parentScaleBy, parentTL;

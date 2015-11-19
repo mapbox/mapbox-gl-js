@@ -1,6 +1,5 @@
 'use strict';
 
-var mat4 = require('gl-matrix').mat4;
 var util = require('../util/util');
 var Buffer = require('../data/buffer');
 
@@ -27,39 +26,6 @@ function Tile(coord, size, sourceMaxZoom) {
 Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
-
-    /**
-     * Calculate the internal posMatrix that this tile uses to display
-     * itself in a map, given a coordinate as (z, x, y) and a transform
-     * @param {number} z
-     * @param {number} x
-     * @param {number} y
-     * @param {Object} transform
-     * @private
-     */
-    calculateMatrices: function(z, x, y, transform) {
-
-        // Initialize model-view matrix that converts from the tile coordinates
-        // to screen coordinates.
-        var tileScale = Math.pow(2, z);
-        var scale = transform.worldSize / tileScale;
-
-        // TODO: remove
-        this.scale = scale;
-
-        // The position matrix
-        this.posMatrix = new Float64Array(16);
-
-        mat4.identity(this.posMatrix);
-        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
-        mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, transform.projMatrix, this.posMatrix);
-
-        this.posMatrix = new Float32Array(this.posMatrix);
-
-        this.exMatrix = transform.exMatrix;
-        this.rotationMatrix = transform.rotationMatrix;
-    },
 
     /**
      * Given a coordinate position, zoom that coordinate to my zoom and
