@@ -58,18 +58,14 @@ Navigation.prototype = util.inherit(Control, {
         document.addEventListener('mousemove', this._onCompassMove);
         document.addEventListener('mouseup', this._onCompassUp);
 
-        var evt = new MouseEvent('mousedown', util.extend({}, e, { button: 2, buttons: 2 }));
-        this._el.dispatchEvent(evt);
-
+        this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     },
 
     _onCompassMove: function(e) {
         if (e.button !== 0) return;
 
-        var evt = new MouseEvent('mousemove', util.extend({}, e, { button: 2, buttons: 2 }));
-        this._el.dispatchEvent(evt);
-
+        this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     },
 
@@ -80,9 +76,7 @@ Navigation.prototype = util.inherit(Control, {
         document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
 
-        var evt = new MouseEvent('mouseup', util.extend({}, e, { button: 2, buttons: 2 }));
-        this._el.dispatchEvent(evt);
-
+        this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     },
 
@@ -97,3 +91,26 @@ Navigation.prototype = util.inherit(Control, {
         this._compassArrow.style.transform = rotate;
     }
 });
+
+
+function copyMouseEvent(e) {
+    return new MouseEvent(e.type, {
+        button: 2,    // right click
+        buttons: 2,   // right click
+        bubbles: true,
+        cancelable: true,
+        detail: e.detail,
+        view: e.view,
+        screenX: e.screenX,
+        screenY: e.screenY,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        movementX: e.movementX,
+        movementY: e.movementY,
+        ctrlKey: e.ctrlKey,
+        shiftKey: e.shiftKey,
+        altKey: e.altKey,
+        metaKey: e.metaKey
+    });
+}
+
