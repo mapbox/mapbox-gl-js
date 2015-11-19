@@ -118,9 +118,7 @@ ImageSource.prototype = util.inherit(Evented, {
 
         var painter = this.map.painter;
         var gl = painter.gl;
-        var center = this.center;
 
-        this.tile.calculateMatrices(center.zoom, center.column, center.row, this.map.transform, painter);
 
         if (!this.tile.texture) {
             this.tile.texture = gl.createTexture();
@@ -135,8 +133,9 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
 
+        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
         var tiles = {};
-        tiles[this.tile.id] = this.tile;
+        tiles[coord.id] = this.tile;
         return tiles;
     },
 

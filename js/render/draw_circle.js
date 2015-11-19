@@ -11,7 +11,7 @@ function drawCircles(painter, layer, tiles) {
 
     for (var coordID in tiles) {
         var tile = tiles[coordID];
-        drawCirclesTile(painter, layer, painter.calculateMatrix(coordID, tile.sourceMaxZoom), tiles[coordID].sourceMaxZoom);
+        drawCirclesTile(painter, layer, painter.calculateMatrix(coordID, tile.sourceMaxZoom), tiles[coordID]);
     }
 }
 
