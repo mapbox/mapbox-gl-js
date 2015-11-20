@@ -30,16 +30,15 @@ DragPan.prototype = {
     },
 
     _onDown: function (e) {
+        if (this._ignoreEvent(e)) return;
         if (this.active) return;
 
-        if (e.touches && e.touches.length === 1) {
+        if (e.touches) {
             document.addEventListener('touchmove', this._onMove);
             document.addEventListener('touchend', this._onTouchEnd);
-        } else if (e.button === 0) {
+        } else {
             document.addEventListener('mousemove', this._onMove);
             document.addEventListener('mouseup', this._onMouseUp);
-        } else {
-            return;
         }
 
         this.active = false;
@@ -48,12 +47,7 @@ DragPan.prototype = {
     },
 
     _onMove: function (e) {
-        var map = this._map;
-
-        if (map.boxZoom && map.boxZoom.active) return;
-        if (map.dragRotate && map.dragRotate.active) return;
-        if (e.touches && e.touches.length > 1) return;
-        if (!e.touches && e.buttons & 1 === 0) return;
+        if (this._ignoreEvent(e)) return;
 
         if (!this.active) {
             this.active = true;
@@ -62,13 +56,12 @@ DragPan.prototype = {
         }
 
         var pos = DOM.mousePos(this._el, e),
-            inertia = this._inertia,
-            now = Date.now();
-
-        inertia.push([now, pos]);
-        while (inertia.length > 1 && now - inertia[0][0] > 50) inertia.shift();
+            map = this._map;
 
         map.stop();
+        this._drainInertiaBuffer();
+        this._inertia.push([Date.now(), pos]);
+
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
 
         this._fireEvent('drag', e);
@@ -80,26 +73,17 @@ DragPan.prototype = {
     },
 
     _onUp: function (e) {
-        var map = this._map;
-
         if (!this.active) return;
-        if (map.boxZoom && map.boxZoom.active) return;
-        if (map.dragRotate && map.dragRotate.active) return;
-        if (e.touches && e.touches.length > 1) return;
-        if (!e.touches && e.button !== 0) return;
 
         this.active = false;
         this._fireEvent('dragend', e);
-
-        var inertia = this._inertia,
-            now = Date.now();
-
-        while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
+        this._drainInertiaBuffer();
 
         var finish = function() {
             this._fireEvent('moveend', e);
         }.bind(this);
 
+        var inertia = this._inertia;
         if (inertia.length < 2) {
             finish();
             return;
@@ -127,7 +111,7 @@ DragPan.prototype = {
         var duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = velocity.mult(-duration / 2);
 
-        map.panBy(offset, {
+        this._map.panBy(offset, {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
@@ -135,13 +119,14 @@ DragPan.prototype = {
     },
 
     _onMouseUp: function (e) {
-        if (e.button !== 0) return;
+        if (this._ignoreEvent(e)) return;
         this._onUp(e);
         document.removeEventListener('mousemove', this._onMove);
         document.removeEventListener('mouseup', this._onMouseUp);
     },
 
     _onTouchEnd: function (e) {
+        if (this._ignoreEvent(e)) return;
         this._onUp(e);
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onTouchEnd);
@@ -149,8 +134,33 @@ DragPan.prototype = {
 
     _fireEvent: function (type, e) {
         return this._map.fire(type, { originalEvent: e });
+    },
+
+    _ignoreEvent: function (e) {
+        var map = this._map;
+
+        if (map.boxZoom && map.boxZoom.active) return true;
+        if (map.dragRotate && map.dragRotate.active) return true;
+        if (e.touches) {
+            return (e.touches.length > 1);
+        } else {
+            if (e.ctrlKey) return true;
+            var buttons = 1,  // left button
+                button = 0;   // left button
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+        }
+    },
+
+    _drainInertiaBuffer: function () {
+        var inertia = this._inertia,
+            now = Date.now(),
+            cutoff = 50;   // msec
+
+        while (inertia.length > 0 && now - inertia[0][0] > cutoff)
+            inertia.shift();
     }
 };
+
 
 
 /**

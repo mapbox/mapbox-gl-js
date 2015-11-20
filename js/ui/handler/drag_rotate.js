@@ -29,8 +29,8 @@ DragRotate.prototype = {
     },
 
     _onDown: function (e) {
+        if (this._ignoreEvent(e)) return;
         if (this.active) return;
-        if (e.button !== 2) return;
 
         document.addEventListener('mousemove', this._onMove);
         document.addEventListener('mouseup', this._onUp);
@@ -53,11 +53,7 @@ DragRotate.prototype = {
     },
 
     _onMove: function (e) {
-        var map = this._map;
-
-        if (e.buttons & 2 === 0) return;
-        if (map.boxZoom && map.boxZoom.active) return;
-        if (map.dragPan && map.dragPan.active) return;
+        if (this._ignoreEvent(e)) return;
 
         if (!this.active) {
             this.active = true;
@@ -65,6 +61,7 @@ DragRotate.prototype = {
             this._fireEvent('movestart', e);
         }
 
+        var map = this._map;
         map.stop();
 
         var p1 = this._pos,
@@ -73,12 +70,12 @@ DragRotate.prototype = {
             bearingDiff = p1.sub(center).angleWith(p2.sub(center)) / Math.PI * 180,
             bearing = map.getBearing() - bearingDiff,
             inertia = this._inertia,
-            last = inertia[inertia.length - 1],
-            now = Date.now();
+            last = inertia[inertia.length - 1];
+
+        this._drainInertiaBuffer();
+        inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
 
         map.transform.bearing = bearing;
-        inertia.push([now, map._normalizeBearing(bearing, last[1])]);
-        while (inertia.length > 1 && now - inertia[0][0] > 50) inertia.shift();
 
         this._fireEvent('rotate', e);
         this._fireEvent('move', e);
@@ -87,20 +84,19 @@ DragRotate.prototype = {
     },
 
     _onUp: function (e) {
-        if (e.button !== 2) return;
+        if (this._ignoreEvent(e)) return;
         document.removeEventListener('mousemove', this._onMove);
         document.removeEventListener('mouseup', this._onUp);
 
         if (!this.active) return;
+
         this.active = false;
         this._fireEvent('rotateend', e);
+        this._drainInertiaBuffer();
 
         var map = this._map,
             mapBearing = map.getBearing(),
-            inertia = this._inertia,
-            now = Date.now();
-
-        while (inertia.length > 0 && now - inertia[0][0] > 50) inertia.shift();
+            inertia = this._inertia;
 
         var finish = function() {
             if (Math.abs(mapBearing) < map.options.bearingSnap) {
@@ -151,6 +147,29 @@ DragRotate.prototype = {
 
     _fireEvent: function (type, e) {
         return this._map.fire(type, { originalEvent: e });
+    },
+
+    _ignoreEvent: function (e) {
+        var map = this._map;
+
+        if (map.boxZoom && map.boxZoom.active) return true;
+        if (map.dragPan && map.dragPan.active) return true;
+        if (e.touches) {
+            return (e.touches.length > 1);
+        } else {
+            var buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
+                button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+        }
+    },
+
+    _drainInertiaBuffer: function () {
+        var inertia = this._inertia,
+            now = Date.now(),
+            cutoff = 50;   //msec
+
+        while (inertia.length > 0 && now - inertia[0][0] > cutoff)
+            inertia.shift();
     }
 
 };
