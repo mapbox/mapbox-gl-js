@@ -27,6 +27,7 @@ Navigation.prototype = util.inherit(Control, {
         var className = 'mapboxgl-ctrl';
 
         var container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
         this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
@@ -41,45 +42,42 @@ Navigation.prototype = util.inherit(Control, {
         map.on('rotate', this._rotateCompassArrow.bind(this));
         this._rotateCompassArrow();
 
+        this._el = map.getCanvasContainer();
+
         return container;
     },
 
-    _onCompassDown: function(e) {
-        DOM.disableDrag();
+    _onContextMenu: function(e) {
+        e.preventDefault();
+    },
 
+    _onCompassDown: function(e) {
+        if (e.button !== 0) return;
+
+        DOM.disableDrag();
         document.addEventListener('mousemove', this._onCompassMove);
         document.addEventListener('mouseup', this._onCompassUp);
-        this._prevX = e.screenX;
 
+        this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     },
 
     _onCompassMove: function(e) {
-        var x = e.screenX,
-            d = x < 2 ? -5 : // left edge of the screen, continue rotating
-                x > window.screen.width - 2 ? 5 : // right edge
-                (x - this._prevX) / 4;
+        if (e.button !== 0) return;
 
-        this._map.setBearing(this._map.getBearing() - d);
-        this._prevX = e.screenX;
-        this._moved = true;
-
-        e.preventDefault();
+        this._el.dispatchEvent(copyMouseEvent(e));
+        e.stopPropagation();
     },
 
-    _onCompassUp: function() {
+    _onCompassUp: function(e) {
+        if (e.button !== 0) return;
+
         document.removeEventListener('mousemove', this._onCompassMove);
         document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
 
-        if (this._moved) {
-            this._moved = false;
-            DOM.suppressClick();
-        } else {
-            this._map.setPitch(0);
-        }
-
-        this._map.snapToNorth();
+        this._el.dispatchEvent(copyMouseEvent(e));
+        e.stopPropagation();
     },
 
     _createButton: function(className, fn) {
@@ -93,3 +91,26 @@ Navigation.prototype = util.inherit(Control, {
         this._compassArrow.style.transform = rotate;
     }
 });
+
+
+function copyMouseEvent(e) {
+    return new MouseEvent(e.type, {
+        button: 2,    // right click
+        buttons: 2,   // right click
+        bubbles: true,
+        cancelable: true,
+        detail: e.detail,
+        view: e.view,
+        screenX: e.screenX,
+        screenY: e.screenY,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        movementX: e.movementX,
+        movementY: e.movementY,
+        ctrlKey: e.ctrlKey,
+        shiftKey: e.shiftKey,
+        altKey: e.altKey,
+        metaKey: e.metaKey
+    });
+}
+

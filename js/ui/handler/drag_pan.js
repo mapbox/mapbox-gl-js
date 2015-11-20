@@ -5,7 +5,6 @@ var DOM = require('../../util/dom'),
 
 module.exports = DragPan;
 
-
 var inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 3000, // px/s
@@ -21,8 +20,8 @@ function DragPan(map) {
 
 DragPan.prototype = {
     enable: function () {
-        this._el.addEventListener('mousedown', this._onDown, false);
-        this._el.addEventListener('touchstart', this._onDown, false);
+        this._el.addEventListener('mousedown', this._onDown);
+        this._el.addEventListener('touchstart', this._onDown);
     },
 
     disable: function () {
@@ -31,57 +30,77 @@ DragPan.prototype = {
     },
 
     _onDown: function (e) {
-        this._startPos = this._pos = DOM.mousePos(this._el, e);
+        if (this._ignoreEvent(e)) return;
+        if (this.active) return;
 
-        this._inertia = [[Date.now(), this._pos]];
-
-        if (!e.touches) {
-            document.addEventListener('mousemove', this._onMove, false);
-            document.addEventListener('mouseup', this._onMouseUp, false);
-
-        } else if (e.touches.length === 1) {
-            document.addEventListener('touchmove', this._onMove, false);
-            document.addEventListener('touchend', this._onTouchEnd, false);
+        if (e.touches) {
+            document.addEventListener('touchmove', this._onMove);
+            document.addEventListener('touchend', this._onTouchEnd);
+        } else {
+            document.addEventListener('mousemove', this._onMove);
+            document.addEventListener('mouseup', this._onMouseUp);
         }
+
+        this.active = false;
+        this._startPos = this._pos = DOM.mousePos(this._el, e);
+        this._inertia = [[Date.now(), this._pos]];
     },
 
     _onMove: function (e) {
-        var map = this._map;
-        if (map.boxZoom.active || map.dragRotate.active || (e.touches && e.touches.length > 1)) return;
+        if (this._ignoreEvent(e)) return;
 
-        this.active = true;
+        if (!this.active) {
+            this.active = true;
+            this._fireEvent('dragstart', e);
+            this._fireEvent('movestart', e);
+        }
 
         var pos = DOM.mousePos(this._el, e),
-            inertia = this._inertia,
-            now = Date.now();
-
-        inertia.push([now, pos]);
-        while (inertia.length > 2 && now - inertia[0][0] > 50) inertia.shift();
+            map = this._map;
 
         map.stop();
+        this._drainInertiaBuffer();
+        this._inertia.push([Date.now(), pos]);
+
         map.transform.setLocationAtPoint(map.transform.pointLocation(this._pos), pos);
-        map.fire('move');
+
+        this._fireEvent('drag', e);
+        this._fireEvent('move', e);
 
         this._pos = pos;
 
         e.preventDefault();
     },
 
-    _onUp: function () {
-        var inertia = this._inertia;
+    _onUp: function (e) {
+        if (!this.active) return;
 
+        this.active = false;
+        this._fireEvent('dragend', e);
+        this._drainInertiaBuffer();
+
+        var finish = function() {
+            this._fireEvent('moveend', e);
+        }.bind(this);
+
+        var inertia = this._inertia;
         if (inertia.length < 2) {
-            this._map.fire('moveend');
+            finish();
             return;
         }
 
         var last = inertia[inertia.length - 1],
             first = inertia[0],
             flingOffset = last[1].sub(first[1]),
-            flingDuration = (last[0] - first[0]) / 1000,
+            flingDuration = (last[0] - first[0]) / 1000;
 
-            // calculate px/s velocity & adjust for increased initial animation speed when easing out
-            velocity = flingOffset.mult(inertiaLinearity / flingDuration),
+        if (flingDuration === 0 || last[1].equals(first[1])) {
+            finish();
+            return;
+        }
+
+        // calculate px/s velocity & adjust for increased initial animation speed when easing out
+        var velocity = flingOffset.mult(inertiaLinearity / flingDuration),
             speed = velocity.mag(); // px/s
 
         if (speed > inertiaMaxSpeed) {
@@ -97,19 +116,79 @@ DragPan.prototype = {
             easing: inertiaEasing,
             noMoveStart: true
         });
-
-        this.active = false;
     },
 
-    _onMouseUp: function () {
-        this._onUp();
-        document.removeEventListener('mousemove', this._onMove, false);
-        document.removeEventListener('mouseup', this._onMouseUp, false);
+    _onMouseUp: function (e) {
+        if (this._ignoreEvent(e)) return;
+        this._onUp(e);
+        document.removeEventListener('mousemove', this._onMove);
+        document.removeEventListener('mouseup', this._onMouseUp);
     },
 
-    _onTouchEnd: function () {
-        this._onUp();
+    _onTouchEnd: function (e) {
+        if (this._ignoreEvent(e)) return;
+        this._onUp(e);
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onTouchEnd);
+    },
+
+    _fireEvent: function (type, e) {
+        return this._map.fire(type, { originalEvent: e });
+    },
+
+    _ignoreEvent: function (e) {
+        var map = this._map;
+
+        if (map.boxZoom && map.boxZoom.active) return true;
+        if (map.dragRotate && map.dragRotate.active) return true;
+        if (e.touches) {
+            return (e.touches.length > 1);
+        } else {
+            if (e.ctrlKey) return true;
+            var buttons = 1,  // left button
+                button = 0;   // left button
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+        }
+    },
+
+    _drainInertiaBuffer: function () {
+        var inertia = this._inertia,
+            now = Date.now(),
+            cutoff = 50;   // msec
+
+        while (inertia.length > 0 && now - inertia[0][0] > cutoff)
+            inertia.shift();
     }
 };
+
+
+
+/**
+ * Drag start event. This event is emitted at the start of a user-initiated pan interaction.
+ *
+ * @event dragstart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Drag event. This event is emitted repeatedly during a user-initiated pan interaction.
+ *
+ * @event drag
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Drag end event. This event is emitted at the end of a user-initiated pan interaction.
+ *
+ * @event dragend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */

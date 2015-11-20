@@ -268,7 +268,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         bearing = this._normalizeBearing(bearing, start);
 
         this.rotating = true;
-        this.fire('movestart');
+        if (!options.noMoveStart) {
+            this.fire('movestart');
+        }
 
         this._ease(function(k) {
             tr.setBearingAround(interpolate(start, bearing, k), around);
