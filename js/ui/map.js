@@ -646,9 +646,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
         if (this.options.interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
-            canvasContainer.addEventListener('mouseenter', function() {
-                DOM.setOffset(canvasContainer);
-            }, false);
         }
         this._canvas = new Canvas(this, canvasContainer);
 
