@@ -73,7 +73,7 @@ map.on('style.load', function () {
 });
 
 map.on('click', function (e) {
-    // Use featresAt to get features within a given radius of the click event
+    // Use featuresAt to get features within a given radius of the click event
     // Use layer option to avoid getting results from other layers
     map.featuresAt(e.point, {layer: 'symbols', radius: 10, includeGeometry: true}, function (err, features) {
         if (err) throw err;
@@ -92,7 +92,7 @@ map.on('click', function (e) {
 map.on('mousemove', function (e) {
     map.featuresAt(e.point, {layer: 'symbols', radius: 10}, function (err, features) {
         if (err) throw err;
-        map.getCanvas().style.cursor = features.length ? "pointer" : "";
+        map.getCanvas().style.cursor = features.length ? 'pointer' : '';
     });
 });
 </script>
