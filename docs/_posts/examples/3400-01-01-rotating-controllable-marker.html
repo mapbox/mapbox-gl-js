@@ -15,18 +15,26 @@ var map = new mapboxgl.Map({
 
 var direction = 0, manual = false, speed = 1;
 
+// create a GeoJSON point to serve as a starting point
 var point = {
-    type: 'Point',
-    coordinates: [-74.50, 40]
+    "type": "Feature",
+    "geometry": {
+        "type": "Point",
+        "coordinates": [
+            -74.50, 
+            40
+        ]
+    }
 };
 
+// add the GeoJSON above to a new vector tile source
 var source = new mapboxgl.GeoJSONSource({
     data: point
 });
 
 function setPosition() {
-    point.coordinates[0] += speed * Math.sin(direction) / 100;
-    point.coordinates[1] += speed * Math.cos(direction) / 100;
+    point.geometry.coordinates[0] += speed * Math.sin(direction) / 100;
+    point.geometry.coordinates[1] += speed * Math.cos(direction) / 100;
     source.setData(point);
 
     map.setLayoutProperty('drone', 'icon-rotate', direction * (180 / Math.PI));
@@ -35,7 +43,7 @@ function setPosition() {
         direction += (Math.random() - 0.5) / 2;
     }
 
-    map.setCenter(point.coordinates);
+    map.setCenter(point.geometry.coordinates);
 }
 
 map.on('style.load', function () {
