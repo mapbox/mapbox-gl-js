@@ -117,6 +117,16 @@ test("mapbox", function(t) {
             t.end();
         });
 
+        t.test('replaces img extension with webp on supporting devices', function(t) {
+            browser.supportsWebp = true;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', 'mapbox://user.map'), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', 'mapbox://user.map'), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', 'mapbox://user.map'), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', 'mapbox://user.map'), 'http://path.png/tile.webp?access_token=foo');
+            browser.supportsWebp = false;
+            t.end();
+        });
+
         t.test('ignores non-mapbox:// sources', function(t) {
             t.equal(mapbox.normalizeTileURL('http://path.png', 'http://path'), 'http://path.png');
             t.end();
