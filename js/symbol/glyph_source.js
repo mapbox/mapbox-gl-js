@@ -88,7 +88,7 @@ function SimpleGlyph(glyph, rect, buffer) {
 
 GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
 
-    if (range * 256 > 65535) return callback('gyphs > 65535 not supported');
+    if (range * 256 > 65535) return callback('glyphs > 65535 not supported');
 
     if (this.loading[fontstack] === undefined) this.loading[fontstack] = {};
     var loading = this.loading[fontstack];
