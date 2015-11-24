@@ -1,54 +1,54 @@
 [
   {
     "message": "layers[0].filter: array expected, object found",
-    "line": 14
+    "line": 15
   },
   {
     "message": "layers[1].filter: filter array must have at least 1 element",
-    "line": 20
+    "line": 22
   },
   {
     "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none], = found",
-    "line": 27
+    "line": 30
   },
   {
     "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements",
-    "line": 36
+    "line": 40
   },
   {
     "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements",
-    "line": 42
+    "line": 47
   },
   {
     "message": "layers[5].filter[1]: string expected, number found",
-    "line": 53
+    "line": 59
   },
   {
     "message": "layers[6].filter[2]: string, number, or boolean expected, array found",
-    "line": 64
+    "line": 71
   },
   {
     "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found",
-    "line": 74
+    "line": 82
   },
   {
     "message": "layers[8].filter[1]: filter key cannot be a constant",
-    "line": 83
+    "line": 92
   },
   {
     "message": "layers[9].filter[2]: filter value cannot be a constant",
-    "line": 94
-  },
-  {
-    "message": "layers[10].filter: \"$type\" cannot be use with operator \">\"",
-    "line": 101
-  },
-  {
-    "message": "layers[10].filter[2]: expected one of [Point, LineString, Polygon], value found",
     "line": 104
   },
   {
+    "message": "layers[10].filter: \"$type\" cannot be use with operator \">\"",
+    "line": 112
+  },
+  {
+    "message": "layers[10].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "line": 115
+  },
+  {
     "message": "layers[11].filter[1]: filter array must have at least 1 element",
-    "line": 113
+    "line": 125
   }
 ]

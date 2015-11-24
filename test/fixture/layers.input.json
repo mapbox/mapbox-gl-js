@@ -19,7 +19,8 @@
     {
       "id": "ref",
       "type": "line",
-      "source": "vector"
+      "source": "vector",
+      "source-layer": "source-layer"
     },
     {
       "id": "ref-prohibited-properties",
@@ -55,24 +56,33 @@
     {
       "id": "raster-vector-mismatch",
       "type": "raster",
-      "source": "vector"
+      "source": "vector",
+      "source-layer": "source-layer"
     },
     {
       "id": "duplicate",
       "type": "line",
-      "source": "vector"
+      "source": "vector",
+      "source-layer": "source-layer"
     },
     {
       "id": "duplicate",
       "type": "line",
-      "source": "vector"
+      "source": "vector",
+      "source-layer": "source-layer"
     },
     {
       "id": "invalid-type",
       "type": "invalid",
       "source": "vector",
+      "source-layer": "source-layer",
       "layout": {},
       "paint": {}
+    },
+    {
+      "id": "missing-source-layer",
+      "type": "line",
+      "source": "vector"
     }
   ]
 }

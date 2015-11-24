@@ -5,54 +5,58 @@
   },
   {
     "message": "layers[2]: \"type\" is prohibited for ref layers",
-    "line": 27
-  },
-  {
-    "message": "layers[2]: \"source\" is prohibited for ref layers",
     "line": 28
   },
   {
-    "message": "layers[2]: \"source-layer\" is prohibited for ref layers",
+    "message": "layers[2]: \"source\" is prohibited for ref layers",
     "line": 29
   },
   {
-    "message": "layers[2]: \"filter\" is prohibited for ref layers",
+    "message": "layers[2]: \"source-layer\" is prohibited for ref layers",
     "line": 30
   },
   {
-    "message": "layers[2]: \"layout\" is prohibited for ref layers",
+    "message": "layers[2]: \"filter\" is prohibited for ref layers",
     "line": 31
   },
   {
+    "message": "layers[2]: \"layout\" is prohibited for ref layers",
+    "line": 32
+  },
+  {
     "message": "layers[3]: ref layer \"not-found\" not found",
-    "line": 35
+    "line": 36
   },
   {
     "message": "layers[4]: ref cannot reference another ref layer",
-    "line": 39
+    "line": 40
   },
   {
     "message": "layers[5]: missing required property \"source\"",
-    "line": 41
+    "line": 42
   },
   {
     "message": "layers[6]: source \"not-found\" not found",
-    "line": 48
+    "line": 49
   },
   {
     "message": "layers[7]: layer \"vector-raster-mismatch\" requires a vector source",
-    "line": 53
+    "line": 54
   },
   {
     "message": "layers[8]: layer \"raster-vector-mismatch\" requires a raster source",
-    "line": 58
+    "line": 59
   },
   {
-    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 61",
-    "line": 66
+    "message": "layers[10]: duplicate layer id \"duplicate\", previously used at line 63",
+    "line": 69
   },
   {
     "message": "layers[11].type: expected one of [fill, line, symbol, raster, background], invalid found",
-    "line": 72
+    "line": 76
+  },
+  {
+    "message": "layers[12]: layer \"missing-source-layer\" must specify a \"source-layer\"",
+    "line": 82
   }
 ]
