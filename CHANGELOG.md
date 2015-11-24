@@ -1,5 +1,11 @@
 ## master
 
+## 8.2.1
+
+v8.0.0 styles are fully compatible with v8.2.0.
+
+* Enforce that all layers that use a vector source specify a "source-layer"
+
 ## 8.2.0
 
 v8.0.0 styles are fully compatible with v8.2.0.
