@@ -5,12 +5,12 @@ title: Switch style
 description: Switch to a unique map style for a source.
 ---
 <style>
-	#menu { position: absolute; background: #fff; padding: 10px;}
+#menu { position: absolute; background: #fff; padding: 10px;}
 </style>
 
 <div id='map'></div>
 <div id='menu'>
-  	<input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
+	<input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
 	<label for='basic'>basic</label>
 	<input id='streets' type='radio' name='rtoggle' value='streets'>
 	<label for='streets'>streets</label>
@@ -20,15 +20,15 @@ description: Switch to a unique map style for a source.
 	<label for='bright'>bright</label>
 	<input id='light' type='radio' name='rtoggle' value='light'>
 	<label for='light'>light</label>
-  	<input id='dark' type='radio' name='rtoggle' value='dark'>
+	<input id='dark' type='radio' name='rtoggle' value='dark'>
 	<label for='dark'>dark</label>
 </div>
 <script>
 var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/basic-v8',
-    zoom: 13,
-    center: [4.899,52.372]
+	container: 'map',
+	style: 'mapbox://styles/mapbox/basic-v8',
+	zoom: 13,
+	center: [4.899,52.372]
 });
 
 var layerList = document.getElementById('menu');
@@ -36,7 +36,7 @@ var inputs  = layerList.getElementsByTagName('input');
 
 function switchLayer (layer) {
 	var layerId = layer.target.id;
-    map.setStyle('mapbox://styles/mapbox/' + layerId + '-v8');
+	map.setStyle('mapbox://styles/mapbox/' + layerId + '-v8');
 };
 
 for (var i = 0; i < inputs.length; i++) {
