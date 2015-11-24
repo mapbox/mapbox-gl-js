@@ -352,7 +352,7 @@ Painter.prototype.render = function(style, options) {
     }
 
     if (this.options.debug) {
-        draw.debug(this);
+        draw.debug(this, tiles);
     }
 };
 

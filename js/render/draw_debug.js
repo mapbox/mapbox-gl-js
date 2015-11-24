@@ -10,8 +10,8 @@ var TilePyramid = require('../source/tile_pyramid');
 
 var pyramid = new TilePyramid({ tileSize: 512 });
 
-function drawDebug(painter) {
-    var coords = pyramid.coveringTiles(painter.transform);
+function drawDebug(painter, tiles) {
+    var coords = Object.keys(tiles).map(function(key) { return TileCoord.fromID(key); });
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
         drawDebugTile(painter, coord);
