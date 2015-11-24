@@ -11,18 +11,21 @@
       "id": "not-array",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": {}
     },
     {
       "id": "zero-elements",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": []
     },
     {
       "id": "invalid-operator",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "=",
         "key",
@@ -33,12 +36,14 @@
       "id": "missing-key",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": ["=="]
     },
     {
       "id": "missing-value",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         "key"
@@ -48,6 +53,7 @@
       "id": "invalid-key",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         1,
@@ -58,6 +64,7 @@
       "id": "invalid-value",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         "key",
@@ -68,6 +75,7 @@
       "id": "invalid-type",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         "$type",
@@ -78,6 +86,7 @@
       "id": "key-constant",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         "@constant",
@@ -88,6 +97,7 @@
       "id": "value-constant",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "==",
         "key",
@@ -98,6 +108,7 @@
       "id": "invalid-type-operator",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         ">",
         "$type",
@@ -108,6 +119,7 @@
       "id": "invalid-nested-filter",
       "type": "line",
       "source": "source",
+      "source-layer": "source-layer",
       "filter": [
         "any",
         []
