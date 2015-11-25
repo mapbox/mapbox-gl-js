@@ -14,6 +14,7 @@ uniform mat4 u_matrix;
 // shared
 uniform float u_ratio;
 uniform vec2 u_linewidth;
+uniform float u_offset;
 
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
@@ -23,6 +24,7 @@ varying float v_gamma_scale;
 
 void main() {
     vec2 a_extrude = a_data.xy;
+    float a_direction = sign(a_data.z) * mod(a_data.z, 2.0);
 
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
@@ -36,11 +38,19 @@ void main() {
     // of this vertex.
     vec2 dist = u_linewidth.s * a_extrude * scale;
 
+    // Calculate the offset when drawing a line that is to the side of the actual line.
+    // We do this by creating a vector that points towards the extrude, but rotate
+    // it when we're drawing round end points (a_direction = -1 or 1) since their
+    // extrude vector points in another direction.
+    float u = 0.5 * a_direction;
+    float t = 1.0 - abs(u);
+    vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix. Add the extrusion vector *after* the model/view matrix
     // because we're extruding the line in pixel space, regardless of the current
     // tile's zoom level.
-    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist / u_ratio, 0.0, 1.0);
+    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset + dist) / u_ratio, 0.0, 1.0);
 
     // position of y on the screen
     float y = gl_Position.y / gl_Position.w;

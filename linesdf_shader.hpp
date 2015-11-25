@@ -26,6 +26,7 @@ public:
     Uniform<GLfloat>                 u_sdfgamma  = {"u_sdfgamma",  *this};
     Uniform<GLfloat>                 u_mix       = {"u_mix",       *this};
     Uniform<GLfloat>                 u_extra     = {"u_extra",     *this};
+    Uniform<GLfloat>                 u_offset    = {"u_offset",    *this};
     UniformMatrix<2>                 u_antialiasingmatrix = {"u_antialiasingmatrix", *this};
 
 private:
