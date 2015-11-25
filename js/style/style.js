@@ -388,6 +388,14 @@ Style.prototype = util.inherit(Evented, {
     },
 
     featuresAt: function(coord, params, callback) {
+        this._queryFeatures('featuresAt', coord, params, callback);
+    },
+
+    featuresIn: function(bbox, params, callback) {
+        this._queryFeatures('featuresIn', bbox, params, callback);
+    },
+
+    _queryFeatures: function(queryType, bboxOrCoords, params, callback) {
         var features = [];
         var error = null;
 
@@ -397,36 +405,7 @@ Style.prototype = util.inherit(Evented, {
 
         util.asyncEach(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
-            source.featuresAt(coord, params, function(err, result) {
-                if (result) features = features.concat(result);
-                if (err) error = err;
-                callback();
-            });
-        }.bind(this), function() {
-            if (error) return callback(error);
-
-            callback(null, features
-                .filter(function(feature) {
-                    return this._layers[feature.layer] !== undefined;
-                }.bind(this))
-                .map(function(feature) {
-                    feature.layer = this._layers[feature.layer].json();
-                    return feature;
-                }.bind(this)));
-        }.bind(this));
-    },
-
-    featuresIn: function(bbox, params, callback) {
-        var features = [];
-        var error = null;
-
-        if (params.layer) {
-            params.layer = { id: params.layer };
-        }
-
-        util.asyncEach(Object.keys(this.sources), function(id, callback) {
-            var source = this.sources[id];
-            source.featuresIn(bbox, params, function(err, result) {
+            source[queryType](bboxOrCoords, params, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();
