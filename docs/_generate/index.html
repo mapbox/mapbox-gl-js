@@ -7,60 +7,50 @@ class: fill-light
 options: full
 navigation:
   - title: Root
-    id: root
+    subnav:
+    - title: version
+    - title: name
+    - title: metadata
+    - title: center
+    - title: zoom
+    - title: bearing
+    - title: pitch
+    - title: sources
+    - title: sprite
+    - title: glyphs
+    - title: transition
+    - title: layers
   - title: Sources
-    id: sources
     subnav:
     - title: Vector
-      id: vector
     - title: Raster
-      id: rastersource
     - title: GeoJSON
-      id: geojson
     - title: Image
-      id: image
     - title: Video
-      id: video
   - title: Sprite
-    id: sprite
   - title: Glyphs
-    id: glyphs
   - title: Transition
-    id: transition
+    subnav:
+    - title: duration
+    - title: delay
   - title: Layers
-    id: layers
     subnav:
     - title: Background
-      id: background
     - title: Fill
-      id: fill
     - title: Line
-      id: line
     - title: Symbol
-      id: symbol
     - title: Raster
-      id: raster
     - title: Circle
-      id: circle
   - title: Types
-    id: types
     subnav:
     - title: Color
-      id: color
     - title: Enum
-      id: enum
     - title: String
-      id: string
     - title: Boolean
-      id: boolean
     - title: Number
-      id: number
     - title: Array
-      id: array
     - title: Function
-      id: function
     - title: Filter
-      id: filter
 ---
 <link href='https://www.mapbox.com/css/docs.css' rel='stylesheet'>
 <link href='site.css' rel='stylesheet' />
@@ -76,9 +66,11 @@ navigation:
 
       {% for navitem in page.navigation %}
       <div class='space-bottom1'>
-        <a class='block truncate strong quiet' href='#{{navitem.id}}'>{{navitem.title}}</a>
+        {% assign navitem_id = navitem.title | downcase | slugify %}
+        <a class='block truncate strong quiet' href='#{{navitem_id}}'>{{navitem.title}}</a>
         {% for subitem in navitem.subnav %}
-        <a class='block truncate' href='#{{subitem.id}}'>{{subitem.title}}</a>
+        {% assign subitem_id = subitem.title | downcase | slugify %}
+        <a class='block truncate' href='#{{navitem_id}}-{{subitem_id}}'>{{subitem.title}}</a>
         {% endfor %}
       </div>
       {% endfor %}
@@ -134,7 +126,7 @@ navigation:
       </div>
       <div class='pad2 keyline-all fill-white'>
         <% _(ref.$root).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
+        <%= item({prop: prop, id: "root-" + name, name: name}) %>
         <% }); %>
       </div>
     </div>
@@ -182,8 +174,8 @@ navigation:
       </ul>
 
       <div class='space-bottom4 fill-white keyline-all'>
-        <div id='vector' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#vector' title='link to vector'>vector</a></h3>
+        <div id='sources-vector' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#sources-vector' title='link to vector'>vector</a></h3>
           <p>
             A vector tile source. Tiles must be in <a href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
             Vector Tile format</a>. All layers that use a vector source must specify a <code>"source-layer"</code> value.
@@ -199,8 +191,8 @@ navigation:
 {% endhighlight %}
           </div>
         </div>
-        <div id='rastersource' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#rastersource' title='link to raster'>raster</a></h3>
+        <div id='sources-raster' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#sources-raster' title='link to raster'>raster</a></h3>
           <p>
             A raster tile source. For raster tiles hosted by Mapbox, the <code>"url"</code> value should be of the
             form <code>mapbox://<var>mapid</var></code>.
@@ -215,8 +207,8 @@ navigation:
 {% endhighlight %}
           </div>
         </div>
-        <div id='geojson' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#geojson' title='link to geojson'>geojson</a></h3>
+        <div id='sources-geojson' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#sources-geojson' title='link to geojson'>geojson</a></h3>
           <p>
             A <a href="http://geojson.org/">GeoJSON</a> source. Data must be provided via a <code>"data"</code>
             property, whose value can be a URL or inline GeoJSON.
@@ -240,8 +232,8 @@ navigation:
 {% endhighlight %}
           </div>
         </div>
-        <div id='image' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#image' title='link to image'>image</a></h3>
+        <div id='sources-image' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#sources-image' title='link to image'>image</a></h3>
           <p>
             An image source. The <code>"url"</code> value contains the image location.
           </p>
@@ -264,8 +256,8 @@ navigation:
 {% endhighlight %}
           </div>
         </div>
-        <div id='video' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#video' title='link to video'>video</a></h3>
+        <div id='sources-video' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#sources-video' title='link to video'>video</a></h3>
           <p>
             A video source. The <code>"urls"</code> value is an array. For each URL in the array,
             a video element <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source">source</a> will
@@ -394,7 +386,7 @@ navigation:
       </p>
       <div class='pad2 keyline-all fill-white'>
         <% _(ref.transition).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
+        <%= item({prop: prop, id: "transition-" + name, name: name}) %>
         <% }); %>
       </div>
     </div>
@@ -418,7 +410,7 @@ navigation:
       </p>
       <div class='pad2 keyline-all fill-white'>
         <% _(ref.layer).each(function(prop, name) { %>
-        <%= item({prop: prop, name: name}) %>
+        <%= item({prop: prop, id: "layer-" + name, name: name}) %>
         <% }); %>
       </div>
     </div>
@@ -445,8 +437,8 @@ navigation:
 
       <div class='space-bottom4 fill-white keyline-all'>
         <% _(layer_types).each(function(t) { %>
-        <div id='<%= t %>' class='pad2 keyline-bottom'>
-          <h3 class='space-bottom1'><a href='#<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
+        <div id='layers-<%= t %>' class='pad2 keyline-bottom'>
+          <h3 class='space-bottom1'><a href='#layers-<%= t %>' title='link to layer: <%= t %>'><%= t %></a></h3>
           <div>
             <h4 class='pad1y'><a href='#layout_<%= t %>' title='link to layout: <%= t %>' class='quiet'>Layout Properties</a></h4>
             <% if (_.isEmpty(ref['layout_'+t])) { %>
@@ -455,7 +447,7 @@ navigation:
               </div>
             <% } else { %>
               <% _(ref['layout_'+t]).each(function(prop, name) { %>
-              <%= item({prop: prop, name: name}) %>
+              <%= item({prop: prop, id: "layout-" + t + "-" + name, name: name}) %>
               <% }); %>
             <% } %>
           </div>
@@ -463,7 +455,7 @@ navigation:
             <a id='paint_<%= t %>' class='anchor'></a>
             <h4 class='pad1y'><a href='#paint_<%= t %>' title='link to paint: <%= t %>' class='quiet'>Paint Properties</a></h4>
             <% _(ref['paint_'+t]).each(function(prop, name) { %>
-            <%= item({prop: prop, name: name}) %>
+            <%= item({prop: prop, id: "paint-" + name, name: name}) %>
             <% }); %>
           </div>
         </div>
@@ -479,8 +471,8 @@ navigation:
 
       <div class='keyline-all fill-white'>
         <div class='pad2 keyline-bottom'>
-          <a id='color' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#color' title='link to color'>Color</a></h3>
+          <a id='types-color' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-color' title='link to color'>Color</a></h3>
           <p>
             Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.
           </p>
@@ -500,8 +492,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='enum' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#enum' title='link to enum'>Enum</a></h3>
+          <a id='types-enum' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-enum' title='link to enum'>Enum</a></h3>
           <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
 {% highlight json %}
 {
@@ -511,8 +503,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='string' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#string' title='link to string'>String</a></h3>
+          <a id='types-string' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-string' title='link to string'>String</a></h3>
           <p>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
@@ -522,8 +514,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='boolean' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#boolean' title='link to boolean'>Boolean</a></h3>
+          <a id='types-boolean' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-boolean' title='link to boolean'>Boolean</a></h3>
           <p>Boolean means yes or no, so it accepts the values <code>true</code> or <code>false</code>.</p>
 {% highlight json %}
 {
@@ -533,8 +525,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='number' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#number' title='link to number'>Number</a></h3>
+          <a id='types-number' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-number' title='link to number'>Number</a></h3>
           <p>A number value, often an integer or floating point (decimal number). Written without quotes.</p>
 {% highlight json %}
 {
@@ -544,8 +536,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='array' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#array' title='link to array'>Array</a></h3>
+          <a id='types-array' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-array' title='link to array'>Array</a></h3>
           <p>Arrays are comma-separated lists of one or more numbers in a specific
           order. For example, they're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.</p>
 {% highlight json %}
@@ -556,8 +548,8 @@ navigation:
         </div>
 
         <div class='pad2 keyline-bottom'>
-          <a id='function' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#function' title='link to function'>Function</a></h3>
+          <a id='types-function' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-function' title='link to function'>Function</a></h3>
           <p>The value for any layout or paint property may be specified as a <em>function</em>, allowing you to
               parameterize the value according to the current zoom level. Functions are written as an array of stops,
               where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
@@ -603,8 +595,8 @@ navigation:
         </div>
 
         <div class='pad2'>
-          <a id='filter' class='anchor'></a>
-          <h3 class='space-bottom1'><a href='#filter' title='link to filter'>Filter</a></h3>
+          <a id='types-filter' class='anchor'></a>
+          <h3 class='space-bottom1'><a href='#types-filter' title='link to filter'>Filter</a></h3>
           <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
 
           <div class='col12 clearfix space-bottom2'>
