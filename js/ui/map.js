@@ -319,8 +319,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
      * @param {Object} params
-     * @param {string} [params.layer] Only return features from a given layer
+     * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
      * @param {string} [params.type] Either `raster` or `vector`
+     * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
