@@ -750,7 +750,7 @@ test('Style#featuresAt', function(t) {
         style._cascade([]);
         style._recalculate(0);
 
-        style.sources.mapbox.featuresAt = function(position, params, callback) {
+        style.sources.mapbox.featuresAt = style.sources.mapbox.featuresIn = function(position, params, callback) {
             var features = [{
                 type: 'Feature',
                 layer: 'land',
@@ -782,83 +782,90 @@ test('Style#featuresAt', function(t) {
             }, 10);
         };
 
-        t.test('returns feature type', function(t) {
-            style.featuresAt([256, 256], {}, function(err, results) {
-                t.error(err);
-                t.equal(results[0].geometry.type, 'Polygon');
-                t.end();
+        [
+            style.featuresAt.bind(style, [256, 256]),
+            style.featuresIn.bind(style, [256, 256, 512, 512])
+        ].forEach(function (featuresInOrAt) {
+            t.test('returns feature type', function(t) {
+                featuresInOrAt({}, function(err, results) {
+                    t.error(err);
+                    t.equal(results[0].geometry.type, 'Polygon');
+                    t.end();
+                });
             });
+
+            t.test('filters by `layer` option', function(t) {
+                featuresInOrAt({layer: 'land'}, function(err, results) {
+                    t.error(err);
+                    t.equal(results.length, 2);
+                    t.end();
+                });
+            });
+
+            t.test('includes layout properties', function(t) {
+                featuresInOrAt({}, function(err, results) {
+                    t.error(err);
+
+                    var layout = results[0].layer.layout;
+                    t.deepEqual(layout, {'line-cap': 'round'});
+                    t.deepEqual(
+                        Object.getPrototypeOf(layout),
+                        LayoutProperties.line.prototype);
+
+                    t.end();
+                });
+            });
+
+            t.test('includes paint properties', function(t) {
+                featuresInOrAt({}, function(err, results) {
+                    t.error(err);
+
+                    var paint = results[0].layer.paint;
+                    t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
+                    t.deepEqual(
+                        Object.getPrototypeOf(paint),
+                        PaintProperties.line.prototype);
+
+                    t.end();
+                });
+            });
+
+            t.test('ref layer inherits properties', function(t) {
+                featuresInOrAt({}, function(err, results) {
+                    t.error(err);
+
+                    var layer = results[1].layer;
+                    var refLayer = results[2].layer;
+                    t.deepEqual(layer.layout, refLayer.layout);
+                    t.deepEqual(layer.type, refLayer.type);
+                    t.deepEqual(layer.id, refLayer.ref);
+                    t.notEqual(layer.paint, refLayer.paint);
+
+                    t.end();
+                });
+            });
+
+            t.test('includes arbitrary keys', function(t) {
+                featuresInOrAt({}, function(err, results) {
+                    t.error(err);
+
+                    var layer = results[0].layer;
+                    t.equal(layer.something, 'else');
+
+                    t.end();
+                });
+            });
+
+            t.test('include multiple layers', function(t) {
+                featuresInOrAt({layer: ['land', 'landref']}, function(err, results) {
+                    t.error(err);
+                    t.equals(results.length, 3);
+                    t.end();
+                });
+            });
+
         });
 
-        t.test('filters by `layer` option', function(t) {
-            style.featuresAt([256, 256], {layer: 'land'}, function(err, results) {
-                t.error(err);
-                t.equal(results.length, 2);
-                t.end();
-            });
-        });
-
-        t.test('includes layout properties', function(t) {
-            style.featuresAt([256, 256], {}, function(err, results) {
-                t.error(err);
-
-                var layout = results[0].layer.layout;
-                t.deepEqual(layout, {'line-cap': 'round'});
-                t.deepEqual(
-                    Object.getPrototypeOf(layout),
-                    LayoutProperties.line.prototype);
-
-                t.end();
-            });
-        });
-
-        t.test('includes paint properties', function(t) {
-            style.featuresAt([256, 256], {}, function(err, results) {
-                t.error(err);
-
-                var paint = results[0].layer.paint;
-                t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
-                t.deepEqual(
-                    Object.getPrototypeOf(paint),
-                    PaintProperties.line.prototype);
-
-                t.end();
-            });
-        });
-
-        t.test('ref layer inherits properties', function(t) {
-            style.featuresAt([256, 256], {}, function(err, results) {
-                t.error(err);
-
-                var layer = results[1].layer;
-                var refLayer = results[2].layer;
-                t.deepEqual(layer.layout, refLayer.layout);
-                t.deepEqual(layer.type, refLayer.type);
-                t.deepEqual(layer.id, refLayer.ref);
-                t.notEqual(layer.paint, refLayer.paint);
-
-                t.end();
-            });
-        });
-
-        t.test('includes arbitrary keys', function(t) {
-            style.featuresAt([256, 256], {}, function(err, results) {
-                t.error(err);
-
-                var layer = results[0].layer;
-                t.equal(layer.something, 'else');
-
-                t.end();
-            });
-        });
-
-        t.test('include multiple layers', function(t) {
-            style.featuresAt([256, 256], {layer: ['land', 'landref']}, function(err, results) {
-                t.error(err);
-                t.equals(results.length, 3);
-                t.end();
-            });
-        });
 
         t.end();
     });
