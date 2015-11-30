@@ -468,6 +468,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             this.rotating = true;
         }
 
+        if (pitch !== startPitch) {
+            this.pitching = true;
+        }
+
         if (this.zooming && !around) {
             around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
         }
@@ -485,7 +489,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
 
-            if (pitch !== startPitch) {
+            if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
@@ -496,9 +500,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             if (this.rotating) {
                 this.fire('rotate');
             }
+            if (this.pitching) {
+                this.fire('pitch');
+            }
         }, function() {
             this.zooming = false;
             this.rotating = false;
+            this.pitching = false;
             this.fire('moveend');
         }, options);
 

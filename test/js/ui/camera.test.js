@@ -551,12 +551,13 @@ test('camera', function(t) {
             t.end();
         });
 
-        t.test('emits move, zoom, and rotate events', function(t) {
+        t.test('emits move, zoom, rotate, and pitch events', function(t) {
             var camera = createCamera();
             var started;
             var moved;
             var zoomed;
             var rotated;
+            var pitched;
 
             camera.on('movestart', function() {
                 started = true;
@@ -574,15 +575,20 @@ test('camera', function(t) {
                 rotated = true;
             });
 
+            camera.on('pitch', function() {
+                pitched = true;
+            });
+
             camera.on('moveend', function() {
                 t.ok(started);
                 t.ok(moved);
                 t.ok(zoomed);
                 t.ok(rotated);
+                t.ok(pitched);
                 t.end();
             });
 
-            camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 0 });
+            camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 0, pitch: 45 });
         });
 
         t.test('stops existing ease', function(t) {
