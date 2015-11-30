@@ -1,8 +1,8 @@
 ---
 layout: example
 category: example
-title: Scroll fly to
-description: Fly to places on scroll events
+title: Scroll-driven navigation
+description: Scroll down through the story and the map will fly to the chapter's location.
 ---
 
 <style>
@@ -15,17 +15,27 @@ description: Fly to places on scroll events
     margin-left: 50%;
     font-family: sans-serif;
     overflow-y: scroll;
+    background-color: #fafafa;
 }
 section {
-    padding:  10px 50px;
-    line-height: 35px;
+    padding:  25px 50px;
+    line-height: 25px;
     border-bottom: 1px solid #ddd;
+    opacity: 0.25;
+    font-size: 13px;
+}
+section.active {
+    opacity: 1;
+}
+section:last-child {
+    border-bottom: none;
+    margin-bottom: 200px;
 }
 </style>
 
 <div id='map'></div>
 <div id='features'>
-    <section id='baker'>
+    <section id='baker' class='active'>
         <h3>221b Baker St.</h3>
         <p>November 1895. London is shrouded in fog and Sherlock Holmes and Watson pass time restlessly awaiting a new case. "The London criminal is certainly a dull fellow," Sherlock bemoans. "There have been numerous petty thefts," Watson offers in response. Just then a telegram arrives from Sherlock's brother Mycroft with a mysterious case.</p>
     </section>
@@ -56,113 +66,100 @@ section {
     <section id='charing-cross'>
         <h3>Charing Cross Hotel</h3>
         <p>Walter writes to Oberstein and convinces him to meet in the smoking room of the Charing Cross Hotel where he promises additional plans for the submarine in exchange for money. The plan works and Holmes and Watson catch both criminals.</p>
-        <small class='colophon'>
+        <small id="citation">
             Adapted from <a href='http://www.gutenberg.org/files/2346/2346-h/2346-h.htm'>Project Gutenberg</a>
         </small>
     </section>
 </div>
 <script>
+
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v8',
-    center: [-0.12960000, 51.50110000],
-    zoom: 9
+    center: [-0.15591514, 51.51830379],
+    zoom: 15.5,
+    bearing: 27,
+    pitch: 50
 });
 
-var activeSection = '';
-
-function isOnScreen (element) {
-    var bounds = element.getBoundingClientRect();
-    return bounds.top < window.innerHeight && bounds.bottom > 0;
-}
-
-function updateMap(newSection) {
-    // Don't update position if activeSection and passed in section are the same
-    if (activeSection === newSection) return;
-    switch (newSection) {
-        case 'baker':
-            map.flyTo({
-                bearing: 27,
-                center: [-0.12960000, 51.50110000],
-                zoom: 15.5
-            });
-            break;
-        case 'aldgate':
-            map.easeTo({
-                duration: 6000,
-                around: [-0.15591514, 51.51830379],
-                pitch: 55,
-                bearing: 150,
-                zoom: 15
-            });
-            break;
-        case 'london-bridge':
-            map.flyTo({
-                bearing: 90,
-                center: [-0.07571203, 51.51424049],
-                zoom: 13,
-                speed: 0.6
-            });
-            break;
-        case 'woolwich':
-            map.easeTo({
-                bearing: 90,
-                center: [-0.08533793, 51.50438536],
-                zoom: 12.3,
-                duration: 2000
-            });
-            break;
-        case 'gloucester':
-            map.easeTo({
-                bearing: 45,
-                center: [0.05991101, 51.48752939],
-                zoom: 15.3,
-                duration: 2000
-            });
-            break;
-        case 'caulfield-gardens':
-            map.easeTo({
-                bearing: 180,
-                center: [-0.18335806, 51.49439521],
-                zoom: 12.3,
-                pitch: 0,
-                duration: 2000
-            });
-            break;
-        case 'telegraph':
-            map.easeTo({
-                bearing: 90,
-                center: [-0.19684993, 51.5033856],
-                zoom: 17.3,
-                pitch: 20,
-                duration: 2000
-            });
-            break;
-        case 'charing-cross':
-            map.easeTo({
-                bearing: 90,
-                center: [-0.10669358, 51.51433123],
-                zoom: 12.3,
-                duration: 2000
-            });
-            break;
+var chapters = {
+    'baker': {
+        bearing: 27,
+        center: [-0.15591514, 51.51830379],
+        zoom: 15.5
+    },
+    'aldgate': {
+        duration: 6000,
+        center: [-0.07571203, 51.51424049],
+        bearing: 150,
+        zoom: 15
+    },
+    'london-bridge': {
+        bearing: 90,
+        center: [-0.08533793, 51.50438536],
+        zoom: 13,
+        speed: 0.6
+    },
+    'woolwich': {
+        bearing: 90,
+        center: [0.05991101, 51.48752939],
+        zoom: 12.3,
+        duration: 2000
+    },
+    'gloucester': {
+        bearing: 45,
+        center: [-0.18335806, 51.49439521],
+        zoom: 15.3,
+        duration: 2000
+    },
+    'caulfield-gardens': {
+        bearing: 180,
+        center: [-0.19684993, 51.5033856],
+        zoom: 12.3,
+        duration: 2000
+    },
+    'telegraph': {
+        bearing: 90,
+        center: [-0.10669358, 51.51433123],
+        zoom: 17.3,
+        duration: 2000
+    },
+    'charing-cross': {
+        bearing: 90,
+        center: [-0.12416858, 51.50779757],
+        zoom: 12.3,
+        duration: 2000
     }
-    activeSection = newSection;
-}
+};
 
 // On every scroll event, check which element is on screen
 window.onscroll = function() {
-    var newSection =
-        isOnScreen(document.getElementById('baker')) ? 'baker' :
-        isOnScreen(document.getElementById('aldgate')) ? 'aldgate' :
-        isOnScreen(document.getElementById('london-bridge')) ? 'london-bridge' :
-        isOnScreen(document.getElementById('woolwich')) ? 'woolwich' :
-        isOnScreen(document.getElementById('gloucester')) ? 'gloucester' :
-        isOnScreen(document.getElementById('caulfield-gardens')) ? 'caulfield-gardens' :
-        isOnScreen(document.getElementById('telegraph')) ? 'telegraph' :
-        isOnScreen(document.getElementById('charing-cross')) ? 'charing-cross' : '';
-
-    updateMap(newSection);
+    var chapterNames = Object.keys(chapters);
+    for (var i = 0; i < chapterNames.length; i++) {
+        var chapterName = chapterNames[i];
+        if (isElementOnScreen(chapterName)) {
+            setActiveChapter(chapterName);
+            break;
+        }
+    }
 };
+
+var activeChapterName = 'baker';
+function setActiveChapter(chapterName) {
+    if (chapterName === activeChapterName) return;
+
+    map.flyTo(chapters[chapterName]);
+
+    document.getElementById(chapterName).setAttribute('class', 'active');
+    document.getElementById(activeChapterName).setAttribute('class', '');
+
+    activeChapterName = chapterName;
+}
+
+function isElementOnScreen(id) {
+    var element = document.getElementById(id);
+    var bounds = element.getBoundingClientRect();
+    return bounds.top < window.innerHeight && bounds.bottom > 0;
+}
 
 </script>

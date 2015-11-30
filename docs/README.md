@@ -29,7 +29,7 @@ In the post body, write the HTML and JavaScript constituting the example.
 
 ## Generating Documentation
 
-To generate new docs ensure you are running [Jekyll](http://jekyllrb.com) version `2.5.x`
+To generate new docs, ensure you are running Jekyll version 2.5.x
 
 ```bash
 jekyll -v
@@ -42,12 +42,16 @@ Then run
 npm run docs
 ```
 
-This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server (in the project's root directory)
+This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. If this is the first time building the site, you will need to also generate the `dist/mapbox-gl.js`. To generate the dist folder and scripts run
+
+```bash
+npm run production
+```
+You will only need to do this once. To view the documentation, start a Jekyll server (in the project's root directory)
 
 ```bash
 jekyll serve -w
 ```
-
 and open the served page
 
 ```bash

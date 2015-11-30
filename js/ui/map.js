@@ -286,15 +286,17 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get all features at a point ([x, y]). Only works on layers where `interactive` is set to true.
+     * Query features at a point, or within a certain radius thereof.
+     *
+     * To use this method, you must set the style property `"interactive": true` on layers you wish to query.
      *
      * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
      * @param {number} [params.radius=0] Radius in pixels to search in
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
-     * @param {string} params.type Optional. Either `raster` or `vector`
-     * @param {boolean} [params.includeGeometry=false] Optional. If `true`, geometry of features will be included in the results at the expense of a much slower query time.
-     * @param {featuresAtCallback} callback function that receives the results
+     * @param {string} [params.type] Either `raster` or `vector`
+     * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
+     * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
@@ -311,26 +313,20 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get all features in a rectangle.
+     * Query features within a rectangle.
      *
-     * Note: because features come from vector tiles, the returned features will be:
-     *
-     * 1. Truncated at tile boundaries.
-     * 2. Duplicated across tile boundaries.
-     *
-     * For example, suppose there is a highway running through your rectangle in a `featuresIn` query. `featuresIn` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
+     * To use this method, you must set the style property `"interactive": true` on layers you wish to query.
      *
      * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
      * @param {Object} params
-     * @param {string} params.layer Optional. Only return features from a given layer
-     * @param {string} params.type Optional. Either `raster` or `vector`
-     * @param {featuresInCallback} callback function that receives the results
+     * @param {string} [params.layer] Only return features from a given layer
+     * @param {string} [params.type] Either `raster` or `vector`
+     * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
      * @example
-     * map.featuresIn([[10, 20], [30, 50]], { layer: 'my-layer-name' },
-     * function(err, features) {
+     * map.featuresIn([[10, 20], [30, 50]], { layer: 'my-layer-name' }, function(err, features) {
      *   console.log(features);
      * });
      */
@@ -875,21 +871,19 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
 
 /**
- * Callback to receive `featuresAt` results.
+ * Callback to receive results from `Map#featuresAt` and `Map#featuresIn`.
  *
- * @callback featuresAtCallback
- * @param {Object} err Error _If any_
- * @param {Array} features Displays a JSON array of features given the passed parameters of `featuresAt`
- */
-
-/**
- * Callback to receive `featuresIn` results
+ * Note: because features come from vector tiles or GeoJSON data that is converted to vector tiles internally, the returned features will be:
  *
- * @callback featuresInCallback
- * @param {Object} err Error _If any_
- * @param {Array} features A JSON array of features given the passed parameters of `featuresIn`
+ * 1. Truncated at tile boundaries.
+ * 2. Duplicated across tile boundaries.
+ *
+ * For example, suppose there is a highway running through your rectangle in a `featuresIn` query. `featuresIn` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
+ *
+ * @callback featuresCallback
+ * @param {?Error} err - An error that occurred during query processing, if any. If this parameter is non-null, the `features` parameter will be null.
+ * @param {?Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
  */
-
 
 
 util.extendAll(Map.prototype, /** @lends Map.prototype */{
