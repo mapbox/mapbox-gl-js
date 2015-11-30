@@ -292,7 +292,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} params
      * @param {number} [params.radius=0] Radius in pixels to search in
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
-     * @param {string} params.type Optional. Either `raster` or `vector`
+     * @param {string} [params.type] Either `raster` or `vector`
      * @param {boolean} [params.includeGeometry=false] Optional. If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {featuresAtCallback} callback function that receives the results
      *
@@ -322,8 +322,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
      * @param {Object} params
-     * @param {string} params.layer Optional. Only return features from a given layer
-     * @param {string} params.type Optional. Either `raster` or `vector`
+     * @param {string} [params.layer] Only return features from a given layer or layers.
+     * @param {string} [params.type] Either `raster` or `vector`
+     * @param {boolean} [params.includeGeometry=false] Optional. If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {featuresInCallback} callback function that receives the results
      *
      * @returns {Map} `this`
