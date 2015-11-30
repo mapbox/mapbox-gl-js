@@ -123,11 +123,14 @@ test('Style#_resolve', function(t) {
                 }
             },
             "layers": [{
-                id: "fill",
-                source: "foo",
-                type: "fill"
+                "id": "fill",
+                "source": "foo",
+                "source-layer": "source-layer",
+                "type": "fill"
             }]
         });
+
+        style.on('error', function(error) { t.error(error); });
 
         style.on('load', function() {
             t.ok(style.getLayer('fill') instanceof StyleLayer);
@@ -144,14 +147,17 @@ test('Style#_resolve', function(t) {
                 }
             },
             "layers": [{
-                id: "ref",
-                ref: "referent"
+                "id": "ref",
+                "ref": "referent"
             }, {
-                id: "referent",
-                source: "foo",
-                type: "fill"
+                "id": "referent",
+                "source": "foo",
+                "source-layer": "source-layer",
+                "type": "fill"
             }]
         });
+
+        style.on('error', function(event) { t.error(event.error); });
 
         style.on('load', function() {
             var ref = style.getLayer('ref'),
