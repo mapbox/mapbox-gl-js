@@ -494,6 +494,14 @@ test('camera', function(t) {
             t.end();
         });
 
+        t.test('zooms around a point', function(t) {
+            var camera = createCamera();
+            camera.easeTo({ around: [100, 0], zoom: 3, duration: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 87.5, lat: 0 }));
+            t.equal(camera.getZoom(), 3);
+            t.end();
+        });
+
         t.test('pans and rotates', function(t) {
             var camera = createCamera();
             camera.easeTo({ center: [100, 0], bearing: 90, duration: 0 });

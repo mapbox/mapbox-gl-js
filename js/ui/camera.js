@@ -449,6 +449,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var tr = this.transform,
             offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
+            startWorldSize = tr.worldSize,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -459,7 +460,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
             scale = tr.zoomScale(zoom - startZoom),
             to = 'center' in options ? tr.project(LngLat.convert(options.center)).sub(offset.div(scale)) : from,
-            around = LngLat.convert(options.around);
+            around = 'center' in options ? null : LngLat.convert(options.around);
 
         if (zoom !== startZoom) {
             this.zooming = true;
@@ -479,10 +480,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.fire('movestart');
 
         this._ease(function (k) {
-            if (this.zooming) {
+            if (this.zooming && around) {
                 tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             } else {
-                tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
+                if (this.zooming) tr.zoom = interpolate(startZoom, zoom, k);
+                tr.center = tr.unproject(from.add(to.sub(from).mult(k)), startWorldSize);
             }
 
             if (this.rotating) {
