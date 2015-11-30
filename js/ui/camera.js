@@ -550,11 +550,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
-            startBearing = this.getBearing();
+            startBearing = this.getBearing(),
+            startPitch = this.getPitch();
 
         var center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
         var zoom = 'zoom' in options ?  +options.zoom : startZoom;
         var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
+        var pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
@@ -597,6 +599,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
+        if (startPitch !== pitch) this.pitching = true;
 
         this.fire('movestart');
 
@@ -607,17 +610,24 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
-            if (bearing !== startBearing) {
+            if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
+            }
+            if (this.pitching) {
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
 
             this.fire('move').fire('zoom');
-            if (bearing !== startBearing) {
+            if (this.rotating) {
                 this.fire('rotate');
+            }
+            if (this.pitching) {
+                this.fire('pitch');
             }
         }, function() {
             this.zooming = false;
             this.rotating = false;
+            this.pitching = false;
             this.fire('moveend');
         }, options);
 
