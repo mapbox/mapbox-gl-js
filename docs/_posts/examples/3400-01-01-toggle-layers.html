@@ -1,0 +1,124 @@
+---
+layout: example
+category: example
+title: Toggling layers
+description: Create a custom layer switcher to display different datasets.
+permalink: /examples
+---
+<style>
+.menu-ui {
+  background:#fff;
+  position:absolute;
+  top:10px;right:10px;
+  z-index:1;
+  border-radius:3px;
+  width:120px;
+  border:1px solid rgba(0,0,0,0.4);
+  font-family: 'Open Sans', sans-serif;
+  }
+  .menu-ui a {
+    font-size:13px;
+    color:#404040;
+    display:block;
+    margin:0;padding:0;
+    padding:10px;
+    text-decoration:none;
+    border-bottom:1px solid rgba(0,0,0,0.25);
+    text-align:center;
+    }
+    .menu-ui a:first-child {
+      border-radius:3px 3px 0 0;
+      }
+    .menu-ui a:last-child {
+      border:none;
+      border-radius:0 0 3px 3px;
+      }
+    .menu-ui a:hover {
+      background:#f8f8f8;
+      color:#404040;
+      }
+    .menu-ui a.active {
+      background:#3887BE;
+      color:#FFF;
+      }
+      .menu-ui a.active:hover {
+        background:#3074a4;
+        }
+</style>
+<nav id='menu-ui' class='menu-ui'></nav>
+<div id='map'></div>
+
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    zoom: 15,
+    center: [-71.97722138410576,-13.517379300798098]
+});
+
+var layers = document.getElementById('menu-ui');
+
+map.on('style.load', function () {
+    map.addSource('museum-cusco', {
+        type: 'vector',
+        url: 'mapbox://mapbox.2opop9hr'
+    });
+    map.addLayer({
+        'id': 'museum-cusco',
+        'type': 'circle',
+        'source': 'museum-cusco',
+        'paint': {
+            'circle-radius': 8,
+            'circle-color': 'rgba(55,148,179,1)'
+        },
+        'source-layer': 'museum-cusco',
+    });
+    map.addSource('terrain-data', {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-terrain-v2'
+    });
+    map.addLayer({
+        'id': 'terrain-data',
+        'type': 'line',
+        'source': 'terrain-data',
+        'source-layer': 'contour',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#877b59',
+            'line-width': 1
+        }
+    });
+});
+
+addLayer('Contour', 'terrain-data');
+addLayer('Museums', 'museum-cusco');
+
+function addLayer (name, layerID) {
+    var link = document.createElement('a');
+    link.href = '#';
+    link.className = 'active';
+    link.innerHTML = name;
+
+    link.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var currentLayer = map.getLayoutProperty(layerID, 'visibility');
+
+        if (currentLayer == 'visible') {
+            map.setLayoutProperty(layerID, 'visibility', 'none');
+            this.className = '';
+        } else {
+            this.className = 'active';
+            map.setLayoutProperty(layerID, 'visibility', 'visible');
+        };
+    }
+
+    layers.appendChild(link);
+};
+
+</script>
