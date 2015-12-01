@@ -423,3 +423,31 @@ test('TilePyramid#tilesIn', function (t) {
 
     t.end();
 });
+
+test('TilePyramid#loaded (no errors)', function (t) {
+    var pyramid = createPyramid({
+        load: function(tile) {
+            tile.loaded = true;
+        }
+    });
+
+    var coord = new TileCoord(0, 0, 0);
+    pyramid.addTile(coord);
+
+    t.ok(pyramid.loaded());
+    t.end();
+});
+
+test('TilePyramid#loaded (with errors)', function (t) {
+    var pyramid = createPyramid({
+        load: function(tile) {
+            tile.errored = true;
+        }
+    });
+
+    var coord = new TileCoord(0, 0, 0);
+    pyramid.addTile(coord);
+
+    t.ok(pyramid.loaded());
+    t.end();
+});
