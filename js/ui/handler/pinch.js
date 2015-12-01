@@ -22,6 +22,14 @@ Pinch.prototype = {
         this._el.removeEventListener('touchstart', this._onStart);
     },
 
+    disableRotation: function() {
+        this._rotationDisabled = true;
+    },
+
+    enableRotation: function() {
+        this._rotationDisabled = false;
+    },
+
     _onStart: function (e) {
         if (e.touches.length !== 2) return;
 
@@ -44,7 +52,7 @@ Pinch.prototype = {
             p = p0.add(p1).div(2),
             vec = p0.sub(p1),
             scale = vec.mag() / this._startVec.mag(),
-            bearing = vec.angleWith(this._startVec) * 180 / Math.PI,
+            bearing = this._rotationDisabled ? 0 : vec.angleWith(this._startVec) * 180 / Math.PI,
             map = this._map;
 
         map.easeTo({
