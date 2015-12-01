@@ -7,8 +7,8 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.4/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.4/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.5/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.5/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
@@ -84,6 +84,7 @@ To prepare a release:
   * `git checkout master && git merge origin/mb-pages`
 * Update `CHANGELOG.md`
 * Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
+* Commit changes
 * Tag the release (`git tag vX.Y.Z && git push origin --tags`). The CI server will automatically publish tagged builds to the Mapbox CDN.
 * Publish the build to npm (`npm publish`)
 * Merge `master` into `mb-pages` and publish documentation:

@@ -2,6 +2,22 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.11.5 (Dec 1 2015)
+
+#### Bugfixes
+
+* Draw layers sorted by their order in they stylesheet (#1558)
+
+#### API Improvements
+
+* Fire `mousedown` and `mouseup` events (#1411)
+* Fire `movestart` and `moveend` when panning (#1658)
+* Added drag events (#1442)
+
+#### UX Improvements
+
+* Request webp images for mapbox:// raster tiles in chrome
+
 ## 0.11.4 (Nov 16 2015)
 
 #### Bugfixes
