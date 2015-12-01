@@ -24,7 +24,7 @@ LineBucket.prototype.shaders = {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributeArgs: ['point', 'extrude', 'tx', 'ty', 'linesofar'],
+        attributeArgs: ['point', 'extrude', 'tx', 'ty', 'dir', 'linesofar'],
 
         attributes: [{
             name: 'pos',
@@ -41,8 +41,13 @@ LineBucket.prototype.shaders = {
             value: [
                 'Math.round(' + EXTRUDE_SCALE + ' * extrude.x)',
                 'Math.round(' + EXTRUDE_SCALE + ' * extrude.y)',
-                'linesofar / 128',
-                'linesofar % 128'
+
+                // Encode the -1/0/1 direction value into .zw coordinates of a_data, which is normally covered
+                // by linesofar, so we need to merge them.
+                // The z component's first bit, as well as the sign bit is reserved for the direction,
+                // so we need to shift the linesofar.
+                '((dir < 0) ? -1 : 1) * ((dir ? 1 : 0) | ((linesofar << 1) & 0x7F))',
+                '(linesofar >> 6) & 0x7F'
             ]
         }]
     }
@@ -194,7 +199,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 joinNormal._perp()._mult(bevelLength * direction);
             }
             this.addCurrentVertex(currentVertex, flip, distance, joinNormal, 0, 0, false);
-            flip = -flip;
+            this.addCurrentVertex(currentVertex, -flip, distance, joinNormal, 0, 0, false);
 
         } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
             var lineTurnsLeft = flip * (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
@@ -316,7 +321,7 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, 
 
     extrude = normal.mult(flip);
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 0, distance) - group.vertexStartIndex;
+    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 0, endLeft, distance) - group.vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
         this.addLineElement(this.e1, this.e2, this.e3);
         group.elementLength++;
@@ -326,7 +331,7 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, flip, distance, 
 
     extrude = normal.mult(-flip);
     if (endRight) extrude._sub(normal.perp()._mult(endRight));
-    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 1, distance) - group.vertexStartIndex;
+    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 1, -endRight, distance) - group.vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
         this.addLineElement(this.e1, this.e2, this.e3);
         group.elementLength++;
@@ -351,7 +356,7 @@ LineBucket.prototype.addPieSliceVertex = function(currentVertex, flip, distance,
     extrude = extrude.mult(flip * (lineTurnsLeft ? -1 : 1));
     var group = this.elementGroups.line.current;
 
-    this.e3 = this.addLineVertex(currentVertex, extrude, 0, ty, distance) - group.vertexStartIndex;
+    this.e3 = this.addLineVertex(currentVertex, extrude, 0, ty, 0, distance) - group.vertexStartIndex;
     group.vertexLength++;
 
     if (this.e1 >= 0 && this.e2 >= 0) {
