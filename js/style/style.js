@@ -172,13 +172,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _broadcastLayers: function() {
-        var ordered = [];
-
-        for (var id in this._layers) {
-            ordered.push(this._layers[id].json());
-        }
-
-        this.dispatcher.broadcast('set layers', ordered);
+        this.dispatcher.broadcast('set layers', this._order.map(function(id) {
+            return this._layers[id].json();
+        }, this));
     },
 
     _cascade: function(classes, options) {

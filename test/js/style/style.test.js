@@ -113,6 +113,38 @@ test('Style', function(t) {
     });
 });
 
+test('Style#_broadcastLayers', function(t) {
+    var style = new Style({
+        'version': 8,
+        'sources': {
+            'source': {
+                'type': 'vector'
+            }
+        },
+        'layers': [{
+            'id': 'second',
+            'source': 'source',
+            'source-layer': 'source-layer',
+            'type': 'fill'
+        }]
+    });
+
+    style.on('error', function(error) { t.error(error); });
+
+    style.on('load', function() {
+        style.addLayer({id: 'first', source: 'source', type: 'fill' }, 'second');
+        style.addLayer({id: 'third', source: 'source', type: 'fill' });
+
+        style.dispatcher.broadcast = function(key, value) {
+            t.equal(key, 'set layers');
+            t.deepEqual(value.map(function(layer) { return layer.id; }), ['first', 'second', 'third']);
+            t.end();
+        };
+
+        style._broadcastLayers();
+    });
+});
+
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({
