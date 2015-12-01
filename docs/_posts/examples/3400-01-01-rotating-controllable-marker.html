@@ -15,11 +15,13 @@ var map = new mapboxgl.Map({
 
 var direction = 0, manual = false, speed = 1;
 
+// create a GeoJSON point to serve as a starting point
 var point = {
-    type: 'Point',
-    coordinates: [-74.50, 40]
+  "type": "Point",
+  "coordinates": [-74.50, 40]
 };
 
+// add the GeoJSON above to a new vector tile source
 var source = new mapboxgl.GeoJSONSource({
     data: point
 });
@@ -40,7 +42,7 @@ function setPosition() {
 
 map.on('style.load', function () {
     map.addSource('drone', source);
-
+    
     map.addLayer({
         "id": "drone-glow-strong",
         "type": "circle",
@@ -62,7 +64,7 @@ map.on('style.load', function () {
             "circle-opacity": 0.1
         }
     });
-
+    
     map.addLayer({
         "id": "drone",
         "type": "symbol",
@@ -71,7 +73,7 @@ map.on('style.load', function () {
             "icon-image": "airport-24",
         }
     });
-
+    
     window.setInterval(setPosition, 10);
 });
 
