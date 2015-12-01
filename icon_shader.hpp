@@ -30,6 +30,6 @@ protected:
     GLint a_data2 = -1;
 };
 
-}
+} // namespace mbgl
 
 #endif

@@ -17,6 +17,6 @@ public:
     Uniform<std::array<GLfloat, 2>> u_world  = {"u_world",  *this};
 };
 
-}
+} // namespace mbgl
 
 #endif

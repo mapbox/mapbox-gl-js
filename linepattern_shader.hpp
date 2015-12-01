@@ -32,6 +32,6 @@ public:
 private:
     GLint a_data = -1;
 };
-}
+} // namespace mbgl
 
 #endif

@@ -33,6 +33,6 @@ private:
 };
 
 
-}
+} // namespace mbgl
 
 #endif

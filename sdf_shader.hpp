@@ -40,6 +40,6 @@ public:
     void bind(GLbyte *offset) final;
 };
 
-}
+} // namespace mbgl
 
 #endif

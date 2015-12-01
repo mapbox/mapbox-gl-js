@@ -18,6 +18,6 @@ public:
     Uniform<GLfloat>                u_blur   = {"u_blur",   *this};
 };
 
-}
+} // namespace mbgl
 
 #endif

@@ -44,4 +44,4 @@ void UniformMatrix<4>::bind(const std::array<GLfloat, 16>& t) {
 
 // Add more as needed.
 
-}
+} // namespace mbgl

@@ -16,6 +16,6 @@ public:
     Uniform<std::array<GLfloat, 4>> u_color    = {"u_color",  *this};
 };
 
-}
+} // namespace mbgl
 
 #endif

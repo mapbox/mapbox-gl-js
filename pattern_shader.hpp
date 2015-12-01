@@ -24,6 +24,6 @@ public:
     UniformMatrix<3>                u_patternmatrix_b = {"u_patternmatrix_b", *this};
 };
 
-}
+} // namespace mbgl
 
 #endif

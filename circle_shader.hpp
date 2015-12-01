@@ -19,6 +19,6 @@ public:
     Uniform<GLfloat>                 u_blur     = {"u_blur",     *this};
 };
 
-}
+} // namespace mbgl
 
 #endif // MBGL_SHADER_CIRCLE_SHADER

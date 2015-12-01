@@ -34,6 +34,6 @@ private:
     GLuint fragShader = 0;
 };
 
-}
+} // namespace mbgl
 
 #endif

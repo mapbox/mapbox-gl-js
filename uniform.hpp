@@ -56,6 +56,6 @@ private:
     GLint location;
 };
 
-}
+} // namespace mbgl
 
 #endif

@@ -23,6 +23,6 @@ public:
     Uniform<std::array<GLfloat, 3>> u_spin_weights      = {"u_spin_weights",      *this};
 };
 
-}
+} // namespace mbgl
 
 #endif

@@ -26,6 +26,6 @@ private:
 };
 
 
-}
+} // namespace mbgl
 
 #endif
