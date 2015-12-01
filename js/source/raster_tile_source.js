@@ -39,6 +39,10 @@ RasterTileSource.prototype = util.inherit(Evented, {
         // noop
     },
 
+    remove: function() {
+        this.fire('remove');
+    },
+
     render: Source._renderTiles,
 
     _loadTile: function(tile) {
