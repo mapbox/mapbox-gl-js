@@ -47,7 +47,7 @@ TilePyramid.prototype = {
      */
     loaded: function() {
         for (var t in this._tiles) {
-            if (!this._tiles[t].loaded)
+            if (!this._tiles[t].loaded && !this._tiles[t].errored)
                 return false;
         }
         return true;
