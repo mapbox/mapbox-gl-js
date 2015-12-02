@@ -7,7 +7,7 @@ var handlers = {
     dragPan: require('./handler/drag_pan'),
     keyboard: require('./handler/keyboard'),
     doubleClickZoom: require('./handler/dblclick_zoom'),
-    pinch: require('./handler/pinch')
+    touchZoomRotate: require('./handler/touch_zoom_rotate')
 };
 
 var DOM = require('../util/dom'),
@@ -252,4 +252,3 @@ Interaction.prototype = {
  * @type {Object}
  * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
  */
-

@@ -3,17 +3,17 @@
 var DOM = require('../../util/dom'),
     util = require('../../util/util');
 
-module.exports = Pinch;
+module.exports = TouchZoomRotate;
 
 
-function Pinch(map) {
+function TouchZoomRotate(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-Pinch.prototype = {
+TouchZoomRotate.prototype = {
     enable: function () {
         this._el.addEventListener('touchstart', this._onStart, false);
     },

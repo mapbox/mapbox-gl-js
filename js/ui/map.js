@@ -150,7 +150,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         dragPan: true,
         keyboard: true,
         doubleClickZoom: true,
-        pinch: true,
+        touchZoomRotate: true,
 
         bearingSnap: 7,
 
