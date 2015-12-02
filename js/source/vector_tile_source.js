@@ -43,6 +43,10 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
+    remove: function() {
+        this.fire('remove');
+    },
+
     render: Source._renderTiles,
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,

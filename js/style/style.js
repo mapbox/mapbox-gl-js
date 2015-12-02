@@ -422,6 +422,12 @@ Style.prototype = util.inherit(Evented, {
 
     _remove: function() {
         this.dispatcher.remove();
+
+        for (var id in this.sources) {
+            if (this.sources[id] && this.sources[id].remove) {
+                this.sources[id].remove();
+            }
+        }
     },
 
     _reloadSource: function(id) {

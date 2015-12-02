@@ -3,12 +3,13 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
+var config = require('../util/config');
 var TilePyramid = require('./tile_pyramid');
 var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 exports._loadTileJSON = function(options) {
-    var loaded = function(err, tileJSON) {
+    var loaded = function(err, tileJSON, preservePyramid) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -22,26 +23,38 @@ exports._loadTileJSON = function(options) {
             this.vectorLayerIds = this.vectorLayers.map(function(layer) { return layer.id; });
         }
 
-        this._pyramid = new TilePyramid({
-            tileSize: this.tileSize,
-            cacheSize: 20,
-            minzoom: this.minzoom,
-            maxzoom: this.maxzoom,
-            roundZoom: this.roundZoom,
-            reparseOverscaled: this.reparseOverscaled,
-            load: this._loadTile.bind(this),
-            abort: this._abortTile.bind(this),
-            unload: this._unloadTile.bind(this),
-            add: this._addTile.bind(this),
-            remove: this._removeTile.bind(this),
-            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
-        });
+        if (!preservePyramid) {
+            this._pyramid = new TilePyramid({
+                tileSize: this.tileSize,
+                cacheSize: 20,
+                minzoom: this.minzoom,
+                maxzoom: this.maxzoom,
+                roundZoom: this.roundZoom,
+                reparseOverscaled: this.reparseOverscaled,
+                load: this._loadTile.bind(this),
+                abort: this._abortTile.bind(this),
+                unload: this._unloadTile.bind(this),
+                add: this._addTile.bind(this),
+                remove: this._removeTile.bind(this),
+                redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
+            });
+        }
 
         this.fire('load');
     }.bind(this);
 
-    if (options.url) {
-        ajax.getJSON(normalizeURL(options.url), loaded);
+    if (this.url) {
+        ajax.getJSON(normalizeURL(this.url), loaded);
+
+        var onTokenChange = function() {
+            ajax.getJSON(normalizeURL(this.url), function (err, tileJSON) {
+                loaded(err, tileJSON, true);
+            });
+        }.bind(this);
+        config.on('token.change', onTokenChange);
+        this.once('remove', function() {
+            config.off('token.change', onTokenChange);
+        });
     } else {
         browser.frame(loaded.bind(this, null, options));
     }
