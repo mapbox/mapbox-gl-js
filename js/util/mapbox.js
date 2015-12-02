@@ -66,8 +66,10 @@ module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl) {
-    var extension = browser.supportsWebp ? 'webp' : '$1';
     if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
         return url;
+
+    url = url.replace(/([?&]access_token=)tk\.[^&]+/, '$1' + config.ACCESS_TOKEN);
+    var extension = browser.supportsWebp ? 'webp' : '$1';
     return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.' + extension : '.' + extension);
 };
