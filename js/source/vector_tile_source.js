@@ -3,6 +3,7 @@
 var util = require('../util/util');
 var Evented = require('../util/evented');
 var Source = require('./source');
+var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = VectorTileSource;
 
@@ -50,7 +51,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            url: tile.coord.url(this.tiles, this.maxzoom),
+            url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom), this.url),
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
