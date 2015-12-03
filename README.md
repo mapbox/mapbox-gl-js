@@ -85,12 +85,12 @@ To prepare a release:
 * Update `CHANGELOG.md` with all changes since the last release
 * Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
 * Commit changes
-* Run `npm version patch` (or `major`, or `minor`) to bump the version number
+* Run `npm version patch` ([or `major`, or `minor`](http://semver.org/)) to bump the version number
 * Run `git push origin && git push origin --follow-tags`. The CI server will automatically publish tagged builds to the Mapbox CDN.
 * Run `npm publish` to publish the build to npm.
 * Merge `master` into `mb-pages` and publish documentation:
   * `git checkout mb-pages && git merge master && git push origin mb-pages`
-* [Create a GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the CHANGELOG
+* Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using text from the CHANGELOG.md
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
