@@ -7,8 +7,8 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.5/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.11.5/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
@@ -82,14 +82,15 @@ To prepare a release:
 
 * Merge `mb-pages` into `master`:
   * `git checkout master && git merge origin/mb-pages`
-* Update `CHANGELOG.md`
+* Update `CHANGELOG.md` with all changes since the last release
 * Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
 * Commit changes
-* Tag the release (`git tag vX.Y.Z && git push origin --tags`). The CI server will automatically publish tagged builds to the Mapbox CDN.
-* Publish the build to npm (`npm publish`)
+* Run `npm version patch` (or `major`, or `minor`) to bump the version number
+* Run `git push origin --tags`. The CI server will automatically publish tagged builds to the Mapbox CDN.
+* Run `npm publish` to publish the build to npm.
 * Merge `master` into `mb-pages` and publish documentation:
   * `git checkout mb-pages && git merge master && git push origin mb-pages`
-* [Create a GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new)
+* [Create a GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the CHANGELOG
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 

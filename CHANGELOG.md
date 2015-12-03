@@ -2,27 +2,39 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.12.0 (Dec 2 2015)
+
+#### API Improvements
+
+* Added `line-offset` style property (#1778)
+
 ## 0.11.5 (Dec 1 2015)
 
 #### Bugfixes
 
-* Draw layers sorted by their order in they stylesheet (#1558)
+* Fixed unstable symbol layer render order when adding / removing layers (#1558)
+* Fire map loaded event even if raster tiles have errors
+* Fix panning animation during easeTo with zoom change
+* Fix pitching animation during flyTo
+* Fix pitching animation during easeTo
+* Prevent rotation from firing `mouseend` events (#1104)
 
 #### API Improvements
 
 * Fire `mousedown` and `mouseup` events (#1411)
 * Fire `movestart` and `moveend` when panning (#1658)
 * Added drag events (#1442)
+* Request webp images for mapbox:// raster tiles in chrome (#1725)
 
 #### UX Improvements
 
-* Request webp images for mapbox:// raster tiles in chrome
+* Added inertia to map rotation (#620)
 
 ## 0.11.4 (Nov 16 2015)
 
 #### Bugfixes
 
-* Fix alpha blending of alpha layers  (#1684)
+* Fix alpha blending of alpha layers (#1684)
 
 ## 0.11.3 (Nov 10 2015)
 
