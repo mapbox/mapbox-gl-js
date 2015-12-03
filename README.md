@@ -86,7 +86,7 @@ To prepare a release:
 * Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
 * Commit changes
 * Run `npm version patch` (or `major`, or `minor`) to bump the version number
-* Run `git push origin --tags`. The CI server will automatically publish tagged builds to the Mapbox CDN.
+* Run `git push origin && git push origin --follow-tags`. The CI server will automatically publish tagged builds to the Mapbox CDN.
 * Run `npm publish` to publish the build to npm.
 * Merge `master` into `mb-pages` and publish documentation:
   * `git checkout mb-pages && git merge master && git push origin mb-pages`
