@@ -1,0 +1,29 @@
+---
+layout: example
+category: example
+title: Driving directions
+description: Use the mapbox-gl-directions plugin to show results from the Mapbox Directions API
+---
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v0.0.0/mapbox-gl-directions.js'></script>
+<link rel='stylesheet' href='https://api.tiles.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v0.0.0/mapbox-gl-directions.css' type='text/css' />
+<div id='map'></div>
+
+<script>
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [-79.4512, 43.6568],
+  zoom: 13
+});
+
+var directions = mapboxgl.Directions(document.getElementById('map'), {
+  unit: 'metric',
+  profile: 'walking',
+  proximity: {
+    latitude: 66.1,
+    longitude: 45.3
+  }
+});
+
+map.addControl(directions);
+</script>
