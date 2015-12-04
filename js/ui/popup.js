@@ -58,6 +58,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     remove: function() {
         if (this._container) {
             this._container.parentNode.removeChild(this._container);
+            delete this._container;
         }
 
         if (this._map) {
