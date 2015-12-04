@@ -17,7 +17,8 @@ test('Map', function(t) {
                 offsetWidth: 200,
                 offsetHeight: 200,
                 classList: {
-                    add: function() {}
+                    add: function() {},
+                    remove: function() {}
                 }
             },
             interactive: false,
@@ -212,8 +213,20 @@ test('Map', function(t) {
     });
 
     t.test('#remove', function(t) {
-        var map = createMap();
-        t.equal(map.remove(), map);
+        var map = createMap(),
+            removedCanvas,
+            removedControls;
+
+        map._canvasContainer.remove = function () {
+            removedCanvas = true;
+        };
+        map._controlContainer.remove = function () {
+            removedControls = true;
+        };
+
+        t.equal(map.remove(), undefined);
+        t.ok(removedCanvas);
+        t.ok(removedControls);
         t.end();
     });
 

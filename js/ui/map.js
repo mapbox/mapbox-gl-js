@@ -650,7 +650,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
         this._canvas = new Canvas(this, canvasContainer);
 
-        var controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
+        var controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         var corners = this._controlCorners = {};
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
             corners[pos] = DOM.create('div', 'mapboxgl-ctrl-' + pos, controlContainer);
@@ -785,8 +785,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Destroys the map's underlying resources, including web workers.
-     * @returns {Map} this
+     * Destroys the map's underlying resources, including web workers and DOM elements. Afterwards,
+     * you must not call any further methods on this Map instance.
+     *
+     * @returns {undefined}
      */
     remove: function() {
         if (this._hash) this._hash.remove();
@@ -796,7 +798,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
         }
-        return this;
+        this._canvasContainer.remove();
+        this._controlContainer.remove();
+        this._container.classList.remove('mapboxgl-map');
     },
 
     /**

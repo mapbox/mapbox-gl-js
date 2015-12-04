@@ -1,5 +1,9 @@
 'use strict';
 
 exports.create = function (tagName, className, container) {
-    return container;
+    return {
+        offsetWidth: container.offsetWidth,
+        offsetHeight: container.offsetHeight,
+        remove: function () {}
+    };
 };

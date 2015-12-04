@@ -18,7 +18,8 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
             offsetWidth: options.width,
             offsetHeight: options.height,
             classList: {
-                add: function() {}
+                add: function() {},
+                remove: function() {}
             }
         },
         center: options.center,
