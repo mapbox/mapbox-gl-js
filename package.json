@@ -38,7 +38,7 @@
     "eslint": "^1.5.0",
     "eslint-config-mourner": "^1.0.0",
     "istanbul": "^0.3.15",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#8e79185e18e33c555e879c0074919ecfbff523d2",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#96a784f76653f0476f2ce4858bb1fbde3e1e7bf5",
     "prova": "^2.1.2",
     "sinon": "^1.15.4",
     "st": "^0.5.5",
