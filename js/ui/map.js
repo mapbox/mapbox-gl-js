@@ -84,15 +84,15 @@ var Map = module.exports = function(options) {
         '_onSourceUpdate',
         '_onWindowResize',
         'onError',
-        'update',
-        'render'
+        '_update',
+        '_render'
     ], this);
 
     this._setupContainer();
     this._setupPainter();
 
-    this.on('move', this.update.bind(this, false));
-    this.on('zoom', this.update.bind(this, true));
+    this.on('move', this._update.bind(this, false));
+    this.on('zoom', this._update.bind(this, true));
     this.on('moveend', function() {
         this.animationLoop.set(300); // text fading
         this._rerender();
@@ -377,7 +377,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.style.batch(work);
 
         this.style._cascade(this._classes);
-        this.update(true);
+        this._update(true);
     },
 
     /**
@@ -401,7 +401,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 .off('layer.remove', this._forwardLayerEvent)
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
-                .off('tile.load', this.update)
+                .off('tile.load', this._update)
                 .off('tile.error', this._forwardTileEvent)
                 .off('tile.stats', this._forwardTileEvent)
                 ._remove();
@@ -432,7 +432,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             .on('layer.remove', this._forwardLayerEvent)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
-            .on('tile.load', this.update)
+            .on('tile.load', this._update)
             .on('tile.error', this._forwardTileEvent)
             .on('tile.stats', this._forwardTileEvent);
 
@@ -699,7 +699,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     _contextRestored: function(event) {
         this._setupPainter();
         this.resize();
-        this.update();
+        this._update();
         this.fire("webglcontextrestored", {originalEvent: event});
     },
 
@@ -724,8 +724,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {boolean} updateStyle mark the map's style for reprocessing as
      * well as its sources
      * @returns {Map} this
+     * @private
      */
-    update: function(updateStyle) {
+    _update: function(updateStyle) {
         if (!this.style) return this;
 
         this._styleDirty = this._styleDirty || updateStyle;
@@ -740,8 +741,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Call when a (re-)render of the map is required, e.g. when the
      * user panned or zoomed,f or new data is available.
      * @returns {Map} this
+     * @private
      */
-    render: function() {
+    _render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
             this.style._recalculate(this.transform.zoom);
@@ -813,7 +815,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     _rerender: function() {
         if (this.style && !this._frameId) {
-            this._frameId = browser.frame(this.render);
+            this._frameId = browser.frame(this._render);
         }
     },
 
@@ -842,7 +844,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onStyleChange: function(e) {
-        this.update(true);
+        this._update(true);
         this._forwardStyleEvent(e);
     },
 
@@ -861,12 +863,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onSourceUpdate: function(e) {
-        this.update();
+        this._update();
         this._forwardSourceEvent(e);
     },
 
     _onWindowResize: function() {
-        this.stop().resize().update();
+        this.stop().resize()._update();
     }
 });
 
@@ -897,7 +899,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      */
     _debug: false,
     get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this.update(); },
+    set debug(value) { this._debug = value; this._update(); },
 
     /**
      * Show collision boxes: useful for debugging label placement
@@ -921,10 +923,10 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      */
     _repaint: false,
     get repaint() { return this._repaint; },
-    set repaint(value) { this._repaint = value; this.update(); },
+    set repaint(value) { this._repaint = value; this._update(); },
 
     // show vertices
     _vertices: false,
     get vertices() { return this._vertices; },
-    set vertices(value) { this._vertices = value; this.update(); }
+    set vertices(value) { this._vertices = value; this._update(); }
 });
