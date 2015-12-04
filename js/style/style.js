@@ -399,7 +399,7 @@ Style.prototype = util.inherit(Evented, {
             params.layerIds = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
-        util.asyncEach(Object.keys(this.sources), function(id, callback) {
+        util.asyncAll(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
             source[queryType](bboxOrCoords, params, function(err, result) {
                 if (result) features = features.concat(result);

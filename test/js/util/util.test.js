@@ -188,12 +188,12 @@ test('util', function(t) {
         t.end();
     });
 
-    t.test('asyncEach', function(t) {
+    t.test('asyncAll', function(t) {
         var expect = 1;
-        util.asyncEach([], function(callback) { callback(); }, function() {
+        util.asyncAll([], function(callback) { callback(); }, function() {
             t.ok('immediate callback');
         });
-        util.asyncEach([1, 2, 3], function(number, callback) {
+        util.asyncAll([1, 2, 3], function(number, callback) {
             t.equal(number, expect++);
             t.ok(callback instanceof Function);
             callback();

@@ -107,24 +107,6 @@ exports.coalesce = function() {
 
 /*
  * Call an asynchronous function on an array of arguments,
- * calling `callback` once all calls complete.
- *
- * @param {Array<*>} array input to each call of the async function.
- * @param {Function} fn an async function with signature (data, callback)
- * @param {Function} callback a callback run after all async work is done.
- * called with no arguments
- * @returns {undefined}
- * @private
- */
-exports.asyncEach = function (array, fn, callback) {
-    var remaining = array.length;
-    if (remaining === 0) return callback();
-    function check() { if (--remaining === 0) callback(); }
-    for (var i = 0; i < array.length; i++) fn(array[i], check);
-};
-
-/*
- * Call an asynchronous function on an array of arguments,
  * calling `callback` with the completed results of all calls.
  *
  * @param {Array<*>} array input to each call of the async function.

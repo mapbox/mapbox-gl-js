@@ -259,7 +259,7 @@ function preloadAssets(stylesheet, callback) {
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
     var timeStart = performance.now();
 
-    util.asyncEach(coordinates, function(coordinate, eachCallback) {
+    util.asyncAll(coordinates, function(coordinate, eachCallback) {
         var url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
 
         var stylesheetLayers = stylesheet.layers.filter(function(layer) {
