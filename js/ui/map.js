@@ -162,6 +162,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         preserveDrawingBuffer: false
     },
 
+    /**
+     * Adds a control to the map, calling `control.addTo(this)`.
+     *
+     * @param {Control} control
+     * @returns {Map} `this`
+     */
     addControl: function(control) {
         control.addTo(this);
         return this;
