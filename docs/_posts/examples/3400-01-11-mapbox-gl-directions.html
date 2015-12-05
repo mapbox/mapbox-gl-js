@@ -16,14 +16,6 @@ var map = new mapboxgl.Map({
   zoom: 13
 });
 
-var directions = mapboxgl.Directions(document.getElementById('map'), {
-  unit: 'metric',
-  profile: 'walking',
-  proximity: {
-    latitude: 66.1,
-    longitude: 45.3
-  }
-});
-
+var directions = new mapboxgl.Directions(document.getElementById('map'));
 map.addControl(directions);
 </script>
