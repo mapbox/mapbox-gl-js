@@ -100,7 +100,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_mix, dasharray.t);
 
         gl.uniform1f(shader.u_extra, extra);
-        gl.uniform1f(shader.u_offset, layer.paint['line-offset']);
+        gl.uniform1f(shader.u_offset, -layer.paint['line-offset']);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
 
     } else if (image) {
@@ -128,7 +128,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_opacity, layer.paint['line-opacity']);
 
         gl.uniform1f(shader.u_extra, extra);
-        gl.uniform1f(shader.u_offset, layer.paint['line-offset']);
+        gl.uniform1f(shader.u_offset, -layer.paint['line-offset']);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
 
     } else {
@@ -139,7 +139,7 @@ module.exports = function drawLine(painter, layer, posMatrix, tile) {
         gl.uniform1f(shader.u_ratio, ratio);
         gl.uniform1f(shader.u_blur, blur);
         gl.uniform1f(shader.u_extra, extra);
-        gl.uniform1f(shader.u_offset, layer.paint['line-offset']);
+        gl.uniform1f(shader.u_offset, -layer.paint['line-offset']);
         gl.uniformMatrix2fv(shader.u_antialiasingmatrix, false, antialiasingMatrix);
 
         gl.uniform4fv(shader.u_color, color);
