@@ -986,7 +986,7 @@
     "line-offset": {
       "type": "number",
       "default": 0,
-      "doc": "The line's offset perpendicular to its direction. Values may be positive or negative, where positive indicates \"leftwards\" (if you were moving in the direction of the line) and negative indicates \"rightwards.\"",
+      "doc": "The line's offset perpendicular to its direction. Values may be positive or negative, where positive indicates \"rightwards\" (if you were moving in the direction of the line) and negative indicates \"leftwards.\"",
       "function": "interpolated",
       "transition": true,
       "units": "pixels"
