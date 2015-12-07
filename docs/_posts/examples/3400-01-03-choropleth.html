@@ -1,0 +1,98 @@
+---
+layout: example
+category: example
+title: Choropleth
+description: Visualize population density on a map
+---
+<style>
+    .marker-title {
+        font-weight: 700;
+    }
+</style>
+<!-- Include Turf.js () for use of turf.extent. -->
+<script src='https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v8',
+    center: [-96.7778, 38.1289],
+    zoom: 2.832
+});
+
+var popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+});
+
+map.on('style.load', function () {
+    // Sets a `statesData` variable holding GeoJSON data for the United States.
+    // You will need to copy this file to your own server and change the URL.
+    map.addSource("states", {
+        "type": "geojson",
+        "data": "{{site.baseurl}}/assets/us-states.json"
+    });
+
+    // Display the states data in eight layers, each filtered to a range of
+    // density values. Each range gets a different fill color.
+    var layers = [
+        [1000, '#8c2d04'],
+        [500, '#cc4c02'],
+        [200, '#ec7014'],
+        [100, '#fe9929'],
+        [50, '#fec44f'],
+        [20, '#fee391'],
+        [10, '#fff7bc'],
+        [0, '#ffffe5']
+    ];
+
+    layers.forEach(function (layer, i) {
+        map.addLayer({
+            "id": "states-" + i,
+            "interactive": true,
+            "type": "fill",
+            "source": "states",
+            "paint": {
+                "fill-color": layer[1],
+                "fill-opacity": 0.7
+            },
+            "filter": i == 0 ?
+                [">=", "density", layer[0]] :
+                ["all",
+                    [">=", "density", layer[0]],
+                    ["<", "density", layers[i - 1][0]]]
+        }, 'admin-2-boundaries');
+    });
+});
+
+map.on('mousemove', function (e) {
+    map.featuresAt(e.point, {
+        layer: ['states-0', 'states-1', 'states-2', 'states-3',
+                'states-4', 'states-5', 'states-6', 'states-7']
+    }, function (err, features) {
+        if (!err && features.length) {
+            var feature = features[0],
+                html = '<div class="marker-title">' + feature.properties.name + '</div>' +
+                    feature.properties.density + ' people per square mile';
+
+            popup.setLngLat(e.lngLat)
+                .setHTML(html)
+                .addTo(map);
+        } else {
+            popup.remove();
+        }
+    });
+});
+
+map.on('click', function (e) {
+    map.featuresAt(e.point, {
+        layer: ['states-0', 'states-1', 'states-2', 'states-3',
+                'states-4', 'states-5', 'states-6', 'states-7'],
+        includeGeometry: true
+    }, function (err, features) {
+        if (!err && features.length) {
+            map.fitBounds(turf.extent(features[0]), {padding: 20});
+        }
+    });
+});
+</script>
