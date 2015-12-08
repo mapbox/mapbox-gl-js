@@ -143,5 +143,9 @@ ImageSource.prototype = util.inherit(Evented, {
      */
     featuresAt: function(point, params, callback) {
         return callback(null, []);
+    },
+
+    featuresIn: function(bbox, params, callback) {
+        return callback(null, []);
     }
 });
