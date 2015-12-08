@@ -88,8 +88,8 @@ To prepare a release:
 * Run `git push origin && git push origin --tags` to push the new commit and tag to GitHub
 * Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the tag you just pushed and the text in `CHANGELOG.md`
 * The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. Wait for this build to finish successfully before proceeding.
-* Run `git checkout mb-pages && git merge master && git push origin mb-pages` to merge `master` into `mb-pages` and publish documentation. Check that the examples work
-* Run `npm publish` to publish the release to npm
+* Run `git checkout mb-pages && git merge master && git push origin mb-pages` to merge `master` into `mb-pages` and publish documentation. Wait for the [examples](https://www.mapbox.com/mapbox-gl-js/examples/) to publish successfully before proceeding (this can take a few minutes).
+* Run `git checkout master && npm publish` to publish the release to npm.
 
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
