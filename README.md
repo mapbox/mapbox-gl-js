@@ -7,8 +7,8 @@ A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles
 Include the source via HTML tags:
 
 ```html
-<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.js'></script>
-<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.1/mapbox-gl.css' rel='stylesheet' />
 ```
 
 For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
@@ -82,9 +82,10 @@ To prepare a release:
 
 * Run `git checkout master && git merge origin/mb-pages` to merge `mb-pages` into `master`:
 * Update `CHANGELOG.md` with all changes since the last release
-* Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
 * Commit changes
-* Run `npm version patch` ([or `major`, or `minor`](http://semver.org/)) to bump the version number
+* Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
+* Commit changes `git commit -m "vX.Y.Z"`
+* Tag the release, `git tag vX.Y.Z`
 * Run `git push origin && git push origin --follow-tags`.
 * Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using text from the CHANGELOG.md
 * The CI server will automatically publish tagged builds to the Mapbox CDN. Wait for this build to finish successfully before proceeding.

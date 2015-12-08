@@ -2,6 +2,29 @@
 
 An in-progress version being developed in the `master` branch.
 
+## 0.12.1 (Dec 8 2015)
+
+#### Breaking changes
+
+* Reversed the direction of `line-offset` (#1808)
+* Renamed `Pinch` interaction handler to `TouchZoomRotate` (#1777)
+* Made `Map#update` and `Map#render` private methods (#1798)
+* Made `Map#remove` remove created DOM elements (#1789)
+
+#### API Improvements
+
+* Added an method to disable touch rotation (#1777)
+* Added a `position` option for `Attribution` (#1689)
+
+#### Bugfixes
+
+* Ensure tile loading errors are properly reported (#1799)
+* Ensure re-adding a previously removed pop-up works (#1477)
+
+#### UX Improvements
+
+* Don't round zoom level during double-click interaction (#1640)
+
 ## 0.12.0 (Dec 2 2015)
 
 #### API Improvements
