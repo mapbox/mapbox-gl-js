@@ -1,7 +1,3 @@
-## dev
-
-An in-progress version being developed in the `master` branch.
-
 ## 0.12.1 (Dec 8 2015)
 
 #### Breaking changes
