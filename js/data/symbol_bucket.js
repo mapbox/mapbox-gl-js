@@ -302,7 +302,6 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
 };
 
 SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisionDebug) {
-
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -319,6 +318,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var maxScale = collisionTile.maxScale;
 
     elementGroups.glyph['text-size'] = layout['text-size'];
+    elementGroups.glyph['text-font'] = layout['text-font'];
     elementGroups.icon['icon-size'] = layout['icon-size'];
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';

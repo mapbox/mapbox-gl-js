@@ -119,10 +119,15 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     }
 
     if (text) {
-        painter.glyphAtlas.updateTexture(gl);
+        var textfont = elementGroups['text-font'];
+        var fontstack = textfont && textfont.join(',');
+        var glyphAtlas = fontstack && painter.glyphSource.getGlyphAtlas(fontstack);
+        if (!glyphAtlas) return;
+
+        glyphAtlas.updateTexture(gl);
         vertex = tile.buffers.glyphVertex;
         elements = tile.buffers.glyphElement;
-        texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
+        texsize = [glyphAtlas.width / 4, glyphAtlas.height / 4];
     } else {
         var mapMoving = painter.options.rotating || painter.options.zooming;
         var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;

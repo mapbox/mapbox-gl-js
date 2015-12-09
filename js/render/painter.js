@@ -269,8 +269,7 @@ Painter.prototype.render = function(style, options) {
     this.spriteAtlas = style.spriteAtlas;
     this.spriteAtlas.setSprite(style.sprite);
 
-    this.glyphAtlas = style.glyphAtlas;
-    this.glyphAtlas.bind(this.gl);
+    this.glyphSource = style.glyphSource;
 
     this.frameHistory.record(this.transform.zoom);
 
