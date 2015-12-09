@@ -22,10 +22,6 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
                 remove: function() {}
             }
         },
-        center: options.center,
-        zoom: options.zoom,
-        pitch: options.pitch,
-        bearing: options.bearing,
         style: style,
         classes: options.classes,
         interactive: false,
