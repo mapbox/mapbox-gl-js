@@ -176,6 +176,8 @@ function drawFillTile(painter, layer, coord, tile) {
         vertex.bind(gl);
         elements.bind(gl);
 
+        painter.setClippingMask(coord.id);
+
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
