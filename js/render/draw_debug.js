@@ -6,10 +6,6 @@ var TileCoord = require('../source/tile_coord');
 
 module.exports = drawDebug;
 
-var TilePyramid = require('../source/tile_pyramid');
-
-var pyramid = new TilePyramid({ tileSize: 512 });
-
 function drawDebug(painter, tiles) {
     var coords = Object.keys(tiles).map(function(key) { return TileCoord.fromID(key); });
     for (var i = 0; i < coords.length; i++) {
