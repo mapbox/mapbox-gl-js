@@ -1,5 +1,6 @@
 #include <mbgl/shader/pattern_shader.hpp>
-#include <mbgl/shader/shaders.hpp>
+#include <mbgl/shader/pattern.vertex.hpp>
+#include <mbgl/shader/pattern.fragment.hpp>
 #include <mbgl/platform/gl.hpp>
 
 #include <cstdio>
@@ -9,8 +10,7 @@ using namespace mbgl;
 PatternShader::PatternShader()
     : Shader(
         "pattern",
-        shaders[PATTERN_SHADER].vertex,
-        shaders[PATTERN_SHADER].fragment
+        shaders::pattern::vertex, shaders::pattern::fragment
     ) {
 }
 

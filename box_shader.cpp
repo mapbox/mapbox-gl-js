@@ -1,5 +1,6 @@
 #include <mbgl/shader/box_shader.hpp>
-#include <mbgl/shader/shaders.hpp>
+#include <mbgl/shader/box.vertex.hpp>
+#include <mbgl/shader/box.fragment.hpp>
 #include <mbgl/platform/gl.hpp>
 
 #include <cstdio>
@@ -7,11 +8,7 @@
 using namespace mbgl;
 
 CollisionBoxShader::CollisionBoxShader()
-    : Shader(
-        "collisionbox",
-        shaders[BOX_SHADER].vertex,
-        shaders[BOX_SHADER].fragment
-    ) {
+    : Shader("collisionbox", shaders::box::vertex, shaders::box::fragment) {
     a_extrude = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_extrude"));
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }

@@ -1,23 +1,19 @@
 #include <mbgl/shader/icon_shader.hpp>
-#include <mbgl/shader/shaders.hpp>
+#include <mbgl/shader/icon.vertex.hpp>
+#include <mbgl/shader/icon.fragment.hpp>
 #include <mbgl/platform/gl.hpp>
 
 #include <cstdio>
 
 using namespace mbgl;
 
-IconShader::IconShader()
-    : Shader(
-         "icon",
-         shaders[ICON_SHADER].vertex,
-         shaders[ICON_SHADER].fragment
-         ) {
+IconShader::IconShader() : Shader("icon", shaders::icon::vertex, shaders::icon::fragment) {
     a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_offset"));
     a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data1"));
     a_data2 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data2"));
 }
 
-void IconShader::bind(GLbyte *offset) {
+void IconShader::bind(GLbyte* offset) {
     const GLsizei stride = 16;
 
     MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));

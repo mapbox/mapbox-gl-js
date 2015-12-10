@@ -1,5 +1,6 @@
 #include <mbgl/shader/linepattern_shader.hpp>
-#include <mbgl/shader/shaders.hpp>
+#include <mbgl/shader/linepattern.vertex.hpp>
+#include <mbgl/shader/linepattern.fragment.hpp>
 #include <mbgl/platform/gl.hpp>
 
 #include <cstdio>
@@ -7,15 +8,11 @@
 using namespace mbgl;
 
 LinepatternShader::LinepatternShader()
-    : Shader(
-        "linepattern",
-         shaders[LINEPATTERN_SHADER].vertex,
-         shaders[LINEPATTERN_SHADER].fragment
-    ) {
+    : Shader("linepattern", shaders::linepattern::vertex, shaders::linepattern::fragment) {
     a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
 }
 
-void LinepatternShader::bind(GLbyte *offset) {
+void LinepatternShader::bind(GLbyte* offset) {
     MBGL_CHECK_ERROR(glEnableVertexAttribArray(a_pos));
     MBGL_CHECK_ERROR(glVertexAttribPointer(a_pos, 2, GL_SHORT, false, 8, offset + 0));
 
