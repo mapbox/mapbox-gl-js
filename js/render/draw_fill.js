@@ -147,7 +147,7 @@ function drawFillTile(painter, layer, coord, tile) {
 
     // Because we're drawing top-to-bottom, and we update the stencil mask
     // below, we have to draw the outline first (!)
-    if (!painter.opaquePass && layer.paint['fill-antialias'] === true && !(layer.paint['fill-image'] && !strokeColor)) {
+    if (!painter.opaquePass && layer.paint['fill-antialias'] === true && !(layer.paint['fill-pattern'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader);
         gl.uniformMatrix4fv(painter.outlineShader.u_matrix, false, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio * 10);
