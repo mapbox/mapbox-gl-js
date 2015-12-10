@@ -37,6 +37,8 @@ function drawSymbols(painter, layer, tiles) {
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
+        painter.setClippingMask(coordID1);
+
         if (elementGroups.icon.groups.length) {
             drawSymbol(painter, layer, painter.calculateMatrix(coordID1, tile.sourceMaxZoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
         }
@@ -50,10 +52,7 @@ function drawSymbols(painter, layer, tiles) {
         if (!elementGroups) continue;
 
         var posMatrix = painter.calculateMatrix(coordID2, tile.sourceMaxZoom);
-
-        if (elementGroups.glyph.groups.length) {
-            drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
-        }
+        painter.setClippingMask(coordID2);
 
         if (elementGroups.glyph.groups.length) {
             drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
@@ -62,6 +61,7 @@ function drawSymbols(painter, layer, tiles) {
 
     for (var coordID3 in tiles) {
         tile = tiles[coordID3];
+        painter.setClippingMask(coordID3);
         drawCollisionDebug(painter, layer, coordID3, tile);
     }
 
