@@ -17,12 +17,14 @@ var LngLat = require('./lng_lat');
  * var llb = new mapboxgl.LngLatBounds(sw, ne);
  */
 function LngLatBounds(sw, ne) {
-    if (!sw) return;
-
-    var lnglats = ne ? [sw, ne] : sw;
-
-    for (var i = 0, len = lnglats.length; i < len; i++) {
-        this.extend(lnglats[i]);
+    if (!sw) {
+        return;
+    } else if (ne) {
+        this.extend(sw).extend(ne);
+    } else if (sw.length === 4) {
+        this.extend([sw[0], sw[1]]).extend([sw[2], sw[3]]);
+    } else {
+        this.extend(sw[0]).extend(sw[1]);
     }
 }
 
@@ -157,7 +159,7 @@ LngLatBounds.prototype = {
  *
  * Calls `LngLat#convert` internally to convert arrays as `LngLat` values.
  *
- * @param {LngLatBounds|Array<Array<number>>} input input to convert to a LngLatBounds
+ * @param {LngLatBounds|Array<number>|Array<Array<number>>} input input to convert to a LngLatBounds
  * @returns {LngLatBounds} LngLatBounds object or original input
  * @example
  * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];

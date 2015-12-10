@@ -12,6 +12,7 @@ test('LngLatBounds', function(t) {
         t.ok(bounds instanceof LngLatBounds, 'creates an object');
         t.end();
     });
+
     t.test('#constructor-noargs', function(t) {
         var bounds = new LngLatBounds();
         t.throws(function() {
@@ -19,6 +20,7 @@ test('LngLatBounds', function(t) {
         });
         t.end();
     });
+
     t.test('extend', function(t) {
         var sw = new LngLat(0, 0);
         var ne = new LngLat(-10, 10);
@@ -42,6 +44,7 @@ test('LngLatBounds', function(t) {
 
         t.end();
     });
+
     t.test('accessors', function(t) {
         var sw = new LngLat(0, 0);
         var ne = new LngLat(-10, 10);
@@ -57,6 +60,7 @@ test('LngLatBounds', function(t) {
         t.deepEqual(bounds.getNorthWest(), new LngLat(-10, 10));
         t.end();
     });
+
     t.test('.convert', function(t) {
         var sw = new LngLat(0, 0);
         var ne = new LngLat(-10, 10);
@@ -64,6 +68,7 @@ test('LngLatBounds', function(t) {
         t.equal(LngLatBounds.convert(undefined), undefined);
         t.deepEqual(LngLatBounds.convert(bounds), bounds);
         t.deepEqual(LngLatBounds.convert([sw, ne]), bounds);
+        t.deepEqual(LngLatBounds.convert([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]), bounds);
         t.end();
     });
 
