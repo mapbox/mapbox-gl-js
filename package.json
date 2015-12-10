@@ -26,7 +26,7 @@
     "resolve-url": "^0.2.1",
     "unassertify": "^2.0.0",
     "unitbezier": "^0.0.0",
-    "vector-tile": "^1.1.3",
+    "vector-tile": "^1.2.0",
     "webworkify": "^1.0.2"
   },
   "devDependencies": {
