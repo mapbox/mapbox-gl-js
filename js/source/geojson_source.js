@@ -123,15 +123,14 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             source: this.id,
             geojsonVtOptions: this.geojsonVtOptions
         }, function(err) {
-
+            this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});
-                return;
+            } else {
+                this._pyramid.reload();
+                this.fire('change');
             }
-            this._loaded = true;
-            this._pyramid.reload();
 
-            this.fire('change');
         }.bind(this));
     },
 
