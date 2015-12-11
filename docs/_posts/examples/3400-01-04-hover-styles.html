@@ -1,0 +1,74 @@
+---
+layout: example
+category: example
+title: Hover styles
+description: Using featuresAt and a filter to change hover styles
+---
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-100.486052, 37.830348],
+    zoom: 2
+});
+
+map.on('style.load', function () {
+    map.addSource("states", {
+        "type": "geojson",
+        "data": "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_1_states_provinces.geojson"
+    });
+
+    map.addLayer({
+        "id": "state-fills",
+        "type": "fill",
+        "source": "states",
+        "interactive": true,
+        "layout": {},
+        "paint": {
+            "fill-color": "#627BC1",
+            "fill-opacity": 0.5
+        }
+    });
+
+    map.addLayer({
+        "id": "state-borders",
+        "type": "line",
+        "source": "states",
+        "layout": {},
+        "paint": {
+            "line-color": "#627BC1",
+            "line-width": 2
+        }
+    });
+
+    map.addLayer({
+        "id": "route-hover",
+        "type": "fill",
+        "source": "states",
+        "layout": {},
+        "paint": {
+            "fill-color": "#627BC1",
+            "fill-opacity": 1
+        },
+        "filter": ["==", "name", ""]
+    });
+
+    // When the user moves their mouse over the page, we look for features
+    // at the mouse position (e.point) and within the states layer (states-fill).
+    // If a feature is found, then we'll update the filter in the route-hover
+    // layer to only show that state, thus making a hover effect.
+    map.on("mousemove", function(e) {
+        map.featuresAt(e.point, {
+            radius: 5,
+            layers: ["states-fill"]
+        }, function (err, features) {
+            if (!err && features.length) {
+                map.setFilter("route-hover", ["==", "name", features[0].properties.name]);
+            } else {
+                map.setFilter("route-hover", ["==", "name", ""]);
+            }
+        });
+    });
+});
+</script>
