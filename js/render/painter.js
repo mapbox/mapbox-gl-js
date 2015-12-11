@@ -301,69 +301,49 @@ Painter.prototype.render = function(style, options) {
     this.clearColor();
     this.clearDepth();
 
-    var numLayers = style._order.length;
-    this.depthRangeSize = 1 - (numLayers + 2) * this.numSublayers * this.depthEpsilon;
-    this.currentLayer = numLayers;
+    this.depthRangeSize = 1 - (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
-    var group, layer, tiles;
-    for (var i = style._groups.length - 1; i >= 0; i--) {
-        group = style._groups[i];
-        tiles = this._prepareSource(style.sources[group.source]);
+    var that = this;
+    var groups = style._groups;
 
-        this.setOpaque();
-
-        for (var l = group.length - 1; l >= 0; l--) {
-            layer = group[l];
-            this.currentLayer--;
-
-            if (layer.hidden)
-                continue;
-
-            if (group.source === undefined) {
-                draw.background(this, layer, this.identityMatrix, undefined);
-            } else {
-                this.drawLayer(layer, tiles);
-            }
-        }
-    }
-
-    this.currentLayer = -1;
-
-    for (var m = 0; m < style._groups.length; m++) {
-        group = style._groups[m];
-        tiles = this._prepareSource(style.sources[group.source]);
-
-        this.setTranslucent();
-
-        for (var k = 0; k < group.length; k++) {
-            layer = group[k];
-            this.currentLayer++;
-
-            if (layer.hidden)
-                continue;
-
-            if (group.source === undefined) {
-                draw.background(this, layer, this.identityMatrix, undefined);
-            } else {
-                this.drawLayer(layer, tiles);
-            }
-
-        }
-    }
+    this.renderPass(true);
+    this.renderPass(false);
 
     if (this.options.debug) {
         draw.debug(this, tiles);
     }
 };
 
-Painter.prototype.setOpaque = function() {
-    this.gl.disable(this.gl.BLEND);
-    this.opaquePass = true;
-};
+Painter.prototype.renderPass = function(opaquePass) {
+    var groups = this.style._groups;
 
-Painter.prototype.setTranslucent = function() {
-    this.gl.enable(this.gl.BLEND);
-    this.opaquePass = false;
+    this.currentLayer = !opaquePass ? -1 : this.style._order.length;
+
+    for (var i = 0; i < groups.length; i++) {
+        var group = groups[opaquePass ? groups.length - 1 - i : i];
+        var tiles = this._prepareSource(this.style.sources[group.source]);
+
+        if (opaquePass) {
+            this.gl.disable(this.gl.BLEND);
+            this.opaquePass = true;
+        } else {
+            this.gl.enable(this.gl.BLEND);
+            this.opaquePass = false;
+        }
+
+        for (var j = 0; j < group.length; j++) {
+            var layer = group[opaquePass ? group.length - 1 - j : j];
+            this.currentLayer += opaquePass ? -1 : 1;
+
+            if (layer.hidden) continue;
+
+            if (group.source === undefined) {
+                draw.background(this, layer, this.identityMatrix, undefined);
+            } else {
+                this.renderLayer(layer, tiles);
+            }
+        }
+    }
 };
 
 Painter.prototype.depthMask = function(mask) {
@@ -373,10 +353,11 @@ Painter.prototype.depthMask = function(mask) {
     }
 };
 
-Painter.prototype.drawLayer = function(layer, tiles) {
+Painter.prototype.renderLayer = function(layer, tiles) {
     if (!Object.keys(tiles).length) return;
     draw[layer.type](this, layer, tiles);
 };
+
 // Draws non-opaque areas. This is for debugging purposes.
 Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
