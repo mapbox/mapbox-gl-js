@@ -205,7 +205,7 @@ Painter.prototype.clearDepth = function() {
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
-Painter.prototype._drawClippingMasks = function(tiles) {
+Painter.prototype._drawClippingMasks = function(coords, sourceMaxZoom) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
@@ -216,13 +216,10 @@ Painter.prototype._drawClippingMasks = function(tiles) {
     // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    var nextClipID = 1;
-    for (var coordID in tiles) {
-        var tile = tiles[coordID];
-        var coord = TileCoord.fromID(coordID);
-        var clipID = this.clipIDs[coord.id] = nextClipID << 3;
-        this._drawClippingMask(clipID, coord, tile.sourceMaxZoom);
-        nextClipID++;
+    this.nextClipID = 1;
+    this.clipIDs = {};
+    for (var i = 0; i < coords.length; i++) {
+        this._drawClippingMask(coords[i], sourceMaxZoom);
     }
 
     gl.stencilMask(0x00);
@@ -231,12 +228,14 @@ Painter.prototype._drawClippingMasks = function(tiles) {
     gl.enable(gl.DEPTH_TEST);
 };
 
-Painter.prototype._drawClippingMask = function(clipID, coord, maxZoom) {
+Painter.prototype._drawClippingMask = function(coord, sourceMaxZoom) {
+    var clipID = this.clipIDs[coord] = (this.nextClipID++) << 3;
+
     var gl = this.gl;
     gl.stencilFunc(gl.ALWAYS, clipID, 0xF8);
 
     gl.switchShader(this.fillShader);
-    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculateMatrix(coord, maxZoom));
+    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculateMatrix(coord, sourceMaxZoom));
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -314,7 +313,7 @@ Painter.prototype.renderPass = function(opaquePass) {
             this.clearStencil();
             if (source.useStencilClipping) {
                 this.clearStencil();
-                this._drawClippingMasks(tiles);
+                this._drawClippingMasks(coords, source.maxzoom);
             }
         }
 
