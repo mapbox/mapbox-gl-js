@@ -133,9 +133,8 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
 
-        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
         var tiles = {};
-        tiles[coord.id] = this.tile;
+        tiles[-1] = this.tile;
         return tiles;
     },
 

@@ -155,9 +155,9 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
         this._currentTime = this.video.currentTime;
 
-        var coord = new TileCoord(this.center.zoom, this.center.column, this.center.row);
         var tiles = {};
-        tiles[coord.id] = this.tile;
+        tiles[-1] = this.tile;
+
         return tiles;
     },
 

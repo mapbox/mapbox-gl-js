@@ -7,7 +7,9 @@ module.exports = drawRaster;
 
 function drawRaster(painter, layer, tiles) {
     for (var coordID in tiles) {
-        drawRasterTile(painter, layer, TileCoord.fromID(coordID), tiles[coordID]);
+        var tile = tiles[coordID];
+        var coord = coordID === '-1' ? tile.coord : TileCoord.fromID(coordID);
+        drawRasterTile(painter, layer, coord, tile);
     }
 }
 
@@ -20,6 +22,7 @@ function drawRasterTile(painter, layer, coord, tile) {
 
     gl.disable(gl.STENCIL_TEST);
 
+    if (coord === -1) coord = tile.coord;
     var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
 
     var shader = painter.rasterShader;
