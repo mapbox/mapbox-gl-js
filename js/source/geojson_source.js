@@ -114,7 +114,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _updateData: function() {
         this._dirty = false;
         var data = this._data;
-        if (typeof data === 'string') {
+        if (typeof data === 'string' && typeof window != 'undefined') {
             data = urlResolve(window.location.href, data);
         }
         this.workerID = this.dispatcher.send('parse geojson', {

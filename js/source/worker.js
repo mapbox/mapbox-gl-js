@@ -101,6 +101,9 @@ util.extend(Worker.prototype, {
     'parse geojson': function(params, callback) {
         var indexData = function(err, data) {
             if (err) return callback(err);
+            if (typeof data != 'object') {
+                return callback(new Error("Input data is not a valid GeoJSON object."));
+            }
             try {
                 this.geoJSONIndexes[params.source] = geojsonvt(data, params.geojsonVtOptions);
             } catch (err) {
