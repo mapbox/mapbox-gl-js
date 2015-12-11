@@ -190,7 +190,6 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
-        // this.glyphAtlas.removeGlyphs(tile.uid);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
