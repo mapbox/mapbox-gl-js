@@ -23,7 +23,7 @@ function drawFillTile(painter, layer, coord, tile) {
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'] || 1;
 
-    var posMatrix = painter.calculateMatrix(coord, 15);
+    var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
     var clipID = painter.clipIDs[coord.id];
 
     var drawFillThisPass = image ?
