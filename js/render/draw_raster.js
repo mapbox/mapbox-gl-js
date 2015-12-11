@@ -20,7 +20,7 @@ function drawRasterTile(painter, source, layer, coord) {
     gl.disable(gl.STENCIL_TEST);
 
     var tile = source.getTile(coord);
-    var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
+    var posMatrix = painter.calculatePosMatrix(coord, tile.sourceMaxZoom);
 
     var shader = painter.rasterShader;
     gl.switchShader(shader);

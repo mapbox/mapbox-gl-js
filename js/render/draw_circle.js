@@ -21,7 +21,7 @@ function drawCirclesTile(painter, source, layer, coord) {
 
     var elementGroups = tile.elementGroups[layer.ref || layer.id].circle;
     var gl = painter.gl;
-    var posMatrix = painter.calculateMatrix(coord, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
     var shader = painter.circleShader;
     var vertex = tile.buffers.circleVertex;
     var elements = tile.buffers.circleElement;

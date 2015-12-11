@@ -15,7 +15,7 @@ function drawDebugTile(painter, coord) {
     var gl = painter.gl;
 
     var shader = painter.debugShader;
-    gl.switchShader(shader, painter.calculateMatrix(coord, Infinity));
+    gl.switchShader(shader, painter.calculatePosMatrix(coord, Infinity));
 
     // draw bounding rectangle
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);

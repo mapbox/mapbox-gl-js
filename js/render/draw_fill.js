@@ -17,7 +17,7 @@ function drawFillTile(painter, source, layer, coord) {
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
-    var posMatrix = painter.calculateMatrix(coord, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
 
     var color = layer.paint['fill-color'];
     var image = layer.paint['fill-pattern'];

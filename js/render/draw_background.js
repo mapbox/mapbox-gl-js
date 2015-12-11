@@ -24,7 +24,7 @@ function drawBackground(painter, source, layer) {
 
         // Draw texture fill
         shader = painter.patternShader;
-        gl.switchShader(shader, painter.identityMatrix);
+        gl.switchShader(shader);
         gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
@@ -53,7 +53,7 @@ function drawBackground(painter, source, layer) {
         if (painter.opaquePass !== (color[3] === 1)) return;
 
         shader = painter.fillShader;
-        gl.switchShader(shader, painter.identityMatrix);
+        gl.switchShader(shader);
         gl.uniform4fv(shader.u_color, color);
     }
 
@@ -63,7 +63,7 @@ function drawBackground(painter, source, layer) {
 
     var coords = pyramid.coveringTiles(transform);
     for (var c = 0; c < coords.length; c++) {
-        gl.uniformMatrix4fv(shader.u_matrix, false, painter.calculateMatrix(coords[c], Infinity));
+        gl.uniformMatrix4fv(shader.u_matrix, false, painter.calculatePosMatrix(coords[c], Infinity));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 

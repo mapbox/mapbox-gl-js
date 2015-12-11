@@ -235,7 +235,7 @@ Painter.prototype._drawClippingMask = function(coord, sourceMaxZoom) {
     gl.stencilFunc(gl.ALWAYS, clipID, 0xF8);
 
     gl.switchShader(this.fillShader);
-    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculateMatrix(coord, sourceMaxZoom));
+    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculatePosMatrix(coord, sourceMaxZoom));
 
     // Draw the clipping mask
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -407,7 +407,7 @@ Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
  * @param {Object} transform
  * @private
  */
-Painter.prototype.calculateMatrix = function(coord, maxZoom) {
+Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
     var tileExtent = 4096;
     assert(coord instanceof TileCoord);
     var transform = this.transform;

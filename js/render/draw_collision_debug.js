@@ -11,7 +11,7 @@ function drawCollisionDebug(painter, layer, coordID, tile) {
     var gl = painter.gl;
     var buffer = tile.buffers.collisionBoxVertex;
     var shader = painter.collisionBoxShader;
-    var posMatrix = painter.calculateMatrix(coordID, Infinity);
+    var posMatrix = painter.calculatePosMatrix(coordID, Infinity);
 
     gl.enable(gl.STENCIL_TEST);
     painter.setClippingMask(coordID);
