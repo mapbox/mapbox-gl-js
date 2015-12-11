@@ -1,7 +1,6 @@
 'use strict';
 
 var browser = require('../util/browser');
-var assert = require('assert');
 
 module.exports = drawFill;
 

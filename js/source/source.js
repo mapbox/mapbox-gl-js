@@ -5,6 +5,7 @@ var ajax = require('../util/ajax');
 var browser = require('../util/browser');
 var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
+var TileCoord = require('./tile_coord');
 
 exports._loadTileJSON = function(options) {
     var loaded = function(err, tileJSON) {
@@ -58,15 +59,14 @@ exports.redoPlacement = function() {
     }
 };
 
-// TODO handle overzooming and stuff?
 exports._getTile = function(coord) {
-    return this._pyramid.getTile(coord);
+    return this._pyramid.getTile(coord.id);
 };
 
 // TODO should this really be the soruce's job?
 exports._getVisibleCoordinates = function() {
     if (!this._pyramid) return [];
-    else return this._pyramid.renderedIDs();
+    else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
 exports._vectorFeaturesAt = function(coord, params, callback) {

@@ -19,9 +19,7 @@ function drawRasterTile(painter, source, layer, coord) {
 
     gl.disable(gl.STENCIL_TEST);
 
-    // TODO remove this hack by always working with inflated coord objects
     var tile = source.getTile(coord);
-    if (coord === -1) coord = tile.coord;
     var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
 
     var shader = painter.rasterShader;

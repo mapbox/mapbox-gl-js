@@ -2,7 +2,6 @@
 
 var browser = require('../util/browser');
 var mat2 = require('gl-matrix').mat2;
-var TileCoord = require('../source/tile_coord');
 
 /**
  * Draw a line. Under the hood this will read elements from
@@ -127,17 +126,16 @@ module.exports = function drawLine(painter, source, layer, coords) {
     }
 
     for (var k = 0; k < coords.length; k++) {
-        var coordID = coords[k];
-        var coord = TileCoord.fromID(coordID);
-        var tile = source.getTile(coordID);
+        var coord = coords[k];
+        var tile = source.getTile(coord);
 
         var elementGroups = tile.buffers && tile.elementGroups[layer.ref || layer.id] && tile.elementGroups[layer.ref || layer.id].line;
         if (!elementGroups) continue;
 
-        painter.setClippingMask(coordID);
+        painter.setClippingMask(coord);
 
         // set uniforms that are different for each tile
-        var posMatrix = painter.translateMatrix(painter.calculateMatrix(coordID, tile.sourceMaxZoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        var posMatrix = painter.translateMatrix(painter.calculateMatrix(coord, tile.sourceMaxZoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
         gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
         gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);

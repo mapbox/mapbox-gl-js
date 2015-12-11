@@ -229,7 +229,7 @@ Painter.prototype._drawClippingMasks = function(coords, sourceMaxZoom) {
 };
 
 Painter.prototype._drawClippingMask = function(coord, sourceMaxZoom) {
-    var clipID = this.clipIDs[coord] = (this.nextClipID++) << 3;
+    var clipID = this.clipIDs[coord.id] = (this.nextClipID++) << 3;
 
     var gl = this.gl;
     gl.stencilFunc(gl.ALWAYS, clipID, 0xF8);
@@ -243,10 +243,10 @@ Painter.prototype._drawClippingMask = function(coord, sourceMaxZoom) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 };
 
-// TODO revamp this
-Painter.prototype.setClippingMask = function(coordID) {
+Painter.prototype.setClippingMask = function(coord) {
     var gl = this.gl;
-    gl.stencilFunc(gl.EQUAL, this.clipIDs[coordID], 0xF8);
+    assert(coord instanceof TileCoord);
+    gl.stencilFunc(gl.EQUAL, this.clipIDs[coord.id], 0xF8);
 };
 
 // Overridden by headless tests.
@@ -409,7 +409,7 @@ Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
  */
 Painter.prototype.calculateMatrix = function(coord, maxZoom) {
     var tileExtent = 4096;
-    if (!isNaN(coord)) { coord = TileCoord.fromID(coord); }
+    assert(coord instanceof TileCoord);
     var transform = this.transform;
 
     assert(maxZoom !== undefined);

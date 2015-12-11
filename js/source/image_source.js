@@ -134,7 +134,7 @@ ImageSource.prototype = util.inherit(Evented, {
     },
 
     getVisibleCoordinates: function() {
-        if (this.tile) return [-1];
+        if (this.tile) return [this.tile.coord];
         else return [];
     },
 
