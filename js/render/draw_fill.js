@@ -1,30 +1,28 @@
 'use strict';
 
 var browser = require('../util/browser');
-var TileCoord = require('../source/tile_coord');
+var assert = require('assert');
 
 module.exports = drawFill;
 
-function drawFill(painter, layer, tiles) {
-    for (var coordID in tiles) {
-        var tile = tiles[coordID];
-        drawFillTile(painter, layer, TileCoord.fromID(coordID), tile);
+function drawFill(painter, source, layer, coords) {
+    for (var i = 0; i < coords.length; i++) {
+        drawFillTile(painter, source, layer, coords[i]);
     }
 }
 
-function drawFillTile(painter, layer, coord, tile) {
+function drawFillTile(painter, source, layer, coord) {
+    var tile = source.getTile(coord);
 
     // No data
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
+    var posMatrix = painter.calculateMatrix(coord, source.maxzoom);
 
     var color = layer.paint['fill-color'];
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'] || 1;
-
-    var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
-    var clipID = painter.clipIDs[coord.id];
 
     var drawFillThisPass = image ?
         !painter.opaquePass :
@@ -48,7 +46,7 @@ function drawFillTile(painter, layer, coord, tile) {
         // increasing the lower 7 bits by one if the triangle is a front-facing
         // triangle. This means that all visible polygons should be in CCW
         // orientation, while all holes (see below) are in CW orientation.
-        gl.stencilFunc(gl.EQUAL, clipID, 0xF8);
+        painter.setClippingMask(coord);
 
         // When we do a nonzero fill, we count the number of times a pixel is
         // covered by a counterclockwise polygon, and subtract the number of
@@ -140,7 +138,7 @@ function drawFillTile(painter, layer, coord, tile) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
         gl.stencilMask(0x00);
-        gl.stencilFunc(gl.EQUAL, clipID, 0xF8);
+        painter.setClippingMask(coord);
     }
 
     var strokeColor = layer.paint['fill-outline-color'];
@@ -176,7 +174,7 @@ function drawFillTile(painter, layer, coord, tile) {
         vertex.bind(gl);
         elements.bind(gl);
 
-        painter.setClippingMask(coord.id);
+        painter.setClippingMask(coord);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             group = elementGroups.groups[k];

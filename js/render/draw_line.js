@@ -14,14 +14,14 @@ var TileCoord = require('../source/tile_coord');
  * @returns {undefined} draws with the painter
  * @private
  */
-module.exports = function drawLine(painter, layer, tiles) {
+module.exports = function drawLine(painter, source, layer, coords) {
     if (painter.opaquePass) return;
     painter.setSublayer(0);
     painter.depthMask(false);
 
     var hasData = false;
-    for (var id in tiles) {
-        if (tiles[id].hasLayerData(layer)) {
+    for (var j = 0; j < coords.length; j++) {
+        if (source.getTile(coords[j]).hasLayerData(layer)) {
             hasData = true;
             break;
         }
@@ -126,9 +126,10 @@ module.exports = function drawLine(painter, layer, tiles) {
         gl.uniform4fv(shader.u_color, color);
     }
 
-    for (var coordID in tiles) {
-        var tile = tiles[coordID];
+    for (var k = 0; k < coords.length; k++) {
+        var coordID = coords[k];
         var coord = TileCoord.fromID(coordID);
+        var tile = source.getTile(coordID);
 
         var elementGroups = tile.buffers && tile.elementGroups[layer.ref || layer.id] && tile.elementGroups[layer.ref || layer.id].line;
         if (!elementGroups) continue;

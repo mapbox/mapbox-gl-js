@@ -263,8 +263,7 @@ var draw = {
     fill: require('./draw_fill'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
-    debug: require('./draw_debug'),
-    vertices: require('./draw_vertices')
+    debug: require('./draw_debug')
 };
 
 Painter.prototype.render = function(style, options) {
@@ -328,18 +327,13 @@ Painter.prototype.renderPass = function(opaquePass) {
         for (var j = 0; j < group.length; j++) {
             var layer = group[opaquePass ? group.length - 1 - j : j];
             this.currentLayer += opaquePass ? -1 : 1;
-
-            if (layer.hidden) continue;
-
-            if (group.source === undefined) {
-                draw.background(this, layer, this.identityMatrix, undefined);
-            } else {
-                this.renderLayer(layer, tiles);
+            if (!layer.hidden) {
+                this.renderLayer(this, source, layer, coords);
             }
         }
 
         if (!opaquePass && this.options.debug) {
-            draw.debug(this, tiles);
+            draw.debug(this, coords);
         }
     }
 };
@@ -351,9 +345,9 @@ Painter.prototype.depthMask = function(mask) {
     }
 };
 
-Painter.prototype.renderLayer = function(layer, tiles) {
-    if (!Object.keys(tiles).length) return;
-    draw[layer.type](this, layer, tiles);
+Painter.prototype.renderLayer = function(painter, source, layer, coords) {
+    if (layer.type !== 'background' && !coords.length) return;
+    draw[layer.type](painter, source, layer, coords);
 };
 
 // Draws non-opaque areas. This is for debugging purposes.

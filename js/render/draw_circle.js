@@ -4,23 +4,24 @@ var browser = require('../util/browser.js');
 
 module.exports = drawCircles;
 
-function drawCircles(painter, layer, tiles) {
+function drawCircles(painter, source, layer, coords) {
     painter.setSublayer(0);
     painter.depthMask(false);
     painter.gl.switchShader(painter.circleShader);
 
-    for (var coordID in tiles) {
-        var tile = tiles[coordID];
-        drawCirclesTile(painter, layer, painter.calculateMatrix(coordID, tile.sourceMaxZoom), tiles[coordID]);
+    for (var i = 0; i < coords.length; i++) {
+        drawCirclesTile(painter, source, layer, coords[i]);
     }
 }
 
-function drawCirclesTile(painter, layer, posMatrix, tile) {
+function drawCirclesTile(painter, source, layer, coord) {
+    var tile = source.getTile(coord);
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
 
     var elementGroups = tile.elementGroups[layer.ref || layer.id].circle;
     var gl = painter.gl;
+    var posMatrix = painter.calculateMatrix(coord, source.maxzoom);
     var shader = painter.circleShader;
     var vertex = tile.buffers.circleVertex;
     var elements = tile.buffers.circleElement;

@@ -1,19 +1,16 @@
 'use strict';
 
 var util = require('../util/util');
-var TileCoord = require('../source/tile_coord');
 
 module.exports = drawRaster;
 
-function drawRaster(painter, layer, tiles) {
-    for (var coordID in tiles) {
-        var tile = tiles[coordID];
-        var coord = coordID === '-1' ? tile.coord : TileCoord.fromID(coordID);
-        drawRasterTile(painter, layer, coord, tile);
+function drawRaster(painter, source, layer, coords) {
+    for (var i = 0; i < coords.length; i++) {
+        drawRasterTile(painter, source, layer, coords[i]);
     }
 }
 
-function drawRasterTile(painter, layer, coord, tile) {
+function drawRasterTile(painter, source, layer, coord) {
     if (painter.opaquePass) return;
 
     painter.setSublayer(0);
@@ -22,6 +19,8 @@ function drawRasterTile(painter, layer, coord, tile) {
 
     gl.disable(gl.STENCIL_TEST);
 
+    // TODO remove this hack by always working with inflated coord objects
+    var tile = source.getTile(coord);
     if (coord === -1) coord = tile.coord;
     var posMatrix = painter.calculateMatrix(coord, tile.sourceMaxZoom);
 

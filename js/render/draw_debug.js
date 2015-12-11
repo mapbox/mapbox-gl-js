@@ -2,15 +2,12 @@
 
 var textVertices = require('../lib/debugtext');
 var browser = require('../util/browser');
-var TileCoord = require('../source/tile_coord');
 
 module.exports = drawDebug;
 
-function drawDebug(painter, tiles) {
-    var coords = Object.keys(tiles).map(function(key) { return TileCoord.fromID(key); });
+function drawDebug(painter, coords) {
     for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
-        drawDebugTile(painter, coord);
+        drawDebugTile(painter, coords[i]);
     }
 }
 

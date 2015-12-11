@@ -7,7 +7,7 @@ var drawCollisionDebug = require('./draw_collision_debug');
 
 module.exports = drawSymbols;
 
-function drawSymbols(painter, layer, tiles) {
+function drawSymbols(painter, source, layer, coords) {
     if (painter.opaquePass) return;
 
     var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
@@ -30,39 +30,39 @@ function drawSymbols(painter, layer, tiles) {
 
     var tile, elementGroups;
 
-    for (var coordID1 in tiles) {
-        tile = tiles[coordID1];
+    for (var i = 0; i < coords.length; i++) {
+        tile = source.getTile(coords[i]);
 
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
-        painter.setClippingMask(coordID1);
+        painter.setClippingMask(coords[i]);
 
         if (elementGroups.icon.groups.length) {
-            drawSymbol(painter, layer, painter.calculateMatrix(coordID1, tile.sourceMaxZoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
+            drawSymbol(painter, layer, painter.calculateMatrix(coords[i], tile.sourceMaxZoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
         }
     }
 
-    for (var coordID2 in tiles) {
-        tile = tiles[coordID2];
+    for (var j = 0; j < coords.length; j++) {
+        tile = source.getTile(coords[j]);
 
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
-        var posMatrix = painter.calculateMatrix(coordID2, tile.sourceMaxZoom);
-        painter.setClippingMask(coordID2);
+        var posMatrix = painter.calculateMatrix(coords[j], tile.sourceMaxZoom);
+        painter.setClippingMask(coords[j]);
 
         if (elementGroups.glyph.groups.length) {
             drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
         }
     }
 
-    for (var coordID3 in tiles) {
-        tile = tiles[coordID3];
-        painter.setClippingMask(coordID3);
-        drawCollisionDebug(painter, layer, coordID3, tile);
+    for (var k = 0; k < coords.length; k++) {
+        tile = source.getTile(coords[k]);
+        painter.setClippingMask(coords[k]);
+        drawCollisionDebug(painter, layer, coords[k], tile);
     }
 
     if (drawAcrossEdges) {
