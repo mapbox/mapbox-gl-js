@@ -113,12 +113,11 @@ ImageSource.prototype = util.inherit(Evented, {
         // noop
     },
 
-    renderedTiles: function() {
-        if (!this._loaded || !this.loaded()) return {};
+    prepare: function() {
+        if (!this._loaded || !this.loaded()) return;
 
         var painter = this.map.painter;
         var gl = painter.gl;
-
 
         if (!this.tile.texture) {
             this.tile.texture = gl.createTexture();
@@ -132,10 +131,15 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
+    },
 
-        var tiles = {};
-        tiles[-1] = this.tile;
-        return tiles;
+    getVisibleCoordinates: function() {
+        if (this.tile) return [-1];
+        else return [];
+    },
+
+    getTile: function() {
+        return this.tile;
     },
 
     /**

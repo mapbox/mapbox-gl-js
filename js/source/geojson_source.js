@@ -108,7 +108,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }
     },
 
-    renderedTiles: Source._renderedTiles,
+    getVisibleCoordinates: Source._getVisibleCoordinates,
+    getTile: Source._getTile,
 
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,

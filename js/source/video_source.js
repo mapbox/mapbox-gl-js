@@ -135,9 +135,9 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         // noop
     },
 
-    renderedTiles: function() {
+    prepare: function() {
         // not enough data for current position
-        if (!this._loaded || this.video.readyState < 2) return {};
+        if (!this._loaded || this.video.readyState < 2) return;
 
         var gl = this.map.painter.gl;
         if (!this.tile.texture) {
@@ -154,11 +154,15 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         }
 
         this._currentTime = this.video.currentTime;
+    },
 
-        var tiles = {};
-        tiles[-1] = this.tile;
+    getVisibleCoordinates: function() {
+        if (this.tile) return [-1];
+        else return [];
+    },
 
-        return tiles;
+    getTile: function() {
+        return this.tile;
     },
 
     featuresAt: function(point, params, callback) {

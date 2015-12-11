@@ -45,7 +45,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    renderedTiles: Source._renderedTiles,
+    getVisibleCoordinates: Source._getVisibleCoordinates,
+    getTile: Source._getTile,
 
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,

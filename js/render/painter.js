@@ -250,20 +250,6 @@ Painter.prototype.setClippingMask = function(coordID) {
     gl.stencilFunc(gl.EQUAL, this.clipIDs[coordID], 0xF8);
 };
 
-Painter.prototype._prepareSource = function(source) {
-    if (!source) return {};
-
-    this.clearStencil();
-    var tiles = source.renderedTiles();
-
-    if (source.useStencilClipping) {
-        this.clearStencil();
-        this._drawClippingMasks(tiles);
-    }
-
-    return tiles;
-};
-
 // Overridden by headless tests.
 Painter.prototype.prepareBuffers = function() {};
 Painter.prototype.bindDefaultFramebuffer = function() {
@@ -283,7 +269,6 @@ var draw = {
 };
 
 Painter.prototype.render = function(style, options) {
-
     this.style = style;
     this.options = options;
 
@@ -303,15 +288,8 @@ Painter.prototype.render = function(style, options) {
 
     this.depthRangeSize = 1 - (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
-    var that = this;
-    var groups = style._groups;
-
     this.renderPass(true);
     this.renderPass(false);
-
-    if (this.options.debug) {
-        draw.debug(this, tiles);
-    }
 };
 
 Painter.prototype.renderPass = function(opaquePass) {
@@ -321,7 +299,24 @@ Painter.prototype.renderPass = function(opaquePass) {
 
     for (var i = 0; i < groups.length; i++) {
         var group = groups[opaquePass ? groups.length - 1 - i : i];
-        var tiles = this._prepareSource(this.style.sources[group.source]);
+        var source = this.style.sources[group.source];
+
+        var tiles = {};
+
+        if (source) {
+            var coords = source.getVisibleCoordinates();
+            for (var k = 0; k < coords.length; k++) {
+                var coord = coords[k];
+                tiles[coord] = source.getTile(coord);
+            }
+
+            if (source.prepare) source.prepare();
+            this.clearStencil();
+            if (source.useStencilClipping) {
+                this.clearStencil();
+                this._drawClippingMasks(tiles);
+            }
+        }
 
         if (opaquePass) {
             this.gl.disable(this.gl.BLEND);
@@ -342,6 +337,10 @@ Painter.prototype.renderPass = function(opaquePass) {
             } else {
                 this.renderLayer(layer, tiles);
             }
+        }
+
+        if (!opaquePass && this.options.debug) {
+            draw.debug(this, tiles);
         }
     }
 };

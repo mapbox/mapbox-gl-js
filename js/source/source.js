@@ -58,19 +58,15 @@ exports.redoPlacement = function() {
     }
 };
 
-exports._renderedTiles = function() {
-    var tiles = {};
+// TODO handle overzooming and stuff?
+exports._getTile = function(coord) {
+    return this._pyramid.getTile(coord);
+};
 
-    if (!this._pyramid)
-        return tiles;
-
-    var ids = this._pyramid.renderedIDs();
-    for (var i = 0; i < ids.length; i++) {
-        var id = ids[i];
-        tiles[id] = this._pyramid.getTile(id);
-    }
-
-    return tiles;
+// TODO should this really be the soruce's job?
+exports._getVisibleCoordinates = function() {
+    if (!this._pyramid) return [];
+    else return this._pyramid.renderedIDs();
 };
 
 exports._vectorFeaturesAt = function(coord, params, callback) {
