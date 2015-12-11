@@ -163,9 +163,6 @@ test('GeoJSONSource#update', function(t) {
         source.map.transform.resize(512, 512);
 
         source.style = {};
-        // source.glyphAtlas = {
-        //     removeGlyphs: function() {}
-        // };
 
         source.update(transform);
 
