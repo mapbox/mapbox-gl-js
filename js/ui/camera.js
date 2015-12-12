@@ -339,19 +339,29 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {number} [options.speed=1.2] How fast animation occurs
      * @param {number} [options.curve=1.42] How much zooming out occurs during animation
      * @param {Function} options.easing
-     * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
+     * @param {number|Array} options.padding how much padding there is around the given bounds on each side in pixels. Accepts a number for all padding edges or an array [n, e, s, w]
      * @param {number} options.maxZoom
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @example
+     * var bbox = [[-79, 43], [-73, 45]];
+     * map.fitBounds(bbox, {
+     *   padding: [10, 40, 10, 40]
+     * });
      */
     fitBounds: function(bounds, options) {
 
         options = util.extend({
-            padding: 0,
+            padding: [0, 0, 0, 0],
             offset: [0, 0],
             maxZoom: Infinity
         }, options);
+
+        if (typeof options.padding === 'number') {
+            var p = options.padding;
+            options.padding = [p, p, p, p];
+        }
 
         bounds = LngLatBounds.convert(bounds);
 
@@ -360,8 +370,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - (options.padding[1] + options.padding[3]) * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - (options.padding[0] + options.padding[2]) * 2 - Math.abs(offset.y) * 2) / size.y;
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
