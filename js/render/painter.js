@@ -299,14 +299,9 @@ Painter.prototype.renderPass = function(opaquePass) {
         var group = groups[opaquePass ? groups.length - 1 - i : i];
         var source = this.style.sources[group.source];
 
-        var tiles = {};
-
         if (source) {
             var coords = source.getVisibleCoordinates();
-            for (var k = 0; k < coords.length; k++) {
-                var coord = coords[k];
-                tiles[coord] = source.getTile(coord);
-            }
+            if (!opaquePass) coords.reverse();
 
             if (source.prepare) source.prepare();
             this.clearStencil();
