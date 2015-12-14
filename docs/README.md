@@ -18,7 +18,7 @@ Examples are written as Jekyll posts in `docs/_posts/examples`. The Jekyll front
 
 * `layout`: `example`
 * `category`: `example`
-* `title`: A short title for the example, in **sentence case**
+* `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
 
 In the post body, write the HTML and JavaScript constituting the example.

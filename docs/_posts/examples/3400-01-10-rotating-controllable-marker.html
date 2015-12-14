@@ -1,7 +1,7 @@
 ---
 layout: example
 category: example
-title: Rotating and controllable marker
+title: Move marker with the keyboard
 description: Control a marker with keybindings and rotate it
 ---
 <div id='map'></div>
@@ -42,7 +42,7 @@ function setPosition() {
 
 map.on('style.load', function () {
     map.addSource('drone', source);
-    
+
     map.addLayer({
         "id": "drone-glow-strong",
         "type": "circle",
@@ -64,7 +64,7 @@ map.on('style.load', function () {
             "circle-opacity": 0.1
         }
     });
-    
+
     map.addLayer({
         "id": "drone",
         "type": "symbol",
@@ -73,7 +73,7 @@ map.on('style.load', function () {
             "icon-image": "airport-24",
         }
     });
-    
+
     window.setInterval(setPosition, 10);
 });
 
