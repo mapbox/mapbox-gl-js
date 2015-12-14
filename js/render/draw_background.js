@@ -20,7 +20,7 @@ function drawBackground(painter, source, layer) {
     painter.setSublayer(0);
     if (imagePosA && imagePosB) {
 
-        if (painter.opaquePass) return;
+        if (painter.isOpaquePass) return;
 
         // Draw texture fill
         shader = painter.patternShader;
@@ -50,7 +50,7 @@ function drawBackground(painter, source, layer) {
 
     } else {
         // Draw filling rectangle.
-        if (painter.opaquePass !== (color[3] === 1)) return;
+        if (painter.isOpaquePass !== (color[3] === 1)) return;
 
         shader = painter.fillShader;
         gl.switchShader(shader);

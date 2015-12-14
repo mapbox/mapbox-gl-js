@@ -23,13 +23,13 @@ function drawFillTile(painter, source, layer, coord) {
     var opacity = layer.paint['fill-opacity'] || 1;
 
     var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
-    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
+    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     drawFillTileFill();
     drawFillTileStroke();
 
     function drawFillTileFill() {
-        if (image ? painter.opaquePass : painter.opaquePass === (color[3] !== 1)) return;
+        if (image ? painter.isOpaquePass : painter.isOpaquePass === (color[3] !== 1)) return;
 
         // Draw the stencil mask.
         painter.setSublayer(1);
@@ -43,7 +43,7 @@ function drawFillTile(painter, source, layer, coord) {
         // increasing the lower 7 bits by one if the triangle is a front-facing
         // triangle. This means that all visible polygons should be in CCW
         // orientation, while all holes (see below) are in CW orientation.
-        painter.setClippingMask(coord);
+        painter.enableTileClippingMask(coord);
 
         // When we do a nonzero fill, we count the number of times a pixel is
         // covered by a counterclockwise polygon, and subtract the number of
@@ -54,7 +54,7 @@ function drawFillTile(painter, source, layer, coord) {
         // When drawFilling a shape, we first drawFill all shapes to the stencil buffer
         // and incrementing all areas where polygons are
         gl.colorMask(false, false, false, false);
-        painter.depthMask(false);
+        painter.setDepthMaskEnabled(false);
 
         // Draw the actual triangle fan into the stencil buffer.
         gl.switchShader(painter.fillShader);
@@ -80,7 +80,7 @@ function drawFillTile(painter, source, layer, coord) {
         // Now that we have the stencil mask in the stencil buffer, we can start
         // writing to the color buffer.
         gl.colorMask(true, true, true, true);
-        painter.depthMask(true);
+        painter.setDepthMaskEnabled(true);
 
         // From now on, we don't want to update the stencil buffer anymore.
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
@@ -133,7 +133,7 @@ function drawFillTile(painter, source, layer, coord) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
         gl.stencilMask(0x00);
-        painter.setClippingMask(coord);
+        painter.enableTileClippingMask(coord);
 
     }
 
@@ -143,7 +143,7 @@ function drawFillTile(painter, source, layer, coord) {
 
         var strokeColor = layer.paint['fill-outline-color'];
 
-        if (painter.opaquePass || !layer.paint['fill-antialias'] || (layer.paint['fill-pattern'] && !strokeColor)) return;
+        if (painter.isOpaquePass || !layer.paint['fill-antialias'] || (layer.paint['fill-pattern'] && !strokeColor)) return;
 
         gl.switchShader(painter.outlineShader);
         gl.uniformMatrix4fv(painter.outlineShader.u_matrix, false, translatedPosMatrix);
@@ -173,7 +173,7 @@ function drawFillTile(painter, source, layer, coord) {
         vertex.bind(gl);
         elements.bind(gl);
 
-        painter.setClippingMask(coord);
+        painter.enableTileClippingMask(coord);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
             var group = elementGroups.groups[k];

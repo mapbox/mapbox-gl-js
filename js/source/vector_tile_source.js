@@ -23,7 +23,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     tileSize: 512,
     reparseOverscaled: true,
     _loaded: false,
-    useStencilClipping: true,
+    isTileClipped: true,
 
     onAdd: function(map) {
         this.map = map;

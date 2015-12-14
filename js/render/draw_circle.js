@@ -6,7 +6,7 @@ module.exports = drawCircles;
 
 function drawCircles(painter, source, layer, coords) {
     painter.setSublayer(0);
-    painter.depthMask(false);
+    painter.setDepthMaskEnabled(false);
     painter.gl.switchShader(painter.circleShader);
 
     for (var i = 0; i < coords.length; i++) {
@@ -30,7 +30,7 @@ function drawCirclesTile(painter, source, layer, coord) {
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
-    var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
+    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
     gl.uniformMatrix4fv(shader.u_matrix, false, translatedPosMatrix);
     gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);
 

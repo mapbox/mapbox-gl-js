@@ -8,7 +8,7 @@ var drawCollisionDebug = require('./draw_collision_debug');
 module.exports = drawSymbols;
 
 function drawSymbols(painter, source, layer, coords) {
-    if (painter.opaquePass) return;
+    if (painter.isOpaquePass) return;
 
     var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
         layer.layout['text-ignore-placement'] || layer.layout['icon-ignore-placement']);
@@ -25,7 +25,7 @@ function drawSymbols(painter, source, layer, coords) {
     }
 
     painter.setSublayer(0);
-    painter.depthMask(false);
+    painter.setDepthMaskEnabled(false);
     gl.disable(gl.DEPTH_TEST);
 
     var tile, elementGroups;
@@ -37,7 +37,7 @@ function drawSymbols(painter, source, layer, coords) {
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
 
-        painter.setClippingMask(coords[i]);
+        painter.enableTileClippingMask(coords[i]);
 
         if (elementGroups.icon.groups.length) {
             drawSymbol(painter, layer, painter.calculatePosMatrix(coords[i], source.maxzoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
@@ -52,7 +52,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
 
         var posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
-        painter.setClippingMask(coords[j]);
+        painter.enableTileClippingMask(coords[j]);
 
         if (elementGroups.glyph.groups.length) {
             drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
@@ -61,7 +61,7 @@ function drawSymbols(painter, source, layer, coords) {
 
     for (var k = 0; k < coords.length; k++) {
         tile = source.getTile(coords[k]);
-        painter.setClippingMask(coords[k]);
+        painter.enableTileClippingMask(coords[k]);
         drawCollisionDebug(painter, layer, coords[k], tile);
     }
 
@@ -79,7 +79,7 @@ var defaultSizes = {
 function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf) {
     var gl = painter.gl;
 
-    posMatrix = painter.translateMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
+    posMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
 
     var tr = painter.transform;
     var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';

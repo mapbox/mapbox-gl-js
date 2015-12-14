@@ -14,9 +14,9 @@ var mat2 = require('gl-matrix').mat2;
  * @private
  */
 module.exports = function drawLine(painter, source, layer, coords) {
-    if (painter.opaquePass) return;
+    if (painter.isOpaquePass) return;
     painter.setSublayer(0);
-    painter.depthMask(false);
+    painter.setDepthMaskEnabled(false);
 
     var hasData = false;
     for (var j = 0; j < coords.length; j++) {
@@ -132,10 +132,10 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var elementGroups = tile.buffers && tile.elementGroups[layer.ref || layer.id] && tile.elementGroups[layer.ref || layer.id].line;
         if (!elementGroups) continue;
 
-        painter.setClippingMask(coord);
+        painter.enableTileClippingMask(coord);
 
         // set uniforms that are different for each tile
-        var posMatrix = painter.translateMatrix(painter.calculatePosMatrix(coord, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
         gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
         gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);

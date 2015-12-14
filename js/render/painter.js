@@ -19,14 +19,13 @@ function Painter(gl, transform) {
 
     this.reusableTextures = {};
     this.preFbos = {};
-    this.clipIDs = {};
 
     this.frameHistory = new FrameHistory();
 
     this.setup();
 
-    this.depthEpsilon = 1 / Math.pow(2, 16);
-    this.numSublayers = 3;
+    this.sublayerDepthEpsilon = 1 / Math.pow(2, 16);
+    this.sublayerCount = 3;
 }
 
 /*
@@ -201,14 +200,14 @@ Painter.prototype.clearStencil = function() {
 Painter.prototype.clearDepth = function() {
     var gl = this.gl;
     gl.clearDepth(1);
-    this.depthMask(true);
+    this.setDepthMaskEnabled(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
-Painter.prototype._drawClippingMasks = function(coords, sourceMaxZoom) {
+Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
-    this.depthMask(false);
+    this.setDepthMaskEnabled(false);
     gl.disable(gl.DEPTH_TEST);
 
     // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
@@ -216,37 +215,33 @@ Painter.prototype._drawClippingMasks = function(coords, sourceMaxZoom) {
     // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    this.nextClipID = 1;
-    this.clipIDs = {};
+    var nextClipID = 1;
+    this._tileClippingMaskIDs = {};
     for (var i = 0; i < coords.length; i++) {
-        this._drawClippingMask(coords[i], sourceMaxZoom);
+        var coord = coords[i];
+        var id = this._tileClippingMaskIDs[coord.id] = (nextClipID++) << 3;
+
+        gl.stencilFunc(gl.ALWAYS, id, 0xF8);
+
+        gl.switchShader(this.fillShader);
+        gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculatePosMatrix(coord, sourceMaxZoom));
+
+        // Draw the clipping mask
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+        gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
     }
 
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
-    this.depthMask(true);
+    this.setDepthMaskEnabled(true);
     gl.enable(gl.DEPTH_TEST);
 };
 
-Painter.prototype._drawClippingMask = function(coord, sourceMaxZoom) {
-    var clipID = this.clipIDs[coord.id] = (this.nextClipID++) << 3;
-
-    var gl = this.gl;
-    gl.stencilFunc(gl.ALWAYS, clipID, 0xF8);
-
-    gl.switchShader(this.fillShader);
-    gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculatePosMatrix(coord, sourceMaxZoom));
-
-    // Draw the clipping mask
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
-};
-
-Painter.prototype.setClippingMask = function(coord) {
+Painter.prototype.enableTileClippingMask = function(coord) {
     var gl = this.gl;
     assert(coord instanceof TileCoord);
-    gl.stencilFunc(gl.EQUAL, this.clipIDs[coord.id], 0xF8);
+    gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
 };
 
 // Overridden by headless tests.
@@ -284,56 +279,57 @@ Painter.prototype.render = function(style, options) {
     this.clearColor();
     this.clearDepth();
 
-    this.depthRangeSize = 1 - (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
+    this.sublayerMaxDepth = (style._order.length + 2) * this.sublayerCount * this.sublayerDepthEpsilon;
 
-    this.renderPass(true);
-    this.renderPass(false);
+    this.renderPass({isOpaquePass: true});
+    this.renderPass({isOpaquePass: false});
 };
 
-Painter.prototype.renderPass = function(opaquePass) {
+Painter.prototype.renderPass = function(options) {
     var groups = this.style._groups;
+    var isOpaquePass = options.isOpaquePass;
 
-    this.currentLayer = !opaquePass ? -1 : this.style._order.length;
+    this.currentLayer = !isOpaquePass ? -1 : this.style._order.length;
 
     for (var i = 0; i < groups.length; i++) {
-        var group = groups[opaquePass ? groups.length - 1 - i : i];
+        var group = groups[isOpaquePass ? groups.length - 1 - i : i];
         var source = this.style.sources[group.source];
 
         if (source) {
             var coords = source.getVisibleCoordinates();
-            if (!opaquePass) coords.reverse();
+            if (!isOpaquePass) coords.reverse();
 
             if (source.prepare) source.prepare();
             this.clearStencil();
-            if (source.useStencilClipping) {
+            if (source.isTileClipped) {
                 this.clearStencil();
-                this._drawClippingMasks(coords, source.maxzoom);
+                this._renderTileClippingMasks(coords, source.maxzoom);
             }
         }
 
-        if (opaquePass) {
+        if (isOpaquePass) {
             this.gl.disable(this.gl.BLEND);
-            this.opaquePass = true;
+            this.isOpaquePass = true;
         } else {
             this.gl.enable(this.gl.BLEND);
-            this.opaquePass = false;
+            this.isOpaquePass = false;
         }
 
         for (var j = 0; j < group.length; j++) {
-            var layer = group[opaquePass ? group.length - 1 - j : j];
-            this.currentLayer += opaquePass ? -1 : 1;
+            var layer = group[isOpaquePass ? group.length - 1 - j : j];
+            this.currentLayer += isOpaquePass ? -1 : 1;
             if (!layer.hidden) {
                 this.renderLayer(this, source, layer, coords);
             }
         }
 
-        if (!opaquePass && this.options.debug) {
+        if (!isOpaquePass && this.options.debug) {
             draw.debug(this, coords);
         }
     }
 };
 
-Painter.prototype.depthMask = function(mask) {
+Painter.prototype.setDepthMaskEnabled = function(mask) {
     if (mask !== this._depthMask) {
         this._depthMask = mask;
         this.gl.depthMask(mask);
@@ -367,12 +363,12 @@ Painter.prototype.drawStencilBuffer = function() {
 };
 
 Painter.prototype.setSublayer = function(n) {
-    var farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
-    var nearDepth = farDepth - this.depthRangeSize;
+    var farDepth = 1 - ((1 + this.currentLayer) * this.sublayerCount + n) * this.sublayerDepthEpsilon;
+    var nearDepth = farDepth - 1 + this.sublayerMaxDepth;
     this.gl.depthRange(nearDepth, farDepth);
 };
 
-Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
+Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor) {
     if (!translate[0] && !translate[1]) return matrix;
 
     if (anchor === 'viewport') {
