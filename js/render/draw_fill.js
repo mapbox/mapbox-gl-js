@@ -12,31 +12,29 @@ function drawFill(painter, source, layer, coords) {
 
 function drawFillTile(painter, source, layer, coord) {
     var tile = source.getTile(coord);
-
-    // No data
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
+
+    var gl = painter.gl;
 
     var color = layer.paint['fill-color'];
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'] || 1;
 
-    var drawFillThisPass = image ?
-        !painter.opaquePass :
-        painter.opaquePass === (color[3] === 1);
-
-    var gl = painter.gl;
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
     var translatedPosMatrix = painter.translateMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
-    var vertex, elements, group, count;
+    drawFillTileFill();
+    drawFillTileStroke();
 
-    if (drawFillThisPass) {
+    function drawFillTileFill() {
+        if (image ? painter.opaquePass : painter.opaquePass === (color[3] !== 1)) return;
+
         // Draw the stencil mask.
         painter.setSublayer(1);
 
-        // We're only drawing to the first seven bits (== support a maximum of
+        // We're only drawFilling to the first seven bits (== support a maximum of
         // 8 overlapping polygons in one place before we get rendering errors).
         gl.stencilMask(0x07);
         gl.clear(gl.STENCIL_BUFFER_BIT);
@@ -53,7 +51,7 @@ function drawFillTile(painter, source, layer, coord) {
         gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
         gl.stencilOpSeparate(gl.BACK, gl.KEEP, gl.KEEP, gl.DECR_WRAP);
 
-        // When drawing a shape, we first draw all shapes to the stencil buffer
+        // When drawFilling a shape, we first drawFill all shapes to the stencil buffer
         // and incrementing all areas where polygons are
         gl.colorMask(false, false, false, false);
         painter.depthMask(false);
@@ -63,21 +61,19 @@ function drawFillTile(painter, source, layer, coord) {
         gl.uniformMatrix4fv(painter.fillShader.u_matrix, false, translatedPosMatrix);
 
         // Draw all buffers
-        vertex = tile.buffers.fillVertex;
+        var vertex = tile.buffers.fillVertex;
         vertex.bind(gl);
 
-        elements = tile.buffers.fillElement;
+        var elements = tile.buffers.fillElement;
         elements.bind(gl);
 
-        var offset, elementOffset;
-
         for (var i = 0; i < elementGroups.groups.length; i++) {
-            group = elementGroups.groups[i];
-            offset = group.vertexStartIndex * vertex.itemSize;
+            var group = elementGroups.groups[i];
+            var offset = group.vertexStartIndex * vertex.itemSize;
             vertex.setAttribPointers(gl, painter.fillShader, offset);
 
-            count = group.elementLength * 3;
-            elementOffset = group.elementStartIndex * elements.itemSize;
+            var count = group.elementLength * 3;
+            var elementOffset = group.elementStartIndex * elements.itemSize;
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
 
@@ -130,7 +126,7 @@ function drawFillTile(painter, source, layer, coord) {
             gl.uniform4fv(shader.u_color, color);
         }
 
-        // Only draw regions that we marked
+        // Only drawFill regions that we marked
         gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
         gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
         gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
@@ -138,13 +134,17 @@ function drawFillTile(painter, source, layer, coord) {
 
         gl.stencilMask(0x00);
         painter.setClippingMask(coord);
+
     }
 
-    var strokeColor = layer.paint['fill-outline-color'];
+    function drawFillTileStroke() {
+        var gl = painter.gl;
+        var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
-    // Because we're drawing top-to-bottom, and we update the stencil mask
-    // below, we have to draw the outline first (!)
-    if (!painter.opaquePass && layer.paint['fill-antialias'] === true && !(layer.paint['fill-pattern'] && !strokeColor)) {
+        var strokeColor = layer.paint['fill-outline-color'];
+
+        if (painter.opaquePass || !layer.paint['fill-antialias'] || (layer.paint['fill-pattern'] && !strokeColor)) return;
+
         gl.switchShader(painter.outlineShader);
         gl.uniformMatrix4fv(painter.outlineShader.u_matrix, false, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio * 10);
@@ -156,7 +156,7 @@ function drawFillTile(painter, source, layer, coord) {
             painter.setSublayer(2);
 
         } else {
-            // Otherwise, we only want to draw the antialiased parts that are
+            // Otherwise, we only want to drawFill the antialiased parts that are
             // *outside* the current shape. This is important in case the fill
             // or stroke color is translucent. If we wouldn't clip to outside
             // the current shape, some pixels from the outline stroke overlapped
@@ -168,20 +168,20 @@ function drawFillTile(painter, source, layer, coord) {
         gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
         // Draw all buffers
-        vertex = tile.buffers.fillVertex;
-        elements = tile.buffers.fillSecondElement;
+        var vertex = tile.buffers.fillVertex;
+        var elements = tile.buffers.fillSecondElement;
         vertex.bind(gl);
         elements.bind(gl);
 
         painter.setClippingMask(coord);
 
         for (var k = 0; k < elementGroups.groups.length; k++) {
-            group = elementGroups.groups[k];
-            offset = group.vertexStartIndex * vertex.itemSize;
+            var group = elementGroups.groups[k];
+            var offset = group.vertexStartIndex * vertex.itemSize;
             vertex.setAttribPointers(gl, painter.outlineShader, offset);
 
-            count = group.secondElementLength * 2;
-            elementOffset = group.secondElementStartIndex * elements.itemSize;
+            var count = group.secondElementLength * 2;
+            var elementOffset = group.secondElementStartIndex * elements.itemSize;
             gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
     }
