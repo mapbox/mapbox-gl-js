@@ -5,8 +5,8 @@ var Tile = require('./tile');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
-var TileCoord = require('./tile_coord');
 var ajax = require('../util/ajax');
+var TileCoord = require('./tile_coord');
 
 module.exports = ImageSource;
 
@@ -53,9 +53,6 @@ function ImageSource(options) {
 }
 
 ImageSource.prototype = util.inherit(Evented, {
-    minzoom: 0,
-    maxzoom: Infinity,
-
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
@@ -76,7 +73,8 @@ ImageSource.prototype = util.inherit(Evented, {
             return map.transform.locationCoordinate(loc).zoomTo(0);
         });
 
-        var center = util.getCoordinatesCenter(coords);
+        var center = this.center = util.getCoordinatesCenter(coords);
+        this.coord = new TileCoord(center.zoom, center.column, center.row);
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(center.zoom);
@@ -94,14 +92,12 @@ ImageSource.prototype = util.inherit(Evented, {
             tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
         ]);
 
-        this.tile = new Tile(new TileCoord(center.zoom, center.column, center.row), 512, Infinity);
+        this.tile = new Tile();
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
-
-        this.center = center;
     },
 
     loaded: function() {
@@ -137,7 +133,7 @@ ImageSource.prototype = util.inherit(Evented, {
     },
 
     getVisibleCoordinates: function() {
-        if (this.tile) return [this.tile.coord];
+        if (this.coord) return [this.coord];
         else return [];
     },
 

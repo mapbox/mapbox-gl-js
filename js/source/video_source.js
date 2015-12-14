@@ -5,8 +5,8 @@ var Tile = require('./tile');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
-var TileCoord = require('./tile_coord');
 var ajax = require('../util/ajax');
+var TileCoord = require('./tile_coord');
 
 module.exports = VideoSource;
 
@@ -67,8 +67,6 @@ function VideoSource(options) {
 
 VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
     roundZoom: true,
-    minzoom: 0,
-    maxzoom: Infinity,
 
     /**
      * Return the HTML video element.
@@ -100,6 +98,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         });
 
         var center = this.center = util.getCoordinatesCenter(coords);
+        this.coord = new TileCoord(center.zoom, center.column, center.row);
         var tileExtent = 4096;
         var tileCoords = coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(center.zoom);
@@ -117,7 +116,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
             tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
         ]);
 
-        this.tile = new Tile(new TileCoord(center.zoom, center.column, center.row), 512, Infinity);
+        this.tile = new Tile();
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = gl.createBuffer();
@@ -138,8 +137,8 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     prepare: function() {
-        // not enough data for current position
-        if (!this._loaded || this.video.readyState < 2) return;
+        if (!this._loaded) return;
+        if (this.video.readyState < 2) return; // not enough data for current position
 
         var gl = this.map.painter.gl;
         if (!this.tile.texture) {
@@ -150,7 +149,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
-        } else if (this._currentTime !== this.video.currentTime) {
+        } else {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
         }
@@ -159,7 +158,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     getVisibleCoordinates: function() {
-        if (this.tile) return [this.tile.coord];
+        if (this.coord) return [this.coord];
         else return [];
     },
 

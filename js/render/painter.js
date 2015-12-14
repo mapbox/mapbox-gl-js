@@ -407,7 +407,7 @@ Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
     assert(coord instanceof TileCoord);
     var transform = this.transform;
 
-    assert(maxZoom !== undefined);
+    if (maxZoom === undefined) maxZoom = Infinity;
 
     // Initialize model-view matrix that converts from the tile coordinates
     // to screen coordinates.
