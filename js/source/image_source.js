@@ -53,6 +53,9 @@ function ImageSource(options) {
 }
 
 ImageSource.prototype = util.inherit(Evented, {
+    minzoom: 0,
+    maxzoom: Infinity,
+
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
