@@ -6,7 +6,6 @@ var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
-var TileCoord = require('./tile_coord');
 
 module.exports = ImageSource;
 
@@ -31,8 +30,6 @@ module.exports = ImageSource;
  * map.removeSource('some id');  // remove
  */
 function ImageSource(options) {
-    this.coordinates = options.coordinates;
-
     ajax.getImage(options.url, function(err, image) {
         // @TODO handle errors via event.
         if (err) return;
@@ -46,7 +43,7 @@ function ImageSource(options) {
         this._loaded = true;
 
         if (this.map) {
-            this.createTile();
+            this.createTile(options.coordinates);
             this.fire('change');
         }
     }.bind(this));
@@ -66,21 +63,20 @@ ImageSource.prototype = util.inherit(Evented, {
      * may be outside the tile, because raster tiles aren't clipped when rendering.
      * @private
      */
-    createTile: function() {
+    createTile: function(cornerGeoCoords) {
         var map = this.map;
-        var coords = this.coordinates.map(function(lnglat) {
-            var loc = LngLat.convert(lnglat);
-            return map.transform.locationCoordinate(loc).zoomTo(0);
+        var cornerZ0Coords = cornerGeoCoords.map(function(coord) {
+            return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
-        var center = this.center = util.getCoordinatesCenter(coords);
-        this.coord = new TileCoord(center.zoom, center.column, center.row);
+        var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+
         var tileExtent = 4096;
-        var tileCoords = coords.map(function(coord) {
-            var zoomedCoord = coord.zoomTo(center.zoom);
+        var tileCoords = cornerZ0Coords.map(function(coord) {
+            var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
-                Math.round((zoomedCoord.column - center.column) * tileExtent),
-                Math.round((zoomedCoord.row - center.row) * tileExtent));
+                Math.round((zoomedCoord.column - centerCoord.column) * tileExtent),
+                Math.round((zoomedCoord.row - centerCoord.row) * tileExtent));
         });
 
         var gl = map.painter.gl;
@@ -133,7 +129,7 @@ ImageSource.prototype = util.inherit(Evented, {
     },
 
     getVisibleCoordinates: function() {
-        if (this.coord) return [this.coord];
+        if (this.centerCoord) return [this.centerCoord];
         else return [];
     },
 

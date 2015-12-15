@@ -5,7 +5,6 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
-var assert = require('assert');
 
 /*
  * Initialize a new painter object.
@@ -396,7 +395,9 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
  */
 Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
     var tileExtent = 4096;
-    assert(coord instanceof TileCoord);
+    if (coord instanceof TileCoord) {
+        coord = coord.toCoordinate();
+    }
     var transform = this.transform;
 
     if (maxZoom === undefined) maxZoom = Infinity;
@@ -406,11 +407,11 @@ Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
 
     // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
     // so calculate the matrix the maxzoom tile would use.
-    var z = Math.min(coord.z, maxZoom);
-    var tileScale = Math.pow(2, z);
-    var x = coord.x + tileScale * coord.w;
-    var y = coord.y;
-    var scale = transform.worldSize / tileScale;
+    var z = Math.min(coord.zoom, maxZoom);
+    var x = coord.column;
+    var y = coord.row;
+
+    var scale = transform.worldSize / Math.pow(2, z);
 
     // The position matrix
     var posMatrix = new Float64Array(16);

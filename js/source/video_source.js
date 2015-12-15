@@ -6,7 +6,6 @@ var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
-var TileCoord = require('./tile_coord');
 
 module.exports = VideoSource;
 
@@ -33,8 +32,6 @@ module.exports = VideoSource;
  * map.removeSource('some id');  // remove
  */
 function VideoSource(options) {
-    this.coordinates = options.coordinates;
-
     ajax.getVideo(options.urls, function(err, video) {
         // @TODO handle errors via event.
         if (err) return;
@@ -59,7 +56,7 @@ function VideoSource(options) {
 
         if (this.map) {
             this.video.play();
-            this.createTile();
+            this.createTile(options.coordinates);
             this.fire('change');
         }
     }.bind(this));
@@ -85,26 +82,25 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         }
     },
 
-    createTile: function() {
+    createTile: function(cornerGeoCoords) {
         /*
          * Calculate which mercator tile is suitable for rendering the video in
          * and create a buffer with the corner coordinates. These coordinates
          * may be outside the tile, because raster tiles aren't clipped when rendering.
          */
         var map = this.map;
-        var coords = this.coordinates.map(function(lnglat) {
-            var loc = LngLat.convert(lnglat);
-            return map.transform.locationCoordinate(loc).zoomTo(0);
+        var cornerZ0Coords = cornerGeoCoords.map(function(coord) {
+            return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
-        var center = this.center = util.getCoordinatesCenter(coords);
-        this.coord = new TileCoord(center.zoom, center.column, center.row);
+        var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+
         var tileExtent = 4096;
-        var tileCoords = coords.map(function(coord) {
-            var zoomedCoord = coord.zoomTo(center.zoom);
+        var tileCoords = cornerZ0Coords.map(function(coord) {
+            var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
-                Math.round((zoomedCoord.column - center.column) * tileExtent),
-                Math.round((zoomedCoord.row - center.row) * tileExtent));
+                Math.round((zoomedCoord.column - centerCoord.column) * tileExtent),
+                Math.round((zoomedCoord.row - centerCoord.row) * tileExtent));
         });
 
         var gl = map.painter.gl;
@@ -158,7 +154,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     getVisibleCoordinates: function() {
-        if (this.coord) return [this.coord];
+        if (this.centerCoord) return [this.centerCoord];
         else return [];
     },
 
