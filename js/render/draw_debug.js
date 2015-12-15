@@ -6,6 +6,9 @@ var browser = require('../util/browser');
 module.exports = drawDebug;
 
 function drawDebug(painter, coords) {
+    if (painter.isOpaquePass) return;
+    if (!painter.options.debug) return;
+
     for (var i = 0; i < coords.length; i++) {
         drawDebugTile(painter, coords[i]);
     }

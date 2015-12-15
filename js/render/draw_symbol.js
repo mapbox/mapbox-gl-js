@@ -28,7 +28,7 @@ function drawSymbols(painter, source, layer, coords) {
     painter.setDepthMaskEnabled(false);
     gl.disable(gl.DEPTH_TEST);
 
-    var tile, elementGroups;
+    var tile, elementGroups, posMatrix;
 
     for (var i = 0; i < coords.length; i++) {
         tile = source.getTile(coords[i]);
@@ -36,12 +36,11 @@ function drawSymbols(painter, source, layer, coords) {
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
+        if (!elementGroups.icon.groups.length) continue;
 
+        posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
-
-        if (elementGroups.icon.groups.length) {
-            drawSymbol(painter, layer, painter.calculatePosMatrix(coords[i], source.maxzoom), tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
-        }
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
     }
 
     for (var j = 0; j < coords.length; j++) {
@@ -50,13 +49,11 @@ function drawSymbols(painter, source, layer, coords) {
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
+        if (!elementGroups.glyph.groups.length) continue;
 
-        var posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
-
-        if (elementGroups.glyph.groups.length) {
-            drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
-        }
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
     }
 
     for (var k = 0; k < coords.length; k++) {

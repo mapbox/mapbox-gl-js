@@ -215,11 +215,11 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
     // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    var nextClipID = 1;
+    var idNext = 1;
     this._tileClippingMaskIDs = {};
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
-        var id = this._tileClippingMaskIDs[coord.id] = (nextClipID++) << 3;
+        var id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
@@ -240,7 +240,6 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
 Painter.prototype.enableTileClippingMask = function(coord) {
     var gl = this.gl;
-    assert(coord instanceof TileCoord);
     gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
 };
 
@@ -288,17 +287,15 @@ Painter.prototype.render = function(style, options) {
 Painter.prototype.renderPass = function(options) {
     var groups = this.style._groups;
     var isOpaquePass = options.isOpaquePass;
-
-    this.currentLayer = !isOpaquePass ? -1 : this.style._order.length;
+    this.currentLayer = isOpaquePass ? this.style._order.length : -1;
 
     for (var i = 0; i < groups.length; i++) {
         var group = groups[isOpaquePass ? groups.length - 1 - i : i];
         var source = this.style.sources[group.source];
 
+        var coords = [];
         if (source) {
-            var coords = source.getVisibleCoordinates();
-            if (!isOpaquePass) coords.reverse();
-
+            coords = source.getVisibleCoordinates();
             if (source.prepare) source.prepare();
             this.clearStencil();
             if (source.isTileClipped) {
@@ -313,6 +310,7 @@ Painter.prototype.renderPass = function(options) {
         } else {
             this.gl.enable(this.gl.BLEND);
             this.isOpaquePass = false;
+            coords.reverse();
         }
 
         for (var j = 0; j < group.length; j++) {
@@ -323,9 +321,7 @@ Painter.prototype.renderPass = function(options) {
             }
         }
 
-        if (!isOpaquePass && this.options.debug) {
-            draw.debug(this, coords);
-        }
+        draw.debug(this, coords);
     }
 };
 
