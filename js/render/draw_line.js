@@ -137,8 +137,8 @@ module.exports = function drawLine(painter, source, layer, coords) {
         // set uniforms that are different for each tile
         var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
-        gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
-        gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);
+        gl.setPosMatrix(posMatrix);
+        gl.setExMatrix(painter.transform.exMatrix);
         var ratio = painter.transform.scale / (1 << coord.z) / (4096 / tile.tileSize);
 
         // how much the tile is overscaled by

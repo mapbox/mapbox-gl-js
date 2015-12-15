@@ -23,8 +23,7 @@ function drawRasterTile(painter, source, layer, coord) {
     var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
 
     var shader = painter.rasterShader;
-    gl.switchShader(shader);
-    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+    gl.switchShader(shader, posMatrix);
 
     // color parameters
     gl.uniform1f(shader.u_brightness_low, layer.paint['raster-brightness-min']);

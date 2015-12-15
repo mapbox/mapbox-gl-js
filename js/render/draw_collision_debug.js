@@ -16,9 +16,8 @@ function drawCollisionDebug(painter, layer, coord, tile) {
     gl.enable(gl.STENCIL_TEST);
     painter.enableTileClippingMask(coordID);
 
-    gl.switchShader(shader);
-    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
-
+    gl.switchShader(shader, posMatrix);
+    
     buffer.bind(gl);
     buffer.setAttribPointers(gl, shader, 0);
 

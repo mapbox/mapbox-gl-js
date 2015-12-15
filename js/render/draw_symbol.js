@@ -131,9 +131,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
-    gl.switchShader(shader);
-    gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
-    gl.uniformMatrix4fv(shader.u_exmatrix, false, exMatrix);
+    gl.switchShader(shader, posMatrix, exMatrix);
     gl.uniform1i(shader.u_texture, 0);
     gl.uniform2fv(shader.u_texsize, texsize);
     gl.uniform1i(shader.u_skewed, skewed);

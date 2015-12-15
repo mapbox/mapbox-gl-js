@@ -57,8 +57,7 @@ function drawFillTile(painter, source, layer, coord) {
         painter.setDepthMaskEnabled(false);
 
         // Draw the actual triangle fan into the stencil buffer.
-        gl.switchShader(painter.fillShader);
-        gl.uniformMatrix4fv(painter.fillShader.u_matrix, false, translatedPosMatrix);
+        gl.switchShader(painter.fillShader, translatedPosMatrix);
 
         // Draw all buffers
         var vertex = tile.buffers.fillVertex;
@@ -94,8 +93,7 @@ function drawFillTile(painter, source, layer, coord) {
             if (!imagePosA || !imagePosB) return;
 
             shader = painter.patternShader;
-            gl.switchShader(shader);
-            gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+            gl.switchShader(shader, posMatrix);
             gl.uniform1i(shader.u_image, 0);
             gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
             gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
@@ -121,8 +119,7 @@ function drawFillTile(painter, source, layer, coord) {
         } else {
             // Draw filling rectangle.
             shader = painter.fillShader;
-            gl.switchShader(shader);
-            gl.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
+            gl.switchShader(shader, posMatrix);
             gl.uniform4fv(shader.u_color, color);
         }
 
@@ -145,8 +142,7 @@ function drawFillTile(painter, source, layer, coord) {
 
         if (painter.isOpaquePass || !layer.paint['fill-antialias'] || (layer.paint['fill-pattern'] && !strokeColor)) return;
 
-        gl.switchShader(painter.outlineShader);
-        gl.uniformMatrix4fv(painter.outlineShader.u_matrix, false, translatedPosMatrix);
+        gl.switchShader(painter.outlineShader, translatedPosMatrix);
         gl.lineWidth(2 * browser.devicePixelRatio * 10);
 
         if (strokeColor) {

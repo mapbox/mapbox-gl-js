@@ -222,8 +222,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        gl.switchShader(this.fillShader);
-        gl.uniformMatrix4fv(this.fillShader.u_matrix, false, this.calculatePosMatrix(coord, sourceMaxZoom));
+        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, sourceMaxZoom));
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);

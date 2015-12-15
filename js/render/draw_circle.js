@@ -31,8 +31,8 @@ function drawCirclesTile(painter, source, layer, coord) {
     gl.disable(gl.STENCIL_TEST);
 
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
-    gl.uniformMatrix4fv(shader.u_matrix, false, translatedPosMatrix);
-    gl.uniformMatrix4fv(shader.u_exmatrix, false, painter.transform.exMatrix);
+    gl.setPosMatrix(translatedPosMatrix);
+    gl.setExMatrix(painter.transform.exMatrix);
 
     // antialiasing factor: this is a minimum blur distance that serves as
     // a faux-antialiasing for the circle. since blur is a ratio of the circle's

@@ -63,7 +63,7 @@ function drawBackground(painter, source, layer) {
 
     var coords = pyramid.coveringTiles(transform);
     for (var c = 0; c < coords.length; c++) {
-        gl.uniformMatrix4fv(shader.u_matrix, false, painter.calculatePosMatrix(coords[c], Infinity));
+        gl.setPosMatrix(painter.calculatePosMatrix(coords[c]));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 
