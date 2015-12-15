@@ -5,34 +5,17 @@ var browser = require('../util/browser.js');
 module.exports = drawCircles;
 
 function drawCircles(painter, source, layer, coords) {
+    var gl = painter.gl;
+
+    var shader = painter.circleShader;
+    painter.gl.switchShader(shader);
+
     painter.setSublayer(0);
     painter.setDepthMaskEnabled(false);
-    painter.gl.switchShader(painter.circleShader);
-
-    for (var i = 0; i < coords.length; i++) {
-        drawCirclesTile(painter, source, layer, coords[i]);
-    }
-}
-
-function drawCirclesTile(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
-    if (!tile.buffers) return;
-    if (!tile.elementGroups[layer.ref || layer.id]) return;
-
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].circle;
-    var gl = painter.gl;
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
-    var shader = painter.circleShader;
-    var vertex = tile.buffers.circleVertex;
-    var elements = tile.buffers.circleElement;
 
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
-
-    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['circle-translate'], layer.paint['circle-translate-anchor']);
-    gl.setPosMatrix(translatedPosMatrix);
-    gl.setExMatrix(painter.transform.exMatrix);
 
     // antialiasing factor: this is a minimum blur distance that serves as
     // a faux-antialiasing for the circle. since blur is a ratio of the circle's
@@ -44,18 +27,38 @@ function drawCirclesTile(painter, source, layer, coord) {
     gl.uniform1f(shader.u_blur, Math.max(layer.paint['circle-blur'], antialias));
     gl.uniform1f(shader.u_size, layer.paint['circle-radius']);
 
-    for (var k = 0; k < elementGroups.groups.length; k++) {
-        var group = elementGroups.groups[k];
-        var offset = group.vertexStartIndex * vertex.itemSize;
+    for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
 
-        vertex.bind(gl);
-        vertex.setAttribPointers(gl, shader, offset);
+        var tile = source.getTile(coord);
+        if (!tile.buffers) continue;
+        if (!tile.elementGroups[layer.ref || layer.id].circle) continue;
 
-        elements.bind(gl);
+        var elementGroups = tile.elementGroups[layer.ref || layer.id].circle;
+        var vertex = tile.buffers.circleVertex;
+        var elements = tile.buffers.circleElement;
 
-        var count = group.elementLength * 3;
-        var elementOffset = group.elementStartIndex * elements.itemSize;
-        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+        gl.setPosMatrix(painter.translatePosMatrix(
+            painter.calculatePosMatrix(coord, source.maxzoom),
+            tile,
+            layer.paint['circle-translate'],
+            layer.paint['circle-translate-anchor']
+        ));
+        gl.setExMatrix(painter.transform.exMatrix);
+
+        for (var k = 0; k < elementGroups.groups.length; k++) {
+            var group = elementGroups.groups[k];
+            var offset = group.vertexStartIndex * vertex.itemSize;
+
+            vertex.bind(gl);
+            vertex.setAttribPointers(gl, shader, offset);
+
+            elements.bind(gl);
+
+            var count = group.elementLength * 3;
+            var elementOffset = group.elementStartIndex * elements.itemSize;
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+        }
     }
 
     gl.enable(gl.STENCIL_TEST);
