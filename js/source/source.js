@@ -63,7 +63,6 @@ exports._getTile = function(coord) {
     return this._pyramid.getTile(coord.id);
 };
 
-// TODO should this really be the soruce's job?
 exports._getVisibleCoordinates = function() {
     if (!this._pyramid) return [];
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
