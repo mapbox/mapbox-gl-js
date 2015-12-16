@@ -43,8 +43,8 @@ function draw(painter, source, layer, coords) {
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
 
-        for (var i = 0; i < coords.length; i++) {
-            drawStroke(painter, source, layer, coords[i]);
+        for (var j = 0; j < coords.length; j++) {
+            drawStroke(painter, source, layer, coords[j]);
         }
     }
 }
