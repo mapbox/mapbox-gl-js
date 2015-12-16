@@ -24,7 +24,7 @@ function drawSymbols(painter, source, layer, coords) {
         gl.disable(gl.STENCIL_TEST);
     }
 
-    painter.setSublayer(0);
+    painter.setDepthSublayer(0);
     painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 

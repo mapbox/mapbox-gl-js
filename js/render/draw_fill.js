@@ -29,7 +29,7 @@ function draw(painter, source, layer, coords) {
             // If we defined a different color for the fill outline, we are
             // going to ignore the bits in 0x07 and just care about the global
             // clipping mask.
-            painter.setSublayer(2);
+            painter.setDepthSublayer(2);
 
         } else {
             // Otherwise, we only want to drawFill the antialiased parts that are
@@ -37,7 +37,7 @@ function draw(painter, source, layer, coords) {
             // or stroke color is translucent. If we wouldn't clip to outside
             // the current shape, some pixels from the outline stroke overlapped
             // the (non-antialiased) fill.
-            painter.setSublayer(0);
+            painter.setDepthSublayer(0);
         }
 
         gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -65,7 +65,7 @@ function drawFill(painter, source, layer, coord) {
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
-    painter.setSublayer(1);
+    painter.setDepthSublayer(1);
 
     // We're only drawFilling to the first seven bits (== support a maximum of
     // 8 overlapping polygons in one place before we get rendering errors).

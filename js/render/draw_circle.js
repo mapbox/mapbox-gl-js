@@ -10,7 +10,7 @@ function drawCircles(painter, source, layer, coords) {
     var shader = painter.circleShader;
     painter.gl.switchShader(shader);
 
-    painter.setSublayer(0);
+    painter.setDepthSublayer(0);
     painter.depthMask(false);
 
     // Allow circles to be drawn across boundaries, so that

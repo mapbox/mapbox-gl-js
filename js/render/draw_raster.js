@@ -13,7 +13,7 @@ function drawRaster(painter, source, layer, coords) {
 function drawRasterTile(painter, source, layer, coord) {
     if (painter.isOpaquePass) return;
 
-    painter.setSublayer(0);
+    painter.setDepthSublayer(0);
 
     var gl = painter.gl;
 

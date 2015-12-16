@@ -15,7 +15,7 @@ var mat2 = require('gl-matrix').mat2;
  */
 module.exports = function drawLine(painter, source, layer, coords) {
     if (painter.isOpaquePass) return;
-    painter.setSublayer(0);
+    painter.setDepthSublayer(0);
     painter.depthMask(false);
 
     var hasData = false;

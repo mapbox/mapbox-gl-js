@@ -16,7 +16,7 @@ function drawBackground(painter, source, layer) {
     var imagePosA = image ? painter.spriteAtlas.getPosition(image.from, true) : null;
     var imagePosB = image ? painter.spriteAtlas.getPosition(image.to, true) : null;
 
-    painter.setSublayer(0);
+    painter.setDepthSublayer(0);
     if (imagePosA && imagePosB) {
 
         if (painter.isOpaquePass) return;

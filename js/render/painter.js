@@ -25,8 +25,8 @@ function Painter(gl, transform) {
 
     // Within each layer there are 3 distinct z-planes that can be drawn to.
     // This is implemented using the WebGL depth buffer.
-    this.sublayerCount = 3;
-    this.sublayerDepthEpsilon = 1 / Math.pow(2, 16);
+    this.numSublayers = 3;
+    this.depthEpsilon = 1 / Math.pow(2, 16);
 }
 
 /*
@@ -278,7 +278,7 @@ Painter.prototype.render = function(style, options) {
     this.clearColor();
     this.clearDepth();
 
-    this.sublayerDepthRangeSize = (style._order.length + 2) * this.sublayerCount * this.sublayerDepthEpsilon;
+    this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
     this.renderPass({isOpaquePass: true});
     this.renderPass({isOpaquePass: false});
@@ -356,9 +356,9 @@ Painter.prototype.drawStencilBuffer = function() {
     gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
 
-Painter.prototype.setSublayer = function(n) {
-    var farDepth = 1 - ((1 + this.currentLayer) * this.sublayerCount + n) * this.sublayerDepthEpsilon;
-    var nearDepth = farDepth - 1 + this.sublayerDepthRangeSize;
+Painter.prototype.setDepthSublayer = function(n) {
+    var farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+    var nearDepth = farDepth - 1 + this.depthRange;
     this.gl.depthRange(nearDepth, farDepth);
 };
 
