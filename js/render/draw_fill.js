@@ -13,6 +13,8 @@ function draw(painter, source, layer, coords) {
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1)) {
+        // Once we switch to earcut drawing we can pull most of the WebGL setup
+        // outside of this coords loop.
         for (var i = 0; i < coords.length; i++) {
             drawFill(painter, source, layer, coords[i]);
         }
