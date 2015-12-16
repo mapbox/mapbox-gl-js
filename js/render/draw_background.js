@@ -1,8 +1,7 @@
 'use strict';
 
-var TilePyramid = require('../source/tile_pyramid');
-
-var pyramid = new TilePyramid({ tileSize: 512 });
+var mat4 = require('gl-matrix').mat4;
+var TileCoord = require('../source/tile_coord');
 
 module.exports = drawBackground;
 
@@ -57,18 +56,15 @@ function drawBackground(painter, source, layer) {
         gl.uniform4fv(shader.u_color, color);
     }
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, painter.backgroundBuffer);
+
+    gl.vertexAttribPointer(shader.a_pos, painter.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.setPosMatrix(painter.identityMatrix);
+
     gl.disable(gl.STENCIL_TEST);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-    gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.depthFunc(gl.LEQUAL);
+    gl.enable(gl.DEPTH_TEST);
+    painter.setDepthMaskEnabled(true);
 
-    var coords = pyramid.coveringTiles(transform);
-    for (var c = 0; c < coords.length; c++) {
-        gl.setPosMatrix(painter.calculatePosMatrix(coords[c]));
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
-    }
-
-    gl.enable(gl.STENCIL_TEST);
-
-    gl.stencilMask(0x00);
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.backgroundBuffer.itemCount);
 }
