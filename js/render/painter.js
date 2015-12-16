@@ -23,8 +23,10 @@ function Painter(gl, transform) {
 
     this.setup();
 
-    this.sublayerDepthEpsilon = 1 / Math.pow(2, 16);
+    // Within each layer there are 3 distinct z-planes that can be drawn to.
+    // This is implemented using the WebGL depth buffer.
     this.sublayerCount = 3;
+    this.sublayerDepthEpsilon = 1 / Math.pow(2, 16);
 }
 
 /*
