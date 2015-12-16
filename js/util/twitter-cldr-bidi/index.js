@@ -16,24 +16,24 @@ function Bidi(options) {
   this.run_bidi();
 }
 
-Bidi.bidi_class_for = function(code_point) {
-  var bidi_class, end, range, range_list, range_offset, ranges, start, _i, _len, _ref;
-  _ref = bidi_classes;
-  for (bidi_class in _ref) {
-    ranges = _ref[bidi_class];
-    for (range_offset in ranges) {
-      range_list = ranges[range_offset];
-      for (_i = 0, _len = range_list.length; _i < _len; _i++) {
-        range = range_list[_i];
-        start = range;
-        end = start + parseInt(range_offset);
-        if ((code_point >= start) && (code_point <= end)) {
-          return bidi_class;
-        }
-      }
-    }
+Bidi._binarySearch = function(value, start, end) {
+  var mid = Math.floor((start + end) / 2);
+
+  var midRange = bidi_classes[mid];
+
+  if (midRange.min <= value && midRange.max >= value) {
+    return midRange.bidiClass; // Equal
+  } else if (end - start < 2) {
+    return null; // Does not exist
+  } else if (midRange.min < value) {
+    return this._binarySearch(value, mid, end); // Check upper
+  } else {
+    return this._binarySearch(value, start, mid); // Check lower
   }
-  return null;
+};
+
+Bidi.bidi_class_for = function(code_point) {
+  return this._binarySearch(code_point, 0, bidi_classes.length);
 };
 
 Bidi.from_string = function(str, options) {
