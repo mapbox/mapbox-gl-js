@@ -2,37 +2,68 @@
 
 var browser = require('../util/browser');
 
-module.exports = drawFill;
+module.exports = draw;
 
-function drawFill(painter, source, layer, coords) {
+function draw(painter, source, layer, coords) {
     var gl = painter.gl;
 
     var color = layer.paint['fill-color'];
     var image = layer.paint['fill-pattern'];
-    var opacity = layer.paint['fill-opacity'] || 1;
+    var strokeColor = layer.paint['fill-outline-color'];
 
-    if (!(image ? painter.isOpaquePass : painter.isOpaquePass === (color[3] !== 1))) {
+    // Draw fill
+    if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1)) {
         for (var i = 0; i < coords.length; i++) {
-            drawFillStencil(painter, source, layer, coords[i]);
-            drawFillFill(painter, source, layer, coords[i]);
+            drawFill(painter, source, layer, coords[i]);
         }
     }
 
-    for (var i = 0; i < coords.length; i++) {
-        drawFillStroke(painter, source, layer, coords[i]);
+    // Draw stroke
+    if (!painter.isOpaquePass && layer.paint['fill-antialias'] && !(layer.paint['fill-pattern'] && !strokeColor)) {
+        gl.switchShader(painter.outlineShader);
+        gl.lineWidth(2 * browser.devicePixelRatio * 10);
+
+        if (strokeColor) {
+            // If we defined a different color for the fill outline, we are
+            // going to ignore the bits in 0x07 and just care about the global
+            // clipping mask.
+            painter.setSublayer(2);
+
+        } else {
+            // Otherwise, we only want to drawFill the antialiased parts that are
+            // *outside* the current shape. This is important in case the fill
+            // or stroke color is translucent. If we wouldn't clip to outside
+            // the current shape, some pixels from the outline stroke overlapped
+            // the (non-antialiased) fill.
+            painter.setSublayer(0);
+        }
+
+        gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
+
+        for (var i = 0; i < coords.length; i++) {
+            drawStroke(painter, source, layer, coords[i]);
+        }
     }
 }
 
-function drawFillStencil(painter, source, layer, coord) {
-    var gl = painter.gl;
-
+function drawFill(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
+    var gl = painter.gl;
+
+    var color = layer.paint['fill-color'];
+    var image = layer.paint['fill-pattern'];
+    var opacity = layer.paint['fill-opacity'];
+
     var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
+
+    // Draw the stencil mask.
+    painter.setSublayer(1);
 
     // We're only drawFilling to the first seven bits (== support a maximum of
     // 8 overlapping polygons in one place before we get rendering errors).
@@ -75,21 +106,6 @@ function drawFillStencil(painter, source, layer, coord) {
         var elementOffset = group.elementStartIndex * elements.itemSize;
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
     }
-}
-
-function drawFillFill(painter, source, layer, coord) {
-    var gl = painter.gl;
-
-    var tile = source.getTile(coord);
-    if (!tile.buffers) return;
-    if (!tile.elementGroups[layer.ref || layer.id].fill) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
-
-    var color = layer.paint['fill-color'];
-    var image = layer.paint['fill-pattern'];
-    var opacity = layer.paint['fill-opacity'] || 1;
-
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
 
     // Now that we have the stencil mask in the stencil buffer, we can start
     // writing to the color buffer.
@@ -138,18 +154,16 @@ function drawFillFill(painter, source, layer, coord) {
         gl.uniform4fv(shader.u_color, color);
     }
 
-    // Only drawFill regions that we marked
+    // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
     gl.vertexAttribPointer(shader.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
 
     gl.stencilMask(0x00);
-    painter.enableTileClippingMask(coord);
-
 }
 
-function drawFillStroke(painter, source, layer, coord) {
+function drawStroke(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
@@ -157,34 +171,12 @@ function drawFillStroke(painter, source, layer, coord) {
     var gl = painter.gl;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
-    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
-
-    var color = layer.paint['fill-color'];
-    var strokeColor = layer.paint['fill-outline-color'];
-
-    if (painter.isOpaquePass || !layer.paint['fill-antialias'] || (layer.paint['fill-pattern'] && !strokeColor)) return;
-
-    gl.switchShader(painter.outlineShader, translatedPosMatrix);
-    gl.lineWidth(2 * browser.devicePixelRatio * 10);
-
-    if (strokeColor) {
-        // If we defined a different color for the fill outline, we are
-        // going to ignore the bits in 0x07 and just care about the global
-        // clipping mask.
-        painter.setSublayer(2);
-
-    } else {
-        // Otherwise, we only want to drawFill the antialiased parts that are
-        // *outside* the current shape. This is important in case the fill
-        // or stroke color is translucent. If we wouldn't clip to outside
-        // the current shape, some pixels from the outline stroke overlapped
-        // the (non-antialiased) fill.
-        painter.setSublayer(0);
-    }
-
-    gl.uniform2f(painter.outlineShader.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    gl.uniform4fv(painter.outlineShader.u_color, strokeColor ? strokeColor : color);
+    gl.setPosMatrix(painter.translatePosMatrix(
+        painter.calculatePosMatrix(coord, source.maxzoom),
+        tile,
+        layer.paint['fill-translate'],
+        layer.paint['fill-translate-anchor']
+    ));
 
     // Draw all buffers
     var vertex = tile.buffers.fillVertex;
