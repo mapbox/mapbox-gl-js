@@ -210,11 +210,6 @@ footer:
        <a class="block pad1y icon data" href="/data-platform/">Curated Data</a>
 
       </div>
-  <!--     <div class="col4">
-        <h3>Enterprise</h3>
-          <a class="block pad1y icon mt" href="/highvolume/">High Volume</a>
-          <a class="block pad1y icon globe"  href="/atlas/">Atlas Server</a>
-      </div> -->
     </div>
 
     <div class="subnav-use-cases clearfix">
@@ -283,6 +278,31 @@ footer:
 
     </div>
 
+    <div class="subnav-help clearfix">
+    <div class="col3">
+      <h3><a href="/help/" class="rcon next">Help</a></h3>
+       <a class="block pad1y icon search" href="/help/">Search</a>
+       <a class="block pad1y icon mapbox" href="/help/how-mapbox-works/">How Mapbox works</a>
+       <a class="block pad1y icon book" href="/help/glossary/">Glossary</a>
+    </div>
+
+     <div class="col8 margin1 clearfix">
+      <h3>I would like to</h3>
+        <div class="col6">
+       <a class="block pad1y icon paint" href="/help/#design-a-map">Design a map</a>
+       <a class="block pad1y icon mobile" href="/help/#build-a-mobile-app">Build a mobile app</a>
+       <a class="block pad1y icon globe" href="/help/#build-a-web-app">Build a web app</a>
+       <a class="block pad1y icon bolt" href="help/#extend-my-app-with-web-services">Extend my app with web services</a>
+       </div>
+      <div class="col6">
+       <a class="block pad1y icon satellite"  href="/help/#work-with-data-and-imagery">Work with data &amp; Imagery</a>
+       <a class="block pad1y icon data" href="/help/#analyze-data">Analyze Data</a>
+       <a class="block pad1y icon lock" href="/help/#learn-about-mapbox-privacy-and-policies">Learn about privacy and policies</a>
+       <a class="block pad1y icon account" href="/help/#make-changes-to-my-account">Make changes to my account</a>
+      </div>
+      </div>
+
+    </div>
 
   </div>
 </div>
@@ -299,9 +319,9 @@ footer:
          <div class="dropdown inline pad1y fl contain"  id="menu-products"> <a href='/products/'     class='contain primary-nav-button fl pad1x pad0y round '>Product</a></div>
           <div class="dropdown inline pad1y fl contain"  id="menu-use-cases"> <a href='/industries/'  class='contain primary-nav-button fl pad1x pad0y round'>Industries</a></div>
          <div class="dropdown inline pad1y fl contain"  id="menu-documentation">  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round '>Documentation</a></div>
+         <div class="dropdown inline pad1y fl contain"  id="menu-help">  <a href='/help/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
           <div class="inline pad1y fl"> <a href='/plans/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/plans' %}active{% endif %}'>Pricing</a></div>
 
-          <div class="inline pad1y fl"> <a href='/help/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/help' %}active{% endif %}'>Help</a></div>
           <div class="inline pad1y fl"> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
         </div>
         <!-- Hardcoded width so content doesn't jump -->
@@ -512,16 +532,25 @@ switch(activeCategory) {
       $(".subnav-products").addClass("show");
       $(".subnav-use-cases").removeClass("show");
       $(".subnav-documentation").removeClass("show");
+      $(".subnav-help").removeClass("show");
         break;
     case 'menu-use-cases':
       $(".subnav-use-cases").addClass("show");
       $(".subnav-products").removeClass("show");
       $(".subnav-documentation").removeClass("show");
+      $(".subnav-help").removeClass("show");
         break;
     case 'menu-documentation':
       $(".subnav-documentation").addClass("show");
       $(".subnav-products").removeClass("show");
       $(".subnav-use-cases").removeClass("show");
+      $(".subnav-help").removeClass("show");
+        break;
+    case 'menu-help':
+      $(".subnav-help").addClass("show");
+      $(".subnav-products").removeClass("show");
+      $(".subnav-use-cases").removeClass("show");
+      $(".subnav-documentation").removeClass("show");
         break;
   }
 }
