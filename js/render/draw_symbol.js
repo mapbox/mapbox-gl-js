@@ -25,7 +25,7 @@ function drawSymbols(painter, source, layer, coords) {
     }
 
     painter.setSublayer(0);
-    painter.setDepthMaskEnabled(false);
+    painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
     var tile, elementGroups, posMatrix;

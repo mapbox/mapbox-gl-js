@@ -11,7 +11,7 @@ function drawCircles(painter, source, layer, coords) {
     painter.gl.switchShader(shader);
 
     painter.setSublayer(0);
-    painter.setDepthMaskEnabled(false);
+    painter.depthMask(false);
 
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles

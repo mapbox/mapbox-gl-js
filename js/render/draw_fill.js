@@ -87,7 +87,7 @@ function drawFill(painter, source, layer, coord) {
     // When drawFilling a shape, we first drawFill all shapes to the stencil buffer
     // and incrementing all areas where polygons are
     gl.colorMask(false, false, false, false);
-    painter.setDepthMaskEnabled(false);
+    painter.depthMask(false);
 
     // Draw the actual triangle fan into the stencil buffer.
     gl.switchShader(painter.fillShader, translatedPosMatrix);
@@ -112,7 +112,7 @@ function drawFill(painter, source, layer, coord) {
     // Now that we have the stencil mask in the stencil buffer, we can start
     // writing to the color buffer.
     gl.colorMask(true, true, true, true);
-    painter.setDepthMaskEnabled(true);
+    painter.depthMask(true);
 
     // From now on, we don't want to update the stencil buffer anymore.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);

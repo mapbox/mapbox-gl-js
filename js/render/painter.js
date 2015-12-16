@@ -201,14 +201,14 @@ Painter.prototype.clearStencil = function() {
 Painter.prototype.clearDepth = function() {
     var gl = this.gl;
     gl.clearDepth(1);
-    this.setDepthMaskEnabled(true);
+    this.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
 Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
-    this.setDepthMaskEnabled(false);
+    this.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
     // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
@@ -234,7 +234,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
-    this.setDepthMaskEnabled(true);
+    this.depthMask(true);
     gl.enable(gl.DEPTH_TEST);
 };
 
@@ -278,7 +278,7 @@ Painter.prototype.render = function(style, options) {
     this.clearColor();
     this.clearDepth();
 
-    this.sublayerMaxDepth = (style._order.length + 2) * this.sublayerCount * this.sublayerDepthEpsilon;
+    this.sublayerDepthRangeSize = (style._order.length + 2) * this.sublayerCount * this.sublayerDepthEpsilon;
 
     this.renderPass({isOpaquePass: true});
     this.renderPass({isOpaquePass: false});
@@ -296,10 +296,9 @@ Painter.prototype.renderPass = function(options) {
         var coords = [];
         if (source) {
             coords = source.getVisibleCoordinates();
-            if (source.prepare) source.prepare();
             this.clearStencil();
+            if (source.prepare) source.prepare();
             if (source.isTileClipped) {
-                this.clearStencil();
                 this._renderTileClippingMasks(coords, source.maxzoom);
             }
         }
@@ -316,16 +315,14 @@ Painter.prototype.renderPass = function(options) {
         for (var j = 0; j < group.length; j++) {
             var layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
-            if (!layer.hidden) {
-                this.renderLayer(this, source, layer, coords);
-            }
+            this.renderLayer(this, source, layer, coords);
         }
 
         draw.debug(this, coords);
     }
 };
 
-Painter.prototype.setDepthMaskEnabled = function(mask) {
+Painter.prototype.depthMask = function(mask) {
     if (mask !== this._depthMask) {
         this._depthMask = mask;
         this.gl.depthMask(mask);
@@ -333,6 +330,7 @@ Painter.prototype.setDepthMaskEnabled = function(mask) {
 };
 
 Painter.prototype.renderLayer = function(painter, source, layer, coords) {
+    if (layer.hidden) return;
     if (layer.type !== 'background' && !coords.length) return;
     draw[layer.type](painter, source, layer, coords);
 };
@@ -360,7 +358,7 @@ Painter.prototype.drawStencilBuffer = function() {
 
 Painter.prototype.setSublayer = function(n) {
     var farDepth = 1 - ((1 + this.currentLayer) * this.sublayerCount + n) * this.sublayerDepthEpsilon;
-    var nearDepth = farDepth - 1 + this.sublayerMaxDepth;
+    var nearDepth = farDepth - 1 + this.sublayerDepthRangeSize;
     this.gl.depthRange(nearDepth, farDepth);
 };
 

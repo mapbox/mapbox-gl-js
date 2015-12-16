@@ -7,7 +7,6 @@ module.exports = drawBackground;
 
 function drawBackground(painter, source, layer) {
     var gl = painter.gl;
-    var transform = painter.transform;
     var color = layer.paint['background-color'];
     var image = layer.paint['background-pattern'];
     var opacity = layer.paint['background-opacity'];
@@ -17,6 +16,7 @@ function drawBackground(painter, source, layer) {
     var imagePosB = image ? painter.spriteAtlas.getPosition(image.to, true) : null;
 
     painter.setSublayer(0);
+
     if (imagePosA && imagePosB) {
 
         if (painter.isOpaquePass) return;
@@ -30,9 +30,9 @@ function drawBackground(painter, source, layer) {
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
         gl.uniform2fv(shader.u_pattern_br_b, imagePosB.br);
         gl.uniform1f(shader.u_opacity, opacity);
-
         gl.uniform1f(shader.u_mix, image.t);
 
+        var transform = painter.transform;
         var factor = (4096 / transform.tileSize) / Math.pow(2, 0);
 
         gl.uniform2fv(shader.u_patternscale_a, [
@@ -49,7 +49,7 @@ function drawBackground(painter, source, layer) {
 
     } else {
         // Draw filling rectangle.
-        if (painter.isOpaquePass !== (color[3] === 1)) return;
+        if (painter.isOpaquePass === (color[3] !== 1))) return;
 
         shader = painter.fillShader;
         gl.switchShader(shader);
@@ -62,9 +62,18 @@ function drawBackground(painter, source, layer) {
     gl.setPosMatrix(painter.identityMatrix);
 
     gl.disable(gl.STENCIL_TEST);
-    gl.depthFunc(gl.LEQUAL);
     gl.enable(gl.DEPTH_TEST);
-    painter.setDepthMaskEnabled(true);
+    gl.depthFunc(gl.LEQUAL);
+    painter.depthMask(false);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.backgroundBuffer.itemCount);
+
+    gl.enable(gl.STENCIL_TEST);
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    painter.depthMask(true);
+
+    gl.stencilMask(0x00);
+    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+
 }
