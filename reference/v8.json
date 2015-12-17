@@ -158,17 +158,17 @@
     "maxzoom": {
       "type": "number",
       "default": 14,
-      "doc": "Maximum zoom to preserve detail at."
+      "doc": "Maximum zoom level at which to create vector tiles (higher means greater detail at high zoom levels)."
     },
     "buffer": {
       "type": "number",
       "default": 64,
-      "doc": "Tile buffer on each side."
+      "doc": "Tile buffer size on each side (higher means fewer rendering artifacts near tile edges but slower performance)."
     },
     "tolerance": {
       "type": "number",
       "default": 3,
-      "doc": "Simplification tolerance (higher means simpler)."
+      "doc": "Douglas-Peucker simplification tolerance (higher means simpler geometries and faster performance)."
     }
   },
   "source_video": {
