@@ -333,7 +333,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         this.symbolInstances.sort(function(a, b) {
             var aRotated = sin * a.x + cos * a.y;
             var bRotated = sin * b.x + cos * b.y;
-            return bRotated - aRotated;
+            return aRotated - bRotated;
         });
     }
 

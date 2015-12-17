@@ -23,6 +23,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     tileSize: 512,
     reparseOverscaled: true,
     _loaded: false,
+    isTileClipped: true,
 
     onAdd: function(map) {
         this.map = map;
@@ -44,7 +45,9 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    render: Source._renderTiles,
+    getVisibleCoordinates: Source._getVisibleCoordinates,
+    getTile: Source._getTile,
+
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,
 
