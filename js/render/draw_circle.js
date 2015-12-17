@@ -5,6 +5,8 @@ var browser = require('../util/browser.js');
 module.exports = drawCircles;
 
 function drawCircles(painter, source, layer, coords) {
+    if (painter.isOpaquePass) return;
+
     var gl = painter.gl;
 
     var shader = painter.circleShader;
