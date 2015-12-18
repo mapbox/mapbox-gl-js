@@ -58,10 +58,10 @@ options: full
         </div>
       </div>
       <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='{{site.baseurl}}/api' class='col3 {% if page.category == "api" %}active{% endif %}'>API</a><!--
-        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3'>Style Reference</a><!--
-        --><a href='{{site.baseurl}}/examples' class='col3 {% if page.category == "example" %}active{% endif %}'>Examples</a><!--
-        --><a href='{{site.baseurl}}/plugins' class='col3 {% if page.url contains "plugins" %}active{% endif %}'>Plugins</a>
+        --><a href='{{site.baseurl}}/api' class='col3 truncate{% if page.category == "api" %} active{% endif %}'>API</a><!--
+        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3 truncate'>Style Reference</a><!--
+        --><a href='{{site.baseurl}}/examples' class='col3 truncate{% if page.category == "example" %} active{% endif %}'>Examples</a><!--
+        --><a href='{{site.baseurl}}/plugins' class='col3 truncate{% if page.url contains "plugins" %} active{% endif %}'>Plugins</a>
       </div>
     </nav>
   </div>
