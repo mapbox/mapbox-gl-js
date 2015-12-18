@@ -4,7 +4,7 @@ attribute vec2 a_pos;
 attribute vec2 a_extrude;
 attribute vec2 a_data;
 
-uniform mat4 u_matrix;
+uniform highp mat4 u_matrix;
 uniform float u_scale;
 
 varying float v_max_zoom;
