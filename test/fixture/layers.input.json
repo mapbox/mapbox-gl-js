@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "sources": {
     "vector": {
       "type": "vector",
@@ -15,6 +15,11 @@
       "id": "no-ref-or-type",
       "source": "vector",
       "source-layer": "layer"
+    },
+    {
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer"
     },
     {
       "id": "ref",

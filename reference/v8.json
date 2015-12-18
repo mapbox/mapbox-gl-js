@@ -229,7 +229,8 @@
   "layer": {
     "id": {
       "type": "string",
-      "doc": "Unique layer name."
+      "doc": "Unique layer name.",
+      "required": true
     },
     "type": {
       "type": "enum",
