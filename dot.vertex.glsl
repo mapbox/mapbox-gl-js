@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform mat4 u_matrix;
+uniform highp mat4 u_matrix;
 uniform float u_size;
 
 attribute vec2 a_pos;
