@@ -10,9 +10,6 @@
   "scripts": {
     "test": "eslint index.js test/*.js && tape test/*.js"
   },
-  "engines": {
-    "node": "0.10.x"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:mapbox/mapbox-gl-function.git"
