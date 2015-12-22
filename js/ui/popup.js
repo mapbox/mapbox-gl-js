@@ -175,8 +175,6 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             } else {
                 anchor = anchor.join('-');
             }
-
-            this.options.anchor = anchor;
         }
 
         var anchorTranslate = {
