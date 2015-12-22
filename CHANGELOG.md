@@ -1,3 +1,16 @@
+## 0.12.2 (Dec 22 2015)
+
+#### API Improvements
+
+* Support LngLat.convert([w, s, e, n]) (#1812)
+* Invalid GeoJSON is now handled better
+
+#### Bugfixes
+
+* Fixed `Popup#addTo` when the popup is already open (#1811)
+* Fixed warping when rotating / zooming really fast
+* `Map#flyTo` now flies across the antimeridan if shorter (#1853)
+
 ## 0.12.1 (Dec 8 2015)
 
 #### Breaking changes
