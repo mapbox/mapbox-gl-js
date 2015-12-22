@@ -13,6 +13,9 @@ var LngLat = require('../geo/lng_lat');
  * @param {Object} options
  * @param {boolean} options.closeButton
  * @param {boolean} options.closeOnClick
+ * @param {string} options.anchor - One of "top", "bottom", "left", "right", "top-left",
+ * "top-right", "bottom-left", or "bottom-right", describing where the popup's anchor
+ * relative to the coordinate set via `setLngLat`.
  * @example
  * var tooltip = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
