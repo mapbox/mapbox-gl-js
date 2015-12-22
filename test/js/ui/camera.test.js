@@ -708,7 +708,7 @@ test('camera', function(t) {
         t.test('pans with specified offset', function(t) {
             var camera = createCamera();
             camera.flyTo({ center: [100, 0], offset: [100, 0], animate: false });
-            t.deepEqual(camera.getCenter(), { lng: 29.6875, lat: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 29.6875, lat: 0 });
             t.end();
         });
 
