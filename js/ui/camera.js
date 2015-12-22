@@ -573,7 +573,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = tr.project(center).sub(offset.div(scale));
+            to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
         var startWorldSize = tr.worldSize,
             rho = options.curve,
@@ -599,7 +599,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             S = (r(1) - r0) / rho;
 
         if (Math.abs(u1) < 0.000001) {
-            if (Math.abs(w0 - w1) < 0.000001) return this;
+            if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options);
 
             var k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
