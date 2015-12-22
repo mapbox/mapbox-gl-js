@@ -1,0 +1,22 @@
+---
+layout: example
+category: example
+title: Change a layer's icon image
+description: Use setLayoutProperty to change a layer's icon. 
+---
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map', 
+    style: 'mapbox://styles/mapbox/streets-v8', 
+    center: [-91.93, 43.9], 
+    zoom: 7.9 
+});
+
+map.on('style.load', function () {
+    // Specify in icon image from your style's sprite using 
+    // setLayoutProperty (layer, name, value)
+    map.setLayoutProperty('place-city-sm', 'icon-image', 'rocket-11');
+});
+
+</script>
