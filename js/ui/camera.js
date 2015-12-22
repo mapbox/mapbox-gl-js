@@ -336,10 +336,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {LngLatBounds|Array<Array<number>>} bounds [[minLng, minLat], [maxLng, maxLat]]
      * @param {Object} options
-     * @param {boolean} [options.linear] When true, the map transitions to the
-     *     new camera using {@link #Map.easeTo}. When false, the map transitions
-     *     using {@link #Map.flyTo}. See {@link #Map.flyTo} for information on
-     *     options specific to that animation transition.
+     * @param {boolean} [options.linear] When true, the map transitions to the new camera using
+     *     {@link #Map.easeTo}. When false, the map transitions using {@link #Map.flyTo}. See
+     *     {@link #Map.flyTo} for information on options specific to that animation transition.
      * @param {Function} options.easing
      * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
      * @param {number} options.maxZoom The resulting zoom level will be at most
@@ -519,33 +518,27 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Change any combination of center, zoom, bearing, and pitch, animated
-     * along a curve that evokes flight. The transition animation seamlessly
-     * incorporates zooming and panning to help the user find his or her
-     * bearings even after traversing a great distance.
+     * Change any combination of center, zoom, bearing, and pitch, animated along a curve that
+     * evokes flight. The transition animation seamlessly incorporates zooming and panning to help
+     * the user find his or her bearings even after traversing a great distance.
      *
-     * @param {CameraOptions|AnimationOptions} options map view and animation
-     *   options
-     * @param {number} [options.curve=1.42] Relative amount of zooming that
-     *     takes place along the flight path. A high value maximizes zooming for
-     *     an exaggerated animation, while a low value minimizes zooming for
-     *     something closer to {@link #Map.easeTo}. 1.42 is the average value
-     *     selected by participants in the user study in
-     *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A
-     *     value of `Math.pow(6, 0.25)` would be equivalent to the root mean
-     *     squared average velocity. A value of 1 would produce a circular
-     *     motion.
-     * @param {number} [options.minZoom] Zero-based zoom level at the peak of
-     *     the flight path. If `options.curve` is specified, this option is
-     *     ignored.
-     * @param {number} [options.speed=1.2] Average speed of the animation. A
-     *     speed of 1.2 means that the map appears to move along the flight path
-     *     by `options.curve` screenfuls every second. A _screenful_ is the
-     *     visible span in pixels. It does not correspond to a fixed physical
+     * @param {CameraOptions|AnimationOptions} options map view and animation options
+     * @param {number} [options.curve=1.42] Relative amount of zooming that takes place along the
+     *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+     *     value minimizes zooming for something closer to {@link #Map.easeTo}. 1.42 is the average
+     *     value selected by participants in the user study in
+     *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+     *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+     *     value of 1 would produce a circular motion.
+     * @param {number} [options.minZoom] Zero-based zoom level at the peak of the flight path. If
+     *     `options.curve` is specified, this option is ignored.
+     * @param {number} [options.speed=1.2] Average speed of the animation. A speed of 1.2 means that
+     *     the map appears to move along the flight path by `options.curve` screenfuls every second.
+     *     A _screenful_ is the visible span in pixels. It does not correspond to a fixed physical
      *     distance but rather varies by zoom level.
-     * @param {number} [options.screenSpeed] Average speed of the animation,
-     *     measured in screenfuls per second, assuming a linear timing curve. If
-     *     `options.speed` is specified, this option is ignored.
+     * @param {number} [options.screenSpeed] Average speed of the animation, measured in screenfuls
+     *     per second, assuming a linear timing curve. If `options.speed` is specified, this option
+     *     is ignored.
      * @param {Function} [options.easing] Transition timing curve
      * @fires movestart
      * @fires moveend
@@ -567,12 +560,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     flyTo: function(options) {
         // This method implements an “optimal path” animation, as detailed in:
         //
-        // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and
-        //   panning.” INFOVIS ’03. pp. 15–22.
-        //   <https://www.win.tue.nl/~vanwijk/zoompan.pdf#page=5>.
+        // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
+        //   ’03. pp. 15–22. <https://www.win.tue.nl/~vanwijk/zoompan.pdf#page=5>.
         //
-        // Where applicable, local variable documentation begins with the
-        // associated variable or function in van Wijk (2003).
+        // Where applicable, local variable documentation begins with the associated variable or
+        // function in van Wijk (2003).
 
         this.stop();
 
@@ -594,9 +586,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         var pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-        // If a path crossing the antimeridian would be shorter, extend the
-        // final coordinate so that interpolating between the two endpoints will
-        // cross it.
+        // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
+        // interpolating between the two endpoints will cross it.
         if (Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
             if (tr.center.lng > 0 && center.lng < 0) {
                 center.lng += 360;
@@ -612,21 +603,18 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var startWorldSize = tr.worldSize,
             rho = options.curve,
 
-            // w₀: Initial visible span, measured in pixels at the initial
-            // scale.
+            // w₀: Initial visible span, measured in pixels at the initial scale.
             w0 = Math.max(tr.width, tr.height),
-            // w₁: Final visible span, measured in pixels with respect to the
-            // initial scale.
+            // w₁: Final visible span, measured in pixels with respect to the initial scale.
             w1 = w0 / scale,
-            // Length of the flight path as projected onto the ground plane,
-            // measured in pixels from the world image origin at the initial
-            // scale.
+            // Length of the flight path as projected onto the ground plane, measured in pixels from
+            // the world image origin at the initial scale.
             u1 = to.sub(from).mag();
 
         if ('minZoom' in options) {
             var minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
-            // w<sub>m</sub>: Maximum visible span, measured in pixels with
-            // respect to the initial scale.
+            // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
+            // scale.
             var wMax = w0 / tr.zoomScale(minZoom - startZoom);
             rho = Math.sqrt(wMax / u1 * 2);
         }
@@ -651,26 +639,23 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         // r₀: Zoom-out factor during ascent.
         var r0 = r(0),
             /**
-             * w(s): Returns the visible span on the ground, measured in pixels
-             * with respect to the initial scale.
+             * w(s): Returns the visible span on the ground, measured in pixels with respect to the
+             * initial scale.
              *
              * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
              */
             w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
             /**
-             * u(s): Returns the distance along the flight path as projected
-             * onto the ground plane, measured in pixels from the world image
-             * origin at the initial scale.
+             * u(s): Returns the distance along the flight path as projected onto the ground plane,
+             * measured in pixels from the world image origin at the initial scale.
              */
             u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; },
             // S: Total length of the flight path, measured in ρ-screenfuls.
             S = (r(1) - r0) / rho;
 
-        // When u₀ = u₁, the optimal path doesn’t require both ascent and
-        // descent.
+        // When u₀ = u₁, the optimal path doesn’t require both ascent and descent.
         if (Math.abs(u1) < 0.000001) {
-            // Perform a more or less instantaneous transition if the path is
-            // too short.
+            // Perform a more or less instantaneous transition if the path is too short.
             if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options);
 
             var k = w1 < w0 ? -1 : 1;
@@ -694,8 +679,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.fire('movestart');
 
         this._ease(function (k) {
-            // s: The distance traveled along the flight path, measured in
-            // ρ-screenfuls.
+            // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             var s = k * S,
                 us = u(s);
 
