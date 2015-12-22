@@ -9,14 +9,14 @@ description: Use setLayoutProperty to change a layer's icon.
 var map = new mapboxgl.Map({
     container: 'map', 
     style: 'mapbox://styles/mapbox/streets-v8', 
-    center: [-91.93, 43.9], 
-    zoom: 7.9 
+    center: [2.34, 48.875], 
+    zoom: 14
 });
 
 map.on('style.load', function () {
     // Specify an icon image from your style's sprite using 
     // setLayoutProperty (layer, name, value)
-    map.setLayoutProperty('place-city-sm', 'icon-image', 'rocket-11');
+    map.setLayoutProperty('rail-label', 'icon-image', 'rail-11');
 });
 
 </script>
