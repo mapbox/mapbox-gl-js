@@ -503,8 +503,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * specified layer via a `ref` property are also removed.
      *
      * @param {string} id layer id
+     * @throws {Error} if no layer with the given `id` exists
      * @fires layer.remove
-     * @returns {Map} this
+     * @returns {Map} `this`
      */
     removeLayer: function(id) {
         this.style.removeLayer(id);
@@ -515,8 +516,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Return the style layer object with the given `id`.
      *
-     * @param {string} id layer ID
-     * @returns {Object}
+     * @param {string} id layer id
+     * @returns {?Object} a layer, if one with the given `id` exists
      */
     getLayer: function(id) {
         return this.style.getLayer(id);

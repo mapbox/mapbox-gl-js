@@ -102,3 +102,51 @@ section section:last-child { border-bottom:none; }
 .hljs-chunk {
   color:#aaa;
   }
+
+/*  -------------------------------------------------------
+ *    Syntax highlighting for prettify
+ *
+ *    Acronym Key
+ *    =====================================================
+ *   .str = string content
+ *   .kwd = keyword
+ *   .com = comment
+ *   .typ = type name
+ *   .lit = literal value
+ *   .pun = punctuation
+ *   .opn = lisp open bracket
+ *   .clo = listp close bracket
+ *   .tag = markup tag name
+ *   .atn = markup attribute name
+ *   .atv = markup attribute value
+ *   .dec = declaration
+ *   .var = variable name
+ *   .fun = function name
+ *
+ *  ------------------------------------------------------- */
+
+/*greys*/
+pre .pln { color:#404040; }
+pre .com { color:#808080; }
+pre .pun,
+pre .opn,
+pre .clo { color:#909090; }
+
+/*rust*/
+pre .fun { color:#DF6637; font-weight:bold; }
+
+/*green*/
+pre .str,
+pre .atv { color:#75A21C; }
+
+/*dark blue*/
+pre .kwd,
+pre .linenums,
+pre .tag { color:#0B5A91; display:inline; }
+
+/*light blue*/
+pre .lit,
+pre .typ,
+pre .atn,
+pre .dec,
+pre .var { color:#0C9DC2; }

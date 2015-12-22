@@ -317,9 +317,10 @@ Style.prototype = util.inherit(Evented, {
     },
 
     /**
-     * Get a layer by id.
-     * @param {string} id id of the desired layer
-     * @returns {Layer} layer
+     * Return the style layer object with the given `id`.
+     *
+     * @param {string} id - id of the desired layer
+     * @returns {?Object} a layer, if one with the given `id` exists
      * @private
      */
     getLayer: function(id) {
