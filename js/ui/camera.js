@@ -533,9 +533,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {number} [options.minZoom] Zero-based zoom level at the peak of the flight path. If
      *     `options.curve` is specified, this option is ignored.
      * @param {number} [options.speed=1.2] Average speed of the animation. A speed of 1.2 means that
-     *     the map appears to move along the flight path by `options.curve` screenfuls every second.
-     *     A _screenful_ is the visible span in pixels. It does not correspond to a fixed physical
-     *     distance but rather varies by zoom level.
+     *     the map appears to move along the flight path by 1.2 times `options.curve` screenfuls every
+     *     second. A _screenful_ is the visible span in pixels. It does not correspond to a fixed
+     *     physical distance but rather varies by zoom level.
      * @param {number} [options.screenSpeed] Average speed of the animation, measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option
      *     is ignored.
