@@ -340,8 +340,6 @@ Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
     gl.switchShader(this.fillShader, this.identityMatrix);
 
-    // Blend to the front, not the back.
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 
@@ -351,9 +349,6 @@ Painter.prototype.drawStencilBuffer = function() {
 
     gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
-
-    // Revert blending mode to blend to the back.
-    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
 
 Painter.prototype.setDepthSublayer = function(n) {
