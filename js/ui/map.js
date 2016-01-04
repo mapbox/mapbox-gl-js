@@ -527,7 +527,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Set the filter for a given style layer.
      *
      * @param {string} layer ID of a layer
-     * @param {Array} filter filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#filter)
+     * @param {Array} filter filter specification, as defined in the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
      * @returns {Map} `this`
      */
     setFilter: function(layer, filter) {
