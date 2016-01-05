@@ -93,11 +93,11 @@ function saturationFactor(saturation) {
 
 function getOpacities(tile, parentTile, layer, transform) {
     var opacity = [1, 0];
+    var fadeDuration = layer.paint['raster-fade-duration'];
 
-    if (tile.source) {
+    if (tile.source && fadeDuration > 0) {
         var now = new Date().getTime();
 
-        var fadeDuration = layer.paint['raster-fade-duration'];
         var sinceTile = (now - tile.timeAdded) / fadeDuration;
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
