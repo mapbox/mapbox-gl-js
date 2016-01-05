@@ -219,8 +219,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var glyphSize = 24;
 
     var fontScale = layout['text-size'] / glyphSize,
+        textMaxSize = layout['text-max-size'] !== undefined ? layout['text-max-size'] : layout['text-size'],
         textBoxScale = this.tilePixelRatio * fontScale,
-        textMaxBoxScale = this.tilePixelRatio * layout['text-max-size'] / glyphSize,
+        textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = this.tilePixelRatio * layout['icon-size'],
         symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
