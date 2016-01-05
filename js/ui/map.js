@@ -122,7 +122,7 @@ var Map = module.exports = function(options) {
 
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
-    if (options.attributionControl) this.addControl(new Attribution());
+    if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
     this.on('style.error', this.onError);
     this.on('source.error', this.onError);
