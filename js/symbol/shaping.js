@@ -32,8 +32,8 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     // the y offset *should* be part of the font metadata
     var yOffset = -17;
 
-    var x = translate[0];
-    var y = translate[1] + yOffset;
+    var x = 0;
+    var y = yOffset;
 
     for (var i = 0; i < text.length; i++) {
         var codePoint = text.charCodeAt(i);
@@ -47,7 +47,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify);
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
 
     return shaping;
 }
@@ -70,7 +70,7 @@ var breakable = {
     0x2013: true  // en dash
 };
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
     var lastSafeBreak = null;
 
     var lengthBeforeCurrentLine = 0;
@@ -127,7 +127,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     var height = (line + 1) * lineHeight;
 
     justifyLine(positionedGlyphs, glyphs, lineStartIndex, positionedGlyphs.length - 1, justify);
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);
+    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate);
 
     // Calculate the bounding box
     shaping.top += -verticalAlign * height;
@@ -146,9 +146,9 @@ function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
 
 }
 
-function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line) {
-    var shiftX = (justify - horizontalAlign) * maxLineLength;
-    var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight;
+function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate) {
+    var shiftX = (justify - horizontalAlign) * maxLineLength + translate[0];
+    var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight + translate[1];
 
     for (var j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;
