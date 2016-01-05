@@ -3,10 +3,10 @@
 module.exports = drawCollisionDebug;
 
 function drawCollisionDebug(painter, layer, coord, tile) {
+    if (!tile.buffers) return;
     if (!tile.elementGroups[layer.ref || layer.id]) return;
     var elementGroups = tile.elementGroups[layer.ref || layer.id].collisionBox;
     if (!elementGroups) return;
-    if (!tile.buffers) return;
 
     var gl = painter.gl;
     var buffer = tile.buffers.collisionBoxVertex;
