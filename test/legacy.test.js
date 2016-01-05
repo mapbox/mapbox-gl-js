@@ -35,14 +35,14 @@ var func = {
     interpolated: function(parameters) {
         var scale = MapboxGLScale(migrate('interpolated', parameters));
         return function(zoom) {
-            return scale({'$zoom': zoom})({});
+            return scale({'$zoom': zoom});
         };
     },
 
     'piecewise-constant': function(parameters) {
         var scale = MapboxGLScale(migrate('piecewise-constant', parameters));
         return function(zoom) {
-            return scale({'$zoom': zoom})({});
+            return scale({'$zoom': zoom});
         };
     }
 };
