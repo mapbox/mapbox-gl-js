@@ -81,7 +81,7 @@ function Bucket(options) {
  * @private
  */
 Bucket.prototype.addFeatures = function() {
-    for (var i = this.features.length - 1; i >= 0; i--) {
+    for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
     }
 };
