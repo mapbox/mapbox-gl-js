@@ -805,8 +805,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
         }
-        this._canvasContainer.remove();
-        this._controlContainer.remove();
+        removeNode(this._canvasContainer);
+        removeNode(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');
     },
 
@@ -941,3 +941,9 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
     get vertices() { return this._vertices; },
     set vertices(value) { this._vertices = value; this._update(); }
 });
+
+function removeNode(node) {
+    if (node.parentNode) {
+        node.parentNode.removeChild(node);
+    }
+}
