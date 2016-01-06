@@ -337,6 +337,57 @@ test('TilePyramid#update', function(t) {
         ]);
         t.end();
     });
+
+    t.test('includes partially covered tiles in rendered tiles', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 2;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+        t.deepEqual(pyramid.orderedIDs(), [
+            new TileCoord(2, 1, 1).id,
+            new TileCoord(2, 2, 1).id,
+            new TileCoord(2, 1, 2).id,
+            new TileCoord(2, 2, 2).id
+        ]);
+
+        transform.zoom = 0;
+        pyramid.update(true, transform, 100);
+
+        t.deepEqual(pyramid.renderedIDs().length, 5);
+        t.end();
+    });
+
+    t.test('retains a parent tile for fading even if a tile is partially covered by children', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 2;
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform, 100);
+
+        t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+        t.end();
+    });
 });
 
 test('TilePyramid#clearTiles', function(t) {
