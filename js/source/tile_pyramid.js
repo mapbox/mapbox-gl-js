@@ -137,7 +137,7 @@ TilePyramid.prototype = {
 
     /**
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
-     * adds found tiles to retain object; returns true if children completely cover the tile
+     * adds found tiles to retain object; returns true if any child is found.
      *
      * @param {Coordinate} coord
      * @param {number} maxCoveringZoom
@@ -241,18 +241,31 @@ TilePyramid.prototype = {
             }
         }
 
-        for (var id in retain) {
+        var parentsForFading = {};
+
+        var ids = Object.keys(retain);
+        for (var k = 0; k < ids.length; k++) {
+            var id = ids[k];
             coord = TileCoord.fromID(id);
             tile = this._tiles[id];
             if (tile && tile.timeAdded > now - (fadeDuration || 0)) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                    this._coveredTiles[id] = true;
                     retain[id] = true;
-                } else {
-                    this.findLoadedParent(coord, minCoveringZoom, retain);
                 }
+                this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
             }
+        }
+
+        var fadedParent;
+        for (fadedParent in parentsForFading) {
+            if (!retain[fadedParent]) {
+                // If a tile is only needed for fading, mark it as covered so that it isn't rendered on it's own.
+                this._coveredTiles[fadedParent] = true;
+            }
+        }
+        for (fadedParent in parentsForFading) {
+            retain[fadedParent] = true;
         }
 
         // Remove the tiles we don't need anymore.
