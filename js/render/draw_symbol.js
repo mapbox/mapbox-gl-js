@@ -124,8 +124,10 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         elements = tile.buffers.glyphElement;
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
-        painter.spriteAtlas.bind(gl, alignedWithMap || painter.options.rotating ||
-            painter.options.zooming || fontScale !== 1 || sdf || painter.transform.pitch);
+        var mapMoving = painter.options.rotating || painter.options.zooming;
+        var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio;
+        var iconTransformed = alignedWithMap || painter.transform.pitch;
+        painter.spriteAtlas.bind(gl, sdf || mapMoving || iconScaled || iconTransformed);
         vertex = tile.buffers.iconVertex;
         elements = tile.buffers.iconElement;
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
