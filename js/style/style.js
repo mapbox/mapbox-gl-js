@@ -446,6 +446,11 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _forwardTileEvent: function(e) {
+        if (e.type === 'tile.load') {
+            if (this.loaded()) {
+                this.fire('tiles.loaded');
+            }
+        }
         this.fire(e.type, util.extend({source: e.target}, e));
     },
 
