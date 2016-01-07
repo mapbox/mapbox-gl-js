@@ -805,8 +805,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
         }
-        this._canvasContainer.remove();
-        this._controlContainer.remove();
+        this._canvasContainer.parentNode.removeChild(this._canvasContainer);
+        this._controlContainer.parentNode.removeChild(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');
     },
 
