@@ -459,6 +459,37 @@ test('Style#addLayer', function(t) {
         });
     });
 
+
+    t.test('fires quiesce after tiles load', function(t) {
+        var style = new Style(createStyleJSON());
+        style.loaded = function() { return true; };
+        style.on('quiesce', function() {
+            t.end();
+        });
+        style._forwardTileEvent({type: 'tile.load'});
+    });
+
+    t.test('not firing quiesce after tiles load', function(t) {
+        var style = new Style(createStyleJSON());
+        style.loaded = function() { return false; };
+        style.on('quiesce', function() {
+            t.ok(false);
+        });
+        style._forwardTileEvent({type: 'tile.load'});
+        t.end();
+    });
+
+    t.test('fires quiesce after sprite load', function(t) {
+        var style = new Style(createStyleJSON({sprite: 'http://sprites/mapbox/bright-v8'}));
+        style.loaded = function() { return true; };
+        style.on('quiesce', function() {
+            t.end();
+        });
+        style.on('load', function() { style.sprite.fire('load'); });
+    });
+
+    // doesn't fire quiesce unless loaded is true
+
     t.test('throws on duplicates', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};

@@ -64,8 +64,13 @@ function Style(stylesheet, animationLoop) {
         if (stylesheet.sprite) {
             this.sprite = new ImageSprite(stylesheet.sprite);
             this.sprite.on('load', this.fire.bind(this, 'change'));
+            var style = this;
+            this.sprite.on('load', function() {
+                if (style.loaded()) {
+                    style.fire('quiesce');
+                }
+            });
         }
-
         this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
         this._resolve();
         this.fire('load');
@@ -448,7 +453,7 @@ Style.prototype = util.inherit(Evented, {
     _forwardTileEvent: function(e) {
         if (e.type === 'tile.load') {
             if (this.loaded()) {
-                this.fire('tiles.loaded');
+                this.fire('quiesce');
             }
         }
         this.fire(e.type, util.extend({source: e.target}, e));
