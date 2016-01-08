@@ -232,6 +232,29 @@ test('TilePyramid#removeTile', function(t) {
     });
 });
 
+test('TilePyramid#tileAt', function(t) {
+    var pyramid = createPyramid({
+        load: function(tile) { tile.loaded = true; },
+        minzoom: 1,
+        maxzoom: 10,
+        tileSize: 512
+    });
+
+    var transform = new Transform();
+    transform.resize(512, 512);
+    transform.zoom = 1.5;
+    pyramid.update(true, transform);
+
+    var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+
+    t.deepEqual(result.tile.coord.id, 65);
+    t.deepEqual(result.scale, 724.0773439350247);
+    t.deepEqual(result.x, 0);
+    t.deepEqual(result.y, 2048);
+
+    t.end();
+});
+
 test('TilePyramid#update', function(t) {
     t.test('loads no tiles if used is false', function(t) {
         var transform = new Transform();
@@ -451,7 +474,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: 2048,
             maxX: 6144,
@@ -463,7 +487,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: -2048,
             maxX: 2048,

@@ -273,6 +273,8 @@ TilePyramid.prototype = {
         for (i = 0; i < remove.length; i++) {
             this.removeTile(+remove[i]);
         }
+
+        this.transform = transform;
     },
 
     /**
@@ -299,7 +301,7 @@ TilePyramid.prototype = {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling);
+            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
             this._load(tile);
         }
 
@@ -357,7 +359,7 @@ TilePyramid.prototype = {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
-            var pos = tile.positionAt(coord, this.maxzoom);
+            var pos = tile.positionAt(coord);
             if (pos && pos.x >= 0 && pos.x < tile.tileExtent && pos.y >= 0 && pos.y < tile.tileExtent) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
@@ -365,7 +367,7 @@ TilePyramid.prototype = {
                     tile: tile,
                     x: pos.x,
                     y: pos.y,
-                    scale: pos.scale
+                    scale: this.transform.worldSize / Math.pow(2, tile.coord.z)
                 };
             }
         }
@@ -385,8 +387,8 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var tileSpaceBounds = [
-                tile.positionAt(bounds[0], this.maxzoom),
-                tile.positionAt(bounds[1], this.maxzoom)
+                tile.positionAt(bounds[0]),
+                tile.positionAt(bounds[1])
             ];
             if (tileSpaceBounds[0].x < tile.tileExtent && tileSpaceBounds[0].y < tile.tileExtent &&
                 tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
