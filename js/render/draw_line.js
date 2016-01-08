@@ -141,10 +141,11 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.setExMatrix(painter.transform.exMatrix);
         var ratio = painter.transform.scale / (1 << coord.z) / (4096 / tile.tileSize);
 
-        // how much the tile is overscaled by
-        var overscaling = tile.tileSize / painter.transform.tileSize;
 
         if (dasharray) {
+            // how much the tile is overscaled by
+            var overscaling = tile.tileSize / painter.transform.tileSize;
+
             var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - coord.z) / 8 * overscaling;
             var scaleA = [patternratio / posA.width / dasharray.fromScale, -posA.height / 2];
             var gammaA = painter.lineAtlas.width / (dasharray.fromScale * posA.width * 256 * browser.devicePixelRatio) / 2;
@@ -156,7 +157,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(shader.u_sdfgamma, Math.max(gammaA, gammaB));
 
         } else if (image) {
-            var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - coord.z) * overscaling;
+            var factor = 4096 / tile.tileSize / Math.pow(2, painter.transform.tileZoom - coord.z);
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
             gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);
