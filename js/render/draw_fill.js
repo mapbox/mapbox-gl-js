@@ -135,17 +135,37 @@ function drawFill(painter, source, layer, coord) {
         gl.uniform1f(shader.u_opacity, opacity);
         gl.uniform1f(shader.u_mix, image.t);
 
-        var factor = (4096 / tile.tileSize) / Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+        var scale = Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+        var factor = 4096 / tile.tileSize;
+
+        var imageSizeScaledA = [
+            (imagePosA.size[0] * image.fromScale) / scale,
+            (imagePosA.size[1] * image.fromScale) / scale
+        ];
+        var imageSizeScaledB = [
+            (imagePosB.size[0] * image.toScale) / scale,
+            (imagePosB.size[1] * image.toScale) / scale
+        ];
 
         gl.uniform2fv(shader.u_patternscale_a, [
-            1 / (imagePosA.size[0] * factor * image.fromScale),
-            1 / (imagePosA.size[1] * factor * image.fromScale)
+            1 / (imageSizeScaledA[0] * factor),
+            1 / (imageSizeScaledA[1] * factor)
         ]);
 
         gl.uniform2fv(shader.u_patternscale_b, [
-            1 / (imagePosB.size[0] * factor * image.toScale),
-            1 / (imagePosB.size[1] * factor * image.toScale)
+            1 / (imageSizeScaledB[0] * factor),
+            1 / (imageSizeScaledB[1] * factor)
         ]);
+
+        // shift images to match at tile boundaries
+        var offsetAx = ((tile.tileSize % imageSizeScaledA[0]) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z))) / imageSizeScaledA[0];
+        var offsetAy = ((tile.tileSize % imageSizeScaledA[1]) * tile.coord.y) / imageSizeScaledA[1];
+
+        var offsetBx = ((tile.tileSize % imageSizeScaledB[0]) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z))) / imageSizeScaledB[0];
+        var offsetBy = ((tile.tileSize % imageSizeScaledB[1]) * tile.coord.y) / imageSizeScaledB[1];
+
+        gl.uniform2fv(shader.u_offset_a, [offsetAx, offsetAy]);
+        gl.uniform2fv(shader.u_offset_b, [offsetBx, offsetBy]);
 
         painter.spriteAtlas.bind(gl, true);
 
