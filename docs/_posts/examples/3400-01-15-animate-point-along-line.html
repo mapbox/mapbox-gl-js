@@ -1,12 +1,11 @@
 ---
 layout: example
 category: example
-title: Animate a point along a line
-description: Create a marker and animate its position along the length of a <code>lineString</code> by looking up its coordinates.
+title: Animate a point
+description: Animate the position of a point by updating a GeoJSON source on each frame.
 ---
 <div id='map'></div>
 <script>
-
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v8',
@@ -15,97 +14,44 @@ var map = new mapboxgl.Map({
 });
 
 var radius = 20;
-var segments = 100;
-function circleSegment(pos) {
-    return [
-        Math.cos((pos / segments) * Math.PI * 2) * radius,
-        Math.sin((pos / segments) * Math.PI * 2) * radius
-    ]
-}
 
-var point = {
-    "type": "Feature",
-    "geometry": {
+function pointOnCircle(angle) {
+    return {
         "type": "Point",
-        "coordinates": circleSegment(0) // Place marker on first circle segment.
-    }
-};
-
-var lineString = {
-    "type": "Feature",
-    "geometry": {
-        "type": "LineString",
-        "coordinates": []
-    }
-};
-
-for (var i = 0; i < segments; i++) {
-    lineString.geometry.coordinates.push(circleSegment(i));
+        "coordinates": [
+            Math.cos(angle) * radius,
+            Math.sin(angle) * radius
+        ]
+    };
 }
 
-// Complete the circle by appending it's original position.
-lineString.geometry.coordinates.push(circleSegment(0));
-
-var styles = [{
-  "id": "line-example",
-  "type": 'line',
-  "source": 'geojson',
-  "filter": ["in", "$type", "LineString"],
-  "layout": {
-      "line-cap": "round",
-      "line-join": "round"
-  },
-  "paint": {
-      "line-color": '#007cbf',
-      "line-width": 4
-  }
-}, {
-  "id": "point-example",
-  "type": "circle",
-  "source": "geojson",
-  "filter": ["in", "$type", "Point"],
-  "paint": {
-      "circle-radius": 10,
-      "circle-color": "#007cbf"
-  }
-}];
-
-map.on('load', function() {
-
-    // Add GeoJSON data to the map giving it a source name:`geojson`.
-    map.addSource('geojson', {
+map.on('load', function () {
+    // Add a source and layer displaying a point which will be animated in a circle.
+    map.addSource('point', {
         "type": "geojson",
-        "data":  {
-            "type": "FeatureCollection",
-            "features": [ lineString, point ]
+        "data": pointOnCircle(0)
+    });
+
+    map.addLayer({
+        "id": "point",
+        "source": "point",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#007cbf"
         }
     });
 
-    // Apply a style to the `geojson` layer.
-    styles.forEach(function(style) {
-        map.addLayer(style);
-    });
+    function animateMarker(timestamp) {
+        // Update the data to a new position based on the animation timestamp. The
+        // divisor in the expression `timestamp / 1000` controls the animation speed.
+        map.getSource('point').setData(pointOnCircle(timestamp / 1000));
 
-    // Animate the point along the line by updating its coordinates.
-    var index = 0;
-
-    function animateMarker() {
-        // Set point to the coordinates as one of the segments on the line.
-        point.geometry.coordinates = lineString.geometry.coordinates[index];
-
-        // Update the layer.
-        map.getSource('geojson').setData({
-            "type": "FeatureCollection",
-            "features": [ lineString, point ]
-        });
-
-        // Move to the next point on the line every 100ms. When `index` reaches
-        // the length of the array, reset to the beginning.
-        if (++index === lineString.geometry.coordinates.length) index = 0;
+        // Request the next frame of the animation.
         requestAnimationFrame(animateMarker);
     }
 
-    // Start the animation cycle
-    animateMarker();
+    // Start the animation.
+    animateMarker(0);
 });
 </script>
