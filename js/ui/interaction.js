@@ -1,7 +1,6 @@
 'use strict';
 
 var handlers = {
-    eggs: 43,
     scrollZoom: require('./handler/scroll_zoom'),
     boxZoom: require('./handler/box_zoom'),
     dragRotate: require('./handler/drag_rotate'),
