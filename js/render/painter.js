@@ -4,6 +4,7 @@ var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
+var TileCoord = require('../source/tile_coord');
 
 /*
  * Initialize a new painter object.
@@ -21,6 +22,11 @@ function Painter(gl, transform) {
     this.frameHistory = new FrameHistory();
 
     this.setup();
+
+    // Within each layer there are 3 distinct z-planes that can be drawn to.
+    // This is implemented using the WebGL depth buffer.
+    this.numSublayers = 3;
+    this.depthEpsilon = 1 / Math.pow(2, 16);
 }
 
 /*
@@ -45,9 +51,15 @@ Painter.prototype.setup = function() {
     // We are blending the new pixels *behind* the existing pixels. That way we can
     // draw front-to-back and use then stencil buffer to cull opaque pixels early.
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.enable(gl.STENCIL_TEST);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+
+    this._depthMask = false;
+    gl.depthMask(false);
 
     // Initialize shaders
     this.debugShader = gl.initializeShader('debug',
@@ -64,7 +76,7 @@ Painter.prototype.setup = function() {
 
     this.lineShader = gl.initializeShader('line',
         ['a_pos', 'a_data'],
-        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix', 'u_offset']);
+        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix', 'u_offset', 'u_exmatrix']);
 
     this.linepatternShader = gl.initializeShader('linepattern',
         ['a_pos', 'a_data'],
@@ -93,7 +105,7 @@ Painter.prototype.setup = function() {
 
     this.patternShader = gl.initializeShader('pattern',
         ['a_pos'],
-        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternmatrix_a', 'u_patternmatrix_b', 'u_opacity', 'u_image']
+        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternscale_a', 'u_patternscale_b', 'u_opacity', 'u_image', 'u_offset_a', 'u_offset_b']
     );
 
     this.fillShader = gl.initializeShader('fill',
@@ -186,35 +198,49 @@ Painter.prototype.clearStencil = function() {
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
-Painter.prototype.drawClippingMask = function(tile) {
+Painter.prototype.clearDepth = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, tile.posMatrix);
+    gl.clearDepth(1);
+    this.depthMask(true);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+};
+
+Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
+    var gl = this.gl;
     gl.colorMask(false, false, false, false);
+    this.depthMask(false);
+    gl.disable(gl.DEPTH_TEST);
 
-    // Clear the entire stencil buffer, except for the 7th bit, which stores
-    // the global clipping mask that allows us to avoid drawing in regions of
-    // tiles we've already painted in.
-    gl.clearStencil(0x0);
-    gl.stencilMask(0xBF);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
-
-    // The stencil test will fail always, meaning we set all pixels covered
-    // by this geometry to 0x80. We use the highest bit 0x80 to mark the regions
-    // we want to draw in. All pixels that have this bit *not* set will never be
-    // drawn in.
-    gl.stencilFunc(gl.EQUAL, 0xC0, 0x40);
-    gl.stencilMask(0xC0);
-    gl.stencilOp(gl.REPLACE, gl.KEEP, gl.KEEP);
-
-    // Draw the clipping mask
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
-
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
+    // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
+    gl.stencilMask(0xF8);
+    // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+
+    var idNext = 1;
+    this._tileClippingMaskIDs = {};
+    for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
+        var id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
+
+        gl.stencilFunc(gl.ALWAYS, id, 0xF8);
+
+        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, sourceMaxZoom));
+
+        // Draw the clipping mask
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
+        gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
+    }
+
     gl.stencilMask(0x00);
     gl.colorMask(true, true, true, true);
+    this.depthMask(true);
+    gl.enable(gl.DEPTH_TEST);
+};
+
+Painter.prototype.enableTileClippingMask = function(coord) {
+    var gl = this.gl;
+    gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
 };
 
 // Overridden by headless tests.
@@ -231,8 +257,7 @@ var draw = {
     fill: require('./draw_fill'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
-    debug: require('./draw_debug'),
-    vertices: require('./draw_vertices')
+    debug: require('./draw_debug')
 };
 
 Painter.prototype.render = function(style, options) {
@@ -251,44 +276,63 @@ Painter.prototype.render = function(style, options) {
 
     this.prepareBuffers();
     this.clearColor();
+    this.clearDepth();
 
-    for (var i = style._groups.length - 1; i >= 0; i--) {
-        var group = style._groups[i];
-        var source = style.sources[group.source];
+    this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
+    this.renderPass({isOpaquePass: true});
+    this.renderPass({isOpaquePass: false});
+};
+
+Painter.prototype.renderPass = function(options) {
+    var groups = this.style._groups;
+    var isOpaquePass = options.isOpaquePass;
+    this.currentLayer = isOpaquePass ? this.style._order.length : -1;
+
+    for (var i = 0; i < groups.length; i++) {
+        var group = groups[isOpaquePass ? groups.length - 1 - i : i];
+        var source = this.style.sources[group.source];
+
+        var coords = [];
         if (source) {
+            coords = source.getVisibleCoordinates();
             this.clearStencil();
-            source.render(group, this);
-
-        } else if (group.source === undefined) {
-            this.drawLayers(group, this.identityMatrix);
+            if (source.prepare) source.prepare();
+            if (source.isTileClipped) {
+                this._renderTileClippingMasks(coords, source.maxzoom);
+            }
         }
+
+        if (isOpaquePass) {
+            this.gl.disable(this.gl.BLEND);
+            this.isOpaquePass = true;
+        } else {
+            this.gl.enable(this.gl.BLEND);
+            this.isOpaquePass = false;
+            coords.reverse();
+        }
+
+        for (var j = 0; j < group.length; j++) {
+            var layer = group[isOpaquePass ? group.length - 1 - j : j];
+            this.currentLayer += isOpaquePass ? -1 : 1;
+            this.renderLayer(this, source, layer, coords);
+        }
+
+        draw.debug(this, coords);
     }
 };
 
-Painter.prototype.drawTile = function(tile, layers) {
-    this.setExtent(tile.tileExtent);
-    this.drawClippingMask(tile);
-    this.drawLayers(layers, tile.posMatrix, tile);
-
-    if (this.options.debug) {
-        draw.debug(this, tile);
+Painter.prototype.depthMask = function(mask) {
+    if (mask !== this._depthMask) {
+        this._depthMask = mask;
+        this.gl.depthMask(mask);
     }
 };
 
-Painter.prototype.drawLayers = function(layers, matrix, tile) {
-    for (var i = layers.length - 1; i >= 0; i--) {
-        var layer = layers[i];
-
-        if (layer.hidden)
-            continue;
-
-        draw[layer.type](this, layer, matrix, tile);
-
-        if (this.options.vertices) {
-            draw.vertices(this, layer, matrix, tile);
-        }
-    }
+Painter.prototype.renderLayer = function(painter, source, layer, coords) {
+    if (layer.hidden) return;
+    if (layer.type !== 'background' && !coords.length) return;
+    draw[layer.type](painter, source, layer, coords);
 };
 
 // Draws non-opaque areas. This is for debugging purposes.
@@ -296,8 +340,6 @@ Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
     gl.switchShader(this.fillShader, this.identityMatrix);
 
-    // Blend to the front, not the back.
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 
@@ -307,12 +349,15 @@ Painter.prototype.drawStencilBuffer = function() {
 
     gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
-
-    // Revert blending mode to blend to the back.
-    gl.blendFunc(gl.ONE_MINUS_DST_ALPHA, gl.ONE);
 };
 
-Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
+Painter.prototype.setDepthSublayer = function(n) {
+    var farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+    var nearDepth = farDepth - 1 + this.depthRange;
+    this.gl.depthRange(nearDepth, farDepth);
+};
+
+Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor) {
     if (!translate[0] && !translate[1]) return matrix;
 
     if (anchor === 'viewport') {
@@ -334,6 +379,43 @@ Painter.prototype.translateMatrix = function(matrix, tile, translate, anchor) {
     var translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
+};
+
+/**
+ * Calculate the posMatrix that this tile uses to display itself in a map,
+ * given a coordinate as (z, x, y) and a transform
+ * @param {Object} transform
+ * @private
+ */
+Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
+    var tileExtent = 4096;
+    if (coord instanceof TileCoord) {
+        coord = coord.toCoordinate();
+    }
+    var transform = this.transform;
+
+    if (maxZoom === undefined) maxZoom = Infinity;
+
+    // Initialize model-view matrix that converts from the tile coordinates
+    // to screen coordinates.
+
+    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
+    // so calculate the matrix the maxzoom tile would use.
+    var z = Math.min(coord.zoom, maxZoom);
+    var x = coord.column;
+    var y = coord.row;
+
+    var scale = transform.worldSize / Math.pow(2, z);
+
+    // The position matrix
+    var posMatrix = new Float64Array(16);
+
+    mat4.identity(posMatrix);
+    mat4.translate(posMatrix, posMatrix, [x * scale, y * scale, 0]);
+    mat4.scale(posMatrix, posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.multiply(posMatrix, transform.projMatrix, posMatrix);
+
+    return new Float32Array(posMatrix);
 };
 
 Painter.prototype.saveTexture = function(texture) {

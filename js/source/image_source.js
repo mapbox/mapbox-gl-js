@@ -30,8 +30,6 @@ module.exports = ImageSource;
  * map.removeSource('some id');  // remove
  */
 function ImageSource(options) {
-    this.coordinates = options.coordinates;
-
     ajax.getImage(options.url, function(err, image) {
         // @TODO handle errors via event.
         if (err) return;
@@ -45,7 +43,7 @@ function ImageSource(options) {
         this._loaded = true;
 
         if (this.map) {
-            this.createTile();
+            this.createTile(options.coordinates);
             this.fire('change');
         }
     }.bind(this));
@@ -65,20 +63,20 @@ ImageSource.prototype = util.inherit(Evented, {
      * may be outside the tile, because raster tiles aren't clipped when rendering.
      * @private
      */
-    createTile: function() {
+    createTile: function(cornerGeoCoords) {
         var map = this.map;
-        var coords = this.coordinates.map(function(lnglat) {
-            var loc = LngLat.convert(lnglat);
-            return map.transform.locationCoordinate(loc).zoomTo(0);
+        var cornerZ0Coords = cornerGeoCoords.map(function(coord) {
+            return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
-        var center = util.getCoordinatesCenter(coords);
+        var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+
         var tileExtent = 4096;
-        var tileCoords = coords.map(function(coord) {
-            var zoomedCoord = coord.zoomTo(center.zoom);
+        var tileCoords = cornerZ0Coords.map(function(coord) {
+            var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
-                Math.round((zoomedCoord.column - center.column) * tileExtent),
-                Math.round((zoomedCoord.row - center.row) * tileExtent));
+                Math.round((zoomedCoord.column - centerCoord.column) * tileExtent),
+                Math.round((zoomedCoord.row - centerCoord.row) * tileExtent));
         });
 
         var gl = map.painter.gl;
@@ -96,8 +94,6 @@ ImageSource.prototype = util.inherit(Evented, {
         this.tile.boundsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
-
-        this.center = center;
     },
 
     loaded: function() {
@@ -112,12 +108,10 @@ ImageSource.prototype = util.inherit(Evented, {
         // noop
     },
 
-    render: function(layers, painter) {
+    prepare: function() {
         if (!this._loaded || !this.loaded()) return;
 
-        var c = this.center;
-        this.tile.calculateMatrices(c.zoom, c.column, c.row, this.map.transform, painter);
-
+        var painter = this.map.painter;
         var gl = painter.gl;
 
         if (!this.tile.texture) {
@@ -132,8 +126,15 @@ ImageSource.prototype = util.inherit(Evented, {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         }
+    },
 
-        painter.drawLayers(layers, this.tile.posMatrix, this.tile);
+    getVisibleCoordinates: function() {
+        if (this.centerCoord) return [this.centerCoord];
+        else return [];
+    },
+
+    getTile: function() {
+        return this.tile;
     },
 
     /**

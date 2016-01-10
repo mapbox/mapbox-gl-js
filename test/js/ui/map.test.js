@@ -217,11 +217,17 @@ test('Map', function(t) {
             removedCanvas,
             removedControls;
 
-        map._canvasContainer.remove = function () {
-            removedCanvas = true;
+        map._canvasContainer.parentNode = {
+            removeChild: function (child) {
+                t.equal(child, map._canvasContainer);
+                removedCanvas = true;
+            }
         };
-        map._controlContainer.remove = function () {
-            removedControls = true;
+        map._controlContainer.parentNode = {
+            removeChild: function (child) {
+                t.equal(child, map._controlContainer);
+                removedControls = true;
+            }
         };
 
         t.equal(map.remove(), undefined);

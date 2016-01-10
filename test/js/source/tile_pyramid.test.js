@@ -232,6 +232,29 @@ test('TilePyramid#removeTile', function(t) {
     });
 });
 
+test('TilePyramid#tileAt', function(t) {
+    var pyramid = createPyramid({
+        load: function(tile) { tile.loaded = true; },
+        minzoom: 1,
+        maxzoom: 10,
+        tileSize: 512
+    });
+
+    var transform = new Transform();
+    transform.resize(512, 512);
+    transform.zoom = 1.5;
+    pyramid.update(true, transform);
+
+    var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+
+    t.deepEqual(result.tile.coord.id, 65);
+    t.deepEqual(result.scale, 724.0773439350247);
+    t.deepEqual(result.x, 0);
+    t.deepEqual(result.y, 2048);
+
+    t.end();
+});
+
 test('TilePyramid#update', function(t) {
     t.test('loads no tiles if used is false', function(t) {
         var transform = new Transform();
@@ -337,6 +360,57 @@ test('TilePyramid#update', function(t) {
         ]);
         t.end();
     });
+
+    t.test('includes partially covered tiles in rendered tiles', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 2;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+        t.deepEqual(pyramid.orderedIDs(), [
+            new TileCoord(2, 1, 1).id,
+            new TileCoord(2, 2, 1).id,
+            new TileCoord(2, 1, 2).id,
+            new TileCoord(2, 2, 2).id
+        ]);
+
+        transform.zoom = 0;
+        pyramid.update(true, transform, 100);
+
+        t.deepEqual(pyramid.renderedIDs().length, 5);
+        t.end();
+    });
+
+    t.test('retains a parent tile for fading even if a tile is partially covered by children', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 2;
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform, 100);
+
+        t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+        t.end();
+    });
 });
 
 test('TilePyramid#clearTiles', function(t) {
@@ -400,7 +474,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: 2048,
             maxX: 6144,
@@ -412,7 +487,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: -2048,
             maxX: 2048,

@@ -61,10 +61,6 @@ exports.extend = function(context) {
 
     // Switches to a different shader program.
     context.switchShader = function(shader, posMatrix, exMatrix) {
-        if (!posMatrix) {
-            console.trace('posMatrix does not have required argument');
-        }
-
         if (this.currentShader !== shader) {
             this.useProgram(shader.program);
 
@@ -89,19 +85,31 @@ exports.extend = function(context) {
             this.currentShader = shader;
         }
 
-        // Update the matrices if necessary. Note: This relies on object identity!
-        // This means changing the matrix values without the actual matrix object
-        // will FAIL to update the matrix properly.
+        if (posMatrix !== undefined) context.setPosMatrix(posMatrix);
+        if (exMatrix !== undefined) context.setExMatrix(exMatrix);
+    };
+
+    // Update the matrices if necessary. Note: This relies on object identity!
+    // This means changing the matrix values without the actual matrix object
+    // will FAIL to update the matrix properly.
+    context.setPosMatrix = function(posMatrix) {
+        var shader = this.currentShader;
         if (shader.posMatrix !== posMatrix) {
             this.uniformMatrix4fv(shader.u_matrix, false, posMatrix);
             shader.posMatrix = posMatrix;
         }
+    };
+
+    // Update the matrices if necessary. Note: This relies on object identity!
+    // This means changing the matrix values without the actual matrix object
+    // will FAIL to update the matrix properly.
+    context.setExMatrix = function(exMatrix) {
+        var shader = this.currentShader;
         if (exMatrix && shader.exMatrix !== exMatrix && shader.u_exmatrix) {
             this.uniformMatrix4fv(shader.u_exmatrix, false, exMatrix);
             shader.exMatrix = exMatrix;
         }
     };
-
 
     context.vertexAttrib2fv = function(attribute, values) {
         context.vertexAttrib2f(attribute, values[0], values[1]);

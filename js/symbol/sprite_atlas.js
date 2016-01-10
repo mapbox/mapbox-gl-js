@@ -118,7 +118,8 @@ SpriteAtlas.prototype.allocateImage = function(pixelWidth, pixelHeight) {
     // We have to allocate a new area in the bin, and store an empty image in it.
     // Add a 1px border around every image.
     var rect = this.bin.allocate(packWidth, packHeight);
-    if (rect.w === 0) {
+    if (rect.x < 0) {
+        console.warn('SpriteAtlas out of space.');
         return rect;
     }
 
@@ -145,7 +146,7 @@ SpriteAtlas.prototype.getImage = function(name, wrap) {
     var width = pos.width / pos.pixelRatio;
     var height = pos.height / pos.pixelRatio;
     var rect = this.allocateImage(width, height);
-    if (rect.w === 0) {
+    if (rect.x < 0) {
         return rect;
     }
 
