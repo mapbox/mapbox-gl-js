@@ -244,12 +244,37 @@ Bucket.prototype.createFilter = function() {
 
 var createVertexAddMethodCache = {};
 function createVertexAddMethod(programName, programInterface, bufferName) {
+    var body = '';
+
     var pushArgs = [];
     for (var i = 0; i < programInterface.attributes.length; i++) {
-        pushArgs = pushArgs.concat(programInterface.attributes[i].value);
+        var attribute = programInterface.attributes[i];
+
+        var attributePushArgs = [];
+        if (Array.isArray(attribute.value)) {
+            attributePushArgs = attribute.value;
+        } else {
+            var attributeId = '_' + i;
+            body += 'var ' + attributeId + ' = ' + attribute.value + ';';
+            for (var j = 0; j < attribute.components; j++) {
+                attributePushArgs.push(attributeId + '[' + j + ']');
+            }
+        }
+
+        var multipliedAttributePushArgs;
+        if (attribute.multiplier) {
+            multipliedAttributePushArgs = [];
+            for (var k = 0; k < attributePushArgs.length; k++) {
+                multipliedAttributePushArgs[k] = attributePushArgs[k] + '*' + attribute.multiplier;
+            }
+        } else {
+            multipliedAttributePushArgs = attributePushArgs;
+        }
+
+        pushArgs = pushArgs.concat(multipliedAttributePushArgs);
     }
 
-    var body = 'return this.arrays.' + bufferName + '.emplaceBack(' + pushArgs.join(', ') + ');';
+    body += 'return this.arrays.' + bufferName + '.emplaceBack(' + pushArgs.join(',') + ');';
 
     if (!createVertexAddMethodCache[body]) {
         createVertexAddMethodCache[body] = new Function(programInterface.attributeArgs, body);
