@@ -40,7 +40,7 @@ function drawSymbols(painter, source, layer, coords) {
 
         posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons);
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
     }
 
     for (var j = 0; j < coords.length; j++) {
@@ -53,7 +53,7 @@ function drawSymbols(painter, source, layer, coords) {
 
         posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true);
+        drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }
 
     for (var k = 0; k < coords.length; k++) {
@@ -73,7 +73,7 @@ var defaultSizes = {
     text: 24
 };
 
-function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf) {
+function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf, iconsNeedLinear) {
     var gl = painter.gl;
 
     posMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
@@ -125,7 +125,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf)
         texsize = [painter.glyphAtlas.width / 4, painter.glyphAtlas.height / 4];
     } else {
         var mapMoving = painter.options.rotating || painter.options.zooming;
-        var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio;
+        var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
         var iconTransformed = alignedWithMap || painter.transform.pitch;
         painter.spriteAtlas.bind(gl, sdf || mapMoving || iconScaled || iconTransformed);
         vertex = tile.buffers.iconVertex;

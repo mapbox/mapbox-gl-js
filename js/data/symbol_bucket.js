@@ -117,6 +117,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     this.tilePixelRatio = tileExtent / tileSize;
     this.compareText = {};
     this.symbolInstances = [];
+    this.iconsNeedLinear = false;
 
     var layout = this.layoutProperties;
     var features = this.features;
@@ -199,6 +200,9 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
                     this.sdfIcons = image.sdf;
                 } else if (this.sdfIcons !== image.sdf) {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
+                }
+                if (image.pixelRatio !== 1) {
+                    this.iconsNeedLinear = true;
                 }
             }
         } else {
@@ -307,7 +311,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var elementGroups = this.elementGroups = {
         glyph: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
         icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
-        sdfIcons: this.sdfIcons
+        sdfIcons: this.sdfIcons,
+        iconsNeedLinear: this.iconsNeedLinear
     };
 
     var layout = this.layoutProperties;
