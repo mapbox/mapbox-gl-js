@@ -22,6 +22,8 @@ public:
     Uniform<GLint>                  u_image           = {"u_image",           *this};
     UniformMatrix<3>                u_patternmatrix_a = {"u_patternmatrix_a", *this};
     UniformMatrix<3>                u_patternmatrix_b = {"u_patternmatrix_b", *this};
+    Uniform<std::array<GLfloat, 2>> u_offset_a        = {"u_offset_a",        *this};
+    Uniform<std::array<GLfloat, 2>> u_offset_b        = {"u_offset_b",        *this};
 };
 
 } // namespace mbgl
