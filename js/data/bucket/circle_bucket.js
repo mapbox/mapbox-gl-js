@@ -35,6 +35,17 @@ CircleBucket.prototype.programInterfaces = {
                 '(x * 2) + ((extrudeX + 1) / 2)',
                 '(y * 2) + ((extrudeY + 1) / 2)'
             ]
+        }, {
+            name: 'color',
+            components: 4,
+            type: 'Uint8',
+            value: (
+                'this._premultiplyColor(' +
+                    'this.layer.paint["circle-color"],' +
+                    'this.layer.paint["circle-opacity"]' +
+                ')'
+            ),
+            multiplier: 255
         }]
     }
 };

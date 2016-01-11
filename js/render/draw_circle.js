@@ -1,7 +1,6 @@
 'use strict';
 
 var browser = require('../util/browser');
-var util = require('../util/util');
 
 module.exports = drawCircles;
 
@@ -27,10 +26,6 @@ function drawCircles(painter, source, layer, coords) {
 
     gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
     gl.uniform1f(program.u_size, layer.paint['circle-radius']);
-
-    var color = util.premultiply(layer.paint['circle-color'], layer.paint['circle-opacity']).map(function(v) { return v * 255; });
-    gl.disableVertexAttribArray(program.a_color);
-    gl.vertexAttrib4fv(program.a_color, color);
 
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
