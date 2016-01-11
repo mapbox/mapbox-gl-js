@@ -231,6 +231,7 @@ Bucket.prototype.serialize = function() {
 Bucket.prototype.createStyleLayer = function() {
     if (!(this.layer instanceof StyleLayer)) {
         this.layer = StyleLayer.create(this.layer);
+        this.layer.updatePaintTransitions([], {transition: false});
         this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
     }
 };
@@ -240,6 +241,8 @@ Bucket.prototype.createFilter = function() {
         this.filter = featureFilter(this.layer.filter);
     }
 };
+
+Bucket.prototype._premultiplyColor = util.premultiply;
 
 
 var createVertexAddMethodCache = {};
