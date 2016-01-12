@@ -9,6 +9,7 @@ module.exports = TouchZoomRotate;
 function TouchZoomRotate(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
+    this._rotationDisabled = false;
 
     util.bindHandlers(this);
 }
@@ -39,13 +40,10 @@ TouchZoomRotate.prototype = {
         this._startVec = p0.sub(p1);
         this._startScale = this._map.transform.scale;
         this._startBearing = this._map.transform.bearing;
-        this._scalingSignificantly = false;
-        this._rotatingSignificantly = false;
-        this._blockRotation = undefined;
+        this._gestureIntent = undefined;
 
-        // TODO(jliebrand): Move these to config options on the map?
-        this._significantScaleThreshold = 0.1;
-        this._significantRotateThreshold = 5;
+        this._significantScaleThreshold = 0.15;
+        this._significantRotateThreshold = 4;
 
         document.addEventListener('touchmove', this._onMove, false);
         document.addEventListener('touchend', this._onEnd, false);
@@ -62,33 +60,36 @@ TouchZoomRotate.prototype = {
             bearing = this._rotationDisabled ? 0 : vec.angleWith(this._startVec) * 180 / Math.PI,
             map = this._map;
 
-        this._scalingSignificantly =
-            this._scalingSignificantly || (Math.abs(1 - scale) > this._significantScaleThreshold);
+        // Determine 'intent' by whichever threshold is surpassed first,
+        // then keep that state for the duration of this gesture.
+        if (!this._gestureIntent) {
+            var scalingSignificantly = (Math.abs(1 - scale) > this._significantScaleThreshold),
+                rotatingSignificantly = (Math.abs(bearing) > this._significantRotateThreshold);
 
-        this._rotatingSignificantly =
-            this._rotatingSignificantly || (Math.abs(bearing) > this._significantRotateThreshold);
-
-        // Similar to google maps: if the user's intent is pinch zooming, rotate
-        // will be disabled. If their intent is rotating, then both rotate and
-        // zoom will be supported. We determine 'intent' by whichever threshold is
-        // surpassed first. Once determined, we keep that state for the duration
-        // of this gesture.
-        if (this._blockRotation === undefined) {
-            if (this._scalingSignificantly) {
-                this._blockRotation = true;
-            } else if (this._rotatingSignificantly) {
-                this._blockRotation = false;
+            if (rotatingSignificantly) {
+                this._gestureIntent = 'rotate';
+            } else if (scalingSignificantly) {
+                this._gestureIntent = 'zoom';
             }
-        }
 
-        // Only set the bearing if rotation is allowed AND we are rotating more than our threshold
-        var updateBearing = ((this._blockRotation === false) && this._rotatingSignificantly);
-        map.easeTo({
-            zoom: map.transform.scaleZoom(this._startScale * scale),
-            bearing: updateBearing ? (this._startBearing + bearing) : this._startBearing,
-            duration: 0,
-            around: map.unproject(p)
-        });
+            if (this._gestureIntent) {
+                this._startVec = vec;
+                this._startScale = map.transform.scale;
+                this._startBearing = map.transform.bearing;
+            }
+
+        } else {
+            var param = { duration: 0, around: map.unproject(p) };
+
+            if (this._gestureIntent === 'rotate') {
+                param.bearing = this._startBearing + bearing;
+            }
+            if (this._gestureIntent === 'zoom' || this._gestureIntent === 'rotate') {
+                param.zoom = map.transform.scaleZoom(this._startScale * scale);
+            }
+
+            map.easeTo(param);
+        }
 
         e.preventDefault();
     },
