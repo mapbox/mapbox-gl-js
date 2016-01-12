@@ -32,9 +32,9 @@ var operators = {
     '<=': strictInfix('<='),
     '>=': strictInfix('>='),
     'in': function(_, key) {
-        return Array.prototype.slice.call(arguments, 2).map(function(value) {
-            return '(' + operators['=='](_, key, value) + ')';
-        }).join('||') || 'false';
+        return '(function(){' + Array.prototype.slice.call(arguments, 2).map(function(value) {
+            return 'if (' + operators['=='](_, key, value) + ') return true;';
+        }).join('') + 'return false;})()';
     },
     '!in': function() {
         return '!(' + operators.in.apply(this, arguments) + ')';

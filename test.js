@@ -225,6 +225,15 @@ test('in, multiple', function(t) {
     t.end();
 });
 
+test('in, large_multiple', function(t) {
+    var f = filter(['in', 'foo'].concat(Array.apply(null, {length: 2000}).map(Number.call, Number)));
+    t.equal(f({properties: {foo: 0}}), true);
+    t.equal(f({properties: {foo: 1}}), true);
+    t.equal(f({properties: {foo: 1999}}), true);
+    t.equal(f({properties: {foo: 2000}}), false);
+    t.end();
+});
+
 test('in, $type', function(t) {
     var f = filter(['in', '$type', 'LineString', 'Polygon']);
     t.equal(f({type: 1}), false);
@@ -263,6 +272,15 @@ test('!in, multiple', function(t) {
     t.equal(f({properties: {foo: 0}}), false);
     t.equal(f({properties: {foo: 1}}), false);
     t.equal(f({properties: {foo: 3}}), true);
+    t.end();
+});
+
+test('!in, large_multiple', function(t) {
+    var f = filter(['!in', 'foo'].concat(Array.apply(null, {length: 2000}).map(Number.call, Number)));
+    t.equal(f({properties: {foo: 0}}), false);
+    t.equal(f({properties: {foo: 1}}), false);
+    t.equal(f({properties: {foo: 1999}}), false);
+    t.equal(f({properties: {foo: 2000}}), true);
     t.end();
 });
 
