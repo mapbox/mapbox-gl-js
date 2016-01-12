@@ -47,7 +47,7 @@ TouchZoomRotate.prototype = {
         this._startBearing = this._map.transform.bearing;
         this._scalingSignificantly = false;
         this._rotatingSignificantly = false;
-        this._blockRotation = undefined,
+        this._blockRotation = undefined;
         this._inertia = [];
 
         document.addEventListener('touchmove', this._onMove, false);
@@ -89,11 +89,9 @@ TouchZoomRotate.prototype = {
         map.stop();
         this._drainInertiaBuffer();
         inertia.push([now, scale, bearing, p, this._blockRotation]);
-        
         // Only set the bearing if rotation is allowed AND we are rotating more than our threshold
         var updateBearing = ((this._blockRotation === false) && this._rotatingSignificantly);
         
-
         map.easeTo({
             zoom: map.transform.scaleZoom(this._startScale * scale),
             bearing: updateBearing ? (this._startBearing + bearing) : this._startBearing,
@@ -152,6 +150,7 @@ TouchZoomRotate.prototype = {
             zoom: targetScale,
             bearing: updateBearing ? (this._startBearing + bearing) : this._startBearing,
             duration: duration,
+            easing: inertiaEasing,
             around: map.unproject(p)
         });
 
@@ -164,6 +163,7 @@ TouchZoomRotate.prototype = {
             now = Date.now(),
             cutoff = 160; // msec
 
-            while (inertia.length > 2 && now - inertia[0][0] > cutoff) inertia.shift();
+        while (inertia.length > 2 && now - inertia[0][0] > cutoff) 
+            inertia.shift();
     }
 };
