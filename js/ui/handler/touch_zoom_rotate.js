@@ -163,7 +163,7 @@ TouchZoomRotate.prototype = {
             now = Date.now(),
             cutoff = 160; // msec
 
-        while (inertia.length > 2 && now - inertia[0][0] > cutoff) 
+        while (inertia.length > 2 && now - inertia[0][0] > cutoff)
             inertia.shift();
     }
 };
