@@ -135,6 +135,10 @@ GlyphAtlas.prototype.resize = function() {
     var origw = this.width,
         origh = this.height;
 
+    // For now, don't grow the atlas beyond 1024x1024 because of how
+    // texture coords pack into unsigned byte in symbol bucket.
+    if (origw > 512 || origh > 512) return;
+
     if (this.texture) {
         if (this.gl) {
             this.gl.deleteTexture(this.texture);
