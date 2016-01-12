@@ -64,7 +64,12 @@ function Bucket(options) {
     this.maxZoom = this.layer.maxzoom;
     this.filter = featureFilter(this.layer.filter);
 
-    this.resetBuffers(options.buffers);
+    if (options.elementGroups) {
+        this.elementGroups = options.elementGroups;
+        this.buffers = options.buffers;
+    } else {
+        this.resetBuffers(options.buffers);
+    }
 
     for (var shaderName in this.shaderInterfaces) {
         var shaderInterface = this.shaderInterfaces[shaderName];
@@ -162,6 +167,15 @@ Bucket.prototype.getAddMethodName = function(shaderName, type) {
 Bucket.prototype.getBufferName = function(shaderName, type) {
     return shaderName + capitalize(type);
 };
+
+Bucket.prototype.serialize = function() {
+    return {
+        layer: this.layer.serialize(),
+        zoom: this.zoom,
+        elementGroups: this.elementGroups
+    };
+};
+
 
 var createVertexAddMethodCache = {};
 function createVertexAddMethod(shaderName, shaderInterface, bufferName) {

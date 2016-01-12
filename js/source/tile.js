@@ -2,7 +2,7 @@
 
 var util = require('../util/util');
 var Buffer = require('../data/buffer');
-var EXTENT = require('../data/buffer').EXTENT;
+var Bucket = require('../data/bucket');
 
 module.exports = Tile;
 
@@ -21,6 +21,7 @@ function Tile(coord, size, sourceMaxZoom) {
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
+    this.buckets = {};
 }
 
 Tile.prototype = {
@@ -40,7 +41,7 @@ Tile.prototype = {
      * @private
      */
     pixelsToTileUnits: function(pixelValue, z) {
-        return pixelValue * (EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
+        return pixelValue * (Buffer.EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
     },
 
     /**
@@ -53,8 +54,8 @@ Tile.prototype = {
     positionAt: function(coord) {
         var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
         return {
-            x: (zoomedCoord.column - this.coord.x) * EXTENT,
-            y: (zoomedCoord.row - this.coord.y) * EXTENT
+            x: (zoomedCoord.column - this.coord.x) * Buffer.EXTENT,
+            y: (zoomedCoord.row - this.coord.y) * Buffer.EXTENT
         };
     },
 
@@ -75,6 +76,7 @@ Tile.prototype = {
 
         this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
+        this.buckets = unserializeBuckets(data.buckets, this.buffers);
     },
 
     /**
@@ -86,7 +88,6 @@ Tile.prototype = {
      * @private
      */
     reloadSymbolData: function(data, painter) {
-
         if (!this.buffers) {
             // the tile has been destroyed
             return;
@@ -98,16 +99,9 @@ Tile.prototype = {
         if (this.buffers.iconElement) this.buffers.iconElement.destroy(painter.gl);
         if (this.buffers.collisionBoxVertex) this.buffers.collisionBoxVertex.destroy(painter.gl);
 
-        var buffers = unserializeBuffers(data.buffers);
-        this.buffers.glyphVertex = buffers.glyphVertex;
-        this.buffers.glyphElement = buffers.glyphElement;
-        this.buffers.iconVertex = buffers.iconVertex;
-        this.buffers.iconElement = buffers.iconElement;
-        this.buffers.collisionBoxVertex = buffers.collisionBoxVertex;
-
-        for (var id in data.elementGroups) {
-            this.elementGroups[id] = data.elementGroups[id];
-        }
+        util.extend(this.buffers, unserializeBuffers(data.buffers));
+        util.extend(this.elementGroups, data.elementGroups);
+        util.extend(this.buckets, unserializeBuckets(data.buckets, this.buffers));
     },
 
     /**
@@ -166,6 +160,15 @@ function unserializeBuffers(input) {
     var output = {};
     for (var k in input) {
         output[k] = new Buffer(input[k]);
+    }
+    return output;
+}
+
+function unserializeBuckets(input, buffers) {
+    var output = {};
+    for (var i = 0; i < input.length; i++) {
+        var bucket = Bucket.create(util.extend(input[i], {buffers: buffers}));
+        output[bucket.id] = bucket;
     }
     return output;
 }
