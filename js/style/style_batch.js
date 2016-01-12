@@ -151,7 +151,6 @@ styleBatch.prototype = {
         source.id = id;
         source.style = this._style;
         source.dispatcher = this._style.dispatcher;
-        // source.glyphAtlas = this._style.glyphAtlas;
         source
             .on('load', this._style._forwardSourceEvent)
             .on('error', this._style._forwardSourceEvent)
