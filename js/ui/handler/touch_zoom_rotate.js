@@ -91,7 +91,7 @@ TouchZoomRotate.prototype = {
         inertia.push([now, scale, bearing, p, this._blockRotation]);
         // Only set the bearing if rotation is allowed AND we are rotating more than our threshold
         var updateBearing = ((this._blockRotation === false) && this._rotatingSignificantly);
-        
+
         map.easeTo({
             zoom: map.transform.scaleZoom(this._startScale * scale),
             bearing: updateBearing ? (this._startBearing + bearing) : this._startBearing,
@@ -128,7 +128,7 @@ TouchZoomRotate.prototype = {
 
         // calculate scale/s speed and ajust for increased initial animation speed when easing
         var speed = scaleOffset * inertiaLinearity / scaleDuration; // scale/s
-        
+
         if (Math.abs(speed) > inertiaMaxSpeed) {
             if (speed > 0) {
                 speed = inertiaMaxSpeed;
@@ -143,7 +143,7 @@ TouchZoomRotate.prototype = {
         if (targetScale < 0) {
             targetScale = 0;
         }
-      
+
         var updateBearing = ((blockRotation === false) && this._rotatingSignificantly);
 
         map.easeTo({
