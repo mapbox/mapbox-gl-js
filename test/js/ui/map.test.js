@@ -67,6 +67,7 @@ test('Map', function(t) {
             map.on('style.load',    styleEvent);
             map.on('style.error',   styleEvent);
             map.on('style.change',  styleEvent);
+            map.on('style.quiesce',  styleEvent);
             map.on('source.load',   sourceEvent);
             map.on('source.error',  sourceEvent);
             map.on('source.change', sourceEvent);
@@ -79,10 +80,11 @@ test('Map', function(t) {
             map.off('source.error', map.onError);
             map.off('tile.error', map.onError);
 
-            t.plan(10);
+            t.plan(11);
             map.setStyle(style); // Fires load
             style.fire('error');
             style.fire('change');
+            style.fire('quiesce');
             style.fire('source.load');
             style.fire('source.error');
             style.fire('source.change');
@@ -90,6 +92,20 @@ test('Map', function(t) {
             style.fire('tile.load');
             style.fire('tile.error');
             style.fire('tile.remove');
+        });
+
+        t.test('fires the quiesce event', function(t) {
+            var map = createMap();
+            var style = new Style({
+                version: 8,
+                sources: {},
+                layers: []
+            });
+            map.setStyle(style);
+            map.on('quiesce', function() {
+                t.end();
+            });
+            style.fire('quiesce');
         });
 
         t.test('can be called more than once', function(t) {
