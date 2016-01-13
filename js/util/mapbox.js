@@ -62,6 +62,7 @@ module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
     var user = split[3];
     var style = split[4];
     var draft = split[5] ? '/draft' : '';
+    if (ext === '.json') ext = '';
     return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
 };
 

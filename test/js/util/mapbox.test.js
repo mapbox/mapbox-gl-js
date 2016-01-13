@@ -79,7 +79,7 @@ test("mapbox", function(t) {
         t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
-                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite?access_token=key'
             );
 
             t.equal(
