@@ -411,6 +411,44 @@ test('TilePyramid#update', function(t) {
         t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
         t.end();
     });
+
+
+    t.test('retains overscaled loaded children', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 16;
+        transform.center = new LngLat(0, 0);
+
+
+        var pyramid = createPyramid({
+            reparseOverscaled: true,
+            load: function(tile) {
+                tile.loaded = tile.coord.z === 16;
+            }
+        });
+
+        t.equal(pyramid.maxzoom, 14);
+
+        pyramid.update(true, transform);
+        t.deepEqual(pyramid.renderedIDs(), [
+            new TileCoord(16, 8191, 8191, 0).id,
+            new TileCoord(16, 8192, 8191, 0).id,
+            new TileCoord(16, 8192, 8192, 0).id,
+            new TileCoord(16, 8191, 8192, 0).id
+        ]);
+
+        transform.zoom = 15;
+        pyramid.update(true, transform);
+
+        t.deepEqual(pyramid.renderedIDs(), [
+            new TileCoord(16, 8191, 8191, 0).id,
+            new TileCoord(16, 8192, 8191, 0).id,
+            new TileCoord(16, 8192, 8192, 0).id,
+            new TileCoord(16, 8191, 8192, 0).id
+        ]);
+        t.end();
+
+    });
 });
 
 test('TilePyramid#clearTiles', function(t) {
