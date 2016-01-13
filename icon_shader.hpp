@@ -23,6 +23,7 @@ public:
     Uniform<std::array<GLfloat, 2>> u_texsize     = {"u_texsize",     *this};
     Uniform<GLint>                  u_skewed      = {"u_skewed",      *this};
     Uniform<GLfloat>                u_extra       = {"u_extra",       *this};
+    Uniform<GLint>                  u_texture     = {"u_texture",     *this};
 
 protected:
     GLint a_offset = -1;
