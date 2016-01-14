@@ -166,7 +166,7 @@ DragRotate.prototype = {
     _drainInertiaBuffer: function () {
         var inertia = this._inertia,
             now = Date.now(),
-            cutoff = 50;   //msec
+            cutoff = 160;   //msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff)
             inertia.shift();

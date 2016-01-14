@@ -5,10 +5,10 @@ var DOM = require('../../util/dom'),
 
 module.exports = DragPan;
 
-var inertiaLinearity = 0.25,
+var inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
-    inertiaMaxSpeed = 3000, // px/s
-    inertiaDeceleration = 4000; // px/s^2
+    inertiaMaxSpeed = 1400, // px/s
+    inertiaDeceleration = 2500; // px/s^2
 
 
 function DragPan(map) {
@@ -154,10 +154,9 @@ DragPan.prototype = {
     _drainInertiaBuffer: function () {
         var inertia = this._inertia,
             now = Date.now(),
-            cutoff = 50;   // msec
+            cutoff = 160;   // msec
 
-        while (inertia.length > 0 && now - inertia[0][0] > cutoff)
-            inertia.shift();
+        while (inertia.length > 0 && now - inertia[0][0] > cutoff) inertia.shift();
     }
 };
 
