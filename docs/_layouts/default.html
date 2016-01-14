@@ -93,7 +93,7 @@ footer:
   <meta http-equiv='X-UA-Compatible' content='IE=edge' />
   <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name='apple-mobile-web-app-capable' content='yes' />
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
@@ -132,6 +132,7 @@ footer:
   <meta property='og:type' content='website' />
   {% endif %}
   {% endif %}
+  <meta name="p:domain_verify" content="57838af58c8045c2c024bc2f9d1577f9"/>
 
   <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
@@ -176,212 +177,198 @@ footer:
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PQR37Z" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PQR37Z');</script>
 <!-- End Google Tag Manager -->
 
-
-
 <div class='page-content'>
-
 {% if page.app %}
 {{content}}
 {% else %}
-<div class="main-subnav fill-midnight splash pin-top dark clearfix">
-  <div class="prose dark keyline-top pad4y hover-area clearfix">
-  <div class="limiter clearfix">
-    <div class="subnav-products clearfix">
-      <div class="col6 clearfix">
-        <h3><a href="/products/" class="rcon next">Our products</a></h3>
-        <div class="col5">
-       <a class="block pad1y icon map" href="/maps">Maps</a>
-       <a class="block pad1y icon studio" href="/mapbox-studio">Mapbox Studio</a>
-       <a class="block pad1y icon compass" href="/directions/">Directions</a>
-       <a class="block pad1y icon marker" href="/geocoding/">Geocoding</a>
-       </div>
-      <div class="col6">
-       <a class="block pad1y icon bolt" href="/analysis/">Analysis</a>
-       <a class="block pad1y icon mobile" href="/mobile/">Mobile</a>
-       <a class="block pad1y icon satellite" href="/satellite/">Satellite</a>
-       <a class="block pad1y icon globe" href="/atlas/">Atlas Server</a>
-      </div>
-      </div>
-      <div class="col5 margin1r">
-        <h3>Our platform</h3>
+<div class='main-subnav fill-midnight splash pin-top dark clearfix'>
+  <div class='prose dark keyline-top pad4y hover-area clearfix'>
+    <div class='limiter clearfix'>
 
-       <a class="block pad1y icon building" href="/platform/">Scalable infrastructure</a>
-       <a class="block pad1y icon lock" href="/platform/security/">Security</a>
-       <a class="block pad1y icon data" href="/data-platform/">Curated Data</a>
-
-      </div>
-    </div>
-
-    <div class="subnav-use-cases clearfix">
-      <div class="col7 clearfix">
-       <h3><a href="/industries/" class="rcon next">Industries</a></h3>
-        <div class="col4">
-         <a class="block pad0y" href="/industries/social">Web &amp; Social</a>
-         <a class="block pad0y" href="/industries/logistics">Logistics</a>
-         <a class="block pad0y" href="/industries/outdoors">Fitness &amp; Outdoors</a>
-         <a class="block pad0y" href="/industries/naturalresources">Natural Resources</a>
-         <a class="block pad0y" href="/industries/agriculture">Agriculture</a>
-         </div>
-        <div class="col4">
-         <a class="block pad0y" href="/industries/transportation">Transportation</a>
-         <a class="block pad0y" href="/industries/realestate">Real Estate</a>
-         <a class="block pad0y" href="/industries/insurance">Insurance</a>
-         <a class="block pad0y" href="/industries/security">Security</a>
-         <a class="block pad0y" href="/industries/finance">Finance</a>
+      <div class='subnav-group subnav-products clearfix'>
+        <div class='col6 clearfix'>
+          <h3><a href='/products/' class='rcon next'>Our products</a></h3>
+          <div class='col5'>
+            <a class='block pad1y icon map' href='/maps'>Maps</a>
+            <a class='block pad1y icon studio' href='/mapbox-studio'>Mapbox Studio</a>
+            <a class='block pad1y icon compass' href='/directions/'>Directions</a>
+            <a class='block pad1y icon marker' href='/geocoding/'>Geocoding</a>
+          </div>
+          <div class='col6'>
+            <a class='block pad1y icon bolt' href='/analysis/'>Analysis</a>
+            <a class='block pad1y icon mobile' href='/mobile/'>Mobile</a>
+            <a class='block pad1y icon satellite' href='/satellite/'>Satellite</a>
+            <a class='block pad1y icon globe' href='/atlas/'>Atlas Server</a>
+          </div>
         </div>
-        <div class="col4">
-         <a class="block pad0y" href="/industries/drones">Drones</a>
-         <a class="block pad0y" href="/industries/government">Government</a>
-         <a class="block pad0y" href="/industries/health">Health</a>
-         <a class="block pad0y" href="/industries/media">Media</a>
+        <div class='col5 margin1r'>
+          <h3>Our platform</h3>
+          <a class='block pad1y icon building' href='/platform/'>Scalable infrastructure</a>
+          <a class='block pad1y icon lock' href='/platform/security/'>Security</a>
+          <a class='block pad1y icon data' href='/data-platform/'>Curated Data</a>
         </div>
-     </div>
-    <div class="col4 margin1">
-       <h3>Examples</h3>
-        <a class="block pad0y" href="/gallery/">Map Gallery</a>
-        <a class="block pad0y" href="/showcase/">Customer Showcase</a>
-    </div>
-
-    </div>
-
-
-    <div class="subnav-documentation clearfix">
-      <div class="col8 clearfix subnavcol">
-        <h3><a href="/developers/" class="rcon next">Developer tools</a></h3>
-      <div class="col4">
-       <a class="block pad1y icon gl" href="/mapbox-gl-js/api/">Mapbox GL JS</a>
-       <a class="block pad1y icon apple" href="/ios-sdk/">Mapbox iOS SDK</a>
-       <a class="block pad1y icon android" href="/android-sdk/">Mapbox Android SDK</a>
-       <a class="block pad1y icon globe" href="/mapbox.js/api/">Mapbox.js</a>
-     </div>
-      <div class="col4">
-       <a class="block pad1y icon marker" href="/developers/api/geocoding/">Geocoding API</a>
-       <a class="block pad1y icon paint" href="/developers/api/styles/">Styles API</a>
-       <a class="block pad1y icon up" href="/developers/api/uploads/">Uploads API</a>
-       <a class="block pad1y icon inspect" href="/developers/api/surface/">Surface API</a>
-       </div>
-      <div class="col4">
-       <a class="block pad1y icon compass" href="/developers/api/directions/">Directions API</a>
-       <a class="block pad1y icon point-line" href="/developers/api/distance/">Distance API</a>
-       <a class="block pad1y icon picture" href="/developers/api/static/">Static API</a>
-       <a class="block pad1y icon data" href="/developers/api/maps/">Tiles API</a>
-       </div>
       </div>
 
-      <div class="col3 margin1r subnavcol">
-      <h3>References</h3>
-       <a class="block pad1y" href="/tos">TOS</a>
-       <a class="block pad1y" href="/privacy/">Privacy</a>
-       <a class="block pad1y" href="/about/open/">Open source tools</a>
-       <a class="block pad1y" href="/telemetry/">Telemetry</a>
+      <div class='subnav-group subnav-use-cases clearfix'>
+        <div class='col7 clearfix'>
+          <h3><a href='/industries/' class='rcon next'>Industries</a></h3>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/social'>Web &amp; Social</a>
+            <a class='block pad0y' href='/industries/logistics'>Logistics</a>
+            <a class='block pad0y' href='/industries/outdoors'>Fitness &amp; Outdoors</a>
+            <a class='block pad0y' href='/industries/naturalresources'>Natural Resources</a>
+            <a class='block pad0y' href='/industries/agriculture'>Agriculture</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/transportation'>Transportation</a>
+            <a class='block pad0y' href='/industries/realestate'>Real Estate</a>
+            <a class='block pad0y' href='/industries/insurance'>Insurance</a>
+            <a class='block pad0y' href='/industries/security'>Security</a>
+            <a class='block pad0y' href='/industries/finance'>Finance</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/drones'>Drones</a>
+            <a class='block pad0y' href='/industries/government'>Government</a>
+            <a class='block pad0y' href='/industries/health'>Health</a>
+            <a class='block pad0y' href='/industries/media'>Media</a>
+          </div>
+        </div>
+        <div class='col4 margin1'>
+          <h3>Examples</h3>
+            <a class='block pad0y' href='/gallery/'>Map Gallery</a>
+            <a class='block pad0y' href='/showcase/'>Customer Showcase</a>
+        </div>
+      </div>
+
+      <div class='subnav-group subnav-documentation clearfix'>
+        <div class='col8 clearfix subnavcol'>
+          <h3><a href='/developers/' class='rcon next'>Developer tools</a></h3>
+          <div class='col4'>
+            <a class='block pad1y icon gl' href='/mapbox-gl-js/api/'>Mapbox GL JS</a>
+            <a class='block pad1y icon apple' href='/ios-sdk/'>Mapbox iOS SDK</a>
+            <a class='block pad1y icon android' href='/android-sdk/'>Mapbox Android SDK</a>
+            <a class='block pad1y icon globe' href='/mapbox.js/api/'>Mapbox.js</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad1y icon marker' href='/developers/api/geocoding/'>Geocoding API</a>
+            <a class='block pad1y icon paint' href='/developers/api/styles/'>Styles API</a>
+            <a class='block pad1y icon up' href='/developers/api/uploads/'>Uploads API</a>
+            <a class='block pad1y icon inspect' href='/developers/api/surface/'>Surface API</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad1y icon compass' href='/developers/api/directions/'>Directions API</a>
+            <a class='block pad1y icon point-line' href='/developers/api/distance/'>Distance API</a>
+            <a class='block pad1y icon picture' href='/developers/api/static/'>Static API</a>
+            <a class='block pad1y icon data' href='/developers/api/maps/'>Tiles API</a>
+          </div>
+        </div>
+        <div class='col3 margin1r subnavcol'>
+        <h3>References</h3>
+          <a class='block pad1y' href='/tos'>TOS</a>
+          <a class='block pad1y' href='/privacy/'>Privacy</a>
+          <a class='block pad1y' href='/about/open/'>Open source tools</a>
+          <a class='block pad1y' href='/telemetry/'>Telemetry</a>
+        </div>
+      </div>
+
+      <div class='subnav-group subnav-help clearfix'>
+        <div class='col3'>
+          <h3><a href='/help/' class='rcon next'>Help</a></h3>
+          <a class='block pad1y icon search' href='/help/'>Search</a>
+          <a class='block pad1y icon mapbox' href='/help/how-mapbox-works/'>How Mapbox works</a>
+          <a class='block pad1y icon book' href='/help/glossary/'>Glossary</a>
+        </div>
+        <div class='col8 margin1 clearfix'>
+          <h3>I would like to</h3>
+          <div class='col6'>
+            <a class='block pad1y icon paint' href='/help/#design-a-map'>Design a map</a>
+            <a class='block pad1y icon mobile' href='/help/#build-a-mobile-app'>Build a mobile app</a>
+            <a class='block pad1y icon globe' href='/help/#build-a-web-app'>Build a web app</a>
+            <a class='block pad1y icon bolt' href='help/#extend-my-app-with-web-services'>Extend my app with web services</a>
+          </div>
+          <div class='col6'>
+            <a class='block pad1y icon satellite'  href='/help/#work-with-data-and-imagery'>Work with data &amp; Imagery</a>
+            <a class='block pad1y icon data' href='/help/#analyze-data'>Analyze Data</a>
+            <a class='block pad1y icon lock' href='/help/#learn-about-mapbox-privacy-and-policies'>Learn about privacy and policies</a>
+            <a class='block pad1y icon account' href='/help/#make-changes-to-my-account'>Make changes to my account</a>
+          </div>
+        </div>
       </div>
 
     </div>
-
-    <div class="subnav-help clearfix">
-    <div class="col3">
-      <h3><a href="/help/" class="rcon next">Help</a></h3>
-       <a class="block pad1y icon search" href="/help/">Search</a>
-       <a class="block pad1y icon mapbox" href="/help/how-mapbox-works/">How Mapbox works</a>
-       <a class="block pad1y icon book" href="/help/glossary/">Glossary</a>
-    </div>
-
-     <div class="col8 margin1 clearfix">
-      <h3>I would like to</h3>
-        <div class="col6">
-       <a class="block pad1y icon paint" href="/help/#design-a-map">Design a map</a>
-       <a class="block pad1y icon mobile" href="/help/#build-a-mobile-app">Build a mobile app</a>
-       <a class="block pad1y icon globe" href="/help/#build-a-web-app">Build a web app</a>
-       <a class="block pad1y icon bolt" href="help/#extend-my-app-with-web-services">Extend my app with web services</a>
-       </div>
-      <div class="col6">
-       <a class="block pad1y icon satellite"  href="/help/#work-with-data-and-imagery">Work with data &amp; Imagery</a>
-       <a class="block pad1y icon data" href="/help/#analyze-data">Analyze Data</a>
-       <a class="block pad1y icon lock" href="/help/#learn-about-mapbox-privacy-and-policies">Learn about privacy and policies</a>
-       <a class="block pad1y icon account" href="/help/#make-changes-to-my-account">Make changes to my account</a>
-      </div>
-      </div>
-
-    </div>
-
   </div>
 </div>
-</div>
+
 <div class='masthead col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
-    <nav class='col12 text-right pad2y contain animate clearfix noprint'>
+    <nav class='col12 text-right navigation-padding-top contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
       <h4 class='logo-enterpriseaddon pin-topleft text-aqua block-in-enterprise'>Enterprise</h4>
 
       <!-- Desktop nav -->
-      <div class='text-right z10 strong small primary hide-mobile'>
+      <div class='text-right z10 strong small primary hide-mobile space-top0'>
         <div class='inline align-top'>
-         <div class="dropdown inline pad1y fl contain"  id="menu-products"> <a href='/products/'     class='contain primary-nav-button fl pad1x pad0y round '>Products</a></div>
-          <div class="dropdown inline pad1y fl contain"  id="menu-use-cases"> <a href='/industries/'  class='contain primary-nav-button fl pad1x pad0y round'>Industries</a></div>
-         <div class="dropdown inline pad1y fl contain"  id="menu-documentation">  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round '>Developers</a></div>
-         <div class="dropdown inline pad1y fl contain"  id="menu-help">  <a href='/help/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
-          <div class="inline pad1y fl"> <a href='/plans/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/plans' %}active{% endif %}'>Pricing</a></div>
-
-          <div class="inline pad1y fl"> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
+         <div class='dropdown inline fl contain'  data-category='products'> <a href='/products/'     class='contain primary-nav-button fl pad1x pad0y round '>Products</a></div>
+          <div class='dropdown inline fl contain'  data-category='use-cases'> <a href='/industries/'  class='contain primary-nav-button fl pad1x pad0y round'>Industries</a></div>
+         <div class='dropdown inline fl contain'  data-category='documentation'>  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round '>Developers</a></div>
+         <div class='dropdown inline fl contain'  data-category='help'>  <a href='/help/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
+          <div class='inline fl'> <a href='/plans/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/plans' %}active{% endif %}'>Pricing</a></div>
+          <div class='inline fl'> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
         </div>
         <!-- Hardcoded width so content doesn't jump -->
-        <div style='width:130px' class='unfloat inline align-top pad1y' id='nav'>
-        </div>
+        <div style='width:130px' class='unfloat inline align-top' id='nav'></div>
       </div>
 
       <!-- Mobile nav -->
       <div class='show-mobile contain dropdown-container pin-topright'>
         <a href='#menu' class='dark contain z1 big inline icon menu round quiet dropdown-button js-dropdown-button pin-right'></a>
         <div id='menu' class='js-dropdown-menu scroll-v dropdown-menu offcanvas-top fill-midnight clip col12 pin-top animate'>
-      <div class="keyline-bottom clearfix">
-          <div class="mobile-cols pad4y keyline-bottom clearfix">
-            <a class="pad1 block strong col6" href="/products/">Products</a>
-            <a class="pad1 block strong col6" href="/mapbox-studio/">Mapbox Studio</a>
-            <a class="pad1 block strong col6" href="/data-platform/">Data</a>
-            <a class="pad1 block strong col6" href="/gallery/">Gallery</a>
-            <a class="pad1 block strong col6" href="/industries/">Industries</a>
-            <a class="pad1 block strong col6" href="/help/">Help</a>
-            <a class="pad1 block strong col6" href="/developers/">Developers</a>
-            <a class="pad1 block strong col6" href="/blog/">Blog</a>
-            <a class="pad1 block strong col6" href="/pricing/">Pricing</a>
-          </div>
-          <div id="mobile-nav" class="pad2y clearfix mobile-cols">
-              <a class="pad1 block strong col6 signin" href="/studio/">Log in</a>
-              <a class="pad1 block strong col6" href="/studio/signup/">Sign up</a>
+          <div class='keyline-bottom clearfix'>
+            <div class='mobile-cols pad4y keyline-bottom clearfix'>
+              <a class='pad1 block strong col6' href='/products/'>Products</a>
+              <a class='pad1 block strong col6' href='/mapbox-studio/'>Mapbox Studio</a>
+              <a class='pad1 block strong col6' href='/data-platform/'>Data</a>
+              <a class='pad1 block strong col6' href='/gallery/'>Gallery</a>
+              <a class='pad1 block strong col6' href='/industries/'>Industries</a>
+              <a class='pad1 block strong col6' href='/help/'>Help</a>
+              <a class='pad1 block strong col6' href='/developers/'>Developers</a>
+              <a class='pad1 block strong col6' href='/blog/'>Blog</a>
+              <a class='pad1 block strong col6' href='/pricing/'>Pricing</a>
             </div>
-          </div>
-          <div class='clearfix  small'>
-
-         <div class="col12 clearfix pad4y keyline-bottom">
-            <h3 class="pad0y pad1x strong space-bottom1">Products</h3>
-            <div class="col12 pad1x clearfix  mobile-cols ">
-              <a class='pad0y block quiet col6' href='/maps/'>Maps</a>
-              <a class='pad0y block quiet col6' href='/geocoding/'>Geocoding</a>
-              <a class='pad0y block quiet col6' href='/directions/'>Directions</a>
-              <a class='pad0y block quiet col6' href='/developers/'>Developer tools</a>
-              <a class='pad0y block quiet col6' href='/satellite/'>Satellite</a>
-              <a class='pad0y block quiet col6' href='/analysis/'>Analysis</a>
-              <a class='pad0y block quiet col6' href='/atlas/'>Atlas</a>
-              <a class='pad0y block quiet col6' href='/highvolume/'>High Volume</a>
+            <div id='mobile-nav' class='pad2y clearfix mobile-cols'>
+              <a class='pad1 block strong col6 signin' href='/studio/'>Log in</a>
+              <a class='pad1 block strong col6' href='/studio/signup/'>Sign up</a>
             </div>
           </div>
 
-          <div class="col12 pad1x clearfix  mobile-cols pad4y ">
-            <a class='pad0y block strong quiet col6' href='/about/'>About</a>
-            <a class='pad0y block strong quiet col6' href='/about/team/'>Team</a>
-            <a class='pad0y block strong quiet col6' href='/jobs/'>Jobs</a>
-            <a class='pad0y block strong quiet col6' href='/about/press/'>Press</a>
-            <a class='pad0y block strong quiet col6' href='/tos/'>Legal</a>
-            <a class='pad0y block strong quiet col6' href='/contact/'>Contact</a>
-            <a class='pad0y block strong quiet col6' href='/education/'>Education</a>
-            <a class='pad0y block strong quiet col6' href='/security/'>Security</a>
-            <a class='pad0y block strong quiet col6' href='/about/board'>Board</a>
-          </div>
-
+          <div class='clearfix small'>
+            <div class='col12 clearfix pad4y keyline-bottom'>
+              <h3 class='pad0y pad1x strong space-bottom1'>Products</h3>
+              <div class='col12 pad1x clearfix  mobile-cols '>
+                <a class='pad0y block quiet col6' href='/maps/'>Maps</a>
+                <a class='pad0y block quiet col6' href='/geocoding/'>Geocoding</a>
+                <a class='pad0y block quiet col6' href='/directions/'>Directions</a>
+                <a class='pad0y block quiet col6' href='/developers/'>Developer tools</a>
+                <a class='pad0y block quiet col6' href='/satellite/'>Satellite</a>
+                <a class='pad0y block quiet col6' href='/analysis/'>Analysis</a>
+                <a class='pad0y block quiet col6' href='/atlas/'>Atlas</a>
+                <a class='pad0y block quiet col6' href='/highvolume/'>High Volume</a>
+              </div>
+            </div>
+            <div class='col12 pad1x clearfix  mobile-cols pad4y '>
+              <a class='pad0y block strong quiet col6' href='/about/'>About</a>
+              <a class='pad0y block strong quiet col6' href='/about/team/'>Team</a>
+              <a class='pad0y block strong quiet col6' href='/jobs/'>Jobs</a>
+              <a class='pad0y block strong quiet col6' href='/about/press/'>Press</a>
+              <a class='pad0y block strong quiet col6' href='/tos/'>Legal</a>
+              <a class='pad0y block strong quiet col6' href='/contact/'>Contact</a>
+              <a class='pad0y block strong quiet col6' href='/education/'>Education</a>
+              <a class='pad0y block strong quiet col6' href='/security/'>Security</a>
+              <a class='pad0y block strong quiet col6' href='/about/board'>Board</a>
+            </div>
           </div>
         </div>
       </div>
-
 
     </nav>
   </div>
@@ -389,10 +376,8 @@ footer:
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
-
 {% unless page.url contains '/hello/directions' or page.url contains '/welcome'  %}
 <div class='footer footer-in-docs clearfix contain hide-mobile fill-light' data-swiftype-index='false'>
-
   <div class='limiter clearfix'>
     <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
       <div class='hide-in-docs col2'>
@@ -456,105 +441,60 @@ footer:
       </form>
     </div>
   </div>
-
 </div>
 
 <div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
-    <a href='{{site.url}}/tos'>Terms</a> +
-    <a href='{{site.url}}/privacy'>Privacy</a>
-    &copy; Mapbox
+  <a href='{{site.url}}/tos'>Terms</a> +
+  <a href='{{site.url}}/privacy'>Privacy</a>
+  &copy; Mapbox
 </div>
 {% endunless %}
 
 {% if page.url contains '/hello/directions' %}
-
 <div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
-    <a href='{{site.url}}/tos'>Terms</a> +
-    <a href='{{site.url}}/privacy'>Privacy</a>
-    &copy; Mapbox
+  <a href='{{site.url}}/tos'>Terms</a> +
+  <a href='{{site.url}}/privacy'>Privacy</a>
+  &copy; Mapbox
 </div>
-
 {% endif %}
 {% endif %}
-
-
 
 <div id='modal-content' class='animate modal modal-content'></div>
 </div>
 
-<script type="text/javascript">
+<script>
+var $dropdownTriggers = $('.dropdown');
+var $dropdownArea = $('.main-subnav');
+var $dropdownZone = $('.hover-area');
 
-  $( ".dropdown" ).hover(
-    function() {
-    setContent($(this).attr("id"));
-      $(".main-subnav").addClass("show");
-      $($(this)).addClass("show");
+$dropdownTriggers.each(function() {
+  var $this = $(this);
+  window.hoverintent(this, function() {
+    $dropdownTriggers.removeClass('show');
+    $('.subnav-group').removeClass('show');
+    $dropdownArea.addClass('show');
+    $('.subnav-' + $this.data('category')).addClass('show');
+    $this.addClass('show');
+  }, function() {
+    if (!$dropdownZone.hasClass('hovered') && $('.dropdown:hover').length === 0) {
+      $dropdownArea.removeClass('show');
+      $dropdownTriggers.removeClass('show');
     }
-  );
-
-$('.hover-area').mouseover(
-    function(){
-        $(this).addClass('hovered');
-        return false;
-    } )
-    .mouseout(
-        function(){
-        $(this).removeClass('hovered');
-    });
-
-
-  $(".dropdown").mouseleave(function(){
-    window.setTimeout(function(){
-      if(!$(".hover-area").hasClass('hovered') && $(".dropdown:hover").length == 0){
-        $(".main-subnav").removeClass("show");
-        $(".dropdown").removeClass("show");
-      }
-
-    }, 300);
-
-  })
-
-  $( ".hover-area" ).mouseleave(function() {
-    window.setTimeout(function(){
-       if($(".dropdown:hover").length == 0){
-             $(".main-subnav").removeClass("show");
-             $(".dropdown").removeClass("show");
-       }
-    }, 300);
   });
+});
 
-
-
-function setContent (activeCategory){
-    $(".dropdown").removeClass("show");
-switch(activeCategory) {
-    case 'menu-products':
-      $(".subnav-products").addClass("show");
-      $(".subnav-use-cases").removeClass("show");
-      $(".subnav-documentation").removeClass("show");
-      $(".subnav-help").removeClass("show");
-        break;
-    case 'menu-use-cases':
-      $(".subnav-use-cases").addClass("show");
-      $(".subnav-products").removeClass("show");
-      $(".subnav-documentation").removeClass("show");
-      $(".subnav-help").removeClass("show");
-        break;
-    case 'menu-documentation':
-      $(".subnav-documentation").addClass("show");
-      $(".subnav-products").removeClass("show");
-      $(".subnav-use-cases").removeClass("show");
-      $(".subnav-help").removeClass("show");
-        break;
-    case 'menu-help':
-      $(".subnav-help").addClass("show");
-      $(".subnav-products").removeClass("show");
-      $(".subnav-use-cases").removeClass("show");
-      $(".subnav-documentation").removeClass("show");
-        break;
-  }
-}
-
+$dropdownZone.mouseover(function() {
+  $(this).addClass('hovered');
+  return false;
+}).mouseleave(function() {
+  $(this).removeClass('hovered');
+  window.setTimeout(function() {
+    if ($('.dropdown:hover').length === 0) {
+      $dropdownArea.removeClass('show');
+      $dropdownTriggers.removeClass('show');
+    }
+  }, 300);
+});
 </script>
 
 </body>
