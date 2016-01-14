@@ -104,17 +104,17 @@ footer:
   {% for tags in page.tags %}<meta class='swiftype' name='tags' data-type='string' content='{{tags}}' />
   {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
-  <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt %}
-  <meta class='swiftype' name='excerpt' data-type='string' content='{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}' />{% endif %}
+  <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
-  <meta name='twitter:url' content='{{page.permalink}}' />
-  <meta property='og:url' content='{{page.permalink}}' />
+  <meta name='twitter:url' content='{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
+  <meta property='og:url' content='{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
   <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;"}}' />
   <meta property='og:title' content='{{page.title | replace:"'","&rsquo;"}}' />
-  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
-  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
   {% if page.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
@@ -161,7 +161,7 @@ footer:
   <script>
   window.mapbox_api = '{{site.api}}';
   window.mapbox_tileApi = '{{site.tileApi}}';
-  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q'
+  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpamVuY3cxbzAwMG12ZGx4cGljbGtqMGUifQ.vpDqms08MBqoRgp667Yz5Q'
   if (typeof L !== 'undefined' && L.mapbox.VERSION[0] === '2') {
       L.mapbox.accessToken = window.mapbox_accessToken;
       L.mapbox.config.FORCE_HTTPS = true;
