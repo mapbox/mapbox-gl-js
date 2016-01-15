@@ -1,0 +1,69 @@
+---
+layout: example
+category: example
+title: Set a point after Geocoder result
+description: Listen to the <code>geocoder.input</code> event from the <a href='https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-geocoder'>Geocoder plugin</a> and place a point on the coordinate results.
+tags:
+  - plugins
+  - mapbox-geocoding
+---
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v0.1.0/mapbox-gl-geocoder.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v0.1.0/mapbox-gl-geocoder.css' type='text/css' />
+<style>
+#geocoder-container {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#geocoder-container > div {
+    min-width:50%;
+    margin-left:25%;
+}
+</style>
+<div id='map'></div>
+<div id='geocoder-container'></div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-79.4512, 43.6568],
+    zoom: 13
+});
+
+var geocoder = new mapboxgl.Geocoder({
+    container: 'geocoder-container' // Optional. Specify a unique container for the control to be added to.
+});
+
+map.addControl(geocoder);
+
+// After the map style has loaded on the page, add a source layer and default
+// styling for a single point.
+map.on('style.load', function() {
+    map.addSource('single-point', {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": []
+        }
+    });
+
+    map.addLayer({
+        "id": "point",
+        "source": "single-point",
+        "type": "circle",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#007cbf"
+        }
+    });
+
+    // Listen for the `geocoder.input` event that is triggered when a user
+    // makes a selection and add a marker that matches the result.
+    geocoder.on('geocoder.input', function(ev) {
+        map.getSource('single-point').setData(ev.result.geometry);
+    });
+});
+</script>
