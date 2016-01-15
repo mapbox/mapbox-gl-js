@@ -4,8 +4,7 @@ module.exports = drawCollisionDebug;
 
 function drawCollisionDebug(painter, layer, coord, tile) {
     if (!tile.buffers) return;
-    if (!tile.elementGroups[layer.ref || layer.id]) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].collisionBox;
+    var elementGroups = tile.getElementGroups(layer, 'collisionBox');
     if (!elementGroups) return;
 
     var gl = painter.gl;

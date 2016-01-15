@@ -52,8 +52,8 @@ function draw(painter, source, layer, coords) {
 function drawFill(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     if (!tile.buffers) return;
-    if (!tile.elementGroups[layer.ref || layer.id]) return;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
+    var elementGroups = tile.getElementGroups(layer, 'fill');
+    if (!elementGroups) return;
 
     var gl = painter.gl;
 

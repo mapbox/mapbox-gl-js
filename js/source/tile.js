@@ -137,13 +137,8 @@ Tile.prototype = {
         }
     },
 
-    /**
-     * Return whether this tile has any data for the given layer.
-     * @param {Object} style layer object
-     * @returns {boolean}
-     */
-    hasLayerData: function(layer) {
-        return Boolean(this.buffers && this.elementGroups[layer.ref || layer.id] && Object.keys(this.elementGroups[layer.ref || layer.id]).length);
+    getElementGroups: function(layer, shaderName) {
+        return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
     }
 };
 
