@@ -18,13 +18,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    var hasData = false;
-    for (var j = 0; j < coords.length; j++) {
-        if (source.getTile(coords[j]).hasLayerData(layer)) {
-            hasData = true;
-            break;
-        }
-    }
+    var hasData = coords.some(function(coord) {
+        return source.getTile(coord).getElementGroups(layer, 'line');
+    });
     if (!hasData) return;
 
     var gl = painter.gl;
@@ -129,7 +125,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var coord = coords[k];
         var tile = source.getTile(coord);
 
-        var elementGroups = tile.buffers && tile.elementGroups[layer.ref || layer.id] && tile.elementGroups[layer.ref || layer.id].line;
+        var elementGroups = tile.getElementGroups(layer, 'line');
         if (!elementGroups) continue;
 
         painter.enableTileClippingMask(coord);
