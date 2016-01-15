@@ -220,6 +220,16 @@ Interaction.prototype = {
  * @type {Object}
  */
 
+ /**
+  * Quiesce event. This event is emitted immediately after all necessary resources have been downloaded
+  * and a complete rendering has occurred (i.e. there are no outstanding network requests).
+  *
+  * @event quiesce
+  * @memberof Map
+  * @instance
+  * @type {Object}
+  */
+
 /**
  * Move start event. This event is emitted just before the map begins a transition from one
  * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.

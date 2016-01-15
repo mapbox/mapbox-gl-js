@@ -78,6 +78,7 @@ var Map = module.exports = function(options) {
         '_forwardLayerEvent',
         '_forwardTileEvent',
         '_onStyleLoad',
+        '_onStyleQuiesce',
         '_onStyleChange',
         '_onSourceAdd',
         '_onSourceRemove',
@@ -396,6 +397,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this.style) {
             this.style
                 .off('load', this._onStyleLoad)
+                .off('quiesce', this._onStyleQuiesce)
                 .off('error', this._forwardStyleEvent)
                 .off('change', this._onStyleChange)
                 .off('source.add', this._onSourceAdd)
@@ -427,6 +429,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         this.style
             .on('load', this._onStyleLoad)
+            .on('quiesce', this._onStyleQuiesce)
             .on('error', this._forwardStyleEvent)
             .on('change', this._onStyleChange)
             .on('source.add', this._onSourceAdd)
@@ -851,6 +854,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             this.jumpTo(this.style.stylesheet);
         }
         this.style._cascade(this._classes, {transition: false});
+        this._forwardStyleEvent(e);
+    },
+
+    _onStyleQuiesce: function(e) {
+        this.fire('quiesce', util.extend({style: e.target}, e));
         this._forwardStyleEvent(e);
     },
 
