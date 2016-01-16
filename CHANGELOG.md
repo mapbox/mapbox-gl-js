@@ -16,7 +16,7 @@ Fix patterns and icons for mismatched pixelRatios (#1851)
 Fix missing labels when text size 0 at max zoom (#1809)
 Use linear interp when pixel ratios don't match (#1601)
 Fix blank areas, flickering in raster layers (#1876, #675)
-Fix labels slipping/cropping at tile bounds (#1882, #757)
+Fix labels slipping/cropping at tile bounds (#757)
 
 #### UX Improvements
 Improve touch handler perceived performance (#1844)
