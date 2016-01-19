@@ -268,7 +268,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         bearing = this._normalizeBearing(bearing, start);
 
         this.rotating = true;
-        this.fire('movestart');
+        if (!options.noMoveStart) {
+            this.fire('movestart');
+        }
 
         this._ease(function(k) {
             tr.setBearingAround(interpolate(start, bearing, k), around);
@@ -334,11 +336,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {LngLatBounds|Array<Array<number>>} bounds [[minLng, minLat], [maxLng, maxLat]]
      * @param {Object} options
-     * @param {number} [options.speed=1.2] How fast animation occurs
-     * @param {number} [options.curve=1.42] How much zooming out occurs during animation
+     * @param {boolean} [options.linear] When true, the map transitions to the new camera using
+     *     {@link #Map.easeTo}. When false, the map transitions using {@link #Map.flyTo}. See
+     *     {@link #Map.flyTo} for information on options specific to that animation transition.
      * @param {Function} options.easing
      * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
-     * @param {number} options.maxZoom
+     * @param {number} options.maxZoom The resulting zoom level will be at most
+     *     this value.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -388,13 +392,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             bearingChanged = false,
             pitchChanged = false;
 
-        if ('center' in options) {
-            tr.center = LngLat.convert(options.center);
-        }
-
         if ('zoom' in options && tr.zoom !== +options.zoom) {
             zoomChanged = true;
             tr.zoom = +options.zoom;
+        }
+
+        if ('center' in options) {
+            tr.center = LngLat.convert(options.center);
         }
 
         if ('bearing' in options && tr.bearing !== +options.bearing) {
@@ -426,7 +430,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Easing animation to a specified location/zoom/bearing
+     * Change any combination of center, zoom, bearing, and pitch, with a smooth animation
+     * between old and new values. The map will retain the current values for any options
+     * not included in `options`.
      *
      * @param {CameraOptions|AnimationOptions} options map view and animation options
      * @fires movestart
@@ -445,6 +451,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var tr = this.transform,
             offset = Point.convert(options.offset).rotate(-tr.angle),
             from = tr.point,
+            startWorldSize = tr.worldSize,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -455,13 +462,17 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
             scale = tr.zoomScale(zoom - startZoom),
             to = 'center' in options ? tr.project(LngLat.convert(options.center)).sub(offset.div(scale)) : from,
-            around = LngLat.convert(options.around);
+            around = 'center' in options ? null : LngLat.convert(options.around);
 
         if (zoom !== startZoom) {
             this.zooming = true;
         }
         if (startBearing !== bearing) {
             this.rotating = true;
+        }
+
+        if (pitch !== startPitch) {
+            this.pitching = true;
         }
 
         if (this.zooming && !around) {
@@ -471,17 +482,18 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.fire('movestart');
 
         this._ease(function (k) {
-            if (this.zooming) {
+            if (this.zooming && around) {
                 tr.setZoomAround(interpolate(startZoom, zoom, k), around);
             } else {
-                tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
+                if (this.zooming) tr.zoom = interpolate(startZoom, zoom, k);
+                tr.center = tr.unproject(from.add(to.sub(from).mult(k)), startWorldSize);
             }
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
 
-            if (pitch !== startPitch) {
+            if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
@@ -492,9 +504,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             if (this.rotating) {
                 this.fire('rotate');
             }
+            if (this.pitching) {
+                this.fire('pitch');
+            }
         }, function() {
             this.zooming = false;
             this.rotating = false;
+            this.pitching = false;
             this.fire('moveend');
         }, options);
 
@@ -502,12 +518,28 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Flying animation to a specified location/zoom/bearing with automatic curve
+     * Change any combination of center, zoom, bearing, and pitch, animated along a curve that
+     * evokes flight. The transition animation seamlessly incorporates zooming and panning to help
+     * the user find his or her bearings even after traversing a great distance.
      *
-     * @param {CameraOptions} options map view options
-     * @param {number} [options.speed=1.2] How fast animation occurs
-     * @param {number} [options.curve=1.42] How much zooming out occurs during animation
-     * @param {Function} [options.easing]
+     * @param {CameraOptions|AnimationOptions} options map view and animation options
+     * @param {number} [options.curve=1.42] Relative amount of zooming that takes place along the
+     *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+     *     value minimizes zooming for something closer to {@link #Map.easeTo}. 1.42 is the average
+     *     value selected by participants in the user study in
+     *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+     *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+     *     value of 1 would produce a circular motion.
+     * @param {number} [options.minZoom] Zero-based zoom level at the peak of the flight path. If
+     *     `options.curve` is specified, this option is ignored.
+     * @param {number} [options.speed=1.2] Average speed of the animation. A speed of 1.2 means that
+     *     the map appears to move along the flight path by 1.2 times `options.curve` screenfuls every
+     *     second. A _screenful_ is the visible span in pixels. It does not correspond to a fixed
+     *     physical distance but rather varies by zoom level.
+     * @param {number} [options.screenSpeed] Average speed of the animation, measured in screenfuls
+     *     per second, assuming a linear timing curve. If `options.speed` is specified, this option
+     *     is ignored.
+     * @param {Function} [options.easing] Transition timing curve
      * @fires movestart
      * @fires moveend
      * @returns {this}
@@ -526,6 +558,14 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * });
      */
     flyTo: function(options) {
+        // This method implements an “optimal path” animation, as detailed in:
+        //
+        // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
+        //   ’03. pp. 15–22. <https://www.win.tue.nl/~vanwijk/zoompan.pdf#page=5>.
+        //
+        // Where applicable, local variable documentation begins with the associated variable or
+        // function in van Wijk (2003).
+
         this.stop();
 
         options = util.extend({
@@ -538,25 +578,55 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         var tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
-            startBearing = this.getBearing();
+            startBearing = this.getBearing(),
+            startPitch = this.getPitch();
 
         var center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
         var zoom = 'zoom' in options ?  +options.zoom : startZoom;
         var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
+        var pitch = 'pitch' in options ? +options.pitch : startPitch;
+
+        // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
+        // interpolating between the two endpoints will cross it.
+        if (Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
+            if (tr.center.lng > 0 && center.lng < 0) {
+                center.lng += 360;
+            } else if (tr.center.lng < 0 && center.lng > 0) {
+                center.lng -= 360;
+            }
+        }
 
         var scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = tr.project(center).sub(offset.div(scale));
+            to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
         var startWorldSize = tr.worldSize,
             rho = options.curve,
-            V = options.speed,
 
+            // w₀: Initial visible span, measured in pixels at the initial scale.
             w0 = Math.max(tr.width, tr.height),
+            // w₁: Final visible span, measured in pixels with respect to the initial scale.
             w1 = w0 / scale,
-            u1 = to.sub(from).mag(),
-            rho2 = rho * rho;
+            // Length of the flight path as projected onto the ground plane, measured in pixels from
+            // the world image origin at the initial scale.
+            u1 = to.sub(from).mag();
 
+        if ('minZoom' in options) {
+            var minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
+            // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
+            // scale.
+            var wMax = w0 / tr.zoomScale(minZoom - startZoom);
+            rho = Math.sqrt(wMax / u1 * 2);
+        }
+
+        // ρ²
+        var rho2 = rho * rho;
+
+        /**
+         * rᵢ: Returns the zoom-out factor at one end of the animation.
+         *
+         * @param i 0 for the ascent or 1 for the descent.
+         */
         function r(i) {
             var b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
             return Math.log(Math.sqrt(b * b + 1) - b);
@@ -566,13 +636,27 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         function cosh(n) { return (Math.exp(n) + Math.exp(-n)) / 2; }
         function tanh(n) { return sinh(n) / cosh(n); }
 
+        // r₀: Zoom-out factor during ascent.
         var r0 = r(0),
+            /**
+             * w(s): Returns the visible span on the ground, measured in pixels with respect to the
+             * initial scale.
+             *
+             * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
+             */
             w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
+            /**
+             * u(s): Returns the distance along the flight path as projected onto the ground plane,
+             * measured in pixels from the world image origin at the initial scale.
+             */
             u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; },
+            // S: Total length of the flight path, measured in ρ-screenfuls.
             S = (r(1) - r0) / rho;
 
+        // When u₀ = u₁, the optimal path doesn’t require both ascent and descent.
         if (Math.abs(u1) < 0.000001) {
-            if (Math.abs(w0 - w1) < 0.000001) return this;
+            // Perform a more or less instantaneous transition if the path is too short.
+            if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options);
 
             var k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
@@ -581,31 +665,45 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             w = function(s) { return Math.exp(k * rho * s); };
         }
 
-        options.duration = 1000 * S / V;
+        if ('duration' in options) {
+            options.duration = +options.duration;
+        } else {
+            var V = 'screenSpeed' in options ? +options.screenSpeed / rho : +options.speed;
+            options.duration = 1000 * S / V;
+        }
 
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
+        if (startPitch !== pitch) this.pitching = true;
 
         this.fire('movestart');
 
         this._ease(function (k) {
+            // s: The distance traveled along the flight path, measured in ρ-screenfuls.
             var s = k * S,
                 us = u(s);
 
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
             tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
 
-            if (bearing !== startBearing) {
+            if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
+            }
+            if (this.pitching) {
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
 
             this.fire('move').fire('zoom');
-            if (bearing !== startBearing) {
+            if (this.rotating) {
                 this.fire('rotate');
+            }
+            if (this.pitching) {
+                this.fire('pitch');
             }
         }, function() {
             this.zooming = false;
             this.rotating = false;
+            this.pitching = false;
             this.fire('moveend');
         }, options);
 

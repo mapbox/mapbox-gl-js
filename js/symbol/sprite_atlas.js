@@ -1,6 +1,7 @@
 'use strict';
 
 var BinPack = require('./bin_pack');
+var browser = require('../util/browser');
 
 module.exports = SpriteAtlas;
 function SpriteAtlas(width, height) {
@@ -37,49 +38,6 @@ SpriteAtlas.prototype = {
     }
 };
 
-SpriteAtlas.prototype.resize = function(newRatio) {
-    if (this.pixelRatio === newRatio) return false;
-
-    var oldRatio = this.pixelRatio;
-    this.pixelRatio = newRatio;
-
-    if (this.canvas) {
-        this.canvas.width = this.width * this.pixelRatio;
-        this.canvas.height = this.height * this.pixelRatio;
-    }
-
-    if (this.data) {
-        var oldData = this.data;
-
-        this.data = false;
-        this.allocate();
-        this.texture = false;
-
-        var oldWidth = this.width * oldRatio;
-        var oldHeight = this.height * oldRatio;
-        var newWidth = this.width * newRatio;
-        var newHeight = this.height * newRatio;
-
-        // Basic image scaling. TODO: Replace this with better image scaling.
-        var newImage = this.data;
-        var oldImage = oldData;
-
-        for (var y = 0; y < newHeight; y++) {
-            var oldYOffset = Math.floor((y * oldHeight) / newHeight) * oldWidth;
-            var newYOffset = y * newWidth;
-            for (var x = 0; x < newWidth; x++) {
-                var oldX = Math.floor((x * oldWidth) / newWidth);
-                newImage[newYOffset + x] = oldImage[oldYOffset + oldX];
-            }
-        }
-
-        oldData = null;
-        this.dirty = true;
-    }
-
-    return this.dirty;
-};
-
 function copyBitmap(src, srcStride, srcX, srcY, dst, dstStride, dstX, dstY, width, height, wrap) {
     var srcI = srcY * srcStride + srcX;
     var dstI = dstY * dstStride + dstX;
@@ -105,6 +63,9 @@ function copyBitmap(src, srcStride, srcX, srcY, dst, dstStride, dstX, dstY, widt
 
 SpriteAtlas.prototype.allocateImage = function(pixelWidth, pixelHeight) {
 
+    pixelWidth = pixelWidth / this.pixelRatio;
+    pixelHeight = pixelHeight / this.pixelRatio;
+
     // Increase to next number divisible by 4, but at least 1.
     // This is so we can scale down the texture coordinates and pack them
     // into 2 bytes rather than 4 bytes.
@@ -116,12 +77,10 @@ SpriteAtlas.prototype.allocateImage = function(pixelWidth, pixelHeight) {
     // We have to allocate a new area in the bin, and store an empty image in it.
     // Add a 1px border around every image.
     var rect = this.bin.allocate(packWidth, packHeight);
-    if (rect.w === 0) {
+    if (rect.x < 0) {
+        console.warn('SpriteAtlas out of space.');
         return rect;
     }
-
-    rect.originalWidth = pixelWidth;
-    rect.originalHeight = pixelHeight;
 
     return rect;
 };
@@ -140,14 +99,12 @@ SpriteAtlas.prototype.getImage = function(name, wrap) {
         return null;
     }
 
-    var width = pos.width / pos.pixelRatio;
-    var height = pos.height / pos.pixelRatio;
-    var rect = this.allocateImage(width, height);
-    if (rect.w === 0) {
+    var rect = this.allocateImage(pos.width, pos.height);
+    if (rect.x < 0) {
         return rect;
     }
 
-    var image = new AtlasImage(rect, width, height, pos.sdf);
+    var image = new AtlasImage(rect, pos.width / pos.pixelRatio, pos.height / pos.pixelRatio, pos.sdf, pos.pixelRatio / this.pixelRatio);
     this.images[name] = image;
 
     this.copy(rect, pos, wrap);
@@ -156,6 +113,7 @@ SpriteAtlas.prototype.getImage = function(name, wrap) {
 };
 
 
+// Return position of a repeating fill pattern.
 SpriteAtlas.prototype.getPosition = function(name, repeating) {
     var image = this.getImage(name, repeating);
     var rect = image && image.rect;
@@ -164,14 +122,12 @@ SpriteAtlas.prototype.getPosition = function(name, repeating) {
         return null;
     }
 
-    // When the image is repeating, get the correct position of the image, rather than the
-    // one rounded up to 4 pixels.
-    var width = repeating ? image.width : rect.w;
-    var height = repeating ? image.height : rect.h;
+    var width = image.width * image.pixelRatio;
+    var height = image.height * image.pixelRatio;
     var padding = 1;
 
     return {
-        size: [width, height],
+        size: [image.width, image.height],
         tl: [(rect.x + padding)         / this.width, (rect.y + padding)          / this.height],
         br: [(rect.x + padding + width) / this.width, (rect.y + padding + height) / this.height]
     };
@@ -191,7 +147,6 @@ SpriteAtlas.prototype.allocate = function() {
 
 
 SpriteAtlas.prototype.copy = function(dst, src, wrap) {
-    // if (!sprite->raster) return;
     if (!this.sprite.img.data) return;
     var srcImg = new Uint32Array(this.sprite.img.data.buffer);
 
@@ -218,6 +173,14 @@ SpriteAtlas.prototype.copy = function(dst, src, wrap) {
 };
 
 SpriteAtlas.prototype.setSprite = function(sprite) {
+    if (sprite) {
+        this.pixelRatio = browser.devicePixelRatio > 1 ? 2 : 1;
+
+        if (this.canvas) {
+            this.canvas.width = this.width * this.pixelRatio;
+            this.canvas.height = this.height * this.pixelRatio;
+        }
+    }
     this.sprite = sprite;
 };
 
@@ -295,9 +258,10 @@ SpriteAtlas.prototype.bind = function(gl, linear) {
     }
 };
 
-function AtlasImage(rect, width, height, sdf) {
+function AtlasImage(rect, width, height, sdf, pixelRatio) {
     this.rect = rect;
     this.width = width;
     this.height = height;
     this.sdf = sdf;
+    this.pixelRatio = pixelRatio;
 }

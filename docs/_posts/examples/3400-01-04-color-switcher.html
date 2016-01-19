@@ -1,0 +1,63 @@
+---
+layout: example
+category: example
+title: Change a layer's color with buttons
+description: Using setPaintProperty to change a layer's fill color
+---
+<style>
+    #colorSwitcherWater {
+        margin: 0;
+        padding: 0;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 70px;
+        height: 95%;
+        list-style-type: none;
+    }
+
+    #colorSwitcherBuilding {
+        margin: 0;
+        padding: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 70px;
+        height: 100%;
+        list-style-type: none;
+    }
+
+    .color-swatch {
+        height: 20%;
+        width: 100%;
+        cursor: pointer;
+    }
+</style>
+<div id='map'></div>
+<ul id='colorSwitcherWater'>
+    <li class="color-swatch" onclick="switchColor('#ffffcc', 'water')" style="background-color: #ffffcc"></li>
+    <li class="color-swatch" onclick="switchColor('#a1dab4', 'water')" style="background-color: #a1dab4"></li>
+    <li class="color-swatch" onclick="switchColor('#41b6c4', 'water')" style="background-color: #41b6c4"></li>
+    <li class="color-swatch" onclick="switchColor('#2c7fb8', 'water')" style="background-color: #2c7fb8"></li>
+    <li class="color-swatch" onclick="switchColor('#253494', 'water')" style="background-color: #253494"></li>
+</ul>
+
+<ul id='colorSwitcherBuilding'>
+    <li class="color-swatch" onclick="switchColor('#fed976', 'building')" style="background-color: #fed976"></li>
+    <li class="color-swatch" onclick="switchColor('#feb24c', 'building')" style="background-color: #feb24c"></li>
+    <li class="color-swatch" onclick="switchColor('#fd8d3c', 'building')" style="background-color: #fd8d3c"></li>
+    <li class="color-swatch" onclick="switchColor('#f03b20', 'building')" style="background-color: #f03b20"></li>
+    <li class="color-swatch" onclick="switchColor('#bd0026', 'building')" style="background-color: #bd0026"></li>
+</ul>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v8',
+    center: [12.338, 45.4385],
+    zoom: 17.4
+});
+
+function switchColor(myColor, layer) {
+    map.setPaintProperty(layer, 'fill-color', myColor);
+}
+</script>

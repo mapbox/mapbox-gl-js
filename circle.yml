@@ -1,18 +1,19 @@
 machine:
   node:
-    version: '0.10'
+    version: '4'
 dependencies:
-  pre:
-    - sudo apt-get update; sudo apt-get -y install python-pip libglew-dev gdb
-    - sudo pip install awscli
+  override:
+    - npm update && npm run prepublish
 test:
   override:
     - ./ci.sh
 deployment:
-  any:
-    branch: /.*/
+  release:
+    tag: /v[0-9]+\.[0-9]+\.[0-9]+/
     commands:
-      - 'if [[ -z $CIRCLE_PR_NUMBER ]]; then ./deploy.sh $CIRCLE_BRANCH; fi'
+      - pip install awscli
+      - ./deploy.sh
 general:
   artifacts:
-    - "node_modules/mapbox-gl-test-suite/tests/index.html"
+    - "node_modules/mapbox-gl-test-suite/render-tests/index.html"
+    - "node_modules/mapbox-gl-test-suite/query-tests/index.html"

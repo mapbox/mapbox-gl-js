@@ -9,10 +9,15 @@ module.exports = Attribution;
 /**
  * Creates an attribution control
  * @class Attribution
+ * @param {Object} [options]
+ * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
  * @example
- * map.addControl(new mapboxgl.Attribution());
+ * var map = new mapboxgl.Map({attributionContro: false})
+ *     .addControl(new mapboxgl.Navigation({position: 'top-left'}));
  */
-function Attribution() {}
+function Attribution(options) {
+    util.setOptions(this, options);
+}
 
 Attribution.prototype = util.inherit(Control, {
     options: {

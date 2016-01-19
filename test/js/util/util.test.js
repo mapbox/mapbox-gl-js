@@ -145,6 +145,16 @@ test('util', function(t) {
         }));
     });
 
+    t.test('asyncAll - empty', function(t) {
+        t.equal(util.asyncAll([], function(data, callback) {
+            callback(null, 'foo');
+        }, function(err, results) {
+            t.ifError(err);
+            t.deepEqual(results, []);
+            t.end();
+        }));
+    });
+
     t.test('coalesce', function(t) {
         t.equal(util.coalesce(undefined, 1), 1);
         t.equal(util.coalesce(2, 1), 2);
@@ -178,12 +188,12 @@ test('util', function(t) {
         t.end();
     });
 
-    t.test('asyncEach', function(t) {
+    t.test('asyncAll', function(t) {
         var expect = 1;
-        util.asyncEach([], function(callback) { callback(); }, function() {
+        util.asyncAll([], function(callback) { callback(); }, function() {
             t.ok('immediate callback');
         });
-        util.asyncEach([1, 2, 3], function(number, callback) {
+        util.asyncAll([1, 2, 3], function(number, callback) {
             t.equal(number, expect++);
             t.ok(callback instanceof Function);
             callback();

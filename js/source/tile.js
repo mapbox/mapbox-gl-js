@@ -1,10 +1,7 @@
 'use strict';
 
-var glmatrix = require('gl-matrix');
-var mat2 = glmatrix.mat2;
-var mat4 = glmatrix.mat4;
 var util = require('../util/util');
-var BufferSet = require('../data/buffer/buffer_set');
+var Buffer = require('../data/buffer');
 
 module.exports = Tile;
 
@@ -16,56 +13,18 @@ module.exports = Tile;
  * @param {number} size
  * @private
  */
-function Tile(coord, size) {
+function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
     this.loaded = false;
     this.uses = 0;
     this.tileSize = size;
+    this.sourceMaxZoom = sourceMaxZoom;
 }
 
 Tile.prototype = {
     // todo unhardcode
     tileExtent: 4096,
-
-    /**
-     * Calculate the internal posMatrix that this tile uses to display
-     * itself in a map, given a coordinate as (z, x, y) and a transform
-     * @param {number} z
-     * @param {number} x
-     * @param {number} y
-     * @param {Object} transform
-     * @private
-     */
-    calculateMatrices: function(z, x, y, transform) {
-
-        // Initialize model-view matrix that converts from the tile coordinates
-        // to screen coordinates.
-        var tileScale = Math.pow(2, z);
-        var scale = transform.worldSize / tileScale;
-
-        // TODO: remove
-        this.scale = scale;
-
-        // The position matrix
-        this.posMatrix = new Float64Array(16);
-        mat4.identity(this.posMatrix);
-        mat4.translate(this.posMatrix, this.posMatrix, [x * scale, y * scale, 0]);
-
-        mat4.scale(this.posMatrix, this.posMatrix, [ scale / this.tileExtent, scale / this.tileExtent, 1 ]);
-        mat4.multiply(this.posMatrix, transform.getProjMatrix(), this.posMatrix);
-
-        // The extrusion matrix.
-        this.exMatrix = mat4.create();
-        mat4.ortho(this.exMatrix, 0, transform.width, transform.height, 0, 0, -1);
-        //mat4.rotateZ(this.exMatrix, this.exMatrix, -transform.angle);
-
-        // 2x2 matrix for rotating points
-        this.rotationMatrix = mat2.create();
-        mat2.rotate(this.rotationMatrix, this.rotationMatrix, transform.angle);
-
-        this.posMatrix = new Float32Array(this.posMatrix);
-    },
 
     /**
      * Given a coordinate position, zoom that coordinate to my zoom and
@@ -74,12 +33,11 @@ Tile.prototype = {
      * @returns {Object} position
      * @private
      */
-    positionAt: function(coord, sourceMaxZoom) {
-        coord = coord.zoomTo(Math.min(this.coord.z, sourceMaxZoom));
+    positionAt: function(coord) {
+        var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
         return {
-            x: (coord.column - this.coord.x) * 4096,
-            y: (coord.row - this.coord.y) * 4096,
-            scale: this.scale
+            x: (zoomedCoord.column - this.coord.x) * this.tileExtent,
+            y: (zoomedCoord.row - this.coord.y) * this.tileExtent
         };
     },
 
@@ -98,7 +56,7 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
-        this.buffers = new BufferSet(data.buffers);
+        this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
         this.tileExtent = data.extent;
     },
@@ -118,13 +76,13 @@ Tile.prototype = {
             return;
         }
 
-        this.buffers.glyphVertex.destroy(painter.gl);
-        this.buffers.glyphElement.destroy(painter.gl);
-        this.buffers.iconVertex.destroy(painter.gl);
-        this.buffers.iconElement.destroy(painter.gl);
-        this.buffers.collisionBoxVertex.destroy(painter.gl);
+        if (this.buffers.glyphVertex) this.buffers.glyphVertex.destroy(painter.gl);
+        if (this.buffers.glyphElement) this.buffers.glyphElement.destroy(painter.gl);
+        if (this.buffers.iconVertex) this.buffers.iconVertex.destroy(painter.gl);
+        if (this.buffers.iconElement) this.buffers.iconElement.destroy(painter.gl);
+        if (this.buffers.collisionBoxVertex) this.buffers.collisionBoxVertex.destroy(painter.gl);
 
-        var buffers = new BufferSet(data.buffers);
+        var buffers = unserializeBuffers(data.buffers);
         this.buffers.glyphVertex = buffers.glyphVertex;
         this.buffers.glyphElement = buffers.glyphElement;
         this.buffers.iconVertex = buffers.iconVertex;
@@ -146,8 +104,48 @@ Tile.prototype = {
      */
     unloadVectorData: function(painter) {
         for (var b in this.buffers) {
-            this.buffers[b].destroy(painter.gl);
+            if (this.buffers[b]) this.buffers[b].destroy(painter.gl);
         }
         this.buffers = null;
+    },
+
+    redoPlacement: function(source) {
+        if (!this.loaded || this.redoingPlacement) {
+            this.redoWhenDone = true;
+            return;
+        }
+
+        this.redoingPlacement = true;
+
+        source.dispatcher.send('redo placement', {
+            uid: this.uid,
+            source: source.id,
+            angle: source.map.transform.angle,
+            pitch: source.map.transform.pitch,
+            collisionDebug: source.map.collisionDebug
+        }, done.bind(this), this.workerID);
+
+        function done(_, data) {
+            this.reloadSymbolData(data, source.map.painter);
+            source.fire('tile.load', {tile: this});
+
+            this.redoingPlacement = false;
+            if (this.redoWhenDone) {
+                this.redoPlacement(source);
+                this.redoWhenDone = false;
+            }
+        }
+    },
+
+    getElementGroups: function(layer, shaderName) {
+        return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
     }
 };
+
+function unserializeBuffers(input) {
+    var output = {};
+    for (var k in input) {
+        output[k] = new Buffer(input[k]);
+    }
+    return output;
+}

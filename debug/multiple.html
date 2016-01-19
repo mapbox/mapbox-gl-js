@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        .map { width: 300px; height: 300px; display: block; float: left; margin: 5px; }
+    </style>
+</head>
+
+<div class='map' id='map1'></div>
+<div class='map' id='map2'></div>
+
+<script src='mapbox-gl.js'></script>
+<script>
+mapboxgl.accessToken = getAccessToken();
+
+function getAccessToken() {
+    var match = location.search.match(/access_token=([^&\/]*)/);
+    var accessToken = match && match[1];
+
+    if (accessToken) {
+        localStorage.accessToken = accessToken;
+    } else {
+        accessToken = localStorage.accessToken;
+    }
+
+    return accessToken;
+}
+
+var style = {
+    "version": 8,
+    "sources": {
+        "satellite": {
+            "type": "raster",
+            "url": "mapbox://mapbox.satellite",
+            "tileSize": 256
+        },
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "satellite",
+        "type": "raster",
+        "source": "satellite"
+    }]
+};
+
+var map1 = new mapboxgl.Map({
+  container: 'map1',
+  minZoom: 14,
+  zoom: 17,
+  center: [-122.514426, 37.562984],
+  bearing: -96,
+  style: style,
+  hash: false
+});
+
+var map2 = new mapboxgl.Map({
+  container: 'map2',
+  minZoom: 14,
+  zoom: 17,
+  center: [-122.514426, 37.562984],
+  bearing: -96,
+  style: style,
+  hash: false
+});
+
+function popup(e) {
+    if (e.originalEvent.shiftKey) return;
+    (new mapboxgl.Popup())
+        .setLngLat(e.lngLat)
+        .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
+        .addTo(this);
+}
+
+map1.on('click', popup.bind(map1));
+map2.on('click', popup.bind(map2));
+
+</script>
+
+</body>
+</html>

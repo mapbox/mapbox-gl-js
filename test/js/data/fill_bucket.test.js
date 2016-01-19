@@ -6,7 +6,6 @@ var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
 var FillBucket = require('../../../js/data/fill_bucket');
-var BufferSet = require('../../../js/data/buffer/buffer_set');
 var path = require('path');
 
 // Load a fill feature from fixture tile.
@@ -18,8 +17,10 @@ test('FillBucket', function(t) {
     var warn = console.warn;
     console.warn = function() {};
 
-    var buffers = new BufferSet();
-    var bucket = new FillBucket(buffers);
+    var bucket = new FillBucket({
+        buffers: {},
+        layer: { id: 'test', type: 'fill', layout: {} }
+    });
     t.ok(bucket);
 
     t.equal(bucket.addFill([
@@ -33,7 +34,7 @@ test('FillBucket', function(t) {
         new Point(10, 20)
     ]), undefined);
 
-    t.equal(bucket.addFeature(feature.loadGeometry()), undefined);
+    t.equal(bucket.addFeature(feature), undefined);
 
     // Put it back.
     console.warn = warn;

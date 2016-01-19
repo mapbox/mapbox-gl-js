@@ -68,38 +68,6 @@ GlyphAtlas.prototype.getRects = function() {
     return rects;
 };
 
-GlyphAtlas.prototype.removeGlyphs = function(id) {
-    for (var key in this.ids) {
-
-        var ids = this.ids[key];
-
-        var pos = ids.indexOf(id);
-        if (pos >= 0) ids.splice(pos, 1);
-        this.ids[key] = ids;
-
-        if (!ids.length) {
-            var rect = this.index[key];
-
-            var target = this.data;
-            for (var y = 0; y < rect.h; y++) {
-                var y1 = this.width * (rect.y + y) + rect.x;
-                for (var x = 0; x < rect.w; x++) {
-                    target[y1 + x] = 0;
-                }
-            }
-
-            this.dirty = true;
-
-            this.bin.release(rect);
-
-            delete this.index[key];
-            delete this.ids[key];
-        }
-    }
-
-
-    this.updateTexture(this.gl);
-};
 
 GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     if (!glyph) {
@@ -137,6 +105,10 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
 
     var rect = this.bin.allocate(packWidth, packHeight);
     if (rect.x < 0) {
+        this.resize();
+        rect = this.bin.allocate(packWidth, packHeight);
+    }
+    if (rect.x < 0) {
         console.warn('glyph bitmap overflow');
         return { glyph: glyph, rect: null };
     }
@@ -157,6 +129,35 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     this.dirty = true;
 
     return rect;
+};
+
+GlyphAtlas.prototype.resize = function() {
+    var origw = this.width,
+        origh = this.height;
+
+    // For now, don't grow the atlas beyond 1024x1024 because of how
+    // texture coords pack into unsigned byte in symbol bucket.
+    if (origw > 512 || origh > 512) return;
+
+    if (this.texture) {
+        if (this.gl) {
+            this.gl.deleteTexture(this.texture);
+        }
+        this.texture = null;
+    }
+
+    this.width *= 2;
+    this.height *= 2;
+    this.bin.resize(this.width, this.height);
+
+    var buf = new ArrayBuffer(this.width * this.height),
+        src, dst;
+    for (var i = 0; i < origh; i++) {
+        src = new Uint8Array(this.data.buffer, origh * i, origw);
+        dst = new Uint8Array(buf, origh * i * 2, origw);
+        dst.set(src);
+    }
+    this.data = new Uint8Array(buf);
 };
 
 GlyphAtlas.prototype.bind = function(gl) {

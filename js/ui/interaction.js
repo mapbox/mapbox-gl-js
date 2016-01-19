@@ -7,66 +7,13 @@ var handlers = {
     dragPan: require('./handler/drag_pan'),
     keyboard: require('./handler/keyboard'),
     doubleClickZoom: require('./handler/dblclick_zoom'),
-    pinch: require('./handler/pinch')
+    touchZoomRotate: require('./handler/touch_zoom_rotate')
 };
 
 var DOM = require('../util/dom'),
     util = require('../util/util');
 
 module.exports = Interaction;
-
-/**
- * Mouse move event.
- *
- * @event mousemove
- * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
- */
-
-/**
- * Click event.
- *
- * @event click
- * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
- */
-
-/**
- * Double click event.
- *
- * @event dblclick
- * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
- */
-
-/**
- * Context menu event.
- *
- * @event contextmenu
- * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
- */
-
-/**
- * Load event. This event is emitted immediately after all necessary resources have been downloaded
- * and the first visually complete rendering has occurred.
- *
- * @event load
- * @memberof Map
- * @type {Object}
- */
 
 function Interaction(map) {
     this._map = map;
@@ -115,14 +62,21 @@ Interaction.prototype = {
     },
 
     _onMouseDown: function (e) {
+        this._map.stop();
         this._startPos = DOM.mousePos(this._el, e);
+        this._fireEvent('mousedown', e);
     },
 
     _onMouseUp: function (e) {
-        if (this._contextMenuFired && DOM.mousePos(this._el, e).equals(this._startPos))
-            this._fireEvent('contextmenu', e);
+        var map = this._map,
+            rotating = map.dragRotate && map.dragRotate.active;
 
-        this._contextMenuFired = null;
+        if (this._contextMenuEvent && !rotating) {
+            this._fireEvent('contextmenu', this._contextMenuEvent);
+        }
+
+        this._contextMenuEvent = null;
+        this._fireEvent('mouseup', e);
     },
 
     _onTouchStart: function (e) {
@@ -146,7 +100,8 @@ Interaction.prototype = {
         var map = this._map,
             el = this._el;
 
-        if (map.dragPan.active || map.dragRotate.active) return;
+        if (map.dragPan && map.dragPan.active) return;
+        if (map.dragRotate && map.dragRotate.active) return;
 
         var target = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
@@ -168,17 +123,132 @@ Interaction.prototype = {
         e.preventDefault();
     },
 
-    _onContextMenu: function () {
-        this._contextMenuFired = true;
+    _onContextMenu: function (e) {
+        this._contextMenuEvent = e;
+        e.preventDefault();
     },
 
     _fireEvent: function (type, e) {
         var pos = DOM.mousePos(this._el, e);
 
-        this._map.fire(type, {
+        return this._map.fire(type, {
             lngLat: this._map.unproject(pos),
             point: pos,
             originalEvent: e
         });
     }
 };
+
+
+/**
+ * Mouse down event.
+ *
+ * @event mousedown
+ * @memberof Map
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Mouse up event.
+ *
+ * @event mouseup
+ * @memberof Map
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Mouse move event.
+ *
+ * @event mousemove
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Click event.
+ *
+ * @event click
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Double click event.
+ *
+ * @event dblclick
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Context menu event.
+ *
+ * @event contextmenu
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Point} point the pixel location of the event
+ * @property {LngLat} lngLat the geographic location of the event
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Load event. This event is emitted immediately after all necessary resources have been downloaded
+ * and the first visually complete rendering has occurred.
+ *
+ * @event load
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ */
+
+/**
+ * Move start event. This event is emitted just before the map begins a transition from one
+ * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event movestart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ */
+
+/**
+ * Move event. This event is emitted repeatedly during animated transitions from one view to
+ * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event move
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ */
+
+/**
+ * Move end event. This event is emitted just after the map completes a transition from one
+ * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event moveend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ */

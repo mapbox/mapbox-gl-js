@@ -53,21 +53,45 @@ map.on('style.load', function() {
             "circle-color": "#f0f"
         }
     });
+
+    var bufferTimes = {};
+    map.on('tile.stats', function(bufferTimes) {
+        var _stats = [];
+        for (var name in bufferTimes) {
+            var value = Math.round(bufferTimes[name]);
+            if (isNaN(value)) continue;
+            var width = value;
+            _stats.push({name: name, value: value, width: width});
+        }
+        _stats = _stats.sort(function(a, b) { return b.value - a.value }).slice(0, 10);
+
+        var html = '';
+        for (var i in _stats) {
+            html += '<div style="width:' + _stats[i].width * 2 + 'px">' + _stats[i].value + 'ms - ' + _stats[i].name + '</div>';
+        }
+
+        document.getElementById('buffer').innerHTML = html;
+    });
 });
 
 map.on('click', function(e) {
+    if (e.originalEvent.shiftKey) return;
     (new mapboxgl.Popup())
         .setLngLat(map.unproject(e.point))
         .setHTML("<h1>Hello World!</h1>")
         .addTo(map);
 });
 
-document.getElementById('debug').onclick = function() {
+document.getElementById('debug-checkbox').onclick = function() {
     map.debug = !!this.checked;
 };
 
-document.getElementById('collision-debug').onclick = function() {
+document.getElementById('collision-debug-checkbox').onclick = function() {
     map.collisionDebug = !!this.checked;
+};
+
+document.getElementById('buffer-checkbox').onclick = function() {
+    document.getElementById('buffer').style.display = this.checked ? 'block' : 'none';
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native

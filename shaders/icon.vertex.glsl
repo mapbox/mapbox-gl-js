@@ -1,3 +1,5 @@
+precision mediump float;
+
 attribute vec2 a_pos;
 attribute vec2 a_offset;
 attribute vec4 a_data1;

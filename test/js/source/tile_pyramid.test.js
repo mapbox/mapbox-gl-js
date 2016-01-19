@@ -16,9 +16,7 @@ test('TilePyramid#coveringTiles', function(t) {
     });
 
     var transform = new Transform();
-
-    transform.width = 200;
-    transform.height = 200;
+    transform.resize(200, 200);
 
     transform.zoom = 0;
     t.deepEqual(pyramid.coveringTiles(transform), []);
@@ -234,11 +232,33 @@ test('TilePyramid#removeTile', function(t) {
     });
 });
 
+test('TilePyramid#tileAt', function(t) {
+    var pyramid = createPyramid({
+        load: function(tile) { tile.loaded = true; },
+        minzoom: 1,
+        maxzoom: 10,
+        tileSize: 512
+    });
+
+    var transform = new Transform();
+    transform.resize(512, 512);
+    transform.zoom = 1.5;
+    pyramid.update(true, transform);
+
+    var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+
+    t.deepEqual(result.tile.coord.id, 65);
+    t.deepEqual(result.scale, 724.0773439350247);
+    t.deepEqual(result.x, 0);
+    t.deepEqual(result.y, 2048);
+
+    t.end();
+});
+
 test('TilePyramid#update', function(t) {
     t.test('loads no tiles if used is false', function(t) {
         var transform = new Transform();
-        transform.width = 512;
-        transform.height = 512;
+        transform.resize(512, 512);
         transform.zoom = 0;
 
         var pyramid = createPyramid({});
@@ -250,8 +270,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('loads covering tiles', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({});
@@ -263,8 +282,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('removes unused tiles', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -290,8 +308,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
 
         var pyramid = createPyramid({
@@ -318,8 +335,7 @@ test('TilePyramid#update', function(t) {
 
     t.test('retains parent tiles for pending children (wrapped)', function(t) {
         var transform = new Transform();
-        transform.width = 511;
-        transform.height = 511;
+        transform.resize(511, 511);
         transform.zoom = 0;
         transform.center = new LngLat(360, 0);
 
@@ -343,6 +359,95 @@ test('TilePyramid#update', function(t) {
             new TileCoord(0, 0, 0, 1).id
         ]);
         t.end();
+    });
+
+    t.test('includes partially covered tiles in rendered tiles', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 2;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+        t.deepEqual(pyramid.orderedIDs(), [
+            new TileCoord(2, 1, 1).id,
+            new TileCoord(2, 2, 1).id,
+            new TileCoord(2, 1, 2).id,
+            new TileCoord(2, 2, 2).id
+        ]);
+
+        transform.zoom = 0;
+        pyramid.update(true, transform, 100);
+
+        t.deepEqual(pyramid.renderedIDs().length, 5);
+        t.end();
+    });
+
+    t.test('retains a parent tile for fading even if a tile is partially covered by children', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        var pyramid = createPyramid({
+            load: function(tile) {
+                tile.timeAdded = Infinity;
+                tile.loaded = true;
+            }
+        });
+
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 2;
+        pyramid.update(true, transform, 100);
+
+        transform.zoom = 1;
+        pyramid.update(true, transform, 100);
+
+        t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+        t.end();
+    });
+
+
+    t.test('retains overscaled loaded children', function(t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 16;
+        transform.center = new LngLat(0, 0);
+
+
+        var pyramid = createPyramid({
+            reparseOverscaled: true,
+            load: function(tile) {
+                tile.loaded = tile.coord.z === 16;
+            }
+        });
+
+        t.equal(pyramid.maxzoom, 14);
+
+        pyramid.update(true, transform);
+        t.deepEqual(pyramid.renderedIDs(), [
+            new TileCoord(16, 8191, 8191, 0).id,
+            new TileCoord(16, 8192, 8191, 0).id,
+            new TileCoord(16, 8192, 8192, 0).id,
+            new TileCoord(16, 8191, 8192, 0).id
+        ]);
+
+        transform.zoom = 15;
+        pyramid.update(true, transform);
+
+        t.deepEqual(pyramid.renderedIDs(), [
+            new TileCoord(16, 8191, 8191, 0).id,
+            new TileCoord(16, 8192, 8191, 0).id,
+            new TileCoord(16, 8192, 8192, 0).id,
+            new TileCoord(16, 8191, 8192, 0).id
+        ]);
+        t.end();
+
     });
 });
 
@@ -375,8 +480,7 @@ test('TilePyramid#clearTiles', function(t) {
 
 test('TilePyramid#tilesIn', function (t) {
     var transform = new Transform();
-    transform.width = 511;
-    transform.height = 511;
+    transform.resize(511, 511);
     transform.zoom = 1;
 
     var pyramid = createPyramid({
@@ -408,7 +512,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: 2048,
             maxX: 6144,
@@ -420,7 +525,8 @@ test('TilePyramid#tilesIn', function (t) {
                 coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
                 loaded: true,
                 uses: 1,
-                tileSize: 512
+                tileSize: 512,
+                sourceMaxZoom: 14
             },
             minX: -2048,
             maxX: 2048,
@@ -429,5 +535,33 @@ test('TilePyramid#tilesIn', function (t) {
         }
     ]);
 
+    t.end();
+});
+
+test('TilePyramid#loaded (no errors)', function (t) {
+    var pyramid = createPyramid({
+        load: function(tile) {
+            tile.loaded = true;
+        }
+    });
+
+    var coord = new TileCoord(0, 0, 0);
+    pyramid.addTile(coord);
+
+    t.ok(pyramid.loaded());
+    t.end();
+});
+
+test('TilePyramid#loaded (with errors)', function (t) {
+    var pyramid = createPyramid({
+        load: function(tile) {
+            tile.errored = true;
+        }
+    });
+
+    var coord = new TileCoord(0, 0, 0);
+    pyramid.addTile(coord);
+
+    t.ok(pyramid.loaded());
     t.end();
 });

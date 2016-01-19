@@ -1,8 +1,8 @@
 ---
 layout: example
 category: example
-title: Traditional tiles
-description: Using a tiled raster map
+title: Add a raster tile source
+description: Using a Mapbox raster tile source in a map
 ---
 <div id='map'></div>
 <script>
@@ -12,7 +12,7 @@ var map = new mapboxgl.Map({
     style: {
         "version": 8,
         "sources": {
-            "simple-tiles": {
+            "raster-tiles": {
                 "type": "raster",
                 "url": "mapbox://" + tileset,
                 "tileSize": 256
@@ -21,7 +21,7 @@ var map = new mapboxgl.Map({
         "layers": [{
             "id": "simple-tiles",
             "type": "raster",
-            "source": "simple-tiles",
+            "source": "raster-tiles",
             "minzoom": 0,
             "maxzoom": 22
         }]

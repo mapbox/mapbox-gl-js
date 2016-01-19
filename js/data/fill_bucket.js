@@ -1,23 +1,36 @@
 'use strict';
 
-var ElementGroups = require('./element_groups');
+var Bucket = require('./bucket');
+var util = require('../util/util');
 
 module.exports = FillBucket;
 
-function FillBucket(buffers) {
-    this.buffers = buffers;
-    this.elementGroups = new ElementGroups(buffers.fillVertex, buffers.fillElement, buffers.outlineElement);
+function FillBucket() {
+    Bucket.apply(this, arguments);
 }
 
-FillBucket.prototype.addFeatures = function() {
-    var features = this.features;
-    for (var i = 0; i < features.length; i++) {
-        var feature = features[i];
-        this.addFeature(feature.loadGeometry());
+FillBucket.prototype = util.inherit(Bucket, {});
+
+FillBucket.prototype.shaders = {
+    fill: {
+        vertexBuffer: true,
+        elementBuffer: true,
+        secondElementBuffer: true,
+        secondElementBufferComponents: 2,
+
+        attributeArgs: ['x', 'y'],
+
+        attributes: [{
+            name: 'pos',
+            components: 2,
+            type: Bucket.AttributeType.SHORT,
+            value: ['x', 'y']
+        }]
     }
 };
 
-FillBucket.prototype.addFeature = function(lines) {
+FillBucket.prototype.addFeature = function(feature) {
+    var lines = feature.loadGeometry();
     for (var i = 0; i < lines.length; i++) {
         this.addFill(lines[i]);
     }
@@ -38,34 +51,27 @@ FillBucket.prototype.addFill = function(vertices) {
 
     var len = vertices.length;
 
-    // Check whether this geometry buffer can hold all the required vertices.
-    this.elementGroups.makeRoomFor(len + 1);
-    var elementGroup = this.elementGroups.current;
-
-    var fillVertex = this.buffers.fillVertex;
-    var fillElement = this.buffers.fillElement;
-    var outlineElement = this.buffers.outlineElement;
+    // Expand this geometry buffer to hold all the required vertices.
+    var group = this.makeRoomFor('fill', len + 1);
 
     // We're generating triangle fans, so we always start with the first coordinate in this polygon.
-    var firstIndex = fillVertex.index - elementGroup.vertexStartIndex,
-        prevIndex, currentIndex, currentVertex;
-
+    var firstIndex, prevIndex;
     for (var i = 0; i < vertices.length; i++) {
-        currentIndex = fillVertex.index - elementGroup.vertexStartIndex;
-        currentVertex = vertices[i];
+        var currentVertex = vertices[i];
 
-        fillVertex.add(currentVertex.x, currentVertex.y);
-        elementGroup.vertexLength++;
+        var currentIndex = this.addFillVertex(currentVertex.x, currentVertex.y) - group.vertexStartIndex;
+        group.vertexLength++;
+        if (i === 0) firstIndex = currentIndex;
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            fillElement.add(firstIndex, prevIndex, currentIndex);
-            elementGroup.elementLength++;
+            this.addFillElement(firstIndex, prevIndex, currentIndex);
+            group.elementLength++;
         }
 
         if (i >= 1) {
-            outlineElement.add(prevIndex, currentIndex);
-            elementGroup.secondElementLength++;
+            this.addFillSecondElement(prevIndex, currentIndex);
+            group.secondElementLength++;
         }
 
         prevIndex = currentIndex;

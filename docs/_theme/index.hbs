@@ -1,0 +1,28 @@
+---
+layout: docs
+title: Mapbox GL JS API
+navigation:
+{{#each docs}}
+  - title: {{name}}
+    url: /api
+    id: {{permalink}}
+    subnav:
+    {{#each members.static}}
+      - title: .{{name}}
+        url: /api
+        id: {{permalink}}
+    {{/each}}
+    {{#each members.instance}}
+    {{#if event}}
+      - title: 'ⓔ {{name}}'
+        url: /api
+        id: {{permalink}}
+    {{else}}
+      - title: '#{{name}}'
+        url: /api
+        id: {{permalink}}
+    {{/if}}
+    {{/each}}
+{{/each}}
+---
+{{#each docs ~}}{{> section}}{{/each}}

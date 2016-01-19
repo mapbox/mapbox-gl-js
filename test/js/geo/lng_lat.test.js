@@ -35,4 +35,14 @@ test('LngLat', function(t) {
         t.deepEqual(new LngLat(190, 0).wrap(), { lng: -170, lat: 0 });
         t.end();
     });
+
+    t.test('#toArray', function(t) {
+        t.deepEqual(new LngLat(10, 20).toArray(), [10, 20]);
+        t.end();
+    });
+
+    t.test('#toString', function(t) {
+        t.equal(new LngLat(10, 20).toString(), 'LngLat(10, 20)');
+        t.end();
+    });
 });

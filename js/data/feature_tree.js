@@ -39,7 +39,7 @@ FeatureTree.prototype.query = function(args, callback) {
     var radius, bounds;
     if (typeof x !== 'undefined' && typeof y !== 'undefined') {
         // a point (or point+radius) query
-        radius = (params.radius || 0) * 4096 / args.scale;
+        radius = (params.radius || 0) * (args.tileExtent || 4096) / args.scale;
         bounds = [x - radius, y - radius, x + radius, y + radius];
     } else {
         // a rectangle query

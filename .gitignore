@@ -1,9 +1,11 @@
-/docs/_posts/3400-01-01-api.html
+/docs/api/index.html
 /_site
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
 /dist/mapbox-gl.js.map
 /node_modules
+npm-debug.log
 *.sublime-*
 coverage
 .DS_Store
+/bench/buffer/buffer_benchmark.js.map

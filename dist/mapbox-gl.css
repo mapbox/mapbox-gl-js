@@ -1,12 +1,3 @@
-@font-face {
-    font-family: 'mapboxgl';
-    src:url('font/icon.eot?v=1');
-    src:url('font/icon.eot?v=1#iefix-lwq1d6') format('embedded-opentype'),
-        url('font/icon.woff?v=1') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .mapboxgl-map {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     overflow: hidden;
@@ -44,7 +35,9 @@
 
 .mapboxgl-ctrl-group {
     border-radius: 4px;
-    border: 1px solid #ccc;
+    -moz-box-shadow: 0px 0px 2px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0px 0px 2px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 0px 2px rgba(0,0,0,0.1);
     overflow: hidden;
     background: #fff;
 }
@@ -71,20 +64,27 @@
 .mapboxgl-ctrl > button:hover {
     background-color: rgba(0,0,0,0.05);
 }
-.mapboxgl-ctrl-icon:before {
-    font-family: 'mapboxgl';
+.mapboxgl-ctrl-icon,
+.mapboxgl-ctrl-icon > div.arrow {
     speak: none;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
-    text-transform: none;
-    font-size: 20px;
-    line-height: 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out:before { content: '\e600'; }
-.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in:before  { content: '\e601'; }
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
+    padding: 5px;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg%20viewBox%3D%270%200%2020%2020%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%3E%0A%20%20%3Cpath%20style%3D%27fill%3A%23333333%3B%27%20d%3D%27m%207%2C9%20c%20-0.554%2C0%20-1%2C0.446%20-1%2C1%200%2C0.554%200.446%2C1%201%2C1%20l%206%2C0%20c%200.554%2C0%201%2C-0.446%201%2C-1%200%2C-0.554%20-0.446%2C-1%20-1%2C-1%20z%27%20%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-in  {
+    padding: 5px;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg%20viewBox%3D%270%200%2020%2020%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%3E%0A%20%20%3Cpath%20style%3D%27fill%3A%23333333%3B%27%20d%3D%27M%2010%206%20C%209.446%206%209%206.4459904%209%207%20L%209%209%20L%207%209%20C%206.446%209%206%209.446%206%2010%20C%206%2010.554%206.446%2011%207%2011%20L%209%2011%20L%209%2013%20C%209%2013.55401%209.446%2014%2010%2014%20C%2010.554%2014%2011%2013.55401%2011%2013%20L%2011%2011%20L%2013%2011%20C%2013.554%2011%2014%2010.554%2014%2010%20C%2014%209.446%2013.554%209%2013%209%20L%2011%209%20L%2011%207%20C%2011%206.4459904%2010.554%206%2010%206%20z%27%20%2F%3E%0A%3C%2Fsvg%3E%0A");
+}
+.mapboxgl-ctrl-icon.mapboxgl-ctrl-compass > div.arrow {
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2020%2020%27%3E%0A%09%3Cpolygon%20fill%3D%27%23333333%27%20points%3D%276%2C9%2010%2C1%2014%2C9%27%2F%3E%0A%09%3Cpolygon%20fill%3D%27%23CCCCCC%27%20points%3D%276%2C11%2010%2C19%2014%2C11%20%27%2F%3E%0A%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+}
 
 .mapboxgl-ctrl.mapboxgl-ctrl-attrib {
     padding: 0 5px;

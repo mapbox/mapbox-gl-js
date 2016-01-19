@@ -25,14 +25,14 @@ BoxZoom.prototype = {
     },
 
     _onMouseDown: function (e) {
-        if (e.shiftKey || (e.which === 1 && e.button === 1)) {
-            document.addEventListener('mousemove', this._onMouseMove, false);
-            document.addEventListener('keydown', this._onKeyDown, false);
-            document.addEventListener('mouseup', this._onMouseUp, false);
+        if (!(e.shiftKey && e.button === 0)) return;
 
-            this._startPos = DOM.mousePos(this._el, e);
-            this.active = true;
-        }
+        document.addEventListener('mousemove', this._onMouseMove, false);
+        document.addEventListener('keydown', this._onKeyDown, false);
+        document.addEventListener('mouseup', this._onMouseUp, false);
+
+        this._startPos = DOM.mousePos(this._el, e);
+        this.active = true;
     },
 
     _onMouseMove: function (e) {
@@ -45,7 +45,7 @@ BoxZoom.prototype = {
 
             DOM.disableDrag();
 
-            this._map.fire('boxzoomstart');
+            this._fireEvent('boxzoomstart', e);
         }
 
         var minX = Math.min(p0.x, p1.x),
@@ -60,27 +60,31 @@ BoxZoom.prototype = {
     },
 
     _onMouseUp: function (e) {
+        if (e.button !== 0) return;
+
         var p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
             bounds = new LngLatBounds(this._map.unproject(p0), this._map.unproject(p1));
 
         this._finish();
 
-        this._map
-            .fitBounds(bounds, {linear: true})
-            .fire('boxzoomend', {boxZoomBounds: bounds});
+        if (p0.x === p1.x && p0.y === p1.y) {
+            this._fireEvent('boxzoomcancel', e);
+        } else {
+            this._map
+                .fitBounds(bounds, {linear: true})
+                .fire('boxzoomend', { originalEvent: e, boxZoomBounds: bounds });
+        }
     },
 
     _onKeyDown: function (e) {
         if (e.keyCode === 27) {
             this._finish();
-            this._map.fire('boxzoomcancel');
+            this._fireEvent('boxzoomcancel', e);
         }
     },
 
     _finish: function () {
-        if (!this._box) return;
-
         this.active = false;
 
         document.removeEventListener('mousemove', this._onMouseMove, false);
@@ -89,9 +93,47 @@ BoxZoom.prototype = {
 
         this._container.classList.remove('mapboxgl-crosshair');
 
-        this._box.parentNode.removeChild(this._box);
-        this._box = null;
+        if (this._box) {
+            this._box.parentNode.removeChild(this._box);
+            this._box = null;
+        }
 
         DOM.enableDrag();
+    },
+
+    _fireEvent: function (type, e) {
+        return this._map.fire(type, { originalEvent: e });
     }
 };
+
+/**
+ * Boxzoom start event. This event is emitted at the start of a box zoom interaction.
+ *
+ * @event boxzoomstart
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */
+
+/**
+ * Boxzoom end event. This event is emitted at the end of a box zoom interaction
+ *
+ * @event boxzoomend
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ * @property {LngLatBounds} boxZoomBounds the bounds of the box zoom target
+ */
+
+/**
+ * Boxzoom cancel event.  This event is emitted when the user cancels a box zoom interaction,
+ *   or when the box zoom does not meet the minimum size threshold.
+ *
+ * @event boxzoomcancel
+ * @memberof Map
+ * @instance
+ * @type {Object}
+ * @property {Event} originalEvent the original DOM event
+ */

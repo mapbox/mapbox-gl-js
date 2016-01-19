@@ -35,6 +35,8 @@ function TilePyramid(options) {
 
     this._tiles = {};
     this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
+
+    this._filterRendered = this._filterRendered.bind(this);
 }
 
 TilePyramid.prototype = {
@@ -45,7 +47,7 @@ TilePyramid.prototype = {
      */
     loaded: function() {
         for (var t in this._tiles) {
-            if (!this._tiles[t].loaded)
+            if (!this._tiles[t].loaded && !this._tiles[t].errored)
                 return false;
         }
         return true;
@@ -57,15 +59,15 @@ TilePyramid.prototype = {
      * @private
      */
     orderedIDs: function() {
-        return Object.keys(this._tiles)
-            .sort(function(a, b) { return (b % 32) - (a % 32); })
-            .map(function(id) { return +id; });
+        return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     },
 
     renderedIDs: function() {
-        return this.orderedIDs().filter(function(id) {
-            return this._tiles[id].loaded && !this._coveredTiles[id];
-        }.bind(this));
+        return this.orderedIDs().filter(this._filterRendered);
+    },
+
+    _filterRendered: function(id) {
+        return this._tiles[id].loaded && !this._coveredTiles[id];
     },
 
     reload: function() {
@@ -135,7 +137,7 @@ TilePyramid.prototype = {
 
     /**
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
-     * adds found tiles to retain object; returns true if children completely cover the tile
+     * adds found tiles to retain object; returns true if any child is found.
      *
      * @param {Coordinate} coord
      * @param {number} maxCoveringZoom
@@ -144,22 +146,36 @@ TilePyramid.prototype = {
      * @private
      */
     findLoadedChildren: function(coord, maxCoveringZoom, retain) {
-        var complete = true;
-        var z = coord.z;
-        var coords = coord.children(this.maxzoom);
-        for (var i = 0; i < coords.length; i++) {
-            var id = coords[i].id;
-            if (this._tiles[id] && this._tiles[id].loaded) {
-                retain[id] = true;
-            } else {
-                complete = false;
-                if (z < maxCoveringZoom) {
-                    // Go further down the hierarchy to find more unloaded children.
-                    this.findLoadedChildren(coords[i], maxCoveringZoom, retain);
+        var found = false;
+
+        for (var id in this._tiles) {
+            var tile = this._tiles[id];
+
+            // only consider loaded tiles on higher zoom levels (up to maxCoveringZoom)
+            if (retain[id] || !tile.loaded || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
+
+            // disregard tiles that are not descendants of the given tile coordinate
+            var z2 = Math.pow(2, Math.min(tile.coord.z, this.maxzoom) - Math.min(coord.z, this.maxzoom));
+            if (Math.floor(tile.coord.x / z2) !== coord.x ||
+                Math.floor(tile.coord.y / z2) !== coord.y)
+                continue;
+
+            // found loaded child
+            retain[id] = true;
+            found = true;
+
+            // loop through parents; retain the topmost loaded one if found
+            while (tile && tile.coord.z - 1 > coord.z) {
+                var parentId = tile.coord.parent(this.maxzoom).id;
+                tile = this._tiles[parentId];
+
+                if (tile && tile.loaded) {
+                    delete retain[id];
+                    retain[parentId] = true;
                 }
             }
         }
-        return complete;
+        return found;
     },
 
     /**
@@ -195,8 +211,8 @@ TilePyramid.prototype = {
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
-        var maxCoveringZoom = util.clamp(zoom + 1,  this.minzoom, this.maxzoom);
+        var minCoveringZoom = Math.max(zoom - 10, this.minzoom);
+        var maxCoveringZoom = Math.max(zoom + 3,  this.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
@@ -225,18 +241,31 @@ TilePyramid.prototype = {
             }
         }
 
-        for (var id in retain) {
+        var parentsForFading = {};
+
+        var ids = Object.keys(retain);
+        for (var k = 0; k < ids.length; k++) {
+            var id = ids[k];
             coord = TileCoord.fromID(id);
             tile = this._tiles[id];
             if (tile && tile.timeAdded > now - (fadeDuration || 0)) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                    this._coveredTiles[id] = true;
                     retain[id] = true;
-                } else {
-                    this.findLoadedParent(coord, minCoveringZoom, retain);
                 }
+                this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
             }
+        }
+
+        var fadedParent;
+        for (fadedParent in parentsForFading) {
+            if (!retain[fadedParent]) {
+                // If a tile is only needed for fading, mark it as covered so that it isn't rendered on it's own.
+                this._coveredTiles[fadedParent] = true;
+            }
+        }
+        for (fadedParent in parentsForFading) {
+            retain[fadedParent] = true;
         }
 
         // Remove the tiles we don't need anymore.
@@ -244,6 +273,8 @@ TilePyramid.prototype = {
         for (i = 0; i < remove.length; i++) {
             this.removeTile(+remove[i]);
         }
+
+        this.transform = transform;
     },
 
     /**
@@ -270,7 +301,7 @@ TilePyramid.prototype = {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling);
+            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
             this._load(tile);
         }
 
@@ -328,15 +359,15 @@ TilePyramid.prototype = {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
-            var pos = tile.positionAt(coord, this.maxzoom);
-            if (pos && pos.x >= 0 && pos.x < 4096 && pos.y >= 0 && pos.y < 4096) {
+            var pos = tile.positionAt(coord);
+            if (pos && pos.x >= 0 && pos.x < tile.tileExtent && pos.y >= 0 && pos.y < tile.tileExtent) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
                 return {
                     tile: tile,
                     x: pos.x,
                     y: pos.y,
-                    scale: pos.scale
+                    scale: this.transform.worldSize / Math.pow(2, tile.coord.z)
                 };
             }
         }
@@ -345,7 +376,7 @@ TilePyramid.prototype = {
     /**
      * Search through our current tiles and attempt to find the tiles that
      * cover the given bounds.
-     * @param {Array<Coordinate>} [minxminy, maxxmaxy] coordinates of the corners of bounding rectangle
+     * @param {Array<Coordinate>} bounds [minxminy, maxxmaxy] coordinates of the corners of bounding rectangle
      * @returns {Array<Object>} result items have {tile, minX, maxX, minY, maxY}, where min/max bounding values are the given bounds transformed in into the coordinate space of this tile.
      * @private
      */
@@ -356,10 +387,10 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var tileSpaceBounds = [
-                tile.positionAt(bounds[0], this.maxzoom),
-                tile.positionAt(bounds[1], this.maxzoom)
+                tile.positionAt(bounds[0]),
+                tile.positionAt(bounds[1])
             ];
-            if (tileSpaceBounds[0].x < 4096 && tileSpaceBounds[0].y < 4096 &&
+            if (tileSpaceBounds[0].x < tile.tileExtent && tileSpaceBounds[0].y < tile.tileExtent &&
                 tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
                 result.push({
                     tile: tile,
@@ -374,3 +405,7 @@ TilePyramid.prototype = {
         return result;
     }
 };
+
+function compareKeyZoom(a, b) {
+    return (b % 32) - (a % 32);
+}

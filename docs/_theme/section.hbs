@@ -1,0 +1,135 @@
+<section id='{{permalink}}' class='pad2 keyline-bottom'>
+  {{#if context.github}}
+    <div class='fr space'>
+      {{#if augments}}
+        <span>
+          Extends
+          {{#augments}}
+            {{{autolink name}}}
+          {{/augments}}
+        </span>
+      {{/if}}
+      <a class='quiet' href='{{{context.github}}}'>
+        <code class='icon floppy pad0'>{{{context.path}}}</code>
+      </a>
+    </div>
+  {{/if}}
+  <h2 id='{{permalink}}' class='space'>
+    <span>{{name}}</span>
+    <span class='quiet'>{{{format_params}}}</span>
+  </h2>
+
+  <div class='prose space-bottom2'>
+    {{{md description}}}
+  </div>
+
+  {{#if params}}
+    <h3 class='space-bottom1 space-top1'>Parameters</h3>
+    <table class='prose space-bottom1 small'>
+      {{#params}}
+        <tr>
+          <td class="fill-light">
+            <div class="code strong">{{name}}</div>
+            <div class="quiet">
+            {{{format_type type}}}
+                {{#default}}
+                  (default <code>{{.}}</code>)
+                {{/default}}
+            </div>
+          </td>
+          <td>{{{md description}}}</td>
+        </tr>
+        {{#properties}}
+          <tr>
+            <td class="fill-light">
+              <div class="code strong">{{name}}</div>
+              <div class="quiet">
+                {{{format_type type}}}
+                {{#default}}
+                  (default <code>{{.}}</code>)
+                {{/default}}
+              </div>
+            </td>
+            <td>{{{md description}}}</td>
+          </tr>
+        {{/properties}}
+      {{/params}}
+    </table>
+  {{/if}}
+
+  {{#if properties}}
+    <h3 class='space-bottom1 space-top1'>Properties</h3>
+    <table class='prose space-bottom1 small'>
+      {{#properties}}
+        <tr>
+          <td class="fill-light">
+            <div class="code strong">{{name}}</div>
+            <div class="quiet">
+              {{{format_type type}}}
+              {{#default}}
+                (default <code>{{.}}</code>)
+              {{/default}}
+            </div>
+          </td>
+          <td>{{{md description}}}</td>
+        </tr>
+      {{/properties}}
+    </table>
+  {{/if}}
+
+  {{#if returns}}
+    {{#returns}}
+      <h3 class='space-bottom1 space-top1'>Returns</h3>
+      <code>{{{format_type type}}}</code>
+      {{#if description}}:{{/if}}
+      <span class='inline'>
+        {{{md description}}}
+      </span>
+    {{/returns}}
+  {{/if}}
+
+  {{#if throws}}
+    <h3>Throws</h3>
+    <table class='prose space-bottom1'>
+      <thead>
+        <th>exception</th>
+        <th>description</th>
+      </thead>
+      {{#throws}}
+        <tr>
+          <td>{{{format_type type}}}</td>
+          <td>
+            {{{md description}}}
+          </td>
+        </tr>
+      {{/throws}}
+    </table>
+  {{/if}}
+
+  {{#if examples}}
+    <h3 class='space-bottom1 space-top1'>Examples</h3>
+<div class='prose'>
+{{#each examples ~}}
+<pre>
+{{{.}}}
+</pre>
+{{/each}}
+</div>
+  {{/if}}
+
+  {{#if members.static}}
+    {{#each members.static}}
+      <div>
+{{> section}}
+      </div>
+    {{/each}}
+  {{/if}}
+
+  {{#if members.instance}}
+    {{#each members.instance}}
+      <div>
+{{> section}}
+      </div>
+    {{/each}}
+  {{/if}}
+</section>

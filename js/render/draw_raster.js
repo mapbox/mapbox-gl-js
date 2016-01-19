@@ -4,10 +4,31 @@ var util = require('../util/util');
 
 module.exports = drawRaster;
 
-function drawRaster(painter, layer, posMatrix, tile) {
+function drawRaster(painter, source, layer, coords) {
+    if (painter.isOpaquePass) return;
+
+    var gl = painter.gl;
+
+    // Change depth function to prevent double drawing in areas where tiles overlap.
+    gl.depthFunc(gl.LESS);
+
+    for (var i = coords.length - 1; i >= 0; i--) {
+        drawRasterTile(painter, source, layer, coords[i]);
+    }
+
+    gl.depthFunc(gl.LEQUAL);
+}
+
+function drawRasterTile(painter, source, layer, coord) {
+
+    painter.setDepthSublayer(0);
+
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);
+
+    var tile = source.getTile(coord);
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
 
     var shader = painter.rasterShader;
     gl.switchShader(shader, posMatrix);
@@ -19,7 +40,7 @@ function drawRaster(painter, layer, posMatrix, tile) {
     gl.uniform1f(shader.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(shader.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(tile.coord, 0, {}),
+    var parentTile = tile.source && tile.source._pyramid.findLoadedParent(coord, 0, {}),
         opacities = getOpacities(tile, parentTile, layer, painter.transform);
 
     var parentScaleBy, parentTL;
@@ -79,26 +100,27 @@ function saturationFactor(saturation) {
 }
 
 function getOpacities(tile, parentTile, layer, transform) {
-    if (!tile.source) return [1, 0];
-
-    var now = new Date().getTime();
-
+    var opacity = [1, 0];
     var fadeDuration = layer.paint['raster-fade-duration'];
-    var sinceTile = (now - tile.timeAdded) / fadeDuration;
-    var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-    var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
-    var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
+    if (tile.source && fadeDuration > 0) {
+        var now = new Date().getTime();
 
-    var opacity = [];
-    if (!parentTile || parentFurther) {
-        // if no parent or parent is older
-        opacity[0] = util.clamp(sinceTile, 0, 1);
-        opacity[1] = 1 - opacity[0];
-    } else {
-        // parent is younger, zooming out
-        opacity[0] = util.clamp(1 - sinceParent, 0, 1);
-        opacity[1] = 1 - opacity[0];
+        var sinceTile = (now - tile.timeAdded) / fadeDuration;
+        var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
+
+        var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
+        var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
+
+        if (!parentTile || parentFurther) {
+            // if no parent or parent is older
+            opacity[0] = util.clamp(sinceTile, 0, 1);
+            opacity[1] = 1 - opacity[0];
+        } else {
+            // parent is younger, zooming out
+            opacity[0] = util.clamp(1 - sinceParent, 0, 1);
+            opacity[1] = 1 - opacity[0];
+        }
     }
 
     var op = layer.paint['raster-opacity'];

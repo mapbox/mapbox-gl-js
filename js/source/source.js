@@ -4,8 +4,8 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
 var TilePyramid = require('./tile_pyramid');
-var TileCoord = require('./tile_coord');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
+var TileCoord = require('./tile_coord');
 
 exports._loadTileJSON = function(options) {
     var loaded = function(err, tileJSON) {
@@ -16,6 +16,11 @@ exports._loadTileJSON = function(options) {
 
         util.extend(this, util.pick(tileJSON,
             ['tiles', 'minzoom', 'maxzoom', 'attribution']));
+
+        if (tileJSON.vector_layers) {
+            this.vectorLayers = tileJSON.vector_layers;
+            this.vectorLayerIds = this.vectorLayers.map(function(layer) { return layer.id; });
+        }
 
         this._pyramid = new TilePyramid({
             tileSize: this.tileSize,
@@ -42,30 +47,25 @@ exports._loadTileJSON = function(options) {
     }
 };
 
-exports._renderTiles = function(layers, painter) {
-    if (!this._pyramid)
+exports.redoPlacement = function() {
+    if (!this._pyramid) {
         return;
-
-    var ids = this._pyramid.renderedIDs();
-    for (var i = 0; i < ids.length; i++) {
-        var tile = this._pyramid.getTile(ids[i]),
-            // coord is different than tile.coord for wrapped tiles since the actual
-            // tile object is shared between all the visible copies of that tile.
-            coord = TileCoord.fromID(ids[i]),
-            z = coord.z,
-            x = coord.x,
-            y = coord.y,
-            w = coord.w;
-
-        // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-        // so calculate the matrix the maxzoom tile would use.
-        z = Math.min(z, this.maxzoom);
-
-        x += w * (1 << z);
-        tile.calculateMatrices(z, x, y, painter.transform, painter);
-
-        painter.drawTile(tile, layers);
     }
+
+    var ids = this._pyramid.orderedIDs();
+    for (var i = 0; i < ids.length; i++) {
+        var tile = this._pyramid.getTile(ids[i]);
+        this._redoTilePlacement(tile);
+    }
+};
+
+exports._getTile = function(coord) {
+    return this._pyramid.getTile(coord.id);
+};
+
+exports._getVisibleCoordinates = function() {
+    if (!this._pyramid) return [];
+    else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
 exports._vectorFeaturesAt = function(coord, params, callback) {
@@ -80,6 +80,7 @@ exports._vectorFeaturesAt = function(coord, params, callback) {
         uid: result.tile.uid,
         x: result.x,
         y: result.y,
+        tileExtent: result.tile.tileExtent,
         scale: result.scale,
         source: this.id,
         params: params

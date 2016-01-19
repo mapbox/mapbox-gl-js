@@ -1,3 +1,5 @@
+precision mediump float;
+
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
 // stored in a byte (-128..127). we scale regular normals up to length 63, but
@@ -14,6 +16,7 @@ uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
+uniform float u_offset;
 
 varying vec2 v_normal;
 varying float v_linesofar;
@@ -21,6 +24,7 @@ varying float v_gamma_scale;
 
 void main() {
     vec2 a_extrude = a_data.xy;
+    float a_direction = sign(a_data.z) * mod(a_data.z, 2.0);
 
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
@@ -34,9 +38,17 @@ void main() {
     // of this vertex.
     vec4 dist = vec4(u_linewidth.s * a_extrude * scale, 0.0, 0.0);
 
+    // Calculate the offset when drawing a line that is to the side of the actual line.
+    // We do this by creating a vector that points towards the extrude, but rotate
+    // it when we're drawing round end points (a_direction = -1 or 1) since their
+    // extrude vector points in another direction.
+    float u = 0.5 * a_direction;
+    float t = 1.0 - abs(u);
+    vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix.
-    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + dist.xy / u_ratio, 0.0, 1.0);
+    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset + dist.xy) / u_ratio, 0.0, 1.0);
 
     // position of y on the screen
     float y = gl_Position.y / gl_Position.w;

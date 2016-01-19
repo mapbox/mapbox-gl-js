@@ -1,6 +1,148 @@
-## dev
+## 0.12.3 (Jan 14 2016)
 
-An in-progress version being developed in the `master` branch.
+#### API Improvements
+Support inline attribution options in map options (#1865)
+Improve flyTo options (#1854, #1429)
+
+#### Bugfixes
+Fix flickering with overscaled tiles (#1921)
+Remove Node.remove calls for IE browser compatibility (#1900)
+Match patterns at tile boundaries (#1908)
+Fix Tile#positionAt, fix query tests (#1899)
+Fix flickering on streets (#1875)
+Fix text-max-angle property (#1870)
+Fix overscaled line patterns (#1856)
+Fix patterns and icons for mismatched pixelRatios (#1851)
+Fix missing labels when text size 0 at max zoom (#1809)
+Use linear interp when pixel ratios don't match (#1601)
+Fix blank areas, flickering in raster layers (#1876, #675)
+Fix labels slipping/cropping at tile bounds (#757)
+
+#### UX Improvements
+Improve touch handler perceived performance (#1844)
+
+## 0.12.2 (Dec 22 2015)
+
+#### API Improvements
+
+* Support LngLat.convert([w, s, e, n]) (#1812)
+* Invalid GeoJSON is now handled better
+
+#### Bugfixes
+
+* Fixed `Popup#addTo` when the popup is already open (#1811)
+* Fixed warping when rotating / zooming really fast
+* `Map#flyTo` now flies across the antimeridan if shorter (#1853)
+
+## 0.12.1 (Dec 8 2015)
+
+#### Breaking changes
+
+* Reversed the direction of `line-offset` (#1808)
+* Renamed `Pinch` interaction handler to `TouchZoomRotate` (#1777)
+* Made `Map#update` and `Map#render` private methods (#1798)
+* Made `Map#remove` remove created DOM elements (#1789)
+
+#### API Improvements
+
+* Added an method to disable touch rotation (#1777)
+* Added a `position` option for `Attribution` (#1689)
+
+#### Bugfixes
+
+* Ensure tile loading errors are properly reported (#1799)
+* Ensure re-adding a previously removed pop-up works (#1477)
+
+#### UX Improvements
+
+* Don't round zoom level during double-click interaction (#1640)
+
+## 0.12.0 (Dec 2 2015)
+
+#### API Improvements
+
+* Added `line-offset` style property (#1778)
+
+## 0.11.5 (Dec 1 2015)
+
+#### Bugfixes
+
+* Fixed unstable symbol layer render order when adding / removing layers (#1558)
+* Fire map loaded event even if raster tiles have errors
+* Fix panning animation during easeTo with zoom change
+* Fix pitching animation during flyTo
+* Fix pitching animation during easeTo
+* Prevent rotation from firing `mouseend` events (#1104)
+
+#### API Improvements
+
+* Fire `mousedown` and `mouseup` events (#1411)
+* Fire `movestart` and `moveend` when panning (#1658)
+* Added drag events (#1442)
+* Request webp images for mapbox:// raster tiles in chrome (#1725)
+
+#### UX Improvements
+
+* Added inertia to map rotation (#620)
+
+## 0.11.4 (Nov 16 2015)
+
+#### Bugfixes
+
+* Fix alpha blending of alpha layers (#1684)
+
+## 0.11.3 (Nov 10 2015)
+
+#### Bugfixes
+
+* Fix GeoJSON rendering and performance (#1685)
+
+#### UX Improvements
+
+* Use SVG assets for UI controls (#1657)
+* Zoom out with shift + dblclick (#1666)
+
+## 0.11.2 (Oct 29 2015)
+
+* Misc performance improvements
+
+#### Bugfixes
+
+* Fix sprites on systems with non-integer `devicePixelRatio`s (#1029 #1475 #1476)
+* Fix layer minZoom being ignored if not less than source maxZoom
+* Fix symbol placement at the start of a line (#1461)
+* Fix `raster-opacity` on non-tile sources (#1270)
+* Ignore boxzoom on shift-click (#1655)
+
+#### UX Improvements
+
+* Enable line breaks on common punctuation (#1115)
+
+#### API Improvements
+
+* Add toString and toArray methods to LngLat, LngLatBounds (#1571)
+* Add `Transform#resize` method
+* Add `Map#getLayer` method (#1183)
+* Add `Transform#unmodified` property (#1452)
+* Propagate WebGL context events (#1612)
+
+## 0.11.1 (Sep 30 2015)
+
+#### Bugfixes
+
+* Add statistics and checkboxes to debug page
+* Fix `Map#featuresAt` for non-4096 vector sources (#1529)
+* Don't fire `mousemove` on drag-pan
+* Fix maxBounds constrains (#1539)
+* Fix maxBounds infinite loop (#1538)
+* Fix memory leak in worker
+* Assert valid `TileCoord`, fix wrap calculation in `TileCoord#cover` (#1483)
+* Abort raster tile load if not in viewport (#1490)
+
+#### API Improvements
+
+* Add `Map` event listeners for `mouseup`, `contextmenu` (right click) (#1532)
+
 
 ## 0.11.0 (Sep 11 2015)
 
@@ -31,7 +173,7 @@ An in-progress version being developed in the `master` branch.
 
 * Switched to [longitude, latitude] coordinate order, matching GeoJSON. We anticipate that mapbox-gl-js will be widely used
   with GeoJSON, and in the long term having a coordinate order that is consistent with GeoJSON will lead to less confusion
-  and impedence mismatch than will a [latitude, longitude] order.
+  and impedance mismatch than will a [latitude, longitude] order.
 
   The following APIs were renamed:
 
@@ -62,7 +204,7 @@ An in-progress version being developed in the `master` branch.
 * Mapbox default styles are now hosted via the Styles API rather than www.mapbox.com. You can make use of the Styles API
   with a `mapbox://` style URL pointing to a v8 style, e.g. `mapbox://styles/mapbox/streets-v8`.
 * The v8 satellite style (`mapbox://styles/mapbox/satellite-v8`) is now a plain satellite style, and not longer supports labels
-  or countour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
+  or contour lines via classes. For a labeled satellite style, use `mapbox://styles/mapbox/satellite-hybrid`.
 
 * Removed `mbgl.config.HTTP_URL` and `mbgl.config.FORCE_HTTPS`; https is always used when connecting to the Mapbox API.
 * Renamed `mbgl.config.HTTPS_URL` to `mbgl.config.API_URL`.
@@ -172,7 +314,7 @@ An in-progress version being developed in the `master` branch.
 * Fix cracks between fill patterns (#972)
 * Fix angle of icons aligned with lines (37a498a)
 * Fix dashed line bug for overscaled tiles (#1132)
-* Fix icon artifacts caused by sprite neighbours (#1195)
+* Fix icon artifacts caused by sprite neighbors (#1195)
 
 #### API Bugfixes
 
@@ -354,7 +496,7 @@ An in-progress version being developed in the `master` branch.
 - Added support for remote, non-Mapbox TileJSON sources and inline TileJSON sources (#535, #698).
 - Added support for `symbol-avoid-edges` property to allow labels to be placed across tile edges.
 - Fixed mkdir issue on Windows (#674).
-- Fixed drawing bevelled line joins without overlap.
+- Fixed drawing beveled line joins without overlap.
 
 #### Bugfixes
 
@@ -416,7 +558,7 @@ and gets added with `map.addControl(nav)` or `nav.addTo(map)`.
 - Fixed compass control to rotate its icon with the map.
 - Fixed navigation control cursors.
 - Fixed inertia going to the wrong direction in a rotated map.
-- Fixed inertia race condition where error was sometimes throwed after erratic panning/zooming.
+- Fixed inertia race condition where error was sometimes thrown after erratic panning/zooming.
 
 
 ## 0.2.0 (Aug 6 2014)

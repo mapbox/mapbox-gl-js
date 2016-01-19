@@ -4,7 +4,7 @@ Mapbox GL JS has [API documentation](#api-documentation) and [examples](#example
 
 API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with [documentationjs](http://documentation.js.org/). We aim to document all classes and methods, public and private. Mark private classes and methods with `@private`.
 
-Any interface not explicitly marked as `@private` will be displayed on the official [Mapbox GL JS documentation page](https://www.mapbox.com/mapbox-gl-js/api/). Internal interfaces can and should be documentated with JSDoc comments but must be marked as `@private`.
+Any interface not explicitly marked as `@private` will be displayed on the official [Mapbox GL JS documentation page](https://www.mapbox.com/mapbox-gl-js/api/). Internal interfaces can and should be documented with JSDoc comments but must be marked as `@private`.
 
 References:
 
@@ -18,7 +18,7 @@ Examples are written as Jekyll posts in `docs/_posts/examples`. The Jekyll front
 
 * `layout`: `example`
 * `category`: `example`
-* `title`: A short title for the example, in **sentence case**
+* `title`: A short title for the example in **sentence case** as a **verb phrase**
 * `description`: A one sentence description of the example
 
 In the post body, write the HTML and JavaScript constituting the example.
@@ -26,21 +26,33 @@ In the post body, write the HTML and JavaScript constituting the example.
 * Use **4 space indentation**. Exception: do not add an initial level of indentation to code within `<script>` tags (it should start flush left).
 * Do **not** include an access token in the example code. The access token will be inserted automatically by the template, using the current logged in user's default public token, or a placeholder `<insert token here>` string if the user is not logged in.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
+* When embedding literal JSON (GeoJSON or GL style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
 ## Generating Documentation
 
-To generate new docs run
+To generate new docs, ensure you are running Jekyll version 2.5.x
+
+```bash
+jekyll -v
+ > jekyll 2.5.3
+```
+
+Then run
 
 ```bash
 npm run docs
 ```
 
-This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. To view the documentation, start a Jekyll server (in the project's root directory)
+This will generate a [Jekyll](http://jekyllrb.com) site in the `docs` directory. If this is the first time building the site, you will need to also generate the `dist/mapbox-gl.js`. To generate the dist folder and scripts run
+
+```bash
+npm run production
+```
+You will only need to do this once. To view the documentation, start a Jekyll server (in the project's root directory)
 
 ```bash
 jekyll serve -w
 ```
-
 and open the served page
 
 ```bash

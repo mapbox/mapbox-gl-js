@@ -107,24 +107,6 @@ exports.coalesce = function() {
 
 /*
  * Call an asynchronous function on an array of arguments,
- * calling `callback` once all calls complete.
- *
- * @param {Array<*>} array input to each call of the async function.
- * @param {Function} fn an async function with signature (data, callback)
- * @param {Function} callback a callback run after all async work is done.
- * called with no arguments
- * @returns {undefined}
- * @private
- */
-exports.asyncEach = function (array, fn, callback) {
-    var remaining = array.length;
-    if (remaining === 0) return callback();
-    function check() { if (--remaining === 0) callback(); }
-    for (var i = 0; i < array.length; i++) fn(array[i], check);
-};
-
-/*
- * Call an asynchronous function on an array of arguments,
  * calling `callback` with the completed results of all calls.
  *
  * @param {Array<*>} array input to each call of the async function.
@@ -135,6 +117,7 @@ exports.asyncEach = function (array, fn, callback) {
  * @private
  */
 exports.asyncAll = function (array, fn, callback) {
+    if (!array.length) { return callback(null, []); }
     var remaining = array.length;
     var results = new Array(array.length);
     var error = null;
@@ -347,6 +330,7 @@ exports.bindAll = function(fns, context) {
  * begin with _on, and bind them to the class.
  *
  * @param {Object} context an object with methods
+ * @private
  */
 exports.bindHandlers = function(context) {
     for (var i in context) {

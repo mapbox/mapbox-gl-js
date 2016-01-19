@@ -5,8 +5,11 @@ var LngLat = require('./lng_lat'),
     Coordinate = require('./coordinate'),
     wrap = require('../util/util').wrap,
     interp = require('../util/interpolate'),
-    vec4 = require('gl-matrix').vec4,
-    mat4 = require('gl-matrix').mat4;
+    glmatrix = require('gl-matrix');
+
+var vec4 = glmatrix.vec4,
+    mat4 = glmatrix.mat4,
+    mat2 = glmatrix.mat2;
 
 module.exports = Transform;
 
@@ -28,22 +31,25 @@ function Transform(minZoom, maxZoom) {
 
     this.width = 0;
     this.height = 0;
+    this._center = new LngLat(0, 0);
     this.zoom = 0;
-    this.center = new LngLat(0, 0);
     this.angle = 0;
     this._altitude = 1.5;
     this._pitch = 0;
+    this._unmodified = true;
 }
 
 Transform.prototype = {
     get minZoom() { return this._minZoom; },
     set minZoom(zoom) {
+        if (this._minZoom === zoom) return;
         this._minZoom = zoom;
         this.zoom = Math.max(this.zoom, zoom);
     },
 
     get maxZoom() { return this._maxZoom; },
     set maxZoom(zoom) {
+        if (this._maxZoom === zoom) return;
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
     },
@@ -64,38 +70,74 @@ Transform.prototype = {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
-        this.angle = -wrap(bearing, -180, 180) * Math.PI / 180;
+        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+        if (this.angle === b) return;
+        this._unmodified = false;
+        this.angle = b;
+        this._calcProjMatrix();
+
+        // 2x2 matrix for rotating points
+        this.rotationMatrix = mat2.create();
+        mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
     },
 
     get pitch() {
         return this._pitch / Math.PI * 180;
     },
     set pitch(pitch) {
-        this._pitch = Math.min(60, pitch) / 180 * Math.PI;
+        var p = Math.min(60, pitch) / 180 * Math.PI;
+        if (this._pitch === p) return;
+        this._unmodified = false;
+        this._pitch = p;
+        this._calcProjMatrix();
     },
 
     get altitude() {
         return this._altitude;
     },
     set altitude(altitude) {
-        this._altitude = Math.max(0.75, altitude);
+        var a = Math.max(0.75, altitude);
+        if (this._altitude === a) return;
+        this._unmodified = false;
+        this._altitude = a;
+        this._calcProjMatrix();
     },
 
     get zoom() { return this._zoom; },
     set zoom(zoom) {
-        zoom = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
-        this._zoom = zoom;
-        this.scale = this.zoomScale(zoom);
-        this.tileZoom = Math.floor(zoom);
-        this.zoomFraction = zoom - this.tileZoom;
+        var z = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
+        if (this._zoom === z) return;
+        this._unmodified = false;
+        this._zoom = z;
+        this.scale = this.zoomScale(z);
+        this.tileZoom = Math.floor(z);
+        this.zoomFraction = z - this.tileZoom;
+        this._calcProjMatrix();
         this._constrain();
     },
 
     get center() { return this._center; },
     set center(center) {
+        if (center.lat === this._center.lat && center.lng === this._center.lng) return;
+        this._unmodified = false;
         this._center = center;
+        this._calcProjMatrix();
         this._constrain();
     },
+
+    resize: function(width, height) {
+        this.width = width;
+        this.height = height;
+
+        // The extrusion matrix
+        this.exMatrix = mat4.create();
+        mat4.ortho(this.exMatrix, 0, width, height, 0, 0, -1);
+
+        this._calcProjMatrix();
+        this._constrain();
+    },
+
+    get unmodified() { return this._unmodified; },
 
     zoomScale: function(zoom) { return Math.pow(2, zoom); },
     scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
@@ -156,8 +198,8 @@ Transform.prototype = {
         var c = this.locationCoordinate(lnglat);
         var coordAtPoint = this.pointCoordinate(point);
         var coordCenter = this.pointCoordinate(this.centerPoint);
-
         var translate = coordAtPoint._sub(c);
+        this._unmodified = false;
         this.center = this.coordinateLocation(coordCenter._sub(translate));
     },
 
@@ -231,16 +273,19 @@ Transform.prototype = {
         if (targetZ === undefined) targetZ = 0;
 
         var matrix = this.coordinatePointMatrix(this.tileZoom);
-        var inverted = mat4.invert(new Float64Array(16), matrix);
+        mat4.invert(matrix, matrix);
 
-        if (!inverted) throw new Error("failed to invert matrix");
+        if (!matrix) throw new Error("failed to invert matrix");
 
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
         // line with z=0
 
-        var coord0 = vec4.transformMat4([], [p.x, p.y, 0, 1], inverted);
-        var coord1 = vec4.transformMat4([], [p.x, p.y, 1, 1], inverted);
+        var coord0 = [p.x, p.y, 0, 1];
+        var coord1 = [p.x, p.y, 1, 1];
+
+        vec4.transformMat4(coord0, coord0, matrix);
+        vec4.transformMat4(coord1, coord1, matrix);
 
         var w0 = coord0[3];
         var w1 = coord1[3];
@@ -268,12 +313,13 @@ Transform.prototype = {
      */
     coordinatePoint: function(coord) {
         var matrix = this.coordinatePointMatrix(coord.zoom);
-        var p = vec4.transformMat4([], [coord.column, coord.row, 0, 1], matrix);
+        var p = [coord.column, coord.row, 0, 1];
+        vec4.transformMat4(p, p, matrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
     coordinatePointMatrix: function(z) {
-        var proj = this.getProjMatrix();
+        var proj = mat4.copy(new Float64Array(16), this.projMatrix);
         var scale = this.worldSize / this.zoomScale(z);
         mat4.scale(proj, proj, [scale, scale, 1]);
         mat4.multiply(proj, this.getPixelMatrix(), proj);
@@ -298,7 +344,8 @@ Transform.prototype = {
         this._constraining = true;
 
         var minY, maxY, minX, maxX, sy, sx, x2, y2,
-            size = this.size;
+            size = this.size,
+            unmodified = this._unmodified;
 
         if (this.latRange) {
             minY = this.latY(this.latRange[1]);
@@ -320,6 +367,7 @@ Transform.prototype = {
                 sx ? (maxX + minX) / 2 : this.x,
                 sy ? (maxY + minY) / 2 : this.y));
             this.zoom += this.scaleZoom(s);
+            this._unmodified = unmodified;
             this._constraining = false;
             return;
         }
@@ -347,15 +395,17 @@ Transform.prototype = {
                 y2 !== undefined ? y2 : this.y));
         }
 
+        this._unmodified = unmodified;
         this._constraining = false;
     },
 
-    getProjMatrix: function() {
+    _calcProjMatrix: function() {
         var m = new Float64Array(16);
 
         // Find the distance from the center point to the center top in altitude units using law of sines.
         var halfFov = Math.atan(0.5 / this.altitude);
         var topHalfSurfaceDistance = Math.sin(halfFov) * this.altitude / Math.sin(Math.PI / 2 - this._pitch - halfFov);
+
         // Calculate z value of the farthest fragment that should be rendered.
         var farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.altitude;
 
@@ -370,6 +420,7 @@ Transform.prototype = {
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);
-        return m;
+
+        this.projMatrix = m;
     }
 };

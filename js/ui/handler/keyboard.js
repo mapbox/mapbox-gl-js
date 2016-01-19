@@ -4,7 +4,8 @@ module.exports = Keyboard;
 
 
 var panDelta = 80,
-    rotateDelta = 2;
+    rotateDelta = 2,
+    pitchDelta = 5;
 
 /**
  * The `Keyboard` handler responds to keyboard input by zooming, rotating, or panning the
@@ -16,6 +17,8 @@ var panDelta = 80,
  *  * Arrow keys: pan by 80 pixels
  *  * `Shift+⇢`: increase rotation by 2 degrees
  *  * `Shift+⇠`: decrease rotation by 2 degrees
+ *  * `Shift+⇡`: increase pitch by 5 degrees
+ *  * `Shift+⇣`: decrease pitch by 5 degrees
  * @class Keyboard
  * @example
  *   // Disable the keyboard handler
@@ -61,7 +64,7 @@ Keyboard.prototype = {
 
         case 37:
             if (e.shiftKey) {
-                map.setBearing(map.getBearing() - rotateDelta);
+                map.easeTo({ bearing: map.getBearing() - rotateDelta });
             } else {
                 map.panBy([-panDelta, 0]);
             }
@@ -69,18 +72,26 @@ Keyboard.prototype = {
 
         case 39:
             if (e.shiftKey) {
-                map.setBearing(map.getBearing() + rotateDelta);
+                map.easeTo({ bearing: map.getBearing() + rotateDelta });
             } else {
                 map.panBy([panDelta, 0]);
             }
             break;
 
         case 38:
-            map.panBy([0, -panDelta]);
+            if (e.shiftKey) {
+                map.easeTo({ pitch: map.getPitch() + pitchDelta });
+            } else {
+                map.panBy([0, -panDelta]);
+            }
             break;
 
         case 40:
-            map.panBy([0, panDelta]);
+            if (e.shiftKey) {
+                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) });
+            } else {
+                map.panBy([0, panDelta]);
+            }
             break;
         }
     }

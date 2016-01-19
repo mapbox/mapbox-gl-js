@@ -32,8 +32,8 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     // the y offset *should* be part of the font metadata
     var yOffset = -17;
 
-    var x = translate[0];
-    var y = translate[1] + yOffset;
+    var x = 0;
+    var y = yOffset;
 
     for (var i = 0; i < text.length; i++) {
         var codePoint = text.charCodeAt(i);
@@ -47,14 +47,30 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify);
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
 
     return shaping;
 }
 
-var breakable = { 32: true }; // Currently only breaks at regular spaces
+var invisible = {
+    0x20:   true, // space
+    0x200b: true  // zero-width space
+};
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify) {
+var breakable = {
+    0x20:   true, // space
+    0x26:   true, // ampersand
+    0x2b:   true, // plus sign
+    0x2d:   true, // hyphen-minus
+    0x2f:   true, // solidus
+    0xad:   true, // soft hyphen
+    0xb7:   true, // middle dot
+    0x200b: true, // zero-width space
+    0x2010: true, // hyphen
+    0x2013: true  // en dash
+};
+
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
     var lastSafeBreak = null;
 
     var lengthBeforeCurrentLine = 0;
@@ -83,7 +99,13 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 }
 
                 if (justify) {
-                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lastSafeBreak - 1, justify);
+                    // Collapse invisible characters.
+                    var lineEnd = lastSafeBreak;
+                    if (invisible[positionedGlyphs[lastSafeBreak].codePoint]) {
+                        lineEnd--;
+                    }
+
+                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lineEnd, justify);
                 }
 
                 lineStartIndex = lastSafeBreak + 1;
@@ -105,7 +127,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     var height = (line + 1) * lineHeight;
 
     justifyLine(positionedGlyphs, glyphs, lineStartIndex, positionedGlyphs.length - 1, justify);
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line);
+    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate);
 
     // Calculate the bounding box
     shaping.top += -verticalAlign * height;
@@ -124,9 +146,9 @@ function justifyLine(positionedGlyphs, glyphs, start, end, justify) {
 
 }
 
-function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line) {
-    var shiftX = (justify - horizontalAlign) * maxLineLength;
-    var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight;
+function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate) {
+    var shiftX = (justify - horizontalAlign) * maxLineLength + translate[0];
+    var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight + translate[1];
 
     for (var j = 0; j < positionedGlyphs.length; j++) {
         positionedGlyphs[j].x += shiftX;
