@@ -82,7 +82,7 @@ SymbolBucket.prototype.shaders = {
     },
 
     collisionBox: {
-        vertexBuffer: 'collisionBoxVertex',
+        vertexBuffer: true,
 
         attributeArgs: ['point', 'extrude', 'maxZoom', 'placementZoom'],
 

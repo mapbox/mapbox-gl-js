@@ -51,7 +51,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug
         });
-        bucket.layers = [layer.id];
 
         bucketsById[layer.id] = bucket;
 
