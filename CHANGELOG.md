@@ -1,3 +1,10 @@
+## 0.12.4 (Jan 19 2016)
+
+#### Bugfixes
+
+Fix elementGroups null value errors (#1933)
+Fix some glyph atlas overflow cases (#1923)
+
 ## 0.12.3 (Jan 14 2016)
 
 #### API Improvements
