@@ -354,12 +354,14 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
 
         // Calculate the scales at which the text and icon can be placed without collision.
 
-        var glyphScale = hasText && !layout['text-allow-overlap'] ?
-            collisionTile.placeCollisionFeature(symbolInstance.textCollisionFeature) :
+        var glyphScale = hasText ?
+            collisionTile.placeCollisionFeature(symbolInstance.textCollisionFeature,
+                    layout['text-allow-overlap'], layout['symbol-avoid-edges']) :
             collisionTile.minScale;
 
-        var iconScale = hasIcon && !layout['icon-allow-overlap'] ?
-            collisionTile.placeCollisionFeature(symbolInstance.iconCollisionFeature) :
+        var iconScale = hasIcon ?
+            collisionTile.placeCollisionFeature(symbolInstance.iconCollisionFeature,
+                    layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
             collisionTile.minScale;
 
 

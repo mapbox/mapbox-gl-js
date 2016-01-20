@@ -28,7 +28,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     var tile = this,
         buffers = {},
-        collisionTile = new CollisionTile(this.angle, this.pitch),
         bucketsById = {},
         bucketsBySourceLayer = {},
         i, layer, sourceLayerId, bucket;
@@ -96,6 +95,9 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     var buckets = [],
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
+
+    this.extent = extent;
+    var collisionTile = new CollisionTile(this.angle, this.pitch, extent);
 
     for (var id in bucketsById) {
         bucket = bucketsById[id];
@@ -209,7 +211,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     var buffers = {},
-        collisionTile = new CollisionTile(angle, pitch);
+        collisionTile = new CollisionTile(angle, pitch, this.extent);
 
     for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
         this.symbolBuckets[i].placeFeatures(collisionTile, buffers, collisionDebug);

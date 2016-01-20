@@ -33,7 +33,6 @@ StyleLayer.prototype = {
                 if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
                     this.layout['icon-rotation-alignment'] = 'map';
                 }
-                this.layout['symbol-avoid-edges'] = true;
             }
         }
     },
