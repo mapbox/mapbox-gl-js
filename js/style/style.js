@@ -545,6 +545,7 @@ Style.prototype = util.inherit(Evented, {
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
         layer.setPaintProperty(name, value, klass);
+
         return this.updateClasses(layerId, name);
     },
 

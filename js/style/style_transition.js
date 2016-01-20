@@ -44,16 +44,21 @@ StyleTransition.prototype.instant = function() {
 /*
  * Return the value of the transitioning property at zoom level `z` and optional time `t`
  */
-StyleTransition.prototype.at = function(z, zoomHistory, t) {
-
-    var value = this.declaration.calculate(z, zoomHistory, this.duration);
+StyleTransition.prototype.calculate = function(globalProperties, featureProperties) {
+    var value = this.declaration.calculate(
+        util.extend({}, globalProperties, {duration: this.duration}),
+        featureProperties
+    );
 
     if (this.instant()) return value;
 
-    t = t || Date.now();
+    var t = globalProperties.time || Date.now();
 
     if (t < this.endTime) {
-        var oldValue = this.oldTransition.at(z, zoomHistory, this.startTime);
+        var oldValue = this.oldTransition.calculate(
+            util.extend({}, globalProperties, {time: this.startTime}),
+            featureProperties
+        );
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);
         value = this.interp(oldValue, value, eased);
     }

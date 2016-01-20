@@ -40,7 +40,6 @@ CircleBucket.prototype.programInterfaces = {
 };
 
 CircleBucket.prototype.addFeature = function(feature) {
-
     var geometries = loadGeometry(feature);
     for (var j = 0; j < geometries.length; j++) {
         var geometry = geometries[j];

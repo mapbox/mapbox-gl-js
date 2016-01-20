@@ -21,13 +21,13 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
         return false;
     },
 
-    getLayoutValue: function(name, zoom, zoomHistory) {
+    getLayoutValue: function(name, globalProperties, featureProperties) {
         if (name === 'text-rotation-alignment' &&
-                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                this.getLayoutValue('symbol-placement', globalProperties, featureProperties) === 'line' &&
                 !this.getLayoutProperty('text-rotation-alignment')) {
             return 'map';
         } else if (name === 'icon-rotation-alignment' &&
-                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                this.getLayoutValue('symbol-placement', globalProperties, featureProperties) === 'line' &&
                 !this.getLayoutProperty('icon-rotation-alignment')) {
             return 'map';
         } else {
