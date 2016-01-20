@@ -51,6 +51,7 @@ Bucket.AttributeType = Buffer.AttributeType;
 function Bucket(options) {
     this.layer = options.layer;
     this.zoom = options.zoom;
+    this.tileExtent = options.tileExtent;
 
     this.layers = [this.layer.id];
     this.type = this.layer.type;

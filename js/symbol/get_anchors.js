@@ -6,7 +6,7 @@ var checkMaxAngle = require('./check_max_angle');
 
 module.exports = getAnchors;
 
-function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, boxScale, overscaling) {
+function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, boxScale, overscaling, tileExtent) {
 
     // Resample a line to get anchor points for labels and check that each
     // potential label passes text-max-angle check and has enough froom to fit
@@ -21,7 +21,7 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     // Is the line continued from outside the tile boundary?
-    if (line[0].x === 0 || line[0].x === 4096 || line[0].y === 0 || line[0].y === 4096) {
+    if (line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent) {
         var continuedLine = true;
     }
 
@@ -42,11 +42,11 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
         ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
-    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, continuedLine, false);
+    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, continuedLine, false, tileExtent);
 }
 
 
-function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, placeAtMiddle) {
+function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, placeAtMiddle, tileExtent) {
 
     var distance = 0,
         markedDistance = offset - spacing;
@@ -68,7 +68,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 
-            if (x >= 0 && x < 4096 && y >= 0 && y < 4096) {
+            if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent) {
                 x = Math.round(x);
                 y = Math.round(y);
                 var anchor = new Anchor(x, y, angle, i);
@@ -88,7 +88,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
         // This has the most effect for short lines in overscaled tiles, since the
         // initial offset used in overscaled tiles is calculated to align labels with positions in
         // parent tiles instead of placing the label as close to the beginning as possible.
-        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, true);
+        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, true, tileExtent);
     }
 
     return anchors;

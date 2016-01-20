@@ -41,7 +41,7 @@ function drawCircles(painter, source, layer, coords) {
         var elements = tile.buffers.circleElement;
 
         gl.setPosMatrix(painter.translatePosMatrix(
-            painter.calculatePosMatrix(coord, source.maxzoom),
+            painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom),
             tile,
             layer.paint['circle-translate'],
             layer.paint['circle-translate-anchor']

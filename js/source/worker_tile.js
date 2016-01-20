@@ -32,6 +32,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucketsBySourceLayer = {},
         i, layer, sourceLayerId, bucket;
 
+    var extent = this.extent = getExtent(data.layers);
+
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
@@ -48,7 +50,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             buffers: buffers,
             zoom: this.zoom,
             overscaling: this.overscaling,
-            collisionDebug: this.collisionDebug
+            collisionDebug: this.collisionDebug,
+            tileExtent: extent
         });
 
         bucketsById[layer.id] = bucket;
@@ -68,15 +71,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         }
     }
 
-    var extent = 4096;
-
     // read each layer, and sort its features into buckets
     if (data.layers) { // vectortile
         for (sourceLayerId in bucketsBySourceLayer) {
             layer = data.layers[sourceLayerId];
-            if (!layer) continue;
-            if (layer.extent) extent = layer.extent;
-            sortLayerIntoBuckets(layer, bucketsBySourceLayer[sourceLayerId]);
+            if (layer) {
+                sortLayerIntoBuckets(layer, bucketsBySourceLayer[sourceLayerId]);
+            }
         }
     } else { // geojson
         sortLayerIntoBuckets(data, bucketsById);
@@ -96,7 +97,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    this.extent = extent;
     var collisionTile = new CollisionTile(this.angle, this.pitch, extent);
 
     for (var id in bucketsById) {
@@ -245,4 +245,14 @@ function getTransferables(buffers) {
         buffers[k].push = null;
     }
     return transferables;
+}
+
+function getExtent(layers) {
+    var extent = 4096;
+    if (!layers) return extent;
+    for (var key in layers) {
+        var layer = layers[key];
+        if (layer && layer.extent) extent = layer.extent;
+    }
+    return extent;
 }

@@ -38,7 +38,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.icon.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[i], tile.tileExtent, source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
     }
@@ -51,7 +51,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.glyph.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[j], tile.tileExtent, source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }

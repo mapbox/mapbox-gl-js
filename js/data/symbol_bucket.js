@@ -113,8 +113,7 @@ SymbolBucket.prototype.shaders = {
 
 SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     var tileSize = 512 * this.overscaling;
-    var tileExtent = 4096;
-    this.tilePixelRatio = tileExtent / tileSize;
+    this.tilePixelRatio = this.tileExtent / tileSize;
     this.compareText = {};
     this.symbolInstances = [];
     this.iconsNeedLinear = false;
@@ -240,16 +239,29 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         textRepeatDistance = symbolMinDistance / 2;
 
     if (isLine) {
-        lines = clipLine(lines, 0, 0, 4096, 4096);
+        lines = clipLine(lines, 0, 0, this.tileExtent, this.tileExtent);
     }
 
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
 
         // Calculate the anchor points around which you want to place labels
-        var anchors = isLine ?
-            getAnchors(line, symbolMinDistance, textMaxAngle, shapedText, shapedIcon, glyphSize, textMaxBoxScale, this.overscaling) :
-            [ new Anchor(line[0].x, line[0].y, 0) ];
+        var anchors;
+        if (isLine) {
+            anchors = getAnchors(
+                line,
+                symbolMinDistance,
+                textMaxAngle,
+                shapedText,
+                shapedIcon,
+                glyphSize,
+                textMaxBoxScale,
+                this.overscaling,
+                this.tileExtent
+            );
+        } else {
+            anchors = [ new Anchor(line[0].x, line[0].y, 0) ];
+        }
 
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {
@@ -261,7 +273,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                 }
             }
 
-            var inside = !(anchor.x < 0 || anchor.x > 4096 || anchor.y < 0 || anchor.y > 4096);
+            var inside = !(anchor.x < 0 || anchor.x > this.tileExtent || anchor.y < 0 || anchor.y > this.tileExtent);
 
             if (avoidEdges && !inside) continue;
 
