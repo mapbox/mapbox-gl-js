@@ -169,6 +169,20 @@
       "type": "number",
       "default": 3,
       "doc": "Douglas-Peucker simplification tolerance (higher means simpler geometries and faster performance)."
+    },
+    "cluster": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If the data is a collection of point features, setting this to true clusters the points by radius into groups."
+    },
+    "clusterRadius": {
+      "type": "number",
+      "default": 400,
+      "doc": "Radius of each cluster when clustering points, relative to 4096 tile."
+    },
+    "clusterMaxZoom": {
+      "type": "number",
+      "doc": "Max zoom to cluster points on. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     }
   },
   "source_video": {
