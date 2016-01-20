@@ -475,10 +475,6 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             this.pitching = true;
         }
 
-        if (this.zooming && !around) {
-            around = tr.pointLocation(tr.centerPoint.add(to.sub(from).div(1 - 1 / scale)));
-        }
-
         this.fire('movestart');
 
         this._ease(function (k) {

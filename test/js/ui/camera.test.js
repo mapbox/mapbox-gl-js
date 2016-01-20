@@ -520,7 +520,7 @@ test('camera', function(t) {
         });
 
         t.test('pans, zooms, and rotates', function(t) {
-            var camera = createCamera();
+            var camera = createCamera({bearing: -90});
             camera.easeTo({ center: [100, 0], zoom: 3.2, bearing: 90, duration: 0 });
             t.deepEqual(fixedLngLat(camera.getCenter()), fixedLngLat({ lng: 100, lat: 0 }));
             t.equal(camera.getZoom(), 3.2);
