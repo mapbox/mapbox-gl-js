@@ -122,10 +122,10 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
     // This calculates text-size at a high zoom level so that all tiles can
     // use the same value when calculating anchor positions.
     var zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-    this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', 18, zoomHistory);
-    this.adjustedTextSize = this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory);
-    this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', 18, zoomHistory);
-    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory);
+    this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', {$zoom: 18, $zoomHistory: zoomHistory});
+    this.adjustedTextSize = this.layer.getLayoutValue('text-size', {$zoom: this.zoom + 1, $zoomHistory: zoomHistory});
+    this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', {$zoom: 18, $zoomHistory: zoomHistory});
+    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', {$zoom: this.zoom + 1, $zoomHistory: zoomHistory});
 
     var tileSize = 512 * this.overscaling;
     this.tilePixelRatio = EXTENT / tileSize;

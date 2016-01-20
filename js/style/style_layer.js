@@ -99,12 +99,12 @@ StyleLayer.prototype = util.inherit(Evented, {
         );
     },
 
-    getLayoutValue: function(name, zoom, zoomHistory) {
+    getLayoutValue: function(name, globalProperties, featureProperties) {
         var specification = this._layoutSpecifications[name];
         var declaration = this._layoutDeclarations[name];
 
         if (declaration) {
-            return declaration.calculate(zoom, zoomHistory);
+            return declaration.calculate(globalProperties, featureProperties);
         } else {
             return specification.default;
         }
@@ -152,12 +152,12 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
-    getPaintValue: function(name, zoom, zoomHistory) {
+    getPaintValue: function(name, globalProperties, featureProperties) {
         var specification = this._paintSpecifications[name];
         var transition = this._paintTransitions[name];
 
         if (transition) {
-            return transition.at(zoom, zoomHistory);
+            return transition.calculate(globalProperties, featureProperties);
         } else if (specification.type === 'color' && specification.default) {
             return parseColor(specification.default);
         } else {
@@ -200,10 +200,10 @@ StyleLayer.prototype = util.inherit(Evented, {
     // update all zoom-dependent layout/paint values
     recalculate: function(zoom, zoomHistory) {
         for (var paintName in this._paintTransitions) {
-            this.paint[paintName] = this.getPaintValue(paintName, zoom, zoomHistory);
+            this.paint[paintName] = this.getPaintValue(paintName, {$zoom: zoom, $zoomHistory: zoomHistory});
         }
         for (var layoutName in this._layoutFunctions) {
-            this.layout[layoutName] = this.getLayoutValue(layoutName, zoom, zoomHistory);
+            this.layout[layoutName] = this.getLayoutValue(layoutName, {$zoom: zoom, $zoomHistory: zoomHistory});
         }
     },
 
