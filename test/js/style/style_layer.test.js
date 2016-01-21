@@ -50,7 +50,7 @@ test('StyleLayer#resolvePaint', function(t) {
 
         layer.resolvePaint({});
 
-        t.deepEqual(Object.keys(layer._resolved), ['', 'night']);
+        t.deepEqual(Object.keys(layer._classes), ['', 'night']);
         t.end();
     });
 });

@@ -33,9 +33,8 @@ function StyleLayer(layer, refLayer) {
     this.filter = (refLayer || layer).filter;
     this.layout = (refLayer || layer).layout;
 
-    // Resolved and cascaded paint properties.
-    this._resolved = {}; // class name -> StyleDeclarationSet
-    this._cascaded = {}; // property name -> StyleTransition
+    this._classes = {}; // class name -> StyleDeclarationSet
+    this._transitions = {}; // property name -> StyleTransition
 }
 
 StyleLayer.prototype = {
@@ -71,43 +70,44 @@ StyleLayer.prototype = {
             var match = p.match(/^paint(?:\.(.*))?$/);
             if (!match)
                 continue;
-            this._resolved[match[1] || ''] =
+            this._classes[match[1] || ''] =
                 new StyleDeclarationSet('paint', this.type, this._layer[p]);
         }
     },
 
     setPaintProperty: function(name, value, klass) {
-        var declarations = this._resolved[klass || ''];
+        var declarations = this._classes[klass || ''];
         if (!declarations) {
-            declarations = this._resolved[klass || ''] =
+            declarations = this._classes[klass || ''] =
                 new StyleDeclarationSet('paint', this.type, {});
         }
         declarations[name] = value;
     },
 
     getPaintProperty: function(name, klass) {
-        var declarations = this._resolved[klass || ''];
+        var declarations = this._classes[klass || ''];
         if (!declarations)
             return undefined;
         return declarations[name];
     },
 
+    // update classes
     cascade: function(classes, options, globalTrans, animationLoop) {
-        for (var klass in this._resolved) {
+        for (var klass in this._classes) {
             if (klass !== "" && !classes[klass])
                 continue;
 
-            var declarations = this._resolved[klass],
+            var declarations = this._classes[klass],
                 values = declarations.values();
 
             for (var k in values) {
                 var newDeclaration = values[k];
-                var oldTransition = options.transition ? this._cascaded[k] : undefined;
+                var oldTransition = options.transition ? this._transitions[k] : undefined;
 
                 // Only create a new transition if the declaration changed
                 if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
                     var newStyleTrans = declarations.transition(k, globalTrans);
-                    var newTransition = this._cascaded[k] =
+                    var newTransition = this._transitions[k] =
                         new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
 
                     // Run the animation loop until the end of the transition
@@ -127,17 +127,18 @@ StyleLayer.prototype = {
         // as internal paint properties.
         if (this.type === 'symbol') {
             var resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
-            this._cascaded['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
-            this._cascaded['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
+            this._transitions['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
+            this._transitions['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
         }
     },
 
+    // update zoom
     recalculate: function(z, zoomHistory) {
         var type = this.type,
             calculated = this.paint = new PaintProperties[type]();
 
-        for (var k in this._cascaded) {
-            calculated[k] = this._cascaded[k].at(z, zoomHistory);
+        for (var k in this._transitions) {
+            calculated[k] = this._transitions[k].at(z, zoomHistory);
         }
 
         this.hidden = (this.minzoom && z < this.minzoom) ||
@@ -160,12 +161,12 @@ StyleLayer.prototype = {
             premultiplyLayer(calculated, type);
         }
 
-        if (this._cascaded['line-dasharray']) {
+        if (this._transitions['line-dasharray']) {
             // If the line is dashed, scale the dash lengths by the line
             // width at the previous round zoom level.
             var dashArray = calculated['line-dasharray'];
-            var lineWidth = this._cascaded['line-width'] ?
-                this._cascaded['line-width'].at(Math.floor(z), Infinity) :
+            var lineWidth = this._transitions['line-width'] ?
+                this._transitions['line-width'].at(Math.floor(z), Infinity) :
                 calculated['line-width'];
 
             dashArray.fromScale *= lineWidth;
