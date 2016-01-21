@@ -86,9 +86,7 @@ StyleLayer.prototype = {
 
     getPaintProperty: function(name, klass) {
         var declarations = this._classes[klass || ''];
-        if (!declarations)
-            return undefined;
-        return declarations[name];
+        return declarations && declarations[name];
     },
 
     // update classes
