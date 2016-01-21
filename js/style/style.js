@@ -205,7 +205,8 @@ Style.prototype = util.inherit(Evented, {
         for (id in this._layers) {
             var layer = this._layers[id];
 
-            if (layer.recalculate(z, this.zoomHistory) && layer.source) {
+            layer.recalculate(z, this.zoomHistory);
+            if (!layer.isHidden(z) && layer.source) {
                 this.sources[layer.source].used = true;
             }
         }

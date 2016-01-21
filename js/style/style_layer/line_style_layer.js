@@ -29,8 +29,6 @@ LineStyleLayer.prototype = util.inherit(StyleLayer, {
             dashArray.fromScale *= lineWidth;
             dashArray.toScale *= lineWidth;
         }
-
-        return !this.isHidden(zoom);
     }
 
 });

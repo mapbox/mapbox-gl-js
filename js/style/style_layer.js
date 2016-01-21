@@ -125,14 +125,11 @@ StyleLayer.prototype = {
         this.paint = new PaintProperties[this.type]();
 
         for (var k in this._transitions) {
-            this.paint[k] = this._transitions[k].at(z, zoomHistory);
+            this.paint[k] = this._transitions[k].at(zoom, zoomHistory);
         }
 
         if (!this.isHidden(zoom)) {
             StyleLayer._premultiplyLayer(this.paint, this.type);
-            return false;
-        } else {
-            return true;
         }
     },
 

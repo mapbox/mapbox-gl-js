@@ -55,9 +55,6 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
             StyleLayer._premultiplyLayer(this.paint, 'text');
             StyleLayer._premultiplyLayer(this.paint, 'icon');
         }
-
-        return !this.isHidden();
-
     }
 
 });
