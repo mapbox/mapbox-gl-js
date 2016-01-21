@@ -121,7 +121,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {number} zoom Map zoom level
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
      * @fires moveend
+     * @fires zoomend
      * @returns {Map} `this`
      * @example
      * // zoom the map to 5
@@ -138,7 +142,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {number} zoom
      * @param {AnimationOptions} [options]
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
      * @fires moveend
+     * @fires zoomend
      * @returns {Map} `this`
      */
     zoomTo: function(zoom, options) {
@@ -164,7 +172,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         if (!this.zooming) {
             this.zooming = true;
-            this.fire('movestart');
+            this.fire('movestart').fire('zoomstart');
         }
 
         this._ease(function(k) {
@@ -174,7 +182,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             this.ease = null;
             if (options.duration >= 200) {
                 this.zooming = false;
-                this.fire('moveend');
+                this.fire('moveend').fire('zoomend');
             }
         }, options);
 
@@ -182,7 +190,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             clearTimeout(this._onZoomEnd);
             this._onZoomEnd = setTimeout(function() {
                 this.zooming = false;
-                this.fire('moveend');
+                this.fire('moveend').fire('zoomend');
             }.bind(this), 200);
         }
 
@@ -194,7 +202,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {AnimationOptions} [options]
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
      * @fires moveend
+     * @fires zoomend
      * @returns {Map} `this`
      */
     zoomIn: function(options) {
@@ -207,7 +219,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {AnimationOptions} [options]
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
      * @fires moveend
+     * @fires zoomend
      * @returns {Map} `this`
      */
     zoomOut: function(options) {
@@ -381,6 +397,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {CameraOptions} options map view options
      * @fires movestart
+     * @fires move
+     * @fires zoom
+     * @fires rotate
+     * @fires pitch
      * @fires moveend
      * @returns {Map} `this`
      */
@@ -411,11 +431,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             tr.pitch = +options.pitch;
         }
 
-        this.fire('movestart')
-            .fire('move');
+        this.fire('movestart').fire('move');
 
         if (zoomChanged) {
-            this.fire('zoom');
+            this.fire('zoomstart').fire('zoom').fire('zoomend');
         }
 
         if (bearingChanged) {
