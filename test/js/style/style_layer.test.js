@@ -7,7 +7,7 @@ var LayoutProperties = require('../../../js/style/layout_properties');
 test('StyleLayer', function(t) {
     t.test('sets raw layer', function (t) {
         var rawLayer = {type: 'fill'},
-            layer = new StyleLayer(rawLayer);
+            layer = StyleLayer.create(rawLayer);
         t.equal(layer._layer, rawLayer);
         t.end();
     });
@@ -15,7 +15,7 @@ test('StyleLayer', function(t) {
 
 test('StyleLayer#resolveLayout', function(t) {
     t.test('creates layout properties', function (t) {
-        var layer = new StyleLayer({type: 'fill'});
+        var layer = StyleLayer.create({type: 'fill'});
         layer.resolveLayout({});
         t.ok(layer.layout instanceof LayoutProperties.fill);
         t.end();
@@ -24,8 +24,8 @@ test('StyleLayer#resolveLayout', function(t) {
 
 test('StyleLayer#resolveReference', function(t) {
     t.test('sets properties from ref', function (t) {
-        var layer = new StyleLayer({ref: 'ref'}),
-            referent = new StyleLayer({type: 'fill'});
+        var layer = StyleLayer.create({ref: 'ref'}),
+            referent = StyleLayer.create({type: 'fill'});
         layer.resolveReference({ref: referent});
         t.equal(layer.type, 'fill');
         t.end();
@@ -34,7 +34,7 @@ test('StyleLayer#resolveReference', function(t) {
 
 test('StyleLayer#resolvePaint', function(t) {
     t.test('calculates paint classes', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             type: 'fill',
             'paint': {},
             'paint.night': {}
@@ -49,7 +49,7 @@ test('StyleLayer#resolvePaint', function(t) {
 
 //test('StyleLayer#cascade', function(t) {
 //    t.test('applies default transitions', function(t) {
-//        var layer = new StyleLayer({
+//        var layer = StyleLayer.create({
 //            type: 'fill',
 //            paint: {
 //                'fill-color': 'blue'
@@ -68,7 +68,7 @@ test('StyleLayer#resolvePaint', function(t) {
 
 test('StyleLayer#setPaintProperty', function(t) {
     t.test('sets new property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background"
         });
@@ -80,7 +80,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('updates property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint": {
@@ -96,7 +96,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('unsets property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint": {
@@ -112,7 +112,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('sets classed paint value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint.night": {
@@ -128,7 +128,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('unsets classed paint value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint.night": {
@@ -144,7 +144,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('preserves existing transition', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint": {
@@ -163,7 +163,7 @@ test('StyleLayer#setPaintProperty', function(t) {
     });
 
     t.test('sets transition', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "background",
             "type": "background",
             "paint": {
@@ -181,7 +181,7 @@ test('StyleLayer#setPaintProperty', function(t) {
 
 test('StyleLayer#setLayoutProperty', function(t) {
     t.test('sets new property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol"
         });
@@ -194,7 +194,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
     });
 
     t.test('updates property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol",
             "layout": {
@@ -210,7 +210,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
     });
 
     t.test('unsets property value', function(t) {
-        var layer = new StyleLayer({
+        var layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol",
             "layout": {

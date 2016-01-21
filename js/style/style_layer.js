@@ -8,6 +8,10 @@ var PaintProperties = require('./paint_properties');
 
 module.exports = StyleLayer;
 
+StyleLayer.create = function(layer) {
+    return new StyleLayer(layer);
+};
+
 function StyleLayer(layer) {
     this._layer = layer;
 

@@ -47,7 +47,7 @@ styleBatch.prototype = {
             throw new Error('There is already a layer with this ID');
         }
         if (!(layer instanceof StyleLayer)) {
-            layer = new StyleLayer(layer);
+            layer = StyleLayer.create(layer);
         }
         this._style._validateLayer(layer);
         this._style._layers[layer.id] = layer;
