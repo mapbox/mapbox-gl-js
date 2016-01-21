@@ -47,25 +47,6 @@ test('StyleLayer#resolvePaint', function(t) {
     });
 });
 
-//test('StyleLayer#cascade', function(t) {
-//    t.test('applies default transitions', function(t) {
-//        var layer = StyleLayer.create({
-//            type: 'fill',
-//            paint: {
-//                'fill-color': 'blue'
-//            }
-//        });
-//
-//        layer.resolvePaint({});
-//
-//        var declaration = layer._resolved['']['fill-color'];
-//        t.deepEqual(declaration.value, [0, 0, 1, 1]);
-//        t.deepEqual(declaration.transition, {delay: 0, duration: 300});
-//
-//        t.end();
-//    });
-//});
-
 test('StyleLayer#setPaintProperty', function(t) {
     t.test('sets new property value', function(t) {
         var layer = StyleLayer.create({
