@@ -2,6 +2,7 @@
 
 var test = require('prova');
 var StyleLayer = require('../../../js/style/style_layer');
+var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
 var LayoutProperties = require('../../../js/style/layout_properties');
 
 test('StyleLayer', function(t) {
@@ -19,6 +20,13 @@ test('StyleLayer', function(t) {
         );
 
         t.equal(layer.type, 'fill');
+        t.end();
+    });
+
+    t.test('instantiates the correct subclass', function (t) {
+        var layer = StyleLayer.create({type: 'fill'});
+
+        t.ok(layer instanceof FillStyleLayer);
         t.end();
     });
 });
