@@ -14,6 +14,16 @@ module.exports = SymbolStyleLayer;
 
 SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
 
+    isHidden: function() {
+        if (StyleLayer.prototype.isHidden.apply(this, arguments)) return true;
+
+        var isTextHidden = this.paint['text-opacity'] === 0 || !this.layout['text-field'];
+        var isIconHidden = this.paint['icon-opacity'] === 0 || !this.layout['icon-image'];
+        if (isTextHidden && isIconHidden) return true;
+
+        return false;
+    },
+
     resolveLayout: function() {
         StyleLayer.prototype.resolveLayout.apply(this, arguments);
 
@@ -41,15 +51,12 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
     recalculate: function() {
         StyleLayer.prototype.recalculate.apply(this, arguments);
 
-        if ((this.paint['text-opacity'] === 0 || !this.layout['text-field']) &&
-            (this.paint['icon-opacity'] === 0 || !this.layout['icon-image'])) {
-            this.hidden = true;
-        } else {
+        if (!this.isHidden()) {
             StyleLayer._premultiplyLayer(this.paint, 'text');
             StyleLayer._premultiplyLayer(this.paint, 'icon');
         }
 
-        return !this.hidden;
+        return !this.isHidden();
 
     }
 

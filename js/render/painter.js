@@ -330,7 +330,7 @@ Painter.prototype.depthMask = function(mask) {
 };
 
 Painter.prototype.renderLayer = function(painter, source, layer, coords) {
-    if (layer.hidden) return;
+    if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
     draw[layer.type](painter, source, layer, coords);
 };

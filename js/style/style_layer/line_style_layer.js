@@ -17,7 +17,7 @@ LineStyleLayer.prototype = util.inherit(StyleLayer, {
         // If the line is dashed, scale the dash lengths by the line
         // width at the previous round zoom level.
         if (this._transitions['line-dasharray']) {
-            
+
             var lineWidth;
             if (this._transitions['line-width']) {
                 lineWidth = this._transitions['line-width'].at(Math.floor(zoom), Infinity);
@@ -30,7 +30,7 @@ LineStyleLayer.prototype = util.inherit(StyleLayer, {
             dashArray.toScale *= lineWidth;
         }
 
-        return !this.hidden;
+        return !this.isHidden(zoom);
     }
 
 });

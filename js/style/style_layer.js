@@ -80,6 +80,14 @@ StyleLayer.prototype = {
         return declarations && declarations[name];
     },
 
+    isHidden: function(zoom) {
+        if (this.minzoom && zoom < this.minzoom) return true;
+        if (this.maxzoom && zoom >= this.maxzoom) return true;
+        if (this.layout.visibility === 'none') return true;
+        if (this.paint[this.type + '-opacity'] === 0) return true;
+        return false;
+    },
+
     // update classes
     cascade: function(classes, options, globalTrans, animationLoop) {
         for (var klass in this._classes) {
@@ -113,26 +121,19 @@ StyleLayer.prototype = {
     },
 
     // update zoom
-    recalculate: function(z, zoomHistory) {
+    recalculate: function(zoom, zoomHistory) {
         this.paint = new PaintProperties[this.type]();
 
         for (var k in this._transitions) {
             this.paint[k] = this._transitions[k].at(z, zoomHistory);
         }
 
-        this.hidden = (
-            (this.minzoom && z < this.minzoom) ||
-            (this.maxzoom && z >= this.maxzoom) ||
-            (this.layout.visibility === 'none')
-        );
-
-        if (this.paint[this.type + '-opacity'] === 0) {
-            this.hidden = true;
-        } else {
+        if (!this.isHidden(zoom)) {
             StyleLayer._premultiplyLayer(this.paint, this.type);
+            return false;
+        } else {
+            return true;
         }
-
-        return !this.hidden;
     },
 
     json: function() {
