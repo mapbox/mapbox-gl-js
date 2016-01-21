@@ -123,26 +123,31 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
-        var id, layer;
+        var layer, layerJSON;
 
         this._layers = {};
-        this._order  = [];
+        this._order  = this.stylesheet.layers.map(function(layer) {
+            return layer.id;
+        });
 
+        // resolve all layers WITHOUT a ref
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = StyleLayer.create(this.stylesheet.layers[i]);
+            layerJSON = this.stylesheet.layers[i];
+            if (layerJSON.ref) continue;
+            layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            this._order.push(layer.id);
+            layer.resolveLayout();
+            layer.resolvePaint();
         }
 
-        // Resolve layout properties.
-        for (id in this._layers) {
-            this._layers[id].resolveLayout();
-        }
-
-        // Resolve reference and paint properties.
-        for (id in this._layers) {
-            this._layers[id].resolveReference(this._layers);
-            this._layers[id].resolvePaint();
+        // resolve all layers WITH a ref
+        for (var j = 0; j < this.stylesheet.layers.length; j++) {
+            layerJSON = this.stylesheet.layers[j];
+            if (!layerJSON.ref) continue;
+            var refLayer = this.getLayer(layerJSON.ref);
+            layer = StyleLayer.create(layerJSON, refLayer);
+            this._layers[layer.id] = layer;
+            layer.resolvePaint();
         }
 
         this._groupLayers();

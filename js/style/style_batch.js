@@ -47,13 +47,13 @@ styleBatch.prototype = {
             throw new Error('There is already a layer with this ID');
         }
         if (!(layer instanceof StyleLayer)) {
-            layer = StyleLayer.create(layer);
+            var refLayer = layer.ref && this._style.getLayer(layer.ref);
+            layer = StyleLayer.create(layer, refLayer);
         }
         this._style._validateLayer(layer);
         this._style._layers[layer.id] = layer;
         this._style._order.splice(before ? this._style._order.indexOf(before) : Infinity, 0, layer.id);
         layer.resolveLayout();
-        layer.resolveReference(this._style._layers);
         layer.resolvePaint();
 
         this._groupLayers = true;

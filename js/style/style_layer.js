@@ -8,21 +8,26 @@ var PaintProperties = require('./paint_properties');
 
 module.exports = StyleLayer;
 
-StyleLayer.create = function(layer) {
-    return new StyleLayer(layer);
+StyleLayer.create = function(layer, refLayer) {
+    return new StyleLayer(layer, refLayer);
 };
 
-function StyleLayer(layer) {
+function StyleLayer(layer, refLayer) {
     this._layer = layer;
 
     this.id = layer.id;
     this.ref = layer.ref;
+    this.type = (refLayer || layer).type;
+    this.source = (refLayer || layer).source;
+    this['source-layer'] = (refLayer || layer)['source-layer'];
+    this.minzoom = (refLayer || layer).minzoom;
+    this.maxzoom = (refLayer || layer).maxzoom;
+    this.filter = (refLayer || layer).filter;
+    this.layout = (refLayer || layer).layout;
 
     // Resolved and cascaded paint properties.
     this._resolved = {}; // class name -> StyleDeclarationSet
     this._cascaded = {}; // property name -> StyleTransition
-
-    this.assign(layer);
 }
 
 StyleLayer.prototype = {
@@ -51,12 +56,6 @@ StyleLayer.prototype = {
 
     getLayoutProperty: function(name) {
         return this.layout[name];
-    },
-
-    resolveReference: function(layers) {
-        if (this.ref) {
-            this.assign(layers[this.ref]);
-        }
     },
 
     resolvePaint: function() {
@@ -166,13 +165,6 @@ StyleLayer.prototype = {
         }
 
         return !this.hidden;
-    },
-
-    assign: function(layer) {
-        util.extend(this, util.pick(layer,
-            ['type', 'source', 'source-layer',
-            'minzoom', 'maxzoom', 'filter',
-            'layout']));
     },
 
     json: function() {

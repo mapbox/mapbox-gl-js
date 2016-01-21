@@ -11,6 +11,16 @@ test('StyleLayer', function(t) {
         t.equal(layer._layer, rawLayer);
         t.end();
     });
+
+    t.test('sets properties from ref', function (t) {
+        var layer = StyleLayer.create(
+            {ref: 'ref'},
+            StyleLayer.create({type: 'fill'})
+        );
+
+        t.equal(layer.type, 'fill');
+        t.end();
+    });
 });
 
 test('StyleLayer#resolveLayout', function(t) {
@@ -18,16 +28,6 @@ test('StyleLayer#resolveLayout', function(t) {
         var layer = StyleLayer.create({type: 'fill'});
         layer.resolveLayout({});
         t.ok(layer.layout instanceof LayoutProperties.fill);
-        t.end();
-    });
-});
-
-test('StyleLayer#resolveReference', function(t) {
-    t.test('sets properties from ref', function (t) {
-        var layer = StyleLayer.create({ref: 'ref'}),
-            referent = StyleLayer.create({type: 'fill'});
-        layer.resolveReference({ref: referent});
-        t.equal(layer.type, 'fill');
         t.end();
     });
 });
