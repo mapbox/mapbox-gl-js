@@ -54,15 +54,21 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  * RGBA, return a version for which the RGB components are multiplied
  * by the A (alpha) component
  *
- * @param {Array<number>} c color array
+ * @param {Array<number>} color color array
+ * @param {number} [additionalOpacity] additional opacity to be multiplied into
+ *     the color's alpha component.
  * @returns {Array<number>} premultiplied color array
  * @private
  */
-exports.premultiply = function (c) {
-    c[0] *= c[3];
-    c[1] *= c[3];
-    c[2] *= c[3];
-    return c;
+exports.premultiply = function (color, additionalOpacity) {
+    if (!color) return null;
+    var opacity = color[3] * additionalOpacity;
+    return [
+        color[0] * opacity,
+        color[1] * opacity,
+        color[2] * opacity,
+        opacity
+    ];
 };
 
 /**

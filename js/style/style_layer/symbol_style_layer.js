@@ -14,6 +14,14 @@ module.exports = SymbolStyleLayer;
 
 SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
 
+    premultiply: function() {
+        this.paint['text-color'] = util.premultiply(this.paint['text-color'], this.paint['text-opacity']);
+        this.paint['text-halo-color'] = util.premultiply(this.paint['text-halo-color'], this.paint['text-opacity']);
+
+        this.paint['icon-color'] = util.premultiply(this.paint['icon-color'], this.paint['icon-opacity']);
+        this.paint['icon-halo-color'] = util.premultiply(this.paint['icon-halo-color'], this.paint['icon-opacity']);
+    },
+
     isHidden: function() {
         if (StyleLayer.prototype.isHidden.apply(this, arguments)) return true;
 
@@ -46,15 +54,6 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
         var resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
         this._transitions['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
         this._transitions['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
-    },
-
-    recalculate: function() {
-        StyleLayer.prototype.recalculate.apply(this, arguments);
-
-        if (!this.isHidden()) {
-            StyleLayer._premultiplyLayer(this.paint, 'text');
-            StyleLayer._premultiplyLayer(this.paint, 'icon');
-        }
     }
 
 });

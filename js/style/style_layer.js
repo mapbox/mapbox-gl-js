@@ -129,8 +129,12 @@ StyleLayer.prototype = {
         }
 
         if (!this.isHidden(zoom)) {
-            StyleLayer._premultiplyLayer(this.paint, this.type);
+            this.premultiply();
         }
+    },
+
+    premultiply: function() {
+        this.paint[this.type + '-color'] = util.premultiply(this.paint[this.type + '-color'], this.paint[this.type + '-opacity']);
     },
 
     json: function() {
@@ -140,29 +144,5 @@ StyleLayer.prototype = {
                 ['type', 'source', 'source-layer',
                 'minzoom', 'maxzoom', 'filter',
                 'layout', 'paint']));
-    }
-};
-
-StyleLayer._premultiplyLayer = function(layer, type) {
-    var colorProp = type + '-color',
-        haloProp = type + '-halo-color',
-        outlineProp = type + '-outline-color',
-        color = layer[colorProp],
-        haloColor = layer[haloProp],
-        outlineColor = layer[outlineProp],
-        opacity = layer[type + '-opacity'];
-
-    var colorOpacity = color && (opacity * color[3]);
-    var haloOpacity = haloColor && (opacity * haloColor[3]);
-    var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
-
-    if (colorOpacity !== undefined && colorOpacity < 1) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
-    }
-    if (haloOpacity !== undefined && haloOpacity < 1) {
-        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
-    }
-    if (outlineOpacity !== undefined && outlineOpacity < 1) {
-        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
     }
 };
