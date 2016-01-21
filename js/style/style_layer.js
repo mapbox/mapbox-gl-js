@@ -41,15 +41,6 @@ StyleLayer.prototype = {
     resolveLayout: function() {
         if (!this.ref) {
             this.layout = new LayoutProperties[this.type](this._layer.layout);
-
-            if (this.layout['symbol-placement'] === 'line') {
-                if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
-                    this.layout['text-rotation-alignment'] = 'map';
-                }
-                if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
-                    this.layout['icon-rotation-alignment'] = 'map';
-                }
-            }
         }
     },
 
@@ -119,56 +110,26 @@ StyleLayer.prototype = {
                 }
             }
         }
-
-        // the -size properties are used both as layout and paint.
-        // In the spec they are layout properties. This adds them
-        // as internal paint properties.
-        if (this.type === 'symbol') {
-            var resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
-            this._transitions['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
-            this._transitions['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
-        }
     },
 
     // update zoom
     recalculate: function(z, zoomHistory) {
-        var type = this.type,
-            calculated = this.paint = new PaintProperties[type]();
+        this.paint = new PaintProperties[this.type]();
 
         for (var k in this._transitions) {
-            calculated[k] = this._transitions[k].at(z, zoomHistory);
+            this.paint[k] = this._transitions[k].at(z, zoomHistory);
         }
 
-        this.hidden = (this.minzoom && z < this.minzoom) ||
-                      (this.maxzoom && z >= this.maxzoom) ||
-                      // include visibility check for non-bucketed background layers
-                      (this.layout.visibility === 'none');
+        this.hidden = (
+            (this.minzoom && z < this.minzoom) ||
+            (this.maxzoom && z >= this.maxzoom) ||
+            (this.layout.visibility === 'none')
+        );
 
-        if (type === 'symbol') {
-            if ((calculated['text-opacity'] === 0 || !this.layout['text-field']) &&
-                (calculated['icon-opacity'] === 0 || !this.layout['icon-image'])) {
-                this.hidden = true;
-            } else {
-                premultiplyLayer(calculated, 'text');
-                premultiplyLayer(calculated, 'icon');
-            }
-
-        } else if (calculated[type + '-opacity'] === 0) {
+        if (this.paint[this.type + '-opacity'] === 0) {
             this.hidden = true;
         } else {
-            premultiplyLayer(calculated, type);
-        }
-
-        if (this._transitions['line-dasharray']) {
-            // If the line is dashed, scale the dash lengths by the line
-            // width at the previous round zoom level.
-            var dashArray = calculated['line-dasharray'];
-            var lineWidth = this._transitions['line-width'] ?
-                this._transitions['line-width'].at(Math.floor(z), Infinity) :
-                calculated['line-width'];
-
-            dashArray.fromScale *= lineWidth;
-            dashArray.toScale *= lineWidth;
+            StyleLayer._premultiplyLayer(this.paint, this.type);
         }
 
         return !this.hidden;
@@ -184,7 +145,7 @@ StyleLayer.prototype = {
     }
 };
 
-function premultiplyLayer(layer, type) {
+StyleLayer._premultiplyLayer = function(layer, type) {
     var colorProp = type + '-color',
         haloProp = type + '-halo-color',
         outlineProp = type + '-outline-color',
@@ -206,4 +167,4 @@ function premultiplyLayer(layer, type) {
     if (outlineOpacity !== undefined && outlineOpacity < 1) {
         layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
     }
-}
+};
