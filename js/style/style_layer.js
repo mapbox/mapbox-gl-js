@@ -120,12 +120,16 @@ StyleLayer.prototype = {
         }
     },
 
+    getPaintValue: function(name, zoom, zoomHistory) {
+        return this._transitions[name].at(zoom, zoomHistory);
+    },
+
     // update zoom
     recalculate: function(zoom, zoomHistory) {
         this.paint = new PaintProperties[this.type]();
 
-        for (var k in this._transitions) {
-            this.paint[k] = this._transitions[k].at(zoom, zoomHistory);
+        for (var name in this._transitions) {
+            this.paint[name] = this.getPaintValue(name, zoom, zoomHistory);
         }
     },
 
