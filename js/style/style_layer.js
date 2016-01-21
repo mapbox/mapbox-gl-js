@@ -27,7 +27,7 @@ function StyleLayer(layer, refLayer) {
     this.ref = layer.ref;
     this.type = (refLayer || layer).type;
     this.source = (refLayer || layer).source;
-    this['source-layer'] = (refLayer || layer)['source-layer'];
+    this.sourceLayer = (refLayer || layer)['source-layer'];
     this.minzoom = (refLayer || layer).minzoom;
     this.maxzoom = (refLayer || layer).maxzoom;
     this.filter = (refLayer || layer).filter;

@@ -93,14 +93,14 @@ Style.prototype = util.inherit(Evented, {
     _validateLayer: function(layer) {
         var source = this.sources[layer.source];
 
-        if (!layer['source-layer']) return;
+        if (!layer.sourceLayer) return;
         if (!source) return;
         if (!source.vectorLayerIds) return;
 
-        if (source.vectorLayerIds.indexOf(layer['source-layer']) === -1) {
+        if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
             this.fire('error', {
                 error: new Error(
-                    'Source layer "' + layer['source-layer'] + '" ' +
+                    'Source layer "' + layer.sourceLayer + '" ' +
                     'does not exist on source "' + source.id + '" ' +
                     'as specified by style layer "' + layer.id + '"'
                 )
