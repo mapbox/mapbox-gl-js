@@ -44,13 +44,13 @@ test('StyleLayer#resolvePaint', function(t) {
     t.test('calculates paint classes', function(t) {
         var layer = StyleLayer.create({
             type: 'fill',
-            'paint': {},
-            'paint.night': {}
+            'paint': { 'fill-color': 'white' },
+            'paint.night': { 'fill-color': 'black' }
         });
 
         layer.resolvePaint({});
 
-        t.deepEqual(Object.keys(layer._classes), ['', 'night']);
+        t.deepEqual(Object.keys(layer._paintDeclarations), ['', 'night']);
         t.end();
     });
 });

@@ -2,9 +2,7 @@
 
 var util = require('../../util/util');
 var StyleLayer = require('../style_layer');
-var StyleDeclarationSet = require('../style_declaration_set');
-var StyleTransition = require('../style_transition');
-
+var MapboxGLFunction = require('mapbox-gl-function');
 
 function SymbolStyleLayer() {
     StyleLayer.apply(this, arguments);
@@ -37,15 +35,14 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
         }
     },
 
-    cascade: function(classes, options, globalTrans) {
-        StyleLayer.prototype.cascade.apply(this, arguments);
+    recalculate: function(zoom) {
+        StyleLayer.prototype.recalculate.apply(this, arguments);
 
         // the -size properties are used both as layout and paint.
         // In the spec they are layout properties. This adds them
-        // as internal paint properties.
-        var resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
-        this._transitions['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
-        this._transitions['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
+        // as paint properties.
+        this.paint['text-size'] = MapboxGLFunction.interpolated(this.layout['text-size'])(zoom);
+        this.paint['icon-size'] = MapboxGLFunction.interpolated(this.layout['icon-size'])(zoom);
     }
 
 });

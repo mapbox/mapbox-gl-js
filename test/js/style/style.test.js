@@ -8,7 +8,6 @@ var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var LayoutProperties = require('../../../js/style/layout_properties');
-var PaintProperties = require('../../../js/style/paint_properties');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
@@ -851,13 +850,7 @@ test('Style#featuresAt', function(t) {
             t.test('includes paint properties', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
-
-                    var paint = results[0].layer.paint;
-                    t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
-                    t.deepEqual(
-                        Object.getPrototypeOf(paint),
-                        PaintProperties.line.prototype);
-
+                    t.deepEqual(results[0].layer.paint['line-color'], [ 1, 0, 0, 1 ]);
                     t.end();
                 });
             });
