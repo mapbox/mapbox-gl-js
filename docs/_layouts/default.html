@@ -6,7 +6,7 @@ footer:
     - title: Data
       path: /data-platform
     - title: Pricing
-      path: /plans
+      path: /pricing
     - title: Blog
       path: /blog
     - title: Showcase
@@ -203,6 +203,7 @@ footer:
         </div>
         <div class='col5 margin1r'>
           <h3>Our platform</h3>
+          <a class='block pad1y icon mt' href='/enterprise/'>Enterprise ready</a>
           <a class='block pad1y icon building' href='/platform/'>Scalable infrastructure</a>
           <a class='block pad1y icon lock' href='/platform/security/'>Security</a>
           <a class='block pad1y icon data' href='/data-platform/'>Curated Data</a>
@@ -299,7 +300,7 @@ footer:
   </div>
 </div>
 
-<div class='masthead col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
+<div class='masthead col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.title == 'Developers' %}developers-nav{% endif %} {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right navigation-padding-top contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -312,7 +313,7 @@ footer:
           <div class='dropdown inline fl contain'  data-category='use-cases'> <a href='/industries/'  class='contain primary-nav-button fl pad1x pad0y round'>Industries</a></div>
          <div class='dropdown inline fl contain'  data-category='documentation'>  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round '>Developers</a></div>
          <div class='dropdown inline fl contain'  data-category='help'>  <a href='/help/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
-          <div class='inline fl'> <a href='/plans/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/plans' %}active{% endif %}'>Pricing</a></div>
+          <div class='inline fl'> <a href='/pricing/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/pricing' %}active{% endif %}'>Pricing</a></div>
           <div class='inline fl'> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
         </div>
         <!-- Hardcoded width so content doesn't jump -->
