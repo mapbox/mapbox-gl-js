@@ -57,27 +57,23 @@ StyleLayer.prototype = {
     },
 
     resolvePaint: function() {
-        for (var p in this._layer) {
-            var match = p.match(/^paint(?:\.(.*))?$/);
-            if (!match)
-                continue;
-            this._classes[match[1] || ''] =
-                new StyleDeclarationSet('paint', this.type, this._layer[p]);
+        for (var key in this._layer) {
+            var match = key.match(/^paint(?:\.(.*))?$/);
+            if (!match) continue;
+            this._classes[match[1] || ''] = new StyleDeclarationSet('paint', this.type, this._layer[key]);
         }
     },
 
     setPaintProperty: function(name, value, klass) {
         var declarations = this._classes[klass || ''];
         if (!declarations) {
-            declarations = this._classes[klass || ''] =
-                new StyleDeclarationSet('paint', this.type, {});
+            declarations = this._classes[klass || ''] = new StyleDeclarationSet('paint', this.type, {});
         }
         declarations[name] = value;
     },
 
     getPaintProperty: function(name, klass) {
-        var declarations = this._classes[klass || ''];
-        return declarations && declarations[name];
+        return this._classes[klass || ''] && this._classes[klass || ''][name];
     },
 
     isHidden: function(zoom) {
@@ -91,11 +87,10 @@ StyleLayer.prototype = {
     // update classes
     cascade: function(classes, options, globalTrans, animationLoop) {
         for (var klass in this._classes) {
-            if (klass !== "" && !classes[klass])
-                continue;
+            if (klass !== "" && !classes[klass]) continue;
 
-            var declarations = this._classes[klass],
-                values = declarations.values();
+            var declarations = this._classes[klass];
+            var values = declarations.values();
 
             for (var k in values) {
                 var newDeclaration = values[k];
@@ -104,8 +99,7 @@ StyleLayer.prototype = {
                 // Only create a new transition if the declaration changed
                 if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
                     var newStyleTrans = declarations.transition(k, globalTrans);
-                    var newTransition = this._transitions[k] =
-                        new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
+                    var newTransition = this._transitions[k] = new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
 
                     // Run the animation loop until the end of the transition
                     if (!newTransition.instant()) {
@@ -134,11 +128,13 @@ StyleLayer.prototype = {
     },
 
     json: function() {
-        return util.extend({},
+        return util.extend(
+            {},
             this._layer,
-            util.pick(this,
-                ['type', 'source', 'source-layer',
-                'minzoom', 'maxzoom', 'filter',
-                'layout', 'paint']));
+            util.pick(this, [
+                'type', 'source', 'source-layer', 'minzoom', 'maxzoom',
+                'filter', 'layout', 'paint'
+            ])
+        );
     }
 };
