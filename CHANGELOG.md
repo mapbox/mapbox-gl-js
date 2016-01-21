@@ -1,5 +1,11 @@
 ## master
 
+## 8.4.0
+
+v8.0.0 styles are fully compatible with v8.4.0.
+
+* Added `cluster`, `clusterRadius`, `clusterMaxZoom` GeoJSON source properties.
+
 ## 8.3.0
 
 v8.0.0 styles are fully compatible with v8.3.0.
