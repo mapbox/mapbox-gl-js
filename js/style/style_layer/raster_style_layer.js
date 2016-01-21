@@ -9,8 +9,4 @@ function RasterStyleLayer() {
 
 module.exports = RasterStyleLayer;
 
-RasterStyleLayer.prototype = util.inherit(StyleLayer, {
-
-    premultiply: function() {}
-
-});
+RasterStyleLayer.prototype = util.inherit(StyleLayer, {});

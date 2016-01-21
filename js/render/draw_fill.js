@@ -1,15 +1,16 @@
 'use strict';
 
 var browser = require('../util/browser');
+var util = require('../util/util');
 
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
 
-    var color = layer.paint['fill-color'];
+    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
     var image = layer.paint['fill-pattern'];
-    var strokeColor = layer.paint['fill-outline-color'];
+    var strokeColor = util.premultiply(layer.paint['fill-outline-color'], layer.paint['fill-opacity']);
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1)) {
@@ -57,7 +58,7 @@ function drawFill(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var color = layer.paint['fill-color'];
+    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 

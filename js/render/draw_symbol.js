@@ -4,6 +4,7 @@ var mat4 = require('gl-matrix').mat4;
 
 var browser = require('../util/browser');
 var drawCollisionDebug = require('./draw_collision_debug');
+var util = require('../util/util');
 
 module.exports = drawSymbols;
 
@@ -167,9 +168,11 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
         if (layer.paint[prefix + '-halo-width']) {
+            var haloColor = util.premultiply(layer.paint[prefix + '-halo-color'], layer.paint[prefix + '-opacity']);
+
             // Draw halo underneath the text.
             gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
-            gl.uniform4fv(shader.u_color, layer.paint[prefix + '-halo-color']);
+            gl.uniform4fv(shader.u_color, haloColor);
             gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.groups.length; j++) {
@@ -184,8 +187,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
             }
         }
 
+        var color = util.premultiply(layer.paint[prefix + '-color'], layer.paint[prefix + '-opacity']);
         gl.uniform1f(shader.u_gamma, gamma * gammaScale);
-        gl.uniform4fv(shader.u_color, layer.paint[prefix + '-color']);
+        gl.uniform4fv(shader.u_color, color);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.groups.length; i++) {

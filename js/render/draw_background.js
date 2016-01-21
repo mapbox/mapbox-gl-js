@@ -2,13 +2,14 @@
 
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
+var util = require('../util/util');
 
 module.exports = drawBackground;
 
 function drawBackground(painter, source, layer) {
     var gl = painter.gl;
     var transform = painter.transform;
-    var color = layer.paint['background-color'];
+    var color = util.premultiply(layer.paint['background-color'], layer.paint['background-opacity']);
     var image = layer.paint['background-pattern'];
     var opacity = layer.paint['background-opacity'];
     var shader;

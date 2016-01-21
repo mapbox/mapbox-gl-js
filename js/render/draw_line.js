@@ -2,6 +2,7 @@
 
 var browser = require('../util/browser');
 var mat2 = require('gl-matrix').mat2;
+var util = require('../util/util');
 
 /**
  * Draw a line. Under the hood this will read elements from
@@ -47,7 +48,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
     }
 
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
-    var color = layer.paint['line-color'];
+    var color = util.premultiply(layer.paint['line-color'], layer.paint['line-opacity']);
 
     var tr = painter.transform;
 

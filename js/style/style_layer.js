@@ -127,14 +127,6 @@ StyleLayer.prototype = {
         for (var k in this._transitions) {
             this.paint[k] = this._transitions[k].at(zoom, zoomHistory);
         }
-
-        if (!this.isHidden(zoom)) {
-            this.premultiply();
-        }
-    },
-
-    premultiply: function() {
-        this.paint[this.type + '-color'] = util.premultiply(this.paint[this.type + '-color'], this.paint[this.type + '-opacity']);
     },
 
     json: function() {
