@@ -65,11 +65,15 @@ module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
     return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
 };
 
-module.exports.normalizeTileURL = function(url, sourceUrl) {
+module.exports.normalizeTileURL = function(url, sourceUrl, tileSize) {
     if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
         return url;
 
+    // The v4 mapbox tile API supports 512x512 image tiles only when @2x
+    // is appended to the tile URL. If `tileSize: 512` is specified for
+    // a Mapbox raster source force the @2x suffix even if a non hidpi
+    // device.
     url = url.replace(/([?&]access_token=)tk\.[^&]+/, '$1' + config.ACCESS_TOKEN);
     var extension = browser.supportsWebp ? 'webp' : '$1';
-    return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.' + extension : '.' + extension);
+    return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x.' + extension : '.' + extension);
 };
