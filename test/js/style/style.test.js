@@ -766,7 +766,9 @@ test('Style#featuresAt', function(t) {
             "paint": {
                 "line-color": "red"
             },
-            "something": "else"
+            "metadata": {
+                "something": "else"
+            }
         }, {
             "id": "landref",
             "ref": "land",
@@ -864,12 +866,12 @@ test('Style#featuresAt', function(t) {
                 });
             });
 
-            t.test('includes arbitrary keys', function(t) {
+            t.test('includes metadata', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
 
                     var layer = results[0].layer;
-                    t.equal(layer.something, 'else');
+                    t.equal(layer.metadata.something, 'else');
 
                     t.end();
                 });

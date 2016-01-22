@@ -23,11 +23,9 @@ StyleLayer.create = function(layer, refLayer) {
 };
 
 function StyleLayer(layer, refLayer) {
-    this._layer = layer;
-    this._refLayer = refLayer;
-
     this.id = layer.id;
     this.ref = layer.ref;
+    this.metadata = layer.metadata;
     this.type = (refLayer || layer).type;
     this.source = (refLayer || layer).source;
     this.sourceLayer = (refLayer || layer)['source-layer'];
@@ -40,26 +38,26 @@ function StyleLayer(layer, refLayer) {
     this._layoutSpecifications = StyleSpecification['layout_' + this.type];
 
     // Resolve paint declarations
-    this._paintDeclarations = {}; // { [class name]: { [property name]: StyleDeclaration }}
-    this._paintTransitions = {}; // { [class name]: { [property name]: StyleTransitionOptions }}
-    for (var key in this._layer) {
+    this._paintDeclarations = {};
+    this._paintTransitions = {};
+    for (var key in layer) {
         var match = key.match(/^paint(?:\.(.*))?$/);
         if (match) {
             var klass = match[1] || '';
-            for (var name in this._layer[key]) {
-                this.setPaintProperty(name, this._layer[key][name], klass);
+            for (var name in layer[key]) {
+                this.setPaintProperty(name, layer[key][name], klass);
             }
         }
     }
 
     // Resolve layout declarations
-    this._layoutDeclarations = {}; // { [property name]: StyleDeclaration }
-    if (!this._refLayer) {
-        for (name in this._layer.layout) {
-            this.setLayoutProperty(name, this._layer.layout[name]);
-        }
+    this._layoutDeclarations = {};
+    if (this.ref) {
+        this._layoutDeclarations = refLayer._layoutDeclarations;
     } else {
-        this._layoutDeclarations = this._refLayer._layoutDeclarations;
+        for (name in layer.layout) {
+            this.setLayoutProperty(name, layer.layout[name]);
+        }
     }
 }
 
@@ -198,17 +196,36 @@ StyleLayer.prototype = {
     },
 
     json: function() {
-        return util.extend(
-            {},
-            this._layer,
-            util.pick(this, [
-                'type', 'source', 'source-layer', 'minzoom', 'maxzoom',
-                'filter', 'paint', 'layout'
-            ])
-        );
+        return {
+            'id': this.id,
+            'ref': this.ref,
+            'metadata': this.metadata,
+            'type': this.type,
+            'source': this.source,
+            'source-layer': this.sourceLayer,
+            'minzoom': this.minzoom,
+            'maxzoom': this.maxzoom,
+            'filter': this.filter,
+            'interactive': this.interactive,
+            'layout': mapObject(this._layoutDeclarations, function(declaration) {
+                return declaration.value;
+            }),
+            // TODO return declarations, not calculated values
+            'paint': this.paint
+        };
     }
 };
 
+// TODO move to util
 function endsWith(string, suffix) {
     return string.indexOf(suffix, string.length - suffix.length) !== -1;
+}
+
+// TODO move to util
+function mapObject(input, iterator) {
+    var output = {};
+    for (var key in input) {
+        output[key] = iterator(input[key], key, input);
+    }
+    return output;
 }

@@ -5,13 +5,6 @@ var StyleLayer = require('../../../js/style/style_layer');
 var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
 
 test('StyleLayer', function(t) {
-    t.test('sets raw layer', function (t) {
-        var rawLayer = {type: 'fill'},
-            layer = StyleLayer.create(rawLayer);
-        t.equal(layer._layer, rawLayer);
-        t.end();
-    });
-
     t.test('sets properties from ref', function (t) {
         var layer = StyleLayer.create(
             {ref: 'ref'},
