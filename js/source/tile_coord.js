@@ -1,16 +1,14 @@
 'use strict';
 
 var assert = require('assert');
+var Coordinate = require('../geo/coordinate');
 
 module.exports = TileCoord;
 
 function TileCoord(z, x, y, w) {
-    assert(!isNaN(z));
-    assert(!isNaN(x));
-    assert(!isNaN(y));
-    assert(z >= 0);
-    assert(x >= 0);
-    assert(y >= 0);
+    assert(!isNaN(z) && z >= 0 && z % 1 === 0);
+    assert(!isNaN(x) && x >= 0 && x % 1 === 0);
+    assert(!isNaN(y) && y >= 0 && y % 1 === 0);
 
     if (isNaN(w)) w = 0;
 
@@ -28,6 +26,14 @@ function TileCoord(z, x, y, w) {
 
 TileCoord.prototype.toString = function() {
     return this.z + "/" + this.x + "/" + this.y;
+};
+
+TileCoord.prototype.toCoordinate = function() {
+    var zoom = this.z;
+    var tileScale = Math.pow(2, zoom);
+    var row = this.y;
+    var column = this.x + tileScale * this.w;
+    return new Coordinate(column, row, zoom);
 };
 
 // Parse a packed integer id into a TileCoord object

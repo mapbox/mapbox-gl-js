@@ -21,7 +21,9 @@
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/bright-v8',
-        attributionControl: false
+        attributionControl: {
+            position: 'bottom-left'
+        }
     });
 
     new mapboxgl.Attribution({position: 'top-left'})

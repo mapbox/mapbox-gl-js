@@ -57,9 +57,9 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
 
     var border = 1;
     var left = shapedIcon.left - border;
-    var right = left + rect.w;
+    var right = left + rect.w / shapedIcon.image.pixelRatio;
     var top = shapedIcon.top - border;
-    var bottom = top + rect.h;
+    var bottom = top + rect.h / shapedIcon.image.pixelRatio;
     var tl = new Point(left, top);
     var tr = new Point(right, top);
     var br = new Point(right, bottom);

@@ -5,7 +5,6 @@ var styleBatch = require('./style_batch');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
-var GlyphAtlas = require('../symbol/glyph_atlas');
 var SpriteAtlas = require('../symbol/sprite_atlas');
 var LineAtlas = require('../render/line_atlas');
 var util = require('../util/util');
@@ -21,9 +20,7 @@ module.exports = Style;
 function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
-    this.glyphAtlas = new GlyphAtlas(1024, 1024);
     this.spriteAtlas = new SpriteAtlas(512, 512);
-    this.spriteAtlas.resize(browser.devicePixelRatio);
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
@@ -66,7 +63,7 @@ function Style(stylesheet, animationLoop) {
             this.sprite.on('load', this.fire.bind(this, 'change'));
         }
 
-        this.glyphSource = new GlyphSource(stylesheet.glyphs, this.glyphAtlas);
+        this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
         this.fire('load');
     }.bind(this);

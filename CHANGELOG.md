@@ -1,3 +1,33 @@
+## 0.12.4 (Jan 19 2016)
+
+#### Bugfixes
+
+Fix elementGroups null value errors (#1933)
+Fix some glyph atlas overflow cases (#1923)
+
+## 0.12.3 (Jan 14 2016)
+
+#### API Improvements
+Support inline attribution options in map options (#1865)
+Improve flyTo options (#1854, #1429)
+
+#### Bugfixes
+Fix flickering with overscaled tiles (#1921)
+Remove Node.remove calls for IE browser compatibility (#1900)
+Match patterns at tile boundaries (#1908)
+Fix Tile#positionAt, fix query tests (#1899)
+Fix flickering on streets (#1875)
+Fix text-max-angle property (#1870)
+Fix overscaled line patterns (#1856)
+Fix patterns and icons for mismatched pixelRatios (#1851)
+Fix missing labels when text size 0 at max zoom (#1809)
+Use linear interp when pixel ratios don't match (#1601)
+Fix blank areas, flickering in raster layers (#1876, #675)
+Fix labels slipping/cropping at tile bounds (#757)
+
+#### UX Improvements
+Improve touch handler perceived performance (#1844)
+
 ## 0.12.2 (Dec 22 2015)
 
 #### API Improvements

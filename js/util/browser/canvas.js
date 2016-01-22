@@ -33,7 +33,7 @@ var requiredContextAttributes = {
     antialias: false,
     alpha: true,
     stencil: true,
-    depth: false
+    depth: true
 };
 
 Canvas.prototype.getWebGLContext = function(attributes) {

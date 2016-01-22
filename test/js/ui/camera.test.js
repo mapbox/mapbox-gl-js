@@ -761,19 +761,19 @@ test('camera', function(t) {
 
         t.test('stops existing ease', function(t) {
             var camera = createCamera();
-            camera.flyTo({ center: [200, 0] });
-            camera.flyTo({ center: [100, 0], animate: false });
+            camera.flyTo({ center: [200, 0], duration: 100 });
+            camera.flyTo({ center: [100, 0], duration: 0 });
             t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 100, lat: 0 });
             t.end();
         });
 
         t.test('can be called from within a moveend event handler', function(t) {
             var camera = createCamera();
-            camera.flyTo({ center: [100, 0] });
+            camera.flyTo({ center: [100, 0], duration: 10 });
             camera.once('moveend', function() {
-                camera.flyTo({ center: [200, 0] });
+                camera.flyTo({ center: [200, 0], duration: 10 });
                 camera.once('moveend', function() {
-                    camera.flyTo({ center: [300, 0] });
+                    camera.flyTo({ center: [300, 0], duration: 10 });
                     camera.once('moveend', function() {
                         t.end();
                     });
@@ -816,7 +816,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [10, 0] });
+            camera.flyTo({ center: [10, 0], duration: 10 });
         });
 
         t.test('pans westward across the prime meridian', function(t) {
@@ -835,7 +835,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [-10, 0] });
+            camera.flyTo({ center: [-10, 0], duration: 10 });
         });
 
         t.test('pans eastward across the antimeridian', function(t) {
@@ -854,7 +854,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [-170, 0] });
+            camera.flyTo({ center: [-170, 0], duration: 10 });
         });
 
         t.test('pans westward across the antimeridian', function(t) {
@@ -873,7 +873,26 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [170, 0] });
+            camera.flyTo({ center: [170, 0], duration: 10 });
+        });
+
+        t.test('peaks at the specified zoom level', function(t) {
+            var camera = createCamera();
+            camera.setZoom(20);
+            var minZoom = Infinity;
+
+            camera.on('zoom', function() {
+                if (camera.getZoom() < minZoom) {
+                    minZoom = camera.getZoom();
+                }
+            });
+
+            camera.on('moveend', function() {
+                t.equal(fixedNum(minZoom, 2), 1);
+                t.end();
+            });
+
+            camera.flyTo({ center: [1, 0], zoom: 20, minZoom: 1 });
         });
 
         t.end();

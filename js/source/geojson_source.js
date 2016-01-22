@@ -64,6 +64,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     minzoom: 0,
     maxzoom: 14,
     _dirty: true,
+    isTileClipped: true,
 
     /**
      * Update source geojson data and rerender map
@@ -107,7 +108,9 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }
     },
 
-    render: Source._renderTiles,
+    getVisibleCoordinates: Source._getVisibleCoordinates,
+    getTile: Source._getTile,
+
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,
 
@@ -187,7 +190,6 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
-        this.glyphAtlas.removeGlyphs(tile.uid);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 

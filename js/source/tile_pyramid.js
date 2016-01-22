@@ -137,7 +137,7 @@ TilePyramid.prototype = {
 
     /**
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
-     * adds found tiles to retain object; returns true if children completely cover the tile
+     * adds found tiles to retain object; returns true if any child is found.
      *
      * @param {Coordinate} coord
      * @param {number} maxCoveringZoom
@@ -211,8 +211,8 @@ TilePyramid.prototype = {
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = util.clamp(zoom - 10, this.minzoom, this.maxzoom);
-        var maxCoveringZoom = util.clamp(zoom + 3,  this.minzoom, this.maxzoom);
+        var minCoveringZoom = Math.max(zoom - 10, this.minzoom);
+        var maxCoveringZoom = Math.max(zoom + 3,  this.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
@@ -241,18 +241,31 @@ TilePyramid.prototype = {
             }
         }
 
-        for (var id in retain) {
+        var parentsForFading = {};
+
+        var ids = Object.keys(retain);
+        for (var k = 0; k < ids.length; k++) {
+            var id = ids[k];
             coord = TileCoord.fromID(id);
             tile = this._tiles[id];
             if (tile && tile.timeAdded > now - (fadeDuration || 0)) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                    this._coveredTiles[id] = true;
                     retain[id] = true;
-                } else {
-                    this.findLoadedParent(coord, minCoveringZoom, retain);
                 }
+                this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
             }
+        }
+
+        var fadedParent;
+        for (fadedParent in parentsForFading) {
+            if (!retain[fadedParent]) {
+                // If a tile is only needed for fading, mark it as covered so that it isn't rendered on it's own.
+                this._coveredTiles[fadedParent] = true;
+            }
+        }
+        for (fadedParent in parentsForFading) {
+            retain[fadedParent] = true;
         }
 
         // Remove the tiles we don't need anymore.
@@ -260,6 +273,8 @@ TilePyramid.prototype = {
         for (i = 0; i < remove.length; i++) {
             this.removeTile(+remove[i]);
         }
+
+        this.transform = transform;
     },
 
     /**
@@ -286,7 +301,7 @@ TilePyramid.prototype = {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling);
+            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
             this._load(tile);
         }
 
@@ -344,7 +359,7 @@ TilePyramid.prototype = {
         var ids = this.orderedIDs();
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
-            var pos = tile.positionAt(coord, this.maxzoom);
+            var pos = tile.positionAt(coord);
             if (pos && pos.x >= 0 && pos.x < tile.tileExtent && pos.y >= 0 && pos.y < tile.tileExtent) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
@@ -352,7 +367,7 @@ TilePyramid.prototype = {
                     tile: tile,
                     x: pos.x,
                     y: pos.y,
-                    scale: pos.scale
+                    scale: this.transform.worldSize / Math.pow(2, tile.coord.z)
                 };
             }
         }
@@ -372,8 +387,8 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var tileSpaceBounds = [
-                tile.positionAt(bounds[0], this.maxzoom),
-                tile.positionAt(bounds[1], this.maxzoom)
+                tile.positionAt(bounds[0]),
+                tile.positionAt(bounds[1])
             ];
             if (tileSpaceBounds[0].x < tile.tileExtent && tileSpaceBounds[0].y < tile.tileExtent &&
                 tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
