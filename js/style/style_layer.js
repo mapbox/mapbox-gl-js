@@ -195,8 +195,8 @@ StyleLayer.prototype = {
         }
     },
 
-    json: function() {
-        return {
+    serialize: function() {
+        var output = {
             'id': this.id,
             'ref': this.ref,
             'metadata': this.metadata,
@@ -209,10 +209,17 @@ StyleLayer.prototype = {
             'interactive': this.interactive,
             'layout': mapObject(this._layoutDeclarations, function(declaration) {
                 return declaration.value;
-            }),
-            // TODO return declarations, not calculated values
-            'paint': this.paint
+            })
         };
+
+        for (var klass in this._paintDeclarations) {
+            var key = klass === '' ? 'paint' : 'paint.' + key;
+            output[key] = mapObject(this._paintDeclarations[klass], function(declaration) {
+                return declaration.value;
+            });
+        }
+
+        return output;
     }
 };
 
