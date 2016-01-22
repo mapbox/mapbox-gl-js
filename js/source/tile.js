@@ -143,6 +143,7 @@ Tile.prototype = {
     },
 
     getElementGroups: function(layer, shaderName) {
+        if (!this.buffers || !Object.keys(this.buffers)) return null;
         return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
     }
 };
