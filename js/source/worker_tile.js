@@ -38,12 +38,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
 
-        if (layer.source !== this.source ||
-                layer.ref ||
-                layer.minzoom && this.zoom < layer.minzoom ||
-                layer.maxzoom && this.zoom >= layer.maxzoom ||
-                layer.layout.visibility === 'none')
-            continue;
+        if (layer.source !== this.source) continue;
+        if (layer.ref) continue;
+        if (layer.minzoom && this.zoom < layer.minzoom) continue;
+        if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
+        if (layer.layout && layer.layout.visibility === 'none') continue;
 
         bucket = Bucket.create({
             layer: layer,

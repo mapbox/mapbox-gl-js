@@ -7,7 +7,6 @@ var path = require('path');
 var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
-var LayoutProperties = require('../../../js/style/layout_properties');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
@@ -836,13 +835,8 @@ test('Style#featuresAt', function(t) {
             t.test('includes layout properties', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
-
                     var layout = results[0].layer.layout;
-                    t.deepEqual(layout, {'line-cap': 'round'});
-                    t.deepEqual(
-                        Object.getPrototypeOf(layout),
-                        LayoutProperties.line.prototype);
-
+                    t.deepEqual(layout['line-cap'], 'round');
                     t.end();
                 });
             });

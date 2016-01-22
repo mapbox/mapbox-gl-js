@@ -3,7 +3,6 @@
 var util = require('../util/util');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
-var LayoutProperties = require('./layout_properties');
 var StyleSpecification = require('./reference');
 var parseColor = require('./parse_color');
 
@@ -25,6 +24,7 @@ StyleLayer.create = function(layer, refLayer) {
 
 function StyleLayer(layer, refLayer) {
     this._layer = layer;
+    this._refLayer = refLayer;
 
     this.id = layer.id;
     this.ref = layer.ref;
@@ -34,35 +34,51 @@ function StyleLayer(layer, refLayer) {
     this.minzoom = (refLayer || layer).minzoom;
     this.maxzoom = (refLayer || layer).maxzoom;
     this.filter = (refLayer || layer).filter;
-    this.layout = (refLayer || layer).layout;
+    this.interactive = (refLayer || layer).interactive;
 
-    this._paintDeclarations = {}; // {[class name]: { [property name]: StyleDeclaration }}
-    this._paintTransitions = {}; // {[class name]: { [property name]: StyleTransitionOptions }}
-    this._paintTransitions = {}; // { [property name]: StyleDeclaration }
+    this._layoutDeclarations = {}; // { [property name]: StyleDeclaration }
+    this._paintDeclarations = {}; // { [class name]: { [property name]: StyleDeclaration }}
+    this._paintTransitions = {}; // { [class name]: { [property name]: StyleTransitionOptions }}
 
     this._paintSpecifications = StyleSpecification['paint_' + this.type];
     this._layoutSpecifications = StyleSpecification['layout_' + this.type];
 }
 
 StyleLayer.prototype = {
+    // TODO I'm pretty sure this can be inlined into the constructor
     resolveLayout: function() {
-        if (!this.ref) {
-            this.layout = new LayoutProperties[this.type](this._layer.layout);
+        if (!this._refLayer) {
+            for (var name in this._layer.layout) {
+                this.setLayoutProperty(name, this._layer.layout[name]);
+            }
+        } else {
+            this._layoutDeclarations = this._refLayer._layoutDeclarations;
         }
     },
 
     setLayoutProperty: function(name, value) {
-        if (value == null) {
-            delete this.layout[name];
-        } else {
-            this.layout[name] = value;
-        }
+        this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
     },
 
     getLayoutProperty: function(name) {
-        return this.layout[name];
+        return (
+            this._layoutDeclarations[name] &&
+            this._layoutDeclarations[name].value
+        );
     },
 
+    getLayoutValue: function(name, zoom, zoomHistory) {
+        var specification = this._layoutSpecifications[name];
+        var declaration = this._layoutDeclarations[name];
+
+        if (declaration) {
+            return declaration.calculate(zoom, zoomHistory);
+        } else {
+            return specification.default;
+        }
+    },
+
+    // TODO I'm pretty sure this can be inlined into the constructor
     resolvePaint: function() {
         for (var key in this._layer) {
             var match = key.match(/^paint(?:\.(.*))?$/);
@@ -121,8 +137,12 @@ StyleLayer.prototype = {
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-        if (this.layout.visibility === 'none') return true;
-        if (this.paint[this.type + '-opacity'] === 0) return true;
+
+        if (this.getLayoutValue('visibility') === 'none') return true;
+
+        var opacityProperty = this.type + '-opacity';
+        if (this._paintSpecifications[opacityProperty] && this.getPaintValue(opacityProperty) === 0) return true;
+
         return false;
     },
 
@@ -162,6 +182,11 @@ StyleLayer.prototype = {
         for (var name in this._paintSpecifications) {
             this.paint[name] = this.getPaintValue(name, zoom, zoomHistory);
         }
+
+        this.layout = {};
+        for (name in this._layoutSpecifications) {
+            this.layout[name] = this.getLayoutValue(name, zoom, zoomHistory);
+        }
     },
 
     json: function() {
@@ -170,7 +195,7 @@ StyleLayer.prototype = {
             this._layer,
             util.pick(this, [
                 'type', 'source', 'source-layer', 'minzoom', 'maxzoom',
-                'filter', 'layout', 'paint'
+                'filter', 'paint', 'layout'
             ])
         );
     }

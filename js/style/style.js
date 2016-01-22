@@ -147,6 +147,7 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
+            layer.resolveLayout();
             layer.resolvePaint();
         }
 

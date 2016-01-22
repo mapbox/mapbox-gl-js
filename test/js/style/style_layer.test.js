@@ -3,7 +3,6 @@
 var test = require('prova');
 var StyleLayer = require('../../../js/style/style_layer');
 var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
-var LayoutProperties = require('../../../js/style/layout_properties');
 
 test('StyleLayer', function(t) {
     t.test('sets raw layer', function (t) {
@@ -34,8 +33,8 @@ test('StyleLayer', function(t) {
 test('StyleLayer#resolveLayout', function(t) {
     t.test('creates layout properties', function (t) {
         var layer = StyleLayer.create({type: 'fill'});
-        layer.resolveLayout({});
-        t.ok(layer.layout instanceof LayoutProperties.fill);
+        layer.resolveLayout();
+        t.ok(layer._layoutDeclarations);
         t.end();
     });
 });
@@ -48,7 +47,7 @@ test('StyleLayer#resolvePaint', function(t) {
             'paint.night': { 'fill-color': 'black' }
         });
 
-        layer.resolvePaint({});
+        layer.resolvePaint();
 
         t.deepEqual(Object.keys(layer._paintDeclarations), ['', 'night']);
         t.end();

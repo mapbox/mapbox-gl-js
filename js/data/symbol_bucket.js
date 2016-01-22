@@ -26,6 +26,18 @@ function SymbolBucket(options) {
     Bucket.apply(this, arguments);
     this.collisionDebug = options.collisionDebug;
     this.overscaling = options.overscaling;
+
+    // To reduce the number of labels that jump around when zooming we need
+    // to use a text-size value that is the same for all zoom levels.
+    // This calculates text-size at a high zoom level so that all tiles can
+    // use the same value when calculating anchor positions.
+    var zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+
+    this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', 18, zoomHistory);
+    this.adjustedTextSize = this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory);
+
+    this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', 18, zoomHistory);
+    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory);
 }
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
@@ -221,11 +233,11 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
     var glyphSize = 24;
 
-    var fontScale = layout['text-size'] / glyphSize,
-        textMaxSize = layout['text-max-size'] !== undefined ? layout['text-max-size'] : layout['text-size'],
+    var fontScale = this.adjustedTextSize / glyphSize,
+        textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize,
         textBoxScale = this.tilePixelRatio * fontScale,
         textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
-        iconBoxScale = this.tilePixelRatio * layout['icon-size'],
+        iconBoxScale = this.tilePixelRatio * this.adjustedIconSize,
         symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
         textPadding = layout['text-padding'] * this.tilePixelRatio,
@@ -329,9 +341,9 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var layout = this.layoutProperties;
     var maxScale = collisionTile.maxScale;
 
-    elementGroups.glyph['text-size'] = layout['text-size'];
+    elementGroups.glyph['text-size'] = this.adjustedTextSize;
     elementGroups.glyph['text-font'] = layout['text-font'];
-    elementGroups.icon['icon-size'] = layout['icon-size'];
+    elementGroups.icon['icon-size'] = this.adjustedIconSize;
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
