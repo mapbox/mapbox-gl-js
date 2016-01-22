@@ -141,14 +141,29 @@ Interaction.prototype = {
 
 
 /**
+ * When an event [fires]{@link #Evented.fire} as a result of a
+ * user interaction, the event will be called with an EventData
+ * object containing the original DOM event along with coordinates of
+ * the event target.
+ *
+ * @typedef {Object} EventData
+ * @property {Event} originalEvent The original DOM event
+ * @property {Point} point The pixel location of the event
+ * @property {LngLat} lngLat The geographic location of the event
+ * @example
+ * map.on('click', function(data) {
+ *   var e = data && data.originalEvent;
+ *   console.log('got click ' + (e ? 'button = ' + e.button : ''));
+ * });
+ */
+
+/**
  * Mouse down event.
  *
  * @event mousedown
  * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @instance
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -156,10 +171,8 @@ Interaction.prototype = {
  *
  * @event mouseup
  * @memberof Map
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @instance
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -168,10 +181,7 @@ Interaction.prototype = {
  * @event mousemove
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -180,10 +190,7 @@ Interaction.prototype = {
  * @event click
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -192,10 +199,7 @@ Interaction.prototype = {
  * @event dblclick
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -204,10 +208,7 @@ Interaction.prototype = {
  * @event contextmenu
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Point} point the pixel location of the event
- * @property {LngLat} lngLat the geographic location of the event
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data, if available
  */
 
 /**
@@ -227,8 +228,7 @@ Interaction.prototype = {
  * @event movestart
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ * @property {EventData} data Original event data, if fired interactively
  */
 
 /**
@@ -238,8 +238,7 @@ Interaction.prototype = {
  * @event move
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ * @property {EventData} data Original event data, if fired interactively
  */
 
 /**
@@ -249,39 +248,5 @@ Interaction.prototype = {
  * @event moveend
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
- */
-
-/**
- * Zoom start event. This event is emitted just before the map begins a transition from one
- * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
- *
- * @event zoomstart
- * @memberof Map
- * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
- */
-
-/**
- * Zoom event. This event is emitted repeatedly during animated transitions from one zoom level to
- * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
- *
- * @event zoom
- * @memberof Map
- * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
- */
-
-/**
- * Zoom end event. This event is emitted just after the map completes a transition from one
- * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
- *
- * @event zoomend
- * @memberof Map
- * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event, only present if triggered by user interaction
+ * @property {EventData} data Original event data, if fired interactively
  */

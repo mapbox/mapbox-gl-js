@@ -106,14 +106,14 @@ BoxZoom.prototype = {
     }
 };
 
+
 /**
  * Boxzoom start event. This event is emitted at the start of a box zoom interaction.
  *
  * @event boxzoomstart
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -134,6 +134,5 @@ BoxZoom.prototype = {
  * @event boxzoomcancel
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
