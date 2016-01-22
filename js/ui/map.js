@@ -910,7 +910,11 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      */
     _debug: false,
     get debug() { return this._debug; },
-    set debug(value) { this._debug = value; this._update(); },
+    set debug(value) {
+        if (this._debug === value) return;
+        this._debug = value;
+        this._update();
+    },
 
     /**
      * Show collision boxes: useful for debugging label placement
@@ -922,6 +926,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
     _collisionDebug: false,
     get collisionDebug() { return this._collisionDebug; },
     set collisionDebug(value) {
+        if (this._collisionDebug === value) return;
         this._collisionDebug = value;
         this.style._redoPlacement();
     },
