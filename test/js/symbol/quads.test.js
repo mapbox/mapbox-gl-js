@@ -14,6 +14,7 @@ test('getIconQuads', function(t) {
         left: -7,
         right: 8,
         image: {
+            pixelRatio: 1,
             rect: { w: 15, h: 11}
         }
     };

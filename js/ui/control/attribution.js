@@ -12,7 +12,7 @@ module.exports = Attribution;
  * @param {Object} [options]
  * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
  * @example
- * var map = new mapboxgl.Map({attributionContro: false})
+ * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.Navigation({position: 'top-left'}));
  */
 function Attribution(options) {

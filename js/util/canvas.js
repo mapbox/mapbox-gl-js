@@ -13,7 +13,7 @@ function Canvas(parent, container) {
         antialias: false,
         alpha: true,
         stencil: true,
-        depth: false,
+        depth: true,
         preserveDrawingBuffer: true
     };
 

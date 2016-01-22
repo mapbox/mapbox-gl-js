@@ -82,7 +82,7 @@ SymbolBucket.prototype.shaders = {
     },
 
     collisionBox: {
-        vertexBuffer: 'collisionBoxVertex',
+        vertexBuffer: true,
 
         attributeArgs: ['point', 'extrude', 'maxZoom', 'placementZoom'],
 
@@ -117,6 +117,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     this.tilePixelRatio = tileExtent / tileSize;
     this.compareText = {};
     this.symbolInstances = [];
+    this.iconsNeedLinear = false;
 
     var layout = this.layoutProperties;
     var features = this.features;
@@ -200,6 +201,9 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
                 } else if (this.sdfIcons !== image.sdf) {
                     console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                 }
+                if (image.pixelRatio !== 1) {
+                    this.iconsNeedLinear = true;
+                }
             }
         } else {
             shapedIcon = null;
@@ -219,8 +223,9 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
     var glyphSize = 24;
 
     var fontScale = layout['text-size'] / glyphSize,
+        textMaxSize = layout['text-max-size'] !== undefined ? layout['text-max-size'] : layout['text-size'],
         textBoxScale = this.tilePixelRatio * fontScale,
-        textMaxBoxScale = this.tilePixelRatio * layout['text-max-size'] / glyphSize,
+        textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
         iconBoxScale = this.tilePixelRatio * layout['icon-size'],
         symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
@@ -297,7 +302,6 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
 };
 
 SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisionDebug) {
-
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -306,13 +310,15 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var elementGroups = this.elementGroups = {
         glyph: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
         icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
-        sdfIcons: this.sdfIcons
+        sdfIcons: this.sdfIcons,
+        iconsNeedLinear: this.iconsNeedLinear
     };
 
     var layout = this.layoutProperties;
     var maxScale = collisionTile.maxScale;
 
     elementGroups.glyph['text-size'] = layout['text-size'];
+    elementGroups.glyph['text-font'] = layout['text-font'];
     elementGroups.icon['icon-size'] = layout['icon-size'];
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
@@ -333,7 +339,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         this.symbolInstances.sort(function(a, b) {
             var aRotated = sin * a.x + cos * a.y;
             var bRotated = sin * b.x + cos * b.y;
-            return bRotated - aRotated;
+            return aRotated - bRotated;
         });
     }
 
