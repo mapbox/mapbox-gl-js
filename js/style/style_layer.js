@@ -66,7 +66,11 @@ function StyleLayer(layer, refLayer) {
 StyleLayer.prototype = {
 
     setLayoutProperty: function(name, value) {
-        this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
+        if (value == null) {
+            delete this._layoutDeclarations[name];
+        } else {
+            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
+        }
     },
 
     getLayoutProperty: function(name) {
@@ -92,12 +96,20 @@ StyleLayer.prototype = {
             if (!this._paintTransitions[klass || '']) {
                 this._paintTransitions[klass || ''] = {};
             }
-            this._paintTransitions[klass || ''][name] = value;
+            if (value == null) {
+                delete this._paintTransitions[klass || ''][name];
+            } else {
+                this._paintTransitions[klass || ''][name] = value;
+            }
         } else {
             if (!this._paintDeclarations[klass || '']) {
                 this._paintDeclarations[klass || ''] = {};
             }
-            this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+            if (value == null) {
+                delete this._paintDeclarations[klass || ''][name];
+            } else {
+                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+            }
         }
     },
 

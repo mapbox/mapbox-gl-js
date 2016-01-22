@@ -69,7 +69,7 @@ test('StyleLayer#setPaintProperty', function(t) {
 
         layer.setPaintProperty('background-color', null);
 
-        t.deepEqual(layer.getPaintProperty('background-color'), [0, 0, 0, 1]);
+        t.equal(layer.getPaintProperty('background-color'), undefined);
         t.end();
     });
 
@@ -99,7 +99,7 @@ test('StyleLayer#setPaintProperty', function(t) {
 
         layer.setPaintProperty('background-color', null, 'night');
 
-        t.deepEqual(layer.getPaintProperty('background-color', 'night'), [0, 0, 0, 1]);
+        t.equal(layer.getPaintProperty('background-color', 'night'), undefined);
         t.end();
     });
 
@@ -176,7 +176,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
 
         layer.setLayoutProperty('text-transform', null);
 
-        t.deepEqual(layer.getLayoutProperty('text-transform'), 'none');
+        t.deepEqual(layer.getLayoutProperty('text-transform'), undefined);
         t.end();
     });
 });
