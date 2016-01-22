@@ -52,7 +52,6 @@ function Bucket(options) {
     this.tileExtent = options.tileExtent;
 
     this.layer = StyleLayer.create(options.layer);
-    this.layer.resolveLayout();
     this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
     this.layoutProperties = this.layer.layout; // TODO remove
 

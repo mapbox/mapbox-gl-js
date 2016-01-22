@@ -53,8 +53,6 @@ styleBatch.prototype = {
         this._style._validateLayer(layer);
         this._style._layers[layer.id] = layer;
         this._style._order.splice(before ? this._style._order.indexOf(before) : Infinity, 0, layer.id);
-        layer.resolveLayout();
-        layer.resolvePaint();
 
         this._groupLayers = true;
         this._broadcastLayers = true;

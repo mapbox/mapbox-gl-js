@@ -136,8 +136,6 @@ Style.prototype = util.inherit(Evented, {
             if (layerJSON.ref) continue;
             layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            layer.resolveLayout();
-            layer.resolvePaint();
         }
 
         // resolve all layers WITH a ref
@@ -147,8 +145,6 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
-            layer.resolveLayout();
-            layer.resolvePaint();
         }
 
         this._groupLayers();

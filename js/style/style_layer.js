@@ -36,25 +36,34 @@ function StyleLayer(layer, refLayer) {
     this.filter = (refLayer || layer).filter;
     this.interactive = (refLayer || layer).interactive;
 
-    this._layoutDeclarations = {}; // { [property name]: StyleDeclaration }
-    this._paintDeclarations = {}; // { [class name]: { [property name]: StyleDeclaration }}
-    this._paintTransitions = {}; // { [class name]: { [property name]: StyleTransitionOptions }}
-
     this._paintSpecifications = StyleSpecification['paint_' + this.type];
     this._layoutSpecifications = StyleSpecification['layout_' + this.type];
+
+    // Resolve paint declarations
+    this._paintDeclarations = {}; // { [class name]: { [property name]: StyleDeclaration }}
+    this._paintTransitions = {}; // { [class name]: { [property name]: StyleTransitionOptions }}
+    for (var key in this._layer) {
+        var match = key.match(/^paint(?:\.(.*))?$/);
+        if (match) {
+            var klass = match[1] || '';
+            for (var name in this._layer[key]) {
+                this.setPaintProperty(name, this._layer[key][name], klass);
+            }
+        }
+    }
+
+    // Resolve layout declarations
+    this._layoutDeclarations = {}; // { [property name]: StyleDeclaration }
+    if (!this._refLayer) {
+        for (name in this._layer.layout) {
+            this.setLayoutProperty(name, this._layer.layout[name]);
+        }
+    } else {
+        this._layoutDeclarations = this._refLayer._layoutDeclarations;
+    }
 }
 
 StyleLayer.prototype = {
-    // TODO I'm pretty sure this can be inlined into the constructor
-    resolveLayout: function() {
-        if (!this._refLayer) {
-            for (var name in this._layer.layout) {
-                this.setLayoutProperty(name, this._layer.layout[name]);
-            }
-        } else {
-            this._layoutDeclarations = this._refLayer._layoutDeclarations;
-        }
-    },
 
     setLayoutProperty: function(name, value) {
         this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
@@ -75,19 +84,6 @@ StyleLayer.prototype = {
             return declaration.calculate(zoom, zoomHistory);
         } else {
             return specification.default;
-        }
-    },
-
-    // TODO I'm pretty sure this can be inlined into the constructor
-    resolvePaint: function() {
-        for (var key in this._layer) {
-            var match = key.match(/^paint(?:\.(.*))?$/);
-            if (match) {
-                var klass = match[1] || '';
-                for (var name in this._layer[key]) {
-                    this.setPaintProperty(name, this._layer[key][name], klass);
-                }
-            }
         }
     },
 
