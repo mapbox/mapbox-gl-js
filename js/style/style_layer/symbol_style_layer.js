@@ -21,28 +21,18 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
         return false;
     },
 
-    resolveLayout: function() {
-        StyleLayer.prototype.resolveLayout.apply(this, arguments);
-
-        if (this.layout && this.layout['symbol-placement'] === 'line') {
-            if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
-                this.layout['text-rotation-alignment'] = 'map';
-            }
-            if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
-                this.layout['icon-rotation-alignment'] = 'map';
-            }
+    getLayoutValue: function(name, zoom, zoomHistory) {
+        if (name === 'text-rotation-alignment' &&
+                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                !this.getLayoutProperty('text-rotation-alignment')) {
+            return 'map';
+        } else if (name === 'icon-rotation-alignment' &&
+                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                !this.getLayoutProperty('icon-rotation-alignment')) {
+            return 'map';
+        } else {
+            return StyleLayer.prototype.getLayoutValue.apply(this, arguments);
         }
-    },
-
-    recalculate: function(zoom, zoomHistory) {
-        StyleLayer.prototype.recalculate.apply(this, arguments);
-
-        // the -size properties are used both as layout and paint.
-        // In the spec they are layout properties. This adds them
-        // as paint properties.
-        // TODO we can remove this now that the handling of layout properties is more sane
-        this.paint['text-size'] = this.getLayoutValue('text-size', zoom, zoomHistory);
-        this.paint['icon-size'] = this.getLayoutValue('icon-size', zoom, zoomHistory);
     }
 
 });
