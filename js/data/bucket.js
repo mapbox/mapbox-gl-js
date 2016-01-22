@@ -53,7 +53,6 @@ function Bucket(options) {
 
     this.layer = StyleLayer.create(options.layer);
     this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
-    this.layoutProperties = this.layer.layout; // TODO remove
 
     this.layers = [this.layer.id];
     this.type = this.layer.type;
@@ -64,7 +63,6 @@ function Bucket(options) {
     this.minZoom = this.layer.minzoom;
     this.maxZoom = this.layer.maxzoom;
     this.filter = featureFilter(this.layer.filter);
-
 
     this.resetBuffers(options.buffers);
 

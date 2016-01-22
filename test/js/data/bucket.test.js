@@ -128,8 +128,8 @@ test('Bucket', function(t) {
     });
 
     t.test('layout properties', function(t) {
-        var builder = create();
-        t.equal(builder.layoutProperties.visibility, 'visible');
+        var bucket = create();
+        t.equal(bucket.layer.layout.visibility, 'visible');
         t.end();
     });
 

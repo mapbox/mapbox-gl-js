@@ -130,7 +130,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     this.symbolInstances = [];
     this.iconsNeedLinear = false;
 
-    var layout = this.layoutProperties;
+    var layout = this.layer.layout;
     var features = this.features;
     var textFeatures = this.textFeatures;
 
@@ -229,7 +229,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
-    var layout = this.layoutProperties;
+    var layout = this.layer.layout;
 
     var glyphSize = 24;
 
@@ -338,7 +338,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
         iconsNeedLinear: this.iconsNeedLinear
     };
 
-    var layout = this.layoutProperties;
+    var layout = this.layer.layout;
     var maxScale = collisionTile.maxScale;
 
     elementGroups.glyph['text-size'] = this.adjustedTextSize;
@@ -474,7 +474,7 @@ SymbolBucket.prototype.addSymbols = function(shaderName, quads, scale, keepUprig
 };
 
 SymbolBucket.prototype.updateIcons = function(icons) {
-    var iconValue = this.layoutProperties['icon-image'];
+    var iconValue = this.layer.layout['icon-image'];
     if (!iconValue) return;
 
     for (var i = 0; i < this.features.length; i++) {
@@ -485,10 +485,10 @@ SymbolBucket.prototype.updateIcons = function(icons) {
 };
 
 SymbolBucket.prototype.updateFont = function(stacks) {
-    var fontName = this.layoutProperties['text-font'],
+    var fontName = this.layer.layout['text-font'],
         stack = stacks[fontName] = stacks[fontName] || {};
 
-    this.textFeatures = resolveText(this.features, this.layoutProperties, stack);
+    this.textFeatures = resolveText(this.features, this.layer.layout, stack);
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
