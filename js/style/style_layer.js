@@ -90,7 +90,7 @@ StyleLayer.prototype = {
     },
 
     setPaintProperty: function(name, value, klass) {
-        if (endsWith(name, TRANSITION_SUFFIX)) {
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
             if (!this._paintTransitions[klass || '']) {
                 this._paintTransitions[klass || ''] = {};
             }
@@ -113,7 +113,7 @@ StyleLayer.prototype = {
 
     getPaintProperty: function(name, klass) {
         klass = klass || '';
-        if (endsWith(name, TRANSITION_SUFFIX)) {
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
             return (
                 this._paintTransitions[klass] &&
                 this._paintTransitions[klass][name]
@@ -207,32 +207,18 @@ StyleLayer.prototype = {
             'maxzoom': this.maxzoom,
             'filter': this.filter,
             'interactive': this.interactive,
-            'layout': mapObject(this._layoutDeclarations, function(declaration) {
-                return declaration.value;
-            })
+            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
         };
 
         for (var klass in this._paintDeclarations) {
             var key = klass === '' ? 'paint' : 'paint.' + key;
-            output[key] = mapObject(this._paintDeclarations[klass], function(declaration) {
-                return declaration.value;
-            });
+            output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
         }
 
         return output;
     }
 };
 
-// TODO move to util
-function endsWith(string, suffix) {
-    return string.indexOf(suffix, string.length - suffix.length) !== -1;
-}
-
-// TODO move to util
-function mapObject(input, iterator) {
-    var output = {};
-    for (var key in input) {
-        output[key] = iterator(input[key], key, input);
-    }
-    return output;
+function getDeclarationValue(declaration) {
+    return declaration.value;
 }

@@ -391,3 +391,41 @@ exports.getCoordinatesCenter = function(coords) {
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
         .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 };
+
+/**
+ * Determine if a string ends with a particular substring
+ * @param {string} string
+ * @param {string} suffix
+ * @returns {boolean}
+ * @private
+ */
+exports.endsWith = function(string, suffix) {
+    return string.indexOf(suffix, string.length - suffix.length) !== -1;
+};
+
+/**
+ * Determine if a string starts with a particular substring
+ * @param {string} string
+ * @param {string} prefix
+ * @returns {boolean}
+ * @private
+ */
+exports.startsWith = function(string, prefix) {
+    return string.indexOf(prefix) === 0;
+};
+
+/**
+ * Create an object by mapping all the values of an existing object while
+ * preserving their keys.
+ * @param {Object} input
+ * @param {Function} iterator
+ * @returns {Object}
+ * @private
+ */
+exports.mapObject = function(input, iterator, context) {
+    var output = {};
+    for (var key in input) {
+        output[key] = iterator.call(context || this, input[key], key, input);
+    }
+    return output;
+};
