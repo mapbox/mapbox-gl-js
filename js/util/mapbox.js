@@ -69,7 +69,16 @@ module.exports.normalizeTileURL = function(url, sourceUrl) {
     if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
         return url;
 
+    // Mapbox raster sources always use the @2x suffix on the v4 tile API
+    // to ensure a maximum 512 image size.
     url = url.replace(/([?&]access_token=)tk\.[^&]+/, '$1' + config.ACCESS_TOKEN);
     var extension = browser.supportsWebp ? 'webp' : '$1';
-    return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, browser.devicePixelRatio >= 2 ? '@2x.' + extension : '.' + extension);
+    return url.replace(/\.((?:png|jpg)\d*)(?=$|\?)/, '@2x.' + extension);
 };
+
+module.exports.normalizeTileSize = function(tileSize, sourceUrl) {
+    if (!sourceUrl || !sourceUrl.match(/^mapbox:\/\//))
+        return tileSize;
+    return browser.devicePixelRatio >= 2 ? 256 : 512;
+};
+

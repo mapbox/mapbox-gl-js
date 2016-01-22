@@ -5,11 +5,14 @@ var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
 var Source = require('./source');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
+var normalizeTileSize = require('../util/mapbox').normalizeTileSize;
 
 module.exports = RasterTileSource;
 
 function RasterTileSource(options) {
     util.extend(this, util.pick(options, ['url', 'tileSize']));
+
+    this.tileSize = normalizeTileSize(this.tileSize, this.url);
 
     Source._loadTileJSON.call(this, options);
 }
