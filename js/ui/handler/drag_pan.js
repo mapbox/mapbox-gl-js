@@ -161,15 +161,13 @@ DragPan.prototype = {
 };
 
 
-
 /**
  * Drag start event. This event is emitted at the start of a user-initiated pan interaction.
  *
  * @event dragstart
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -178,8 +176,7 @@ DragPan.prototype = {
  * @event drag
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -188,6 +185,5 @@ DragPan.prototype = {
  * @event dragend
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */

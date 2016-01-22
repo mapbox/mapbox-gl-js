@@ -112,3 +112,35 @@ ScrollZoom.prototype = {
         });
     }
 };
+
+
+/**
+ * Zoom start event. This event is emitted just before the map begins a transition from one
+ * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoomstart
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+
+/**
+ * Zoom event. This event is emitted repeatedly during animated transitions from one zoom level to
+ * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoom
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+
+/**
+ * Zoom end event. This event is emitted just after the map completes a transition from one
+ * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoomend
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+
