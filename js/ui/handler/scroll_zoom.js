@@ -97,6 +97,7 @@ ScrollZoom.prototype = {
     },
 
     _zoom: function (delta, e) {
+        if (delta === 0) return;
         var map = this._map;
 
         // Scale by sigmoid of scroll wheel delta.
