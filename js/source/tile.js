@@ -103,10 +103,15 @@ Tile.prototype = {
      * @private
      */
     unloadVectorData: function(painter) {
+        this.loaded = false;
+
         for (var b in this.buffers) {
             if (this.buffers[b]) this.buffers[b].destroy(painter.gl);
         }
+
+        this.elementGroups = null;
         this.buffers = null;
+        this.tileExtent = null;
     },
 
     redoPlacement: function(source) {
