@@ -680,6 +680,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
          * rᵢ: Returns the zoom-out factor at one end of the animation.
          *
          * @param i 0 for the ascent or 1 for the descent.
+         * @private
          */
         function r(i) {
             var b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
@@ -697,11 +698,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
              * initial scale.
              *
              * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
+             * @private
              */
             w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
             /**
              * u(s): Returns the distance along the flight path as projected onto the ground plane,
              * measured in pixels from the world image origin at the initial scale.
+             * @private
              */
             u = function (s) { return w0 * ((cosh(r0) * tanh(r0 + rho * s) - sinh(r0)) / rho2) / u1; },
             // S: Total length of the flight path, measured in ρ-screenfuls.
