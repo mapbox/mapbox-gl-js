@@ -133,8 +133,60 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 
-    featuresAt: Source._vectorFeaturesAt,
-    featuresIn: Source._vectorFeaturesIn,
+    featuresAt: function(coord, params, callback) {
+        if (!this._pyramid)
+            return callback(null, []);
+
+        var result = this._pyramid.tileAt(coord);
+        if (!result)
+            return callback(null, []);
+
+        this._queryFeatures({
+            uid: result.tile.uid,
+            x: result.x,
+            y: result.y,
+            tileExtent: result.tile.tileExtent,
+            scale: result.scale,
+            source: this.id,
+            params: params
+        }, callback, result.tile.workerID);
+    },
+
+    featuresIn: function(bounds, params, callback) {
+        if (!this._pyramid)
+            return callback(null, []);
+
+        var results = this._pyramid.tilesIn(bounds);
+        if (!results)
+            return callback(null, []);
+
+        util.asyncAll(results, function queryTile(result, cb) {
+            this._queryFeatures({
+                uid: result.tile.uid,
+                source: this.id,
+                minX: result.minX,
+                maxX: result.maxX,
+                minY: result.minY,
+                maxY: result.maxY,
+                params: params
+            }, cb, result.tile.workerID);
+        }.bind(this), function done(err, features) {
+            callback(err, Array.prototype.concat.apply([], features));
+        });
+    },
+
+    _queryFeatures: function(params, callback, workerID) {
+        if (this.skipWorker) {
+            var tile = this._loadedTiles[params.source] && this._loadedTiles[params.source][params.uid];
+            if (tile) {
+                tile.featureTree.query(params, callback);
+            } else {
+                callback(null, []);
+            }
+        } else {
+            this.dispatcher.send('query features', params, callback, workerID);
+        }
+    },
 
     _updateData: function() {
         this._dirty = false;
