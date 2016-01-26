@@ -120,7 +120,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     }
 
     if (text) {
-        var textfont = elementGroups['text-font'];
+        var textfont = layer.layout['text-font'];
         var fontstack = textfont && textfont.join(',');
         var glyphAtlas = fontstack && painter.glyphSource.getGlyphAtlas(fontstack);
         if (!glyphAtlas) return;
@@ -146,7 +146,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     gl.uniform1f(shader.u_extra, extra);
 
     // adjust min/max zooms for variable font sizes
-    var zoomAdjust = Math.log(fontSize / elementGroups[prefix + '-size']) / Math.LN2 || 0;
+    var zoomAdjust = Math.log(fontSize / elementGroups.adjustedSize) / Math.LN2 || 0;
 
 
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level

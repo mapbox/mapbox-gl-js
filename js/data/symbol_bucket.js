@@ -341,9 +341,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var layout = this.layer.layout;
     var maxScale = collisionTile.maxScale;
 
-    elementGroups.glyph['text-size'] = this.adjustedTextSize;
-    elementGroups.glyph['text-font'] = layout['text-font'];
-    elementGroups.icon['icon-size'] = this.adjustedIconSize;
+    elementGroups.glyph.adjustedSize = this.adjustedTextSize;
+    elementGroups.icon.adjustedSize = this.adjustedIconSize;
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
