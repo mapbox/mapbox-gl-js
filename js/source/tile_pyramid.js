@@ -2,6 +2,7 @@
 
 var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
+var tileCover = require('./tile_cover');
 var Point = require('point-geometry');
 var Cache = require('../util/mru_cache');
 var util = require('../util/util');
@@ -129,7 +130,7 @@ TilePyramid.prototype = {
             tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
-        return TileCoord.cover(coveringZoom, [
+        return tileCover(coveringZoom, [
             tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
             tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
             tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
