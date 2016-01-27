@@ -1,3 +1,9 @@
+## 0.13.1 (Jan 27 2016)
+
+#### Bugfixes
+
+Fixed broken npm package due to outdated bundled modules
+
 ## 0.13.0 (Jan 27 2016)
 
 #### Bugfixes
