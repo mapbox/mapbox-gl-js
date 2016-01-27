@@ -37,6 +37,7 @@ function TilePyramid(options) {
     this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
 
     this._filterRendered = this._filterRendered.bind(this);
+    this._fromID = this._fromID.bind(this);
 }
 
 TilePyramid.prototype = {
@@ -62,12 +63,16 @@ TilePyramid.prototype = {
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     },
 
-    renderedIDs: function() {
-        return this.orderedIDs().filter(this._filterRendered);
+    renderedCoords: function() {
+        return this.orderedIDs().filter(this._filterRendered).map(this._fromID);
     },
 
     _filterRendered: function(id) {
         return this._tiles[id].loaded && !this._coveredTiles[id];
+    },
+
+    _fromID: function(id) {
+        return TileCoord.fromID(id, this.maxzoom);
     },
 
     reload: function() {
@@ -115,22 +120,21 @@ TilePyramid.prototype = {
      * @private
      */
     coveringTiles: function(transform) {
-        var z = this.coveringZoomLevel(transform);
-        var actualZ = z;
+        var coveringZoom = this.coveringZoomLevel(transform);
 
-        if (z < this.minzoom) return [];
-        if (z > this.maxzoom) z = this.maxzoom;
+        if (coveringZoom < this.minzoom) return [];
+        var z = Math.min(coveringZoom, this.maxzoom);
 
         var tr = transform,
             tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
-        return TileCoord.cover(z, [
+        return TileCoord.cover(coveringZoom, [
             tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
             tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
             tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
             tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
-        ], this.reparseOverscaled ? actualZ : z).sort(function(a, b) {
+        ], this.maxzoom, this.reparseOverscaled).sort(function(a, b) {
             return centerPoint.dist(a) - centerPoint.dist(b);
         });
     },
@@ -166,7 +170,7 @@ TilePyramid.prototype = {
 
             // loop through parents; retain the topmost loaded one if found
             while (tile && tile.coord.z - 1 > coord.z) {
-                var parentId = tile.coord.parent(this.maxzoom).id;
+                var parentId = tile.coord.parent().id;
                 tile = this._tiles[parentId];
 
                 if (tile && tile.loaded) {
@@ -190,7 +194,7 @@ TilePyramid.prototype = {
      */
     findLoadedParent: function(coord, minCoveringZoom, retain) {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
-            coord = coord.parent(this.maxzoom);
+            coord = coord.parent();
             var tile = this._tiles[coord.id];
             if (tile && tile.loaded) {
                 retain[coord.id] = true;
@@ -246,7 +250,7 @@ TilePyramid.prototype = {
         var ids = Object.keys(retain);
         for (var k = 0; k < ids.length; k++) {
             var id = ids[k];
-            coord = TileCoord.fromID(id);
+            coord = TileCoord.fromID(id, this.maxzoom);
             tile = this._tiles[id];
             if (tile && tile.timeAdded > now - (fadeDuration || 0)) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
@@ -301,7 +305,7 @@ TilePyramid.prototype = {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
+            tile = new Tile(wrapped, this.tileSize * overscaling);
             this._load(tile);
         }
 

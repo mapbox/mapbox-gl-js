@@ -8,12 +8,18 @@ var LngLat = require('../../../js/geo/lng_lat');
 var Coordinate = require('../../../js/geo/coordinate');
 var util = require('../../../js/util/util');
 
+var maxZoom = 20;
+
 test('TilePyramid#coveringTiles', function(t) {
     var pyramid = new TilePyramid({
         minzoom: 1,
         maxzoom: 10,
         tileSize: 512
     });
+
+    function fromID(id) {
+        return TileCoord.fromID(id, pyramid.maxzoom);
+    }
 
     var transform = new Transform();
     transform.resize(200, 200);
@@ -22,16 +28,16 @@ test('TilePyramid#coveringTiles', function(t) {
     t.deepEqual(pyramid.coveringTiles(transform), []);
 
     transform.zoom = 1;
-    t.deepEqual(pyramid.coveringTiles(transform), ['1', '33', '65', '97'].map(TileCoord.fromID));
+    t.deepEqual(pyramid.coveringTiles(transform), ['1', '33', '65', '97'].map(fromID));
 
     transform.zoom = 2.4;
-    t.deepEqual(pyramid.coveringTiles(transform), ['162', '194', '290', '322'].map(TileCoord.fromID));
+    t.deepEqual(pyramid.coveringTiles(transform), ['162', '194', '290', '322'].map(fromID));
 
     transform.zoom = 10;
-    t.deepEqual(pyramid.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+    t.deepEqual(pyramid.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(fromID));
 
     transform.zoom = 11;
-    t.deepEqual(pyramid.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+    t.deepEqual(pyramid.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(fromID));
 
     t.end();
 });
@@ -111,8 +117,9 @@ function createPyramid(options) {
 
 test('TilePyramid#addTile', function(t) {
     t.test('loads tile when uncached', function(t) {
-        var coord = new TileCoord(0, 0, 0);
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom);
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             load: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 t.equal(tile.uses, 0);
@@ -123,8 +130,9 @@ test('TilePyramid#addTile', function(t) {
     });
 
     t.test('adds tile when uncached', function(t) {
-        var coord = new TileCoord(0, 0, 0);
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom);
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             add: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 t.equal(tile.uses, 1);
@@ -135,11 +143,12 @@ test('TilePyramid#addTile', function(t) {
     });
 
     t.test('uses cached tile', function(t) {
-        var coord = new TileCoord(0, 0, 0),
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom),
             load = 0,
             add = 0;
 
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             load: function(tile) { tile.loaded = true; load++; },
             add: function() { add++; }
         });
@@ -155,17 +164,18 @@ test('TilePyramid#addTile', function(t) {
     });
 
     t.test('reuses wrapped tile', function(t) {
-        var coord = new TileCoord(0, 0, 0),
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom),
             load = 0,
             add = 0;
 
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             load: function(tile) { tile.loaded = true; load++; },
             add: function() { add++; }
         });
 
         var t1 = pyramid.addTile(coord);
-        var t2 = pyramid.addTile(new TileCoord(0, 0, 0, 1));
+        var t2 = pyramid.addTile(new TileCoord(0, 0, 0, 1, maxZoom));
 
         t.equal(load, 1);
         t.equal(add, 2);
@@ -177,8 +187,9 @@ test('TilePyramid#addTile', function(t) {
 
 test('TilePyramid#removeTile', function(t) {
     t.test('removes tile', function(t) {
-        var coord = new TileCoord(0, 0, 0);
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom);
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             remove: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 t.equal(tile.uses, 0);
@@ -190,8 +201,9 @@ test('TilePyramid#removeTile', function(t) {
     });
 
     t.test('caches (does not unload) loaded tile', function(t) {
-        var coord = new TileCoord(0, 0, 0);
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom);
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             load: function(tile) {
                 tile.loaded = true;
             },
@@ -207,11 +219,12 @@ test('TilePyramid#removeTile', function(t) {
     });
 
     t.test('aborts and unloads unfinished tile', function(t) {
-        var coord = new TileCoord(0, 0, 0),
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom),
             abort = 0,
             unload = 0;
 
         var pyramid = createPyramid({
+            maxzoom: maxZoom,
             abort: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 abort++;
@@ -276,7 +289,7 @@ test('TilePyramid#update', function(t) {
         var pyramid = createPyramid({});
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 0, maxZoom).id]);
         t.end();
     });
 
@@ -292,16 +305,16 @@ test('TilePyramid#update', function(t) {
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 0, maxZoom).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id
+            new TileCoord(1, 0, 0, 0, maxZoom).id,
+            new TileCoord(1, 1, 0, 0, maxZoom).id,
+            new TileCoord(1, 0, 1, 0, maxZoom).id,
+            new TileCoord(1, 1, 1, 0, maxZoom).id
         ]);
         t.end();
     });
@@ -313,22 +326,22 @@ test('TilePyramid#update', function(t) {
 
         var pyramid = createPyramid({
             load: function(tile) {
-                tile.loaded = (tile.coord.id === new TileCoord(0, 0, 0).id);
+                tile.loaded = (tile.coord.id === new TileCoord(0, 0, 0, 0, maxZoom).id);
             }
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 0, maxZoom).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id,
-            new TileCoord(0, 0, 0).id
+            new TileCoord(1, 0, 0, 0, maxZoom).id,
+            new TileCoord(1, 1, 0, 0, maxZoom).id,
+            new TileCoord(1, 0, 1, 0, maxZoom).id,
+            new TileCoord(1, 1, 1, 0, maxZoom).id,
+            new TileCoord(0, 0, 0, 0, maxZoom).id
         ]);
         t.end();
     });
@@ -341,22 +354,22 @@ test('TilePyramid#update', function(t) {
 
         var pyramid = createPyramid({
             load: function(tile) {
-                tile.loaded = (tile.coord.id === new TileCoord(0, 0, 0).id);
+                tile.loaded = (tile.coord.id === new TileCoord(0, 0, 0, 0, maxZoom).id);
             }
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 1).id]);
+        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 1, maxZoom).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [
-            new TileCoord(1, 0, 0, 1).id,
-            new TileCoord(1, 1, 0, 1).id,
-            new TileCoord(1, 0, 1, 1).id,
-            new TileCoord(1, 1, 1, 1).id,
-            new TileCoord(0, 0, 0, 1).id
+            new TileCoord(1, 0, 0, 1, maxZoom).id,
+            new TileCoord(1, 1, 0, 1, maxZoom).id,
+            new TileCoord(1, 0, 1, 1, maxZoom).id,
+            new TileCoord(1, 1, 1, 1, maxZoom).id,
+            new TileCoord(0, 0, 0, 1, maxZoom).id
         ]);
         t.end();
     });
@@ -375,16 +388,16 @@ test('TilePyramid#update', function(t) {
 
         pyramid.update(true, transform, 100);
         t.deepEqual(pyramid.orderedIDs(), [
-            new TileCoord(2, 1, 1).id,
-            new TileCoord(2, 2, 1).id,
-            new TileCoord(2, 1, 2).id,
-            new TileCoord(2, 2, 2).id
+            new TileCoord(2, 1, 1, 0, maxZoom).id,
+            new TileCoord(2, 2, 1, 0, maxZoom).id,
+            new TileCoord(2, 1, 2, 0, maxZoom).id,
+            new TileCoord(2, 2, 2, 0, maxZoom).id
         ]);
 
         transform.zoom = 0;
         pyramid.update(true, transform, 100);
 
-        t.deepEqual(pyramid.renderedIDs().length, 5);
+        t.deepEqual(pyramid.renderedCoords().length, 5);
         t.end();
     });
 
@@ -408,7 +421,7 @@ test('TilePyramid#update', function(t) {
         transform.zoom = 1;
         pyramid.update(true, transform, 100);
 
-        t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+        t.equal(pyramid._coveredTiles[(new TileCoord(0, 0, 0, 0, maxZoom).id)], true);
         t.end();
     });
 
@@ -430,21 +443,21 @@ test('TilePyramid#update', function(t) {
         t.equal(pyramid.maxzoom, 14);
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.renderedIDs(), [
-            new TileCoord(16, 8191, 8191, 0).id,
-            new TileCoord(16, 8192, 8191, 0).id,
-            new TileCoord(16, 8192, 8192, 0).id,
-            new TileCoord(16, 8191, 8192, 0).id
+        t.deepEqual(pyramid.renderedCoords(), [
+            new TileCoord(16, 8191, 8191, 0, 14),
+            new TileCoord(16, 8192, 8191, 0, 14),
+            new TileCoord(16, 8192, 8192, 0, 14),
+            new TileCoord(16, 8191, 8192, 0, 14)
         ]);
 
         transform.zoom = 15;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.renderedIDs(), [
-            new TileCoord(16, 8191, 8191, 0).id,
-            new TileCoord(16, 8192, 8191, 0).id,
-            new TileCoord(16, 8192, 8192, 0).id,
-            new TileCoord(16, 8191, 8192, 0).id
+        t.deepEqual(pyramid.renderedCoords(), [
+            new TileCoord(16, 8191, 8191, 0, 14),
+            new TileCoord(16, 8192, 8191, 0, 14),
+            new TileCoord(16, 8192, 8192, 0, 14),
+            new TileCoord(16, 8191, 8192, 0, 14)
         ]);
         t.end();
 
@@ -453,7 +466,7 @@ test('TilePyramid#update', function(t) {
 
 test('TilePyramid#clearTiles', function(t) {
     t.test('unloads tiles', function(t) {
-        var coord = new TileCoord(0, 0, 0),
+        var coord = new TileCoord(0, 0, 0, 0, maxZoom),
             abort = 0,
             unload = 0;
 
@@ -492,10 +505,10 @@ test('TilePyramid#tilesIn', function (t) {
     pyramid.update(true, transform);
 
     t.deepEqual(pyramid.orderedIDs(), [
-        new TileCoord(1, 0, 0).id,
-        new TileCoord(1, 1, 0).id,
-        new TileCoord(1, 0, 1).id,
-        new TileCoord(1, 1, 1).id
+        new TileCoord(1, 0, 0, 0, 14).id,
+        new TileCoord(1, 1, 0, 0, 14).id,
+        new TileCoord(1, 0, 1, 0, 14).id,
+        new TileCoord(1, 1, 1, 0, 14).id
     ]);
 
     var tiles = pyramid.tilesIn([
@@ -509,11 +522,10 @@ test('TilePyramid#tilesIn', function (t) {
     t.deepEqual(tiles, [
         {
             tile: {
-                coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
+                coord: new TileCoord(1, 0, 0, 0, 14),
                 loaded: true,
                 uses: 1,
-                tileSize: 512,
-                sourceMaxZoom: 14
+                tileSize: 512
             },
             minX: 2048,
             maxX: 6144,
@@ -522,11 +534,10 @@ test('TilePyramid#tilesIn', function (t) {
         },
         {
             tile: {
-                coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
+                coord: new TileCoord(1, 1, 0, 0, 14),
                 loaded: true,
                 uses: 1,
-                tileSize: 512,
-                sourceMaxZoom: 14
+                tileSize: 512
             },
             minX: -2048,
             maxX: 2048,
@@ -545,7 +556,7 @@ test('TilePyramid#loaded (no errors)', function (t) {
         }
     });
 
-    var coord = new TileCoord(0, 0, 0);
+    var coord = new TileCoord(0, 0, 0, 0, maxZoom);
     pyramid.addTile(coord);
 
     t.ok(pyramid.loaded());
@@ -559,7 +570,7 @@ test('TilePyramid#loaded (with errors)', function (t) {
         }
     });
 
-    var coord = new TileCoord(0, 0, 0);
+    var coord = new TileCoord(0, 0, 0, 0, maxZoom);
     pyramid.addTile(coord);
 
     t.ok(pyramid.loaded());

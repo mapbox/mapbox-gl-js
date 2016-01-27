@@ -21,7 +21,7 @@ test('basic', function(t) {
     }];
 
     var tile = new WorkerTile({uid: '', zoom: 0, maxZoom: 20, tileSize: 512, source: 'source',
-        coord: new TileCoord(1, 1, 1), overscaling: 1 });
+        coord: new TileCoord(1, 1, 1, 0, 20), overscaling: 1 });
 
     t.test('basic worker tile', function(t) {
         tile.parse(new Wrapper(features), buckets, {}, function(err, result) {

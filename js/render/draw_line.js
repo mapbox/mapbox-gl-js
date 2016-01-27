@@ -132,7 +132,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         painter.enableTileClippingMask(coord);
 
         // set uniforms that are different for each tile
-        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, tile.tileExtent), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
         gl.setPosMatrix(posMatrix);
         gl.setExMatrix(painter.transform.exMatrix);

@@ -62,7 +62,7 @@ function drawFill(painter, source, layer, coord) {
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
-    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent);
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
@@ -195,7 +195,7 @@ function drawStroke(painter, source, layer, coord) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
     gl.setPosMatrix(painter.translatePosMatrix(
-        painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom),
+        painter.calculatePosMatrix(coord, tile.tileExtent),
         tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']
