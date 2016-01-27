@@ -86,7 +86,7 @@ ScrollZoom.prototype = {
         if (e.shiftKey && value) value = value / 4;
 
         // Only fire the callback if we actually know what type of scrolling device the user uses.
-        if (this._type) this._zoom(-value);
+        if (this._type) this._zoom(-value, e);
 
         e.preventDefault();
     },
@@ -96,7 +96,7 @@ ScrollZoom.prototype = {
         this._zoom(-this._lastValue);
     },
 
-    _zoom: function (delta) {
+    _zoom: function (delta, e) {
         var map = this._map;
 
         // Scale by sigmoid of scroll wheel delta.
@@ -109,6 +109,38 @@ ScrollZoom.prototype = {
         map.zoomTo(targetZoom, {
             duration: 0,
             around: map.unproject(this._pos)
-        });
+        }, { originalEvent: e });
     }
 };
+
+
+/**
+ * Zoom start event. This event is emitted just before the map begins a transition from one
+ * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoomstart
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+
+/**
+ * Zoom event. This event is emitted repeatedly during animated transitions from one zoom level to
+ * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoom
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+
+/**
+ * Zoom end event. This event is emitted just after the map completes a transition from one
+ * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ *
+ * @event zoomend
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data, if fired interactively
+ */
+

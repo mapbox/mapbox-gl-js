@@ -9,7 +9,7 @@ test('util', function(t) {
     t.equal(util.easeCubicInOut(0.2), 0.03200000000000001);
     t.equal(util.easeCubicInOut(0.5), 0.5, 'easeCubicInOut=0.5');
     t.equal(util.easeCubicInOut(1), 1, 'easeCubicInOut=1');
-    t.deepEqual(util.premultiply([0, 1, 2, 2]), [0, 2, 4, 2], 'premultiply');
+    t.deepEqual(util.premultiply([0, 0.5, 1, 0.5], 0.5), [0, 0.125, 0.25, 0.25], 'premultiply');
     t.deepEqual(util.keysDifference({a:1}, {}), ['a'], 'keysDifference');
     t.deepEqual(util.keysDifference({a:1}, {a:1}), [], 'keysDifference');
     t.deepEqual(util.extend({a:1}, {b:2}), {a:1, b:2}, 'extend');
@@ -213,6 +213,31 @@ test('util', function(t) {
         debounced(1);
         debounced(2);
         debounced(3);
+    });
+
+    t.test('startsWith', function(t) {
+        t.ok(util.startsWith('mapbox', 'map'));
+        t.notOk(util.startsWith('mapbox', 'box'));
+        t.end();
+    });
+
+    t.test('endsWith', function(t) {
+        t.ok(util.endsWith('mapbox', 'box'));
+        t.notOk(util.endsWith('mapbox', 'map'));
+        t.end();
+    });
+
+    t.test('mapObject', function(t) {
+        t.plan(6);
+        t.deepEqual(util.mapObject({}, function() { t.ok(false); }), {});
+        var that = {};
+        t.deepEqual(util.mapObject({map: 'box'}, function(value, key, object) {
+            t.equal(value, 'box');
+            t.equal(key, 'map');
+            t.deepEqual(object, {map: 'box'});
+            t.equal(this, that);
+            return 'BOX';
+        }, that), {map: 'BOX'});
     });
 
     if (process.browser) {

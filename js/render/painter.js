@@ -5,6 +5,7 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
+var assert = require('assert');
 
 /*
  * Initialize a new painter object.
@@ -224,7 +225,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, sourceMaxZoom));
+        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, this.tileExtent, sourceMaxZoom));
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -329,7 +330,7 @@ Painter.prototype.depthMask = function(mask) {
 };
 
 Painter.prototype.renderLayer = function(painter, source, layer, coords) {
-    if (layer.hidden) return;
+    if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
     draw[layer.type](painter, source, layer, coords);
 };
@@ -386,8 +387,9 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
  * @param {Object} transform
  * @private
  */
-Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
-    var tileExtent = 4096;
+Painter.prototype.calculatePosMatrix = function(coord, tileExtent, maxZoom) {
+    assert(tileExtent);
+
     if (coord instanceof TileCoord) {
         coord = coord.toCoordinate();
     }

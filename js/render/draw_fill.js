@@ -1,15 +1,16 @@
 'use strict';
 
 var browser = require('../util/browser');
+var util = require('../util/util');
 
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
 
-    var color = layer.paint['fill-color'];
+    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
     var image = layer.paint['fill-pattern'];
-    var strokeColor = layer.paint['fill-outline-color'];
+    var strokeColor = util.premultiply(layer.paint['fill-outline-color'], layer.paint['fill-opacity']);
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1)) {
@@ -57,11 +58,11 @@ function drawFill(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var color = layer.paint['fill-color'];
+    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom);
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
@@ -136,7 +137,7 @@ function drawFill(painter, source, layer, coord) {
         gl.uniform1f(shader.u_mix, image.t);
 
         var scale = Math.pow(2, painter.transform.tileZoom - tile.coord.z);
-        var factor = 4096 / tile.tileSize;
+        var factor = tile.tileExtent / tile.tileSize;
 
         var imageSizeScaledA = [
             (imagePosA.size[0] * image.fromScale) / scale,
@@ -194,7 +195,7 @@ function drawStroke(painter, source, layer, coord) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
     gl.setPosMatrix(painter.translatePosMatrix(
-        painter.calculatePosMatrix(coord, source.maxzoom),
+        painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom),
         tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']

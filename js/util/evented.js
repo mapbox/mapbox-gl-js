@@ -71,7 +71,7 @@ var Evented = {
      * Fire event of a given string type with the given data object
      *
      * @param {string} type Event type
-     * @param {Object} [data] Optional data passed down to the event object
+     * @param {Object} [data] Optional data passed to the event receiver (e.g. {@link #EventData})
      * @returns {Object} `this`
      */
     fire: function(type, data) {

@@ -2,103 +2,174 @@
 
 var util = require('../util/util');
 var StyleTransition = require('./style_transition');
-var StyleDeclarationSet = require('./style_declaration_set');
-var LayoutProperties = require('./layout_properties');
-var PaintProperties = require('./paint_properties');
+var StyleDeclaration = require('./style_declaration');
+var StyleSpecification = require('./reference');
+var parseColor = require('./parse_color');
 
 module.exports = StyleLayer;
 
-function StyleLayer(layer) {
-    this._layer = layer;
+var TRANSITION_SUFFIX = '-transition';
 
+StyleLayer.create = function(layer, refLayer) {
+    var Classes = {
+        background: require('./style_layer/background_style_layer'),
+        circle: require('./style_layer/circle_style_layer'),
+        fill: require('./style_layer/fill_style_layer'),
+        line: require('./style_layer/line_style_layer'),
+        raster: require('./style_layer/raster_style_layer'),
+        symbol: require('./style_layer/symbol_style_layer')
+    };
+    return new Classes[(refLayer || layer).type](layer, refLayer);
+};
+
+function StyleLayer(layer, refLayer) {
     this.id = layer.id;
     this.ref = layer.ref;
+    this.metadata = layer.metadata;
+    this.type = (refLayer || layer).type;
+    this.source = (refLayer || layer).source;
+    this.sourceLayer = (refLayer || layer)['source-layer'];
+    this.minzoom = (refLayer || layer).minzoom;
+    this.maxzoom = (refLayer || layer).maxzoom;
+    this.filter = (refLayer || layer).filter;
+    this.interactive = (refLayer || layer).interactive;
 
-    // Resolved and cascaded paint properties.
-    this._resolved = {}; // class name -> StyleDeclarationSet
-    this._cascaded = {}; // property name -> StyleTransition
+    this._paintSpecifications = StyleSpecification['paint_' + this.type];
+    this._layoutSpecifications = StyleSpecification['layout_' + this.type];
 
-    this.assign(layer);
+    this._paintTransitions = {}; // {[propertyName]: StyleTransition}
+    this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
+    this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
+    this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
+
+    // Resolve paint declarations
+    for (var key in layer) {
+        var match = key.match(/^paint(?:\.(.*))?$/);
+        if (match) {
+            var klass = match[1] || '';
+            for (var name in layer[key]) {
+                this.setPaintProperty(name, layer[key][name], klass);
+            }
+        }
+    }
+
+    // Resolve layout declarations
+    if (this.ref) {
+        this._layoutDeclarations = refLayer._layoutDeclarations;
+    } else {
+        for (name in layer.layout) {
+            this.setLayoutProperty(name, layer.layout[name]);
+        }
+    }
 }
 
 StyleLayer.prototype = {
-    resolveLayout: function() {
-        if (!this.ref) {
-            this.layout = new LayoutProperties[this.type](this._layer.layout);
-
-            if (this.layout['symbol-placement'] === 'line') {
-                if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
-                    this.layout['text-rotation-alignment'] = 'map';
-                }
-                if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
-                    this.layout['icon-rotation-alignment'] = 'map';
-                }
-                this.layout['symbol-avoid-edges'] = true;
-            }
-        }
-    },
 
     setLayoutProperty: function(name, value) {
         if (value == null) {
-            delete this.layout[name];
+            delete this._layoutDeclarations[name];
         } else {
-            this.layout[name] = value;
+            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
     },
 
     getLayoutProperty: function(name) {
-        return this.layout[name];
+        return (
+            this._layoutDeclarations[name] &&
+            this._layoutDeclarations[name].value
+        );
     },
 
-    resolveReference: function(layers) {
-        if (this.ref) {
-            this.assign(layers[this.ref]);
-        }
-    },
+    getLayoutValue: function(name, zoom, zoomHistory) {
+        var specification = this._layoutSpecifications[name];
+        var declaration = this._layoutDeclarations[name];
 
-    resolvePaint: function() {
-        for (var p in this._layer) {
-            var match = p.match(/^paint(?:\.(.*))?$/);
-            if (!match)
-                continue;
-            this._resolved[match[1] || ''] =
-                new StyleDeclarationSet('paint', this.type, this._layer[p]);
+        if (declaration) {
+            return declaration.calculate(zoom, zoomHistory);
+        } else {
+            return specification.default;
         }
     },
 
     setPaintProperty: function(name, value, klass) {
-        var declarations = this._resolved[klass || ''];
-        if (!declarations) {
-            declarations = this._resolved[klass || ''] =
-                new StyleDeclarationSet('paint', this.type, {});
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            if (!this._paintTransitionOptions[klass || '']) {
+                this._paintTransitionOptions[klass || ''] = {};
+            }
+            if (value == null) {
+                delete this._paintTransitionOptions[klass || ''][name];
+            } else {
+                this._paintTransitionOptions[klass || ''][name] = value;
+            }
+        } else {
+            if (!this._paintDeclarations[klass || '']) {
+                this._paintDeclarations[klass || ''] = {};
+            }
+            if (value == null) {
+                delete this._paintDeclarations[klass || ''][name];
+            } else {
+                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+            }
         }
-        declarations[name] = value;
     },
 
     getPaintProperty: function(name, klass) {
-        var declarations = this._resolved[klass || ''];
-        if (!declarations)
-            return undefined;
-        return declarations[name];
+        klass = klass || '';
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            return (
+                this._paintTransitionOptions[klass] &&
+                this._paintTransitionOptions[klass][name]
+            );
+        } else {
+            return (
+                this._paintDeclarations[klass] &&
+                this._paintDeclarations[klass][name] &&
+                this._paintDeclarations[klass][name].value
+            );
+        }
     },
 
-    cascade: function(classes, options, globalTrans, animationLoop) {
-        for (var klass in this._resolved) {
-            if (klass !== "" && !classes[klass])
-                continue;
+    getPaintValue: function(name, zoom, zoomHistory) {
+        var specification = this._paintSpecifications[name];
+        var transition = this._paintTransitions[name];
 
-            var declarations = this._resolved[klass],
-                values = declarations.values();
+        if (transition) {
+            return transition.at(zoom, zoomHistory);
+        } else if (specification.type === 'color' && specification.default) {
+            return parseColor(specification.default);
+        } else {
+            return specification.default;
+        }
+    },
 
-            for (var k in values) {
-                var newDeclaration = values[k];
-                var oldTransition = options.transition ? this._cascaded[k] : undefined;
+    isHidden: function(zoom) {
+        if (this.minzoom && zoom < this.minzoom) return true;
+        if (this.maxzoom && zoom >= this.maxzoom) return true;
+
+        if (this.getLayoutValue('visibility') === 'none') return true;
+
+        var opacityProperty = this.type + '-opacity';
+        if (this._paintSpecifications[opacityProperty] && this.getPaintValue(opacityProperty) === 0) return true;
+
+        return false;
+    },
+
+    // update classes
+    cascade: function(classes, options, globalTransitionOptions, animationLoop) {
+        for (var klass in this._paintDeclarations) {
+            if (klass !== "" && !classes[klass]) continue;
+
+            for (var name in this._paintDeclarations[klass]) {
+                var declaration = this._paintDeclarations[klass][name];
+                var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
 
                 // Only create a new transition if the declaration changed
-                if (!oldTransition || oldTransition.declaration.json !== newDeclaration.json) {
-                    var newStyleTrans = declarations.transition(k, globalTrans);
-                    var newTransition = this._cascaded[k] =
-                        new StyleTransition(newDeclaration, oldTransition, newStyleTrans);
+                if (!oldTransition || oldTransition.declaration.json !== declaration.json) {
+                    var newTransition = this._paintTransitions[name] = new StyleTransition(declaration, oldTransition, util.extend(
+                        {duration: 300, delay: 0},
+                        globalTransitionOptions,
+                        this.getPaintProperty(name + TRANSITION_SUFFIX)
+                    ));
 
                     // Run the animation loop until the end of the transition
                     if (!newTransition.instant()) {
@@ -111,97 +182,45 @@ StyleLayer.prototype = {
                 }
             }
         }
+    },
 
-        // the -size properties are used both as layout and paint.
-        // In the spec they are layout properties. This adds them
-        // as internal paint properties.
-        if (this.type === 'symbol') {
-            var resolvedLayout = new StyleDeclarationSet('layout', this.type, this.layout);
-            this._cascaded['text-size'] = new StyleTransition(resolvedLayout.values()['text-size'], undefined, globalTrans);
-            this._cascaded['icon-size'] = new StyleTransition(resolvedLayout.values()['icon-size'], undefined, globalTrans);
+    // update zoom
+    recalculate: function(zoom, zoomHistory) {
+        this.paint = {};
+        for (var name in this._paintSpecifications) {
+            this.paint[name] = this.getPaintValue(name, zoom, zoomHistory);
+        }
+
+        this.layout = {};
+        for (name in this._layoutSpecifications) {
+            this.layout[name] = this.getLayoutValue(name, zoom, zoomHistory);
         }
     },
 
-    recalculate: function(z, zoomHistory) {
-        var type = this.type,
-            calculated = this.paint = new PaintProperties[type]();
+    serialize: function() {
+        var output = {
+            'id': this.id,
+            'ref': this.ref,
+            'metadata': this.metadata,
+            'type': this.type,
+            'source': this.source,
+            'source-layer': this.sourceLayer,
+            'minzoom': this.minzoom,
+            'maxzoom': this.maxzoom,
+            'filter': this.filter,
+            'interactive': this.interactive,
+            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
+        };
 
-        for (var k in this._cascaded) {
-            calculated[k] = this._cascaded[k].at(z, zoomHistory);
+        for (var klass in this._paintDeclarations) {
+            var key = klass === '' ? 'paint' : 'paint.' + key;
+            output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
         }
 
-        this.hidden = (this.minzoom && z < this.minzoom) ||
-                      (this.maxzoom && z >= this.maxzoom) ||
-                      // include visibility check for non-bucketed background layers
-                      (this.layout.visibility === 'none');
-
-        if (type === 'symbol') {
-            if ((calculated['text-opacity'] === 0 || !this.layout['text-field']) &&
-                (calculated['icon-opacity'] === 0 || !this.layout['icon-image'])) {
-                this.hidden = true;
-            } else {
-                premultiplyLayer(calculated, 'text');
-                premultiplyLayer(calculated, 'icon');
-            }
-
-        } else if (calculated[type + '-opacity'] === 0) {
-            this.hidden = true;
-        } else {
-            premultiplyLayer(calculated, type);
-        }
-
-        if (this._cascaded['line-dasharray']) {
-            // If the line is dashed, scale the dash lengths by the line
-            // width at the previous round zoom level.
-            var dashArray = calculated['line-dasharray'];
-            var lineWidth = this._cascaded['line-width'] ?
-                this._cascaded['line-width'].at(Math.floor(z), Infinity) :
-                calculated['line-width'];
-
-            dashArray.fromScale *= lineWidth;
-            dashArray.toScale *= lineWidth;
-        }
-
-        return !this.hidden;
-    },
-
-    assign: function(layer) {
-        util.extend(this, util.pick(layer,
-            ['type', 'source', 'source-layer',
-            'minzoom', 'maxzoom', 'filter',
-            'layout']));
-    },
-
-    json: function() {
-        return util.extend({},
-            this._layer,
-            util.pick(this,
-                ['type', 'source', 'source-layer',
-                'minzoom', 'maxzoom', 'filter',
-                'layout', 'paint']));
+        return output;
     }
 };
 
-function premultiplyLayer(layer, type) {
-    var colorProp = type + '-color',
-        haloProp = type + '-halo-color',
-        outlineProp = type + '-outline-color',
-        color = layer[colorProp],
-        haloColor = layer[haloProp],
-        outlineColor = layer[outlineProp],
-        opacity = layer[type + '-opacity'];
-
-    var colorOpacity = color && (opacity * color[3]);
-    var haloOpacity = haloColor && (opacity * haloColor[3]);
-    var outlineOpacity = outlineColor && (opacity * outlineColor[3]);
-
-    if (colorOpacity !== undefined && colorOpacity < 1) {
-        layer[colorProp] = util.premultiply([color[0], color[1], color[2], colorOpacity]);
-    }
-    if (haloOpacity !== undefined && haloOpacity < 1) {
-        layer[haloProp] = util.premultiply([haloColor[0], haloColor[1], haloColor[2], haloOpacity]);
-    }
-    if (outlineOpacity !== undefined && outlineOpacity < 1) {
-        layer[outlineProp] = util.premultiply([outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity]);
-    }
+function getDeclarationValue(declaration) {
+    return declaration.value;
 }
