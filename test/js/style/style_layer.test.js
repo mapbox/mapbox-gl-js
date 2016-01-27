@@ -128,6 +128,21 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 400});
         t.end();
     });
+
+    t.test('sets transition with a class name equal to the property name', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "red"
+            }
+        });
+
+        layer.setPaintProperty('background-color-transition', {duration: 400}, 'background-color');
+        layer.cascade([], {});
+        t.deepEqual(layer.getPaintProperty('background-color-transition', 'background-color'), {duration: 400});
+        t.end();
+    });
 });
 
 test('StyleLayer#setLayoutProperty', function(t) {

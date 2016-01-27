@@ -37,9 +37,12 @@ function StyleLayer(layer, refLayer) {
     this._paintSpecifications = StyleSpecification['paint_' + this.type];
     this._layoutSpecifications = StyleSpecification['layout_' + this.type];
 
+    this._paintTransitions = {}; // {[propertyName]: StyleTransition}
+    this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
+    this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
+    this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
+
     // Resolve paint declarations
-    this._paintDeclarations = {};
-    this._paintTransitions = {};
     for (var key in layer) {
         var match = key.match(/^paint(?:\.(.*))?$/);
         if (match) {
@@ -51,7 +54,6 @@ function StyleLayer(layer, refLayer) {
     }
 
     // Resolve layout declarations
-    this._layoutDeclarations = {};
     if (this.ref) {
         this._layoutDeclarations = refLayer._layoutDeclarations;
     } else {
@@ -91,13 +93,13 @@ StyleLayer.prototype = {
 
     setPaintProperty: function(name, value, klass) {
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
-            if (!this._paintTransitions[klass || '']) {
-                this._paintTransitions[klass || ''] = {};
+            if (!this._paintTransitionOptions[klass || '']) {
+                this._paintTransitionOptions[klass || ''] = {};
             }
             if (value == null) {
-                delete this._paintTransitions[klass || ''][name];
+                delete this._paintTransitionOptions[klass || ''][name];
             } else {
-                this._paintTransitions[klass || ''][name] = value;
+                this._paintTransitionOptions[klass || ''][name] = value;
             }
         } else {
             if (!this._paintDeclarations[klass || '']) {
@@ -115,8 +117,8 @@ StyleLayer.prototype = {
         klass = klass || '';
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
             return (
-                this._paintTransitions[klass] &&
-                this._paintTransitions[klass][name]
+                this._paintTransitionOptions[klass] &&
+                this._paintTransitionOptions[klass][name]
             );
         } else {
             return (
