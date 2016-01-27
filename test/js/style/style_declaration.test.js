@@ -51,6 +51,10 @@ test('StyleDeclaration', function(t) {
         t.throws(function () {
             t.ok(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, null]] }));
         }, /Invalid color/);
+        t.throws(function() {
+            // hex value with only 5 digits should throw an Invalid color error
+            t.ok(new StyleDeclaration(reference, '#00000'));
+        }, Error, /Invalid color/i);
         // cached
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate(0), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
