@@ -1,7 +1,7 @@
 var urls = [
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.5/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.13.0/mapbox-gl.js',
     '/dist/mapbox-gl.js',
-    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.12.5/mapbox-gl.js',
+    'https://api.tiles.mapbox.com/mapbox-gl-js/v0.13.0/mapbox-gl.js',
     '/dist/mapbox-gl.js'
 ];
 
