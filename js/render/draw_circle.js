@@ -33,6 +33,7 @@ function drawCircles(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
+        bucket.createStyleLayer(layer);
         var elementGroups = bucket.elementGroups.circle;
         if (!elementGroups) continue;
 
@@ -52,7 +53,7 @@ function drawCircles(painter, source, layer, coords) {
             var offset = group.vertexStartIndex * vertex.itemSize;
 
             vertex.bind(gl);
-            vertex.setAttribPointers(gl, program, offset);
+            bucket.setAttribPointers('circle', gl, program, offset, [{$zoom: painter.transform.zoom}]);
 
             elements.bind(gl);
 

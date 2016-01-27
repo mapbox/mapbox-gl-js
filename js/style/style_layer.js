@@ -165,6 +165,16 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
+    isPaintValueFeatureConstant: function(name) {
+        var transition = this._paintTransitions[name];
+
+        if (transition) {
+            return transition.declaration.isFeatureConstant;
+        } else {
+            return true;
+        }
+    },
+
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;

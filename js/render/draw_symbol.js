@@ -71,6 +71,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     var gl = painter.gl;
 
     posMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
+    var programInterfaceName = prefix === 'text' ? 'glyph' : 'icon';
 
     var tr = painter.transform;
     var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';
@@ -167,7 +168,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
                 group = elementGroups[j];
                 offset = group.vertexStartIndex * vertex.itemSize;
                 vertex.bind(gl);
-                vertex.setAttribPointers(gl, program, offset);
+                bucket.setAttribPointers(programInterfaceName, gl, program, offset);
 
                 count = group.elementLength * 3;
                 elementOffset = group.elementStartIndex * elements.itemSize;
@@ -184,7 +185,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
             group = elementGroups[i];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            vertex.setAttribPointers(gl, program, offset);
+            bucket.setAttribPointers(programInterfaceName, gl, program, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;
@@ -197,7 +198,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
             group = elementGroups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            vertex.setAttribPointers(gl, program, offset);
+            bucket.setAttribPointers(programInterfaceName, gl, program, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;

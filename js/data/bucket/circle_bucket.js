@@ -25,7 +25,7 @@ CircleBucket.prototype.programInterfaces = {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributeArgs: ['x', 'y', 'extrudeX', 'extrudeY'],
+        attributeArgs: ['globalProperties', 'featureProperties', 'x', 'y', 'extrudeX', 'extrudeY'],
 
         attributes: [{
             name: 'pos',
@@ -41,26 +41,30 @@ CircleBucket.prototype.programInterfaces = {
             type: 'Uint8',
             value: (
                 'this._premultiplyColor(' +
-                    'this.layer.paint["circle-color"],' +
-                    'this.layer.paint["circle-opacity"]' +
+                    'this.layer.getPaintValue("circle-color", globalProperties, featureProperties),' +
+                    'this.layer.getPaintValue("circle-opacity", globalProperties, featureProperties)' +
                 ')'
             ),
-            multiplier: 255
+            multiplier: 255,
+            isDisabled: function() {
+                return (
+                    this.layer.isPaintValueFeatureConstant("circle-color") &&
+                    this.layer.isPaintValueFeatureConstant('circle-opacity')
+                );
+            }
         }]
     }
 };
 
 CircleBucket.prototype.addFeature = function(feature) {
-
+    var globalProperties = {$zoom: this.zoom};
     var geometries = loadGeometry(feature);
+
     for (var j = 0; j < geometries.length; j++) {
-        var geometry = geometries[j];
+        for (var k = 0; k < geometries[j].length; k++) {
 
-        for (var k = 0; k < geometry.length; k++) {
-            var group = this.makeRoomFor('circle', 4);
-
-            var x = geometry[k].x;
-            var y = geometry[k].y;
+            var x = geometries[j][k].x;
+            var y = geometries[j][k].y;
 
             // Do not include points that are outside the tile boundaries.
             if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
@@ -74,10 +78,12 @@ CircleBucket.prototype.addFeature = function(feature) {
             // │ 0     1 │
             // └─────────┘
 
-            var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
-            this.addCircleVertex(x, y, 1, -1);
-            this.addCircleVertex(x, y, 1, 1);
-            this.addCircleVertex(x, y, -1, 1);
+            var group = this.makeRoomFor('circle', 4);
+
+            var index = this.addCircleVertex(globalProperties, feature.properties, x, y, -1, -1) - group.vertexStartIndex;
+            this.addCircleVertex(globalProperties, feature.properties, x, y, 1, -1);
+            this.addCircleVertex(globalProperties, feature.properties, x, y, 1, 1);
+            this.addCircleVertex(globalProperties, feature.properties, x, y, -1, 1);
             group.vertexLength += 4;
 
             this.addCircleElement(index, index + 1, index + 2);
