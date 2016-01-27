@@ -417,10 +417,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {CameraOptions} options map view options
      * @param {EventData} [eventData] Data to propagate to any event receivers
      * @fires movestart
+     * @fires zoomstart
      * @fires move
      * @fires zoom
      * @fires rotate
      * @fires pitch
+     * @fires zoomend
      * @fires moveend
      * @returns {Map} `this`
      */
@@ -479,6 +481,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {CameraOptions|AnimationOptions} options map view and animation options
      * @param {EventData} [eventData] Data to propagate to any event receivers
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
+     * @fires rotate
+     * @fires pitch
+     * @fires zoomend
      * @fires moveend
      * @returns {Map} `this`
      */
@@ -507,18 +515,14 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             to = 'center' in options ? tr.project(LngLat.convert(options.center)).sub(offset.div(scale)) : from,
             around = 'center' in options ? null : LngLat.convert(options.around);
 
-        if (zoom !== startZoom) {
-            this.zooming = true;
-        }
-        if (startBearing !== bearing) {
-            this.rotating = true;
-        }
-
-        if (pitch !== startPitch) {
-            this.pitching = true;
-        }
+        this.zooming = (zoom !== startZoom);
+        this.rotating = (startBearing !== bearing);
+        this.pitching = (pitch !== startPitch);
 
         this.fire('movestart', eventData);
+        if (this.zooming) {
+            this.fire('zoomstart', eventData);
+        }
 
         this._ease(function (k) {
             if (this.zooming && around) {
@@ -547,10 +551,14 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 this.fire('pitch', eventData);
             }
         }, function() {
+            if (this.zooming) {
+                this.fire('zoomend', eventData);
+            }
+            this.fire('moveend', eventData);
+
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
-            this.fire('moveend', eventData);
         }, options);
 
         return this;
@@ -581,6 +589,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {Function} [options.easing] Transition timing curve
      * @param {EventData} [eventData] Data to propagate to any event receivers
      * @fires movestart
+     * @fires zoomstart
+     * @fires move
+     * @fires zoom
+     * @fires rotate
+     * @fires pitch
+     * @fires zoomend
      * @fires moveend
      * @returns {this}
      * @example
@@ -717,6 +731,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         if (startPitch !== pitch) this.pitching = true;
 
         this.fire('movestart', eventData);
+        this.fire('zoomstart', eventData);
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -733,8 +748,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            this.fire('move', eventData)
-                .fire('zoom', eventData);
+            this.fire('move', eventData);
+            this.fire('zoom', eventData);
             if (this.rotating) {
                 this.fire('rotate', eventData);
             }
@@ -742,10 +757,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 this.fire('pitch', eventData);
             }
         }, function() {
+            this.fire('zoomend', eventData);
+            this.fire('moveend', eventData);
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
-            this.fire('moveend', eventData);
         }, options);
 
         return this;
