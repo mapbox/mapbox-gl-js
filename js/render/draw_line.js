@@ -170,8 +170,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
             var group = elementGroups[i];
 
             var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-            gl.vertexAttribPointer(program.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
-            gl.vertexAttribPointer(program.a_data, 4, gl.UNSIGNED_BYTE, false, 8, vtxOffset + 4);
+            bucket.setAttribPointers('line', gl, program, vtxOffset);
 
             var count = group.elementLength * 3;
             var elementOffset = group.elementStartIndex * element.itemSize;

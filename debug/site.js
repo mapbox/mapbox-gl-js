@@ -51,7 +51,11 @@ map.on('load', function() {
         "source": "geojson-random-points",
         "paint": {
             "circle-radius": 5,
-            "circle-color": "#f0f"
+            "circle-opacity": 0.5,
+            "circle-color": {
+                stops: [[0, 'red'], [100, 'violet']],
+                property: 'mapbox'
+            }
         }
     });
 
