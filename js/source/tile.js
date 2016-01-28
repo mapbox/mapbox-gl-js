@@ -21,10 +21,27 @@ function Tile(coord, size, sourceMaxZoom) {
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
-    this.pixelRatio = EXTENT / size;
 }
 
 Tile.prototype = {
+
+    /**
+     * Converts a pixel value at a the given zoom level to tile units.
+     *
+     * The shaders mostly calculate everything in tile units so style
+     * properties need to be converted from pixels to tile units using this.
+     *
+     * For example, a translation by 30 pixels at zoom 6.5 will be a
+     * translation by pixelsToTileUnits(30, 6.5) tile units.
+     *
+     * @param {number} pixelValue
+     * @param {number} z
+     * @returns {number} value in tile units
+     * @private
+     */
+    pixelsToTileUnits: function(pixelValue, z) {
+        return pixelValue * (EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
+    },
 
     /**
      * Given a coordinate position, zoom that coordinate to my zoom and

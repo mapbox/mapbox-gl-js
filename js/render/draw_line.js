@@ -136,25 +136,30 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         gl.setPosMatrix(posMatrix);
         gl.setExMatrix(painter.transform.exMatrix);
-        var ratio = painter.transform.scale / (1 << coord.z) / tile.pixelRatio;
-
+        var zoom = painter.transform.zoom;
+        var ratio = 1 / tile.pixelsToTileUnits(1, zoom);
 
         if (dasharray) {
-            var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - coord.z) / tile.pixelRatio;
-            var scaleA = [patternratio / posA.width / dasharray.fromScale, -posA.height / 2];
-            var gammaA = painter.lineAtlas.width / (dasharray.fromScale * posA.width * 256 * browser.devicePixelRatio) / 2;
-            var scaleB = [patternratio / posB.width / dasharray.toScale, -posB.height / 2];
-            var gammaB = painter.lineAtlas.width / (dasharray.toScale * posB.width * 256 * browser.devicePixelRatio) / 2;
+            var widthA = posA.width * dasharray.fromScale;
+            var widthB = posB.width * dasharray.toScale;
+            var scaleA = [1 / tile.pixelsToTileUnits(widthA, zoom), -posA.height / 2];
+            var scaleB = [1 / tile.pixelsToTileUnits(widthB, zoom), -posB.height / 2];
+            var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_patternscale_a, scaleA);
             gl.uniform2fv(shader.u_patternscale_b, scaleB);
-            gl.uniform1f(shader.u_sdfgamma, Math.max(gammaA, gammaB));
+            gl.uniform1f(shader.u_sdfgamma, gamma);
 
         } else if (image) {
-            var factor = tile.pixelRatio / Math.pow(2, painter.transform.tileZoom - coord.z);
             gl.uniform1f(shader.u_ratio, ratio);
-            gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
-            gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);
+            gl.uniform2fv(shader.u_pattern_size_a, [
+                tile.pixelsToTileUnits(imagePosA.size[0] * image.fromScale, painter.transform.tileZoom),
+                imagePosB.size[1]
+            ]);
+            gl.uniform2fv(shader.u_pattern_size_b, [
+                tile.pixelsToTileUnits(imagePosB.size[0] * image.toScale, painter.transform.tileZoom),
+                imagePosB.size[1]
+            ]);
 
         } else {
             gl.uniform1f(shader.u_ratio, ratio);

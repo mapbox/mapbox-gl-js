@@ -350,10 +350,9 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
         ];
     }
 
-    var ratio = this.transform.scale / (1 << tile.coord.z) / tile.pixelRatio;
     var translation = [
-        translate[0] / ratio,
-        translate[1] / ratio,
+        tile.pixelsToTileUnits(translate[0], this.transform.zoom),
+        tile.pixelsToTileUnits(translate[1], this.transform.zoom),
         0
     ];
 

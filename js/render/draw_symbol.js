@@ -86,7 +86,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = tile.pixelRatio / Math.pow(2, painter.transform.zoom - tile.coord.z);
+        s = tile.pixelsToTileUnits(1, painter.transform.zoom);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(painter.transform.exMatrix);
