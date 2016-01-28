@@ -17,6 +17,8 @@ var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
 var clipLine = require('../symbol/clip_line');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
+var EXTENT = require('./buffer').EXTENT;
 
 var CollisionFeature = require('../symbol/collision_feature');
 
@@ -125,7 +127,7 @@ SymbolBucket.prototype.shaders = {
 
 SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     var tileSize = 512 * this.overscaling;
-    this.tilePixelRatio = this.tileExtent / tileSize;
+    this.tilePixelRatio = EXTENT / tileSize;
     this.compareText = {};
     this.symbolInstances = [];
     this.iconsNeedLinear = false;
@@ -176,7 +178,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
-        geometries.push(features[g].loadGeometry());
+        geometries.push(loadGeometry(features[g]));
     }
 
     if (layout['symbol-placement'] === 'line') {
@@ -251,7 +253,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
         textRepeatDistance = symbolMinDistance / 2;
 
     if (isLine) {
-        lines = clipLine(lines, 0, 0, this.tileExtent, this.tileExtent);
+        lines = clipLine(lines, 0, 0, EXTENT, EXTENT);
     }
 
     for (var i = 0; i < lines.length; i++) {
@@ -269,7 +271,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                 glyphSize,
                 textMaxBoxScale,
                 this.overscaling,
-                this.tileExtent
+                EXTENT
             );
         } else {
             anchors = [ new Anchor(line[0].x, line[0].y, 0) ];
@@ -285,7 +287,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
                 }
             }
 
-            var inside = !(anchor.x < 0 || anchor.x > this.tileExtent || anchor.y < 0 || anchor.y > this.tileExtent);
+            var inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
             if (avoidEdges && !inside) continue;
 

@@ -62,7 +62,7 @@ function drawFill(painter, source, layer, coord) {
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
-    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
@@ -137,7 +137,6 @@ function drawFill(painter, source, layer, coord) {
         gl.uniform1f(shader.u_mix, image.t);
 
         var scale = Math.pow(2, painter.transform.tileZoom - tile.coord.z);
-        var factor = tile.tileExtent / tile.tileSize;
 
         var imageSizeScaledA = [
             (imagePosA.size[0] * image.fromScale) / scale,
@@ -149,13 +148,13 @@ function drawFill(painter, source, layer, coord) {
         ];
 
         gl.uniform2fv(shader.u_patternscale_a, [
-            1 / (imageSizeScaledA[0] * factor),
-            1 / (imageSizeScaledA[1] * factor)
+            1 / (imageSizeScaledA[0] * tile.pixelRatio),
+            1 / (imageSizeScaledA[1] * tile.pixelRatio)
         ]);
 
         gl.uniform2fv(shader.u_patternscale_b, [
-            1 / (imageSizeScaledB[0] * factor),
-            1 / (imageSizeScaledB[1] * factor)
+            1 / (imageSizeScaledB[0] * tile.pixelRatio),
+            1 / (imageSizeScaledB[1] * tile.pixelRatio)
         ]);
 
         // shift images to match at tile boundaries
@@ -195,7 +194,7 @@ function drawStroke(painter, source, layer, coord) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
     gl.setPosMatrix(painter.translatePosMatrix(
-        painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom),
+        painter.calculatePosMatrix(coord, source.maxzoom),
         tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']

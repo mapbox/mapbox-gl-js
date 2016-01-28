@@ -10,7 +10,7 @@ function drawCollisionDebug(painter, layer, coord, tile) {
     var gl = painter.gl;
     var buffer = tile.buffers.collisionBoxVertex;
     var shader = painter.collisionBoxShader;
-    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent);
+    var posMatrix = painter.calculatePosMatrix(coord);
 
     gl.enable(gl.STENCIL_TEST);
     painter.enableTileClippingMask(coord);

@@ -2,6 +2,7 @@
 
 var util = require('../util/util');
 var Buffer = require('../data/buffer');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = Tile;
 
@@ -20,11 +21,10 @@ function Tile(coord, size, sourceMaxZoom) {
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
+    this.pixelRatio = EXTENT / size;
 }
 
 Tile.prototype = {
-    // todo unhardcode
-    tileExtent: 4096,
 
     /**
      * Given a coordinate position, zoom that coordinate to my zoom and
@@ -36,8 +36,8 @@ Tile.prototype = {
     positionAt: function(coord) {
         var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
         return {
-            x: (zoomedCoord.column - this.coord.x) * this.tileExtent,
-            y: (zoomedCoord.row - this.coord.y) * this.tileExtent
+            x: (zoomedCoord.column - this.coord.x) * EXTENT,
+            y: (zoomedCoord.row - this.coord.y) * EXTENT
         };
     },
 
@@ -58,7 +58,6 @@ Tile.prototype = {
 
         this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
-        this.tileExtent = data.extent;
     },
 
     /**
@@ -111,7 +110,6 @@ Tile.prototype = {
 
         this.elementGroups = null;
         this.buffers = null;
-        this.tileExtent = null;
     },
 
     redoPlacement: function(source) {

@@ -32,8 +32,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucketsBySourceLayer = {},
         i, layer, sourceLayerId, bucket;
 
-    var extent = this.extent = getExtent(data.layers);
-
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
@@ -49,8 +47,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             buffers: buffers,
             zoom: this.zoom,
             overscaling: this.overscaling,
-            collisionDebug: this.collisionDebug,
-            tileExtent: extent
+            collisionDebug: this.collisionDebug
         });
 
         bucketsById[layer.id] = bucket;
@@ -96,7 +93,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    var collisionTile = new CollisionTile(this.angle, this.pitch, extent);
+    var collisionTile = new CollisionTile(this.angle, this.pitch);
 
     for (var id in bucketsById) {
         bucket = bucketsById[id];
@@ -195,7 +192,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         callback(null, {
             elementGroups: getElementGroups(buckets),
             buffers: buffers,
-            extent: extent,
             bucketStats: stats
         }, getTransferables(buffers));
     }
@@ -210,7 +206,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     var buffers = {},
-        collisionTile = new CollisionTile(angle, pitch, this.extent);
+        collisionTile = new CollisionTile(angle, pitch);
 
     for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
         this.symbolBuckets[i].placeFeatures(collisionTile, buffers, collisionDebug);
@@ -244,14 +240,4 @@ function getTransferables(buffers) {
         buffers[k].push = null;
     }
     return transferables;
-}
-
-function getExtent(layers) {
-    var extent = 4096;
-    if (!layers) return extent;
-    for (var key in layers) {
-        var layer = layers[key];
-        if (layer && layer.extent) extent = layer.extent;
-    }
-    return extent;
 }

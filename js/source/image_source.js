@@ -6,6 +6,7 @@ var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = ImageSource;
 
@@ -71,12 +72,11 @@ ImageSource.prototype = util.inherit(Evented, {
 
         var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
 
-        var tileExtent = 4096;
         var tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
-                Math.round((zoomedCoord.column - centerCoord.column) * tileExtent),
-                Math.round((zoomedCoord.row - centerCoord.row) * tileExtent));
+                Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
+                Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
         var gl = map.painter.gl;

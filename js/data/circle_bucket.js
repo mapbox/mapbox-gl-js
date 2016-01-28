@@ -2,6 +2,8 @@
 
 var Bucket = require('./bucket');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
+var EXTENT = require('./buffer').EXTENT;
 
 module.exports = CircleBucket;
 
@@ -39,7 +41,7 @@ CircleBucket.prototype.shaders = {
 
 CircleBucket.prototype.addFeature = function(feature) {
 
-    var geometries = feature.loadGeometry()[0];
+    var geometries = loadGeometry(feature)[0];
     for (var j = 0; j < geometries.length; j++) {
         var group = this.makeRoomFor('circle', 4);
 
@@ -47,7 +49,7 @@ CircleBucket.prototype.addFeature = function(feature) {
         var y = geometries[j].y;
 
         // Do not include points that are outside the tile boundaries.
-        if (x < 0 || x >= this.tileExtent || y < 0 || y >= this.tileExtent) continue;
+        if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
 
         // this geometry will be of the Point type, and we'll derive
         // two triangles from it.

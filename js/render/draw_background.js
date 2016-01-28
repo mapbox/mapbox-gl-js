@@ -3,6 +3,7 @@
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
 var util = require('../util/util');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = drawBackground;
 
@@ -34,7 +35,7 @@ function drawBackground(painter, source, layer) {
 
         gl.uniform1f(shader.u_mix, image.t);
 
-        var factor = (painter.tileExtent / transform.tileSize) / Math.pow(2, 0);
+        var factor = (EXTENT / transform.tileSize) / Math.pow(2, 0);
 
         gl.uniform2fv(shader.u_patternscale_a, [
             1 / (imagePosA.size[0] * factor * image.fromScale),
@@ -69,7 +70,7 @@ function drawBackground(painter, source, layer) {
     // we don't have so much going on in the stencil buffer.
     var coords = pyramid.coveringTiles(transform);
     for (var c = 0; c < coords.length; c++) {
-        gl.setPosMatrix(painter.calculatePosMatrix(coords[c], painter.tileExtent));
+        gl.setPosMatrix(painter.calculatePosMatrix(coords[c]));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 

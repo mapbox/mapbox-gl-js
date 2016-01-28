@@ -132,18 +132,15 @@ module.exports = function drawLine(painter, source, layer, coords) {
         painter.enableTileClippingMask(coord);
 
         // set uniforms that are different for each tile
-        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
         gl.setPosMatrix(posMatrix);
         gl.setExMatrix(painter.transform.exMatrix);
-        var ratio = painter.transform.scale / (1 << coord.z) / (tile.tileExtent / tile.tileSize);
+        var ratio = painter.transform.scale / (1 << coord.z) / tile.pixelRatio;
 
 
         if (dasharray) {
-            // how much the tile is overscaled by
-            var overscaling = tile.tileSize / painter.transform.tileSize;
-
-            var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - coord.z) / 8 * overscaling;
+            var patternratio = Math.pow(2, Math.floor(Math.log(painter.transform.scale) / Math.LN2) - coord.z) / tile.pixelRatio;
             var scaleA = [patternratio / posA.width / dasharray.fromScale, -posA.height / 2];
             var gammaA = painter.lineAtlas.width / (dasharray.fromScale * posA.width * 256 * browser.devicePixelRatio) / 2;
             var scaleB = [patternratio / posB.width / dasharray.toScale, -posB.height / 2];
@@ -154,7 +151,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(shader.u_sdfgamma, Math.max(gammaA, gammaB));
 
         } else if (image) {
-            var factor = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.tileZoom - coord.z);
+            var factor = tile.pixelRatio / Math.pow(2, painter.transform.tileZoom - coord.z);
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_pattern_size_a, [imagePosA.size[0] * factor * image.fromScale, imagePosB.size[1] ]);
             gl.uniform2fv(shader.u_pattern_size_b, [imagePosB.size[0] * factor * image.toScale, imagePosB.size[1] ]);

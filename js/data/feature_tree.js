@@ -4,6 +4,8 @@ var rbush = require('rbush');
 var Point = require('point-geometry');
 var vt = require('vector-tile');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
+var EXTENT = require('./buffer').EXTENT;
 
 module.exports = FeatureTree;
 
@@ -16,6 +18,11 @@ function FeatureTree(coord, overscaling) {
 }
 
 FeatureTree.prototype.insert = function(bbox, layers, feature) {
+    var scale = EXTENT / feature.extent;
+    bbox[0] *= scale;
+    bbox[1] *= scale;
+    bbox[2] *= scale;
+    bbox[3] *= scale;
     bbox.layers = layers;
     bbox.feature = feature;
     this.toBeInserted.push(bbox);
@@ -39,7 +46,7 @@ FeatureTree.prototype.query = function(args, callback) {
     var radius, bounds;
     if (typeof x !== 'undefined' && typeof y !== 'undefined') {
         // a point (or point+radius) query
-        radius = (params.radius || 0) * (args.tileExtent || 4096) / args.scale;
+        radius = (params.radius || 0) * EXTENT / args.scale;
         bounds = [x - radius, y - radius, x + radius, y + radius];
     } else {
         // a rectangle query
@@ -54,9 +61,9 @@ FeatureTree.prototype.query = function(args, callback) {
 
         if (params.$type && type !== params.$type)
             continue;
-        if (radius && !geometryContainsPoint(feature.loadGeometry(), type, new Point(x, y), radius))
+        if (radius && !geometryContainsPoint(loadGeometry(feature), type, new Point(x, y), radius))
             continue;
-        else if (!geometryIntersectsBox(feature.loadGeometry(), type, bounds))
+        else if (!geometryIntersectsBox(loadGeometry(feature), type, bounds))
             continue;
 
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);

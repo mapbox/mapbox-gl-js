@@ -46,7 +46,9 @@ function GeoJSONSource(options) {
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.geojsonVtOptions = {maxZoom: this.maxzoom};
+    this.geojsonVtOptions = {
+        maxZoom: this.maxzoom
+    };
     if (options.buffer !== undefined) this.geojsonVtOptions.buffer = options.buffer;
     if (options.tolerance !== undefined) this.geojsonVtOptions.tolerance = options.tolerance;
 

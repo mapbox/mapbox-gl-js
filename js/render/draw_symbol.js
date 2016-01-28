@@ -39,7 +39,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.icon.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[i], tile.tileExtent, source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
     }
@@ -52,7 +52,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.glyph.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[j], tile.tileExtent, source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }
@@ -86,7 +86,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.coord.z);
+        s = tile.pixelRatio / Math.pow(2, painter.transform.zoom - tile.coord.z);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(painter.transform.exMatrix);

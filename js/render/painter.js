@@ -5,7 +5,7 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
-var assert = require('assert');
+var EXTENT = require('../data/buffer').EXTENT;
 
 /*
  * Initialize a new painter object.
@@ -128,29 +128,6 @@ Painter.prototype.setup = function() {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
-    this.setExtent(4096);
-
-    // The debugTextBuffer is used to draw tile IDs for debugging
-    this.debugTextBuffer = gl.createBuffer();
-    this.debugTextBuffer.itemSize = 2;
-};
-
-/**
- * Rebind the necessary buffers to render at a different extent than
- * the current one. No-ops if the extent is not changing.
- *
- * @param {number} newExtent
- * @example
- * this.setExtent(4096);
- * @private
- */
-Painter.prototype.setExtent = function(newExtent) {
-    if (!newExtent || newExtent === this.tileExtent) return;
-
-    this.tileExtent = newExtent;
-
-    var gl = this.gl;
-
     // The tileExtentBuffer is used when drawing to a full *tile*
     this.tileExtentBuffer = gl.createBuffer();
     this.tileExtentBuffer.itemSize = 4;
@@ -161,9 +138,9 @@ Painter.prototype.setExtent = function(newExtent) {
         new Int16Array([
             // tile coord x, tile coord y, texture coord x, texture coord y
             0, 0, 0, 0,
-            this.tileExtent, 0, 32767, 0,
-            0, this.tileExtent, 0, 32767,
-            this.tileExtent, this.tileExtent,  32767, 32767
+            EXTENT, 0, 32767, 0,
+            0, EXTENT, 0, 32767,
+            EXTENT, EXTENT,  32767, 32767
         ]),
         gl.STATIC_DRAW);
 
@@ -175,8 +152,12 @@ Painter.prototype.setExtent = function(newExtent) {
     gl.bufferData(
         gl.ARRAY_BUFFER,
         new Int16Array([
-            0, 0, this.tileExtent - 1, 0, this.tileExtent - 1, this.tileExtent - 1, 0, this.tileExtent - 1, 0, 0]),
+            0, 0, EXTENT - 1, 0, EXTENT - 1, EXTENT - 1, 0, EXTENT - 1, 0, 0]),
         gl.STATIC_DRAW);
+
+    // The debugTextBuffer is used to draw tile IDs for debugging
+    this.debugTextBuffer = gl.createBuffer();
+    this.debugTextBuffer.itemSize = 2;
 };
 
 /*
@@ -225,7 +206,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, this.tileExtent, sourceMaxZoom));
+        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, sourceMaxZoom));
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -369,10 +350,10 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
         ];
     }
 
-    var tilePixelRatio = this.transform.scale / (1 << tile.coord.z) / (tile.tileExtent / tile.tileSize);
+    var ratio = this.transform.scale / (1 << tile.coord.z) / tile.pixelRatio;
     var translation = [
-        translate[0] / tilePixelRatio,
-        translate[1] / tilePixelRatio,
+        translate[0] / ratio,
+        translate[1] / ratio,
         0
     ];
 
@@ -387,8 +368,7 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
  * @param {Object} transform
  * @private
  */
-Painter.prototype.calculatePosMatrix = function(coord, tileExtent, maxZoom) {
-    assert(tileExtent);
+Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
 
     if (coord instanceof TileCoord) {
         coord = coord.toCoordinate();
@@ -413,7 +393,7 @@ Painter.prototype.calculatePosMatrix = function(coord, tileExtent, maxZoom) {
 
     mat4.identity(posMatrix);
     mat4.translate(posMatrix, posMatrix, [x * scale, y * scale, 0]);
-    mat4.scale(posMatrix, posMatrix, [ scale / tileExtent, scale / tileExtent, 1 ]);
+    mat4.scale(posMatrix, posMatrix, [ scale / EXTENT, scale / EXTENT, 1 ]);
     mat4.multiply(posMatrix, transform.projMatrix, posMatrix);
 
     return new Float32Array(posMatrix);
