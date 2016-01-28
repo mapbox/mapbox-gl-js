@@ -76,21 +76,6 @@ $ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
 
 See [docs/README.md](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
-## Releasing
-
-To prepare a release:
-
-* Run `git checkout master && git merge origin/mb-pages` to merge `mb-pages` into `master`
-* Update `CHANGELOG.md` with all changes since the last release. A list of commits is available on the [GitHub Releases page](https://github.com/mapbox/mapbox-gl-js/releases) through a link that says "X commits to master since this release"
-* Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`
-* Run `git commit -a -m vX.Y.Z` to commit changes
-* Run `git tag vX.Y.Z` to tag the release
-* Run `git push origin && git push origin --tags` to push the new commit and tag to GitHub
-* Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the tag you just pushed and the text in `CHANGELOG.md`
-* The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. Wait for this build to finish successfully before proceeding.
-* Run `git checkout mb-pages && git merge master && git push origin mb-pages && git checkout master` to merge `master` into `mb-pages` and publish documentation.
-* Run `npm install && npm publish` to publish the release to npm.
-
 ## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
 
 ## Recommended Reading
