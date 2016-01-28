@@ -12,7 +12,7 @@ module.exports = GeoJSONSource;
  * Create a GeoJSON data source instance given an options object
  * @class GeoJSONSource
  * @param {Object} [options]
- * @param {Object|string} options.data A GeoJSON data object, a JSON.stringified GeoJSON data object (slightly faster than former option), or URL to it (preferable in case of large GeoJSON files).
+ * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
  * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
  * @param {number} [options.buffer] Tile buffer on each side.
  * @param {number} [options.tolerance] Simplification tolerance (higher means simpler).
@@ -81,7 +81,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     /**
      * Update source geojson data and rerender map
      *
-     * @param {Object|string} data A GeoJSON data object, a JSON.stringified GeoJSON data object (slightly faster than former option), or URL to it (preferable in case of large GeoJSON files).
+     * @param {Object|string} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
      * @returns {GeoJSONSource} this
      */
     setData: function(data) {
@@ -129,7 +129,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _updateData: function() {
         this._dirty = false;
         var data = this._data;
-        if (typeof data === 'string' && typeof window != 'undefined' && data.charAt(0) !== '{') {
+        if (typeof data === 'string' && typeof window != 'undefined') {
             data = urlResolve(window.location.href, data);
         }
         this.workerID = this.dispatcher.send('parse geojson', {

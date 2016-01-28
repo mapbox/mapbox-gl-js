@@ -77,54 +77,6 @@ test('remove tile', function(t) {
     });
 });
 
-test('geojson', function(t) {
-    var geojson = {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [-122.48369693756104, 37.83381888486939],
-                    [-122.48348236083984, 37.83317489144141]
-                ]
-            }
-        }]
-    };
-
-    // test parsing of GeoJSON in native and stringified form.
-    [geojson, JSON.stringify(geojson)].forEach(function (data) {
-        t.test('parses geojson', function(t) {
-            var worker = new Worker(_self);
-
-            worker.loaded = {
-                source: {
-                    '0': {}
-                }
-            };
-
-            t.deepEqual(worker.geoJSONIndexes, {});
-            worker['parse geojson']({
-                data: data,
-                tileSize: 512,
-                source: "test",
-                geojsonVtOptions: { maxZoom: 20 },
-                cluster: false,
-                superclusterOptions: {
-                    maxZoom: 19,
-                    extent: 4096,
-                    radius: 400,
-                    log: false
-                }
-            }, function() {
-                t.notDeepEqual(worker.geoJSONIndexes, {});
-                t.end();
-            });
-        });
-    });
-});
-
 test('after', function(t) {
     server.close(t.end);
 });

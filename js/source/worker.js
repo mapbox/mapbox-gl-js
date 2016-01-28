@@ -122,11 +122,7 @@ util.extend(Worker.prototype, {
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
         if (typeof params.data === 'string') {
-            if (params.data.charAt(0) === '{') {
-                indexData(null, JSON.parse(params.data));
-            } else {
-                ajax.getJSON(params.data, indexData);
-            }
+            ajax.getJSON(params.data, indexData);
         }
         else indexData(null, params.data);
     },
