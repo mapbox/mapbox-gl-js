@@ -5,8 +5,6 @@ var util = require('../util/util');
 
 module.exports = CircleBucket;
 
-var EXTENT = 4096;
-
 /**
  * Circles are represented by two triangles.
  *
@@ -49,7 +47,7 @@ CircleBucket.prototype.addFeature = function(feature) {
         var y = geometries[j].y;
 
         // Do not include points that are outside the tile boundaries.
-        if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
+        if (x < 0 || x >= this.tileExtent || y < 0 || y >= this.tileExtent) continue;
 
         // this geometry will be of the Point type, and we'll derive
         // two triangles from it.

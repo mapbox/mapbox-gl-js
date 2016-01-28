@@ -93,14 +93,14 @@ Style.prototype = util.inherit(Evented, {
     _validateLayer: function(layer) {
         var source = this.sources[layer.source];
 
-        if (!layer['source-layer']) return;
+        if (!layer.sourceLayer) return;
         if (!source) return;
         if (!source.vectorLayerIds) return;
 
-        if (source.vectorLayerIds.indexOf(layer['source-layer']) === -1) {
+        if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
             this.fire('error', {
                 error: new Error(
-                    'Source layer "' + layer['source-layer'] + '" ' +
+                    'Source layer "' + layer.sourceLayer + '" ' +
                     'does not exist on source "' + source.id + '" ' +
                     'as specified by style layer "' + layer.id + '"'
                 )
@@ -123,26 +123,28 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _resolve: function() {
-        var id, layer;
+        var layer, layerJSON;
 
         this._layers = {};
-        this._order  = [];
+        this._order  = this.stylesheet.layers.map(function(layer) {
+            return layer.id;
+        });
 
+        // resolve all layers WITHOUT a ref
         for (var i = 0; i < this.stylesheet.layers.length; i++) {
-            layer = new StyleLayer(this.stylesheet.layers[i]);
+            layerJSON = this.stylesheet.layers[i];
+            if (layerJSON.ref) continue;
+            layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            this._order.push(layer.id);
         }
 
-        // Resolve layout properties.
-        for (id in this._layers) {
-            this._layers[id].resolveLayout();
-        }
-
-        // Resolve reference and paint properties.
-        for (id in this._layers) {
-            this._layers[id].resolveReference(this._layers);
-            this._layers[id].resolvePaint();
+        // resolve all layers WITH a ref
+        for (var j = 0; j < this.stylesheet.layers.length; j++) {
+            layerJSON = this.stylesheet.layers[j];
+            if (!layerJSON.ref) continue;
+            var refLayer = this.getLayer(layerJSON.ref);
+            layer = StyleLayer.create(layerJSON, refLayer);
+            this._layers[layer.id] = layer;
         }
 
         this._groupLayers();
@@ -170,7 +172,7 @@ Style.prototype = util.inherit(Evented, {
 
     _broadcastLayers: function() {
         this.dispatcher.broadcast('set layers', this._order.map(function(id) {
-            return this._layers[id].json();
+            return this._layers[id].serialize();
         }, this));
     },
 
@@ -200,7 +202,8 @@ Style.prototype = util.inherit(Evented, {
         for (id in this._layers) {
             var layer = this._layers[id];
 
-            if (layer.recalculate(z, this.zoomHistory) && layer.source) {
+            layer.recalculate(z, this.zoomHistory);
+            if (!layer.isHidden(z) && layer.source) {
                 this.sources[layer.source].used = true;
             }
         }
@@ -412,7 +415,7 @@ Style.prototype = util.inherit(Evented, {
                     return this._layers[feature.layer] !== undefined;
                 }.bind(this))
                 .map(function(feature) {
-                    feature.layer = this._layers[feature.layer].json();
+                    feature.layer = this._layers[feature.layer].serialize();
                     return feature;
                 }.bind(this)));
         }.bind(this));

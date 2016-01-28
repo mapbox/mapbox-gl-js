@@ -53,7 +53,7 @@ function checkMaxAngle(line, anchor, labelLength, windowSize, maxAngle) {
 
         var angleDelta = prev.angleTo(current) - current.angleTo(next);
         // restrict angle to -pi..pi range
-        angleDelta = ((angleDelta + 3 * Math.PI) % (Math.PI * 2)) - Math.PI;
+        angleDelta = Math.abs(((angleDelta + 3 * Math.PI) % (Math.PI * 2)) - Math.PI);
 
         recentCorners.push({
             distance: anchorDistance,
@@ -67,7 +67,7 @@ function checkMaxAngle(line, anchor, labelLength, windowSize, maxAngle) {
         }
 
         // the sum of angles within the window area exceeds the maximum allowed value. check fails.
-        if (Math.abs(recentAngleDelta) > maxAngle) return false;
+        if (recentAngleDelta > maxAngle) return false;
 
         index++;
         anchorDistance += current.dist(next);

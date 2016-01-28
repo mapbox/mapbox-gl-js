@@ -96,13 +96,13 @@ TouchZoomRotate.prototype = {
             this._drainInertiaBuffer();
             this._inertia.push([Date.now(), scale, p]);
 
-            map.easeTo(param);
+            map.easeTo(param, { originalEvent: e });
         }
 
         e.preventDefault();
     },
 
-    _onEnd: function () {
+    _onEnd: function (e) {
         document.removeEventListener('touchmove', this._onMove);
         document.removeEventListener('touchend', this._onEnd);
         this._drainInertiaBuffer();
@@ -111,7 +111,7 @@ TouchZoomRotate.prototype = {
             map = this._map;
 
         if (inertia.length < 2) {
-            map.snapToNorth();
+            map.snapToNorth({}, { originalEvent: e });
             return;
         }
 
@@ -124,7 +124,7 @@ TouchZoomRotate.prototype = {
             p = last[2];
 
         if (scaleDuration === 0 || lastScale === firstScale) {
-            map.snapToNorth();
+            map.snapToNorth({}, { originalEvent: e });
             return;
         }
 
@@ -151,7 +151,7 @@ TouchZoomRotate.prototype = {
             duration: duration,
             easing: inertiaEasing,
             around: map.unproject(p)
-        });
+        }, { originalEvent: e });
     },
 
     _drainInertiaBuffer: function() {

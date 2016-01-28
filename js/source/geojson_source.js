@@ -16,6 +16,10 @@ module.exports = GeoJSONSource;
  * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
  * @param {number} [options.buffer] Tile buffer on each side.
  * @param {number} [options.tolerance] Simplification tolerance (higher means simpler).
+ * @param {number} [options.cluster] If the data is a collection of point features, setting this to true clusters the points by radius into groups.
+ * @param {number} [options.clusterRadius=400] Radius of each cluster when clustering points, relative to `4096` tile.
+ * @param {number} [options.clusterMaxZoom] Max zoom to cluster points on. Defaults to one zoom less than `maxzoom` (so that last zoom features are not clustered).
+
  * @example
  * var sourceObj = new mapboxgl.GeoJSONSource({
  *    data: {
@@ -42,9 +46,17 @@ function GeoJSONSource(options) {
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.geojsonVtOptions = { maxZoom: this.maxzoom };
+    this.geojsonVtOptions = {maxZoom: this.maxzoom};
     if (options.buffer !== undefined) this.geojsonVtOptions.buffer = options.buffer;
     if (options.tolerance !== undefined) this.geojsonVtOptions.tolerance = options.tolerance;
+
+    this.cluster = options.cluster || false;
+    this.superclusterOptions = {
+        maxZoom: Math.max(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
+        extent: 4096,
+        radius: options.clusterRadius || 400,
+        log: false
+    };
 
     this._pyramid = new TilePyramid({
         tileSize: 512,
@@ -124,7 +136,9 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             data: data,
             tileSize: 512,
             source: this.id,
-            geojsonVtOptions: this.geojsonVtOptions
+            geojsonVtOptions: this.geojsonVtOptions,
+            cluster: this.cluster,
+            superclusterOptions: this.superclusterOptions
         }, function(err) {
             this._loaded = true;
             if (err) {

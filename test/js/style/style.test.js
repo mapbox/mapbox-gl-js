@@ -7,8 +7,6 @@ var path = require('path');
 var sinon = require('sinon');
 var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
-var LayoutProperties = require('../../../js/style/layout_properties');
-var PaintProperties = require('../../../js/style/paint_properties');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
@@ -768,7 +766,9 @@ test('Style#featuresAt', function(t) {
             "paint": {
                 "line-color": "red"
             },
-            "something": "else"
+            "metadata": {
+                "something": "else"
+            }
         }, {
             "id": "landref",
             "ref": "land",
@@ -837,13 +837,8 @@ test('Style#featuresAt', function(t) {
             t.test('includes layout properties', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
-
                     var layout = results[0].layer.layout;
-                    t.deepEqual(layout, {'line-cap': 'round'});
-                    t.deepEqual(
-                        Object.getPrototypeOf(layout),
-                        LayoutProperties.line.prototype);
-
+                    t.deepEqual(layout['line-cap'], 'round');
                     t.end();
                 });
             });
@@ -851,13 +846,7 @@ test('Style#featuresAt', function(t) {
             t.test('includes paint properties', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
-
-                    var paint = results[0].layer.paint;
-                    t.deepEqual(paint, {'line-color': [ 1, 0, 0, 1 ]});
-                    t.deepEqual(
-                        Object.getPrototypeOf(paint),
-                        PaintProperties.line.prototype);
-
+                    t.deepEqual(results[0].layer.paint['line-color'], [ 1, 0, 0, 1 ]);
                     t.end();
                 });
             });
@@ -877,12 +866,12 @@ test('Style#featuresAt', function(t) {
                 });
             });
 
-            t.test('includes arbitrary keys', function(t) {
+            t.test('includes metadata', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
 
                     var layer = results[0].layer;
-                    t.equal(layer.something, 'else');
+                    t.equal(layer.metadata.something, 'else');
 
                     t.end();
                 });

@@ -54,15 +54,21 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  * RGBA, return a version for which the RGB components are multiplied
  * by the A (alpha) component
  *
- * @param {Array<number>} c color array
+ * @param {Array<number>} color color array
+ * @param {number} [additionalOpacity] additional opacity to be multiplied into
+ *     the color's alpha component.
  * @returns {Array<number>} premultiplied color array
  * @private
  */
-exports.premultiply = function (c) {
-    c[0] *= c[3];
-    c[1] *= c[3];
-    c[2] *= c[3];
-    return c;
+exports.premultiply = function (color, additionalOpacity) {
+    if (!color) return null;
+    var opacity = color[3] * additionalOpacity;
+    return [
+        color[0] * opacity,
+        color[1] * opacity,
+        color[2] * opacity,
+        opacity
+    ];
 };
 
 /**
@@ -384,4 +390,42 @@ exports.getCoordinatesCenter = function(coords) {
     var dMax = Math.max(dx, dy);
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
         .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
+};
+
+/**
+ * Determine if a string ends with a particular substring
+ * @param {string} string
+ * @param {string} suffix
+ * @returns {boolean}
+ * @private
+ */
+exports.endsWith = function(string, suffix) {
+    return string.indexOf(suffix, string.length - suffix.length) !== -1;
+};
+
+/**
+ * Determine if a string starts with a particular substring
+ * @param {string} string
+ * @param {string} prefix
+ * @returns {boolean}
+ * @private
+ */
+exports.startsWith = function(string, prefix) {
+    return string.indexOf(prefix) === 0;
+};
+
+/**
+ * Create an object by mapping all the values of an existing object while
+ * preserving their keys.
+ * @param {Object} input
+ * @param {Function} iterator
+ * @returns {Object}
+ * @private
+ */
+exports.mapObject = function(input, iterator, context) {
+    var output = {};
+    for (var key in input) {
+        output[key] = iterator.call(context || this, input[key], key, input);
+    }
+    return output;
 };

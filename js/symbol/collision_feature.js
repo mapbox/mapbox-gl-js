@@ -21,7 +21,7 @@ module.exports = CollisionFeature;
  *
  * @private
  */
-function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
+function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine, straight) {
 
     var y1 = shaped.top * boxScale - padding;
     var y2 = shaped.bottom * boxScale + padding;
@@ -40,7 +40,15 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
         // set minimum box height to avoid very many small labels
         height = Math.max(10 * boxScale, height);
 
-        this._addLineCollisionBoxes(line, anchor, length, height);
+        if (straight) {
+            // used for icon labels that are aligned with the line, but don't curve along it
+            var vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
+            var straightLine = [anchor.sub(vector), anchor.add(vector)];
+            this._addLineCollisionBoxes(straightLine, anchor, 0, length, height);
+        } else {
+            // used for text labels that curve along a line
+            this._addLineCollisionBoxes(line, anchor, anchor.segment, length, height);
+        }
 
     } else {
         this.boxes.push(new CollisionBox(new Point(anchor.x, anchor.y), x1, y1, x2, y2, Infinity));
@@ -57,7 +65,7 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine) {
  *
  * @private
  */
-CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, labelLength, boxSize) {
+CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, segment, labelLength, boxSize) {
     var step = boxSize / 2;
     var nBoxes = Math.floor(labelLength / step);
 
@@ -68,7 +76,7 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, label
     var bboxes = this.boxes;
 
     var p = anchor;
-    var index = anchor.segment + 1;
+    var index = segment + 1;
     var anchorDistance = firstBoxOffset;
 
     // move backwards along the line to the first segment the label appears on
