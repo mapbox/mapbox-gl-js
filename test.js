@@ -294,7 +294,7 @@ test('!in, $type', function(t) {
 
 test('any', function(t) {
     var f1 = filter(['any']);
-    t.equal(f1({properties: {foo: 1}}), false);
+    t.equal(f1({properties: {foo: 1}}), true);
 
     var f2 = filter(['any', ['==', 'foo', 1]]);
     t.equal(f2({properties: {foo: 1}}), true);

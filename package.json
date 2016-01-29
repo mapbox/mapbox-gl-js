@@ -5,10 +5,19 @@
   "description": "Creates filtering function for vector tile features",
   "dependencies": {},
   "devDependencies": {
+    "eslint": "^1.10.3",
+    "eslint-config-mourner": "^1.0.1",
     "tape": "^3.2.1"
   },
   "scripts": {
+    "pretest": "eslint index.js test.js",
     "test": "tape test.js"
+  },
+  "eslintConfig": {
+    "extends": "mourner",
+    "rules": {
+        "space-before-function-paren": [2, "never"]
+    }
   },
   "repository": {
     "type": "git",

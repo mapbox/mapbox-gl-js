@@ -1,66 +1,8 @@
 'use strict';
 
-var VectorTileFeatureTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
+module.exports = createFilter;
 
-function infix(operator) {
-    return function(_, key, value) {
-        if (key === '$type') {
-            return 't' + operator + VectorTileFeatureTypes.indexOf(value);
-        } else {
-            return 'p[' + JSON.stringify(key) + ']' + operator + JSON.stringify(value);
-        }
-    };
-}
-
-function strictInfix(operator) {
-    var nonstrictInfix = infix(operator);
-    return function(_, key, value) {
-        if (key === '$type') {
-            return nonstrictInfix(_, key, value);
-        } else {
-            return 'typeof(p[' + JSON.stringify(key) + ']) === typeof(' + JSON.stringify(value) + ') && ' +
-                nonstrictInfix(_, key, value);
-        }
-    };
-}
-
-var operators = {
-    '==': infix('==='),
-    '!=': infix('!=='),
-    '>': strictInfix('>'),
-    '<': strictInfix('<'),
-    '<=': strictInfix('<='),
-    '>=': strictInfix('>='),
-    'in': function(_, key) {
-        return '(function(){' + Array.prototype.slice.call(arguments, 2).map(function(value) {
-            return 'if (' + operators['=='](_, key, value) + ') return true;';
-        }).join('') + 'return false;})()';
-    },
-    '!in': function() {
-        return '!(' + operators.in.apply(this, arguments) + ')';
-    },
-    'any': function() {
-        return Array.prototype.slice.call(arguments, 1).map(function(filter) {
-            return '(' + compile(filter) + ')';
-        }).join('||') || 'false';
-    },
-    'all': function() {
-        return Array.prototype.slice.call(arguments, 1).map(function(filter) {
-            return '(' + compile(filter) + ')';
-        }).join('&&') || 'true';
-    },
-    'none': function() {
-        return '!(' + operators.any.apply(this, arguments) + ')';
-    }
-};
-
-function compile(filter) {
-    return operators[filter[0]].apply(filter, filter);
-}
-
-function truth() {
-    return true;
-}
+var types = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
 /**
  * Given a filter expressed as nested arrays, return a new function
@@ -70,9 +12,38 @@ function truth() {
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */
-module.exports = function (filter) {
-    if (!filter) return truth;
-    var filterStr = 'var p = f.properties || f.tags || {}, t = f.type; return ' + compile(filter) + ';';
-    // jshint evil: true
-    return new Function('f', filterStr);
-};
+function createFilter(filter) {
+    return new Function('f', 'return ' + compile(filter));
+}
+
+function compile(filter) {
+    if (!filter || filter.length <= 1) return 'true';
+    var op = filter[0];
+    var str =
+        op === '==' ? compare(filter[1], filter[2], '===', false) :
+        op === '!=' ? compare(filter[1], filter[2], '!==', false) :
+        op === '<' ||
+        op === '>' ||
+        op === '<=' ||
+        op === '>=' ? compare(filter[1], filter[2], op, true) :
+        op === 'any' ? filter.slice(1).map(compile).join('||') :
+        op === 'all' ? filter.slice(1).map(compile).join('&&') :
+        op === 'none' ? '!(' + filter.slice(1).map(compile).join('||') + ')' :
+        op === 'in' ? compileIn(filter[1], filter.slice(2)) :
+        op === '!in' ? '!(' + compileIn(filter[1], filter.slice(2)) + ')' :
+        'true';
+    return '(' + str + ')';
+}
+
+function valueExpr(key) {
+    return key === '$type' ? 'f.type' : '(f.properties || {})[' + JSON.stringify(key) + ']';
+}
+function compare(key, val, op, checkType) {
+    var left = valueExpr(key);
+    var right = key === '$type' ? types.indexOf(val) : JSON.stringify(val);
+    return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
+}
+function compileIn(key, values) {
+    if (key === '$type') values = values.map(types.indexOf.bind(types));
+    return JSON.stringify(values) + '.indexOf(' + valueExpr(key) + ') !== -1';
+}
