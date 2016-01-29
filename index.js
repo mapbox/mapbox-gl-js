@@ -17,8 +17,9 @@ function createFilter(filter) {
 }
 
 function compile(filter) {
-    if (!filter || filter.length <= 1) return 'true';
+    if (!filter) return 'true';
     var op = filter[0];
+    if (filter.length <= 1) return op === 'any' ? 'false' : 'true';
     var str =
         op === '==' ? compare(filter[1], filter[2], '===', false) :
         op === '!=' ? compare(filter[1], filter[2], '!==', false) :
