@@ -7,7 +7,9 @@
   "devDependencies": {
     "eslint": "^1.10.3",
     "eslint-config-mourner": "^1.0.1",
-    "tape": "^3.2.1"
+    "pbf": "^1.3.5",
+    "tape": "^3.2.1",
+    "vector-tile": "^1.2.0"
   },
   "scripts": {
     "pretest": "eslint index.js test.js",
@@ -16,7 +18,10 @@
   "eslintConfig": {
     "extends": "mourner",
     "rules": {
-        "space-before-function-paren": [2, "never"]
+      "space-before-function-paren": [
+        2,
+        "never"
+      ]
     }
   },
   "repository": {
