@@ -5,15 +5,17 @@ var t = require('tape'),
     glob = require('glob'),
     fs = require('fs'),
     path = require('path'),
-    validate = require('../').validate;
+    validate = require('../').validate,
+    styleSpecs = require('../reference'),
+    ParsingError = require('../').ParsingError,
+    parseStyle = require('../lib/parse_style');
 
 var UPDATE = !!process.env.UPDATE;
 
 glob.sync(__dirname + '/fixture/*.input.json').forEach(function(file) {
     t(path.basename(file), function(t) {
         var outputfile = file.replace('.input', '.output');
-        var style = fs.readFileSync(file);
-        var result = validate(style);
+        var result = validate(style, styleSpecs['v' + style.version]);
         if (UPDATE) fs.writeFileSync(outputfile, JSON.stringify(result, null, 2));
         var expect = JSON.parse(fs.readFileSync(outputfile));
         t.deepEqual(result, expect);
