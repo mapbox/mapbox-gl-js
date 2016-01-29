@@ -15,28 +15,12 @@ exports.diff = require('./lib/diff');
 exports.ValidationError = require('./lib/validation_error');
 exports.ParsingError = require('./lib/parsing_error');
 
-exports.validate = validateStyleWithInferredSpec;
-exports.validate.parsed = validateStyleWithInferredSpec;
-exports.validate.latest = require('./lib//validate/validate_style');
+exports.validate = require('./lib/validate_style_inferring_spec');
+exports.validate.parsed = require('./lib/validate_style_inferring_spec');
+exports.validate.latest = require('./lib/validate_style');
 
 exports.validateSource = require('./lib/validate/validate_source');
 exports.validateLayer = require('./lib/validate/validate_layer');
 exports.validateFilter = require('./lib/validate/validate_filter');
 exports.validatePaintProperty = require('./lib/validate/validate_paint_property');
 exports.validateLayoutProperty = require('./lib/validate/validate_layout_property');
-
-var validateStyle = require('./lib/validate/validate_style');
-var parseStyle = require('./lib/parse_style');
-function validateStyleWithInferredSpec(style, styleSpec) {
-    var result;
-    try {
-        var style = parseStyle(style);
-        return validateStyle(style, exports['v' + style.version]);
-    } catch (e) {
-        if (e instanceof exports.ParsingError) {
-            return [e];
-        } else {
-            throw e;
-        }
-    }
-}
