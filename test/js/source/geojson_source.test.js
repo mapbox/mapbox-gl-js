@@ -173,7 +173,7 @@ test('GeoJSONSource#update', function(t) {
             source.update(transform);
 
             source.once('change', function() {
-                t.deepEqual(source._pyramid.renderedIDs(), []);
+                t.deepEqual(source._pyramid.renderedCoords(), []);
                 t.end();
             });
         });

@@ -13,13 +13,12 @@ module.exports = Tile;
  * @param {number} size
  * @private
  */
-function Tile(coord, size, sourceMaxZoom) {
+function Tile(coord, size) {
     this.coord = coord;
     this.uid = util.uniqueId();
     this.loaded = false;
     this.uses = 0;
     this.tileSize = size;
-    this.sourceMaxZoom = sourceMaxZoom;
 }
 
 Tile.prototype = {
@@ -34,7 +33,7 @@ Tile.prototype = {
      * @private
      */
     positionAt: function(coord) {
-        var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
+        var zoomedCoord = coord.zoomTo(this.coord.dataZ);
         return {
             x: (zoomedCoord.column - this.coord.x) * this.tileExtent,
             y: (zoomedCoord.row - this.coord.y) * this.tileExtent

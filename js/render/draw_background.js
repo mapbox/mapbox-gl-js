@@ -1,7 +1,7 @@
 'use strict';
 
 var TilePyramid = require('../source/tile_pyramid');
-var pyramid = new TilePyramid({ tileSize: 512 });
+var pyramid = new TilePyramid({ tileSize: 512, maxzoom: Infinity });
 var util = require('../util/util');
 
 module.exports = drawBackground;

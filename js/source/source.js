@@ -5,7 +5,6 @@ var ajax = require('../util/ajax');
 var browser = require('../util/browser');
 var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
-var TileCoord = require('./tile_coord');
 
 exports._loadTileJSON = function(options) {
     var loaded = function(err, tileJSON) {
@@ -65,7 +64,7 @@ exports._getTile = function(coord) {
 
 exports._getVisibleCoordinates = function() {
     if (!this._pyramid) return [];
-    else return this._pyramid.renderedIDs().map(TileCoord.fromID);
+    return this._pyramid.renderedCoords();
 };
 
 exports._vectorFeaturesAt = function(coord, params, callback) {

@@ -206,7 +206,7 @@ Painter.prototype.clearDepth = function() {
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
-Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
+Painter.prototype._renderTileClippingMasks = function(coords) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
@@ -225,7 +225,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, this.tileExtent, sourceMaxZoom));
+        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, this.tileExtent));
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -299,7 +299,7 @@ Painter.prototype.renderPass = function(options) {
             this.clearStencil();
             if (source.prepare) source.prepare();
             if (source.isTileClipped) {
-                this._renderTileClippingMasks(coords, source.maxzoom);
+                this._renderTileClippingMasks(coords);
             }
         }
 
@@ -387,7 +387,7 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
  * @param {Object} transform
  * @private
  */
-Painter.prototype.calculatePosMatrix = function(coord, tileExtent, maxZoom) {
+Painter.prototype.calculatePosMatrix = function(coord, tileExtent) {
     assert(tileExtent);
 
     if (coord instanceof TileCoord) {
@@ -395,14 +395,12 @@ Painter.prototype.calculatePosMatrix = function(coord, tileExtent, maxZoom) {
     }
     var transform = this.transform;
 
-    if (maxZoom === undefined) maxZoom = Infinity;
-
     // Initialize model-view matrix that converts from the tile coordinates
     // to screen coordinates.
 
     // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
     // so calculate the matrix the maxzoom tile would use.
-    var z = Math.min(coord.zoom, maxZoom);
+    var z = coord.zoom;
     var x = coord.column;
     var y = coord.row;
 
