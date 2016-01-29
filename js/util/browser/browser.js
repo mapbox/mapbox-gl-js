@@ -46,6 +46,8 @@ exports.timed = function (fn, dur, ctx) {
     return function() { abort = true; };
 };
 
+exports.supportsWebGL = {};
+
 /**
  * Test whether the basic JavaScript and DOM features required for Mapbox GL are present.
  * @param {Object} options
@@ -98,7 +100,13 @@ exports.supported = function(options) {
         },
 
         function() {
-            return new Canvas().supportsWebGLContext((options && options.failIfMajorPerformanceCaveat) || false);
+            var opt = (options && options.failIfMajorPerformanceCaveat) || false,
+                fimpc = 'fimpc_' + String(opt);
+            if (exports.supportsWebGL[fimpc] === undefined) {
+                var canvas = new Canvas();
+                exports.supportsWebGL[fimpc] = canvas.supportsWebGLContext(opt);
+            }
+            return exports.supportsWebGL[fimpc];
         },
 
         function() { return 'Worker' in window; }
