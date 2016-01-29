@@ -91,17 +91,18 @@ test('GeoJSONSource#update', function(t) {
         var source = new GeoJSONSource({
             data: {},
             maxzoom: 10,
-            tolerance: 2,
-            buffer: 128
+            tolerance: 0.25,
+            buffer: 16
         });
 
         source.dispatcher = {
             send: function(message, params) {
                 t.equal(message, 'parse geojson');
                 t.deepEqual(params.geojsonVtOptions, {
+                    extent: 8192,
                     maxZoom: 10,
-                    tolerance: 2,
-                    buffer: 128
+                    tolerance: 4,
+                    buffer: 256
                 });
                 t.end();
             }
