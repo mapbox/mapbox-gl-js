@@ -45,5 +45,18 @@ function compare(key, val, op, checkType) {
 }
 function compileIn(key, values) {
     if (key === '$type') values = values.map(types.indexOf.bind(types));
-    return JSON.stringify(values) + '.indexOf(' + valueExpr(key) + ') !== -1';
+    var left = JSON.stringify(values.sort(compareFn));
+    var right = valueExpr(key);
+
+    if (values.length <= 200) return left + '.indexOf(' + right + ') !== -1';
+
+    return 'function(v, a, i, j) {' +
+        'while (i <= j) { var m = (i + j) >> 1;' +
+        '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
+        '}' +
+    'return false; }(' + right + ', ' + left + ',0,' + (values.length - 1) + ')';
+}
+
+function compareFn(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
 }
