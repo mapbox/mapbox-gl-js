@@ -302,7 +302,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
 
-            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers,
+            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, this.symbolInstances.length,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine));
         }
@@ -362,9 +362,9 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
             cos = Math.cos(angle);
 
         this.symbolInstances.sort(function(a, b) {
-            var aRotated = sin * a.x + cos * a.y;
-            var bRotated = sin * b.x + cos * b.y;
-            return aRotated - bRotated;
+            var aRotated = (sin * a.x + cos * a.y) | 0;
+            var bRotated = (sin * b.x + cos * b.y) | 0;
+            return (aRotated - bRotated) || (b.index - a.index);
         });
     }
 
@@ -530,12 +530,13 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     }
 };
 
-function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers,
+function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine) {
 
     this.x = anchor.x;
     this.y = anchor.y;
+    this.index = index;
     this.hasText = !!shapedText;
     this.hasIcon = !!shapedIcon;
 
