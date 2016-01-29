@@ -56,6 +56,10 @@
     "line": 68
   },
   {
+    "message": "layers[11]: duplicate layer id \"duplicate\", used at line 74 and line 74",
+    "line": 74
+  },
+  {
     "message": "layers[12].type: expected one of [fill, line, symbol, circle, raster, background], invalid found",
     "line": 81
   },
