@@ -346,6 +346,10 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     elementGroups.glyph.adjustedSize = this.adjustedTextSize;
     elementGroups.icon.adjustedSize = this.adjustedIconSize;
 
+    // Transfer the name of the fonstack back to the main thread along with the buffers.
+    // The draw function needs to know which fonstack's glyph atlas to bind when rendering.
+    elementGroups.glyph.fontstack = layout['text-font'].join(',');
+
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
 

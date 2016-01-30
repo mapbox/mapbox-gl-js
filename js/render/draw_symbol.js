@@ -120,8 +120,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     }
 
     if (text) {
-        var textfont = layer.layout['text-font'];
-        var fontstack = textfont && textfont.join(',');
+        // use the fonstack used when parsing the tile, not the fontstack
+        // at the current zoom level (layout['text-font']).
+        var fontstack = elementGroups.fontstack;
         var glyphAtlas = fontstack && painter.glyphSource.getGlyphAtlas(fontstack);
         if (!glyphAtlas) return;
 
