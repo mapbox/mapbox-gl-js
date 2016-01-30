@@ -68,6 +68,7 @@ function GeoJSONSource(options) {
         tileSize: this.tileSize,
         minzoom: this.minzoom,
         maxzoom: this.maxzoom,
+        reparseOverscaled: true,
         cacheSize: 20,
         load: this._loadTile.bind(this),
         abort: this._abortTile.bind(this),
