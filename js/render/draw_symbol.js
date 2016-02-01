@@ -60,7 +60,7 @@ function drawSymbols(painter, source, layer, coords) {
     for (var k = 0; k < coords.length; k++) {
         tile = source.getTile(coords[k]);
         painter.enableTileClippingMask(coords[k]);
-        drawCollisionDebug(painter, layer, coords[k], tile);
+        drawCollisionDebug(painter, layer, coords[k], tile, source.maxzoom);
     }
 
     if (drawAcrossEdges) {
