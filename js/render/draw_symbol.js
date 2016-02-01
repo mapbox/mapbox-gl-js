@@ -57,11 +57,7 @@ function drawSymbols(painter, source, layer, coords) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }
 
-    for (var k = 0; k < coords.length; k++) {
-        tile = source.getTile(coords[k]);
-        painter.enableTileClippingMask(coords[k]);
-        drawCollisionDebug(painter, layer, coords[k], tile, source.maxzoom);
-    }
+    drawCollisionDebug(painter, source, layer, coords);
 
     if (drawAcrossEdges) {
         gl.enable(gl.STENCIL_TEST);
