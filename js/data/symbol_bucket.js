@@ -498,7 +498,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
-    var group = this.makeRoomFor('collisionBox', 8);
+    var group = this.makeRoomFor('collisionBox', 0);
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
 
