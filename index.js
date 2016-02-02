@@ -18,9 +18,3 @@ exports.ParsingError = require('./lib/error/parsing_error');
 exports.validate = require('./lib/validate_style');
 exports.validate.parsed = require('./lib/validate_style');
 exports.validate.latest = require('./lib/validate_style');
-
-exports.validateSource = require('./lib/validate/validate_source');
-exports.validateLayer = require('./lib/validate/validate_layer');
-exports.validateFilter = require('./lib/validate/validate_filter');
-exports.validatePaintProperty = require('./lib/validate/validate_paint_property');
-exports.validateLayoutProperty = require('./lib/validate/validate_layout_property');
