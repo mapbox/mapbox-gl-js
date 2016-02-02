@@ -3,6 +3,7 @@
 var Bucket = require('./bucket');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
+var EXTENT = require('./buffer').EXTENT;
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -11,6 +12,20 @@ var loadGeometry = require('./load_geometry');
 // normal array, while the extrude normal actually moves the vertex to create
 // the acute/bevelled line join.
 var EXTRUDE_SCALE = 63;
+
+/*
+ * Sharp corners cause dashed lines to tilt because the distance along the line
+ * is the same at both the inner and outer corners. To improve the appearance of
+ * dashed lines we add extra points near sharp corners so that a smaller part
+ * of the line is tilted.
+ *
+ * COS_HALF_SHARP_CORNER controls how sharp a corner has to be for us to add an
+ * extra vertex. The default is 75 degrees.
+ *
+ * The newly created vertices are placed SHARP_CORNER_OFFSET pixels from the corner.
+ */
+var COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
+var SHARP_CORNER_OFFSET = 15;
 
 module.exports = LineBucket;
 
@@ -82,6 +97,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
     if (join === 'bevel') miterLimit = 1.05;
 
+    var sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
+
     var firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
@@ -123,9 +140,6 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 
         currentVertex = vertices[i];
 
-        // Calculate how far along the line the currentVertex is
-        if (prevVertex) distance += currentVertex.dist(prevVertex);
-
         // Calculate the normal towards the next vertex in this line. In case
         // there is no next vertex, pretend that the line is continuing straight,
         // meaning that we are just using the previous normal.
@@ -155,6 +169,18 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         var cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
         var miterLength = 1 / cosHalfAngle;
 
+        var isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+
+        if (isSharpCorner && i > 0) {
+            var prevSegmentLength = currentVertex.dist(prevVertex);
+            if (prevSegmentLength > 2 * sharpCornerOffset) {
+                var newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength));
+                distance += newPrevVertex.dist(prevVertex);
+                this.addCurrentVertex(newPrevVertex, flip, distance, prevNormal.mult(1), 0, 0, false);
+                prevVertex = newPrevVertex;
+            }
+        }
+
         // The join if a middle vertex, otherwise the cap.
         var middleVertex = prevVertex && nextVertex;
         var currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
@@ -180,6 +206,9 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
             // just draw a miter join to save a triangle.
             if (miterLength < miterLimit) currentJoin = 'miter';
         }
+
+        // Calculate how far along the line the currentVertex is
+        if (prevVertex) distance += currentVertex.dist(prevVertex);
 
         if (currentJoin === 'miter') {
 
@@ -294,6 +323,16 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, -1, -1, true);
 
                 this.addCurrentVertex(currentVertex, flip, distance, nextNormal, 0, 0, false);
+            }
+        }
+
+        if (isSharpCorner && i < len - 1) {
+            var nextSegmentLength = currentVertex.dist(nextVertex);
+            if (nextSegmentLength > 2 * sharpCornerOffset) {
+                var newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength));
+                distance += newCurrentVertex.dist(currentVertex);
+                this.addCurrentVertex(newCurrentVertex, flip, distance, nextNormal.mult(1), 0, 0, false);
+                currentVertex = newCurrentVertex;
             }
         }
 

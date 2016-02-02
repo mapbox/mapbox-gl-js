@@ -49,6 +49,7 @@ Bucket.AttributeType = Buffer.AttributeType;
  */
 function Bucket(options) {
     this.zoom = options.zoom;
+    this.overscaling = options.overscaling;
 
     this.layer = StyleLayer.create(options.layer);
     this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
