@@ -40,6 +40,7 @@ map.on('style.load', function() {
     }, 'country-label-lg');
 
     map.addSource('geojson-random-points', {
+        "skipWorker": true,
         "type": "geojson",
         "data": "/debug/random.geojson"
     });

@@ -5,6 +5,11 @@ var Evented = require('../util/evented');
 var TilePyramid = require('./tile_pyramid');
 var Source = require('./source');
 var urlResolve = require('resolve-url');
+var WorkerTile = require('./worker_tile');
+var ajax = require('../util/ajax');
+var supercluster = require('supercluster');
+var geojsonvt = require('geojson-vt');
+var GeoJSONWrapper = require('../source/geojson_wrapper');
 
 module.exports = GeoJSONSource;
 
@@ -60,6 +65,8 @@ function GeoJSONSource(options) {
         log: false
     };
 
+    this.skipWorker = options.skipWorker;
+
     this._pyramid = new TilePyramid({
         tileSize: 512,
         minzoom: this.minzoom,
@@ -72,6 +79,9 @@ function GeoJSONSource(options) {
         remove: this._removeTile.bind(this),
         redoPlacement: this._redoTilePlacement.bind(this)
     });
+
+    this._loadedTiles = {};
+    this._geoJSONIndexes = {};
 }
 
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
@@ -125,8 +135,60 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 
-    featuresAt: Source._vectorFeaturesAt,
-    featuresIn: Source._vectorFeaturesIn,
+    featuresAt: function(coord, params, callback) {
+        if (!this._pyramid)
+            return callback(null, []);
+
+        var result = this._pyramid.tileAt(coord);
+        if (!result)
+            return callback(null, []);
+
+        this._queryFeatures({
+            uid: result.tile.uid,
+            x: result.x,
+            y: result.y,
+            tileExtent: result.tile.tileExtent,
+            scale: result.scale,
+            source: this.id,
+            params: params
+        }, callback, result.tile.workerID);
+    },
+
+    featuresIn: function(bounds, params, callback) {
+        if (!this._pyramid)
+            return callback(null, []);
+
+        var results = this._pyramid.tilesIn(bounds);
+        if (!results)
+            return callback(null, []);
+
+        util.asyncAll(results, function queryTile(result, cb) {
+            this._queryFeatures({
+                uid: result.tile.uid,
+                source: this.id,
+                minX: result.minX,
+                maxX: result.maxX,
+                minY: result.minY,
+                maxY: result.maxY,
+                params: params
+            }, cb, result.tile.workerID);
+        }.bind(this), function done(err, features) {
+            callback(err, Array.prototype.concat.apply([], features));
+        });
+    },
+
+    _queryFeatures: function(params, callback, workerID) {
+        if (this.skipWorker) {
+            var tile = this._loadedTiles[params.source] && this._loadedTiles[params.source][params.uid];
+            if (tile) {
+                tile.featureTree.query(params, callback);
+            } else {
+                callback(null, []);
+            }
+        } else {
+            this.dispatcher.send('query features', params, callback, workerID);
+        }
+    },
 
     _updateData: function() {
         this._dirty = false;
@@ -134,23 +196,57 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         if (typeof data === 'string' && typeof window != 'undefined') {
             data = urlResolve(window.location.href, data);
         }
-        this.workerID = this.dispatcher.send('parse geojson', {
+
+        var params = {
             data: data,
             tileSize: 512,
             source: this.id,
             geojsonVtOptions: this.geojsonVtOptions,
             cluster: this.cluster,
             superclusterOptions: this.superclusterOptions
-        }, function(err) {
-            this._loaded = true;
-            if (err) {
-                this.fire('error', {error: err});
-            } else {
-                this._pyramid.reload();
-                this.fire('change');
-            }
+        };
 
-        }.bind(this));
+        var that = this;
+
+        if (this.skipWorker) {
+            var indexData = function(err, data) {
+                if (err) return callback(err);
+                if (typeof data != 'object') {
+                    return callback(new Error("Input data is not a valid GeoJSON object."));
+                }
+                try {
+                    this._geoJSONIndexes[params.source] = params.cluster ?
+                        supercluster(params.superclusterOptions).load(data.features) :
+                        geojsonvt(data, params.geojsonVtOptions);
+                } catch (err) {
+                    return callback(err);
+                }
+                callback(null);
+            }.bind(this);
+
+            // TODO accept params.url for urls instead
+
+            // Not, because of same origin issues, urls must either include an
+            // explicit origin or absolute path.
+            // ie: /foo/bar.json or http://example.com/bar.json
+            // but not ../foo/bar.json
+            if (typeof params.data === 'string') {
+                ajax.getJSON(params.data, indexData);
+            }
+            else indexData(null, params.data);
+        } else {
+            this.workerID = this.dispatcher.send('parse geojson', params, callback);
+        }
+
+        function callback(err) {
+            that._loaded = true;
+            if (err) {
+                that.fire('error', {error: err});
+            } else {
+                that._pyramid.reload();
+                that.fire('change');
+            }
+        }
     },
 
     _loadTile: function(tile) {
@@ -168,15 +264,40 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             collisionDebug: this.map.collisionDebug
         };
 
-        tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {
+        var that = this;
 
-            tile.unloadVectorData(this.map.painter);
+        if (this.skipWorker) {
+            var source = params.source,
+                coord = params.coord;
+
+            if (!this._geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
+
+            var geoJSONTile = this._geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
+
+            if (!geoJSONTile) return callback(null, null); // nothing in the given tile
+
+            var workerTile = new WorkerTile(params);
+            workerTile.parse(
+                new GeoJSONWrapper(geoJSONTile.features),
+                this.style._order.map(function(id) { return this.style._layers[id].json(); }, this), // layers
+                null, // actor
+                callback
+            );
+
+            this._loadedTiles[source] = this._loadedTiles[source] || {};
+            this._loadedTiles[source][params.uid] = workerTile;
+        } else {
+            tile.workerID = this.dispatcher.send('load geojson tile', params, callback, this.workerID);
+        }
+
+        function callback(err, data) {
+            tile.unloadVectorData(that.map.painter);
 
             if (tile.aborted)
                 return;
 
             if (err) {
-                this.fire('tile.error', {tile: tile});
+                that.fire('tile.error', {tile: tile});
                 return;
             }
 
@@ -184,12 +305,12 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
             if (tile.redoWhenDone) {
                 tile.redoWhenDone = false;
-                tile.redoPlacement(this);
+                tile.redoPlacement(that);
             }
 
-            this.fire('tile.load', {tile: tile});
+            that.fire('tile.load', {tile: tile});
+        }
 
-        }.bind(this), this.workerID);
     },
 
     _abortTile: function(tile) {
