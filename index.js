@@ -12,8 +12,8 @@ exports.format = require('./lib/format');
 exports.migrate = require('./lib/migrate');
 exports.composite = require('./lib/composite');
 exports.diff = require('./lib/diff');
-exports.ValidationError = require('./lib/validation_error');
-exports.ParsingError = require('./lib/parsing_error');
+exports.ValidationError = require('./lib/error/validation_error');
+exports.ParsingError = require('./lib/error/parsing_error');
 
 exports.validate = require('./lib/validate_style');
 exports.validate.parsed = require('./lib/validate_style');
