@@ -96,7 +96,7 @@ StyleLayer.prototype = {
             if (!this._paintTransitionOptions[klass || '']) {
                 this._paintTransitionOptions[klass || ''] = {};
             }
-            if (value == null) {
+            if (value === null || value === undefined) {
                 delete this._paintTransitionOptions[klass || ''][name];
             } else {
                 this._paintTransitionOptions[klass || ''][name] = value;
@@ -105,7 +105,7 @@ StyleLayer.prototype = {
             if (!this._paintDeclarations[klass || '']) {
                 this._paintDeclarations[klass || ''] = {};
             }
-            if (value == null) {
+            if (value === null || value === undefined) {
                 delete this._paintDeclarations[klass || ''][name];
             } else {
                 this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
@@ -156,30 +156,47 @@ StyleLayer.prototype = {
 
     // update classes
     cascade: function(classes, options, globalTransitionOptions, animationLoop) {
+        var oldTransitions = this._paintTransitions;
+        var newTransitions = this._paintTransitions = {};
+        var that = this;
+
+        // Apply new declarations in all active classes
         for (var klass in this._paintDeclarations) {
             if (klass !== "" && !classes[klass]) continue;
-
             for (var name in this._paintDeclarations[klass]) {
-                var declaration = this._paintDeclarations[klass][name];
-                var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
+                applyDeclaration(this._paintDeclarations[klass][name]);
+            }
+        }
 
-                // Only create a new transition if the declaration changed
-                if (!oldTransition || oldTransition.declaration.json !== declaration.json) {
-                    var newTransition = this._paintTransitions[name] = new StyleTransition(declaration, oldTransition, util.extend(
-                        {duration: 300, delay: 0},
-                        globalTransitionOptions,
-                        this.getPaintProperty(name + TRANSITION_SUFFIX)
-                    ));
+        // Apply removed declarations
+        var removedNames = util.keysDifference(oldTransitions, newTransitions);
+        for (var i = 0; i < removedNames.length; i++) {
+            var spec = this._paintSpecifications[removedNames[i]];
+            applyDeclaration(new StyleDeclaration(spec, spec.default));
+        }
 
-                    // Run the animation loop until the end of the transition
-                    if (!newTransition.instant()) {
-                        newTransition.loopID = animationLoop.set(newTransition.endTime - (new Date()).getTime());
-                    }
+        function applyDeclaration(declaration) {
+            var oldTransition = options.transition ? oldTransitions[name] : undefined;
 
-                    if (oldTransition) {
-                        animationLoop.cancel(oldTransition.loopID);
-                    }
+            if (oldTransition && oldTransition.declaration.json === declaration.json) {
+                newTransitions[name] = oldTransition;
+
+            } else {
+                var newTransition = new StyleTransition(declaration, oldTransition, util.extend(
+                    {duration: 300, delay: 0},
+                    globalTransitionOptions,
+                    that.getPaintProperty(name + TRANSITION_SUFFIX)
+                ));
+
+                if (!newTransition.instant()) {
+                    newTransition.loopID = animationLoop.set(newTransition.endTime - (new Date()).getTime());
                 }
+
+                if (oldTransition) {
+                    animationLoop.cancel(oldTransition.loopID);
+                }
+
+                newTransitions[name] = newTransition;
             }
         }
     },

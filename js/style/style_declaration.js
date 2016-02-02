@@ -8,18 +8,12 @@ module.exports = StyleDeclaration;
 function StyleDeclaration(reference, value) {
     this.type = reference.type;
     this.transitionable = reference.transition;
-
-    if (value == null) {
-        this.value = reference.default;
-    } else {
-        this.value = value;
-    }
+    this.value = value;
 
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
     var parsedValue = this.type === 'color' ? parseColor(this.value) : value;
-
     if (reference.function === 'interpolated') {
         this.calculate = MapboxGLFunction.interpolated(parsedValue);
     } else {
