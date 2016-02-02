@@ -136,14 +136,13 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         gl.setPosMatrix(posMatrix);
         gl.setExMatrix(painter.transform.exMatrix);
-        var zoom = painter.transform.zoom;
-        var ratio = 1 / tile.pixelsToTileUnits(1, zoom);
+        var ratio = 1 / tile.pixelsToTileUnits(1, painter.transform.zoom);
 
         if (dasharray) {
             var widthA = posA.width * dasharray.fromScale;
             var widthB = posB.width * dasharray.toScale;
-            var scaleA = [1 / tile.pixelsToTileUnits(widthA, zoom), -posA.height / 2];
-            var scaleB = [1 / tile.pixelsToTileUnits(widthB, zoom), -posB.height / 2];
+            var scaleA = [1 / tile.pixelsToTileUnits(widthA, painter.transform.tileZoom), -posA.height / 2];
+            var scaleB = [1 / tile.pixelsToTileUnits(widthB, painter.transform.tileZoom), -posB.height / 2];
             var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_patternscale_a, scaleA);
