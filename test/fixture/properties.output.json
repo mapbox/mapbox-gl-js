@@ -12,11 +12,11 @@
     "line": 20
   },
   {
-    "message": "layers[0].paint: unknown property \"bad-transition\"",
+    "message": "layers[0].paint.bad-transition: unknown property \"bad-transition\"",
     "line": 22
   },
   {
-    "message": "layers[0].paint: unknown property \"fill-antialias-transition\"",
+    "message": "layers[0].paint.fill-antialias-transition: unknown property \"fill-antialias-transition\"",
     "line": 25
   },
   {
