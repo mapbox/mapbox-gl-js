@@ -6,24 +6,26 @@ var vt = require('vector-tile');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
 var EXTENT = require('./bucket').EXTENT;
+var CollisionBox = require('../symbol/collision_box');
 
 module.exports = FeatureTree;
 
-function FeatureTree(coord, overscaling) {
+function FeatureTree(coord, overscaling, collisionTile) {
     this.x = coord.x;
     this.y = coord.y;
     this.z = coord.z - Math.log(overscaling) / Math.LN2;
     this.rtree = rbush(9);
     this.toBeInserted = [];
+    this.setCollisionTile(collisionTile);
 }
 
-FeatureTree.prototype.insert = function(bbox, layers, feature) {
+FeatureTree.prototype.insert = function(bbox, layerIDs, feature) {
     var scale = EXTENT / feature.extent;
     bbox[0] *= scale;
     bbox[1] *= scale;
     bbox[2] *= scale;
     bbox[3] *= scale;
-    bbox.layers = layers;
+    bbox.layerIDs = layerIDs;
     bbox.feature = feature;
     this.toBeInserted.push(bbox);
 };
@@ -32,6 +34,10 @@ FeatureTree.prototype.insert = function(bbox, layers, feature) {
 FeatureTree.prototype._load = function() {
     this.rtree.load(this.toBeInserted);
     this.toBeInserted = [];
+};
+
+FeatureTree.prototype.setCollisionTile = function(collisionTile) {
+    this.collisionTile = collisionTile;
 };
 
 // Finds features in this tile at a particular position.
@@ -43,45 +49,59 @@ FeatureTree.prototype.query = function(args, callback) {
         y = args.y,
         result = [];
 
-    var radius, bounds;
+    var radius, bounds, symbolQueryBox;
     if (typeof x !== 'undefined' && typeof y !== 'undefined') {
         // a point (or point+radius) query
         radius = (params.radius || 0) * EXTENT / args.tileSize / args.scale;
         bounds = [x - radius, y - radius, x + radius, y + radius];
+        symbolQueryBox = new CollisionBox(new Point(x, y), -radius, -radius, radius, radius, args.scale, null);
     } else {
         // a rectangle query
         bounds = [ args.minX, args.minY, args.maxX, args.maxY ];
+        symbolQueryBox = new CollisionBox(new Point(args.minX, args.minY), 0, 0, args.maxX - args.minX, args.maxY - args.minY, args.scale, null);
     }
 
-    var matching = this.rtree.search(bounds);
+    function checkIntersection(feature) {
+        var type = vt.VectorTileFeature.types[feature.type];
+        if (params.$type && type !== params.$type)
+            return false;
+
+        return radius ?
+            geometryContainsPoint(loadGeometry(feature), type, new Point(x, y), radius) :
+            geometryIntersectsBox(loadGeometry(feature), type, bounds);
+    }
+
+    function checkSymbolIntersection() {
+        return true;
+    }
+
+    this.addFeatures(this.rtree.search(bounds), params, checkIntersection, result);
+    this.addFeatures(this.collisionTile.getFeaturesAt(symbolQueryBox, args.scale), params, checkSymbolIntersection, result);
+
+    callback(null, result);
+};
+
+FeatureTree.prototype.addFeatures = function(matching, params, checkIntersection, result) {
     for (var i = 0; i < matching.length; i++) {
         var feature = matching[i].feature,
-            layers = matching[i].layers,
-            type = vt.VectorTileFeature.types[feature.type];
-
-        if (params.$type && type !== params.$type)
-            continue;
-        if (radius && !geometryContainsPoint(loadGeometry(feature), type, new Point(x, y), radius))
-            continue;
-        else if (!geometryIntersectsBox(loadGeometry(feature), type, bounds))
-            continue;
-
+            layerIDs = matching[i].layerIDs;
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
+
+        if (!checkIntersection(feature)) continue;
 
         if (!params.includeGeometry) {
             geoJSON.geometry = null;
         }
 
-        for (var l = 0; l < layers.length; l++) {
-            var layer = layers[l];
+        for (var l = 0; l < layerIDs.length; l++) {
+            var layerID = layerIDs[l];
 
-            if (params.layerIds && params.layerIds.indexOf(layer) < 0)
+            if (params.layerIds && params.layerIds.indexOf(layerID) < 0)
                 continue;
 
-            result.push(util.extend({layer: layer}, geoJSON));
+            result.push(util.extend({layer: layerID}, geoJSON));
         }
     }
-    callback(null, result);
 };
 
 function geometryIntersectsBox(rings, type, bounds) {

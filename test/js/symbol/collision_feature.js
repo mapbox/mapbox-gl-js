@@ -14,11 +14,14 @@ test('CollisionFeature', function(t) {
         bottom: 10
     };
 
+    var feature = {};
+    var layerIDs = [];
+
     test('point label', function(t) {
         var point = new Point(500, 0);
         var anchor = new Anchor(point.x, point.y, 0, undefined);
 
-        var cf = new CollisionFeature([point], anchor, shapedText, 1, 0, false);
+        var cf = new CollisionFeature([point], anchor, feature, layerIDs, shapedText, 1, 0, false);
         t.equal(cf.boxes.length, 1);
 
         var box = cf.boxes[0];
@@ -32,7 +35,7 @@ test('CollisionFeature', function(t) {
     test('line label', function(t) {
         var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, 1, 0, true);
         var boxPoints = cf.boxes.map(pluckAnchorPoint);
         t.deepEqual(boxPoints, [
             { x: 467.71052542517856, y: 93.54210508503571 },
@@ -51,7 +54,7 @@ test('CollisionFeature', function(t) {
     test('vertical line label', function(t) {
         var line = [new Point(0, 0), new Point(0, 100), new Point(0, 111), new Point(0, 112), new Point(0, 200)];
         var anchor = new Anchor(0, 110, 0, 1);
-        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, 1, 0, true);
         var boxPoints = cf.boxes.map(pluckAnchorPoint);
         t.deepEqual(boxPoints, [
             { x: 0, y: 70 },
@@ -77,7 +80,7 @@ test('CollisionFeature', function(t) {
 
         var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, 1, 0, true);
         t.equal(cf.boxes.length, 0);
         t.end();
     });
@@ -92,7 +95,7 @@ test('CollisionFeature', function(t) {
 
         var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, 1, 0, true);
         t.equal(cf.boxes.length, 0);
         t.end();
     });
@@ -107,7 +110,7 @@ test('CollisionFeature', function(t) {
 
         var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(line, anchor, shapedText, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, 1, 0, true);
         t.ok(cf.boxes.length < 30);
         t.end();
     });
@@ -116,7 +119,7 @@ test('CollisionFeature', function(t) {
         var line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
         var anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
         var shaping = { right: 256, left: 0, bottom: 256, top: 0 };
-        var cf = new CollisionFeature(line, anchor, shaping, 1, 0, true);
+        var cf = new CollisionFeature(line, anchor, feature, layerIDs, shaping, 1, 0, true);
         t.equal(cf.boxes.length, 1);
         t.end();
     });

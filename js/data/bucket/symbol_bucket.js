@@ -223,7 +223,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
         }
 
         if (shapedText || shapedIcon) {
-            this.addFeature(geometries[k], shapedText, shapedIcon);
+            this.addFeature(geometries[k], shapedText, shapedIcon, features[k]);
         }
     }
 
@@ -232,7 +232,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
     this.trimBuffers();
 };
 
-SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feature) {
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -304,7 +304,8 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
 
-            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, this.symbolInstances.length,
+            this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout,
+                        addToBuffers, this.symbolInstances.length, feature, this.layerIDs,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine));
         }
@@ -410,18 +411,14 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
         // Insert final placement into collision tree and add glyphs/icons to buffers
 
         if (hasText) {
-            if (!layout['text-ignore-placement']) {
-                collisionTile.insertCollisionFeature(symbolInstance.textCollisionFeature, glyphScale);
-            }
+            collisionTile.insertCollisionFeature(symbolInstance.textCollisionFeature, glyphScale, layout['text-ignore-placement']);
             if (glyphScale <= maxScale) {
                 this.addSymbols('glyph', symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle);
             }
         }
 
         if (hasIcon) {
-            if (!layout['icon-ignore-placement']) {
-                collisionTile.insertCollisionFeature(symbolInstance.iconCollisionFeature, iconScale);
-            }
+            collisionTile.insertCollisionFeature(symbolInstance.iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
             if (iconScale <= maxScale) {
                 this.addSymbols('icon', symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
             }
@@ -540,7 +537,7 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     }
 };
 
-function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index,
+function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index, feature, layerIDs,
                         textBoxScale, textPadding, textAlongLine,
                         iconBoxScale, iconPadding, iconAlongLine) {
 
@@ -552,11 +549,11 @@ function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffe
 
     if (this.hasText) {
         this.glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
-        this.textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine, false);
+        this.textCollisionFeature = new CollisionFeature(line, anchor, feature, layerIDs, shapedText, textBoxScale, textPadding, textAlongLine, false);
     }
 
     if (this.hasIcon) {
         this.iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
-        this.iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
+        this.iconCollisionFeature = new CollisionFeature(line, anchor, feature, layerIDs, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 }

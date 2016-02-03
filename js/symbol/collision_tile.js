@@ -19,6 +19,7 @@ module.exports = CollisionTile;
  */
 function CollisionTile(angle, pitch) {
     this.tree = rbush();
+    this.ignoredTree = rbush();
     this.angle = angle;
 
     var sin = Math.sin(angle),
@@ -116,6 +117,39 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
     return minPlacementScale;
 };
 
+CollisionTile.prototype.getFeaturesAt = function(queryBox, scale) {
+    var features = [];
+    var result = [];
+
+    var rotationMatrix = this.rotationMatrix;
+    var anchorPoint = queryBox.anchorPoint.matMult(rotationMatrix);
+
+    var searchBox = [
+        anchorPoint.x + queryBox.x1 / scale,
+        anchorPoint.y + queryBox.y1 / scale * this.yStretch,
+        anchorPoint.x + queryBox.x2 / scale,
+        anchorPoint.y + queryBox.y2 / scale * this.yStretch
+    ];
+
+    var blockingBoxes = this.tree.search(searchBox).concat(this.ignoredTree.search(searchBox));
+
+    for (var i = 0; i < blockingBoxes.length; i++) {
+        var blocking = blockingBoxes[i];
+        var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
+        var minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
+        if (minPlacementScale >= scale) {
+            if (features.indexOf(blocking.feature) < 0) {
+                features.push(blocking.feature);
+                result.push({
+                    feature: blocking.feature,
+                    layerIDs: blocking.layerIDs
+                });
+            }
+        }
+    }
+
+    return result;
+};
 
 CollisionTile.prototype.getPlacementScale = function(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking) {
 
@@ -164,7 +198,7 @@ CollisionTile.prototype.getPlacementScale = function(minPlacementScale, anchorPo
  * @param {number} minPlacementScale
  * @private
  */
-CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale) {
+CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale, ignorePlacement) {
 
     var boxes = collisionFeature.boxes;
     for (var k = 0; k < boxes.length; k++) {
@@ -172,6 +206,10 @@ CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minP
     }
 
     if (minPlacementScale < this.maxScale) {
-        this.tree.load(boxes);
+        if (ignorePlacement) {
+            this.ignoredTree.load(boxes);
+        } else {
+            this.tree.load(boxes);
+        }
     }
 };
