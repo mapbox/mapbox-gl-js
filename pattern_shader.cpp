@@ -1,7 +1,7 @@
 #include <mbgl/shader/pattern_shader.hpp>
 #include <mbgl/shader/pattern.vertex.hpp>
 #include <mbgl/shader/pattern.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

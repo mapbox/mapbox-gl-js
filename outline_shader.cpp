@@ -1,7 +1,7 @@
 #include <mbgl/shader/outline_shader.hpp>
 #include <mbgl/shader/outline.vertex.hpp>
 #include <mbgl/shader/outline.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

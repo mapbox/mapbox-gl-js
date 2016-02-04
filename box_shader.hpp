@@ -3,7 +3,7 @@
 
 #include <mbgl/shader/shader.hpp>
 #include <mbgl/shader/uniform.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 namespace mbgl {
 

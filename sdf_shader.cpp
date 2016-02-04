@@ -1,7 +1,7 @@
 #include <mbgl/shader/sdf_shader.hpp>
 #include <mbgl/shader/sdf.vertex.hpp>
 #include <mbgl/shader/sdf.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

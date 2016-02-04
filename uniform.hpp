@@ -2,7 +2,7 @@
 #define MBGL_SHADER_UNIFORM
 
 #include <mbgl/shader/shader.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 namespace mbgl {
 

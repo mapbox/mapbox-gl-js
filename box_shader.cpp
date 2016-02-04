@@ -1,7 +1,7 @@
 #include <mbgl/shader/box_shader.hpp>
 #include <mbgl/shader/box.vertex.hpp>
 #include <mbgl/shader/box.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

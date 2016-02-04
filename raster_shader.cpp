@@ -1,7 +1,7 @@
 #include <mbgl/shader/raster_shader.hpp>
 #include <mbgl/shader/raster.vertex.hpp>
 #include <mbgl/shader/raster.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

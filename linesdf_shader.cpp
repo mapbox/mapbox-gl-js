@@ -1,7 +1,7 @@
 #include <mbgl/shader/linesdf_shader.hpp>
 #include <mbgl/shader/linesdf.vertex.hpp>
 #include <mbgl/shader/linesdf.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

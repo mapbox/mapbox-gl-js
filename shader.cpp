@@ -1,5 +1,5 @@
 #include <mbgl/shader/shader.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 #include <mbgl/util/stopwatch.hpp>
 #include <mbgl/util/exception.hpp>
 #include <mbgl/platform/log.hpp>

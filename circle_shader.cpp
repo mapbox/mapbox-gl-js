@@ -1,7 +1,7 @@
 #include <mbgl/shader/circle_shader.hpp>
 #include <mbgl/shader/circle.vertex.hpp>
 #include <mbgl/shader/circle.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 

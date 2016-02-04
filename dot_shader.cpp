@@ -1,7 +1,7 @@
 #include <mbgl/shader/dot_shader.hpp>
 #include <mbgl/shader/dot.vertex.hpp>
 #include <mbgl/shader/dot.fragment.hpp>
-#include <mbgl/platform/gl.hpp>
+#include <mbgl/gl/gl.hpp>
 
 #include <cstdio>
 
