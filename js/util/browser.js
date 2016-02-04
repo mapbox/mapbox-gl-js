@@ -1,5 +1,14 @@
 'use strict';
 
+/*
+ * When browserify builds Mapbox GL JS, it redirects all require() statements
+ * from this file, js/util/browser.js, to js/util/browser/browser.js.
+ * The latter relies on running in a real browser: 'window' must be defined,
+ * as well as other browser-specific globals. This file, on the other hand,
+ * is comfortable running under node.js, which is why it's the default require:
+ * it's used for tests.
+ */
+
 exports.frame = function(fn) {
     return setTimeout(fn, 0);
 };
@@ -8,6 +17,8 @@ exports.cancelFrame = function(id) {
     return clearTimeout(id);
 };
 
+module.exports.now = Date.now.bind(Date);
+
 exports.timed = function(fn, dur, ctx) {
     if (!dur) {
         fn.call(ctx, 1);
@@ -15,11 +26,11 @@ exports.timed = function(fn, dur, ctx) {
     }
 
     var abort = false,
-        start = Date.now();
+        start = module.exports.now();
 
     function tick(now) {
         if (abort) return;
-        now = Date.now();
+        now = module.exports.now();
 
         if (now >= start + dur) {
             fn.call(ctx, 1);

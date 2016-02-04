@@ -17,6 +17,11 @@ test('browser', function(t) {
         });
     });
 
+    t.test('now', function(t) {
+        t.equal(typeof util.now(), 'number');
+        t.end();
+    });
+
     t.test('cancelFrame', function(t) {
         var id = util.frame(function() {
             t.fail();

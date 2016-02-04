@@ -44,7 +44,7 @@ ScrollZoom.prototype = {
             if (safari) value = value / 3;
         }
 
-        var now = (window.performance || Date).now(),
+        var now = browser.now(),
             timeDelta = now - (this._time || 0);
 
         this._pos = DOM.mousePos(this._el, e);
