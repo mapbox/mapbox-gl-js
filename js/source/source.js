@@ -139,11 +139,24 @@ exports.create = function(source) {
         image: require('./image_source')
     };
 
+    return exports.is(source) ? source : new sources[source.type](source);
+};
+
+exports.is = function(source) {
+    // This is not at file scope in order to avoid a circular require.
+    var sources = {
+        vector: require('./vector_tile_source'),
+        raster: require('./raster_tile_source'),
+        geojson: require('./geojson_source'),
+        video: require('./video_source'),
+        image: require('./image_source')
+    };
+
     for (var type in sources) {
         if (source instanceof sources[type]) {
-            return source;
+            return true;
         }
     }
 
-    return new sources[source.type](source);
+    return false;
 };

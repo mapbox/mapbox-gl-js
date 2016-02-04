@@ -2,6 +2,8 @@
 
 var Source = require('../source/source');
 var StyleLayer = require('./style_layer');
+var validateStyle = require('./validate_style');
+var styleSpec = require('./style_spec');
 
 function styleBatch(style, work) {
     if (!style._loaded) {
@@ -43,14 +45,23 @@ function styleBatch(style, work) {
 styleBatch.prototype = {
 
     addLayer: function(layer, before) {
-        if (this._style._layers[layer.id] !== undefined) {
-            throw new Error('There is already a layer with this ID');
-        }
         if (!(layer instanceof StyleLayer)) {
+            if (validateStyle.emitErrors(this._style, validateStyle.layer({
+                value: layer,
+                style: this._style.serialize(),
+                styleSpec: styleSpec,
+                // this layer is not in the style.layers array, so we pass an
+                // impossible array index
+                arrayIndex: -1
+            }))) return this;
+
             var refLayer = layer.ref && this._style.getLayer(layer.ref);
             layer = StyleLayer.create(layer, refLayer);
         }
         this._style._validateLayer(layer);
+
+        layer.on('error', this._style._forwardLayerEvent);
+
         this._style._layers[layer.id] = layer;
         this._style._order.splice(before ? this._style._order.indexOf(before) : Infinity, 0, layer.id);
 
@@ -75,6 +86,9 @@ styleBatch.prototype = {
                 this.removeLayer(i);
             }
         }
+
+        layer.off('error', this._style._forwardLayerEvent);
+
         delete this._style._layers[id];
         this._style._order.splice(this._style._order.indexOf(id), 1);
 
@@ -107,6 +121,12 @@ styleBatch.prototype = {
     },
 
     setFilter: function(layer, filter) {
+        if (validateStyle.emitErrors(this._style, validateStyle.filter({
+            value: filter,
+            style: this._style.serialize(),
+            styleSpec: styleSpec
+        }))) return this;
+
         layer = this._style.getReferentLayer(layer);
         layer.filter = filter;
 
@@ -144,6 +164,15 @@ styleBatch.prototype = {
         if (this._style.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+
+        if (!Source.is(source)) {
+            if (validateStyle.emitErrors(this._style, validateStyle.source({
+                style: this._style.serialize(),
+                value: source,
+                styleSpec: styleSpec
+            }))) return this;
+        }
+
         source = Source.create(source);
         this._style.sources[id] = source;
         source.id = id;

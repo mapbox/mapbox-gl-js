@@ -109,6 +109,25 @@ test('Style', function(t) {
     t.test('after', function(t) {
         server.close(t.end);
     });
+
+    t.test('sets up layer event forwarding', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'background',
+                type: 'background'
+            }]
+        }));
+
+        style.on('layer.error', function(e) {
+            t.deepEqual(e.layer, {id: 'background'});
+            t.ok(e.mapbox);
+            t.end();
+        });
+
+        style.on('load', function() {
+            style._layers.background.fire('error', {mapbox: true});
+        });
+    });
 });
 
 test('Style#_broadcastLayers', function(t) {
@@ -130,8 +149,8 @@ test('Style#_broadcastLayers', function(t) {
     style.on('error', function(error) { t.error(error); });
 
     style.on('load', function() {
-        style.addLayer({id: 'first', source: 'source', type: 'fill' }, 'second');
-        style.addLayer({id: 'third', source: 'source', type: 'fill' });
+        style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer' }, 'second');
+        style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer' });
 
         style.dispatcher.broadcast = function(key, value) {
             t.equal(key, 'set layers');
@@ -244,9 +263,31 @@ test('Style#addSource', function(t) {
         });
     });
 
+    t.test('emits on invalid source', function(t) {
+        var style = new Style(createStyleJSON());
+        style.on('load', function() {
+            style.on('error', function() {
+                t.notOk(style.getSource('source-id'));
+                t.end();
+            });
+            style.addSource('source-id', {
+                type: 'vector',
+                minzoom: '1', // Shouldn't be a string
+                maxzoom: 10,
+                attribution: 'Mapbox',
+                tiles: ['http://example.com/{z}/{x}/{y}.png']
+            });
+        });
+    });
+
     t.test('sets up source event forwarding', function(t) {
-        var style = new Style(createStyleJSON()),
-            source = createSource();
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'background',
+                type: 'background'
+            }]
+        }));
+        var source = createSource();
 
         function sourceEvent(e) {
             t.equal(e.source, source);
@@ -388,6 +429,24 @@ test('Style#addLayer', function(t) {
         });
     });
 
+    t.test('sets up layer event forwarding', function(t) {
+        var style = new Style(createStyleJSON());
+
+        style.on('layer.error', function(e) {
+            t.deepEqual(e.layer, {id: 'background'});
+            t.ok(e.mapbox);
+            t.end();
+        });
+
+        style.on('load', function() {
+            style.addLayer({
+                id: 'background',
+                type: 'background'
+            });
+            style._layers.background.fire('error', {mapbox: true});
+        });
+    });
+
     t.test('throws on non-existant vector source layer', function(t) {
         var style = new Style(createStyleJSON({
             sources: {
@@ -420,6 +479,23 @@ test('Style#addLayer', function(t) {
         });
     });
 
+    t.test('emits error on invalid layer', function(t) {
+        var style = new Style(createStyleJSON());
+        style.on('load', function() {
+            style.on('error', function() {
+                t.notOk(style.getLayer('background'));
+                t.end();
+            });
+            style.addLayer({
+                id: 'background',
+                type: 'background',
+                paint: {
+                    'background-opacity': 5
+                }
+            });
+        });
+    });
+
     t.test('reloads source', function(t) {
         var style = new Style(util.extend(createStyleJSON(), {
             "sources": {
@@ -433,6 +509,7 @@ test('Style#addLayer', function(t) {
             "id": "symbol",
             "type": "symbol",
             "source": "mapbox",
+            "source-layer": "boxmap",
             "filter": ["==", "id", 0]
         };
 
@@ -457,15 +534,19 @@ test('Style#addLayer', function(t) {
         });
     });
 
-    t.test('throws on duplicates', function(t) {
+    t.test('emits error on duplicates', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
+        style.on('layer.error', function(e) {
+            t.deepEqual(e.layer, {id: 'background'});
+            t.notOk(/duplicate/.match(e.error.message));
+            t.end();
+        });
+
         style.on('load', function() {
             style.addLayer(layer);
-            t.throws(function () {
-                style.addLayer(layer);
-            }, /There is already a layer with this ID/);
+            style.addLayer(layer);
             t.end();
         });
     });
@@ -545,6 +626,26 @@ test('Style#removeLayer', function(t) {
         style.on('load', function() {
             style.addLayer(layer);
             style.removeLayer('background');
+        });
+    });
+
+    t.test('tears down layer event forwarding', function(t) {
+        var style = new Style(createStyleJSON({
+            layers: [{
+                id: 'background',
+                type: 'background'
+            }]
+        }));
+
+        style.on('layer.error', function() {
+            t.fail();
+        });
+
+        style.on('load', function() {
+            var layer = style._layers.background;
+            style.removeLayer('background');
+            layer.fire('error', {mapbox: true});
+            t.end();
         });
     });
 
@@ -648,6 +749,29 @@ test('Style#setFilter', function(t) {
         }, Error, /load/i);
         style.on('load', function() {
             t.end();
+        });
+    });
+
+    t.test('emits if invalid', function(t) {
+        var style = new Style(createStyleJSON({
+            "sources": {
+                "geojson": {
+                    "type": "geojson",
+                    "data": {}
+                }
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        }));
+        style.on('load', function() {
+            style.on('error', function() {
+                t.notOk(style.getLayer('symbol').serialize().filter);
+                t.end();
+            });
+            style.setFilter('symbol', ['==', '$type', 1]);
         });
     });
 });

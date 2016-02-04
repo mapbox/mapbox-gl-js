@@ -3,8 +3,10 @@
 var util = require('../util/util');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
-var StyleSpecification = require('./reference');
+var styleSpec = require('./style_spec');
+var validateStyle = require('./validate_style');
 var parseColor = require('./parse_color');
+var Evented = require('../util/evented');
 
 module.exports = StyleLayer;
 
@@ -34,8 +36,8 @@ function StyleLayer(layer, refLayer) {
     this.filter = (refLayer || layer).filter;
     this.interactive = (refLayer || layer).interactive;
 
-    this._paintSpecifications = StyleSpecification['paint_' + this.type];
-    this._layoutSpecifications = StyleSpecification['layout_' + this.type];
+    this._paintSpecifications = styleSpec['paint_' + this.type];
+    this._layoutSpecifications = styleSpec['layout_' + this.type];
 
     this._paintTransitions = {}; // {[propertyName]: StyleTransition}
     this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
@@ -63,12 +65,19 @@ function StyleLayer(layer, refLayer) {
     }
 }
 
-StyleLayer.prototype = {
+StyleLayer.prototype = util.inherit(Evented, {
 
     setLayoutProperty: function(name, value) {
+
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
+            if (validateStyle.emitErrors(this, validateStyle.layoutProperty({
+                layerType: this.type,
+                objectKey: name,
+                value: value,
+                styleSpec: styleSpec
+            }))) return;
             this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
     },
@@ -92,6 +101,7 @@ StyleLayer.prototype = {
     },
 
     setPaintProperty: function(name, value, klass) {
+
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
             if (!this._paintTransitionOptions[klass || '']) {
                 this._paintTransitionOptions[klass || ''] = {};
@@ -99,6 +109,12 @@ StyleLayer.prototype = {
             if (value === null || value === undefined) {
                 delete this._paintTransitionOptions[klass || ''][name];
             } else {
+                if (validateStyle.emitErrors(this, validateStyle.paintProperty({
+                    layerType: this.type,
+                    objectKey: name,
+                    value: value,
+                    styleSpec: styleSpec
+                }))) return;
                 this._paintTransitionOptions[klass || ''][name] = value;
             }
         } else {
@@ -108,6 +124,12 @@ StyleLayer.prototype = {
             if (value === null || value === undefined) {
                 delete this._paintDeclarations[klass || ''][name];
             } else {
+                if (validateStyle.emitErrors(this, validateStyle.paintProperty({
+                    layerType: this.type,
+                    objectKey: name,
+                    value: value,
+                    styleSpec: styleSpec
+                }))) return;
                 this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
             }
         }
@@ -243,7 +265,7 @@ StyleLayer.prototype = {
             return value !== undefined && !(key === 'layout' && !Object.keys(value).length);
         });
     }
-};
+});
 
 function getDeclarationValue(declaration) {
     return declaration.value;

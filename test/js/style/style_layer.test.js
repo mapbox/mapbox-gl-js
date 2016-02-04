@@ -160,6 +160,36 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.deepEqual(layer.getPaintProperty('background-color-transition', 'background-color'), {duration: 400});
         t.end();
     });
+
+    t.test('emits on an invalid property value', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background"
+        });
+
+        layer.on('error', function() {
+            t.equal(layer.getPaintProperty('background-opacity'), undefined);
+            t.equal(layer.getPaintValue('background-opacity'), 1);
+            t.end();
+        });
+
+        layer.setPaintProperty('background-opacity', 5);
+    });
+
+    t.test('emits on an invalid transition property value', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background"
+        });
+
+        layer.on('error', function() {
+            t.end();
+        });
+
+        layer.setPaintProperty('background-opacity-transition', {
+            duration: -10
+        });
+    });
 });
 
 test('StyleLayer#setLayoutProperty', function(t) {
@@ -173,6 +203,19 @@ test('StyleLayer#setLayoutProperty', function(t) {
 
         t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
         t.end();
+    });
+
+    t.test('emits on an invalid property value', function(t) {
+        var layer = StyleLayer.create({
+            "id": "symbol",
+            "type": "symbol"
+        });
+
+        layer.on('error', function() {
+            t.end();
+        });
+
+        layer.setLayoutProperty('text-transform', 'mapboxcase');
     });
 
     t.test('updates property value', function(t) {
@@ -259,6 +302,100 @@ test('StyleLayer#serialize', function(t) {
                 createRefedSymbolLayer(),
                 StyleLayer.create(createSymbolLayer())
             ).serialize(),
+            createRefedSymbolLayer()
+        );
+        t.end();
+    });
+
+    t.test('serializes refed layers with ref properties', function(t) {
+        t.deepEqual(
+            StyleLayer.create(
+                createRefedSymbolLayer(),
+                StyleLayer.create(createSymbolLayer())
+            ).serialize({includeRefProperties: true}),
+            {
+                id: "symbol",
+                type: "symbol",
+                paint: { "text-color": "red" },
+                layout: { "text-transform": "uppercase" },
+                ref: "symbol"
+            }
+        );
+        t.end();
+    });
+
+    t.test('serializes functions', function(t) {
+        var layerPaint = {
+            'text-color': {
+                base: 2,
+                stops: [[0, 'red'], [1, 'blue']]
+            }
+        };
+
+        t.deepEqual(
+            StyleLayer.create(createSymbolLayer({ paint: layerPaint })).serialize().paint,
+            layerPaint
+        );
+        t.end();
+    });
+
+    t.test('serializes added paint properties', function(t) {
+        var layer = StyleLayer.create(createSymbolLayer());
+        layer.setPaintProperty('text-halo-color', 'orange');
+
+        t.equal(layer.serialize().paint['text-halo-color'], 'orange');
+        t.equal(layer.serialize().paint['text-color'], 'blue');
+
+        t.end();
+    });
+
+    t.test('serializes added layout properties', function(t) {
+        var layer = StyleLayer.create(createSymbolLayer());
+        layer.setLayoutProperty('text-size', 20);
+
+        t.equal(layer.serialize().layout['text-transform'], 'uppercase');
+        t.equal(layer.serialize().layout['text-size'], 20);
+
+        t.end();
+    });
+});
+
+test('StyleLayer#serialize', function(t) {
+
+    function createSymbolLayer(layer) {
+        return util.extend({
+            id: 'symbol',
+            type: 'symbol',
+            paint: {
+                'text-color': 'blue'
+            },
+            layout: {
+                'text-transform': 'uppercase'
+            }
+        }, layer);
+    }
+
+    function createRefedSymbolLayer(layer) {
+        return util.extend({
+            id: 'symbol',
+            ref: 'symbol',
+            paint: {
+                'text-color': 'red'
+            }
+        }, layer);
+    }
+
+    t.test('serializes layers', function(t) {
+        t.deepEqual(
+            StyleLayer.create(createSymbolLayer()).serialize(),
+            createSymbolLayer()
+        );
+        t.end();
+    });
+
+    t.test('serializes refed layers', function(t) {
+        t.deepEqual(
+            StyleLayer.create(createRefedSymbolLayer(), createSymbolLayer()).serialize(),
             createRefedSymbolLayer()
         );
         t.end();

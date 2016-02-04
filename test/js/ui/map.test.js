@@ -93,6 +93,7 @@ test('Map', function(t) {
             map.off('style.error', map.onError);
             map.off('source.error', map.onError);
             map.off('tile.error', map.onError);
+            map.off('layer.error', map.onError);
 
             t.plan(10);
             map.setStyle(style); // Fires load
@@ -105,6 +106,7 @@ test('Map', function(t) {
             style.fire('tile.load');
             style.fire('tile.error');
             style.fire('tile.remove');
+            style.fire('layer.error');
         });
 
         t.test('can be called more than once', function(t) {

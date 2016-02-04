@@ -13,7 +13,7 @@ var normalizeURL = require('../util/mapbox').normalizeStyleURL;
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
-var validate = require('mapbox-gl-style-spec/lib/validate/latest');
+var validateStyle = require('./validate_style');
 
 module.exports = Style;
 
@@ -33,6 +33,7 @@ function Style(stylesheet, animationLoop) {
     util.bindAll([
         '_forwardSourceEvent',
         '_forwardTileEvent',
+        '_forwardLayerEvent',
         '_redoPlacement'
     ], this);
 
@@ -42,13 +43,7 @@ function Style(stylesheet, animationLoop) {
             return;
         }
 
-        var valid = validate(stylesheet);
-        if (valid.length) {
-            for (var i = 0; i < valid.length; i++) {
-                this.fire('error', { error: new Error(valid[i].message) });
-            }
-            return;
-        }
+        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
 
         this._loaded = true;
         this.stylesheet = stylesheet;
@@ -136,6 +131,7 @@ Style.prototype = util.inherit(Evented, {
             if (layerJSON.ref) continue;
             layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
+            layer.on('error', this._forwardLayerEvent);
         }
 
         // resolve all layers WITH a ref
@@ -145,6 +141,7 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
+            layer.on('error', this._forwardLayerEvent);
         }
 
         this._groupLayers();
@@ -470,6 +467,10 @@ Style.prototype = util.inherit(Evented, {
 
     _forwardTileEvent: function(e) {
         this.fire(e.type, util.extend({source: e.target}, e));
+    },
+
+    _forwardLayerEvent: function(e) {
+        this.fire('layer.' + e.type, util.extend({layer: {id: e.target.id}}, e));
     },
 
     // Callbacks from web workers
