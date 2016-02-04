@@ -240,6 +240,23 @@ test('util', function(t) {
         }, that), {map: 'BOX'});
     });
 
+    t.test('filterObject', function(t) {
+        t.plan(6);
+        t.deepEqual(util.filterObject({}, function() { t.ok(false); }), {});
+        var that = {};
+        util.filterObject({map: 'box'}, function(value, key, object) {
+            t.equal(value, 'box');
+            t.equal(key, 'map');
+            t.deepEqual(object, {map: 'box'});
+            t.equal(this, that);
+            return true;
+        }, that);
+        t.deepEqual(util.filterObject({map: 'box', box: 'map'}, function(value) {
+            return value === 'box';
+        }), {map: 'box'});
+        t.end();
+    });
+
     if (process.browser) {
         t.test('timed: no duration', function(t) {
             var context = { foo: 'bar' };

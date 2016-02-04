@@ -31,6 +31,9 @@ module.exports = ImageSource;
  * map.removeSource('some id');  // remove
  */
 function ImageSource(options) {
+    this.urls = options.urls;
+    this.coordinates = options.coordinates;
+
     ajax.getImage(options.url, function(err, image) {
         // @TODO handle errors via event.
         if (err) return;
@@ -148,5 +151,13 @@ ImageSource.prototype = util.inherit(Evented, {
 
     featuresIn: function(bbox, params, callback) {
         return callback(null, []);
+    },
+
+    serialize: function() {
+        return {
+            type: 'image',
+            urls: this.urls,
+            coordinates: this.coordinates
+        };
     }
 });

@@ -173,6 +173,73 @@ test('Map', function(t) {
 
     });
 
+    t.test('#getStyle', function(t) {
+        function createStyle() {
+            return {
+                version: 8,
+                center: [-73.9749, 40.7736],
+                zoom: 12.5,
+                bearing: 29,
+                pitch: 50,
+                sources: {},
+                layers: []
+            };
+        }
+
+        function createStyleSource() {
+            return {
+                type: "geojson",
+                data: {
+                    type: "FeatureCollection",
+                    features: []
+                }
+            };
+        }
+
+        function createStyleLayer() {
+            return {
+                id: 'background',
+                type: 'background'
+            };
+        }
+
+        t.test('returns the style', function(t) {
+            var style = createStyle();
+            var map = createMap({style: style});
+
+            map.on('load', function () {
+                t.deepEqual(map.getStyle(), style);
+                t.end();
+            });
+        });
+
+        t.test('returns the style with added sources', function(t) {
+            var style = createStyle();
+            var map = createMap({style: style});
+
+            map.on('load', function () {
+                map.addSource('geojson', createStyleSource());
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                    sources: {geojson: createStyleSource()}
+                }));
+                t.end();
+            });
+        });
+
+        t.test('returns the style with added layers', function(t) {
+            var style = createStyle();
+            var map = createMap({style: style});
+
+            map.on('load', function () {
+                map.addLayer(createStyleLayer());
+                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                    layers: [createStyleLayer()]
+                }));
+                t.end();
+            });
+        });
+    });
+
     t.test('#resize', function(t) {
         t.test('sets width and height from container offsets', function(t) {
             var map = createMap(),
@@ -566,7 +633,7 @@ test('Map', function(t) {
 
             map.on('style.load', function () {
                 map.setPaintProperty('background', 'background-color', 'red');
-                t.deepEqual(map.getPaintProperty('background', 'background-color'), [1, 0, 0, 1]);
+                t.deepEqual(map.getPaintProperty('background', 'background-color'), 'red');
                 t.end();
             });
         });

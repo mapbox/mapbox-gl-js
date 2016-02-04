@@ -197,19 +197,14 @@ StyleLayer.prototype = {
         }
     },
 
-    serialize: function() {
+    serialize: function(options) {
         var output = {
             'id': this.id,
             'ref': this.ref,
             'metadata': this.metadata,
-            'type': this.type,
-            'source': this.source,
-            'source-layer': this.sourceLayer,
             'minzoom': this.minzoom,
             'maxzoom': this.maxzoom,
-            'filter': this.filter,
-            'interactive': this.interactive,
-            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
+            'interactive': this.interactive
         };
 
         for (var klass in this._paintDeclarations) {
@@ -217,7 +212,19 @@ StyleLayer.prototype = {
             output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
         }
 
-        return output;
+        if (!this.ref || (options && options.includeRefProperties)) {
+            util.extend(output, {
+                'type': this.type,
+                'source': this.source,
+                'source-layer': this.sourceLayer,
+                'filter': this.filter,
+                'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
+            });
+        }
+
+        return util.filterObject(output, function(value, key) {
+            return value !== undefined && !(key === 'layout' && !Object.keys(value).length);
+        });
     }
 };
 

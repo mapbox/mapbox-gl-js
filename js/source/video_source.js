@@ -33,6 +33,9 @@ module.exports = VideoSource;
  * map.removeSource('some id');  // remove
  */
 function VideoSource(options) {
+    this.urls = options.urls;
+    this.coordinates = options.coordinates;
+
     ajax.getVideo(options.urls, function(err, video) {
         // @TODO handle errors via event.
         if (err) return;
@@ -168,5 +171,13 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
     featuresIn: function(bbox, params, callback) {
         return callback(null, []);
+    },
+
+    serialize: function() {
+        return {
+            type: 'video',
+            urls: this.urls,
+            coordinates: this.coordinates
+        };
     }
 });

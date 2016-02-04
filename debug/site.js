@@ -11,7 +11,7 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.Navigation());
 
-map.on('style.load', function() {
+map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
         "data": "/debug/route.json"

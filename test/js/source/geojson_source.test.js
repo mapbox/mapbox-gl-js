@@ -180,3 +180,34 @@ test('GeoJSONSource#update', function(t) {
         });
     });
 });
+
+test('GeoJSONSource#serialize', function(t) {
+
+    t.test('serialize source with inline data', function(t) {
+        var source = new GeoJSONSource({data: hawkHill});
+        t.deepEqual(source.serialize(), {
+            type: 'geojson',
+            data: hawkHill
+        });
+        t.end();
+    });
+
+    t.test('serialize source with url', function(t) {
+        var source = new GeoJSONSource({data: 'local://data.json'});
+        t.deepEqual(source.serialize(), {
+            type: 'geojson',
+            data: 'local://data.json'
+        });
+        t.end();
+    });
+
+    t.test('serialize source with updated data', function(t) {
+        var source = new GeoJSONSource({data: {}});
+        source.setData(hawkHill);
+        t.deepEqual(source.serialize(), {
+            type: 'geojson',
+            data: hawkHill
+        });
+        t.end();
+    });
+});

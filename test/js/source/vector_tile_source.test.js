@@ -70,7 +70,36 @@ test('VectorTileSource', function(t) {
         });
     });
 
+    t.test('serialize', function(t) {
+        var source = new VectorTileSource({
+            url: "http://example.com"
+        });
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            url: "http://example.com"
+        });
+        t.end();
+    });
+
+    t.test('serialize TileJSON', function(t) {
+        var source = new VectorTileSource({
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+        t.deepEqual(source.serialize(), {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+        t.end();
+    });
+
     t.test('after', function(t) {
         server.close(t.end);
     });
+
 });

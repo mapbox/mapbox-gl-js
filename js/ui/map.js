@@ -449,6 +449,15 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Get a style object that can be used to recreate the map's style
+     *
+     * @returns {Object} style
+     */
+    getStyle: function() {
+        return this.style.serialize();
+    },
+
+    /**
      * Add a source to the map style.
      *
      * @param {string} id ID of the source. Must not be used by any existing source.

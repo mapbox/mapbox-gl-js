@@ -9,6 +9,7 @@ module.exports = VectorTileSource;
 
 function VectorTileSource(options) {
     util.extend(this, util.pick(options, ['url', 'tileSize']));
+    this._options = util.extend({ type: 'vector' }, options);
 
     if (this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
@@ -43,6 +44,10 @@ VectorTileSource.prototype = util.inherit(Evented, {
         if (this._pyramid) {
             this._pyramid.reload();
         }
+    },
+
+    serialize: function() {
+        return util.extend({}, this._options);
     },
 
     getVisibleCoordinates: Source._getVisibleCoordinates,

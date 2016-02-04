@@ -846,7 +846,7 @@ test('Style#featuresAt', function(t) {
             t.test('includes paint properties', function(t) {
                 featuresInOrAt({}, function(err, results) {
                     t.error(err);
-                    t.deepEqual(results[0].layer.paint['line-color'], [ 1, 0, 0, 1 ]);
+                    t.deepEqual(results[0].layer.paint['line-color'], 'red');
                     t.end();
                 });
             });

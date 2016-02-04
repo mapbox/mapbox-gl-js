@@ -128,6 +128,13 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }
     },
 
+    serialize: function() {
+        return {
+            type: 'geojson',
+            data: this._data
+        };
+    },
+
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 

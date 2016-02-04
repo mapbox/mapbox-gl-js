@@ -10,22 +10,20 @@ function StyleDeclaration(reference, value) {
     this.transitionable = reference.transition;
 
     if (value == null) {
-        value = reference.default;
-    }
-
-    // immutable representation of value. used for comparison
-    this.json = JSON.stringify(value);
-
-    if (this.type === 'color') {
-        this.value = parseColor(value);
+        this.value = reference.default;
     } else {
         this.value = value;
     }
 
+    // immutable representation of value. used for comparison
+    this.json = JSON.stringify(this.value);
+
+    var parsedValue = this.type === 'color' ? parseColor(this.value) : value;
+
     if (reference.function === 'interpolated') {
-        this.calculate = MapboxGLFunction.interpolated(this.value);
+        this.calculate = MapboxGLFunction.interpolated(parsedValue);
     } else {
-        this.calculate = MapboxGLFunction['piecewise-constant'](this.value);
+        this.calculate = MapboxGLFunction['piecewise-constant'](parsedValue);
         if (reference.transition) {
             this.calculate = transitioned(this.calculate);
         }

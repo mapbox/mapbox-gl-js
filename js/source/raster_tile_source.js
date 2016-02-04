@@ -39,6 +39,14 @@ RasterTileSource.prototype = util.inherit(Evented, {
         // noop
     },
 
+    serialize: function() {
+        return {
+            type: 'raster',
+            url: this.url,
+            tileSize: this.tileSize
+        };
+    },
+
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 

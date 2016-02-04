@@ -429,3 +429,20 @@ exports.mapObject = function(input, iterator, context) {
     }
     return output;
 };
+
+/**
+ * Create an object by filtering out values of an existing object
+ * @param {Object} input
+ * @param {Function} iterator
+ * @returns {Object}
+ * @private
+ */
+exports.filterObject = function(input, iterator, context) {
+    var output = {};
+    for (var key in input) {
+        if (iterator.call(context || this, input[key], key, input)) {
+            output[key] = input[key];
+        }
+    }
+    return output;
+};
