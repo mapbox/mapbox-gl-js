@@ -402,7 +402,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     featuresAt: function(point, params, callback) {
         var location = this.unproject(point).wrap();
         var coord = this.transform.locationCoordinate(location);
-        this.style.featuresAt(coord, params, callback);
+        this.style.featuresAt(coord, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 
@@ -446,7 +446,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             Math.max(bounds[0].y, bounds[1].y)
           )
         ].map(this.transform.pointCoordinate.bind(this.transform));
-        this.style.featuresIn(bounds, params, callback);
+        this.style.featuresIn(bounds, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 

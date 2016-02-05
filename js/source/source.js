@@ -67,7 +67,7 @@ exports._getVisibleCoordinates = function() {
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
-exports._vectorFeaturesAt = function(coord, params, callback) {
+exports._vectorFeaturesAt = function(coord, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
@@ -81,13 +81,16 @@ exports._vectorFeaturesAt = function(coord, params, callback) {
         y: result.y,
         scale: result.scale,
         tileSize: result.tileSize,
+        classes: classes,
+        zoom: zoom,
+        bearing: bearing,
         source: this.id,
         params: params
     }, callback, result.tile.workerID);
 };
 
 
-exports._vectorFeaturesIn = function(bounds, params, callback) {
+exports._vectorFeaturesIn = function(bounds, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
@@ -103,6 +106,11 @@ exports._vectorFeaturesIn = function(bounds, params, callback) {
             maxX: result.maxX,
             minY: result.minY,
             maxY: result.maxY,
+            scale: result.scale,
+            tileSize: result.tileSize,
+            classes: classes,
+            zoom: zoom,
+            bearing: bearing,
             params: params
         }, cb, result.tile.workerID);
     }.bind(this), function done(err, features) {

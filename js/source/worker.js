@@ -4,6 +4,7 @@ var Actor = require('../util/actor');
 var WorkerTile = require('./worker_tile');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
+var StyleLayer = require('../style/style_layer');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var supercluster = require('supercluster');
@@ -29,6 +30,25 @@ function Worker(self) {
 util.extend(Worker.prototype, {
     'set layers': function(layers) {
         this.layers = layers;
+        this.styleLayersByID = {};
+
+        var layer;
+        this._recalculatedZoom = null;
+        this._cascadedClasses = null;
+
+        for (var i = 0; i < layers.length; i++) {
+            layer = layers[i];
+            if (!layer.ref) {
+                this.styleLayersByID[layer.id] = StyleLayer.create(layer);
+            }
+        }
+
+        for (var k = 0; k < layers.length; k++) {
+            layer = layers[k];
+            if (layer.ref) {
+                this.styleLayersByID[layer.id] = StyleLayer.create(layer, this.styleLayersByID[layer.ref]);
+            }
+        }
     },
 
     'update layers': function(layers) {
@@ -170,7 +190,25 @@ util.extend(Worker.prototype, {
     'query features': function(params, callback) {
         var tile = this.loaded[params.source] && this.loaded[params.source][params.uid];
         if (tile) {
-            tile.featureTree.query(params, callback);
+
+            var id;
+
+            var classString = Object.keys(params.classes).join(' ');
+            if (this._cascadedClasses !== classString) {
+                this._cascadedClasses = classString;
+                for (id in this.styleLayersByID) {
+                    this.styleLayersByID[id].cascade(params.classes, {transition: false}, {});
+                }
+            }
+
+            if (this._recalculatedZoom !== params.zoom) {
+                this._recalculatedZoom = params.zoom;
+                for (id in this.styleLayersByID) {
+                    this.styleLayersByID[id].recalculate(params.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+                }
+            }
+
+            callback(null, tile.featureTree.query(params, this.styleLayersByID));
         } else {
             callback(null, []);
         }

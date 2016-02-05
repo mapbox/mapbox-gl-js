@@ -410,15 +410,15 @@ Style.prototype = util.inherit(Evented, {
         }, function(value) { return value !== undefined; });
     },
 
-    featuresAt: function(coord, params, callback) {
-        this._queryFeatures('featuresAt', coord, params, callback);
+    featuresAt: function(coord, params, classes, zoom, bearing, callback) {
+        this._queryFeatures('featuresAt', coord, params, classes, zoom, bearing, callback);
     },
 
-    featuresIn: function(bbox, params, callback) {
-        this._queryFeatures('featuresIn', bbox, params, callback);
+    featuresIn: function(bbox, params, classes, zoom, bearing, callback) {
+        this._queryFeatures('featuresIn', bbox, params, classes, zoom, bearing, callback);
     },
 
-    _queryFeatures: function(queryType, bboxOrCoords, params, callback) {
+    _queryFeatures: function(queryType, bboxOrCoords, params, classes, zoom, bearing, callback) {
         var features = [];
         var error = null;
 
@@ -428,7 +428,7 @@ Style.prototype = util.inherit(Evented, {
 
         util.asyncAll(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
-            source[queryType](bboxOrCoords, params, function(err, result) {
+            source[queryType](bboxOrCoords, params, classes, zoom, bearing, function(err, result) {
                 if (result) features = features.concat(result);
                 if (err) error = err;
                 callback();

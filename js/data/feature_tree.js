@@ -40,20 +40,48 @@ FeatureTree.prototype.setCollisionTile = function(collisionTile) {
     this.collisionTile = collisionTile;
 };
 
+function translateDistance(translate) {
+    return Math.sqrt(translate[0] * translate[0] + translate[1] * translate[1]);
+}
+
 // Finds features in this tile at a particular position.
-FeatureTree.prototype.query = function(args, callback) {
+FeatureTree.prototype.query = function(args, styleLayersByID) {
     if (this.toBeInserted.length) this._load();
 
     var params = args.params || {},
         x = args.x,
         y = args.y,
+        p = new Point(x, y),
+        pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
         result = [];
 
+    // Features are indexed their original geometries. The rendered geometries may
+    // be buffered, translated or offset. Figure out how much the search radius needs to be
+    // expanded by to include these features.
+    var additionalRadius = 0;
+    var styleLayer;
+    for (var id in styleLayersByID) {
+        styleLayer = styleLayersByID[id];
+
+        var styleLayerDistance = 0;
+        if (styleLayer.type === 'line') {
+            styleLayerDistance = styleLayer.paint['line-width'] / 2 + Math.abs(styleLayer.paint['line-offset']) + translateDistance(styleLayer.paint['line-translate']);
+        } else if (styleLayer.type === 'fill') {
+            styleLayerDistance = translateDistance(styleLayer.paint['fill-translate']);
+        } else if (styleLayer.type === 'circle') {
+            styleLayerDistance = styleLayer.paint['circle-radius'] + translateDistance(styleLayer.paint['circle-translate']);
+        }
+        additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
+    }
+
+    var radiusSearch = typeof x !== 'undefined' && typeof y !== 'undefined';
+
     var radius, bounds, symbolQueryBox;
-    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+    if (radiusSearch) {
         // a point (or point+radius) query
-        radius = (params.radius || 0) * EXTENT / args.tileSize / args.scale;
-        bounds = [x - radius, y - radius, x + radius, y + radius];
+        radius = (params.radius || 0) * pixelsToTileUnits;
+        var searchRadius = radius + additionalRadius;
+        bounds = [x - searchRadius, y - searchRadius, x + searchRadius, y + searchRadius];
         symbolQueryBox = new CollisionBox(new Point(x, y), -radius, -radius, radius, radius, args.scale, null);
     } else {
         // a rectangle query
@@ -61,33 +89,17 @@ FeatureTree.prototype.query = function(args, callback) {
         symbolQueryBox = new CollisionBox(new Point(args.minX, args.minY), 0, 0, args.maxX - args.minX, args.maxY - args.minY, args.scale, null);
     }
 
-    function checkIntersection(feature) {
-        var type = vt.VectorTileFeature.types[feature.type];
+    var matching = this.rtree.search(bounds).concat(this.collisionTile.getFeaturesAt(symbolQueryBox, args.scale));
+
+    for (var k = 0; k < matching.length; k++) {
+        var feature = matching[k].feature,
+            layerIDs = matching[k].layerIDs,
+            type = vt.VectorTileFeature.types[feature.type];
+
         if (params.$type && type !== params.$type)
-            return false;
+            continue;
 
-        return radius ?
-            geometryContainsPoint(loadGeometry(feature), type, new Point(x, y), radius) :
-            geometryIntersectsBox(loadGeometry(feature), type, bounds);
-    }
-
-    function checkSymbolIntersection() {
-        return true;
-    }
-
-    this.addFeatures(this.rtree.search(bounds), params, checkIntersection, result);
-    this.addFeatures(this.collisionTile.getFeaturesAt(symbolQueryBox, args.scale), params, checkSymbolIntersection, result);
-
-    callback(null, result);
-};
-
-FeatureTree.prototype.addFeatures = function(matching, params, checkIntersection, result) {
-    for (var i = 0; i < matching.length; i++) {
-        var feature = matching[i].feature,
-            layerIDs = matching[i].layerIDs;
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
-
-        if (!checkIntersection(feature)) continue;
 
         if (!params.includeGeometry) {
             geoJSON.geometry = null;
@@ -96,18 +108,86 @@ FeatureTree.prototype.addFeatures = function(matching, params, checkIntersection
         for (var l = 0; l < layerIDs.length; l++) {
             var layerID = layerIDs[l];
 
-            if (params.layerIds && params.layerIds.indexOf(layerID) < 0)
+            if (params.layerIds && params.layerIds.indexOf(layerID) < 0) {
                 continue;
+            }
+
+            styleLayer = styleLayersByID[layerID];
+            var geometry = loadGeometry(feature);
+
+            var translatedPoint;
+            if (styleLayer.type === 'symbol') {
+                // all symbols already match the style
+
+            } else if (styleLayer.type === 'line') {
+                translatedPoint = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
+                var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
+                if (styleLayer.paint['line-offset']) {
+                    geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                }
+                if (radiusSearch ?
+                        !lineContainsPoint(geometry, translatedPoint, radius + halfWidth) :
+                        !lineIntersectsBox(geometry, bounds)) {
+                    continue;
+                }
+
+            } else if (styleLayer.type === 'fill') {
+                translatedPoint = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
+                if (radiusSearch ?
+                        !(polyContainsPoint(geometry, translatedPoint) || lineContainsPoint(geometry, translatedPoint, radius)) :
+                        !polyIntersectsBox(geometry, bounds)) {
+                    continue;
+                }
+
+            } else if (styleLayer.type === 'circle') {
+                translatedPoint = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
+                var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
+                if (radiusSearch ?
+                        !pointContainsPoint(geometry, translatedPoint, radius + circleRadius) :
+                        !pointIntersectsBox(geometry, bounds)) {
+                    continue;
+                }
+            }
 
             result.push(util.extend({layer: layerID}, geoJSON));
         }
     }
+
+    function translate(translate, translateAnchor) {
+        translate = Point.convert(translate);
+
+        if (translateAnchor === "viewport") {
+            translate._rotate(-args.bearing);
+        }
+
+        return p.sub(translate._mult(pixelsToTileUnits));
+    }
+
+    return result;
 };
 
-function geometryIntersectsBox(rings, type, bounds) {
-    return type === 'Point' ? pointIntersectsBox(rings, bounds) :
-           type === 'LineString' ? lineIntersectsBox(rings, bounds) :
-           type === 'Polygon' ? polyIntersectsBox(rings, bounds) || lineIntersectsBox(rings, bounds) : false;
+function offsetLine(rings, offset) {
+    var newRings = [];
+    var zero = new Point(0, 0);
+    for (var k = 0; k < rings.length; k++) {
+        var ring = rings[k];
+        var newRing = [];
+        for (var i = 0; i < ring.length; i++) {
+            var a = ring[i - 1];
+            var b = ring[i];
+            var c = ring[i + 1];
+            var aToB = i === 0 ? zero : b.sub(a)._unit()._perp();
+            var bToC = i === ring.length - 1 ? zero : c.sub(b)._unit()._perp();
+            var extrude = aToB._add(bToC)._unit();
+
+            var cosHalfAngle = extrude.x * bToC.x + extrude.y * bToC.y;
+            extrude._mult(1 / cosHalfAngle);
+
+            newRing.push(extrude._mult(offset)._add(b));
+        }
+        newRings.push(newRing);
+    }
+    return newRings;
 }
 
 // Tests whether any of the four corners of the bbox are contained in the
@@ -173,12 +253,6 @@ function pointIntersectsBox(rings, bounds) {
         }
     }
     return false;
-}
-
-function geometryContainsPoint(rings, type, p, radius) {
-    return type === 'Point' ? pointContainsPoint(rings, p, radius) :
-           type === 'LineString' ? lineContainsPoint(rings, p, radius) :
-           type === 'Polygon' ? polyContainsPoint(rings, p) || lineContainsPoint(rings, p, radius) : false;
 }
 
 // Code from http://stackoverflow.com/a/1501725/331379.
