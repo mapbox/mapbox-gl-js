@@ -32,6 +32,21 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('emits load event after a style is set', function(t) {
+        var map = createMap();
+
+        map.on('load', fail);
+
+        setTimeout(function() {
+            map.off('load', fail);
+            map.on('load', pass);
+            map.setStyle(createStyle());
+        }, 1);
+
+        function fail() { t.ok(false); }
+        function pass() { t.end(); }
+    });
+
     t.test('#setStyle', function(t) {
         t.test('returns self', function(t) {
             var map = createMap(),
@@ -108,15 +123,7 @@ test('Map', function(t) {
             map.transform.resize(600, 400);
             t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
             t.ok(map.transform.unmodified, 'map transform is not modified');
-            map.setStyle({
-                version: 8,
-                center: [-73.9749, 40.7736],
-                zoom: 12.5,
-                bearing: 29,
-                pitch: 50,
-                sources: {},
-                layers: []
-            });
+            map.setStyle(createStyle());
             map.on('style.load', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -73.9749, lat: 40.7736 }));
                 t.equal(fixedNum(map.transform.zoom), 12.5);
@@ -129,15 +136,7 @@ test('Map', function(t) {
         t.test('style transform does not override map transform modified via options', function (t) {
             var map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
-            map.setStyle({
-                version: 8,
-                center: [-73.9749, 40.7736],
-                zoom: 12.5,
-                bearing: 29,
-                pitch: 50,
-                sources: {},
-                layers: []
-            });
+            map.setStyle(createStyle());
             map.on('style.load', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
                 t.equal(fixedNum(map.transform.zoom), 10);
@@ -153,15 +152,7 @@ test('Map', function(t) {
             map.setZoom(10);
             map.setCenter([-77.0186, 38.8888]);
             t.notOk(map.transform.unmodified, 'map transform is modified via setters');
-            map.setStyle({
-                version: 8,
-                center: [-73.9749, 40.7736],
-                zoom: 12.5,
-                bearing: 29,
-                pitch: 50,
-                sources: {},
-                layers: []
-            });
+            map.setStyle(createStyle());
             map.on('style.load', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
                 t.equal(fixedNum(map.transform.zoom), 10);
@@ -675,3 +666,15 @@ test('Map', function(t) {
         });
     });
 });
+
+function createStyle() {
+    return {
+        version: 8,
+        center: [-73.9749, 40.7736],
+        zoom: 12.5,
+        bearing: 29,
+        pitch: 50,
+        sources: {},
+        layers: []
+    };
+}
