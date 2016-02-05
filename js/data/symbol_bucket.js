@@ -36,10 +36,16 @@ function SymbolBucket(options) {
     var zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 
     this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', 18, zoomHistory);
-    this.adjustedTextSize = this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory);
+    this.adjustedTextSizes = [
+        this.layer.getLayoutValue('text-size', this.zoom, zoomHistory),
+        this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory)
+    ];
 
     this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', 18, zoomHistory);
-    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory);
+    this.adjustedIconSizes = [
+        this.layer.getLayoutValue('icon-size', this.zoom, zoomHistory),
+        this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory)
+    ];
 }
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
@@ -235,11 +241,16 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
 
     var glyphSize = 24;
 
-    var fontScale = this.adjustedTextSize / glyphSize,
-        textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize,
-        textBoxScale = this.tilePixelRatio * fontScale,
+    var textMaxSize = this.adjustedTextMaxSize,
+        textBoxScales = [
+            this.tilePixelRatio * this.adjustedTextSizes[0] / glyphSize,
+            this.tilePixelRatio * this.adjustedTextSizes[1] / glyphSize
+        ],
         textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
-        iconBoxScale = this.tilePixelRatio * this.adjustedIconSize,
+        iconBoxScales = [
+            this.tilePixelRatio * this.adjustedIconSizes[0],
+            this.tilePixelRatio * this.adjustedIconSizes[1]
+        ],
         symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
         avoidEdges = layout['symbol-avoid-edges'],
         textPadding = layout['text-padding'] * this.tilePixelRatio,
@@ -303,8 +314,8 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
             var addToBuffers = inside || mayOverlap;
 
             this.symbolInstances.push(new SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, this.symbolInstances.length,
-                        textBoxScale, textPadding, textAlongLine,
-                        iconBoxScale, iconPadding, iconAlongLine));
+                        textBoxScales, textPadding, textAlongLine,
+                        iconBoxScales, iconPadding, iconAlongLine));
         }
     }
 };
@@ -343,8 +354,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     var layout = this.layer.layout;
     var maxScale = collisionTile.maxScale;
 
-    elementGroups.glyph.adjustedSize = this.adjustedTextSize;
-    elementGroups.icon.adjustedSize = this.adjustedIconSize;
+    elementGroups.glyph.adjustedSize = Math.max(this.adjustedTextSizes[0], this.adjustedTextSizes[1]);
+    elementGroups.icon.adjustedSize = Math.max(this.adjustedIconSizes[0], this.adjustedIconSizes[1]);
 
     // Transfer the name of the fonstack back to the main thread along with the buffers.
     // The draw function needs to know which fonstack's glyph atlas to bind when rendering.
@@ -535,8 +546,8 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
 };
 
 function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index,
-                        textBoxScale, textPadding, textAlongLine,
-                        iconBoxScale, iconPadding, iconAlongLine) {
+                        textBoxScales, textPadding, textAlongLine,
+                        iconBoxScales, iconPadding, iconAlongLine) {
 
     this.x = anchor.x;
     this.y = anchor.y;
@@ -545,12 +556,12 @@ function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffe
     this.hasIcon = !!shapedIcon;
 
     if (this.hasText) {
-        this.glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
-        this.textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScale, textPadding, textAlongLine, false);
+        this.glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, Math.max(textBoxScales[0], textBoxScales[1]), line, layout, textAlongLine) : [];
+        this.textCollisionFeature = new CollisionFeature(line, anchor, shapedText, textBoxScales, textPadding, textAlongLine, false);
     }
 
     if (this.hasIcon) {
-        this.iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
-        this.iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
+        this.iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, Math.max(iconBoxScales[0], iconBoxScales[1]), line, layout, iconAlongLine) : [];
+        this.iconCollisionFeature = new CollisionFeature(line, anchor, shapedIcon, iconBoxScales, iconPadding, iconAlongLine, true);
     }
 }
