@@ -1,5 +1,7 @@
 ## master
 
+* Revert ramp validation checks that broke some styles.
+
 ## 8.4.0
 
 v8.0.0 styles are fully compatible with v8.4.0.

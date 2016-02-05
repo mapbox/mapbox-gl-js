@@ -126,26 +126,6 @@
       }
     },
     {
-      "id": "duplicate-stop",
-      "type": "line",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "line-width": {
-          "stops": [
-            [
-              1,
-              0
-            ],
-            [
-              1,
-              0
-            ]
-          ]
-        }
-      }
-    },
-    {
       "id": "v6-array-function",
       "type": "fill",
       "source": "source",
