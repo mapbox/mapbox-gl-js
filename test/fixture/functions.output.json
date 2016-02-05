@@ -36,23 +36,19 @@
     "line": 102
   },
   {
-    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order and have no duplicates",
+    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order",
     "line": 121
   },
   {
-    "message": "layers[9].paint.line-width.stops[1][0]: array stops must appear in ascending order and have no duplicates",
-    "line": 141
+    "message": "layers[9].paint.fill-translate[0]: number expected, object found",
+    "line": 135
   },
   {
-    "message": "layers[10].paint.fill-translate[0]: number expected, object found",
-    "line": 155
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
+    "line": 139
   },
   {
-    "message": "layers[10].paint.fill-translate[1]: number expected, object found",
-    "line": 159
-  },
-  {
-    "message": "layers[12].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
-    "line": 185
+    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
+    "line": 165
   }
 ]
