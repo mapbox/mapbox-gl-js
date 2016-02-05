@@ -28,6 +28,9 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
         attributionControl: false
     });
 
+    if (options.debug) map.debug = true;
+    if (options.collisionDebug) map.collisionDebug = true;
+
     var gl = map.painter.gl;
 
     map.once('load', function() {

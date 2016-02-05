@@ -152,7 +152,7 @@ Painter.prototype.setup = function() {
     gl.bufferData(
         gl.ARRAY_BUFFER,
         new Int16Array([
-            0, 0, EXTENT - 1, 0, EXTENT - 1, EXTENT - 1, 0, EXTENT - 1, 0, 0]),
+            0, 0, EXTENT, 0, EXTENT, EXTENT, 0, EXTENT, 0, 0]),
         gl.STATIC_DRAW);
 
     // The debugTextBuffer is used to draw tile IDs for debugging
@@ -299,7 +299,9 @@ Painter.prototype.renderPass = function(options) {
             this.renderLayer(this, source, layer, coords);
         }
 
-        draw.debug(this, coords);
+        if (source) {
+            draw.debug(this, source, coords);
+        }
     }
 };
 
