@@ -1,6 +1,6 @@
 'use strict';
 
-var BinPack = require('./bin_pack');
+var ShelfPack = require('shelf-pack');
 var browser = require('../util/browser');
 
 module.exports = SpriteAtlas;
@@ -8,7 +8,7 @@ function SpriteAtlas(width, height) {
     this.width = width;
     this.height = height;
 
-    this.bin = new BinPack(width, height);
+    this.bin = new ShelfPack(width, height);
     this.images = {};
     this.data = false;
     this.texture = 0; // WebGL ID

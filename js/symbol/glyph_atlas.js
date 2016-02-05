@@ -1,13 +1,13 @@
 'use strict';
 
-var BinPack = require('./bin_pack');
+var ShelfPack = require('shelf-pack');
 
 module.exports = GlyphAtlas;
 function GlyphAtlas(width, height) {
     this.width = width;
     this.height = height;
 
-    this.bin = new BinPack(width, height);
+    this.bin = new ShelfPack(width, height);
     this.index = {};
     this.ids = {};
     this.data = new Uint8Array(width * height);
