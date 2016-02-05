@@ -2,7 +2,6 @@
 
 var util = require('../../util/util');
 var StyleLayer = require('../style_layer');
-var MapboxGLFunction = require('mapbox-gl-function');
 
 function SymbolStyleLayer() {
     StyleLayer.apply(this, arguments);
@@ -22,27 +21,18 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
         return false;
     },
 
-    resolveLayout: function() {
-        StyleLayer.prototype.resolveLayout.apply(this, arguments);
-
-        if (this.layout && this.layout['symbol-placement'] === 'line') {
-            if (!this.layout.hasOwnProperty('text-rotation-alignment')) {
-                this.layout['text-rotation-alignment'] = 'map';
-            }
-            if (!this.layout.hasOwnProperty('icon-rotation-alignment')) {
-                this.layout['icon-rotation-alignment'] = 'map';
-            }
+    getLayoutValue: function(name, zoom, zoomHistory) {
+        if (name === 'text-rotation-alignment' &&
+                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                !this.getLayoutProperty('text-rotation-alignment')) {
+            return 'map';
+        } else if (name === 'icon-rotation-alignment' &&
+                this.getLayoutValue('symbol-placement', zoom, zoomHistory) === 'line' &&
+                !this.getLayoutProperty('icon-rotation-alignment')) {
+            return 'map';
+        } else {
+            return StyleLayer.prototype.getLayoutValue.apply(this, arguments);
         }
-    },
-
-    recalculate: function(zoom) {
-        StyleLayer.prototype.recalculate.apply(this, arguments);
-
-        // the -size properties are used both as layout and paint.
-        // In the spec they are layout properties. This adds them
-        // as paint properties.
-        this.paint['text-size'] = MapboxGLFunction.interpolated(this.layout['text-size'])(zoom);
-        this.paint['icon-size'] = MapboxGLFunction.interpolated(this.layout['icon-size'])(zoom);
     }
 
 });

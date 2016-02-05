@@ -39,7 +39,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.icon.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[i], tile.tileExtent, source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
     }
@@ -52,16 +52,12 @@ function drawSymbols(painter, source, layer, coords) {
         if (!elementGroups) continue;
         if (!elementGroups.glyph.groups.length) continue;
 
-        posMatrix = painter.calculatePosMatrix(coords[j], tile.tileExtent, source.maxzoom);
+        posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }
 
-    for (var k = 0; k < coords.length; k++) {
-        tile = source.getTile(coords[k]);
-        painter.enableTileClippingMask(coords[k]);
-        drawCollisionDebug(painter, layer, coords[k], tile);
-    }
+    drawCollisionDebug(painter, source, layer, coords);
 
     if (drawAcrossEdges) {
         gl.enable(gl.STENCIL_TEST);
@@ -86,7 +82,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = tile.tileExtent / tile.tileSize / Math.pow(2, painter.transform.zoom - tile.coord.z);
+        s = tile.pixelsToTileUnits(1, painter.transform.zoom);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(painter.transform.exMatrix);
@@ -95,7 +91,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     }
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
-    var fontSize = layer.paint[prefix + '-size'];
+    var fontSize = layer.layout[prefix + '-size'];
     var fontScale = fontSize / defaultSizes[prefix];
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
@@ -120,8 +116,9 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     }
 
     if (text) {
-        var textfont = elementGroups['text-font'];
-        var fontstack = textfont && textfont.join(',');
+        // use the fonstack used when parsing the tile, not the fontstack
+        // at the current zoom level (layout['text-font']).
+        var fontstack = elementGroups.fontstack;
         var glyphAtlas = fontstack && painter.glyphSource.getGlyphAtlas(fontstack);
         if (!glyphAtlas) return;
 
@@ -146,7 +143,7 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
     gl.uniform1f(shader.u_extra, extra);
 
     // adjust min/max zooms for variable font sizes
-    var zoomAdjust = Math.log(fontSize / elementGroups[prefix + '-size']) / Math.LN2 || 0;
+    var zoomAdjust = Math.log(fontSize / elementGroups.adjustedSize) / Math.LN2 || 0;
 
 
     gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level

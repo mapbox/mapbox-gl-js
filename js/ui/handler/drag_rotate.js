@@ -100,7 +100,7 @@ DragRotate.prototype = {
 
         var finish = function() {
             if (Math.abs(mapBearing) < map.options.bearingSnap) {
-                map.resetNorth({noMoveStart: true});
+                map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
                 this._fireEvent('moveend', e);
             }
@@ -142,7 +142,7 @@ DragRotate.prototype = {
             duration: duration * 1000,
             easing: inertiaEasing,
             noMoveStart: true
-        });
+        }, { originalEvent: e });
     },
 
     _fireEvent: function (type, e) {
@@ -181,8 +181,7 @@ DragRotate.prototype = {
  * @event rotatestart
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -191,8 +190,7 @@ DragRotate.prototype = {
  * @event rotate
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -201,6 +199,5 @@ DragRotate.prototype = {
  * @event rotateend
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */

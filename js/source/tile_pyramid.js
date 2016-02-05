@@ -5,6 +5,7 @@ var TileCoord = require('./tile_coord');
 var Point = require('point-geometry');
 var Cache = require('../util/mru_cache');
 var util = require('../util/util');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = TilePyramid;
 
@@ -360,7 +361,7 @@ TilePyramid.prototype = {
         for (var i = 0; i < ids.length; i++) {
             var tile = this._tiles[ids[i]];
             var pos = tile.positionAt(coord);
-            if (pos && pos.x >= 0 && pos.x < tile.tileExtent && pos.y >= 0 && pos.y < tile.tileExtent) {
+            if (pos && pos.x >= 0 && pos.x < EXTENT && pos.y >= 0 && pos.y < EXTENT) {
                 // The click is within the viewport. There is only ever one tile in
                 // a layer that has this property.
                 return {
@@ -390,7 +391,7 @@ TilePyramid.prototype = {
                 tile.positionAt(bounds[0]),
                 tile.positionAt(bounds[1])
             ];
-            if (tileSpaceBounds[0].x < tile.tileExtent && tileSpaceBounds[0].y < tile.tileExtent &&
+            if (tileSpaceBounds[0].x < EXTENT && tileSpaceBounds[0].y < EXTENT &&
                 tileSpaceBounds[1].x >= 0 && tileSpaceBounds[1].y >= 0) {
                 result.push({
                     tile: tile,

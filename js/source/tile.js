@@ -2,6 +2,7 @@
 
 var util = require('../util/util');
 var Buffer = require('../data/buffer');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = Tile;
 
@@ -23,8 +24,24 @@ function Tile(coord, size, sourceMaxZoom) {
 }
 
 Tile.prototype = {
-    // todo unhardcode
-    tileExtent: 4096,
+
+    /**
+     * Converts a pixel value at a the given zoom level to tile units.
+     *
+     * The shaders mostly calculate everything in tile units so style
+     * properties need to be converted from pixels to tile units using this.
+     *
+     * For example, a translation by 30 pixels at zoom 6.5 will be a
+     * translation by pixelsToTileUnits(30, 6.5) tile units.
+     *
+     * @param {number} pixelValue
+     * @param {number} z
+     * @returns {number} value in tile units
+     * @private
+     */
+    pixelsToTileUnits: function(pixelValue, z) {
+        return pixelValue * (EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
+    },
 
     /**
      * Given a coordinate position, zoom that coordinate to my zoom and
@@ -36,8 +53,8 @@ Tile.prototype = {
     positionAt: function(coord) {
         var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
         return {
-            x: (zoomedCoord.column - this.coord.x) * this.tileExtent,
-            y: (zoomedCoord.row - this.coord.y) * this.tileExtent
+            x: (zoomedCoord.column - this.coord.x) * EXTENT,
+            y: (zoomedCoord.row - this.coord.y) * EXTENT
         };
     },
 
@@ -58,7 +75,6 @@ Tile.prototype = {
 
         this.buffers = unserializeBuffers(data.buffers);
         this.elementGroups = data.elementGroups;
-        this.tileExtent = data.extent;
     },
 
     /**
@@ -103,9 +119,13 @@ Tile.prototype = {
      * @private
      */
     unloadVectorData: function(painter) {
+        this.loaded = false;
+
         for (var b in this.buffers) {
             if (this.buffers[b]) this.buffers[b].destroy(painter.gl);
         }
+
+        this.elementGroups = null;
         this.buffers = null;
     },
 

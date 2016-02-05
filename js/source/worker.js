@@ -135,7 +135,7 @@ util.extend(Worker.prototype, {
 
         // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 
-        var geoJSONTile = this.geoJSONIndexes[source].getTile(coord.z, coord.x, coord.y);
+        var geoJSONTile = this.geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
 
         // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
 

@@ -1,3 +1,26 @@
+## 0.13.1 (Jan 27 2016)
+
+#### Bugfixes
+
+Fixed broken npm package due to outdated bundled modules
+
+## 0.13.0 (Jan 27 2016)
+
+#### Bugfixes
+
+Fixed easeTo pan, zoom, and rotate when initial rotation != 0 (#1950)
+Fixed rendering of tiles with an extent != 4096 (#1952)
+Fixed missing icon collision boxes (#1978)
+Fixed null `Tile#buffers` errors (#1987)
+
+#### New Features & Improvements
+
+Added `symbol-avoid-edges` style property (#1951)
+Improved `symbol-max-angle` check algorithm (#1959)
+Added marker clustering! (#1931)
+Added zoomstart, zoom, and zoomend events (#1958)
+Disabled drag on mousedown when using boxzoom (#1907)
+
 ## 0.12.4 (Jan 19 2016)
 
 #### Bugfixes

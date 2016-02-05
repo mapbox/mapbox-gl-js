@@ -2,6 +2,7 @@
 
 var Bucket = require('./bucket');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
 
 module.exports = FillBucket;
 
@@ -30,7 +31,7 @@ FillBucket.prototype.shaders = {
 };
 
 FillBucket.prototype.addFeature = function(feature) {
-    var lines = feature.loadGeometry();
+    var lines = loadGeometry(feature);
     for (var i = 0; i < lines.length; i++) {
         this.addFill(lines[i]);
     }

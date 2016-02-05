@@ -3,6 +3,7 @@
 var rbush = require('rbush');
 var CollisionBox = require('./collision_box');
 var Point = require('point-geometry');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = CollisionTile;
 
@@ -16,7 +17,7 @@ module.exports = CollisionTile;
  * @param {number} pitch
  * @private
  */
-function CollisionTile(angle, pitch, extent) {
+function CollisionTile(angle, pitch) {
     this.tree = rbush();
     this.angle = angle;
 
@@ -36,11 +37,11 @@ function CollisionTile(angle, pitch, extent) {
         //left
         new CollisionBox(new Point(0, 0), 0, -Infinity, 0, Infinity, Infinity),
         // right
-        new CollisionBox(new Point(extent, 0), 0, -Infinity, 0, Infinity, Infinity),
+        new CollisionBox(new Point(EXTENT, 0), 0, -Infinity, 0, Infinity, Infinity),
         // top
         new CollisionBox(new Point(0, 0), -Infinity, 0, Infinity, 0, Infinity),
         // bottom
-        new CollisionBox(new Point(0, extent), -Infinity, 0, Infinity, 0, Infinity)
+        new CollisionBox(new Point(0, EXTENT), -Infinity, 0, Infinity, 0, Infinity)
     ];
 }
 

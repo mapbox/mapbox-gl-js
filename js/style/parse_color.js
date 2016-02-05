@@ -22,7 +22,10 @@ function parseColor(input) {
 
     // Color string
     } else if (typeof input === 'string') {
-        var output = colorDowngrade(parseCSSColor(input));
+        var parsedColor = parseCSSColor(input);
+        if (!parsedColor) { throw new Error('Invalid color ' + input); }
+
+        var output = colorDowngrade(parsedColor);
         colorCache[input] = output;
         return output;
 

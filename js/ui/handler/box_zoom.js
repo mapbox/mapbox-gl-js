@@ -31,6 +31,7 @@ BoxZoom.prototype = {
         document.addEventListener('keydown', this._onKeyDown, false);
         document.addEventListener('mouseup', this._onMouseUp, false);
 
+        DOM.disableDrag();
         this._startPos = DOM.mousePos(this._el, e);
         this.active = true;
     },
@@ -42,9 +43,6 @@ BoxZoom.prototype = {
         if (!this._box) {
             this._box = DOM.create('div', 'mapboxgl-boxzoom', this._container);
             this._container.classList.add('mapboxgl-crosshair');
-
-            DOM.disableDrag();
-
             this._fireEvent('boxzoomstart', e);
         }
 
@@ -106,14 +104,14 @@ BoxZoom.prototype = {
     }
 };
 
+
 /**
  * Boxzoom start event. This event is emitted at the start of a box zoom interaction.
  *
  * @event boxzoomstart
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */
 
 /**
@@ -134,6 +132,5 @@ BoxZoom.prototype = {
  * @event boxzoomcancel
  * @memberof Map
  * @instance
- * @type {Object}
- * @property {Event} originalEvent the original DOM event
+ * @property {EventData} data Original event data
  */

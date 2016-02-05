@@ -5,6 +5,7 @@ var Evented = require('../util/evented');
 var TilePyramid = require('./tile_pyramid');
 var Source = require('./source');
 var urlResolve = require('resolve-url');
+var EXTENT = require('../data/buffer').EXTENT;
 
 module.exports = GeoJSONSource;
 
@@ -14,10 +15,10 @@ module.exports = GeoJSONSource;
  * @param {Object} [options]
  * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
  * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
- * @param {number} [options.buffer] Tile buffer on each side.
- * @param {number} [options.tolerance] Simplification tolerance (higher means simpler).
+ * @param {number} [options.buffer] Tile buffer on each side in pixels.
+ * @param {number} [options.tolerance] Simplification tolerance (higher means simpler) in pixels.
  * @param {number} [options.cluster] If the data is a collection of point features, setting this to true clusters the points by radius into groups.
- * @param {number} [options.clusterRadius=400] Radius of each cluster when clustering points, relative to `4096` tile.
+ * @param {number} [options.clusterRadius=50] Radius of each cluster when clustering points, in pixels.
  * @param {number} [options.clusterMaxZoom] Max zoom to cluster points on. Defaults to one zoom less than `maxzoom` (so that last zoom features are not clustered).
 
  * @example
@@ -46,22 +47,28 @@ function GeoJSONSource(options) {
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.geojsonVtOptions = {maxZoom: this.maxzoom};
-    if (options.buffer !== undefined) this.geojsonVtOptions.buffer = options.buffer;
-    if (options.tolerance !== undefined) this.geojsonVtOptions.tolerance = options.tolerance;
+    var scale = EXTENT / this.tileSize;
+
+    this.geojsonVtOptions = {
+        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
+        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
+        extent: EXTENT,
+        maxZoom: this.maxzoom
+    };
 
     this.cluster = options.cluster || false;
     this.superclusterOptions = {
         maxZoom: Math.max(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
-        extent: 4096,
-        radius: options.clusterRadius || 400,
+        extent: EXTENT,
+        radius: (options.clusterRadius || 50) * scale,
         log: false
     };
 
     this._pyramid = new TilePyramid({
-        tileSize: 512,
+        tileSize: this.tileSize,
         minzoom: this.minzoom,
         maxzoom: this.maxzoom,
+        reparseOverscaled: true,
         cacheSize: 20,
         load: this._loadTile.bind(this),
         abort: this._abortTile.bind(this),
@@ -75,6 +82,7 @@ function GeoJSONSource(options) {
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
     minzoom: 0,
     maxzoom: 14,
+    tileSize: 512,
     _dirty: true,
     isTileClipped: true,
 
@@ -134,7 +142,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }
         this.workerID = this.dispatcher.send('parse geojson', {
             data: data,
-            tileSize: 512,
+            tileSize: this.tileSize,
             source: this.id,
             geojsonVtOptions: this.geojsonVtOptions,
             cluster: this.cluster,
@@ -158,7 +166,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             coord: tile.coord,
             zoom: tile.coord.z,
             maxZoom: this.maxzoom,
-            tileSize: 512,
+            tileSize: this.tileSize,
             source: this.id,
             overscaling: overscaling,
             angle: this.map.transform.angle,

@@ -3,7 +3,6 @@
 var util = require('../util/util');
 var StyleTransition = require('./style_transition');
 var StyleDeclaration = require('./style_declaration');
-var LayoutProperties = require('./layout_properties');
 var StyleSpecification = require('./reference');
 var parseColor = require('./parse_color');
 
@@ -24,77 +23,102 @@ StyleLayer.create = function(layer, refLayer) {
 };
 
 function StyleLayer(layer, refLayer) {
-    this._layer = layer;
-
     this.id = layer.id;
     this.ref = layer.ref;
+    this.metadata = layer.metadata;
     this.type = (refLayer || layer).type;
     this.source = (refLayer || layer).source;
     this.sourceLayer = (refLayer || layer)['source-layer'];
     this.minzoom = (refLayer || layer).minzoom;
     this.maxzoom = (refLayer || layer).maxzoom;
     this.filter = (refLayer || layer).filter;
-    this.layout = (refLayer || layer).layout;
-
-    this._paintDeclarations = {}; // {[class name]: { [property name]: StyleDeclaration }}
-    this._paintTransitions = {}; // {[class name]: { [property name]: StyleTransitionOptions }}
-    this._paintTransitions = {}; // { [property name]: StyleDeclaration }
+    this.interactive = (refLayer || layer).interactive;
 
     this._paintSpecifications = StyleSpecification['paint_' + this.type];
     this._layoutSpecifications = StyleSpecification['layout_' + this.type];
+
+    this._paintTransitions = {}; // {[propertyName]: StyleTransition}
+    this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
+    this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
+    this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
+
+    // Resolve paint declarations
+    for (var key in layer) {
+        var match = key.match(/^paint(?:\.(.*))?$/);
+        if (match) {
+            var klass = match[1] || '';
+            for (var name in layer[key]) {
+                this.setPaintProperty(name, layer[key][name], klass);
+            }
+        }
+    }
+
+    // Resolve layout declarations
+    if (this.ref) {
+        this._layoutDeclarations = refLayer._layoutDeclarations;
+    } else {
+        for (name in layer.layout) {
+            this.setLayoutProperty(name, layer.layout[name]);
+        }
+    }
 }
 
 StyleLayer.prototype = {
-    resolveLayout: function() {
-        if (!this.ref) {
-            this.layout = new LayoutProperties[this.type](this._layer.layout);
-        }
-    },
 
     setLayoutProperty: function(name, value) {
         if (value == null) {
-            delete this.layout[name];
+            delete this._layoutDeclarations[name];
         } else {
-            this.layout[name] = value;
+            this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
     },
 
     getLayoutProperty: function(name) {
-        return this.layout[name];
+        return (
+            this._layoutDeclarations[name] &&
+            this._layoutDeclarations[name].value
+        );
     },
 
-    resolvePaint: function() {
-        for (var key in this._layer) {
-            var match = key.match(/^paint(?:\.(.*))?$/);
-            if (match) {
-                var klass = match[1] || '';
-                for (var name in this._layer[key]) {
-                    this.setPaintProperty(name, this._layer[key][name], klass);
-                }
-            }
+    getLayoutValue: function(name, zoom, zoomHistory) {
+        var specification = this._layoutSpecifications[name];
+        var declaration = this._layoutDeclarations[name];
+
+        if (declaration) {
+            return declaration.calculate(zoom, zoomHistory);
+        } else {
+            return specification.default;
         }
     },
 
     setPaintProperty: function(name, value, klass) {
-        if (endsWith(name, TRANSITION_SUFFIX)) {
-            if (!this._paintTransitions[klass || '']) {
-                this._paintTransitions[klass || ''] = {};
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
+            if (!this._paintTransitionOptions[klass || '']) {
+                this._paintTransitionOptions[klass || ''] = {};
             }
-            this._paintTransitions[klass || ''][name] = value;
+            if (value == null) {
+                delete this._paintTransitionOptions[klass || ''][name];
+            } else {
+                this._paintTransitionOptions[klass || ''][name] = value;
+            }
         } else {
             if (!this._paintDeclarations[klass || '']) {
                 this._paintDeclarations[klass || ''] = {};
             }
-            this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+            if (value == null) {
+                delete this._paintDeclarations[klass || ''][name];
+            } else {
+                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
+            }
         }
     },
 
     getPaintProperty: function(name, klass) {
         klass = klass || '';
-        if (endsWith(name, TRANSITION_SUFFIX)) {
+        if (util.endsWith(name, TRANSITION_SUFFIX)) {
             return (
-                this._paintTransitions[klass] &&
-                this._paintTransitions[klass][name]
+                this._paintTransitionOptions[klass] &&
+                this._paintTransitionOptions[klass][name]
             );
         } else {
             return (
@@ -121,8 +145,12 @@ StyleLayer.prototype = {
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-        if (this.layout.visibility === 'none') return true;
-        if (this.paint[this.type + '-opacity'] === 0) return true;
+
+        if (this.getLayoutValue('visibility') === 'none') return true;
+
+        var opacityProperty = this.type + '-opacity';
+        if (this._paintSpecifications[opacityProperty] && this.getPaintValue(opacityProperty) === 0) return true;
+
         return false;
     },
 
@@ -162,20 +190,37 @@ StyleLayer.prototype = {
         for (var name in this._paintSpecifications) {
             this.paint[name] = this.getPaintValue(name, zoom, zoomHistory);
         }
+
+        this.layout = {};
+        for (name in this._layoutSpecifications) {
+            this.layout[name] = this.getLayoutValue(name, zoom, zoomHistory);
+        }
     },
 
-    json: function() {
-        return util.extend(
-            {},
-            this._layer,
-            util.pick(this, [
-                'type', 'source', 'source-layer', 'minzoom', 'maxzoom',
-                'filter', 'layout', 'paint'
-            ])
-        );
+    serialize: function() {
+        var output = {
+            'id': this.id,
+            'ref': this.ref,
+            'metadata': this.metadata,
+            'type': this.type,
+            'source': this.source,
+            'source-layer': this.sourceLayer,
+            'minzoom': this.minzoom,
+            'maxzoom': this.maxzoom,
+            'filter': this.filter,
+            'interactive': this.interactive,
+            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
+        };
+
+        for (var klass in this._paintDeclarations) {
+            var key = klass === '' ? 'paint' : 'paint.' + key;
+            output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
+        }
+
+        return output;
     }
 };
 
-function endsWith(string, suffix) {
-    return string.indexOf(suffix, string.length - suffix.length) !== -1;
+function getDeclarationValue(declaration) {
+    return declaration.value;
 }

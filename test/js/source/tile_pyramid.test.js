@@ -250,7 +250,7 @@ test('TilePyramid#tileAt', function(t) {
     t.deepEqual(result.tile.coord.id, 65);
     t.deepEqual(result.scale, 724.0773439350247);
     t.deepEqual(result.x, 0);
-    t.deepEqual(result.y, 2048);
+    t.deepEqual(result.y, 4096);
 
     t.end();
 });
@@ -515,10 +515,10 @@ test('TilePyramid#tilesIn', function (t) {
                 tileSize: 512,
                 sourceMaxZoom: 14
             },
-            minX: 2048,
-            maxX: 6144,
-            minY: 1024,
-            maxY: 3072
+            minX: 4096,
+            maxX: 12288,
+            minY: 2048,
+            maxY: 6144
         },
         {
             tile: {
@@ -528,10 +528,10 @@ test('TilePyramid#tilesIn', function (t) {
                 tileSize: 512,
                 sourceMaxZoom: 14
             },
-            minX: -2048,
-            maxX: 2048,
-            minY: 1024,
-            maxY: 3072
+            minX: -4096,
+            maxX: 4096,
+            minY: 2048,
+            maxY: 6144
         }
     ]);
 

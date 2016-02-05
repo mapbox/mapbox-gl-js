@@ -3,16 +3,8 @@
 var test = require('prova');
 var StyleLayer = require('../../../js/style/style_layer');
 var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
-var LayoutProperties = require('../../../js/style/layout_properties');
 
 test('StyleLayer', function(t) {
-    t.test('sets raw layer', function (t) {
-        var rawLayer = {type: 'fill'},
-            layer = StyleLayer.create(rawLayer);
-        t.equal(layer._layer, rawLayer);
-        t.end();
-    });
-
     t.test('sets properties from ref', function (t) {
         var layer = StyleLayer.create(
             {ref: 'ref'},
@@ -27,30 +19,6 @@ test('StyleLayer', function(t) {
         var layer = StyleLayer.create({type: 'fill'});
 
         t.ok(layer instanceof FillStyleLayer);
-        t.end();
-    });
-});
-
-test('StyleLayer#resolveLayout', function(t) {
-    t.test('creates layout properties', function (t) {
-        var layer = StyleLayer.create({type: 'fill'});
-        layer.resolveLayout({});
-        t.ok(layer.layout instanceof LayoutProperties.fill);
-        t.end();
-    });
-});
-
-test('StyleLayer#resolvePaint', function(t) {
-    t.test('calculates paint classes', function(t) {
-        var layer = StyleLayer.create({
-            type: 'fill',
-            'paint': { 'fill-color': 'white' },
-            'paint.night': { 'fill-color': 'black' }
-        });
-
-        layer.resolvePaint({});
-
-        t.deepEqual(Object.keys(layer._paintDeclarations), ['', 'night']);
         t.end();
     });
 });
@@ -77,7 +45,6 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color', 'blue');
 
         t.deepEqual(layer.getPaintProperty('background-color'), [0, 0, 1, 1]);
@@ -93,10 +60,9 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color', null);
 
-        t.deepEqual(layer.getPaintProperty('background-color'), [0, 0, 0, 1]);
+        t.equal(layer.getPaintProperty('background-color'), undefined);
         t.end();
     });
 
@@ -109,7 +75,6 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color', 'blue', 'night');
 
         t.deepEqual(layer.getPaintProperty('background-color', 'night'), [0, 0, 1, 1]);
@@ -125,10 +90,9 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color', null, 'night');
 
-        t.deepEqual(layer.getPaintProperty('background-color', 'night'), [0, 0, 0, 1]);
+        t.equal(layer.getPaintProperty('background-color', 'night'), undefined);
         t.end();
     });
 
@@ -144,7 +108,6 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color', 'blue');
 
         t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 600});
@@ -160,10 +123,24 @@ test('StyleLayer#setPaintProperty', function(t) {
             }
         });
 
-        layer.resolvePaint({});
         layer.setPaintProperty('background-color-transition', {duration: 400});
 
         t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 400});
+        t.end();
+    });
+
+    t.test('sets transition with a class name equal to the property name', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "red"
+            }
+        });
+
+        layer.setPaintProperty('background-color-transition', {duration: 400}, 'background-color');
+        layer.cascade([], {});
+        t.deepEqual(layer.getPaintProperty('background-color-transition', 'background-color'), {duration: 400});
         t.end();
     });
 });
@@ -175,7 +152,6 @@ test('StyleLayer#setLayoutProperty', function(t) {
             "type": "symbol"
         });
 
-        layer.resolveLayout();
         layer.setLayoutProperty('text-transform', 'lowercase');
 
         t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
@@ -191,7 +167,6 @@ test('StyleLayer#setLayoutProperty', function(t) {
             }
         });
 
-        layer.resolveLayout();
         layer.setLayoutProperty('text-transform', 'lowercase');
 
         t.deepEqual(layer.getLayoutProperty('text-transform'), 'lowercase');
@@ -207,10 +182,9 @@ test('StyleLayer#setLayoutProperty', function(t) {
             }
         });
 
-        layer.resolveLayout();
         layer.setLayoutProperty('text-transform', null);
 
-        t.deepEqual(layer.getLayoutProperty('text-transform'), 'none');
+        t.deepEqual(layer.getLayoutProperty('text-transform'), undefined);
         t.end();
     });
 });

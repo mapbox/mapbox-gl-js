@@ -2,6 +2,8 @@
 
 var Bucket = require('./bucket');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
+var EXTENT = require('./buffer').EXTENT;
 
 module.exports = CircleBucket;
 
@@ -39,34 +41,38 @@ CircleBucket.prototype.shaders = {
 
 CircleBucket.prototype.addFeature = function(feature) {
 
-    var geometries = feature.loadGeometry()[0];
+    var geometries = loadGeometry(feature);
     for (var j = 0; j < geometries.length; j++) {
-        var group = this.makeRoomFor('circle', 4);
+        var geometry = geometries[j];
 
-        var x = geometries[j].x;
-        var y = geometries[j].y;
+        for (var k = 0; k < geometry.length; k++) {
+            var group = this.makeRoomFor('circle', 4);
 
-        // Do not include points that are outside the tile boundaries.
-        if (x < 0 || x >= this.tileExtent || y < 0 || y >= this.tileExtent) continue;
+            var x = geometry[k].x;
+            var y = geometry[k].y;
 
-        // this geometry will be of the Point type, and we'll derive
-        // two triangles from it.
-        //
-        // ┌─────────┐
-        // │ 3     2 │
-        // │         │
-        // │ 0     1 │
-        // └─────────┘
+            // Do not include points that are outside the tile boundaries.
+            if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
 
-        var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
-        this.addCircleVertex(x, y, 1, -1);
-        this.addCircleVertex(x, y, 1, 1);
-        this.addCircleVertex(x, y, -1, 1);
-        group.vertexLength += 4;
+            // this geometry will be of the Point type, and we'll derive
+            // two triangles from it.
+            //
+            // ┌─────────┐
+            // │ 3     2 │
+            // │         │
+            // │ 0     1 │
+            // └─────────┘
 
-        this.addCircleElement(index, index + 1, index + 2);
-        this.addCircleElement(index, index + 3, index + 2);
-        group.elementLength += 2;
+            var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
+            this.addCircleVertex(x, y, 1, -1);
+            this.addCircleVertex(x, y, 1, 1);
+            this.addCircleVertex(x, y, -1, 1);
+            group.vertexLength += 4;
+
+            this.addCircleElement(index, index + 1, index + 2);
+            this.addCircleElement(index, index + 3, index + 2);
+            group.elementLength += 2;
+        }
     }
 
 };

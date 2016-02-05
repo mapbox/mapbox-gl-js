@@ -2,6 +2,7 @@
 
 var Bucket = require('./bucket');
 var util = require('../util/util');
+var loadGeometry = require('./load_geometry');
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -54,15 +55,14 @@ LineBucket.prototype.shaders = {
 };
 
 LineBucket.prototype.addFeature = function(feature) {
-    var lines = feature.loadGeometry();
-    var layoutProperties = this.layoutProperties;
+    var lines = loadGeometry(feature);
     for (var i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],
-            layoutProperties['line-join'],
-            layoutProperties['line-cap'],
-            layoutProperties['line-miter-limit'],
-            layoutProperties['line-round-limit']
+            this.layer.layout['line-join'],
+            this.layer.layout['line-cap'],
+            this.layer.layout['line-miter-limit'],
+            this.layer.layout['line-round-limit']
         );
     }
 };

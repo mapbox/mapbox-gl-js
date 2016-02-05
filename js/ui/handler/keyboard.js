@@ -46,51 +46,52 @@ Keyboard.prototype = {
     _onKeyDown: function (e) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-        var map = this._map;
+        var map = this._map,
+            eventData = { originalEvent: e };
 
         switch (e.keyCode) {
         case 61:
         case 107:
         case 171:
         case 187:
-            map.zoomTo(Math.round(map.getZoom()) + (e.shiftKey ? 2 : 1));
+            map.zoomTo(Math.round(map.getZoom()) + (e.shiftKey ? 2 : 1), eventData);
             break;
 
         case 189:
         case 109:
         case 173:
-            map.zoomTo(Math.round(map.getZoom()) - (e.shiftKey ? 2 : 1));
+            map.zoomTo(Math.round(map.getZoom()) - (e.shiftKey ? 2 : 1), eventData);
             break;
 
         case 37:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() - rotateDelta });
+                map.easeTo({ bearing: map.getBearing() - rotateDelta }, eventData);
             } else {
-                map.panBy([-panDelta, 0]);
+                map.panBy([-panDelta, 0], eventData);
             }
             break;
 
         case 39:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() + rotateDelta });
+                map.easeTo({ bearing: map.getBearing() + rotateDelta }, eventData);
             } else {
-                map.panBy([panDelta, 0]);
+                map.panBy([panDelta, 0], eventData);
             }
             break;
 
         case 38:
             if (e.shiftKey) {
-                map.easeTo({ pitch: map.getPitch() + pitchDelta });
+                map.easeTo({ pitch: map.getPitch() + pitchDelta }, eventData);
             } else {
-                map.panBy([0, -panDelta]);
+                map.panBy([0, -panDelta], eventData);
             }
             break;
 
         case 40:
             if (e.shiftKey) {
-                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) });
+                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) }, eventData);
             } else {
-                map.panBy([0, panDelta]);
+                map.panBy([0, panDelta], eventData);
             }
             break;
         }

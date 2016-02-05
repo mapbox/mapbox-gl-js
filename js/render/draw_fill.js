@@ -62,7 +62,7 @@ function drawFill(painter, source, layer, coord) {
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
-    var posMatrix = painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom);
+    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
@@ -136,34 +136,33 @@ function drawFill(painter, source, layer, coord) {
         gl.uniform1f(shader.u_opacity, opacity);
         gl.uniform1f(shader.u_mix, image.t);
 
-        var scale = Math.pow(2, painter.transform.tileZoom - tile.coord.z);
-        var factor = tile.tileExtent / tile.tileSize;
-
         var imageSizeScaledA = [
-            (imagePosA.size[0] * image.fromScale) / scale,
-            (imagePosA.size[1] * image.fromScale) / scale
+            (imagePosA.size[0] * image.fromScale),
+            (imagePosA.size[1] * image.fromScale)
         ];
         var imageSizeScaledB = [
-            (imagePosB.size[0] * image.toScale) / scale,
-            (imagePosB.size[1] * image.toScale) / scale
+            (imagePosB.size[0] * image.toScale),
+            (imagePosB.size[1] * image.toScale)
         ];
 
         gl.uniform2fv(shader.u_patternscale_a, [
-            1 / (imageSizeScaledA[0] * factor),
-            1 / (imageSizeScaledA[1] * factor)
+            1 / tile.pixelsToTileUnits(imageSizeScaledA[0], painter.transform.tileZoom),
+            1 / tile.pixelsToTileUnits(imageSizeScaledA[1], painter.transform.tileZoom)
         ]);
 
         gl.uniform2fv(shader.u_patternscale_b, [
-            1 / (imageSizeScaledB[0] * factor),
-            1 / (imageSizeScaledB[1] * factor)
+            1 / tile.pixelsToTileUnits(imageSizeScaledB[0], painter.transform.tileZoom),
+            1 / tile.pixelsToTileUnits(imageSizeScaledB[1], painter.transform.tileZoom)
         ]);
 
-        // shift images to match at tile boundaries
-        var offsetAx = ((tile.tileSize % imageSizeScaledA[0]) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z))) / imageSizeScaledA[0];
-        var offsetAy = ((tile.tileSize % imageSizeScaledA[1]) * tile.coord.y) / imageSizeScaledA[1];
+        var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-        var offsetBx = ((tile.tileSize % imageSizeScaledB[0]) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z))) / imageSizeScaledB[0];
-        var offsetBy = ((tile.tileSize % imageSizeScaledB[1]) * tile.coord.y) / imageSizeScaledB[1];
+        // shift images to match at tile boundaries
+        var offsetAx = ((tileSizeAtNearestZoom / imageSizeScaledA[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+        var offsetAy = ((tileSizeAtNearestZoom / imageSizeScaledA[1]) % 1) * tile.coord.y;
+
+        var offsetBx = ((tileSizeAtNearestZoom / imageSizeScaledB[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+        var offsetBy = ((tileSizeAtNearestZoom / imageSizeScaledB[1]) % 1) * tile.coord.y;
 
         gl.uniform2fv(shader.u_offset_a, [offsetAx, offsetAy]);
         gl.uniform2fv(shader.u_offset_b, [offsetBx, offsetBy]);
@@ -195,7 +194,7 @@ function drawStroke(painter, source, layer, coord) {
     var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
 
     gl.setPosMatrix(painter.translatePosMatrix(
-        painter.calculatePosMatrix(coord, tile.tileExtent, source.maxzoom),
+        painter.calculatePosMatrix(coord, source.maxzoom),
         tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']
