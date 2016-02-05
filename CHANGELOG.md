@@ -1,5 +1,7 @@
 ## master
 
+## 8.4.1
+
 * Revert ramp validation checks that broke some styles.
 
 ## 8.4.0
