@@ -12,7 +12,7 @@
     "brfs": "^1.4.0",
     "csscolorparser": "^1.0.2",
     "envify": "^3.4.0",
-    "feature-filter": "^1.0.3",
+    "feature-filter": "^2.0.0",
     "geojson-vt": "^2.1.0",
     "gl-matrix": "^2.3.1",
     "mapbox-gl-function": "^1.0.0",
