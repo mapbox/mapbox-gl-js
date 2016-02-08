@@ -12,6 +12,10 @@ var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : 
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
 
 
+/**
+ * The `ScrollZoomHandler` allows a user to zoom the map by scrolling.
+ * @class ScrollZoomHandler
+ */
 function ScrollZoomHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
@@ -20,11 +24,22 @@ function ScrollZoomHandler(map) {
 }
 
 ScrollZoomHandler.prototype = {
+
+    /**
+     * Enable the "scroll to zoom" interaction.
+     * @example
+     *   map.scrollZoom.enable();
+     */
     enable: function () {
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
     },
 
+    /**
+     * Disable the "scroll to zoom" interaction.
+     * @example
+     *   map.scrollZoom.disable();
+     */
     disable: function () {
         this._el.removeEventListener('wheel', this._onWheel);
         this._el.removeEventListener('mousewheel', this._onWheel);

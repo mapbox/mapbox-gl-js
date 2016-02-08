@@ -6,6 +6,11 @@ var DOM = require('../../util/dom'),
 
 module.exports = BoxZoomHandler;
 
+/**
+ * The `BoxZoomHandler` allows a user to zoom the map to fit a bounding box.
+ * The bounding box is defined by holding `shift` while dragging the cursor.
+ * @class BoxZoomHandler
+ */
 function BoxZoomHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
@@ -15,10 +20,21 @@ function BoxZoomHandler(map) {
 }
 
 BoxZoomHandler.prototype = {
+
+    /**
+     * Enable the "box zoom" interaction.
+     * @example
+     *   map.boxZoom.enable();
+     */
     enable: function () {
         this._el.addEventListener('mousedown', this._onMouseDown, false);
     },
 
+    /**
+     * Disable the "box zoom" interaction.
+     * @example
+     *   map.boxZoom.disable();
+     */
     disable: function () {
         this._el.removeEventListener('mousedown', this._onMouseDown);
     },

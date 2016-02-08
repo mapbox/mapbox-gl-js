@@ -12,6 +12,11 @@ var inertiaLinearity = 0.25,
     inertiaDeceleration = 720; // deg/s^2
 
 
+/**
+ * The `DragRotateHandler` allows a user to rotate the map by clicking and
+ * dragging the cursor while holding the right mouse button or the `ctrl` key.
+ * @class DragRotateHandler
+ */
 function DragRotateHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
@@ -20,10 +25,21 @@ function DragRotateHandler(map) {
 }
 
 DragRotateHandler.prototype = {
+
+    /**
+     * Enable the "drag to rotate" interaction.
+     * @example
+     *   map.dragRotate.enable();
+     */
     enable: function () {
         this._el.addEventListener('mousedown', this._onDown);
     },
 
+    /**
+     * Disable the "drag to rotate" interaction.
+     * @example
+     *   map.dragRotate.disable();
+     */
     disable: function () {
         this._el.removeEventListener('mousedown', this._onDown);
     },
