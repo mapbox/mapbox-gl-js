@@ -9,6 +9,7 @@ function DoubleClickZoom(map) {
 
 DoubleClickZoom.prototype = {
     enable: function () {
+        this.disable();
         this._map.on('dblclick', this._onDblClick);
     },
 

@@ -21,6 +21,7 @@ function DragRotate(map) {
 
 DragRotate.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('mousedown', this._onDown);
     },
 

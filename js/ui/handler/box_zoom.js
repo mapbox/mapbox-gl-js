@@ -17,6 +17,7 @@ function BoxZoom(map) {
 
 BoxZoom.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('mousedown', this._onMouseDown, false);
     },
 

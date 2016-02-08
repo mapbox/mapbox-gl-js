@@ -36,6 +36,7 @@ function Keyboard(map) {
 
 Keyboard.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('keydown', this._onKeyDown, false);
     },
 

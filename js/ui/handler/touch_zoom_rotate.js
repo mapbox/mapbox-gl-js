@@ -22,6 +22,7 @@ function TouchZoomRotate(map) {
 
 TouchZoomRotate.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('touchstart', this._onStart, false);
     },
 

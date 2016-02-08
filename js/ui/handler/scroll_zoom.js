@@ -21,6 +21,7 @@ function ScrollZoom(map) {
 
 ScrollZoom.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
     },
@@ -144,4 +145,3 @@ ScrollZoom.prototype = {
  * @instance
  * @property {EventData} data Original event data, if fired interactively
  */
-

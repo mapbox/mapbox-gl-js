@@ -20,6 +20,7 @@ function DragPan(map) {
 
 DragPan.prototype = {
     enable: function () {
+        this.disable();
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
     },
