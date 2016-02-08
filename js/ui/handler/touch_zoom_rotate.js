@@ -3,7 +3,7 @@
 var DOM = require('../../util/dom'),
     util = require('../../util/util');
 
-module.exports = TouchZoomRotate;
+module.exports = TouchZoomRotateHandler;
 
 var inertiaLinearity = 0.15,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -13,14 +13,14 @@ var inertiaLinearity = 0.15,
     significantRotateThreshold = 4;
 
 
-function TouchZoomRotate(map) {
+function TouchZoomRotateHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-TouchZoomRotate.prototype = {
+TouchZoomRotateHandler.prototype = {
     enable: function () {
         this._el.addEventListener('touchstart', this._onStart, false);
     },

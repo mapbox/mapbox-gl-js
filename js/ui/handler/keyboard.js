@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = Keyboard;
+module.exports = KeyboardHandler;
 
 
 var panDelta = 80,
@@ -8,7 +8,7 @@ var panDelta = 80,
     pitchDelta = 5;
 
 /**
- * The `Keyboard` handler responds to keyboard input by zooming, rotating, or panning the
+ * The `KeyboardHandler` responds to keyboard input by zooming, rotating, or panning the
  * map. The following keyboard shortcuts are supported:
  *  * `=` / `+`: increase zoom level by 1
  *  * `Shift-=` / `Shift-+`: increase zoom level by 2
@@ -19,7 +19,7 @@ var panDelta = 80,
  *  * `Shift+⇠`: decrease rotation by 2 degrees
  *  * `Shift+⇡`: increase pitch by 5 degrees
  *  * `Shift+⇣`: decrease pitch by 5 degrees
- * @class Keyboard
+ * @class KeyboardHandler
  * @example
  *   // Disable the keyboard handler
  *   map.keyboard.disable();
@@ -27,14 +27,14 @@ var panDelta = 80,
  *   // Enable the keyboard handler
  *   map.keyboard.enable();
  */
-function Keyboard(map) {
+function KeyboardHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     this._onKeyDown = this._onKeyDown.bind(this);
 }
 
-Keyboard.prototype = {
+KeyboardHandler.prototype = {
     enable: function () {
         this._el.addEventListener('keydown', this._onKeyDown, false);
     },

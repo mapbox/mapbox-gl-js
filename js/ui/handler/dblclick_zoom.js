@@ -1,13 +1,13 @@
 'use strict';
 
-module.exports = DoubleClickZoom;
+module.exports = DoubleClickZoomHandler;
 
-function DoubleClickZoom(map) {
+function DoubleClickZoomHandler(map) {
     this._map = map;
     this._onDblClick = this._onDblClick.bind(this);
 }
 
-DoubleClickZoom.prototype = {
+DoubleClickZoomHandler.prototype = {
     enable: function () {
         this._map.on('dblclick', this._onDblClick);
     },

@@ -4,7 +4,7 @@ var DOM = require('../../util/dom'),
     browser = require('../../util/browser'),
     util = require('../../util/util');
 
-module.exports = ScrollZoom;
+module.exports = ScrollZoomHandler;
 
 
 var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '',
@@ -12,14 +12,14 @@ var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : 
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
 
 
-function ScrollZoom(map) {
+function ScrollZoomHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-ScrollZoom.prototype = {
+ScrollZoomHandler.prototype = {
     enable: function () {
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
@@ -143,4 +143,3 @@ ScrollZoom.prototype = {
  * @instance
  * @property {EventData} data Original event data, if fired interactively
  */
-

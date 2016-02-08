@@ -4,10 +4,9 @@ var DOM = require('../../util/dom'),
     LngLatBounds = require('../../geo/lng_lat_bounds'),
     util = require('../../util/util');
 
-module.exports = BoxZoom;
+module.exports = BoxZoomHandler;
 
-
-function BoxZoom(map) {
+function BoxZoomHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
     this._container = map.getContainer();
@@ -15,7 +14,7 @@ function BoxZoom(map) {
     util.bindHandlers(this);
 }
 
-BoxZoom.prototype = {
+BoxZoomHandler.prototype = {
     enable: function () {
         this._el.addEventListener('mousedown', this._onMouseDown, false);
     },

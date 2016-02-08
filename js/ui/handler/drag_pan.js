@@ -3,7 +3,7 @@
 var DOM = require('../../util/dom'),
     util = require('../../util/util');
 
-module.exports = DragPan;
+module.exports = DragPanHandler;
 
 var inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -11,14 +11,14 @@ var inertiaLinearity = 0.3,
     inertiaDeceleration = 2500; // px/s^2
 
 
-function DragPan(map) {
+function DragPanHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-DragPan.prototype = {
+DragPanHandler.prototype = {
     enable: function () {
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
