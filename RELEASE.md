@@ -45,13 +45,11 @@ Test at least the following examples before continuing
  - [Dispay driving directions](http://127.0.0.1:4000/mapbox-gl-js/example/mapbox-gl-directions/)
  - [Set a point after Geocoder result](http://127.0.0.1:4000/mapbox-gl-js/example/point-from-geocoder-result/)
 
-## Choose version number
-
-Choose a new version number, respecting [semver](http://semver.org/).
-
 ## Update `CHANGELOG.md`
 
 Update `CHANGELOG.md` with all changes since the last release. A list of commits is available on the [GitHub Releases page](https://github.com/mapbox/mapbox-gl-js/releases) through a link that says "X commits to master since this release"
+
+Look over the changes and choose a new version number, respecting [semver](http://semver.org/) ("patch" if there are no new features, "minor" if there are new features).
 
 ## Update version number
 
