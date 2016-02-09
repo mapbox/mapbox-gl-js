@@ -57,7 +57,9 @@ Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `
 
 ## Commit and tag release
 
-After **carefully inspecting the diff**, commit and tag the release. **There is no going back once you execute this command! A published version tag is forever on our CDN.**
+After **carefully inspecting the diff**, commit and tag the release.
+
+The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. **There is no going back once you execute these commands! A published version tag is forever on our CDN.**
 
 ```bash
 VERSION=vX.Y.Z # UPDATE ME
@@ -66,14 +68,11 @@ git tag $VERSION
 git push origin --follow-tags
 ```
 
+**Wait for the [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) build to finish successfully before proceeding.**
+
 ## Create a GitHub release
 
-Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the tag you just
-pushed and the text in `CHANGELOG.md`
-
-## Wait for CI server to build successfully
-
-The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. Wait for this build to finish successfully before proceeding.
+Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) using the tag you just pushed and the text in `CHANGELOG.md`.
 
 ## Merge `master` into `mb-pages`
 
