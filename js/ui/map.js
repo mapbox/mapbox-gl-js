@@ -21,6 +21,35 @@ var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
+var DEFAULT_OPTIONS = {
+    center: [0, 0],
+    zoom: 0,
+    bearing: 0,
+    pitch: 0,
+
+    minZoom: 0,
+    maxZoom: 20,
+
+    interactive: true,
+
+    scrollZoom: true,
+    boxZoom: true,
+    dragRotate: true,
+    dragPan: true,
+    keyboard: true,
+    doubleClickZoom: true,
+    touchZoomRotate: true,
+
+    bearingSnap: 7,
+
+    hash: false,
+
+    attributionControl: true,
+
+    failIfMajorPerformanceCaveat: false,
+    preserveDrawingBuffer: false
+};
+
 /**
  * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
  * whether or not to smoothly transition property changes triggered by the class change.
@@ -68,7 +97,7 @@ var Attribution = require('./control/attribution');
  */
 var Map = module.exports = function(options) {
 
-    options = this.options = util.inherit(this.options, options);
+    options = this.options = util.extend({}, DEFAULT_OPTIONS, options);
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
@@ -139,35 +168,6 @@ var Map = module.exports = function(options) {
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Camera.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
-
-    options: {
-        center: [0, 0],
-        zoom: 0,
-        bearing: 0,
-        pitch: 0,
-
-        minZoom: 0,
-        maxZoom: 20,
-
-        interactive: true,
-
-        scrollZoom: true,
-        boxZoom: true,
-        dragRotate: true,
-        dragPan: true,
-        keyboard: true,
-        doubleClickZoom: true,
-        touchZoomRotate: true,
-
-        bearingSnap: 7,
-
-        hash: false,
-
-        attributionControl: true,
-
-        failIfMajorPerformanceCaveat: false,
-        preserveDrawingBuffer: false
-    },
 
     /**
      * Adds a control to the map, calling `control.addTo(this)`.
