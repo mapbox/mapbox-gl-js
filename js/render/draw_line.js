@@ -25,6 +25,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
     if (!hasData) return;
 
     var gl = painter.gl;
+    gl.enable(gl.STENCIL_TEST);
 
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;

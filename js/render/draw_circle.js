@@ -64,6 +64,4 @@ function drawCircles(painter, source, layer, coords) {
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
         }
     }
-
-    gl.enable(gl.STENCIL_TEST);
 }

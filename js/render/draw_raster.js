@@ -72,8 +72,6 @@ function drawRasterTile(painter, source, layer, coord) {
     gl.vertexAttribPointer(shader.a_pos,         2, gl.SHORT, false, 8, 0);
     gl.vertexAttribPointer(shader.a_texture_pos, 2, gl.SHORT, false, 8, 4);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    gl.enable(gl.STENCIL_TEST);
 }
 
 function spinWeights(angle) {

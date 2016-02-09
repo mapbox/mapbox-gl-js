@@ -16,13 +16,15 @@ function drawSymbols(painter, source, layer, coords) {
 
     var gl = painter.gl;
 
+    // Disable the stencil test so that labels aren't clipped to tile boundaries.
+    //
+    // Layers with features that may be drawn overlapping aren't clipped. These
+    // layers are sorted in the y direction, and to draw the correct ordering near
+    // tile edges the icons are included in both tiles and clipped when drawing.
     if (drawAcrossEdges) {
-        // Disable the stencil test so that labels aren't clipped to tile boundaries.
-        //
-        // Layers with features that may be drawn overlapping aren't clipped. These
-        // layers are sorted in the y direction, and to draw the correct ordering near
-        // tile edges the icons are included in both tiles and clipped when drawing.
         gl.disable(gl.STENCIL_TEST);
+    } else {
+        gl.enable(gl.STENCIL_TEST);
     }
 
     painter.setDepthSublayer(0);
@@ -57,12 +59,9 @@ function drawSymbols(painter, source, layer, coords) {
         drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
     }
 
-    drawCollisionDebug(painter, source, layer, coords);
-
-    if (drawAcrossEdges) {
-        gl.enable(gl.STENCIL_TEST);
-    }
     gl.enable(gl.DEPTH_TEST);
+
+    drawCollisionDebug(painter, source, layer, coords);
 }
 
 var defaultSizes = {

@@ -192,6 +192,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.STENCIL_TEST);
 
     // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
     gl.stencilMask(0xF8);

@@ -38,6 +38,4 @@ function drawCollisionDebug(painter, source, layer, coords) {
         );
 
     }
-
-    gl.disable(gl.STENCIL_TEST);
 }
