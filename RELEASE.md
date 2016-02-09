@@ -7,8 +7,8 @@ If there are any [open "Release Blocker" issues or PRs](https://github.com/mapbo
 ## Get the latest `master`
 
 ```bash
-git checkout master
-git fetch
+git checkout master &&
+git fetch &&
 git merge --ff-only origin/master
 ```
 
@@ -21,8 +21,8 @@ git merge origin/mb-pages
 ## Make sure your environment is in a good state
 
 ```bash
-npm install
-npm test
+npm install &&
+npm test &&
 npm run test-suite
 ```
 
@@ -62,10 +62,11 @@ After **carefully inspecting the diff**, commit and tag the release.
 The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. **There is no going back once you execute these commands! A published version tag is forever on our CDN.**
 
 ```bash
-VERSION=vX.Y.Z # UPDATE ME
-git commit -am $VERSION
-git tag $VERSION
-git push origin --follow-tags
+VERSION=vX.Y.Z && # UPDATE ME
+git commit -am $VERSION &&
+git tag $VERSION &&
+git push origin &&
+git push origin --tags
 ```
 
 **Wait for the [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) build to finish successfully before proceeding.**
@@ -79,9 +80,9 @@ Create a [GitHub release](https://github.com/mapbox/mapbox-gl-js/releases/new) u
 Merge `master` into `mb-pages` and publish the updated documentation.
 
 ```bash
-git checkout mb-pages
-git merge master
-git push origin mb-pages
+git checkout mb-pages &&
+git merge master &&
+git push origin mb-pages &&
 git checkout master
 ```
 
