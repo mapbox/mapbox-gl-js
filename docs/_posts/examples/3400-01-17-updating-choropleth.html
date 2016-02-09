@@ -1,0 +1,206 @@
+---
+layout: example
+category: example
+title: Update a choropleth layer by zoom level
+description: 'Using 2014 census data, display state or county population depending on zoom level.'
+tags:
+  - choropleth
+  - data
+---
+<style>
+.legend-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0 10px;
+    margin-bottom: 30px;
+    z-index: 1;
+}
+
+.legend {
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+}
+
+.legend h4 {
+    margin: 0 0 10px;
+}
+
+.legend-key {
+    display: inline-block;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+}
+</style>
+
+<div id='map'></div>
+<div class='legend-container'>
+  <div id='legend' class='legend'>
+    <h4>Population</h4>
+  </div>
+</div>
+
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v8',
+    center: [-98, 38.88],
+    zoom: 3
+});
+
+// The key name that exists in each polygon properties
+// object we want to display
+var facet = 'population';
+
+// Show the state choropleth first
+var level = 'state';
+
+// Create a popup, but don't add it to the map yet.
+var popup = new mapboxgl.Popup({
+    closeButton: false
+});
+
+// The values in each array are:
+// 1. Color of choropleth
+// 2. State population value
+// 3. County population value
+var layers = [
+    ['#723122', 25000000, 1000000],
+    ['#8B4225', 10000000, 500000],
+    ['#A25626', 7500000, 100000],
+    ['#B86B25', 5000000, 50000],
+    ['#CA8323', 2500000, 10000],
+    ['#DA9C20', 1000000, 5000],
+    ['#E6B71E', 750000, 1000],
+    ['#EED322', 500000, 100],
+    ['#F2F12D', 0, 0]
+];
+
+function filterBy(type) {
+    // Which value in each layers array
+    // should be used for filtering.
+    var position = type === 'state' ? 1 : 2;
+
+    layers.forEach(function(layer, i) {
+        var filters = [
+            'all',
+            ['>=', facet, layer[position]],
+            // Does a state or county property (depending on `type`)
+            // Exist in a given feature? Just show those:
+            ['!=', type, undefined]
+        ];
+
+        if (i !== 0) filters.push(['<', facet, layers[i - 1][position]]);
+        map.setFilter('layer-' + i, filters);
+
+        // Set the legend value for each layer
+        document.getElementById('legend-value-' + i).textContent = layer[position].toLocaleString();
+    });
+}
+
+function renderChoropleth() {
+    var legend = document.getElementById('legend');
+
+    // Here we pull a vector tile source that makes
+    // up our choropleth. The source was uploaded as
+    // a GeoJSON document and converted to a a vector
+    // tile with property data that looks like this:
+    //
+    // {
+    //    "name": "California"
+    //    "population": 38802500
+    //    "state": 06
+    // },
+    // {
+    //    "county": 06037
+    //    "name": "Los Angeles County"
+    //    "population": 9974203
+    // }
+    // ... etc.
+    //
+    // Polygon data was added using https://github.com/mbostock/us-atlas
+    // Census data was added using http://censusreporter.org/
+    map.addSource('choropleth', {
+        "type": "vector",
+        "url": "mapbox://mapbox.660ui7x6"
+    });
+
+    layers.forEach(function(layer, i) {
+        map.addLayer({
+            "id": "layer-" + i,
+            "interactive": true,
+            "type": "fill",
+            "source": "choropleth",
+            "source-layer": "original",
+            "paint": {
+                "fill-color": layer[0],
+                "fill-opacity": 0.75
+            }
+        }, 'place_label_city_small_s');
+
+        // Build out legends
+        var item = document.createElement('div');
+
+        var key = document.createElement('span');
+        key.className = 'legend-key';
+        key.style.backgroundColor = layer[0];
+
+        var value = document.createElement('span');
+        value.id = 'legend-value-' + i;
+
+        item.appendChild(key);
+        item.appendChild(value);
+        legend.appendChild(item);
+    });
+
+    // Initially filter this by the state level
+    filterBy(level);
+}
+
+map.on('style.load', renderChoropleth);
+
+map.on('move', function(e) {
+    var z = e.target.getZoom();
+
+    if (z > 4 && level !== 'county') {
+        level = 'county';
+        filterBy(level);
+    }
+
+    if (z <= 4 && level !== 'state') {
+        level = 'state';
+        filterBy(level);
+    }
+});
+
+map.on('mousemove', function(e) {
+    map.featuresAt(e.point, {
+
+        // Collect each layer id we created into an array.
+        layer: layers.map(function(layer, i) {
+            return 'layer-' + i;
+        })
+    }, function(err, features) {
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
+
+        if (err || !features.length) {
+            popup.remove();
+            return;
+        }
+
+        var details = features[0].properties;
+
+        // Initialize a popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(e.lngLat)
+            .setHTML(details.name + ': ' + details[facet].toLocaleString())
+            .addTo(map);
+    });
+});
+</script>

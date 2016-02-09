@@ -3,7 +3,7 @@
 var DOM = require('../../util/dom'),
     util = require('../../util/util');
 
-module.exports = TouchZoomRotate;
+module.exports = TouchZoomRotateHandler;
 
 var inertiaLinearity = 0.15,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -13,27 +13,56 @@ var inertiaLinearity = 0.15,
     significantRotateThreshold = 4;
 
 
-function TouchZoomRotate(map) {
+/**
+ * The `TouchZoomRotateHandler` allows a user to zoom and rotate the map by
+ * pinching on a touchscreen.
+ * @class TouchZoomRotateHandler
+ */
+function TouchZoomRotateHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-TouchZoomRotate.prototype = {
+TouchZoomRotateHandler.prototype = {
+
+    /**
+     * Enable the "pinch to rotate and zoom" interaction.
+     * @example
+     *   map.touchZoomRotate.enable();
+     */
     enable: function () {
         this.disable();
         this._el.addEventListener('touchstart', this._onStart, false);
     },
 
+    /**
+     * Disable the "pinch to rotate and zoom" interaction.
+     * @example
+     *   map.touchZoomRotate.disable();
+     */
     disable: function () {
         this._el.removeEventListener('touchstart', this._onStart);
     },
 
+    /**
+     * Disable the "pinch to rotate" interaction, leaving the "pinch to zoom"
+     * interaction enabled.
+     * @example
+     *   map.touchZoomRotate.disableRotation();
+     */
     disableRotation: function() {
         this._rotationDisabled = true;
     },
 
+    /**
+     * Enable the "pinch to rotate" interaction, undoing a call to
+     * `disableRotation`.
+     * @example
+     *   map.touchZoomRotate.enable();
+     *   map.touchZoomRotate.enableRotation();
+     */
     enableRotation: function() {
         this._rotationDisabled = false;
     },

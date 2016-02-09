@@ -3,7 +3,7 @@
 var DOM = require('../../util/dom'),
     util = require('../../util/util');
 
-module.exports = DragPan;
+module.exports = DragPanHandler;
 
 var inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
@@ -11,20 +11,36 @@ var inertiaLinearity = 0.3,
     inertiaDeceleration = 2500; // px/s^2
 
 
-function DragPan(map) {
+/**
+ * The `DragPanHandler` allows a user to pan the map by clicking and dragging
+ * the cursor.
+ * @class DragPanHandler
+ */
+function DragPanHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
 
     util.bindHandlers(this);
 }
 
-DragPan.prototype = {
+DragPanHandler.prototype = {
+
+    /**
+     * Enable the "drag to pan" interaction.
+     * @example
+     *   map.dragPan.enable();
+     */
     enable: function () {
         this.disable();
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
     },
 
+    /**
+     * Disable the "drag to pan" interaction.
+     * @example
+     *   map.dragPan.disable();
+     */
     disable: function () {
         this._el.removeEventListener('mousedown', this._onDown);
         this._el.removeEventListener('touchstart', this._onDown);

@@ -4,10 +4,14 @@ var DOM = require('../../util/dom'),
     LngLatBounds = require('../../geo/lng_lat_bounds'),
     util = require('../../util/util');
 
-module.exports = BoxZoom;
+module.exports = BoxZoomHandler;
 
-
-function BoxZoom(map) {
+/**
+ * The `BoxZoomHandler` allows a user to zoom the map to fit a bounding box.
+ * The bounding box is defined by holding `shift` while dragging the cursor.
+ * @class BoxZoomHandler
+ */
+function BoxZoomHandler(map) {
     this._map = map;
     this._el = map.getCanvasContainer();
     this._container = map.getContainer();
@@ -15,12 +19,23 @@ function BoxZoom(map) {
     util.bindHandlers(this);
 }
 
-BoxZoom.prototype = {
+BoxZoomHandler.prototype = {
+
+    /**
+     * Enable the "box zoom" interaction.
+     * @example
+     *   map.boxZoom.enable();
+     */
     enable: function () {
         this.disable();
         this._el.addEventListener('mousedown', this._onMouseDown, false);
     },
 
+    /**
+     * Disable the "box zoom" interaction.
+     * @example
+     *   map.boxZoom.disable();
+     */
     disable: function () {
         this._el.removeEventListener('mousedown', this._onMouseDown);
     },
