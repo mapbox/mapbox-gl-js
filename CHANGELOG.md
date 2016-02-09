@@ -1,6 +1,14 @@
 ## master
 
+## 8.4.2
+
+v8.0.0 styles are fully compatible with v8.4.2.
+
+* Refactored style validator to expose more granular validation methods
+
 ## 8.4.1
+
+v8.0.0 styles are fully compatible with v8.4.1.
 
 * Revert ramp validation checks that broke some styles.
 
