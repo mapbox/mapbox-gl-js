@@ -32,6 +32,13 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test("different instances don't share options", function(t) {
+        var map1 = createMap();
+        var map2 = createMap();
+        t.notEqual(map1.options, map2.options);
+        t.end();
+    });
+
     t.test('#setStyle', function(t) {
         t.test('returns self', function(t) {
             var map = createMap(),
