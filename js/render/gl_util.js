@@ -17,12 +17,20 @@ exports.extend = function(context) {
             throw new Error("Could not find shader " + name);
         }
 
-        var shader = this.createShader(type);
-        var shaderSource = shaders[name][kind];
+        var fragmentPrecision = 0,
+            vertexPrecision = 0,
+            shader = this.createShader(type),
+            shaderSource = shaders[name][kind];
 
-        if (typeof orientation === 'undefined') {
-            // only use highp precision on mobile browsers
-            shaderSource = shaderSource.replace(/ highp /g, ' ');
+        // Get shader precision format if available
+        if (context.getShaderPrecisionFormat) {
+            fragmentPrecision = context.getShaderPrecisionFormat(context.FRAGMENT_SHADER, context.HIGH_FLOAT).precision;
+            vertexPrecision = context.getShaderPrecisionFormat(context.VERTEX_SHADER, context.HIGH_FLOAT).precision;
+        }
+
+        // Increase shader precision on supported mobile devices
+        if (fragmentPrecision !== 0 && vertexPrecision !== 0 && typeof orientation !== 'undefined') {
+            shaderSource = shaderSource.replace(/ mediump /g, ' highp ');
         }
 
         this.shaderSource(shader, shaderSource);
