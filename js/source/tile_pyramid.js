@@ -368,7 +368,8 @@ TilePyramid.prototype = {
                     tile: tile,
                     x: pos.x,
                     y: pos.y,
-                    scale: this.transform.worldSize / Math.pow(2, tile.coord.z)
+                    scale: Math.pow(2, this.transform.zoom - tile.coord.z),
+                    tileSize: tile.tileSize
                 };
             }
         }

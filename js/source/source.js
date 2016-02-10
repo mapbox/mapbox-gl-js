@@ -81,6 +81,7 @@ exports._vectorFeaturesAt = function(coord, params, callback) {
         x: result.x,
         y: result.y,
         scale: result.scale,
+        tileSize: result.tileSize,
         source: this.id,
         params: params
     }, callback, result.tile.workerID);

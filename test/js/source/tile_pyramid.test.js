@@ -233,25 +233,77 @@ test('TilePyramid#removeTile', function(t) {
 });
 
 test('TilePyramid#tileAt', function(t) {
-    var pyramid = createPyramid({
-        load: function(tile) { tile.loaded = true; },
-        minzoom: 1,
-        maxzoom: 10,
-        tileSize: 512
+    t.test('regular tile', function(t) {
+        var pyramid = createPyramid({
+            load: function(tile) { tile.loaded = true; },
+            minzoom: 1,
+            maxzoom: 1,
+            tileSize: 512
+        });
+
+        var transform = new Transform();
+        transform.resize(512, 512);
+        transform.zoom = 1.5;
+        pyramid.update(true, transform);
+
+        var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+
+        t.deepEqual(result.tile.coord.id, 65);
+        t.deepEqual(result.scale, 1.4142135623730951);
+        t.deepEqual(result.tileSize, 512);
+        t.deepEqual(result.x, 0);
+        t.deepEqual(result.y, 4096);
+
+        t.end();
     });
 
-    var transform = new Transform();
-    transform.resize(512, 512);
-    transform.zoom = 1.5;
-    pyramid.update(true, transform);
+    t.test('reparsed overscaled tile', function(t) {
+        var pyramid = createPyramid({
+            load: function(tile) { tile.loaded = true; },
+            reparseOverscaled: true,
+            minzoom: 1,
+            maxzoom: 1,
+            tileSize: 512
+        });
 
-    var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+        var transform = new Transform();
+        transform.resize(512, 512);
+        transform.zoom = 2.5;
+        pyramid.update(true, transform);
 
-    t.deepEqual(result.tile.coord.id, 65);
-    t.deepEqual(result.scale, 724.0773439350247);
-    t.deepEqual(result.x, 0);
-    t.deepEqual(result.y, 4096);
+        var result = pyramid.tileAt(new Coordinate(0, 3, 2));
 
+        t.deepEqual(result.tile.coord.id, 130);
+        t.deepEqual(result.scale, 1.4142135623730951);
+        t.deepEqual(result.tileSize, 1024);
+        t.deepEqual(result.x, 0);
+        t.deepEqual(result.y, 4096);
+        t.end();
+    });
+
+    t.test('overscaled tile', function(t) {
+        var pyramid = createPyramid({
+            load: function(tile) { tile.loaded = true; },
+            minzoom: 1,
+            maxzoom: 1,
+            tileSize: 512
+        });
+
+        var transform = new Transform();
+        transform.resize(512, 512);
+        transform.zoom = 2.5;
+        pyramid.update(true, transform);
+
+        var result = pyramid.tileAt(new Coordinate(0, 3, 2));
+
+        t.deepEqual(result.tile.coord.id, 65);
+        t.deepEqual(result.scale, 2 * 1.4142135623730951);
+        t.deepEqual(result.tileSize, 512);
+        t.deepEqual(result.x, 0);
+        t.deepEqual(result.y, 4096);
+
+        t.end();
+    });
     t.end();
 });
 
