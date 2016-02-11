@@ -87,10 +87,6 @@ Painter.prototype.setup = function() {
         ['a_pos', 'a_data'],
         ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix', 'u_extra', 'u_antialiasingmatrix', 'u_offset']);
 
-    this.dotShader = gl.initializeShader('dot',
-        ['a_pos'],
-        ['u_matrix', 'u_size', 'u_color', 'u_blur']);
-
     this.sdfShader = gl.initializeShader('sdf',
         ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
         ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);

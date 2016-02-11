@@ -9,10 +9,6 @@ module.exports = {
         fragment: fs.readFileSync(path.join(__dirname, '../../shaders/debug.fragment.glsl'), 'utf8'),
         vertex: fs.readFileSync(path.join(__dirname, '../../shaders/debug.vertex.glsl'), 'utf8')
     },
-    dot: {
-        fragment: fs.readFileSync(path.join(__dirname, '../../shaders/dot.fragment.glsl'), 'utf8'),
-        vertex: fs.readFileSync(path.join(__dirname, '../../shaders/dot.vertex.glsl'), 'utf8')
-    },
     fill: {
         fragment: fs.readFileSync(path.join(__dirname, '../../shaders/fill.fragment.glsl'), 'utf8'),
         vertex: fs.readFileSync(path.join(__dirname, '../../shaders/fill.vertex.glsl'), 'utf8')
