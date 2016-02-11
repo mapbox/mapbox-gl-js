@@ -57,7 +57,8 @@ test('StyleLayer#setPaintProperty', function(t) {
             "id": "background",
             "type": "background",
             "paint": {
-                "background-color": "red"
+                "background-color": "red",
+                "background-opacity": 1
             }
         });
         layer.cascade({}, {transition: false}, null, createAnimationLoop());
@@ -66,6 +67,8 @@ test('StyleLayer#setPaintProperty', function(t) {
 
         t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 0, 1]);
         t.equal(layer.getPaintProperty('background-color'), undefined);
+        t.equal(layer.getPaintValue('background-opacity'), 1);
+        t.equal(layer.getPaintProperty('background-opacity'), 1);
 
         t.end();
     });
@@ -90,10 +93,12 @@ test('StyleLayer#setPaintProperty', function(t) {
             "id": "background",
             "type": "background",
             "paint": {
-                "background-color": "red"
+                "background-color": "red",
+                "background-opacity": 1
             },
             "paint.night": {
-                "background-color": "blue"
+                "background-color": "blue",
+                "background-opacity": 0.1
             }
         });
         layer.cascade({night: true}, {transition: false}, null, createAnimationLoop());
@@ -101,7 +106,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 1, 1]);
 
         layer.setPaintProperty('background-color', null, 'night');
-        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        layer.cascade({night: true}, {transition: false}, null, createAnimationLoop());
         t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
         t.equal(layer.getPaintProperty('background-color', 'night'), undefined);
 

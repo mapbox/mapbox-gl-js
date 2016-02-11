@@ -164,18 +164,19 @@ StyleLayer.prototype = {
         for (var klass in this._paintDeclarations) {
             if (klass !== "" && !classes[klass]) continue;
             for (var name in this._paintDeclarations[klass]) {
-                applyDeclaration(this._paintDeclarations[klass][name]);
+                applyDeclaration(name, this._paintDeclarations[klass][name]);
             }
         }
 
         // Apply removed declarations
         var removedNames = util.keysDifference(oldTransitions, newTransitions);
         for (var i = 0; i < removedNames.length; i++) {
-            var spec = this._paintSpecifications[removedNames[i]];
-            applyDeclaration(new StyleDeclaration(spec, spec.default));
+            name = removedNames[i];
+            var spec = this._paintSpecifications[name];
+            applyDeclaration(name, new StyleDeclaration(spec, spec.default));
         }
 
-        function applyDeclaration(declaration) {
+        function applyDeclaration(name, declaration) {
             var oldTransition = options.transition ? oldTransitions[name] : undefined;
 
             if (oldTransition && oldTransition.declaration.json === declaration.json) {
