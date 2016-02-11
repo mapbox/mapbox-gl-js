@@ -174,7 +174,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         if (isSharpCorner && i > 0) {
             var prevSegmentLength = currentVertex.dist(prevVertex);
             if (prevSegmentLength > 2 * sharpCornerOffset) {
-                var newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength));
+                var newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                 distance += newPrevVertex.dist(prevVertex);
                 this.addCurrentVertex(newPrevVertex, flip, distance, prevNormal.mult(1), 0, 0, false);
                 prevVertex = newPrevVertex;
@@ -329,7 +329,7 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         if (isSharpCorner && i < len - 1) {
             var nextSegmentLength = currentVertex.dist(nextVertex);
             if (nextSegmentLength > 2 * sharpCornerOffset) {
-                var newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength));
+                var newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                 distance += newCurrentVertex.dist(currentVertex);
                 this.addCurrentVertex(newCurrentVertex, flip, distance, nextNormal.mult(1), 0, 0, false);
                 currentVertex = newCurrentVertex;
