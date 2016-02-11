@@ -240,9 +240,25 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
+    t.test('serializes layers with paint classes', function(t) {
+        var layer = createSymbolLayer({
+            'paint.night': {
+                'text-color': 'orange'
+            }
+        });
+        t.deepEqual(
+            StyleLayer.create(layer).serialize(),
+            layer
+        );
+        t.end();
+    });
+
     t.test('serializes refed layers', function(t) {
         t.deepEqual(
-            StyleLayer.create(createRefedSymbolLayer(), createSymbolLayer()).serialize(),
+            StyleLayer.create(
+                createRefedSymbolLayer(),
+                StyleLayer.create(createSymbolLayer())
+            ).serialize(),
             createRefedSymbolLayer()
         );
         t.end();

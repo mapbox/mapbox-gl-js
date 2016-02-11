@@ -225,7 +225,7 @@ StyleLayer.prototype = {
         };
 
         for (var klass in this._paintDeclarations) {
-            var key = klass === '' ? 'paint' : 'paint.' + key;
+            var key = klass === '' ? 'paint' : 'paint.' + klass;
             output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
         }
 
