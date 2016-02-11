@@ -1,6 +1,6 @@
 precision mediump float;
 
-uniform vec4 u_color;
+uniform lowp vec4 u_color;
 uniform float u_blur;
 uniform float u_size;
 
