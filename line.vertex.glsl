@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
@@ -11,7 +11,7 @@ precision mediump float;
 attribute vec2 a_pos;
 attribute vec4 a_data;
 
-uniform highp mat4 u_matrix;
+uniform mat4 u_matrix;
 uniform float u_ratio;
 uniform vec2 u_linewidth;
 uniform float u_extra;

@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 attribute vec2 a_pos;
 attribute vec2 a_offset;
@@ -8,7 +8,7 @@ attribute vec4 a_data2;
 
 // matrix is for the vertex position, exmatrix is for rotating and projecting
 // the extrusion vector.
-uniform highp mat4 u_matrix;
+uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 
 uniform float u_zoom;

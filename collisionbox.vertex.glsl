@@ -1,10 +1,10 @@
-precision mediump float;
+precision highp float;
 
 attribute vec2 a_pos;
 attribute vec2 a_extrude;
 attribute vec2 a_data;
 
-uniform highp mat4 u_matrix;
+uniform mat4 u_matrix;
 uniform float u_scale;
 
 varying float v_max_zoom;
