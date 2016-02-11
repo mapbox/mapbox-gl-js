@@ -193,14 +193,14 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _recalculate: function(z) {
-        for (var id in this.sources)
-            this.sources[id].used = false;
+        for (var sourceId in this.sources)
+            this.sources[sourceId].used = false;
 
         this._updateZoomHistory(z);
 
         this.rasterFadeDuration = 300;
-        for (id in this._layers) {
-            var layer = this._layers[id];
+        for (var layerId in this._layers) {
+            var layer = this._layers[layerId];
 
             layer.recalculate(z, this.zoomHistory);
             if (!layer.isHidden(z) && layer.source) {

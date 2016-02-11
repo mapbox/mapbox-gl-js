@@ -107,8 +107,10 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             otherBuckets.push(bucket);
     }
 
-    var icons = {},
-        stacks = {};
+    var icons = {};
+    var stacks = {};
+    var deps = 0;
+
 
     if (symbolBuckets.length > 0) {
 
@@ -122,8 +124,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
         }
         icons = Object.keys(icons);
-
-        var deps = 0;
 
         actor.send('get glyphs', {uid: this.uid, stacks: stacks}, function(err, newStacks) {
             stacks = newStacks;

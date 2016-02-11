@@ -47,8 +47,8 @@ function StyleLayer(layer, refLayer) {
         var match = key.match(/^paint(?:\.(.*))?$/);
         if (match) {
             var klass = match[1] || '';
-            for (var name in layer[key]) {
-                this.setPaintProperty(name, layer[key][name], klass);
+            for (var paintName in layer[key]) {
+                this.setPaintProperty(paintName, layer[key][paintName], klass);
             }
         }
     }
@@ -57,8 +57,8 @@ function StyleLayer(layer, refLayer) {
     if (this.ref) {
         this._layoutDeclarations = refLayer._layoutDeclarations;
     } else {
-        for (name in layer.layout) {
-            this.setLayoutProperty(name, layer.layout[name]);
+        for (var layoutName in layer.layout) {
+            this.setLayoutProperty(layoutName, layer.layout[layoutName]);
         }
     }
 }
@@ -171,9 +171,8 @@ StyleLayer.prototype = {
         // Apply removed declarations
         var removedNames = util.keysDifference(oldTransitions, newTransitions);
         for (var i = 0; i < removedNames.length; i++) {
-            name = removedNames[i];
-            var spec = this._paintSpecifications[name];
-            applyDeclaration(name, new StyleDeclaration(spec, spec.default));
+            var spec = this._paintSpecifications[removedNames[i]];
+            applyDeclaration(removedNames[i], new StyleDeclaration(spec, spec.default));
         }
 
         function applyDeclaration(name, declaration) {
@@ -205,13 +204,13 @@ StyleLayer.prototype = {
     // update zoom
     recalculate: function(zoom, zoomHistory) {
         this.paint = {};
-        for (var name in this._paintSpecifications) {
-            this.paint[name] = this.getPaintValue(name, zoom, zoomHistory);
+        for (var paintName in this._paintSpecifications) {
+            this.paint[paintName] = this.getPaintValue(paintName, zoom, zoomHistory);
         }
 
         this.layout = {};
-        for (name in this._layoutSpecifications) {
-            this.layout[name] = this.getLayoutValue(name, zoom, zoomHistory);
+        for (var layoutName in this._layoutSpecifications) {
+            this.layout[layoutName] = this.getLayoutValue(layoutName, zoom, zoomHistory);
         }
     },
 

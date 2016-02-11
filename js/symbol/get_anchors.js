@@ -21,9 +21,7 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     // Is the line continued from outside the tile boundary?
-    if (line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent) {
-        var continuedLine = true;
-    }
+    var isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
 
     // Is the label long, relative to the spacing?
     // If so, adjust the spacing so there is always a minimum space of `spacing / 4` between label edges.
@@ -38,15 +36,15 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
     // For non-continued lines, add a bit of fixed extra offset to avoid collisions at T intersections.
     var fixedExtraOffset = glyphSize * 2;
 
-    var offset = !continuedLine ?
+    var offset = !isLineContinued ?
         ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
-    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, continuedLine, false, tileExtent);
+    return resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength * boxScale, isLineContinued, false, tileExtent);
 }
 
 
-function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, placeAtMiddle, tileExtent) {
+function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent) {
 
     var halfLabelLength = labelLength / 2;
     var lineLength = 0;
@@ -93,13 +91,13 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
         distance += segmentDist;
     }
 
-    if (!placeAtMiddle && !anchors.length && !continuedLine) {
+    if (!placeAtMiddle && !anchors.length && !isLineContinued) {
         // The first attempt at finding anchors at which labels can be placed failed.
         // Try again, but this time just try placing one anchor at the middle of the line.
         // This has the most effect for short lines in overscaled tiles, since the
         // initial offset used in overscaled tiles is calculated to align labels with positions in
         // parent tiles instead of placing the label as close to the beginning as possible.
-        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, true, tileExtent);
+        anchors = resample(line, distance / 2, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, true, tileExtent);
     }
 
     return anchors;

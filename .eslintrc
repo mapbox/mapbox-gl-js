@@ -6,6 +6,7 @@
     "array-bracket-spacing": 0,
     "space-before-function-paren": 0,
     "quotes": 0,
-    "no-eq-null": 0
+    "no-eq-null": 0,
+    "block-scoped-var": 2
   }
 }
