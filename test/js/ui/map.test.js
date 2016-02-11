@@ -264,10 +264,30 @@ test('Map', function(t) {
     });
 
     t.test('#getBounds', function(t) {
-        var map = createMap();
+        var map = createMap({ zoom: 0 });
         t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
+
+        t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
+            [ -70.31249999999976, -57.32652122521695 ],
+            [ 70.31249999999977, 57.326521225216965 ] ]));
+
+        t.test('rotated bounds', function(t) {
+            var map = createMap({ zoom: 1, bearing: 45 });
+            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
+                [ -49.718445552178764, -44.44541580601936 ],
+                [ 49.71844555217925, 44.445415806019355 ] ]));
+            t.end();
+        });
         t.end();
+
+        function toFixed(bounds) {
+            var n = 10;
+            return [
+                [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+                [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
+            ];
+        }
     });
 
     t.test('#remove', function(t) {
