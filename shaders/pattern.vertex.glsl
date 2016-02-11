@@ -1,6 +1,6 @@
-precision mediump float;
+precision highp float;
 
-uniform highp mat4 u_matrix;
+uniform mat4 u_matrix;
 uniform vec2 u_patternscale_a;
 uniform vec2 u_patternscale_b;
 uniform vec2 u_offset_a;
