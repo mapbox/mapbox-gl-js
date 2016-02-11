@@ -74,7 +74,6 @@ function drawBackground(painter, source, layer) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 
-    gl.enable(gl.STENCIL_TEST);
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }

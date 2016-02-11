@@ -7,6 +7,7 @@ module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
+    gl.enable(gl.STENCIL_TEST);
 
     var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
     var image = layer.paint['fill-pattern'];

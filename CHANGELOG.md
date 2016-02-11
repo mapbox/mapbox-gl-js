@@ -1,3 +1,10 @@
+## 0.14.1 (Feb 10 2016)
+
+#### Bugfixes
+
+Fix incorrectly rotated symbols along lines near tile boundries (#2062)
+Fix broken rendering when a fill layer follows certain symbol layers (#2092)
+
 ## 0.14.0 (Feb 8 2016)
 
 #### Breaking Changes

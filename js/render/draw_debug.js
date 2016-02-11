@@ -19,6 +19,7 @@ function drawDebug(painter, source, coords) {
 function drawDebugTile(painter, source, coord) {
     var gl = painter.gl;
 
+    gl.disable(gl.STENCIL_TEST);
     gl.lineWidth(1 * browser.devicePixelRatio);
 
     var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);

@@ -48,6 +48,12 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
 
 function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, continuedLine, placeAtMiddle, tileExtent) {
 
+    var halfLabelLength = labelLength / 2;
+    var lineLength = 0;
+    for (var k = 0; k < line.length - 1; k++) {
+        lineLength += line[k].dist(line[k + 1]);
+    }
+
     var distance = 0,
         markedDistance = offset - spacing;
 
@@ -68,7 +74,12 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 
-            if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent) {
+            // Check that the point is within the tile boundaries and that
+            // the label would fit before the beginning and end of the line
+            // if placed at this point.
+            if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent &&
+                    markedDistance - halfLabelLength >= 0 &&
+                    markedDistance + halfLabelLength <= lineLength) {
                 x = Math.round(x);
                 y = Math.round(y);
                 var anchor = new Anchor(x, y, angle, i);
