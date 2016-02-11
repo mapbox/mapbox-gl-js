@@ -1,7 +1,7 @@
 precision mediump float;
 
 uniform vec2 u_linewidth;
-uniform vec4 u_color;
+uniform lowp vec4 u_color;
 uniform float u_blur;
 uniform sampler2D u_image;
 uniform float u_sdfgamma;
