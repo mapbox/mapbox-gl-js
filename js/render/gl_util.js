@@ -28,7 +28,7 @@ exports.extend = function(context) {
         this.shaderSource(shader, shaderSource);
         this.compileShader(shader);
         if (!this.getShaderParameter(shader, this.COMPILE_STATUS)) {
-            throw new Error(this.getShaderInfoLog(shader));
+            throw new Error(name + ' ' + typeString + this.getShaderInfoLog(shader));
         }
         return shader;
     };
@@ -45,7 +45,7 @@ exports.extend = function(context) {
         this.linkProgram(shader.program);
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
-            console.error(this.getProgramInfoLog(shader.program));
+            console.error(name + ' ERROR: ' + this.getProgramInfoLog(shader.program));
         } else {
             for (var i = 0; i < attributes.length; i++) {
                 shader[attributes[i]] = this.getAttribLocation(shader.program, attributes[i]);
