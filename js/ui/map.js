@@ -382,8 +382,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Query features at a point, or within a certain radius thereof.
      *
-     * To use this method, you must set the style property `"interactive": true` on layers you wish to query.
-     *
      * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
      * @param {number} [params.radius=0] Radius in pixels to search in
@@ -408,8 +406,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * Query features within a rectangle.
-     *
-     * To use this method, you must set the style property `"interactive": true` on layers you wish to query.
      *
      * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
      * @param {Object} params

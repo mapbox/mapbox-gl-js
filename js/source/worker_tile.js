@@ -166,7 +166,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket.populateBuffers(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
-        if (bucket.interactive && bucket.type !== 'symbol') {
+        if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
                 tile.featureTree.insert(feature.bbox(), bucket.layerIDs, feature);

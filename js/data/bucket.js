@@ -72,7 +72,6 @@ function Bucket(options) {
     this.features = [];
     this.id = this.layer.id;
     this['source-layer'] = this.layer['source-layer'];
-    this.interactive = this.layer.interactive;
     this.minZoom = this.layer.minzoom;
     this.maxZoom = this.layer.maxzoom;
 
