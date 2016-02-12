@@ -12,13 +12,13 @@ exports.extend = function(context) {
     };
 
     context.getShader = function(name, type) {
-        var kind = type === this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
-        if (!shaders[name] || !shaders[name][kind]) {
+        var typeString = type === this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
+        if (!shaders[name] || !shaders[name][typeString]) {
             throw new Error("Could not find shader " + name);
         }
 
         var shader = this.createShader(type);
-        var shaderSource = shaders[name][kind];
+        var shaderSource = shaders[name][typeString];
 
         if (typeof orientation === 'undefined') {
             // only use highp precision on mobile browsers
