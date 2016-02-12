@@ -9,18 +9,17 @@ description: Drag the range slider to visualize earthquakes that were greater th
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     position: absolute;
     width: 25%;
+    top: 0;
     left: 0;
     padding: 10px;
 }
-
-.map-overlay.top    { top: 0; }
-.map-overlay.bottom { bottom: 0; }
 
 .map-overlay .map-overlay-inner {
     background-color: #fff;
     box-shadow:0 1px 2px rgba(0, 0, 0, 0.20);
     border-radius: 3px;
     padding: 10px;
+    margin-bottom: 10px;
 }
 
 .map-overlay h2 {
@@ -35,7 +34,7 @@ description: Drag the range slider to visualize earthquakes that were greater th
 }
 
 .map-overlay input {
-    background-color: rgba(0, 0, 0, 0.75);
+    background-color: transparent;
     display: inline-block;
     width: 100%;
     position: relative;
@@ -52,11 +51,10 @@ description: Drag the range slider to visualize earthquakes that were greater th
         <label id='month'></label>
         <input id='slider' type='range' min='0' max='11' step='1' value='0' />
     </div>
-</div>
-
-<div class='map-overlay bottom'>
     <div class='map-overlay-inner'>
-        <div id='legend' class='legend'></div>
+        <div id='legend' class='legend'>
+            <div>Magnitude (m)</div>
+        </div>
     </div>
 </div>
 
@@ -151,11 +149,6 @@ map.on('load', function() {
             'data': data
         });
 
-        // Append Legend label
-        var legendLabel = document.createElement('div');
-        legendLabel.textContent = magnitudes[0][0] + ' – ' + magnitudes[magnitudes.length -1][0] + ' Magnitude';
-        legend.appendChild(legendLabel);
-
         // Apply layer styles
         magnitudes.forEach(function(mag, i) {
             var layerID = 'circle-' + i;
@@ -178,7 +171,7 @@ map.on('load', function() {
                 "type": "symbol",
                 "source": "earthquakes",
                 "layout": {
-                    "text-field": "{mag}",
+                    "text-field": "{mag}m",
                     "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
                     "text-size": 12
                 },
@@ -187,17 +180,17 @@ map.on('load', function() {
                 }
             });
 
+            // Set filter to first month of the year +
+            // Magnitude rating. 0 = January
+            filterBy(0, mag, i);
+
             // Add legend bar
             var bar = document.createElement('div');
             bar.className = 'bar';
             bar.title = mag[0];
             bar.style.width = 100 / magnitudes.length + '%';
             bar.style.backgroundColor = mag[1];
-            legend.appendChild(bar);
-
-            // Set filter to first month of the year +
-            // Magnitude rating. 0 = January
-            filterBy(0, mag, i);
+            legend.insertBefore(bar, legend.firstChild);
         });
 
         document.getElementById('slider').addEventListener('input', function(e) {
@@ -235,9 +228,14 @@ map.on('load', function() {
                 link.target = '_blank';
                 link.textContent = feature.properties.place;
 
+                // Use wrapped coordinates to ensure longitude is within (180, -180)
+                var coords = feature.geometry.coordinates;
+                var ll = new mapboxgl.LngLat(coords[0], coords[1]);
+                var wrapped = ll.wrap();
+
                 // Center the map to its point.
-                map.flyTo({ center: feature.geometry.coordinates });
-                popup.setLngLat(feature.geometry.coordinates)
+                map.flyTo({ center: wrapped });
+                popup.setLngLat(wrapped)
                     .setHTML(link.outerHTML)
                     .addTo(map);
             });
