@@ -130,7 +130,6 @@ var Map = module.exports = function(options) {
         this.jumpTo(options);
     }
 
-    this.sources = {};
     this.stacks = {};
     this._classes = {};
 
@@ -443,6 +442,30 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
           )
         ].map(this.transform.pointCoordinate.bind(this.transform));
         this.style.featuresIn(bounds, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+        return this;
+    },
+
+
+    /**
+     * Get data from vector tiles as an array of GeoJSON FeatureCollections FeatureCollections.
+     *
+     * @param {string} sourceID source ID
+     * @param {Object} params
+     * @param {string} [params.source-layer] The name of the vector tile layer to get features from.
+     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
+     * @param {callback} callback function that receives the results
+     *
+     * @returns {Map} `this`
+     */
+    getSourceTileData: function(sourceID, params, callback) {
+        var source = this.getSource(sourceID);
+
+        if (!source) {
+            return callback("No source with id '" + sourceID + "'.", []);
+        }
+
+        source.getTileData(params, callback);
+
         return this;
     },
 

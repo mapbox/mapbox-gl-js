@@ -122,5 +122,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
     featuresIn: function(bbox, params, callback) {
         callback(null, []);
+    },
+
+    getTileData: function(params, callback) {
+        return callback(null, []);
     }
 });

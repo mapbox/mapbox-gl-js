@@ -118,6 +118,37 @@ exports._vectorFeaturesIn = function(bounds, params, classes, zoom, bearing, cal
     });
 };
 
+exports._getVectorTileData = function(params, callback) {
+    if (!this._pyramid) {
+        return callback(null, []);
+    }
+
+    var pyramid = this._pyramid;
+    var tiles = pyramid.renderedIDs().map(function(id) {
+        return pyramid.getTile(id);
+    });
+
+    var dataTiles = {};
+    for (var i = 0; i < tiles.length; i++) {
+        var tile = tiles[i];
+        var dataID = new TileCoord(Math.min(tile.sourceMaxZoom, tile.coord.z), tile.coord.x, tile.coord.y, 0).id;
+        if (!dataTiles[dataID]) {
+            dataTiles[dataID] = tile;
+        }
+    }
+
+    util.asyncAll(Object.keys(dataTiles), function(dataID, callback) {
+        var tile = dataTiles[dataID];
+        this.dispatcher.send('get tile data', {
+            uid: tile.uid,
+            source: this.id,
+            params: params
+        }, callback, tile.workerID);
+    }.bind(this), function(err, results) {
+        callback(err, results.filter(function(x) { return !!x; }));
+    });
+};
+
 /*
  * Create a tiled data source instance given an options object
  *

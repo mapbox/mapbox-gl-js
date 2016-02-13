@@ -3,6 +3,7 @@
 var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
+var featureFilter = require('feature-filter');
 
 module.exports = WorkerTile;
 
@@ -21,6 +22,7 @@ function WorkerTile(params) {
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.status = 'parsing';
+    this.data = data;
 
     var collisionTile = new CollisionTile(this.angle, this.pitch);
     this.featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile);
@@ -238,3 +240,29 @@ function getTransferables(buckets) {
     }
     return transferables;
 }
+
+WorkerTile.prototype.getData = function(params) {
+    if (!this.data) return null;
+
+    var layer = this.data.layers ?
+        this.data.layers[params['source-layer']] :
+        this.data;
+
+    if (!layer) return null;
+
+    var filter = featureFilter(params.filter);
+
+    var features = [];
+    for (var i = 0; i < layer.length; i++) {
+        var feature = layer.feature(i);
+        if (filter(feature)) {
+            features.push(feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z));
+        }
+    }
+
+    return {
+        type: 'FeatureCollection',
+        features: features,
+        coord: { z: this.coord.z, x: this.coord.x, y: this.coord.y }
+    };
+};

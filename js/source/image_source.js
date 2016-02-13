@@ -164,6 +164,14 @@ ImageSource.prototype = util.inherit(Evented, {
         return callback(null, []);
     },
 
+    /**
+     * An ImageSource doesn't have any tiled data.
+     * @private
+     */
+    getTileData: function(params, callback) {
+        return callback(null, []);
+    },
+
     serialize: function() {
         return {
             type: 'image',

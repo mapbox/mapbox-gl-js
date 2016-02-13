@@ -55,6 +55,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
     featuresAt: Source._vectorFeaturesAt,
     featuresIn: Source._vectorFeaturesIn,
+    getTileData: Source._getVectorTileData,
 
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
