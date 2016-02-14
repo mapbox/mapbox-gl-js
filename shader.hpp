@@ -2,11 +2,8 @@
 #define MBGL_RENDERER_SHADER
 
 #include <mbgl/gl/gl.hpp>
+#include <mbgl/gl/gl_object_store.hpp>
 #include <mbgl/util/noncopyable.hpp>
-
-#include <cstdint>
-#include <array>
-#include <string>
 
 namespace mbgl {
 
@@ -16,10 +13,9 @@ public:
 
     ~Shader();
     const GLchar *name;
-    GLuint program;
 
-    inline GLuint getID() const {
-        return program;
+    inline const GLuint& getID() const {
+        return program.getID();
     }
 
     virtual void bind(GLbyte *offset) = 0;
@@ -30,6 +26,7 @@ protected:
 private:
     bool compileShader(GLuint *shader, GLenum type, const GLchar *source[]);
 
+    gl::ProgramHolder program;
     GLuint vertShader = 0;
     GLuint fragShader = 0;
 };
