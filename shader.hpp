@@ -14,7 +14,7 @@ public:
     ~Shader();
     const GLchar *name;
 
-    inline const GLuint& getID() const {
+    GLuint getID() const {
         return program.getID();
     }
 
@@ -24,11 +24,11 @@ protected:
     GLint a_pos = -1;
 
 private:
-    bool compileShader(GLuint *shader, GLenum type, const GLchar *source[]);
+    bool compileShader(gl::ShaderHolder&, const GLchar *source[]);
 
     gl::ProgramHolder program;
-    GLuint vertShader = 0;
-    GLuint fragShader = 0;
+    gl::ShaderHolder vertexShader = { GL_VERTEX_SHADER };
+    gl::ShaderHolder fragmentShader = { GL_FRAGMENT_SHADER };
 };
 
 } // namespace mbgl
