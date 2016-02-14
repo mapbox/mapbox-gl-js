@@ -9,8 +9,8 @@ using namespace mbgl;
 
 CollisionBoxShader::CollisionBoxShader()
     : Shader("collisionbox", shaders::box::vertex, shaders::box::fragment) {
-    a_extrude = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_extrude"));
-    a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
+    a_extrude = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_extrude"));
+    a_data = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_data"));
 }
 
 void CollisionBoxShader::bind(GLbyte *offset) {

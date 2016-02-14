@@ -8,9 +8,9 @@
 using namespace mbgl;
 
 IconShader::IconShader() : Shader("icon", shaders::icon::vertex, shaders::icon::fragment) {
-    a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_offset"));
-    a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data1"));
-    a_data2 = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data2"));
+    a_offset = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_offset"));
+    a_data1 = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_data1"));
+    a_data2 = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_data2"));
 }
 
 void IconShader::bind(GLbyte* offset) {

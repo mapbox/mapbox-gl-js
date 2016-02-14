@@ -9,7 +9,7 @@ using namespace mbgl;
 
 LineSDFShader::LineSDFShader()
     : Shader("line", shaders::linesdf::vertex, shaders::linesdf::fragment) {
-    a_data = MBGL_CHECK_ERROR(glGetAttribLocation(program, "a_data"));
+    a_data = MBGL_CHECK_ERROR(glGetAttribLocation(getID(), "a_data"));
 }
 
 void LineSDFShader::bind(GLbyte* offset) {
