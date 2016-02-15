@@ -4,7 +4,6 @@ category: example
 title: Display a popup on hover
 description: When a user hovers over a marker, show a popup containing more information.
 ---
-<div id='map'></div>
 <style>
     .mapboxgl-popup {
         max-width: 400px;
@@ -15,6 +14,7 @@ description: When a user hovers over a marker, show a popup containing more info
         font-weight: 700;
     }
 </style>
+<div id='map'></div>
 <script>
 var markers = {
     "type": "FeatureCollection",
@@ -160,7 +160,7 @@ map.on('mousemove', function(e) {
 
         var feature = features[0];
 
-        // Initialize a popup and set its coordinates
+        // Popuplate the popup and set its coordinates
         // based on the feature found.
         popup.setLngLat(feature.geometry.coordinates)
             .setHTML(feature.properties.description)
