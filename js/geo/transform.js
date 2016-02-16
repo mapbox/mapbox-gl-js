@@ -203,13 +203,6 @@ Transform.prototype = {
         this.center = this.coordinateLocation(coordCenter._sub(translate));
     },
 
-    setZoomAround: function(zoom, center) {
-        var p;
-        if (center) p = this.locationPoint(center);
-        this.zoom = zoom;
-        if (center) this.setLocationAtPoint(center, p);
-    },
-
     /**
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location

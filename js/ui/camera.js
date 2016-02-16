@@ -132,54 +132,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     zoomTo: function(zoom, options, eventData) {
-        this.stop();
-
-        options = util.extend({
-            duration: 500
-        }, options);
-
-        options.easing = this._updateEasing(options.duration, zoom, options.easing);
-
-        var tr = this.transform,
-            around = tr.center,
-            startZoom = tr.zoom;
-
-        if (options.around) {
-            around = LngLat.convert(options.around);
-        } else if (options.offset) {
-            around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
-        }
-
-
-        if (!this.zooming) {
-            this.zooming = true;
-            this.fire('movestart', eventData)
-                .fire('zoomstart', eventData);
-        }
-
-        this._ease(function(k) {
-            tr.setZoomAround(interpolate(startZoom, zoom, k), around);
-            this.fire('move', eventData)
-                .fire('zoom', eventData);
-        }, function() {
-            this.ease = null;
-            if (options.duration >= 200) {
-                this.zooming = false;
-                this.fire('moveend', eventData)
-                    .fire('zoomend', eventData);
-            }
-        }, options);
-
-        if (options.duration < 200) {
-            clearTimeout(this._onZoomEnd);
-            this._onZoomEnd = setTimeout(function() {
-                this.zooming = false;
-                this.fire('moveend', eventData)
-                    .fire('zoomend', eventData);
-            }.bind(this), 200);
-        }
-
-        return this;
+        return this.easeTo(util.extend({
+            zoom: zoom
+        }, options), eventData);
     },
 
     /**
@@ -453,18 +408,17 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch,
 
-            scale = tr.zoomScale(zoom - startZoom),
             toLngLat,
             toPoint;
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
-            toPoint = tr.centerPoint.add(offset.div(scale));
+            toPoint = tr.centerPoint.add(offset);
         } else if ('around' in options) {
             toLngLat = LngLat.convert(options.around);
             toPoint = tr.locationPoint(toLngLat);
         } else {
-            toPoint = tr.centerPoint.add(offset.div(scale));
+            toPoint = tr.centerPoint.add(offset);
             toLngLat = tr.pointLocation(toPoint);
         }
 
@@ -482,6 +436,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         if (this.zooming) {
             this.fire('zoomstart', eventData);
         }
+
+        clearTimeout(this._onEaseEnd);
 
         this._ease(function (k) {
             if (this.zooming) {
@@ -509,17 +465,25 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 this.fire('pitch', eventData);
             }
         }, function() {
-            if (this.zooming) {
-                this.fire('zoomend', eventData);
+            if (options.delayEndEvents) {
+                this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), options.delayEndEvents);
+            } else {
+                this._easeToEnd(eventData);
             }
-            this.fire('moveend', eventData);
-
-            this.zooming = false;
-            this.rotating = false;
-            this.pitching = false;
-        }, options);
+        }.bind(this), options);
 
         return this;
+    },
+
+    _easeToEnd: function(eventData) {
+        if (this.zooming) {
+            this.fire('zoomend', eventData);
+        }
+        this.fire('moveend', eventData);
+
+        this.zooming = false;
+        this.rotating = false;
+        this.pitching = false;
     },
 
     /**

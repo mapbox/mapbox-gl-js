@@ -72,7 +72,10 @@ test('GeoJSONSource#reload', function(t) {
 test('GeoJSONSource#update', function(t) {
     var transform = new Transform();
     transform.resize(200, 200);
-    transform.setZoomAround(15, LngLat.convert([-122.486052, 37.830348]));
+    var lngLat = LngLat.convert([-122.486052, 37.830348]);
+    var point = transform.locationPoint(lngLat);
+    transform.zoom = 15;
+    transform.setLocationAtPoint(lngLat, point);
 
     t.test('sends parse request to dispatcher', function(t) {
         var source = new GeoJSONSource({data: {}});

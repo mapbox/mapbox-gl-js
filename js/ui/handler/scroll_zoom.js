@@ -125,7 +125,8 @@ ScrollZoomHandler.prototype = {
 
         map.zoomTo(targetZoom, {
             duration: 0,
-            around: map.unproject(this._pos)
+            around: map.unproject(this._pos),
+            delayEndEvents: 200
         }, { originalEvent: e });
     }
 };
