@@ -500,9 +500,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         }, options);
 
         var tr = this.transform,
-            offset = Point.convert(options.offset).rotate(-tr.angle),
-            from = tr.point,
-            startWorldSize = tr.worldSize,
+            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -512,8 +510,21 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             pitch = 'pitch' in options ? +options.pitch : startPitch,
 
             scale = tr.zoomScale(zoom - startZoom),
-            to = 'center' in options ? tr.project(LngLat.convert(options.center)).sub(offset.div(scale)) : from,
-            around = 'center' in options ? null : LngLat.convert(options.around);
+            toLngLat,
+            toPoint;
+
+        if ('center' in options) {
+            toLngLat = LngLat.convert(options.center);
+            toPoint = tr.centerPoint.add(offset.div(scale));
+        } else if ('around' in options) {
+            toLngLat = LngLat.convert(options.around);
+            toPoint = tr.locationPoint(toLngLat);
+        } else {
+            toPoint = tr.centerPoint.add(offset.div(scale));
+            toLngLat = tr.pointLocation(toPoint);
+        }
+
+        var fromPoint = tr.locationPoint(toLngLat);
 
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
@@ -525,11 +536,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         }
 
         this._ease(function (k) {
-            if (this.zooming && around) {
-                tr.setZoomAround(interpolate(startZoom, zoom, k), around);
-            } else {
-                if (this.zooming) tr.zoom = interpolate(startZoom, zoom, k);
-                tr.center = tr.unproject(from.add(to.sub(from).mult(k)), startWorldSize);
+            if (this.zooming) {
+                tr.zoom = interpolate(startZoom, zoom, k);
             }
 
             if (this.rotating) {
@@ -539,6 +547,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
+
+            tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
 
             this.fire('move', eventData);
             if (this.zooming) {
