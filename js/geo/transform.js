@@ -210,13 +210,6 @@ Transform.prototype = {
         if (center) this.setLocationAtPoint(center, p);
     },
 
-    setBearingAround: function(bearing, center) {
-        var p;
-        if (center) p = this.locationPoint(center);
-        this.bearing = bearing;
-        if (center) this.setLocationAtPoint(center, p);
-    },
-
     /**
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location

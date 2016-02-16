@@ -84,33 +84,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     panTo: function(lnglat, options, eventData) {
-        this.stop();
-
-        lnglat = LngLat.convert(lnglat);
-
-        options = util.extend({
-            duration: 500,
-            easing: util.ease,
-            offset: [0, 0]
-        }, options);
-
-        var tr = this.transform,
-            offset = Point.convert(options.offset).rotate(-tr.angle),
-            from = tr.point,
-            to = tr.project(lnglat).sub(offset);
-
-        if (!options.noMoveStart) {
-            this.fire('movestart', eventData);
-        }
-
-        this._ease(function(k) {
-            tr.center = tr.unproject(from.add(to.sub(from).mult(k)));
-            this.fire('move', eventData);
-        }, function() {
-            this.fire('moveend', eventData);
-        }, options);
-
-        return this;
+        return this.easeTo(util.extend({
+            center: lnglat
+        }, options), eventData);
     },
 
 
@@ -174,7 +150,6 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
         }
 
-        if (options.animate === false) options.duration = 0;
 
         if (!this.zooming) {
             this.zooming = true;
@@ -278,40 +253,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     rotateTo: function(bearing, options, eventData) {
-        this.stop();
-
-        options = util.extend({
-            duration: 500,
-            easing: util.ease
-        }, options);
-
-        var tr = this.transform,
-            start = this.getBearing(),
-            around = tr.center;
-
-        if (options.around) {
-            around = LngLat.convert(options.around);
-        } else if (options.offset) {
-            around = tr.pointLocation(tr.centerPoint.add(Point.convert(options.offset)));
-        }
-
-        bearing = this._normalizeBearing(bearing, start);
-
-        this.rotating = true;
-        if (!options.noMoveStart) {
-            this.fire('movestart', eventData);
-        }
-
-        this._ease(function(k) {
-            tr.setBearingAround(interpolate(start, bearing, k), around);
-            this.fire('move', eventData)
-                .fire('rotate', eventData);
-        }, function() {
-            this.rotating = false;
-            this.fire('moveend', eventData);
-        }, options);
-
-        return this;
+        return this.easeTo(util.extend({
+            bearing: bearing
+        }, options), eventData);
     },
 
     /**
@@ -526,11 +470,15 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         var fromPoint = tr.locationPoint(toLngLat);
 
+        if (options.animate === false) options.duration = 0;
+
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
 
-        this.fire('movestart', eventData);
+        if (!options.noMoveStart) {
+            this.fire('movestart', eventData);
+        }
         if (this.zooming) {
             this.fire('zoomstart', eventData);
         }

@@ -245,14 +245,14 @@ test('camera', function(t) {
         t.test('pans by specified amount', function(t) {
             var camera = createCamera();
             camera.panBy([100, 0], { duration: 0 });
-            t.deepEqual(camera.getCenter(), { lng: 70.3125, lat: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 70.3125, lat: 0 });
             t.end();
         });
 
         t.test('pans relative to viewport on a rotated camera', function(t) {
             var camera = createCamera({bearing: 180});
             camera.panBy([100, 0], { duration: 0 });
-            t.deepEqual(camera.getCenter(), { lng: -70.3125, lat: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -70.3125, lat: 0 });
             t.end();
         });
 
@@ -302,14 +302,14 @@ test('camera', function(t) {
         t.test('pans with specified offset', function(t) {
             var camera = createCamera();
             camera.panTo([100, 0], { offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lng: 29.6875, lat: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 29.6875, lat: 0 });
             t.end();
         });
 
         t.test('pans with specified offset relative to viewport on a rotated camera', function(t) {
             var camera = createCamera({bearing: 180});
             camera.panTo([100, 0], { offset: [100, 0], duration: 0 });
-            t.deepEqual(camera.getCenter(), { lng: 170.3125, lat: 0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 170.3125, lat: 0 });
             t.end();
         });
 
