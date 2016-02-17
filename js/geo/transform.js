@@ -254,9 +254,9 @@ Transform.prototype = {
             this.yLat(coord.row, worldSize));
     },
 
-    pointCoordinate: function(p, targetZ) {
+    pointCoordinate: function(p) {
 
-        if (targetZ === undefined) targetZ = 0;
+        var targetZ = 0;
 
         var matrix = this.coordinatePointMatrix(this.tileZoom);
         mat4.invert(matrix, matrix);

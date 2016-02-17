@@ -436,7 +436,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             new Point(bounds[1].x, bounds[0].y),
             bounds[1],
             new Point(bounds[0].x, bounds[1].y),
-            bounds[0]].map(this.transform.pointCoordinate.bind(this.transform));
+            bounds[0]
+        ].map(this.transform.pointCoordinate.bind(this.transform));
+
         this.style.queryFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
