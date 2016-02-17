@@ -62,9 +62,7 @@ test('featuretree with args', function(t) {
     t.ok(ft, 'can be created');
     ft.insert(feature.bbox(), ['road'], feature);
     t.deepEqual(ft.query({
-        params: {
-            radius: 5
-        },
+        params: {},
         scale: 1,
         tileSize: 512,
         x: 0,
@@ -86,11 +84,10 @@ test('featuretree point query', function(t) {
         scale: 1.4142135624,
         tileSize: 512,
         params: {
-            radius: 30,
             includeGeometry: true
         },
-        x: 1842,
-        y: 2014
+        x: -180,
+        y: 1780
     }, styleLayers);
     t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
     features.forEach(function(f) {
@@ -165,21 +162,19 @@ test('featuretree query with layerIds', function(t) {
         scale: 1.4142135624,
         tileSize: 512,
         params: {
-            radius: 30,
             layerIds: ['water']
         },
-        x: 1842,
-        y: 2014
+        x: -180,
+        y: 1780
     }, styleLayers);
 
-    t.equal(features.length, 2);
+    t.equal(features.length, 1);
 
     var features2 = ft.query({
         source: "mapbox.mapbox-streets-v5",
         scale: 1.4142135624,
         tileSize: 512,
         params: {
-            radius: 30,
             layerIds: ['none']
         },
         x: 1842,

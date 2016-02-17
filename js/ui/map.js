@@ -383,7 +383,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Array<number>} point [x, y] pixel coordinates
      * @param {Object} params
-     * @param {number} [params.radius=0] Radius in pixels to search in
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
      * @param {string} [params.type] Either `raster` or `vector`
      * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.

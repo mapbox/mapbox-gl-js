@@ -51,7 +51,6 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
     var params = args.params || {},
         x = args.x,
         y = args.y,
-        p = new Point(x, y),
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
         result = [];
 
@@ -74,19 +73,23 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }
 
-    var radiusSearch = typeof x !== 'undefined' && typeof y !== 'undefined';
-
-    var radius, bounds, symbolQueryBox;
-    if (radiusSearch) {
-        // a point (or point+radius) query
-        radius = (params.radius || 0) * pixelsToTileUnits;
-        var searchRadius = radius + additionalRadius;
-        bounds = [x - searchRadius, y - searchRadius, x + searchRadius, y + searchRadius];
-        symbolQueryBox = new CollisionBox(new Point(x, y), -radius, -radius, radius, radius, args.scale, null);
+    var bounds, symbolQueryBox, queryPolygon;
+    if (x !== undefined && y !== undefined) {
+        // a point query
+        bounds = [x - additionalRadius, y - additionalRadius, x + additionalRadius, y + additionalRadius];
+        symbolQueryBox = new CollisionBox(new Point(x, y), 0, 0, 0, 0, args.scale, null);
+        queryPolygon = [new Point(x, y)];
     } else {
         // a rectangle query
         bounds = [ args.minX, args.minY, args.maxX, args.maxY ];
         symbolQueryBox = new CollisionBox(new Point(args.minX, args.minY), 0, 0, args.maxX - args.minX, args.maxY - args.minY, args.scale, null);
+        queryPolygon = [
+            new Point(args.minX, args.minY),
+            new Point(args.maxX, args.minY),
+            new Point(args.maxX, args.maxY),
+            new Point(args.minX, args.maxY),
+            new Point(args.minX, args.minY)
+        ];
     }
 
     var matching = this.rtree.search(bounds).concat(this.collisionTile.getFeaturesAt(symbolQueryBox, args.scale));
@@ -115,38 +118,26 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
             styleLayer = styleLayersByID[layerID];
             var geometry = loadGeometry(feature);
 
-            var translatedPoint;
+            var translatedPolygon;
             if (styleLayer.type === 'symbol') {
                 // all symbols already match the style
 
             } else if (styleLayer.type === 'line') {
-                translatedPoint = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
+                translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
                 var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
                 if (styleLayer.paint['line-offset']) {
                     geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
                 }
-                if (radiusSearch ?
-                        !lineContainsPoint(geometry, translatedPoint, radius + halfWidth) :
-                        !lineIntersectsBox(geometry, bounds)) {
-                    continue;
-                }
+                if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
             } else if (styleLayer.type === 'fill') {
-                translatedPoint = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
-                if (radiusSearch ?
-                        !(polyContainsPoint(geometry, translatedPoint) || lineContainsPoint(geometry, translatedPoint, radius)) :
-                        !polyIntersectsBox(geometry, bounds)) {
-                    continue;
-                }
+                translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
+                if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
 
             } else if (styleLayer.type === 'circle') {
-                translatedPoint = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
+                translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
                 var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
-                if (radiusSearch ?
-                        !pointContainsPoint(geometry, translatedPoint, radius + circleRadius) :
-                        !pointIntersectsBox(geometry, bounds)) {
-                    continue;
-                }
+                if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
             }
 
             result.push(util.extend({layer: layerID}, geoJSON));
@@ -154,13 +145,21 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
     }
 
     function translate(translate, translateAnchor) {
+        if (!translate[0] && !translate[1]) {
+            return queryPolygon;
+        }
+
         translate = Point.convert(translate);
 
         if (translateAnchor === "viewport") {
             translate._rotate(-args.bearing);
         }
 
-        return p.sub(translate._mult(pixelsToTileUnits));
+        var translated = [];
+        for (var i = 0; i < queryPolygon.length; i++) {
+            translated.push(queryPolygon[i].sub(translate._mult(pixelsToTileUnits)));
+        }
+        return translated;
     }
 
     return result;
@@ -190,67 +189,92 @@ function offsetLine(rings, offset) {
     return newRings;
 }
 
-// Tests whether any of the four corners of the bbox are contained in the
-// interior of the polygon.  Otherwise, defers to lineIntersectsBox.
-function polyIntersectsBox(rings, bounds) {
-    if (polyContainsPoint(rings, new Point(bounds[0], bounds[1])) ||
-        polyContainsPoint(rings, new Point(bounds[0], bounds[3])) ||
-        polyContainsPoint(rings, new Point(bounds[2], bounds[1])) ||
-        polyContainsPoint(rings, new Point(bounds[2], bounds[3])))
-        return true;
-
-    return lineIntersectsBox(rings, bounds);
-}
-
-// Only needs to cover the case where the line crosses the bbox boundary.
-// Otherwise, pointIntersectsBox should have us covered.
-function lineIntersectsBox(rings, bounds) {
-    for (var k = 0; k < rings.length; k++) {
-        var ring = rings[k];
-        for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-            var p0 = ring[i];
-            var p1 = ring[j];
-
-            // invert the segment so as to reuse segmentCrossesHorizontal for
-            // checking whether it crosses the vertical sides of the bbox.
-            var i0 = new Point(p0.y, p0.x);
-            var i1 = new Point(p1.y, p1.x);
-
-            if (segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[1]) ||
-                segmentCrossesHorizontal(p0, p1, bounds[0], bounds[2], bounds[3]) ||
-                segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[0]) ||
-                segmentCrossesHorizontal(i0, i1, bounds[1], bounds[3], bounds[2]))
-                return true;
-        }
-    }
-
-    return pointIntersectsBox(rings, bounds);
-}
-
-/*
- * Answer whether segment p1-p2 intersects with (x1, y)-(x2, y)
- * Assumes x2 >= x1
- */
-function segmentCrossesHorizontal(p0, p1, x1, x2, y) {
-    if (p1.y === p0.y)
-        return p1.y === y &&
-            Math.min(p0.x, p1.x) <= x2 &&
-            Math.max(p0.x, p1.x) >= x1;
-
-    var r = (y - p0.y) / (p1.y - p0.y);
-    var x = p0.x + r * (p1.x - p0.x);
-    return (x >= x1 && x <= x2 && r <= 1 && r >= 0);
-}
-
-function pointIntersectsBox(rings, bounds) {
+function polygonIntersectsBufferedMultiPoint(polygon, rings, radius) {
+    var multiPolygon = [polygon];
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
-        for (var j = 0; j < ring.length; j++) {
-            if (ring[j].x >= bounds[0] &&
-                ring[j].y >= bounds[1] &&
-                ring[j].x <= bounds[2] &&
-                ring[j].y <= bounds[3]) return true;
+        for (var k = 0; k < ring.length; k++) {
+            var point = ring[k];
+            if (multiPolygonContainsPoint(multiPolygon, point)) return true;
+            if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
         }
+    }
+}
+
+function polygonIntersectsMultiPolygon(polygon, multiPolygon) {
+    for (var i = 0; i < polygon.length; i++) {
+        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
+    }
+    for (var k = 0; k < multiPolygon.length; k++) {
+        if (lineIntersectsLine(polygon, multiPolygon[k])) return true;
+    }
+    return false;
+}
+
+function polygonIntersectsBufferedMultiLine(polygon, multiLine, radius) {
+    var multiPolygon = [polygon];
+    for (var i = 0; i < multiLine.length; i++) {
+        var line = multiLine[i];
+
+        for (var k = 0; k < line.length; k++) {
+            if (multiPolygonContainsPoint(multiPolygon, line[k])) return true;
+        }
+
+        if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
+    }
+    return false;
+}
+
+function lineIntersectsBufferedLine(lineA, lineB, radius) {
+
+    if (lineIntersectsLine(lineA, lineB)) return true;
+
+    // Check whether any point in either line is within radius of the other line
+    for (var j = 0; j < lineB.length; j++) {
+        if (pointIntersectsBufferedLine(lineB[j], lineA, radius)) return true;
+    }
+
+    for (var k = 0; k < lineA.length; k++) {
+        if (pointIntersectsBufferedLine(lineA[k], lineB, radius)) return true;
+    }
+
+    return false;
+}
+
+function lineIntersectsLine(lineA, lineB) {
+    for (var i = 0; i < lineA.length - 1; i++) {
+        var a0 = lineA[i];
+        var a1 = lineA[i + 1];
+        for (var j = 0; j < lineB.length - 1; j++) {
+            var b0 = lineB[j];
+            var b1 = lineB[j + 1];
+            if (lineSegmentIntersectsLineSegment(a0, a1, b0, b1)) return true;
+        }
+    }
+    return false;
+}
+
+
+// http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
+function isCounterClockwise(a, b, c) {
+    return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+}
+
+function lineSegmentIntersectsLineSegment(a0, a1, b0, b1) {
+    return isCounterClockwise(a0, b0, b1) !== isCounterClockwise(a1, b0, b1) &&
+        isCounterClockwise(a0, a1, b0) !== isCounterClockwise(a0, a1, b1);
+}
+
+function pointIntersectsBufferedLine(p, line, radius) {
+    var radiusSquared = radius * radius;
+
+    if (line.length === 1) return p.distSqr(line[0]) < radiusSquared;
+
+    for (var i = 1; i < line.length; i++) {
+        // Find line segments that have a distance <= radius^2 to p
+        // In that case, we treat the line as "containing point p".
+        var v = line[i - 1], w = line[i];
+        if (distToSegmentSquared(p, v, w) < radiusSquared) return true;
     }
     return false;
 }
@@ -265,23 +289,8 @@ function distToSegmentSquared(p, v, w) {
     return p.distSqr(w.sub(v)._mult(t)._add(v));
 }
 
-function lineContainsPoint(rings, p, radius) {
-    var r = radius * radius;
-
-    for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i];
-        for (var j = 1; j < ring.length; j++) {
-            // Find line segments that have a distance <= radius^2 to p
-            // In that case, we treat the line as "containing point p".
-            var v = ring[j - 1], w = ring[j];
-            if (distToSegmentSquared(p, v, w) < r) return true;
-        }
-    }
-    return false;
-}
-
 // point in polygon ray casting algorithm
-function polyContainsPoint(rings, p) {
+function multiPolygonContainsPoint(rings, p) {
     var c = false,
         ring, p1, p2;
 
@@ -296,16 +305,4 @@ function polyContainsPoint(rings, p) {
         }
     }
     return c;
-}
-
-function pointContainsPoint(rings, p, radius) {
-    var r = radius * radius;
-
-    for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i];
-        for (var j = 0; j < ring.length; j++) {
-            if (ring[j].distSqr(p) <= r) return true;
-        }
-    }
-    return false;
 }
