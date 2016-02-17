@@ -3,6 +3,7 @@
 var test = require('tap').test;
 var vt = require('vector-tile');
 var fs = require('fs');
+var Point = require('point-geometry');
 var Protobuf = require('pbf');
 var FeatureTree = require('../../../js/data/feature_tree');
 var path = require('path');
@@ -42,8 +43,7 @@ test('featuretree', function(t) {
         scale: 1,
         tileSize: 512,
         params: { },
-        x: 0,
-        y: 0
+        queryGeometry: [new Point(0, 0)]
     }, styleLayers), []);
     t.end();
 });
@@ -65,8 +65,7 @@ test('featuretree with args', function(t) {
         params: {},
         scale: 1,
         tileSize: 512,
-        x: 0,
-        y: 0
+        queryGeometry: [new Point(0, 0)]
     }, styleLayers), []);
     t.end();
 });
@@ -86,8 +85,7 @@ test('featuretree point query', function(t) {
         params: {
             includeGeometry: true
         },
-        x: -180,
-        y: 1780
+        queryGeometry: [new Point(-180, 1780)]
     }, styleLayers);
     t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
     features.forEach(function(f) {
@@ -116,10 +114,13 @@ test('featuretree rect query', function(t) {
         params: {
             includeGeometry: true
         },
-        minX: 0,
-        minY: 3072,
-        maxX: 2048,
-        maxY: 4096
+        queryGeometry: [
+            new Point(0, 3072),
+            new Point(2048, 3072),
+            new Point(2048, 4096),
+            new Point(0, 4096),
+            new Point(0, 3072)
+        ]
     }, styleLayers);
     t.notEqual(features.length, 0, 'non-empty results for queryFeatures');
     features.forEach(function(f) {
@@ -164,8 +165,7 @@ test('featuretree query with layerIds', function(t) {
         params: {
             layerIds: ['water']
         },
-        x: -180,
-        y: 1780
+        queryGeometry: [new Point(-180, 1780)]
     }, styleLayers);
 
     t.equal(features.length, 1);
@@ -177,8 +177,7 @@ test('featuretree query with layerIds', function(t) {
         params: {
             layerIds: ['none']
         },
-        x: 1842,
-        y: 2014
+        queryGeometry: [new Point(1842, 2014)]
     }, styleLayers);
 
     t.equal(features2.length, 0);

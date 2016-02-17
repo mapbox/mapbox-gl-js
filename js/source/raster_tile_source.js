@@ -116,11 +116,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
         if (tile.texture) this.map.painter.saveTexture(tile.texture);
     },
 
-    featuresAt: function(point, params, callback) {
-        callback(null, []);
-    },
-
-    featuresIn: function(bbox, params, callback) {
+    queryFeatures: function(point, params, callback) {
         callback(null, []);
     },
 

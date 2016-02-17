@@ -53,8 +53,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 
-    featuresAt: Source._vectorFeaturesAt,
-    featuresIn: Source._vectorFeaturesIn,
+    queryFeatures: Source._queryVectorFeatures,
     getTileData: Source._getVectorTileData,
 
     _loadTile: function(tile) {

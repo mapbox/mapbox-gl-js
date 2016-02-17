@@ -398,7 +398,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     featuresAt: function(point, params, callback) {
         var location = this.unproject(point).wrap();
         var coord = this.transform.locationCoordinate(location);
-        this.style.featuresAt(coord, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+        this.style.queryFeatures([coord], params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 
@@ -430,17 +430,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             ];
         }
         bounds = bounds.map(Point.convert.bind(Point));
-        bounds = [
-            new Point(
-            Math.min(bounds[0].x, bounds[1].x),
-            Math.min(bounds[0].y, bounds[1].y)
-          ),
-            new Point(
-            Math.max(bounds[0].x, bounds[1].x),
-            Math.max(bounds[0].y, bounds[1].y)
-          )
-        ].map(this.transform.pointCoordinate.bind(this.transform));
-        this.style.featuresIn(bounds, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+
+        var queryGeometry = [
+            bounds[0],
+            new Point(bounds[1].x, bounds[0].y),
+            bounds[1],
+            new Point(bounds[0].x, bounds[1].y),
+            bounds[0]].map(this.transform.pointCoordinate.bind(this.transform));
+        this.style.queryFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 

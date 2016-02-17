@@ -497,8 +497,8 @@ test('Map', function(t) {
             var opts = {};
 
             t.test('normal coords', function(t) {
-                map.style.featuresAt = function (coords, o, classes, zoom, bearing, cb) {
-                    t.deepEqual(coords, { column: 0.5, row: 0.5, zoom: 0 });
+                map.style.queryFeatures = function (coords, o, classes, zoom, bearing, cb) {
+                    t.deepEqual(coords, [{ column: 0.5, row: 0.5, zoom: 0 }]);
                     t.equal(o, opts);
                     t.equal(cb, callback);
                     t.deepEqual(classes, map._classes);
@@ -511,11 +511,11 @@ test('Map', function(t) {
             });
 
             t.test('wraps coords', function(t) {
-                map.style.featuresAt = function (coords, o, classes, zoom, bearing, cb) {
+                map.style.queryFeatures = function (coords, o, classes, zoom, bearing, cb) {
                     // avoid floating point issues
-                    t.equal(parseFloat(coords.column.toFixed(4)), 0.5);
-                    t.equal(coords.row, 0.5);
-                    t.equal(coords.zoom, 0);
+                    t.equal(parseFloat(coords[0].column.toFixed(4)), 0.5);
+                    t.equal(coords[0].row, 0.5);
+                    t.equal(coords[0].zoom, 0);
 
                     t.equal(o, opts);
                     t.deepEqual(classes, map._classes);

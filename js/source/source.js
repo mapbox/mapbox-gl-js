@@ -67,34 +67,11 @@ exports._getVisibleCoordinates = function() {
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
-exports._vectorFeaturesAt = function(coord, params, classes, zoom, bearing, callback) {
+exports._queryVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
-    var result = this._pyramid.tileAt(coord);
-    if (!result)
-        return callback(null, []);
-
-    this.dispatcher.send('query features', {
-        uid: result.tile.uid,
-        x: result.x,
-        y: result.y,
-        scale: result.scale,
-        tileSize: result.tileSize,
-        classes: classes,
-        zoom: zoom,
-        bearing: bearing,
-        source: this.id,
-        params: params
-    }, callback, result.tile.workerID);
-};
-
-
-exports._vectorFeaturesIn = function(bounds, params, classes, zoom, bearing, callback) {
-    if (!this._pyramid)
-        return callback(null, []);
-
-    var results = this._pyramid.tilesIn(bounds);
+    var results = this._pyramid.tilesIn(queryGeometry);
     if (!results)
         return callback(null, []);
 
@@ -102,12 +79,9 @@ exports._vectorFeaturesIn = function(bounds, params, classes, zoom, bearing, cal
         this.dispatcher.send('query features', {
             uid: result.tile.uid,
             source: this.id,
-            minX: result.minX,
-            maxX: result.maxX,
-            minY: result.minY,
-            maxY: result.maxY,
+            queryGeometry: result.queryGeometry,
             scale: result.scale,
-            tileSize: result.tileSize,
+            tileSize: result.tile.tileSize,
             classes: classes,
             zoom: zoom,
             bearing: bearing,
