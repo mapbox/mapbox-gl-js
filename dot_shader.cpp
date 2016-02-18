@@ -7,7 +7,8 @@
 
 using namespace mbgl;
 
-DotShader::DotShader() : Shader("dot", shaders::dot::vertex, shaders::dot::fragment) {
+DotShader::DotShader(gl::GLObjectStore& glObjectStore)
+    : Shader("dot", shaders::dot::vertex, shaders::dot::fragment, glObjectStore) {
 }
 
 void DotShader::bind(GLbyte* offset) {

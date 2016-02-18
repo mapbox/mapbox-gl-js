@@ -9,7 +9,7 @@ namespace mbgl {
 
 class CollisionBoxShader : public Shader {
 public:
-    CollisionBoxShader();
+    CollisionBoxShader(gl::GLObjectStore&);
 
     void bind(GLbyte *offset) final;
 

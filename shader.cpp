@@ -13,19 +13,19 @@
 
 namespace mbgl {
 
-Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSource)
+Shader::Shader(const char *name_, const GLchar *vertSource, const GLchar *fragSource, gl::GLObjectStore& glObjectStore)
     : name(name_)
 {
     util::stopwatch stopwatch("shader compilation", Event::Shader);
 
-    program.create();
-    vertexShader.create();
+    program.create(glObjectStore);
+    vertexShader.create(glObjectStore);
     if (!compileShader(vertexShader, &vertSource)) {
         Log::Error(Event::Shader, "Vertex shader %s failed to compile: %s", name, vertSource);
         throw util::ShaderException(std::string { "Vertex shader " } + name + " failed to compile");
     }
 
-    fragmentShader.create();
+    fragmentShader.create(glObjectStore);
     if (!compileShader(fragmentShader, &fragSource)) {
         Log::Error(Event::Shader, "Fragment shader %s failed to compile: %s", name, fragSource);
         throw util::ShaderException(std::string { "Fragment shader " } + name + " failed to compile");

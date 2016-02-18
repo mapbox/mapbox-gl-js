@@ -8,7 +8,7 @@ namespace mbgl {
 
 class DotShader : public Shader {
 public:
-    DotShader();
+    DotShader(gl::GLObjectStore&);
 
     void bind(GLbyte *offset) final;
 

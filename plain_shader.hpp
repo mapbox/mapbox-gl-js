@@ -8,7 +8,7 @@ namespace mbgl {
 
 class PlainShader : public Shader {
 public:
-    PlainShader();
+    PlainShader(gl::GLObjectStore&);
 
     void bind(GLbyte *offset) final;
 

@@ -9,7 +9,7 @@ namespace mbgl {
 
 class Shader : private util::noncopyable {
 public:
-    Shader(const GLchar *name, const GLchar *vertex, const GLchar *fragment);
+    Shader(const GLchar *name, const GLchar *vertex, const GLchar *fragment, gl::GLObjectStore&);
 
     ~Shader();
     const GLchar *name;

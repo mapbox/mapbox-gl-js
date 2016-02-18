@@ -7,7 +7,8 @@
 
 using namespace mbgl;
 
-PlainShader::PlainShader() : Shader("plain", shaders::plain::vertex, shaders::plain::fragment) {
+PlainShader::PlainShader(gl::GLObjectStore& glObjectStore)
+    : Shader("plain", shaders::plain::vertex, shaders::plain::fragment, glObjectStore) {
 }
 
 void PlainShader::bind(GLbyte* offset) {

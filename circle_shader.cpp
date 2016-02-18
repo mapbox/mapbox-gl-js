@@ -7,8 +7,8 @@
 
 using namespace mbgl;
 
-CircleShader::CircleShader()
-    : Shader("circle", shaders::circle::vertex, shaders::circle::fragment) {
+CircleShader::CircleShader(gl::GLObjectStore& glObjectStore)
+    : Shader("circle", shaders::circle::vertex, shaders::circle::fragment, glObjectStore) {
 }
 
 void CircleShader::bind(GLbyte* offset) {
