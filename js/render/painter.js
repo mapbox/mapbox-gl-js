@@ -5,7 +5,7 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 /*
  * Initialize a new painter object.

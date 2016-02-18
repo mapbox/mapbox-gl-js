@@ -3,7 +3,7 @@
 var Bucket = require('../bucket');
 var util = require('../../util/util');
 var loadGeometry = require('../load_geometry');
-var EXTENT = require('../buffer').EXTENT;
+var EXTENT = Bucket.EXTENT;
 
 module.exports = CircleBucket;
 

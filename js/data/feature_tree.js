@@ -5,7 +5,7 @@ var Point = require('point-geometry');
 var vt = require('vector-tile');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
-var EXTENT = require('./buffer').EXTENT;
+var EXTENT = require('./bucket').EXTENT;
 
 module.exports = FeatureTree;
 

@@ -5,7 +5,7 @@ var TileCoord = require('./tile_coord');
 var Point = require('point-geometry');
 var Cache = require('../util/lru_cache');
 var util = require('../util/util');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = TilePyramid;
 

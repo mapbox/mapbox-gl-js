@@ -6,7 +6,7 @@ var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = VideoSource;
 

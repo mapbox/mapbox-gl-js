@@ -1,6 +1,6 @@
 'use strict';
 
-var EXTENT = require('./buffer').EXTENT;
+var EXTENT = require('./bucket').EXTENT;
 
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent

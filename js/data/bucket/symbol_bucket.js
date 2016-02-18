@@ -14,13 +14,14 @@ var mergeLines = require('../../symbol/mergelines');
 var clipLine = require('../../symbol/clip_line');
 var util = require('../../util/util');
 var loadGeometry = require('../load_geometry');
-var EXTENT = require('../buffer').EXTENT;
 var CollisionFeature = require('../../symbol/collision_feature');
 
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
 var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
+
+var EXTENT = Bucket.EXTENT;
 
 module.exports = SymbolBucket;
 

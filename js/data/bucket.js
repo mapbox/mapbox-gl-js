@@ -26,9 +26,26 @@ Bucket.create = function(options) {
 
 Bucket.AttributeType = Buffer.AttributeType;
 
+
 /**
- * The `Bucket` class builds a set of `Buffer`s for a set of vector tile
- * features.
+ * The maximum extent of a feature that can be safely stored in the buffer.
+ * In practice, all features are converted to this extent before being added.
+ *
+ * Positions are stored as signed 16bit integers.
+ * One bit is lost for signedness to support featuers extending past the left edge of the tile.
+ * One bit is lost because the line vertex buffer packs 1 bit of other data into the int.
+ * One bit is lost to support features extending past the extent on the right edge of the tile.
+ * This leaves us with 2^13 = 8192
+ *
+ * @property {number}
+ * @private
+ * @readonly
+ */
+Bucket.EXTENT = 8192;
+
+/**
+ * The `Bucket` class is the single point of knowledge about turning vector
+ * tiles into WebGL buffers.
  *
  * `Bucket` is an abstract class. A subclass exists for each Mapbox GL
  * style spec layer type. Because `Bucket` is an abstract class,

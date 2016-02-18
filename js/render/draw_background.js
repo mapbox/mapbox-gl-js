@@ -3,7 +3,7 @@
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
 var util = require('../util/util');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = drawBackground;
 

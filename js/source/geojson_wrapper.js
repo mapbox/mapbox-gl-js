@@ -2,7 +2,7 @@
 
 var Point = require('point-geometry');
 var VectorTileFeature = require('vector-tile').VectorTileFeature;
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = GeoJSONWrapper;
 

@@ -3,7 +3,7 @@
 var textVertices = require('../lib/debugtext');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = drawDebug;
 

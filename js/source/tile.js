@@ -41,7 +41,7 @@ Tile.prototype = {
      * @private
      */
     pixelsToTileUnits: function(pixelValue, z) {
-        return pixelValue * (Buffer.EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
+        return pixelValue * (Bucket.EXTENT / (this.tileSize * Math.pow(2, z - this.coord.z)));
     },
 
     /**
@@ -54,8 +54,8 @@ Tile.prototype = {
     positionAt: function(coord) {
         var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
         return {
-            x: (zoomedCoord.column - this.coord.x) * Buffer.EXTENT,
-            y: (zoomedCoord.row - this.coord.y) * Buffer.EXTENT
+            x: (zoomedCoord.column - this.coord.x) * Bucket.EXTENT,
+            y: (zoomedCoord.row - this.coord.y) * Bucket.EXTENT
         };
     },
 

@@ -5,7 +5,7 @@ var Evented = require('../util/evented');
 var TilePyramid = require('./tile_pyramid');
 var Source = require('./source');
 var urlResolve = require('resolve-url');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = GeoJSONSource;
 

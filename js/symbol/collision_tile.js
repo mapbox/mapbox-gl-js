@@ -3,7 +3,7 @@
 var rbush = require('rbush');
 var CollisionBox = require('./collision_box');
 var Point = require('point-geometry');
-var EXTENT = require('../data/buffer').EXTENT;
+var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = CollisionTile;
 
