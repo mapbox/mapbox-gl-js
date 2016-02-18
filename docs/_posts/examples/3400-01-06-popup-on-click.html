@@ -1,8 +1,8 @@
 ---
 layout: example
 category: example
-title: Display markers with popups
-description: Show a popup with information about a marker when it is clicked
+title: Display a popup on click
+description: When a user clicks a marker, show a popup containing more information.
 ---
 <style>
     .mapboxgl-popup {
@@ -132,22 +132,33 @@ map.on('style.load', function () {
         "type": "symbol",
         "source": "markers",
         "layout": {
-            "icon-image": "{marker-symbol}-15"
+            "icon-image": "{marker-symbol}-15",
+            "icon-allow-overlap": true
         }
     });
 });
 
+var popup = new mapboxgl.Popup();
+
 // When a click event occurs near a marker icon, open a popup at the location of
 // the feature, with description HTML from its properties.
 map.on('click', function (e) {
-    map.featuresAt(e.point, {layer: 'markers', radius: 10, includeGeometry: true}, function (err, features) {
-        if (err || !features.length)
+    map.featuresAt(e.point, {
+        radius: 7.5, // Half the marker size (15px).
+        includeGeometry: true,
+        layer: 'markers'
+    }, function (err, features) {
+
+        if (err || !features.length) {
+            popup.remove();
             return;
+        }
 
         var feature = features[0];
 
-        new mapboxgl.Popup()
-            .setLngLat(feature.geometry.coordinates)
+        // Popuplate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(feature.geometry.coordinates)
             .setHTML(feature.properties.description)
             .addTo(map);
     });
@@ -156,7 +167,10 @@ map.on('click', function (e) {
 // Use the same approach as above to indicate that the symbols are clickable
 // by changing the cursor style to 'pointer'.
 map.on('mousemove', function (e) {
-    map.featuresAt(e.point, {layer: 'markers', radius: 10}, function (err, features) {
+    map.featuresAt(e.point, {
+        radius: 7.5, // Half the marker size (15px).
+        layer: 'markers'
+    }, function (err, features) {
         map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
     });
 });
