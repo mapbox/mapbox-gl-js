@@ -59,6 +59,10 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     remove: function() {
+        if (this._closeButton) {
+            this._closeButton.removeEventListener('click', this._onClickClose);
+        }
+
         if (this._content && this._content.parentNode) {
             this._content.parentNode.removeChild(this._content);
         }
@@ -130,6 +134,10 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     _createContent: function() {
+        if (this._closeButton) {
+            this._closeButton.removeEventListener('click', this._onClickClose);
+        }
+
         if (this._content && this._content.parentNode) {
             this._content.parentNode.removeChild(this._content);
         }
