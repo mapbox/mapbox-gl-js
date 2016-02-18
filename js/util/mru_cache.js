@@ -94,3 +94,21 @@ MRUCache.prototype.get = function(key) {
 
     return data;
 };
+
+/**
+ * Change the max size of the cache.
+ *
+ * @param {number} max the max size of the cache
+ * @returns {MRUCache} this cache
+ * @private
+ */
+MRUCache.prototype.setMaxSize = function(max) {
+    this.max = max;
+
+    while (this.order.length > this.max) {
+        var removedData = this.get(this.order[0]);
+        if (removedData) this.onRemove(removedData);
+    }
+
+    return this;
+};

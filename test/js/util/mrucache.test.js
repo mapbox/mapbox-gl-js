@@ -39,3 +39,21 @@ test('MRUCache#reset', function(t) {
     t.ok(called);
     t.end();
 });
+
+test('MRUCache#setMaxSize', function(t) {
+    var numRemoved = 0;
+    var cache = new MRUCache(10, function() {
+        numRemoved++;
+    });
+    cache.add(1, 1);
+    cache.add(2, 2);
+    cache.add(3, 3);
+    t.equal(numRemoved, 0);
+    cache.setMaxSize(15);
+    t.equal(numRemoved, 0);
+    cache.setMaxSize(1);
+    t.equal(numRemoved, 2);
+    cache.add(4, 4);
+    t.equal(numRemoved, 3);
+    t.end();
+});

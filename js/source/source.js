@@ -24,7 +24,6 @@ exports._loadTileJSON = function(options) {
 
         this._pyramid = new TilePyramid({
             tileSize: this.tileSize,
-            cacheSize: 20,
             minzoom: this.minzoom,
             maxzoom: this.maxzoom,
             roundZoom: this.roundZoom,
@@ -120,7 +119,6 @@ exports._vectorFeaturesIn = function(bounds, params, callback) {
  * @param {Array} options.tiles An array of tile sources. If `url` is not specified, `tiles` can be used instead to specify tile sources, as in the TileJSON spec. Other TileJSON keys such as `minzoom` and `maxzoom` can be specified in a source object if `tiles` is used.
  * @param {string} options.id An optional `id` to assign to the source
  * @param {number} [options.tileSize=512] Optional tile size (width and height in pixels, assuming tiles are square). This option is only configurable for raster sources
- * @param {number} options.cacheSize Optional max number of tiles to cache at any given time
  * @example
  * var sourceObj = new mapboxgl.Source.create({
  *    type: 'vector',

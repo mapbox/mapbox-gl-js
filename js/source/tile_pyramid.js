@@ -35,7 +35,7 @@ function TilePyramid(options) {
     this._redoPlacement = options.redoPlacement;
 
     this._tiles = {};
-    this._cache = new Cache(options.cacheSize, function(tile) { return this._unload(tile); }.bind(this));
+    this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
 
     this._filterRendered = this._filterRendered.bind(this);
 }
@@ -201,6 +201,23 @@ TilePyramid.prototype = {
     },
 
     /**
+     * Resizes the tile cache based on the current viewport's size.
+     *
+     * Larger viewports use more tiles and need larger caches. Larger viewports
+     * are more likely to be found on devices with more memory and on pages where
+     * the map is more important.
+     *
+     * @private
+     */
+    updateCacheSize: function(transform) {
+        var widthInTiles = Math.ceil(transform.width / transform.tileSize) + 1;
+        var heightInTiles = Math.ceil(transform.height / transform.tileSize) + 1;
+        var approxTilesInView = widthInTiles * heightInTiles;
+        var commonZoomRange = 5;
+        this._cache.setMaxSize(Math.floor(approxTilesInView * commonZoomRange));
+    },
+
+    /**
      * Removes tiles that are outside the viewport and adds new tiles that
      * are inside the viewport.
      * @private
@@ -209,6 +226,8 @@ TilePyramid.prototype = {
         var i;
         var coord;
         var tile;
+
+        this.updateCacheSize(transform);
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));

@@ -144,6 +144,10 @@ test('TilePyramid#addTile', function(t) {
             add: function() { add++; }
         });
 
+        var tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        pyramid.updateCacheSize(tr);
         pyramid.addTile(coord);
         pyramid.removeTile(coord.id);
         pyramid.addTile(coord);
@@ -199,6 +203,11 @@ test('TilePyramid#removeTile', function(t) {
                 t.fail();
             }
         });
+
+        var tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        pyramid.updateCacheSize(tr);
 
         pyramid.addTile(coord);
         pyramid.removeTile(coord.id);
