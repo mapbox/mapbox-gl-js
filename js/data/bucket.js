@@ -2,7 +2,6 @@
 
 var featureFilter = require('feature-filter');
 
-var ElementGroups = require('./element_groups');
 var Buffer = require('./buffer');
 var StyleLayer = require('../style/style_layer');
 
@@ -116,8 +115,24 @@ Bucket.prototype.addFeatures = function() {
  * @param {string} shaderName the name of the shader associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
  */
-Bucket.prototype.makeRoomFor = function(shaderName, vertexLength) {
-    return this.elementGroups[shaderName].makeRoomFor(vertexLength);
+Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
+    var groups = this.elementGroups[shaderName];
+    var currentGroup = groups.length && groups[groups.length - 1];
+
+    if (!currentGroup || currentGroup.vertexLength + numVertices > 65535) {
+        var vertexBuffer = this.buffers[this.getBufferName(shaderName, 'vertex')];
+        var elementBuffer = this.buffers[this.getBufferName(shaderName, 'element')];
+        var secondElementBuffer = this.buffers[this.getBufferName(shaderName, 'secondElement')];
+
+        currentGroup = new ElementGroup(
+            vertexBuffer.length,
+            elementBuffer && elementBuffer.length,
+            secondElementBuffer && secondElementBuffer.length
+        );
+        groups.push(currentGroup);
+    }
+
+    return currentGroup;
 };
 
 /**
@@ -157,11 +172,7 @@ Bucket.prototype.resetBuffers = function(buffers) {
             this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.buffers[secondElementBufferName]);
         }
 
-        this.elementGroups[shaderName] = new ElementGroups(
-            buffers[this.getBufferName(shaderName, 'vertex')],
-            buffers[this.getBufferName(shaderName, 'element')],
-            buffers[this.getBufferName(shaderName, 'secondElement')]
-        );
+        this.elementGroups[shaderName] = [];
     }
 };
 
@@ -229,4 +240,14 @@ function createElementBuffer(components) {
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartIndex) {
+    // the offset into the vertex buffer of the first vertex in this group
+    this.vertexStartIndex = vertexStartIndex;
+    this.elementStartIndex = elementStartIndex;
+    this.secondElementStartIndex = secondElementStartIndex;
+    this.elementLength = 0;
+    this.vertexLength = 0;
+    this.secondElementLength = 0;
 }

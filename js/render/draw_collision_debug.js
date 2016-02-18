@@ -15,7 +15,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
 
         if (!elementGroups) continue;
         if (!tile.buffers) continue;
-        if (elementGroups.groups[0].vertexLength === 0) continue;
+        if (elementGroups[0].vertexLength === 0) continue;
 
         var buffer = tile.buffers.collisionBoxVertex;
         buffer.bind(gl);
@@ -33,8 +33,8 @@ function drawCollisionDebug(painter, source, layer, coords) {
 
         gl.drawArrays(
             gl.LINES,
-            elementGroups.groups[0].vertexStartIndex,
-            elementGroups.groups[0].vertexLength
+            elementGroups[0].vertexStartIndex,
+            elementGroups[0].vertexLength
         );
 
     }

@@ -101,8 +101,8 @@ function drawFill(painter, source, layer, coord) {
     var elements = tile.buffers.fillElement;
     elements.bind(gl);
 
-    for (var i = 0; i < elementGroups.groups.length; i++) {
-        var group = elementGroups.groups[i];
+    for (var i = 0; i < elementGroups.length; i++) {
+        var group = elementGroups[i];
         var offset = group.vertexStartIndex * vertex.itemSize;
         vertex.setAttribPointers(gl, painter.fillShader, offset);
 
@@ -209,8 +209,8 @@ function drawStroke(painter, source, layer, coord) {
 
     painter.enableTileClippingMask(coord);
 
-    for (var k = 0; k < elementGroups.groups.length; k++) {
-        var group = elementGroups.groups[k];
+    for (var k = 0; k < elementGroups.length; k++) {
+        var group = elementGroups[k];
         var offset = group.vertexStartIndex * vertex.itemSize;
         vertex.setAttribPointers(gl, painter.outlineShader, offset);
 

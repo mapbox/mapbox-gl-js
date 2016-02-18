@@ -170,8 +170,8 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var element = tile.buffers.lineElement;
         element.bind(gl);
 
-        for (var i = 0; i < elementGroups.groups.length; i++) {
-            var group = elementGroups.groups[i];
+        for (var i = 0; i < elementGroups.length; i++) {
+            var group = elementGroups[i];
             var vtxOffset = group.vertexStartIndex * vertex.itemSize;
             gl.vertexAttribPointer(shader.a_pos, 2, gl.SHORT, false, 8, vtxOffset + 0);
             gl.vertexAttribPointer(shader.a_data, 4, gl.UNSIGNED_BYTE, false, 8, vtxOffset + 4);

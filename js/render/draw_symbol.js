@@ -39,7 +39,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
-        if (!elementGroups.icon.groups.length) continue;
+        if (!elementGroups.icon.length) continue;
 
         posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
@@ -52,7 +52,7 @@ function drawSymbols(painter, source, layer, coords) {
         if (!tile.buffers) continue;
         elementGroups = tile.elementGroups[layer.ref || layer.id];
         if (!elementGroups) continue;
-        if (!elementGroups.glyph.groups.length) continue;
+        if (!elementGroups.glyph.length) continue;
 
         posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
@@ -171,8 +171,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
             gl.uniform4fv(shader.u_color, haloColor);
             gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
-            for (var j = 0; j < elementGroups.groups.length; j++) {
-                group = elementGroups.groups[j];
+            for (var j = 0; j < elementGroups.length; j++) {
+                group = elementGroups[j];
                 offset = group.vertexStartIndex * vertex.itemSize;
                 vertex.bind(gl);
                 vertex.setAttribPointers(gl, shader, offset);
@@ -188,8 +188,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
         gl.uniform4fv(shader.u_color, color);
         gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
 
-        for (var i = 0; i < elementGroups.groups.length; i++) {
-            group = elementGroups.groups[i];
+        for (var i = 0; i < elementGroups.length; i++) {
+            group = elementGroups[i];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
             vertex.setAttribPointers(gl, shader, offset);
@@ -201,8 +201,8 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
 
     } else {
         gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
-        for (var k = 0; k < elementGroups.groups.length; k++) {
-            group = elementGroups.groups[k];
+        for (var k = 0; k < elementGroups.length; k++) {
+            group = elementGroups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
             vertex.setAttribPointers(gl, shader, offset);

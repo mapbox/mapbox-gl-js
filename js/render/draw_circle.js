@@ -50,8 +50,8 @@ function drawCircles(painter, source, layer, coords) {
         ));
         gl.setExMatrix(painter.transform.exMatrix);
 
-        for (var k = 0; k < elementGroups.groups.length; k++) {
-            var group = elementGroups.groups[k];
+        for (var k = 0; k < elementGroups.length; k++) {
+            var group = elementGroups[k];
             var offset = group.vertexStartIndex * vertex.itemSize;
 
             vertex.bind(gl);

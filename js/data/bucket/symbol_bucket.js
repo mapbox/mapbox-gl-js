@@ -3,7 +3,6 @@
 var Point = require('point-geometry');
 
 var Bucket = require('../bucket');
-var ElementGroups = require('../element_groups');
 var Anchor = require('../../symbol/anchor');
 var getAnchors = require('../../symbol/get_anchors');
 var resolveTokens = require('../../util/token');
@@ -335,8 +334,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisio
     this.resetBuffers(buffers);
 
     var elementGroups = this.elementGroups = {
-        glyph: new ElementGroups(buffers.glyphVertex, buffers.glyphElement),
-        icon: new ElementGroups(buffers.iconVertex, buffers.iconElement),
+        glyph: [],
+        icon: [],
         sdfIcons: this.sdfIcons,
         iconsNeedLinear: this.iconsNeedLinear
     };
@@ -498,7 +497,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
-    this.elementGroups.collisionBox = new ElementGroups(this.buffers.collisionBoxVertex);
+    this.elementGroups.collisionBox = [];
     var group = this.makeRoomFor('collisionBox', 0);
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;

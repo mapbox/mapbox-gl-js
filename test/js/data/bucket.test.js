@@ -98,7 +98,7 @@ test('Bucket', function(t) {
         t.equal(bucket.buffers, buffers);
         t.equal(buffers.testElement.length, 0);
         t.equal(buffers.testSecondElement.length, 0);
-        t.equal(bucket.elementGroups.test.groups.length, 0);
+        t.equal(bucket.elementGroups.test.length, 0);
 
         t.end();
     });
