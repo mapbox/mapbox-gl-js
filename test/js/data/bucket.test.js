@@ -63,22 +63,22 @@ test('Bucket', function(t) {
     }
 
     t.test('add features', function(t) {
-        var builder = create();
+        var bucket = create();
 
-        builder.features = [createFeature(17, 42)];
-        builder.addFeatures();
+        bucket.features = [createFeature(17, 42)];
+        bucket.addFeatures();
 
-        var testVertex = builder.buffers.testVertex;
+        var testVertex = bucket.buffers.testVertex;
         t.equal(testVertex.type, Buffer.BufferType.VERTEX);
         t.equal(testVertex.length, 1);
         t.deepEqual(testVertex.get(0), { map: [17], box: [34, 84] });
 
-        var testElement = builder.buffers.testElement;
+        var testElement = bucket.buffers.testElement;
         t.equal(testElement.type, Buffer.BufferType.ELEMENT);
         t.equal(testElement.length, 1);
         t.deepEqual(testElement.get(0), { vertices: [1, 2, 3] });
 
-        var testSecondElement = builder.buffers.testSecondElement;
+        var testSecondElement = bucket.buffers.testSecondElement;
         t.equal(testSecondElement.type, Buffer.BufferType.ELEMENT);
         t.equal(testSecondElement.length, 1);
         t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
@@ -87,40 +87,40 @@ test('Bucket', function(t) {
     });
 
     t.test('reset buffers', function(t) {
-        var builder = create();
+        var bucket = create();
 
-        builder.features = [createFeature(17, 42)];
-        builder.addFeatures();
+        bucket.features = [createFeature(17, 42)];
+        bucket.addFeatures();
 
         var buffers = {};
-        builder.resetBuffers(buffers);
+        bucket.resetBuffers(buffers);
 
-        t.equal(builder.buffers, buffers);
+        t.equal(bucket.buffers, buffers);
         t.equal(buffers.testElement.length, 0);
         t.equal(buffers.testSecondElement.length, 0);
-        t.equal(builder.elementGroups.test.groups.length, 0);
+        t.equal(bucket.elementGroups.test.groups.length, 0);
 
         t.end();
     });
 
     t.test('add features after resetting buffers', function(t) {
-        var builder = create();
+        var bucket = create();
 
-        builder.features = [createFeature(1, 5)];
-        builder.addFeatures();
-        builder.resetBuffers({});
-        builder.features = [createFeature(17, 42)];
-        builder.addFeatures();
+        bucket.features = [createFeature(1, 5)];
+        bucket.addFeatures();
+        bucket.resetBuffers({});
+        bucket.features = [createFeature(17, 42)];
+        bucket.addFeatures();
 
-        var testVertex = builder.buffers.testVertex;
+        var testVertex = bucket.buffers.testVertex;
         t.equal(testVertex.length, 1);
         t.deepEqual(testVertex.get(0), { map: [17], box: [34, 84] });
 
-        var testElement = builder.buffers.testElement;
+        var testElement = bucket.buffers.testElement;
         t.equal(testElement.length, 1);
         t.deepEqual(testElement.get(0), { vertices: [1, 2, 3] });
 
-        var testSecondElement = builder.buffers.testSecondElement;
+        var testSecondElement = bucket.buffers.testSecondElement;
         t.equal(testSecondElement.length, 1);
         t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
 
