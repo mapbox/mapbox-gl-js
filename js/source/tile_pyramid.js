@@ -3,7 +3,7 @@
 var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var Point = require('point-geometry');
-var Cache = require('../util/mru_cache');
+var Cache = require('../util/lru_cache');
 var util = require('../util/util');
 var EXTENT = require('../data/buffer').EXTENT;
 

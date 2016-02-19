@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * A [most-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
+ * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
  * with hash lookup made possible by keeping a list of keys in parallel to
  * an array of dictionary of values
  *
@@ -9,8 +9,8 @@
  * @param {Function} onRemove callback called with items when they expire
  * @private
  */
-module.exports = MRUCache;
-function MRUCache(max, onRemove) {
+module.exports = LRUCache;
+function LRUCache(max, onRemove) {
     this.max = max;
     this.onRemove = onRemove;
     this.reset();
@@ -19,15 +19,15 @@ function MRUCache(max, onRemove) {
 /**
  * Clear the cache
  *
- * @returns {MRUCache} this cache
+ * @returns {LRUCache} this cache
  * @private
  */
-MRUCache.prototype.reset = function() {
-    for (var key in this.list) {
-        this.onRemove(this.list[key]);
+LRUCache.prototype.reset = function() {
+    for (var key in this.data) {
+        this.onRemove(this.data[key]);
     }
 
-    this.list = {};
+    this.data = {};
     this.order = [];
 
     return this;
@@ -40,11 +40,11 @@ MRUCache.prototype.reset = function() {
  * @param {string} key lookup key for the item
  * @param {*} data any value
  *
- * @returns {MRUCache} this cache
+ * @returns {LRUCache} this cache
  * @private
  */
-MRUCache.prototype.add = function(key, data) {
-    this.list[key] = data;
+LRUCache.prototype.add = function(key, data) {
+    this.data[key] = data;
     this.order.push(key);
 
     if (this.order.length > this.max) {
@@ -62,8 +62,8 @@ MRUCache.prototype.add = function(key, data) {
  * @returns {boolean} whether the cache has this value
  * @private
  */
-MRUCache.prototype.has = function(key) {
-    return key in this.list;
+LRUCache.prototype.has = function(key) {
+    return key in this.data;
 };
 
 /**
@@ -72,7 +72,7 @@ MRUCache.prototype.has = function(key) {
  * @returns {Array<string>} an array of keys in this cache.
  * @private
  */
-MRUCache.prototype.keys = function() {
+LRUCache.prototype.keys = function() {
     return this.order;
 };
 
@@ -84,12 +84,12 @@ MRUCache.prototype.keys = function() {
  * @returns {*} the data, or null if it isn't found
  * @private
  */
-MRUCache.prototype.get = function(key) {
+LRUCache.prototype.get = function(key) {
     if (!this.has(key)) { return null; }
 
-    var data = this.list[key];
+    var data = this.data[key];
 
-    delete this.list[key];
+    delete this.data[key];
     this.order.splice(this.order.indexOf(key), 1);
 
     return data;
@@ -99,10 +99,10 @@ MRUCache.prototype.get = function(key) {
  * Change the max size of the cache.
  *
  * @param {number} max the max size of the cache
- * @returns {MRUCache} this cache
+ * @returns {LRUCache} this cache
  * @private
  */
-MRUCache.prototype.setMaxSize = function(max) {
+LRUCache.prototype.setMaxSize = function(max) {
     this.max = max;
 
     while (this.order.length > this.max) {
