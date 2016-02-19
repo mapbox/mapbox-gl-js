@@ -376,11 +376,11 @@ test('TilePyramid#update', function(t) {
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [
+            new TileCoord(0, 0, 0).id,
             new TileCoord(1, 0, 0).id,
             new TileCoord(1, 1, 0).id,
             new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id,
-            new TileCoord(0, 0, 0).id
+            new TileCoord(1, 1, 1).id
         ]);
         t.end();
     });
@@ -404,11 +404,11 @@ test('TilePyramid#update', function(t) {
         pyramid.update(true, transform);
 
         t.deepEqual(pyramid.orderedIDs(), [
+            new TileCoord(0, 0, 0, 1).id,
             new TileCoord(1, 0, 0, 1).id,
             new TileCoord(1, 1, 0, 1).id,
             new TileCoord(1, 0, 1, 1).id,
-            new TileCoord(1, 1, 1, 1).id,
-            new TileCoord(0, 0, 0, 1).id
+            new TileCoord(1, 1, 1, 1).id
         ]);
         t.end();
     });
@@ -615,5 +615,27 @@ test('TilePyramid#loaded (with errors)', function (t) {
     pyramid.addTile(coord);
 
     t.ok(pyramid.loaded());
+    t.end();
+});
+
+test('TilePyramid#orderedIDs (ascending order by zoom level)', function(t) {
+    var ids = [
+        new TileCoord(0, 0, 0),
+        new TileCoord(3, 0, 0),
+        new TileCoord(1, 0, 0),
+        new TileCoord(2, 0, 0)
+    ];
+
+    var pyramid = createPyramid({});
+    for (var i = 0; i < ids.length; i++) {
+        pyramid._tiles[ids[i].id] = {};
+    }
+    var orderedIDs = pyramid.orderedIDs();
+    t.deepEqual(orderedIDs, [
+        new TileCoord(0, 0, 0).id,
+        new TileCoord(1, 0, 0).id,
+        new TileCoord(2, 0, 0).id,
+        new TileCoord(3, 0, 0).id
+    ]);
     t.end();
 });
