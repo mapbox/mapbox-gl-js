@@ -239,6 +239,12 @@ test('in, $type', function(t) {
     t.equal(f({type: 1}), false);
     t.equal(f({type: 2}), true);
     t.equal(f({type: 3}), true);
+
+    var f1 = filter(['in', '$type', 'Polygon', 'LineString', 'Point']);
+    t.equal(f1({type: 1}), true);
+    t.equal(f1({type: 2}), true);
+    t.equal(f1({type: 3}), true);
+
     t.end();
 });
 
