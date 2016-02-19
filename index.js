@@ -45,7 +45,7 @@ function compare(key, val, op, checkType) {
     return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
 }
 function compileIn(key, values) {
-    if (key === '$type') values = values.map(types.indexOf.bind(types));
+    if (key === '$type') values = values.map(function(value) { return types.indexOf(value); });
     var left = JSON.stringify(values.sort(compareFn));
     var right = valueExpr(key);
 
