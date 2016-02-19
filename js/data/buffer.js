@@ -74,6 +74,17 @@ function Buffer(options) {
     }
 }
 
+Buffer.prototype.serialize = function() {
+    return {
+        type: this.type,
+        capacity: this.capacity,
+        arrayBuffer: this.arrayBuffer,
+        attributes: this.attributes,
+        itemSize: this.itemSize,
+        length: this.length
+    };
+};
+
 /**
  * Bind this buffer to a WebGL context.
  * @private

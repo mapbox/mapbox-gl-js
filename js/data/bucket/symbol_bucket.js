@@ -227,7 +227,7 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
         }
     }
 
-    this.placeFeatures(collisionTile, this.buffers, this.collisionDebug);
+    this.placeFeatures(collisionTile, this.collisionDebug);
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {
@@ -327,11 +327,9 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
     return false;
 };
 
-SymbolBucket.prototype.placeFeatures = function(collisionTile, buffers, collisionDebug) {
+SymbolBucket.prototype.placeFeatures = function(collisionTile, collisionDebug) {
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
-
-    this.resetBuffers(buffers);
 
     var elementGroups = this.elementGroups = {
         glyph: [],

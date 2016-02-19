@@ -1,9 +1,9 @@
 'use strict';
 
 var featureFilter = require('feature-filter');
-
 var Buffer = require('./buffer');
 var StyleLayer = require('../style/style_layer');
+var util = require('../util/util');
 
 module.exports = Bucket;
 
@@ -82,9 +82,11 @@ function Bucket(options) {
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
-        this.buffers = options.buffers;
+        this.buffers = util.mapObject(options.buffers, function(options) {
+            return new Buffer(options);
+        });
     } else {
-        this.resetBuffers(options.buffers);
+        this.resetBuffers();
     }
 
     for (var shaderName in this.shaderInterfaces) {
@@ -139,17 +141,16 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
  * Start using a new shared `buffers` object and recreate instances of `Buffer`
  * as necessary.
  * @private
- * @param {Object.<string, Buffer>} buffers
  */
-Bucket.prototype.resetBuffers = function(buffers) {
-    this.buffers = buffers;
-    this.elementGroups = {};
+Bucket.prototype.resetBuffers = function() {
+    var elementGroups = this.elementGroups = {};
+    var buffers = this.buffers = {};
 
     for (var shaderName in this.shaderInterfaces) {
         var shaderInterface = this.shaderInterfaces[shaderName];
 
         var vertexBufferName = this.getBufferName(shaderName, 'vertex');
-        if (shaderInterface.vertexBuffer && !buffers[vertexBufferName]) {
+        if (shaderInterface.vertexBuffer) {
             buffers[vertexBufferName] = new Buffer({
                 type: Buffer.BufferType.VERTEX,
                 attributes: shaderInterface.attributes
@@ -158,21 +159,23 @@ Bucket.prototype.resetBuffers = function(buffers) {
 
         if (shaderInterface.elementBuffer) {
             var elementBufferName = this.getBufferName(shaderName, 'element');
-            if (!buffers[elementBufferName]) {
-                buffers[elementBufferName] = createElementBuffer(shaderInterface.elementBufferComponents);
-            }
+            buffers[elementBufferName] = createElementBuffer(shaderInterface.elementBufferComponents);
             this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.buffers[elementBufferName]);
         }
 
         if (shaderInterface.secondElementBuffer) {
             var secondElementBufferName = this.getBufferName(shaderName, 'secondElement');
-            if (!buffers[secondElementBufferName]) {
-                buffers[secondElementBufferName] = createElementBuffer(shaderInterface.secondElementBufferComponents);
-            }
+            buffers[secondElementBufferName] = createElementBuffer(shaderInterface.secondElementBufferComponents);
             this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.buffers[secondElementBufferName]);
         }
 
-        this.elementGroups[shaderName] = [];
+        elementGroups[shaderName] = [];
+    }
+};
+
+Bucket.prototype.destroy = function(gl) {
+    for (var k in this.buffers) {
+        this.buffers[k].destroy(gl);
     }
 };
 
@@ -200,7 +203,10 @@ Bucket.prototype.serialize = function() {
     return {
         layer: this.layer.serialize(),
         zoom: this.zoom,
-        elementGroups: this.elementGroups
+        elementGroups: this.elementGroups,
+        buffers: util.mapObject(this.buffers, function(buffer) {
+            return buffer.serialize();
+        })
     };
 };
 

@@ -11,13 +11,15 @@ function drawCollisionDebug(painter, source, layer, coords) {
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
         var tile = source.getTile(coord);
-        var elementGroups = tile.getElementGroups(layer, 'collisionBox');
+        var bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        var elementGroups = bucket.elementGroups.collisionBox;
 
         if (!elementGroups) continue;
-        if (!tile.buffers) continue;
+        if (!bucket.buffers) continue;
         if (elementGroups[0].vertexLength === 0) continue;
 
-        var buffer = tile.buffers.collisionBoxVertex;
+        var buffer = bucket.buffers.collisionBoxVertex;
         buffer.bind(gl);
         buffer.setAttribPointers(gl, shader, 0);
 

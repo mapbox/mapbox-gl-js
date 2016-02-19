@@ -567,36 +567,19 @@ test('TilePyramid#tilesIn', function (t) {
     tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
     tiles.forEach(function (result) { delete result.tile.uid; });
 
-    t.deepEqual(tiles, [
-        {
-            tile: {
-                coord: { z: 1, x: 0, y: 0, w: 0, id: 1 },
-                loaded: true,
-                uses: 1,
-                tileSize: 512,
-                sourceMaxZoom: 14,
-                buckets: {}
-            },
-            minX: 4096,
-            maxX: 12288,
-            minY: 2048,
-            maxY: 6144
-        },
-        {
-            tile: {
-                coord: { z: 1, x: 1, y: 0, w: 0, id: 33 },
-                loaded: true,
-                uses: 1,
-                tileSize: 512,
-                sourceMaxZoom: 14,
-                buckets: {}
-            },
-            minX: -4096,
-            maxX: 4096,
-            minY: 2048,
-            maxY: 6144
-        }
-    ]);
+    t.equal(tiles[0].tile.coord.id, 1);
+    t.equal(tiles[0].minX, 4096);
+    t.equal(tiles[0].maxX, 12288);
+    t.equal(tiles[0].minY, 2048);
+    t.equal(tiles[0].maxY, 6144);
+
+    t.equal(tiles[1].tile.coord.id, 33);
+    t.equal(tiles[1].minX, -4096);
+    t.equal(tiles[1].maxX, 4096);
+    t.equal(tiles[1].minY, 2048);
+    t.equal(tiles[1].maxY, 6144);
+
+    t.equal(tiles.length, 2);
 
     t.end();
 });

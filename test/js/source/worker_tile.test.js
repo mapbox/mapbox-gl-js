@@ -26,8 +26,7 @@ test('basic', function(t) {
     t.test('basic worker tile', function(t) {
         tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
             t.equal(err, null);
-            t.ok(result.buffers, 'buffers');
-            t.ok(result.elementGroups, 'element groups');
+            t.ok(result.buckets[0]);
             t.end();
         });
     });
@@ -42,7 +41,7 @@ test('basic', function(t) {
         });
         tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
             t.equal(err, null);
-            t.equal(Object.keys(result.elementGroups).length, 1, 'element groups exclude hidden layer');
+            t.equal(Object.keys(result.buckets[0].elementGroups).length, 1, 'element groups exclude hidden layer');
             t.end();
         });
     });

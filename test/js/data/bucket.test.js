@@ -92,8 +92,8 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.addFeatures();
 
-        var buffers = {};
-        bucket.resetBuffers(buffers);
+        bucket.resetBuffers();
+        var buffers = bucket.buffers;
 
         t.equal(bucket.buffers, buffers);
         t.equal(buffers.testElement.length, 0);
@@ -108,7 +108,7 @@ test('Bucket', function(t) {
 
         bucket.features = [createFeature(1, 5)];
         bucket.addFeatures();
-        bucket.resetBuffers({});
+        bucket.resetBuffers();
         bucket.features = [createFeature(17, 42)];
         bucket.addFeatures();
 

@@ -53,8 +53,9 @@ function draw(painter, source, layer, coords) {
 
 function drawFill(painter, source, layer, coord) {
     var tile = source.getTile(coord);
-    if (!tile.buffers) return;
-    var elementGroups = tile.getElementGroups(layer, 'fill');
+    var bucket = tile.getBucket(layer);
+    if (!bucket) return;
+    var elementGroups = bucket.elementGroups.fill;
     if (!elementGroups) return;
 
     var gl = painter.gl;
@@ -95,10 +96,10 @@ function drawFill(painter, source, layer, coord) {
     gl.switchShader(painter.fillShader, translatedPosMatrix);
 
     // Draw all buffers
-    var vertex = tile.buffers.fillVertex;
+    var vertex = bucket.buffers.fillVertex;
     vertex.bind(gl);
 
-    var elements = tile.buffers.fillElement;
+    var elements = bucket.buffers.fillElement;
     elements.bind(gl);
 
     for (var i = 0; i < elementGroups.length; i++) {
@@ -188,11 +189,11 @@ function drawFill(painter, source, layer, coord) {
 
 function drawStroke(painter, source, layer, coord) {
     var tile = source.getTile(coord);
-    if (!tile.buffers) return;
-    if (!tile.elementGroups[layer.ref || layer.id]) return;
+    var bucket = tile.getBucket(layer);
+    if (!bucket) return;
 
     var gl = painter.gl;
-    var elementGroups = tile.elementGroups[layer.ref || layer.id].fill;
+    var elementGroups = bucket.elementGroups.fill;
 
     gl.setPosMatrix(painter.translatePosMatrix(
         painter.calculatePosMatrix(coord, source.maxzoom),
@@ -202,8 +203,8 @@ function drawStroke(painter, source, layer, coord) {
     ));
 
     // Draw all buffers
-    var vertex = tile.buffers.fillVertex;
-    var elements = tile.buffers.fillSecondElement;
+    var vertex = bucket.buffers.fillVertex;
+    var elements = bucket.buffers.fillSecondElement;
     vertex.bind(gl);
     elements.bind(gl);
 

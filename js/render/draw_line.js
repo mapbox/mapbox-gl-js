@@ -20,7 +20,8 @@ module.exports = function drawLine(painter, source, layer, coords) {
     painter.depthMask(false);
 
     var hasData = coords.some(function(coord) {
-        return source.getTile(coord).getElementGroups(layer, 'line');
+        var bucket = source.getTile(coord).getBucket(layer);
+        return bucket && bucket.elementGroups.line;
     });
     if (!hasData) return;
 
@@ -126,8 +127,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
     for (var k = 0; k < coords.length; k++) {
         var coord = coords[k];
         var tile = source.getTile(coord);
-
-        var elementGroups = tile.getElementGroups(layer, 'line');
+        var bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        var elementGroups = bucket.elementGroups.line;
         if (!elementGroups) continue;
 
         painter.enableTileClippingMask(coord);
@@ -165,9 +167,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(shader.u_ratio, ratio);
         }
 
-        var vertex = tile.buffers.lineVertex;
+        var vertex = bucket.buffers.lineVertex;
         vertex.bind(gl);
-        var element = tile.buffers.lineElement;
+        var element = bucket.buffers.lineElement;
         element.bind(gl);
 
         for (var i = 0; i < elementGroups.length; i++) {

@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var Buffer = require('../data/buffer');
 var Bucket = require('../data/bucket');
 
 module.exports = Tile;
@@ -17,7 +16,8 @@ module.exports = Tile;
 function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
-    this.loaded = false;
+    this.loaded = false; // TODO rename loaded
+    this.isUnloaded = false;
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
@@ -74,9 +74,7 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
-        this.buffers = unserializeBuffers(data.buffers);
-        this.elementGroups = data.elementGroups;
-        this.buckets = unserializeBuckets(data.buckets, this.buffers);
+        this.buckets = unserializeBuckets(data.buckets);
     },
 
     /**
@@ -87,21 +85,18 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
+    // TODO rewrite this
     reloadSymbolData: function(data, painter) {
-        if (!this.buffers) {
-            // the tile has been destroyed
-            return;
+        if (this.isUnloaded) return;
+
+        var newBuckets = unserializeBuckets(data.buckets);
+        for (var id in newBuckets) {
+            var newBucket = newBuckets[id];
+            var oldBucket = this.buckets[id];
+
+            oldBucket.destroy(painter.gl);
+            this.buckets[id] = newBucket;
         }
-
-        if (this.buffers.glyphVertex) this.buffers.glyphVertex.destroy(painter.gl);
-        if (this.buffers.glyphElement) this.buffers.glyphElement.destroy(painter.gl);
-        if (this.buffers.iconVertex) this.buffers.iconVertex.destroy(painter.gl);
-        if (this.buffers.iconElement) this.buffers.iconElement.destroy(painter.gl);
-        if (this.buffers.collisionBoxVertex) this.buffers.collisionBoxVertex.destroy(painter.gl);
-
-        util.extend(this.buffers, unserializeBuffers(data.buffers));
-        util.extend(this.elementGroups, data.elementGroups);
-        util.extend(this.buckets, unserializeBuckets(data.buckets, this.buffers));
     },
 
     /**
@@ -113,14 +108,14 @@ Tile.prototype = {
      * @private
      */
     unloadVectorData: function(painter) {
-        this.loaded = false;
-
-        for (var b in this.buffers) {
-            if (this.buffers[b]) this.buffers[b].destroy(painter.gl);
+        for (var id in this.buckets) {
+            var bucket = this.buckets[id];
+            bucket.destroy(painter.gl);
         }
 
-        this.elementGroups = null;
-        this.buffers = null;
+        this.buckets = null;
+        this.loaded = false;
+        this.isUnloaded = true;
     },
 
     redoPlacement: function(source) {
@@ -151,23 +146,15 @@ Tile.prototype = {
         }
     },
 
-    getElementGroups: function(layer, shaderName) {
-        return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
+    getBucket: function(layer) {
+        return this.buckets && this.buckets[layer.ref || layer.id];
     }
 };
 
-function unserializeBuffers(input) {
-    var output = {};
-    for (var k in input) {
-        output[k] = new Buffer(input[k]);
-    }
-    return output;
-}
-
-function unserializeBuckets(input, buffers) {
+function unserializeBuckets(input) {
     var output = {};
     for (var i = 0; i < input.length; i++) {
-        var bucket = Bucket.create(util.extend(input[i], {buffers: buffers}));
+        var bucket = Bucket.create(input[i]);
         output[bucket.id] = bucket;
     }
     return output;

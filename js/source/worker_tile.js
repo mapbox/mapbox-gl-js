@@ -26,11 +26,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     var stats = { _total: 0 };
 
-    var tile = this,
-        buffers = {},
-        bucketsById = {},
-        bucketsBySourceLayer = {},
-        i, layer, sourceLayerId, bucket;
+    var tile = this;
+    var bucketsById = {};
+    var bucketsBySourceLayer = {};
+    var i;
+    var layer;
+    var sourceLayerId;
+    var bucket;
 
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
@@ -44,7 +46,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
         bucket = Bucket.create({
             layer: layer,
-            buffers: buffers,
             zoom: this.zoom,
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug
@@ -182,67 +183,44 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         tile.status = 'done';
 
         if (tile.redoPlacementAfterDone) {
-            tile.redoPlacement(tile.angle, tile.pitch, null, buffers);
+            tile.redoPlacement(tile.angle, tile.pitch, null);
             tile.redoPlacementAfterDone = false;
         }
 
         callback(null, {
-            elementGroups: getElementGroups(buckets),
-            buffers: buffers,
             buckets: buckets.map(function(bucket) { return bucket.serialize(); }),
-            bucketStats: stats
-        }, getTransferables(buffers));
+            bucketStats: stats // TODO put this in a separate message?
+        }, getTransferables(buckets));
     }
 };
 
-WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug, buffers) {
+WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
         this.angle = angle;
         return {};
     }
 
-    buffers = buffers || {};
-    delete buffers.glyphVertex;
-    delete buffers.glyphElement;
-    delete buffers.iconVertex;
-    delete buffers.iconElement;
-    delete buffers.collisionBoxVertex;
-
     var collisionTile = new CollisionTile(angle, pitch);
 
     for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
-        this.symbolBuckets[i].placeFeatures(collisionTile, buffers, collisionDebug);
+        this.symbolBuckets[i].placeFeatures(collisionTile, collisionDebug);
     }
 
-    // TODO move the results formatting out into Worker
     return {
         result: {
-            buckets: this.symbolBuckets.map(function(bucket) { return bucket.serialize(); }),
-            elementGroups: getElementGroups(this.symbolBuckets),
-            buffers: buffers
+            buckets: this.symbolBuckets.map(function(bucket) { return bucket.serialize(); })
         },
-        transferables: getTransferables(buffers)
+        transferables: getTransferables(this.symbolBuckets)
     };
 };
 
-function getElementGroups(buckets) {
-    var elementGroups = {};
-
-    for (var i = 0; i < buckets.length; i++) {
-        elementGroups[buckets[i].id] = buckets[i].elementGroups;
-    }
-    return elementGroups;
-}
-
-function getTransferables(buffers) {
+function getTransferables(buckets) {
     var transferables = [];
-
-    for (var k in buffers) {
-        transferables.push(buffers[k].arrayBuffer);
-
-        // The Buffer::push method is generated with "new Function(...)" and not transferrable.
-        buffers[k].push = null;
+    for (var i in buckets) {
+        for (var j in buckets.buffers) {
+            transferables.push(buckets[i].buffers[j].arrayBuffer);
+        }
     }
     return transferables;
 }

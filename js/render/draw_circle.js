@@ -35,12 +35,13 @@ function drawCircles(painter, source, layer, coords) {
         var coord = coords[i];
 
         var tile = source.getTile(coord);
-        if (!tile.buffers) continue;
-        var elementGroups = tile.getElementGroups(layer, 'circle');
+        var bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        var elementGroups = bucket.elementGroups.circle;
         if (!elementGroups) continue;
 
-        var vertex = tile.buffers.circleVertex;
-        var elements = tile.buffers.circleElement;
+        var vertex = bucket.buffers.circleVertex;
+        var elements = bucket.buffers.circleElement;
 
         gl.setPosMatrix(painter.translatePosMatrix(
             painter.calculatePosMatrix(coord, source.maxzoom),

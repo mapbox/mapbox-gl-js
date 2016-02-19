@@ -31,32 +31,30 @@ function drawSymbols(painter, source, layer, coords) {
     painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
-    var tile, elementGroups, posMatrix;
+    var tile, elementGroups, bucket, posMatrix;
 
     for (var i = 0; i < coords.length; i++) {
         tile = source.getTile(coords[i]);
-
-        if (!tile.buffers) continue;
-        elementGroups = tile.elementGroups[layer.ref || layer.id];
-        if (!elementGroups) continue;
+        bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        elementGroups = bucket.elementGroups;
         if (!elementGroups.icon.length) continue;
 
         posMatrix = painter.calculatePosMatrix(coords[i], source.maxzoom);
         painter.enableTileClippingMask(coords[i]);
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
+        drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
     }
 
     for (var j = 0; j < coords.length; j++) {
         tile = source.getTile(coords[j]);
-
-        if (!tile.buffers) continue;
-        elementGroups = tile.elementGroups[layer.ref || layer.id];
-        if (!elementGroups) continue;
+        bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        elementGroups = bucket.elementGroups;
         if (!elementGroups.glyph.length) continue;
 
         posMatrix = painter.calculatePosMatrix(coords[j], source.maxzoom);
         painter.enableTileClippingMask(coords[j]);
-        drawSymbol(painter, layer, posMatrix, tile, elementGroups.glyph, 'text', true, false);
+        drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups.glyph, 'text', true, false);
     }
 
     gl.enable(gl.DEPTH_TEST);
@@ -69,7 +67,7 @@ var defaultSizes = {
     text: 24
 };
 
-function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf, iconsNeedLinear) {
+function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, prefix, sdf, iconsNeedLinear) {
     var gl = painter.gl;
 
     posMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
@@ -122,16 +120,16 @@ function drawSymbol(painter, layer, posMatrix, tile, elementGroups, prefix, sdf,
         if (!glyphAtlas) return;
 
         glyphAtlas.updateTexture(gl);
-        vertex = tile.buffers.glyphVertex;
-        elements = tile.buffers.glyphElement;
+        vertex = bucket.buffers.glyphVertex;
+        elements = bucket.buffers.glyphElement;
         texsize = [glyphAtlas.width / 4, glyphAtlas.height / 4];
     } else {
         var mapMoving = painter.options.rotating || painter.options.zooming;
         var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
         var iconTransformed = alignedWithMap || painter.transform.pitch;
         painter.spriteAtlas.bind(gl, sdf || mapMoving || iconScaled || iconTransformed);
-        vertex = tile.buffers.iconVertex;
-        elements = tile.buffers.iconElement;
+        vertex = bucket.buffers.iconVertex;
+        elements = bucket.buffers.iconElement;
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
