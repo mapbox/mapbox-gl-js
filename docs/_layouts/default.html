@@ -97,7 +97,7 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta class='swiftype' name='title' data-type='string' content='{{page.title | replace:"'","&lsquo;" | replace:"'","&lsquo;" | replace:"| Mapbox",""}}' />
+  <meta class='swiftype' name='title' data-type='string' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;" | replace:"| Mapbox",""}}' />
   <meta class='swiftype' name='type' data-type='enum' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta class='swiftype' name='info' data-type='string' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />{% if page.date and site.baseurl == '/blog' %}
   <meta class='swiftype' name='published_at' data-type='date' content='{{ page.date | date_to_xmlschema }}' />{% endif %}{% if page.tags %}
@@ -105,16 +105,16 @@ footer:
   {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
-  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
   <meta name='twitter:url' content='{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
   <meta property='og:url' content='{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
-  <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;"}}' />
-  <meta property='og:title' content='{{page.title | replace:"'","&rsquo;"}}' />
-  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
-  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&lsquo;" | replace:"'","&lsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;"}}' />
+  <meta property='og:title' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;"}}' />
+  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
   {% if page.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
@@ -181,6 +181,7 @@ footer:
 {% if page.app %}
 {{content}}
 {% else %}
+
 <div class='main-subnav fill-midnight splash pin-top dark clearfix'>
   <div class='prose dark keyline-top pad4y hover-area clearfix'>
     <div class='limiter clearfix'>
@@ -374,6 +375,7 @@ footer:
     </nav>
   </div>
 </div>
+
 
 <div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
