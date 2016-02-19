@@ -195,7 +195,12 @@ TilePyramid.prototype = {
             var tile = this._tiles[coord.id];
             if (tile && tile.loaded) {
                 retain[coord.id] = true;
-                return tile;
+                return true;
+            }
+            if (this._cache.has(coord.id)) {
+                this.addTile(coord);
+                retain[coord.id] = true;
+                return true;
             }
         }
     },
