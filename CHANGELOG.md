@@ -1,3 +1,21 @@
+## 0.14.2 (Feb 19 2016)
+
+#### Bugfixes
+
+Look for loaded parent tiles in cache
+Set tile cache size based on viewport size (#2137)
+Fix tile render order for layer-by-layer
+Remove source update throttling (#2139)
+Make panning while zooming more linear (#2070)
+Round points created during bucket creation (#2067)
+Correct bounds for a rotated or tilted map (#1842)
+Fix overscaled featuresAt (#2103)
+Allow using `tileSize: 512` as a switch to trade retina support for 512px raster tiles
+Fix the serialization of paint classes (#2107)
+Fixed bug where unsetting style properties could mutate the value of other style properties (#2105)
+Less slanted dashed lines near sharp corners (#967)
+Fire map#load if no initial style is set (#2042)
+
 ## 0.14.1 (Feb 10 2016)
 
 #### Bugfixes
