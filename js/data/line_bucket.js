@@ -65,17 +65,19 @@ LineBucket.prototype.shaders = {
         }, {
             name: 'data',
             components: 4,
-            type: Bucket.AttributeType.BYTE,
+            type: Bucket.AttributeType.UNSIGNED_BYTE,
             value: [
-                'Math.round(' + EXTRUDE_SCALE + ' * extrude.x)',
-                'Math.round(' + EXTRUDE_SCALE + ' * extrude.y)',
+                // add 128 to store an byte in an unsigned byte
+                'Math.round(' + EXTRUDE_SCALE + ' * extrude.x) + 128',
+                'Math.round(' + EXTRUDE_SCALE + ' * extrude.y) + 128',
 
-                // Encode the -1/0/1 direction value into .zw coordinates of a_data, which is normally covered
-                // by linesofar, so we need to merge them.
-                // The z component's first bit, as well as the sign bit is reserved for the direction,
-                // so we need to shift the linesofar.
-                '((dir < 0) ? -1 : 1) * ((dir ? 1 : 0) | ((linesofar << 1) & 0x7F))',
-                '((linesofar >> 6) & 0xFF) - 128'
+                // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
+                // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
+                // room for the direction value). The upper 8 bits of `linesofar` are placed in
+                // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
+                // we can store longer distances while sacrificing precision.
+                '((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * ' + LINE_DISTANCE_SCALE + ') & 0x3F) << 2)',
+                '(linesofar * ' + LINE_DISTANCE_SCALE + ') >> 6'
             ]
         }]
     }
