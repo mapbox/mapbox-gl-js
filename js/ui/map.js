@@ -782,11 +782,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             this.style._recalculate(this.transform.zoom);
         }
 
-        if (this.style && this._sourcesDirty && !this._sourcesDirtyTimeout) {
+        if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
-            this._sourcesDirtyTimeout = setTimeout(function() {
-                this._sourcesDirtyTimeout = null;
-            }.bind(this), 50);
             this.style._updateSources(this.transform);
         }
 
@@ -826,7 +823,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     remove: function() {
         if (this._hash) this._hash.remove();
         browser.cancelFrame(this._frameId);
-        clearTimeout(this._sourcesDirtyTimeout);
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
