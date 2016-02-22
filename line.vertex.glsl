@@ -13,7 +13,7 @@ attribute vec4 a_data;
 
 uniform mat4 u_matrix;
 uniform float u_ratio;
-uniform vec2 u_linewidth;
+uniform mediump vec2 u_linewidth;
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
 uniform float u_offset;
