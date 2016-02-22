@@ -20,11 +20,6 @@ exports.extend = function(context) {
         var shader = this.createShader(type);
         var shaderSource = shaders[name][typeString];
 
-        if (typeof orientation === 'undefined') {
-            // only use highp precision on mobile browsers
-            shaderSource = shaderSource.replace(/ highp /g, ' ');
-        }
-
         this.shaderSource(shader, shaderSource);
         this.compileShader(shader);
         if (!this.getShaderParameter(shader, this.COMPILE_STATUS)) {
