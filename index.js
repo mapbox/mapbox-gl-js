@@ -13,7 +13,7 @@ var types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * @returns {Function} filter-evaluating function
  */
 function createFilter(filter) {
-    return new Function('f', 'return ' + compile(filter));
+    return new Function('f', 'var p = (f && f.properties || {}); return ' + compile(filter));
 }
 
 function compile(filter) {
@@ -32,12 +32,14 @@ function compile(filter) {
         op === 'none' ? '!(' + filter.slice(1).map(compile).join('||') + ')' :
         op === 'in' ? compileIn(filter[1], filter.slice(2)) :
         op === '!in' ? '!(' + compileIn(filter[1], filter.slice(2)) + ')' :
+        op === 'has' ? compileHas(filter[1]) :
+        op === '!has' ? negate(compileHas([filter[1]])) :
         'true';
     return '(' + str + ')';
 }
 
 function valueExpr(key) {
-    return key === '$type' ? 'f.type' : '(f.properties || {})[' + JSON.stringify(key) + ']';
+    return key === '$type' ? 'f.type' : 'p[' + JSON.stringify(key) + ']';
 }
 function compare(key, val, op, checkType) {
     var left = valueExpr(key);
@@ -58,6 +60,14 @@ function compileIn(key, values) {
     'return false; }(' + right + ', ' + left + ',0,' + (values.length - 1) + ')';
 }
 
+function compileHas(key) {
+    return JSON.stringify(key) + ' in p';
+}
+
 function compareFn(a, b) {
     return a < b ? -1 : a > b ? 1 : 0;
+}
+
+function negate(expression) {
+    return '!(' + expression + ')';
 }

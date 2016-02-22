@@ -30,6 +30,19 @@ test('==, number', function(t) {
     t.end();
 });
 
+test('==, null', function(t) {
+    var f = filter(['==', 'foo', null]);
+    t.equal(f({properties: {foo: 0}}), false);
+    t.equal(f({properties: {foo: 1}}), false);
+    t.equal(f({properties: {foo: '0'}}), false);
+    t.equal(f({properties: {foo: true}}), false);
+    t.equal(f({properties: {foo: false}}), false);
+    t.equal(f({properties: {foo: null}}), true);
+    t.equal(f({properties: {foo: undefined}}), false);
+    t.equal(f({properties: {}}), false);
+    t.end();
+});
+
 test('==, $type', function(t) {
     var f = filter(['==', '$type', 'LineString']);
     t.equal(f({type: 1}), false);
@@ -52,6 +65,19 @@ test('!=, number', function(t) {
     t.equal(f({properties: {foo: true}}), true);
     t.equal(f({properties: {foo: false}}), true);
     t.equal(f({properties: {foo: null}}), true);
+    t.equal(f({properties: {foo: undefined}}), true);
+    t.equal(f({properties: {}}), true);
+    t.end();
+});
+
+test('!=, null', function(t) {
+    var f = filter(['!=', 'foo', null]);
+    t.equal(f({properties: {foo: 0}}), true);
+    t.equal(f({properties: {foo: 1}}), true);
+    t.equal(f({properties: {foo: '0'}}), true);
+    t.equal(f({properties: {foo: true}}), true);
+    t.equal(f({properties: {foo: false}}), true);
+    t.equal(f({properties: {foo: null}}), false);
     t.equal(f({properties: {foo: undefined}}), true);
     t.equal(f({properties: {}}), true);
     t.end();
@@ -217,6 +243,17 @@ test('in, number', function(t) {
     t.end();
 });
 
+test('in, null', function(t) {
+    var f = filter(['in', 'foo', null]);
+    t.equal(f({properties: {foo: 0}}), false);
+    t.equal(f({properties: {foo: '0'}}), false);
+    t.equal(f({properties: {foo: true}}), false);
+    t.equal(f({properties: {foo: false}}), false);
+    t.equal(f({properties: {foo: null}}), true);
+    t.equal(f({properties: {foo: undefined}}), false);
+    t.end();
+});
+
 test('in, multiple', function(t) {
     var f = filter(['in', 'foo', 0, 1]);
     t.equal(f({properties: {foo: 0}}), true);
@@ -269,6 +306,15 @@ test('!in, number', function(t) {
     t.equal(f({properties: {foo: 0}}), false);
     t.equal(f({properties: {foo: '0'}}), true);
     t.equal(f({properties: {foo: null}}), true);
+    t.equal(f({properties: {foo: undefined}}), true);
+    t.end();
+});
+
+test('!in, null', function(t) {
+    var f = filter(['!in', 'foo', null]);
+    t.equal(f({properties: {foo: 0}}), true);
+    t.equal(f({properties: {foo: '0'}}), true);
+    t.equal(f({properties: {foo: null}}), false);
     t.equal(f({properties: {foo: undefined}}), true);
     t.end();
 });
@@ -343,5 +389,31 @@ test('none', function(t) {
     var f4 = filter(['none', ['==', 'foo', 0], ['==', 'foo', 1]]);
     t.equal(f4({properties: {foo: 1}}), false);
 
+    t.end();
+});
+
+test('has', function(t) {
+    var f = filter(['has', 'foo']);
+    t.equal(f({properties: {foo: 0}}), true);
+    t.equal(f({properties: {foo: 1}}), true);
+    t.equal(f({properties: {foo: '0'}}), true);
+    t.equal(f({properties: {foo: true}}), true);
+    t.equal(f({properties: {foo: false}}), true);
+    t.equal(f({properties: {foo: null}}), true);
+    t.equal(f({properties: {foo: undefined}}), true);
+    t.equal(f({properties: {}}), false);
+    t.end();
+});
+
+test('!has', function(t) {
+    var f = filter(['!has', 'foo']);
+    t.equal(f({properties: {foo: 0}}), false);
+    t.equal(f({properties: {foo: 1}}), false);
+    t.equal(f({properties: {foo: '0'}}), false);
+    t.equal(f({properties: {foo: false}}), false);
+    t.equal(f({properties: {foo: false}}), false);
+    t.equal(f({properties: {foo: null}}), false);
+    t.equal(f({properties: {foo: undefined}}), false);
+    t.equal(f({properties: {}}), true);
     t.end();
 });
