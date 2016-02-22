@@ -21,12 +21,12 @@ module.exports = CollisionFeature;
  *
  * @private
  */
-function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine, straight) {
+function CollisionFeature(line, anchor, shaped, boxScales, padding, alignLine, straight) {
 
-    var y1 = shaped.top * boxScale - padding;
-    var y2 = shaped.bottom * boxScale + padding;
-    var x1 = shaped.left * boxScale - padding;
-    var x2 = shaped.right * boxScale + padding;
+    var y1 = Math.min(shaped.top * boxScales[0], shaped.top * boxScales[1]) - padding;
+    var y2 = Math.max(shaped.bottom * boxScales[0], shaped.bottom * boxScales[1]) + padding;
+    var x1 = Math.min(shaped.left * boxScales[0], shaped.left * boxScales[1]) - padding;
+    var x2 = Math.max(shaped.right * boxScales[0], shaped.right * boxScales[1]) + padding;
 
     this.boxes = [];
 
@@ -38,7 +38,7 @@ function CollisionFeature(line, anchor, shaped, boxScale, padding, alignLine, st
         if (height <= 0) return;
 
         // set minimum box height to avoid very many small labels
-        height = Math.max(10 * boxScale, height);
+        height = Math.max(10 * Math.max(boxScales[0], boxScales[1]), height);
 
         if (straight) {
             // used for icon labels that are aligned with the line, but don't curve along it
