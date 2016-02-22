@@ -648,3 +648,60 @@ test('TilePyramid#orderedIDs (ascending order by zoom level)', function(t) {
     ]);
     t.end();
 });
+
+
+test('TilePyramid#findLoadedParent', function(t) {
+
+    t.test('adds from previously used tiles (pyramid._tiles)', function(t) {
+        var pyramid = createPyramid({});
+        var tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        pyramid.updateCacheSize(tr);
+
+        var tile = {
+            coord: new TileCoord(1, 0, 0),
+            loaded: true
+        };
+
+        pyramid._tiles[tile.coord.id] = tile;
+
+        var retain = {};
+        var expectedRetain = {};
+        expectedRetain[tile.coord.id] = true;
+
+        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
+        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.deepEqual(retain, expectedRetain);
+        t.end();
+    });
+
+
+    t.test('adds from cache', function(t) {
+        t.end();
+        var pyramid = createPyramid({});
+        var tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        pyramid.updateCacheSize(tr);
+
+        var tile = {
+            coord: new TileCoord(1, 0, 0),
+            loaded: true
+        };
+
+        pyramid._cache.add(tile.coord.id, tile);
+
+        var retain = {};
+        var expectedRetain = {};
+        expectedRetain[tile.coord.id] = true;
+
+        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
+        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.deepEqual(retain, expectedRetain);
+        t.equal(pyramid._cache.order.length, 0);
+        t.deepEqual(pyramid._tiles[tile.coord.id], tile);
+    });
+
+    t.end();
+});
