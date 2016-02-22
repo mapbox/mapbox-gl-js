@@ -16,7 +16,7 @@ attribute vec2 a_pos;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
-uniform vec2 u_linewidth;
+uniform mediump vec2 u_linewidth;
 uniform float u_ratio;
 uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
