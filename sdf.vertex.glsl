@@ -11,11 +11,11 @@ attribute vec4 a_data2;
 uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 
-uniform float u_zoom;
-uniform float u_fadedist;
-uniform float u_minfadezoom;
-uniform float u_maxfadezoom;
-uniform float u_fadezoom;
+uniform mediump float u_zoom;
+uniform mediump float u_fadedist;
+uniform mediump float u_minfadezoom;
+uniform mediump float u_maxfadezoom;
+uniform mediump float u_fadezoom;
 uniform bool u_skewed;
 uniform float u_extra;
 
@@ -27,16 +27,16 @@ varying float v_gamma_scale;
 
 void main() {
     vec2 a_tex = a_data1.xy;
-    float a_labelminzoom = a_data1[2];
-    vec2 a_zoom = a_data2.st;
-    float a_minzoom = a_zoom[0];
-    float a_maxzoom = a_zoom[1];
+    mediump float a_labelminzoom = a_data1[2];
+    mediump vec2 a_zoom = a_data2.st;
+    mediump float a_minzoom = a_zoom[0];
+    mediump float a_maxzoom = a_zoom[1];
 
     // u_zoom is the current zoom level adjusted for the change in font size
-    float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
+    mediump float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
 
     // fade out labels
-    float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
+    mediump float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
 
     if (u_fadedist >= 0.0) {
         v_alpha = alpha;
