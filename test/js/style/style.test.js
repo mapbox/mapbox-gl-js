@@ -162,6 +162,34 @@ test('Style#_broadcastLayers', function(t) {
     });
 });
 
+test('Style#_broadcastLayers with specific ids', function(t) {
+    var style = new Style({
+        'version': 8,
+        'sources': {
+            'source': {
+                'type': 'vector'
+            }
+        },
+        'layers': [
+            {id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer'},
+            {id: 'second', source: 'source', type: 'fill', 'source-layer': 'source-layer'},
+            {id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer'}
+        ]
+    });
+
+    style.on('error', function(error) { t.error(error); });
+
+    style.on('load', function() {
+        style.dispatcher.broadcast = function(key, value) {
+            t.equal(key, 'update layers');
+            t.deepEqual(value.map(function(layer) { return layer.id; }), ['second', 'third']);
+            t.end();
+        };
+
+        style._broadcastLayers(['second', 'third']);
+    });
+});
+
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
         var style = new Style({

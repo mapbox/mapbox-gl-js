@@ -167,10 +167,18 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    _broadcastLayers: function() {
-        this.dispatcher.broadcast('set layers', this._order.map(function(id) {
-            return this._layers[id].serialize({includeRefProperties: true});
-        }, this));
+    _broadcastLayers: function(ids) {
+        this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
+    },
+
+    _serializeLayers: function(ids) {
+        ids = ids || this._order;
+        var serialized = [];
+        var options = {includeRefProperties: true};
+        for (var i = 0; i < ids.length; i++) {
+            serialized.push(this._layers[ids[i]].serialize(options));
+        }
+        return serialized;
     },
 
     _cascade: function(classes, options) {
