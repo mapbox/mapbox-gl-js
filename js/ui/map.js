@@ -442,7 +442,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} sourceID source ID
      * @param {Object} params
-     * @param {string} [params.source-layer] The name of the vector tile layer to get features from.
+     * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      * @param {callback} callback function that receives the results
      *

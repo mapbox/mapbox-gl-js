@@ -84,13 +84,13 @@ test('querySourceFeatures', function(t) {
 
         tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
 
-        t.equal(tile.querySourceFeatures({ 'source-layer': 'does-not-exist'}), null);
+        t.equal(tile.querySourceFeatures({ 'sourceLayer': 'does-not-exist'}), null);
 
-        var roads = tile.querySourceFeatures({ 'source-layer': 'road' });
+        var roads = tile.querySourceFeatures({ 'sourceLayer': 'road' });
         t.equal(roads.length, 3);
 
-        t.equal(tile.querySourceFeatures({ 'source-layer': 'road', filter: ['==', 'class', 'main'] }).length, 1);
-        t.equal(tile.querySourceFeatures({ 'source-layer': 'road', filter: ['!=', 'class', 'main'] }).length, 2);
+        t.equal(tile.querySourceFeatures({ 'sourceLayer': 'road', filter: ['==', 'class', 'main'] }).length, 1);
+        t.equal(tile.querySourceFeatures({ 'sourceLayer': 'road', filter: ['!=', 'class', 'main'] }).length, 2);
 
         t.end();
     });

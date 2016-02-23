@@ -245,7 +245,7 @@ WorkerTile.prototype.querySourceFeatures = function(params) {
     if (!this.data) return null;
 
     var layer = this.data.layers ?
-        this.data.layers[params['source-layer']] :
+        this.data.layers[params.sourceLayer] :
         this.data;
 
     if (!layer) return null;
