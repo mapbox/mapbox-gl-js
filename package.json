@@ -62,7 +62,7 @@
   },
   "scripts": {
     "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live --port 9966 -- --transform --standalone mapboxgl",
-    "start-buffer": "budo bench/buffer/buffer_benchmark.js --port 6699 -- --transform unassertify --plugin [minifyify --map /bench/buffer/buffer_benchmark.js.map --output bench/buffer/buffer_benchmark.js.map] --standalone bufferBenchmark",
+    "start-buffer": "budo bench/buffer/buffer_benchmark.js --serve=bench/buffer/buffer_benchmark.js --port 6699 -- --transform unassertify --plugin [minifyify --map /bench/buffer/buffer_benchmark.js.map --output bench/buffer/buffer_benchmark.js.map] --standalone bufferBenchmark",
     "start-docs": "npm run production && npm run docs && jekyll serve -w",
     "lint": "eslint js test && documentation --lint",
     "test": "npm run lint && prova test/js/*/*.js -q",
