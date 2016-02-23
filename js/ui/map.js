@@ -379,73 +379,65 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Query features at a point, or within a certain radius thereof.
+     * Query rendered features within a point or rectangle.
      *
-     * @param {Array<number>} point [x, y] pixel coordinates
+     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
      * @param {Object} params
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
-     * @param {string} [params.type] Either `raster` or `vector`
      * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
      * @example
-     * map.featuresAt([10, 20], { radius: 10 }, function(err, features) {
+     * map.queryRenderedFeatures([20, 35], { layer: 'my-layer-name' }, function(err, features) {
      *   console.log(features);
      * });
-     */
-    featuresAt: function(point, params, callback) {
-        var location = this.unproject(point).wrap();
-        var coord = this.transform.locationCoordinate(location);
-        this.style.queryFeatures([coord], params, this._classes, this.transform.zoom, this.transform.angle, callback);
-        return this;
-    },
-
-    /**
-     * Query features within a rectangle.
-     *
-     * @param {Array<Point>|Array<Array<number>>} [bounds] Coordinates of opposite corners of bounding rectangle, in pixel coordinates. Optional: use entire viewport if omitted.
-     * @param {Object} params
-     * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
-     * @param {string} [params.type] Either `raster` or `vector`
-     * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
-     * @param {featuresCallback} callback function that receives the results
-     *
-     * @returns {Map} `this`
      *
      * @example
-     * map.featuresIn([[10, 20], [30, 50]], { layer: 'my-layer-name' }, function(err, features) {
+     * map.queryRenderedFeatures([[10, 20], [30, 50]], { layer: 'my-layer-name' }, function(err, features) {
      *   console.log(features);
      * });
      */
-    featuresIn: function(bounds, params, callback) {
-        if (typeof callback === 'undefined') {
+    queryRenderedFeatures: function(pointOrBox, params, callback) {
+        if (callback === undefined) {
             callback = params;
-            params = bounds;
-          // bounds was omitted: use full viewport
-            bounds = [
+            params = pointOrBox;
+            // bounds was omitted: use full viewport
+            pointOrBox = [
                 Point.convert([0, 0]),
                 Point.convert([this.transform.width, this.transform.height])
             ];
         }
-        bounds = bounds.map(Point.convert.bind(Point));
 
-        var queryGeometry = [
-            bounds[0],
-            new Point(bounds[1].x, bounds[0].y),
-            bounds[1],
-            new Point(bounds[0].x, bounds[1].y),
-            bounds[0]
-        ].map(this.transform.pointCoordinate.bind(this.transform));
+        var queryGeometry;
+        var isPoint = pointOrBox instanceof Point || typeof pointOrBox[0] === 'number';
 
-        this.style.queryFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+        if (isPoint) {
+            var point = Point.convert(pointOrBox);
+            queryGeometry = [point];
+        } else {
+            var box = [Point.convert(pointOrBox[0]), Point.convert(pointOrBox[1])];
+            queryGeometry = [
+                box[0],
+                new Point(box[1].x, box[0].y),
+                box[1],
+                new Point(box[0].x, box[1].y),
+                box[0]
+            ];
+        }
+
+        queryGeometry = queryGeometry.map(function(p) {
+            return this.transform.locationCoordinate(this.transform.pointLocation(p).wrap());
+        }.bind(this));
+
+        this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 
 
     /**
-     * Get data from vector tiles as an array of GeoJSON FeatureCollections FeatureCollections.
+     * Get data from vector tiles as an array of GeoJSON Features.
      *
      * @param {string} sourceID source ID
      * @param {Object} params
@@ -455,14 +447,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @returns {Map} `this`
      */
-    getSourceTileData: function(sourceID, params, callback) {
+    querySourceFeatures: function(sourceID, params, callback) {
         var source = this.getSource(sourceID);
 
         if (!source) {
             return callback("No source with id '" + sourceID + "'.", []);
         }
 
-        source.getTileData(params, callback);
+        source.querySourceFeatures(params, callback);
 
         return this;
     },
@@ -997,14 +989,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
 
 /**
- * Callback to receive results from `Map#featuresAt` and `Map#featuresIn`.
+ * Callback to receive results from `Map#queryRenderFeatures` and `Map#querySourceFeatures`.
  *
  * Note: because features come from vector tiles or GeoJSON data that is converted to vector tiles internally, the returned features will be:
  *
  * 1. Truncated at tile boundaries.
  * 2. Duplicated across tile boundaries.
  *
- * For example, suppose there is a highway running through your rectangle in a `featuresIn` query. `featuresIn` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
+ * For example, suppose there is a highway running through your rectangle in a `queryRenderFeatures` query. `queryRenderFeatures` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
  *
  * @callback featuresCallback
  * @param {?Error} err - An error that occurred during query processing, if any. If this parameter is non-null, the `features` parameter will be null.

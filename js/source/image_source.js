@@ -156,7 +156,7 @@ ImageSource.prototype = util.inherit(Evented, {
      * be selectable, so always return an empty array.
      * @private
      */
-    queryFeatures: function(point, params, callback) {
+    queryRenderedFeatures: function(point, params, callback) {
         return callback(null, []);
     },
 
@@ -164,7 +164,7 @@ ImageSource.prototype = util.inherit(Evented, {
      * An ImageSource doesn't have any tiled data.
      * @private
      */
-    getTileData: function(params, callback) {
+    querySourceFeatures: function(params, callback) {
         return callback(null, []);
     },
 

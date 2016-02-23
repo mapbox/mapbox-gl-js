@@ -179,11 +179,11 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         return this.tile;
     },
 
-    queryFeatures: function(point, params, callback) {
+    queryRenderedFeatures: function(point, params, callback) {
         return callback(null, []);
     },
 
-    getTileData: function(params, callback) {
+    getSourceFeatures: function(params, callback) {
         return callback(null, []);
     },
 

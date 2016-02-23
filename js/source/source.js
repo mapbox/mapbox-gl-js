@@ -67,7 +67,7 @@ exports._getVisibleCoordinates = function() {
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
-exports._queryVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
+exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
@@ -76,7 +76,7 @@ exports._queryVectorFeatures = function(queryGeometry, params, classes, zoom, be
         return callback(null, []);
 
     util.asyncAll(results, function queryTile(result, cb) {
-        this.dispatcher.send('query features', {
+        this.dispatcher.send('query rendered features', {
             uid: result.tile.uid,
             source: this.id,
             queryGeometry: result.queryGeometry,
@@ -92,7 +92,7 @@ exports._queryVectorFeatures = function(queryGeometry, params, classes, zoom, be
     });
 };
 
-exports._getVectorTileData = function(params, callback) {
+exports._querySourceFeatures = function(params, callback) {
     if (!this._pyramid) {
         return callback(null, []);
     }
@@ -113,7 +113,7 @@ exports._getVectorTileData = function(params, callback) {
 
     util.asyncAll(Object.keys(dataTiles), function(dataID, callback) {
         var tile = dataTiles[dataID];
-        this.dispatcher.send('get tile data', {
+        this.dispatcher.send('query source features', {
             uid: tile.uid,
             source: this.id,
             params: params

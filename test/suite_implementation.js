@@ -48,9 +48,9 @@ module.exports = function(style, options, callback) {
         }
 
         if (options.at) {
-            map.featuresAt(options.at, options, done);
+            map.queryRenderedFeatures(options.at, options, done);
         } else if (options.in) {
-            map.featuresIn(options.in, options, done);
+            map.queryRenderedFeatures(options.in, options, done);
         } else {
             done(null, []);
         }

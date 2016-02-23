@@ -137,8 +137,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     getVisibleCoordinates: Source._getVisibleCoordinates,
     getTile: Source._getTile,
 
-    queryFeatures: Source._queryVectorFeatures,
-    getTileData: Source._getVectorTileData,
+    queryRenderedFeatures: Source._queryRenderedVectorFeatures,
+    querySourceFeatures: Source._querySourceFeatures,
 
     _updateData: function() {
         this._dirty = false;

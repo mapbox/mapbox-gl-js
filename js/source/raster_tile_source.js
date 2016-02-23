@@ -116,11 +116,11 @@ RasterTileSource.prototype = util.inherit(Evented, {
         if (tile.texture) this.map.painter.saveTexture(tile.texture);
     },
 
-    queryFeatures: function(point, params, callback) {
+    queryRenderedFeatures: function(point, params, callback) {
         callback(null, []);
     },
 
-    getTileData: function(params, callback) {
+    querySourceFeatures: function(params, callback) {
         return callback(null, []);
     }
 });
