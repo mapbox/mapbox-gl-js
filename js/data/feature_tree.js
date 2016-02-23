@@ -2,11 +2,11 @@
 
 var rbush = require('rbush');
 var Point = require('point-geometry');
-var vt = require('vector-tile');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
-var EXTENT = require('./bucket').EXTENT;
 var CollisionBox = require('../symbol/collision_box');
+var EXTENT = require('./bucket').EXTENT;
+var featureFilter = require('feature-filter');
 
 module.exports = FeatureTree;
 
@@ -50,6 +50,7 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
 
     var params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
+        filter = featureFilter(params.filter),
         result = [];
 
     // Features are indexed their original geometries. The rendered geometries may
@@ -94,11 +95,9 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
 
     for (var k = 0; k < matching.length; k++) {
         var feature = matching[k].feature,
-            layerIDs = matching[k].layerIDs,
-            type = vt.VectorTileFeature.types[feature.type];
+            layerIDs = matching[k].layerIDs;
 
-        if (params.$type && type !== params.$type)
-            continue;
+        if (!filter(feature)) continue;
 
         var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
 

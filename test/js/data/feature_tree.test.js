@@ -183,3 +183,45 @@ test('featuretree query with layerIds', function(t) {
     t.equal(features2.length, 0);
     t.end();
 });
+
+
+test('featuretree query with filter', function(t) {
+    var tile = new vt.VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+    function getType(feature) {
+        return vt.VectorTileFeature.types[feature.type];
+    }
+    function getGeometry(feature) {
+        return feature.loadGeometry();
+    }
+    var ft = new FeatureTree(getGeometry, getType, new CollisionTile(0, 0));
+
+    for (var i = 0; i < tile.layers.water._features.length; i++) {
+        var feature = tile.layers.water.feature(i);
+        ft.insert(feature.bbox(), ['water'], feature);
+    }
+
+    var features = ft.query({
+        source: "mapbox.mapbox-streets-v5",
+        scale: 1.4142135624,
+        tileSize: 512,
+        params: {
+            filter: ['==', '$type', 'Polygon']
+        },
+        queryGeometry: [new Point(-180, 1780)]
+    }, styleLayers);
+
+    t.equal(features.length, 1);
+
+    var features2 = ft.query({
+        source: "mapbox.mapbox-streets-v5",
+        scale: 1.4142135624,
+        tileSize: 512,
+        params: {
+            filter: ['!=', '$type', 'Polygon']
+        },
+        queryGeometry: [new Point(1842, 2014)]
+    }, styleLayers);
+
+    t.equal(features2.length, 0);
+    t.end();
+});

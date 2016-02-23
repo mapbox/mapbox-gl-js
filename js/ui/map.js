@@ -385,6 +385,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} params
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
      * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
+     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
