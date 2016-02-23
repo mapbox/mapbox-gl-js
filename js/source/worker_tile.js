@@ -241,7 +241,7 @@ function getTransferables(buckets) {
     return transferables;
 }
 
-WorkerTile.prototype.getData = function(params) {
+WorkerTile.prototype.querySourceFeatures = function(params) {
     if (!this.data) return null;
 
     var layer = this.data.layers ?
@@ -256,13 +256,11 @@ WorkerTile.prototype.getData = function(params) {
     for (var i = 0; i < layer.length; i++) {
         var feature = layer.feature(i);
         if (filter(feature)) {
-            features.push(feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z));
+            var geojsonFeature = feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z);
+            geojsonFeature.tile = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
+            features.push(geojsonFeature);
         }
     }
 
-    return {
-        type: 'FeatureCollection',
-        features: features,
-        coord: { z: this.coord.z, x: this.coord.x, y: this.coord.y }
-    };
+    return features;
 };

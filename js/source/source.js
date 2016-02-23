@@ -119,7 +119,10 @@ exports._querySourceFeatures = function(params, callback) {
             params: params
         }, callback, tile.workerID);
     }.bind(this), function(err, results) {
-        callback(err, results.filter(function(x) { return !!x; }));
+        callback(err, results.reduce(function(array, d) {
+            if (d) array = array.concat(d);
+            return array;
+        }, []));
     });
 };
 

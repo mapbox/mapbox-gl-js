@@ -217,7 +217,7 @@ util.extend(Worker.prototype, {
     'query source features': function(params, callback) {
         var tile = this.loaded[params.source] && this.loaded[params.source][params.uid];
         if (tile) {
-            callback(null, tile.getData(params.params));
+            callback(null, tile.querySourceFeatures(params.params));
         } else {
             callback(null, null);
         }
