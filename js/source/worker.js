@@ -45,6 +45,12 @@ util.extend(Worker.prototype, {
         function done(err, data) {
             delete this.loading[source][uid];
 
+            // If the tile was not found, it's probably not actually
+            // an error. There should be a better way of handing this
+            // though.
+            if (err && err.message === 'Not Found') return callback();
+
+            // Otherwise, treat it like an error.
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
