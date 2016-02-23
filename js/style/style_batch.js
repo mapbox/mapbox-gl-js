@@ -107,8 +107,8 @@ styleBatch.prototype = {
         return this;
     },
 
-    setPaintProperty: function(layer, name, value, klass) {
-        this._style.getLayer(layer).setPaintProperty(name, value, klass);
+    setPaintProperty: function(layerId, name, value, klass) {
+        this._style.getLayer(layerId).setPaintProperty(name, value, klass);
         this._change = true;
 
         return this;
@@ -116,6 +116,8 @@ styleBatch.prototype = {
 
     setLayoutProperty: function(layerId, name, value) {
         var layer = this._style.getReferentLayer(layerId);
+        if (layer.getLayoutProperty(name) === value) return this;
+
         layer.setLayoutProperty(name, value);
 
         this._broadcastLayers[layerId] = true;
@@ -136,6 +138,7 @@ styleBatch.prototype = {
         }))) return this;
 
         var layer = this._style.getReferentLayer(layerId);
+        if (filtersEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
         this._broadcastLayers[layerId] = true;
@@ -149,6 +152,8 @@ styleBatch.prototype = {
 
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         var layer = this._style.getReferentLayer(layerId);
+        if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
+
         if (minzoom != null) {
             layer.minzoom = minzoom;
         }
@@ -224,5 +229,16 @@ styleBatch.prototype = {
         return this;
     }
 };
+
+function filtersEqual(a, b) {
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) return false;
+        for (var i = 0; i < a.length; i++) {
+            if (!filtersEqual(a[i], b[i])) return false;
+        }
+        return true;
+    }
+    return a === b;
+}
 
 module.exports = styleBatch;
