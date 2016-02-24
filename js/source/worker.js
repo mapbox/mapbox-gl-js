@@ -31,11 +31,13 @@ util.extend(Worker.prototype, {
     },
 
     'update layers': function(layers) {
-        for (var i = 0; i < layers.length; i++) {
-            for (var j = 0; j < this.layers.length; j++) {
-                if (this.layers[j].id === layers[i].id)
-                    this.layers[j] = layers[i];
-            }
+        var layersById = {};
+        var i;
+        for (i = 0; i < layers.length; i++) {
+            layersById[layers[i].id] = layers[i];
+        }
+        for (i = 0; i < this.layers.length; i++) {
+            this.layers[i] = layersById[this.layers[i].id] || this.layers[i];
         }
     },
 
