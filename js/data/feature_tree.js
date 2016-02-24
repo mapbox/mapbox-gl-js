@@ -203,6 +203,15 @@ function polygonIntersectsMultiPolygon(polygon, multiPolygon) {
     for (var i = 0; i < polygon.length; i++) {
         if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
     }
+
+    var polygon_ = [polygon];
+    for (var m = 0; m < multiPolygon.length; m++) {
+        var ring = multiPolygon[m];
+        for (var n = 0; n < ring.length; n++) {
+            if (multiPolygonContainsPoint(polygon_, ring[n])) return true;
+        }
+    }
+
     for (var k = 0; k < multiPolygon.length; k++) {
         if (lineIntersectsLine(polygon, multiPolygon[k])) return true;
     }
