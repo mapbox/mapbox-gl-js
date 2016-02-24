@@ -1,9 +1,9 @@
 'use strict';
 
-var Bucket = require('./bucket');
-var util = require('../util/util');
-var loadGeometry = require('./load_geometry');
-var EXTENT = require('./buffer').EXTENT;
+var Bucket = require('../bucket');
+var util = require('../../util/util');
+var loadGeometry = require('../load_geometry');
+var EXTENT = require('../buffer').EXTENT;
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -47,7 +47,7 @@ function LineBucket() {
 
 LineBucket.prototype = util.inherit(Bucket, {});
 
-LineBucket.prototype.shaders = {
+LineBucket.prototype.shaderInterfaces = {
     line: {
         vertexBuffer: true,
         elementBuffer: true,

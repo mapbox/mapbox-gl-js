@@ -1,9 +1,9 @@
 'use strict';
 
-var Bucket = require('./bucket');
-var util = require('../util/util');
-var loadGeometry = require('./load_geometry');
-var EXTENT = require('./buffer').EXTENT;
+var Bucket = require('../bucket');
+var util = require('../../util/util');
+var loadGeometry = require('../load_geometry');
+var EXTENT = require('../buffer').EXTENT;
 
 module.exports = CircleBucket;
 
@@ -20,7 +20,7 @@ function CircleBucket() {
 
 CircleBucket.prototype = util.inherit(Bucket, {});
 
-CircleBucket.prototype.shaders = {
+CircleBucket.prototype.shaderInterfaces = {
     circle: {
         vertexBuffer: true,
         elementBuffer: true,

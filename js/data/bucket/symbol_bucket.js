@@ -2,25 +2,25 @@
 
 var Point = require('point-geometry');
 
-var Bucket = require('./bucket');
-var ElementGroups = require('./element_groups');
-var Anchor = require('../symbol/anchor');
-var getAnchors = require('../symbol/get_anchors');
-var resolveTokens = require('../util/token');
-var Quads = require('../symbol/quads');
-var Shaping = require('../symbol/shaping');
-var resolveText = require('../symbol/resolve_text');
-var mergeLines = require('../symbol/mergelines');
+var Bucket = require('../bucket');
+var ElementGroups = require('../element_groups');
+var Anchor = require('../../symbol/anchor');
+var getAnchors = require('../../symbol/get_anchors');
+var resolveTokens = require('../../util/token');
+var Quads = require('../../symbol/quads');
+var Shaping = require('../../symbol/shaping');
+var resolveText = require('../../symbol/resolve_text');
+var mergeLines = require('../../symbol/mergelines');
+var clipLine = require('../../symbol/clip_line');
+var util = require('../../util/util');
+var loadGeometry = require('../load_geometry');
+var EXTENT = require('../buffer').EXTENT;
+var CollisionFeature = require('../../symbol/collision_feature');
+
 var shapeText = Shaping.shapeText;
 var shapeIcon = Shaping.shapeIcon;
 var getGlyphQuads = Quads.getGlyphQuads;
 var getIconQuads = Quads.getIconQuads;
-var clipLine = require('../symbol/clip_line');
-var util = require('../util/util');
-var loadGeometry = require('./load_geometry');
-var EXTENT = require('./buffer').EXTENT;
-
-var CollisionFeature = require('../symbol/collision_feature');
 
 module.exports = SymbolBucket;
 
@@ -79,7 +79,7 @@ var shaderAttributes = [{
     ]
 }];
 
-SymbolBucket.prototype.shaders = {
+SymbolBucket.prototype.shaderInterfaces = {
 
     glyph: {
         vertexBuffer: true,
