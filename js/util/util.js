@@ -446,3 +446,30 @@ exports.filterObject = function(input, iterator, context) {
     }
     return output;
 };
+
+/**
+ * Deeply compares two object literals.
+ * @param {Object} obj1
+ * @param {Object} obj2
+ * @returns {boolean}
+ * @private
+ */
+exports.deepEqual = function deepEqual(a, b) {
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) return false;
+        for (var i = 0; i < a.length; i++) {
+            if (!deepEqual(a[i], b[i])) return false;
+        }
+        return true;
+    }
+    if (typeof a === 'object') {
+        if (!(typeof b === 'object')) return false;
+        var keys = Object.keys(a);
+        if (keys.length !== Object.keys(b).length) return false;
+        for (var key in a) {
+            if (!deepEqual(a[key], b[key])) return false;
+        }
+        return true;
+    }
+    return a === b;
+};

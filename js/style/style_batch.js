@@ -4,6 +4,7 @@ var Source = require('../source/source');
 var StyleLayer = require('./style_layer');
 var validateStyle = require('./validate_style');
 var styleSpec = require('./style_spec');
+var util = require('../util/util');
 
 function styleBatch(style, work) {
     if (!style._loaded) {
@@ -138,7 +139,7 @@ styleBatch.prototype = {
         }))) return this;
 
         var layer = this._style.getReferentLayer(layerId);
-        if (filtersEqual(layer.filter, filter)) return this;
+        if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
         this._broadcastLayers[layerId] = true;
@@ -229,16 +230,5 @@ styleBatch.prototype = {
         return this;
     }
 };
-
-function filtersEqual(a, b) {
-    if (Array.isArray(a)) {
-        if (!Array.isArray(b) || a.length !== b.length) return false;
-        for (var i = 0; i < a.length; i++) {
-            if (!filtersEqual(a[i], b[i])) return false;
-        }
-        return true;
-    }
-    return a === b;
-}
 
 module.exports = styleBatch;

@@ -257,6 +257,24 @@ test('util', function(t) {
         t.end();
     });
 
+    t.test('deepEqual', function(t) {
+        var a = {
+            foo: 'bar',
+            bar: {
+                baz: 5,
+                lol: ["cat", 2]
+            }
+        };
+        var b = JSON.parse(JSON.stringify(a));
+        var c = JSON.parse(JSON.stringify(a));
+        c.bar.lol[0] = "z";
+
+        t.ok(util.deepEqual(a, b));
+        t.notOk(util.deepEqual(a, c));
+
+        t.end();
+    });
+
     if (process.browser) {
         t.test('timed: no duration', function(t) {
             var context = { foo: 'bar' };
