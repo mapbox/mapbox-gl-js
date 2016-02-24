@@ -71,5 +71,18 @@ test('Buffer', function(t) {
         t.end();
     });
 
+    t.test('trims', function(t) {
+        var buffer = create();
+        var capacityInitial = buffer.capacity;
+
+        buffer.push(1, 1, 1);
+        t.equal(buffer.capacity, capacityInitial);
+
+        buffer.trim();
+        t.equal(buffer.capacity, buffer.itemSize);
+
+        t.end();
+    });
+
     t.end();
 });

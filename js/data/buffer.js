@@ -96,7 +96,7 @@ Buffer.prototype.bind = function(gl) {
     if (!this.buffer) {
         this.buffer = gl.createBuffer();
         gl.bindBuffer(type, this.buffer);
-        gl.bufferData(type, this.arrayBuffer.slice(0, this.length * this.itemSize), gl.STATIC_DRAW);
+        gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
 
         // dump array buffer once it's bound to gl
         this.arrayBuffer = null;
@@ -131,6 +131,16 @@ Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
             shader['a_' + attrib.name], attrib.components, gl[attrib.type.name],
             false, this.itemSize, offset + attrib.offset);
     }
+};
+
+/**
+ * Resize the buffer to discard unused capacity.
+ * @private
+ */
+Buffer.prototype.trim = function() {
+    this.capacity = align(this.itemSize * this.length, Buffer.CAPACITY_ALIGNMENT);
+    this.arrayBuffer = this.arrayBuffer.slice(0, this.capacity);
+    this._refreshViews();
 };
 
 /**
@@ -174,11 +184,11 @@ Buffer.prototype.validate = function(args) {
 };
 
 Buffer.prototype._resize = function(capacity) {
-    var old = this.views.UNSIGNED_BYTE;
+    var oldUByteView = this.views.UNSIGNED_BYTE;
     this.capacity = align(capacity, Buffer.CAPACITY_ALIGNMENT);
     this.arrayBuffer = new ArrayBuffer(this.capacity);
     this._refreshViews();
-    this.views.UNSIGNED_BYTE.set(old);
+    this.views.UNSIGNED_BYTE.set(oldUByteView);
 };
 
 Buffer.prototype._refreshViews = function() {

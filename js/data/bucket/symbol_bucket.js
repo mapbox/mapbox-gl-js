@@ -228,6 +228,8 @@ SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
     }
 
     this.placeFeatures(collisionTile, this.collisionDebug);
+
+    this.trimBuffers();
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon) {

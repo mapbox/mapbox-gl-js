@@ -107,6 +107,7 @@ Bucket.prototype.addFeatures = function() {
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
     }
+    this.trimBuffers();
 };
 
 /**
@@ -176,6 +177,12 @@ Bucket.prototype.resetBuffers = function() {
 Bucket.prototype.destroy = function(gl) {
     for (var k in this.buffers) {
         this.buffers[k].destroy(gl);
+    }
+};
+
+Bucket.prototype.trimBuffers = function() {
+    for (var bufferName in this.buffers) {
+        this.buffers[bufferName].trim();
     }
 };
 
