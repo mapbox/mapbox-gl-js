@@ -197,7 +197,7 @@ Buffer.prototype._createPushMethod = function() {
 
     body += 'var i = this.length++;\n';
     body += 'var o = i * ' + this.itemSize + ';\n';
-    body += 'if (o + ' + this.itemSize + ' > this.capacity) { this._resize(this.capacity * 1.5); }\n';
+    body += 'if (o + ' + this.itemSize + ' > this.capacity) { this._resize(this.capacity * ' + Buffer.CAPACITY_RESIZE_MULTIPLIER + '); }\n';
 
     for (var i = 0; i < this.attributes.length; i++) {
         var attribute = this.attributes[i];
@@ -269,7 +269,14 @@ Buffer.ELEMENT_ATTRIBUTE_TYPE = Buffer.AttributeType.UNSIGNED_SHORT;
  * @private
  * @readonly
  */
-Buffer.CAPACITY_DEFAULT = 8192;
+Buffer.CAPACITY_DEFAULT = 1024;
+
+/**
+ * @property {number}
+ * @private
+ * @readonly
+ */
+Buffer.CAPACITY_RESIZE_MULTIPLIER = 5;
 
 /**
  * WebGL performs best if buffer sizes are aligned to 2 byte boundaries.
