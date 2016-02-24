@@ -55,6 +55,7 @@ styleBatch.prototype = {
     addLayer: function(layer, before) {
         if (!(layer instanceof StyleLayer)) {
             if (validateStyle.emitErrors(this._style, validateStyle.layer({
+                key: 'layers.' + layer.id,
                 value: layer,
                 style: this._style.serialize(),
                 styleSpec: styleSpec,
@@ -133,6 +134,7 @@ styleBatch.prototype = {
 
     setFilter: function(layerId, filter) {
         if (validateStyle.emitErrors(this._style, validateStyle.filter({
+            key: 'layers.' + layerId + '.filter',
             value: filter,
             style: this._style.serialize(),
             styleSpec: styleSpec
@@ -181,6 +183,7 @@ styleBatch.prototype = {
 
         if (!Source.is(source)) {
             if (validateStyle.emitErrors(this._style, validateStyle.source({
+                key: 'sources.' + id,
                 style: this._style.serialize(),
                 value: source,
                 styleSpec: styleSpec
