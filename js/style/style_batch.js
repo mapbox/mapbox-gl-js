@@ -15,9 +15,9 @@ function styleBatch(style, work) {
 
     batch._style = style;
     batch._groupLayers = false;
-    batch._broadcastAllLayers = false;
-    batch._broadcastLayers = {};
-    batch._reloadSources = {};
+    batch._updateAllLayers = false;
+    batch._updatedLayers = {};
+    batch._updatedSources = {};
     batch._events = [];
     batch._change = false;
 
@@ -27,17 +27,17 @@ function styleBatch(style, work) {
         batch._style._groupLayers();
     }
 
-    if (batch._broadcastAllLayers) {
+    if (batch._updateAllLayers) {
         batch._style._broadcastLayers();
 
     } else {
-        var updatedIds = Object.keys(batch._broadcastLayers);
+        var updatedIds = Object.keys(batch._updatedLayers);
         if (updatedIds.length) {
             batch._style._broadcastLayers(updatedIds);
         }
     }
 
-    Object.keys(batch._reloadSources).forEach(function(sourceId) {
+    Object.keys(batch._updatedSources).forEach(function(sourceId) {
         batch._style._reloadSource(sourceId);
     });
 
@@ -74,9 +74,9 @@ styleBatch.prototype = {
         this._style._order.splice(before ? this._style._order.indexOf(before) : Infinity, 0, layer.id);
 
         this._groupLayers = true;
-        this._broadcastAllLayers = true;
+        this._updateAllLayers = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._events.push(['layer.add', {layer: layer}]);
         this._change = true;
@@ -101,7 +101,7 @@ styleBatch.prototype = {
         this._style._order.splice(this._style._order.indexOf(id), 1);
 
         this._groupLayers = true;
-        this._broadcastAllLayers = true;
+        this._updateAllLayers = true;
         this._events.push(['layer.remove', {layer: layer}]);
         this._change = true;
 
@@ -121,10 +121,10 @@ styleBatch.prototype = {
 
         layer.setLayoutProperty(name, value);
 
-        this._broadcastLayers[layerId] = true;
+        this._updatedLayers[layerId] = true;
 
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
@@ -142,9 +142,9 @@ styleBatch.prototype = {
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
-        this._broadcastLayers[layerId] = true;
+        this._updatedLayers[layerId] = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
@@ -162,9 +162,9 @@ styleBatch.prototype = {
             layer.maxzoom = maxzoom;
         }
 
-        this._broadcastLayers[layerId] = true;
+        this._updatedLayers[layerId] = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
