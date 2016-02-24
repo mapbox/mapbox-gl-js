@@ -50,6 +50,7 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v8',
     center: [-98, 38.88],
+    minZoom: 3,
     zoom: 3
 });
 
@@ -58,7 +59,7 @@ var map = new mapboxgl.Map({
 var facet = 'population';
 
 // Show the state choropleth first
-var level = 'state';
+var level = 'isState';
 
 // Create a popup, but don't add it to the map yet.
 var popup = new mapboxgl.Popup({
@@ -84,7 +85,7 @@ var layers = [
 function filterBy(type) {
     // Which value in each layers array
     // should be used for filtering.
-    var position = type === 'state' ? 1 : 2;
+    var position = type === 'isState' ? 1 : 2;
 
     layers.forEach(function(layer, i) {
         var filters = [
@@ -92,7 +93,7 @@ function filterBy(type) {
             ['>=', facet, layer[position]],
             // Does a state or county property (depending on `type`)
             // Exist in a given feature? Just show those:
-            ['!=', type, undefined]
+            ['==', type, true]
         ];
 
         if (i !== 0) filters.push(['<', facet, layers[i - 1][position]]);
@@ -136,7 +137,7 @@ function renderChoropleth() {
             "interactive": true,
             "type": "fill",
             "source": "choropleth",
-            "source-layer": "original",
+            "source-layer": "state_county_population_2014_cen",
             "paint": {
                 "fill-color": layer[0],
                 "fill-opacity": 0.75
@@ -162,18 +163,18 @@ function renderChoropleth() {
     filterBy(level);
 }
 
-map.on('style.load', renderChoropleth);
+map.on('load', renderChoropleth);
 
 map.on('move', function(e) {
     var z = e.target.getZoom();
 
-    if (z > 4 && level !== 'county') {
-        level = 'county';
+    if (z > 4 && level !== 'isCounty') {
+        level = 'isCounty';
         filterBy(level);
     }
 
-    if (z <= 4 && level !== 'state') {
-        level = 'state';
+    if (z <= 4 && level !== 'isState') {
+        level = 'isState';
         filterBy(level);
     }
 });
