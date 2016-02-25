@@ -8,6 +8,8 @@ To help us diagnose your problem quickly, please
 
 -->
 
+**mapbox-gl-js version**:
+
 ### Steps to Trigger Behavior
 
  1.
