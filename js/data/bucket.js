@@ -208,7 +208,10 @@ Bucket.prototype.getBufferName = function(shaderName, type) {
 
 Bucket.prototype.serialize = function() {
     return {
-        layer: this.layer.serialize(),
+        layer: {
+            id: this.layer.id,
+            type: this.layer.type
+        },
         zoom: this.zoom,
         elementGroups: this.elementGroups,
         buffers: util.mapObject(this.buffers, function(buffer) {
