@@ -15,7 +15,7 @@ module.exports = VideoSource;
  * @class VideoSource
  * @param {Object} [options]
  * @param {Array<string>} options.urls An array of URLs to video files
- * @param {Array} options.coordinates lng, lat coordinates in order clockwise starting at the top left: tl, tr, br, bl
+ * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the video. Does not have to be a rectangle.
  * @example
  * var sourceObj = new mapboxgl.VideoSource({
  *    url: [
@@ -60,8 +60,7 @@ function VideoSource(options) {
 
         if (this.map) {
             this.video.play();
-            this.createTile(options.coordinates);
-            this.fire('change');
+            this.setCoordinates(options.coordinates);
         }
     }.bind(this));
 }
@@ -82,18 +81,25 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         this.map = map;
         if (this.video) {
             this.video.play();
-            this.createTile();
+            this.setCoordinates(this.coordinates);
         }
     },
 
-    createTile: function(cornerGeoCoords) {
-        /*
-         * Calculate which mercator tile is suitable for rendering the video in
-         * and create a buffer with the corner coordinates. These coordinates
-         * may be outside the tile, because raster tiles aren't clipped when rendering.
-         */
+    /**
+     * Update video coordinates and rerender map
+     *
+     * @param {Array} coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the video. Does not have to be a rectangle.
+     * @returns {VideoSource} this
+     */
+    setCoordinates: function(coordinates) {
+        this.coordinates = coordinates;
+
+        // Calculate which mercator tile is suitable for rendering the video in
+        // and create a buffer with the corner coordinates. These coordinates
+        // may be outside the tile, because raster tiles aren't clipped when rendering.
+
         var map = this.map;
-        var cornerZ0Coords = cornerGeoCoords.map(function(coord) {
+        var cornerZ0Coords = coordinates.map(function(coord) {
             return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
@@ -121,6 +127,10 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         this.tile.boundsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+
+        this.fire('change');
+
+        return this;
     },
 
     loaded: function() {
