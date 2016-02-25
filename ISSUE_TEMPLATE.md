@@ -1,23 +1,12 @@
-### Context
+<!--
 
-* **mapbox-gl-js version**: 
+To help us diagnose your problem quickly, please
 
-### Report
+ - include a link to a minimal demonstration the bug (we recommend using https://jsbin.com)
+ - ensure you can reproduce the bug using the latest release
 
-**Expected behavior**:
+-->
 
-**Actual behavior**:
+### Expected Behavior
 
-**Steps to reproduce the behavior**:
-
-1. ...
-2. ...
-3. ...
-
-### Optional
-
-_Including a link to **executable code** that demonstrates your issue is the fastest
-way to get an answer with less back-and-forth. We recommend [JSFiddle](https://jsfiddle.net/)
-for putting short examples online._
-
-* **link to example**:
+### Actual Behavior
