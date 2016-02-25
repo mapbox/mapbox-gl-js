@@ -47,8 +47,7 @@ function ImageSource(options) {
         this._loaded = true;
 
         if (this.map) {
-            this.createTile(options.coordinates);
-            this.fire('change');
+            this.setCoordinates(options.coordinates);
         }
     }.bind(this));
 }
@@ -57,19 +56,27 @@ ImageSource.prototype = util.inherit(Evented, {
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
-            this.createTile();
+            this.setCoordinates();
         }
     },
 
     /**
-     * Calculate which mercator tile is suitable for rendering the image in
-     * and create a buffer with the corner coordinates. These coordinates
-     * may be outside the tile, because raster tiles aren't clipped when rendering.
-     * @private
+     * Update image coordinates and rerender map
+     *
+     * @param {Array} coordinates lng, lat coordinates in order clockwise
+     * @returns {ImageSource} this
      */
-    createTile: function(cornerGeoCoords) {
+    setCoordinates: function(coordinates) {
+        this.coordinates = coordinates;
+        
+        /**
+         * Calculate which mercator tile is suitable for rendering the image in
+         * and create a buffer with the corner coordinates. These coordinates
+         * may be outside the tile, because raster tiles aren't clipped when rendering.
+         */
+                
         var map = this.map;
-        var cornerZ0Coords = cornerGeoCoords.map(function(coord) {
+        var cornerZ0Coords = coordinates.map(function(coord) {
             return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
@@ -97,6 +104,10 @@ ImageSource.prototype = util.inherit(Evented, {
         this.tile.boundsBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+        
+        this.fire('change');
+        
+        return this;
     },
 
     loaded: function() {
