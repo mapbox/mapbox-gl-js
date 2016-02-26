@@ -1,3 +1,18 @@
+## 0.14.3 (Feb 19 2016)
+
+#### New Features & Improvements
+
+Improve responsiveness of zooming out by using cached parent tiles (#2168)
+Improve contextual clues on style API validation (#2170)
+Improve performance of methods including `setData` (#2174)
+
+#### Bugfixes
+
+Fix incorrectly sized line dashes (#2099)
+Fix bug in which `in` feature filter drops features (#2166)
+Fix bug preventing `Map#load` from firing when tile "Not Found" errors occured (#2176)
+Fix rendering artifacts on mobile GPUs (#2117)
+
 ## 0.14.2 (Feb 19 2016)
 
 #### Bugfixes
