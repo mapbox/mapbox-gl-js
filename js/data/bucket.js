@@ -16,10 +16,10 @@ module.exports = Bucket;
  */
 Bucket.create = function(options) {
     var Classes = {
-        fill: require('./fill_bucket'),
-        line: require('./line_bucket'),
-        circle: require('./circle_bucket'),
-        symbol: require('./symbol_bucket')
+        fill: require('./bucket/fill_bucket'),
+        line: require('./bucket/line_bucket'),
+        circle: require('./bucket/circle_bucket'),
+        symbol: require('./bucket/symbol_bucket')
     };
     return new Classes[options.layer.type](options);
 };
@@ -66,11 +66,11 @@ function Bucket(options) {
 
     this.resetBuffers(options.buffers);
 
-    for (var shaderName in this.shaders) {
-        var shader = this.shaders[shaderName];
+    for (var shaderName in this.shaderInterfaces) {
+        var shaderInterface = this.shaderInterfaces[shaderName];
         this[this.getAddMethodName(shaderName, 'vertex')] = createVertexAddMethod(
             shaderName,
-            shader,
+            shaderInterface,
             this.getBufferName(shaderName, 'vertex')
         );
     }
@@ -108,29 +108,29 @@ Bucket.prototype.resetBuffers = function(buffers) {
     this.buffers = buffers;
     this.elementGroups = {};
 
-    for (var shaderName in this.shaders) {
-        var shader = this.shaders[shaderName];
+    for (var shaderName in this.shaderInterfaces) {
+        var shaderInterface = this.shaderInterfaces[shaderName];
 
         var vertexBufferName = this.getBufferName(shaderName, 'vertex');
-        if (shader.vertexBuffer && !buffers[vertexBufferName]) {
+        if (shaderInterface.vertexBuffer && !buffers[vertexBufferName]) {
             buffers[vertexBufferName] = new Buffer({
                 type: Buffer.BufferType.VERTEX,
-                attributes: shader.attributes
+                attributes: shaderInterface.attributes
             });
         }
 
-        if (shader.elementBuffer) {
+        if (shaderInterface.elementBuffer) {
             var elementBufferName = this.getBufferName(shaderName, 'element');
             if (!buffers[elementBufferName]) {
-                buffers[elementBufferName] = createElementBuffer(shader.elementBufferComponents);
+                buffers[elementBufferName] = createElementBuffer(shaderInterface.elementBufferComponents);
             }
             this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.buffers[elementBufferName]);
         }
 
-        if (shader.secondElementBuffer) {
+        if (shaderInterface.secondElementBuffer) {
             var secondElementBufferName = this.getBufferName(shaderName, 'secondElement');
             if (!buffers[secondElementBufferName]) {
-                buffers[secondElementBufferName] = createElementBuffer(shader.secondElementBufferComponents);
+                buffers[secondElementBufferName] = createElementBuffer(shaderInterface.secondElementBufferComponents);
             }
             this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.buffers[secondElementBufferName]);
         }
@@ -164,16 +164,16 @@ Bucket.prototype.getBufferName = function(shaderName, type) {
 };
 
 var createVertexAddMethodCache = {};
-function createVertexAddMethod(shaderName, shader, bufferName) {
+function createVertexAddMethod(shaderName, shaderInterface, bufferName) {
     var pushArgs = [];
-    for (var i = 0; i < shader.attributes.length; i++) {
-        pushArgs = pushArgs.concat(shader.attributes[i].value);
+    for (var i = 0; i < shaderInterface.attributes.length; i++) {
+        pushArgs = pushArgs.concat(shaderInterface.attributes[i].value);
     }
 
     var body = 'return this.buffers.' + bufferName + '.push(' + pushArgs.join(', ') + ');';
 
     if (!createVertexAddMethodCache[body]) {
-        createVertexAddMethodCache[body] = new Function(shader.attributeArgs, body);
+        createVertexAddMethodCache[body] = new Function(shaderInterface.attributeArgs, body);
     }
 
     return createVertexAddMethodCache[body];

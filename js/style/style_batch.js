@@ -4,6 +4,7 @@ var Source = require('../source/source');
 var StyleLayer = require('./style_layer');
 var validateStyle = require('./validate_style');
 var styleSpec = require('./style_spec');
+var util = require('../util/util');
 
 function styleBatch(style, work) {
     if (!style._loaded) {
@@ -14,8 +15,9 @@ function styleBatch(style, work) {
 
     batch._style = style;
     batch._groupLayers = false;
-    batch._broadcastLayers = false;
-    batch._reloadSources = {};
+    batch._updateAllLayers = false;
+    batch._updatedLayers = {};
+    batch._updatedSources = {};
     batch._events = [];
     batch._change = false;
 
@@ -25,11 +27,17 @@ function styleBatch(style, work) {
         batch._style._groupLayers();
     }
 
-    if (batch._broadcastLayers) {
+    if (batch._updateAllLayers) {
         batch._style._broadcastLayers();
+
+    } else {
+        var updatedIds = Object.keys(batch._updatedLayers);
+        if (updatedIds.length) {
+            batch._style._broadcastLayers(updatedIds);
+        }
     }
 
-    Object.keys(batch._reloadSources).forEach(function(sourceId) {
+    Object.keys(batch._updatedSources).forEach(function(sourceId) {
         batch._style._reloadSource(sourceId);
     });
 
@@ -47,6 +55,7 @@ styleBatch.prototype = {
     addLayer: function(layer, before) {
         if (!(layer instanceof StyleLayer)) {
             if (validateStyle.emitErrors(this._style, validateStyle.layer({
+                key: 'layers.' + layer.id,
                 value: layer,
                 style: this._style.serialize(),
                 styleSpec: styleSpec,
@@ -66,9 +75,9 @@ styleBatch.prototype = {
         this._style._order.splice(before ? this._style._order.indexOf(before) : Infinity, 0, layer.id);
 
         this._groupLayers = true;
-        this._broadcastLayers = true;
+        this._updateAllLayers = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._events.push(['layer.add', {layer: layer}]);
         this._change = true;
@@ -93,46 +102,51 @@ styleBatch.prototype = {
         this._style._order.splice(this._style._order.indexOf(id), 1);
 
         this._groupLayers = true;
-        this._broadcastLayers = true;
+        this._updateAllLayers = true;
         this._events.push(['layer.remove', {layer: layer}]);
         this._change = true;
 
         return this;
     },
 
-    setPaintProperty: function(layer, name, value, klass) {
-        this._style.getLayer(layer).setPaintProperty(name, value, klass);
+    setPaintProperty: function(layerId, name, value, klass) {
+        this._style.getLayer(layerId).setPaintProperty(name, value, klass);
         this._change = true;
 
         return this;
     },
 
-    setLayoutProperty: function(layer, name, value) {
-        layer = this._style.getReferentLayer(layer);
+    setLayoutProperty: function(layerId, name, value) {
+        var layer = this._style.getReferentLayer(layerId);
+        if (layer.getLayoutProperty(name) === value) return this;
+
         layer.setLayoutProperty(name, value);
 
-        this._broadcastLayers = true;
+        this._updatedLayers[layerId] = true;
+
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
         return this;
     },
 
-    setFilter: function(layer, filter) {
+    setFilter: function(layerId, filter) {
         if (validateStyle.emitErrors(this._style, validateStyle.filter({
+            key: 'layers.' + layerId + '.filter',
             value: filter,
             style: this._style.serialize(),
             styleSpec: styleSpec
         }))) return this;
 
-        layer = this._style.getReferentLayer(layer);
+        var layer = this._style.getReferentLayer(layerId);
+        if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
-        this._broadcastLayers = true;
+        this._updatedLayers[layerId] = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
@@ -141,6 +155,8 @@ styleBatch.prototype = {
 
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         var layer = this._style.getReferentLayer(layerId);
+        if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
+
         if (minzoom != null) {
             layer.minzoom = minzoom;
         }
@@ -148,9 +164,9 @@ styleBatch.prototype = {
             layer.maxzoom = maxzoom;
         }
 
-        this._broadcastLayers = true;
+        this._updatedLayers[layerId] = true;
         if (layer.source) {
-            this._reloadSources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
         this._change = true;
 
@@ -167,6 +183,7 @@ styleBatch.prototype = {
 
         if (!Source.is(source)) {
             if (validateStyle.emitErrors(this._style, validateStyle.source({
+                key: 'sources.' + id,
                 style: this._style.serialize(),
                 value: source,
                 styleSpec: styleSpec

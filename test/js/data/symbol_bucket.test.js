@@ -5,7 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
-var SymbolBucket = require('../../../js/data/symbol_bucket');
+var SymbolBucket = require('../../../js/data/bucket/symbol_bucket');
 var Collision = require('../../../js/symbol/collision_tile');
 var GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 

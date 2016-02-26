@@ -1,12 +1,10 @@
-precision mediump float;
+precision highp float;
 
-// set by gl_util
-uniform float u_size;
+uniform mat4 u_matrix;
+uniform mat4 u_exmatrix;
+uniform mediump float u_size;
 
 attribute vec2 a_pos;
-
-uniform highp mat4 u_matrix;
-uniform mat4 u_exmatrix;
 
 varying vec2 v_extrude;
 

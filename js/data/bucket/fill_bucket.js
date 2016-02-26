@@ -1,8 +1,8 @@
 'use strict';
 
-var Bucket = require('./bucket');
-var util = require('../util/util');
-var loadGeometry = require('./load_geometry');
+var Bucket = require('../bucket');
+var util = require('../../util/util');
+var loadGeometry = require('../load_geometry');
 
 module.exports = FillBucket;
 
@@ -12,7 +12,7 @@ function FillBucket() {
 
 FillBucket.prototype = util.inherit(Bucket, {});
 
-FillBucket.prototype.shaders = {
+FillBucket.prototype.shaderInterfaces = {
     fill: {
         vertexBuffer: true,
         elementBuffer: true,

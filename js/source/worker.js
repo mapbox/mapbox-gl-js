@@ -30,6 +30,17 @@ util.extend(Worker.prototype, {
         this.layers = layers;
     },
 
+    'update layers': function(layers) {
+        var layersById = {};
+        var i;
+        for (i = 0; i < layers.length; i++) {
+            layersById[layers[i].id] = layers[i];
+        }
+        for (i = 0; i < this.layers.length; i++) {
+            this.layers[i] = layersById[this.layers[i].id] || this.layers[i];
+        }
+    },
+
     'load tile': function(params, callback) {
         var source = params.source,
             uid = params.uid;

@@ -5,7 +5,7 @@ var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
-var FillBucket = require('../../../js/data/fill_bucket');
+var FillBucket = require('../../../js/data/bucket/fill_bucket');
 var path = require('path');
 
 // Load a fill feature from fixture tile.

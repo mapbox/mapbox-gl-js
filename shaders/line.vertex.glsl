@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 // floor(127 / 2) == 63.0
 // the maximum allowed miter limit is 2.0 at the moment. the extrude normal is
@@ -11,40 +11,40 @@ precision mediump float;
 attribute vec2 a_pos;
 attribute vec4 a_data;
 
-uniform highp mat4 u_matrix;
+uniform mat4 u_matrix;
 uniform float u_ratio;
-uniform vec2 u_linewidth;
+uniform mediump vec2 u_linewidth;
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
-uniform float u_offset;
+uniform mediump float u_offset;
 
 varying vec2 v_normal;
 varying float v_linesofar;
 varying float v_gamma_scale;
 
 void main() {
-    vec2 a_extrude = a_data.xy;
-    float a_direction = sign(a_data.z) * mod(a_data.z, 2.0);
+    vec2 a_extrude = a_data.xy - 128.0;
+    float a_direction = mod(a_data.z, 4.0) - 1.0;
 
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
     // y is 1 if the normal points up, and -1 if it points down
-    vec2 normal = mod(a_pos, 2.0);
+    mediump vec2 normal = mod(a_pos, 2.0);
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    vec4 dist = vec4(u_linewidth.s * a_extrude * scale, 0.0, 0.0);
+    mediump vec4 dist = vec4(u_linewidth.s * a_extrude * scale, 0.0, 0.0);
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
     // it when we're drawing round end points (a_direction = -1 or 1) since their
     // extrude vector points in another direction.
-    float u = 0.5 * a_direction;
-    float t = 1.0 - abs(u);
-    vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
+    mediump float u = 0.5 * a_direction;
+    mediump float t = 1.0 - abs(u);
+    mediump vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     // Remove the texture normal bit of the position before scaling it with the
     // model/view matrix.

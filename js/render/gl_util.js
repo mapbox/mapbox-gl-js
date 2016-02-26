@@ -12,23 +12,18 @@ exports.extend = function(context) {
     };
 
     context.getShader = function(name, type) {
-        var kind = type === this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
-        if (!shaders[name] || !shaders[name][kind]) {
+        var typeString = type === this.FRAGMENT_SHADER ? 'fragment' : 'vertex';
+        if (!shaders[name] || !shaders[name][typeString]) {
             throw new Error("Could not find shader " + name);
         }
 
         var shader = this.createShader(type);
-        var shaderSource = shaders[name][kind];
-
-        if (typeof orientation === 'undefined') {
-            // only use highp precision on mobile browsers
-            shaderSource = shaderSource.replace(/ highp /g, ' ');
-        }
+        var shaderSource = shaders[name][typeString];
 
         this.shaderSource(shader, shaderSource);
         this.compileShader(shader);
         if (!this.getShaderParameter(shader, this.COMPILE_STATUS)) {
-            throw new Error(this.getShaderInfoLog(shader));
+            throw new Error(name + ' ' + typeString + this.getShaderInfoLog(shader));
         }
         return shader;
     };
@@ -45,7 +40,7 @@ exports.extend = function(context) {
         this.linkProgram(shader.program);
 
         if (!this.getProgramParameter(shader.program, this.LINK_STATUS)) {
-            console.error(this.getProgramInfoLog(shader.program));
+            console.error(name + ' ERROR: ' + this.getProgramInfoLog(shader.program));
         } else {
             for (var i = 0; i < attributes.length; i++) {
                 shader[attributes[i]] = this.getAttribLocation(shader.program, attributes[i]);

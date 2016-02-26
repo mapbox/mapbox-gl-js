@@ -1,8 +1,7 @@
 precision mediump float;
 
-uniform vec4 u_color;
-uniform float u_blur;
-uniform float u_size;
+uniform lowp vec4 u_color;
+uniform lowp float u_blur;
 
 varying vec2 v_extrude;
 
