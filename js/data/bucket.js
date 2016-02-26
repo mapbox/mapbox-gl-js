@@ -90,9 +90,9 @@ function Bucket(options) {
  * Build the buffers! Features are set directly to the `features` property.
  * @private
  */
-Bucket.prototype.addFeatures = function() {
+Bucket.prototype.populateBuffers = function() {
     this.createStyleLayer();
-    this.resetBuffers();
+    this.createBuffers();
 
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
@@ -104,7 +104,7 @@ Bucket.prototype.addFeatures = function() {
 /**
  * Check if there is enough space available in the current element group for
  * `vertexLength` vertices. If not, append a new elementGroup. Should be called
- * by `addFeatures` and its callees.
+ * by `populateBuffers` and its callees.
  * @private
  * @param {string} shaderName the name of the shader associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
@@ -134,7 +134,7 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
  * as necessary.
  * @private
  */
-Bucket.prototype.resetBuffers = function() {
+Bucket.prototype.createBuffers = function() {
     var elementGroups = this.elementGroups = {};
     var buffers = this.buffers = {};
 

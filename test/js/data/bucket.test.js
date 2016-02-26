@@ -66,7 +66,7 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
-        bucket.addFeatures();
+        bucket.populateBuffers();
 
         var testVertex = bucket.buffers.testVertex;
         t.equal(testVertex.type, Buffer.BufferType.VERTEX);
@@ -90,9 +90,9 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
-        bucket.addFeatures();
+        bucket.populateBuffers();
 
-        bucket.resetBuffers();
+        bucket.createBuffers();
         var buffers = bucket.buffers;
 
         t.equal(bucket.buffers, buffers);
@@ -107,10 +107,10 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(1, 5)];
-        bucket.addFeatures();
-        bucket.resetBuffers();
+        bucket.populateBuffers();
+        bucket.createBuffers();
         bucket.features = [createFeature(17, 42)];
-        bucket.addFeatures();
+        bucket.populateBuffers();
 
         var testVertex = bucket.buffers.testVertex;
         t.equal(testVertex.length, 1);

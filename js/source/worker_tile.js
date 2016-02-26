@@ -163,7 +163,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     function parseBucket(tile, bucket) {
         var now = Date.now();
-        bucket.addFeatures(collisionTile, stacks, icons);
+        bucket.populateBuffers(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
         if (bucket.interactive) {
