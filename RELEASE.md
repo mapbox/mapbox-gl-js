@@ -9,13 +9,13 @@ If there are any [open "Release Blocker" issues or PRs](https://github.com/mapbo
 ```bash
 git checkout master &&
 git fetch &&
-git merge --ff-only origin/master
+git reset origin/master --hard
 ```
 
 ## Merge `mb-pages` into `master`
 
 ```bash
-git merge origin/mb-pages
+git merge origin/mb-pages --no-edit
 ```
 
 ## Make sure your environment is in a good state
@@ -81,7 +81,7 @@ Merge `master` into `mb-pages` and publish the updated documentation.
 
 ```bash
 git checkout mb-pages &&
-git merge master &&
+git merge master --no-edit &&
 git push origin mb-pages &&
 git checkout master
 ```
@@ -91,5 +91,6 @@ git checkout master
 Publish the release to npm. **There is no going back once you execute this command! A published npm package is forever.**
 
 ```bash
+npm install &&
 npm publish
 ```
