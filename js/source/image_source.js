@@ -15,7 +15,7 @@ module.exports = ImageSource;
  * @class ImageSource
  * @param {Object} [options]
  * @param {string} options.url A string URL of an image file
- * @param {Array} options.coordinates lng, lat coordinates in order clockwise
+ * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
  * starting at the top left: tl, tr, br, bl
  * @example
  * var sourceObj = new mapboxgl.ImageSource({
@@ -56,24 +56,22 @@ ImageSource.prototype = util.inherit(Evented, {
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
-            this.setCoordinates();
+            this.setCoordinates(this.coordinates);
         }
     },
 
     /**
      * Update image coordinates and rerender map
      *
-     * @param {Array} coordinates lng, lat coordinates in order clockwise
+     * @param {Array} coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
      * @returns {ImageSource} this
      */
     setCoordinates: function(coordinates) {
         this.coordinates = coordinates;
 
-        /**
-         * Calculate which mercator tile is suitable for rendering the image in
-         * and create a buffer with the corner coordinates. These coordinates
-         * may be outside the tile, because raster tiles aren't clipped when rendering.
-         */
+        // Calculate which mercator tile is suitable for rendering the image in
+        // and create a buffer with the corner coordinates. These coordinates
+        // may be outside the tile, because raster tiles aren't clipped when rendering.
 
         var map = this.map;
         var cornerZ0Coords = coordinates.map(function(coord) {
