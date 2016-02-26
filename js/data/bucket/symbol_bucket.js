@@ -126,6 +126,8 @@ SymbolBucket.prototype.shaderInterfaces = {
 };
 
 SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
+    this.resetBuffers();
+
     var tileSize = 512 * this.overscaling;
     this.tilePixelRatio = EXTENT / tileSize;
     this.compareText = {};

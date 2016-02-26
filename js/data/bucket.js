@@ -85,17 +85,6 @@ function Bucket(options) {
         this.buffers = util.mapObject(options.buffers, function(options) {
             return new Buffer(options);
         });
-    } else {
-        this.resetBuffers();
-    }
-
-    for (var shaderName in this.shaderInterfaces) {
-        var shaderInterface = this.shaderInterfaces[shaderName];
-        this[this.getAddMethodName(shaderName, 'vertex')] = createVertexAddMethod(
-            shaderName,
-            shaderInterface,
-            this.getBufferName(shaderName, 'vertex')
-        );
     }
 }
 
@@ -104,9 +93,12 @@ function Bucket(options) {
  * @private
  */
 Bucket.prototype.addFeatures = function() {
+    this.resetBuffers();
+
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
     }
+
     this.trimBuffers();
 };
 
@@ -150,12 +142,20 @@ Bucket.prototype.resetBuffers = function() {
     for (var shaderName in this.shaderInterfaces) {
         var shaderInterface = this.shaderInterfaces[shaderName];
 
-        var vertexBufferName = this.getBufferName(shaderName, 'vertex');
         if (shaderInterface.vertexBuffer) {
+            var vertexBufferName = this.getBufferName(shaderName, 'vertex');
+            var vertexAddMethodName = this.getAddMethodName(shaderName, 'vertex');
+
             buffers[vertexBufferName] = new Buffer({
                 type: Buffer.BufferType.VERTEX,
                 attributes: shaderInterface.attributes
             });
+
+            this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(
+                shaderName,
+                shaderInterface,
+                this.getBufferName(shaderName, 'vertex')
+            );
         }
 
         if (shaderInterface.elementBuffer) {

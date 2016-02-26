@@ -34,9 +34,9 @@ test('SymbolBucket', function(t) {
             layer: { id: 'test', type: 'symbol', layout: {'text-font': ['Test'] }},
             tileExtent: 4096
         });
+        bucket.resetBuffers();
         bucket.textFeatures = ['abcde'];
         bucket.features = [feature];
-        t.ok(bucket, 'bucketSetup');
         return bucket;
     }
 

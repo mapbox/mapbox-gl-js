@@ -21,7 +21,7 @@ test('FillBucket', function(t) {
         buffers: {},
         layer: { id: 'test', type: 'fill', layout: {} }
     });
-    t.ok(bucket);
+    bucket.resetBuffers();
 
     t.equal(bucket.addFill([
         new Point(0, 0),
