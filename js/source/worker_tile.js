@@ -50,6 +50,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             overscaling: this.overscaling,
             collisionDebug: this.collisionDebug
         });
+        bucket.createFilter();
 
         bucketsById[layer.id] = bucket;
 

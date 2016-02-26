@@ -76,7 +76,6 @@ function Bucket(options) {
     this.interactive = this.layer.interactive;
     this.minZoom = this.layer.minzoom;
     this.maxZoom = this.layer.maxzoom;
-    this.filter = featureFilter(this.layer.filter);
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
@@ -223,6 +222,12 @@ Bucket.prototype.createStyleLayer = function() {
     if (!(this.layer instanceof StyleLayer)) {
         this.layer = StyleLayer.create(this.layer);
         this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+    }
+};
+
+Bucket.prototype.createFilter = function() {
+    if (!this.filter) {
+        this.filter = featureFilter(this.layer.filter);
     }
 };
 
