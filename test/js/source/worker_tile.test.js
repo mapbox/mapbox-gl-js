@@ -9,7 +9,7 @@ test('basic', function(t) {
     var buckets = [{
         id: 'test',
         source: 'source',
-        type: 'fill',
+        type: 'circle',
         layout: {},
         compare: function () { return true; }
     }];

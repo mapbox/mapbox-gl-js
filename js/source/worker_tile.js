@@ -187,6 +187,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             tile.redoPlacementAfterDone = false;
         }
 
+        buckets = filterEmptyBuckets(buckets);
+
         callback(null, {
             buckets: buckets.map(function(bucket) { return bucket.serialize(); }),
             bucketStats: stats // TODO put this in a separate message?
@@ -202,18 +204,30 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     }
 
     var collisionTile = new CollisionTile(angle, pitch);
+    var buckets = this.symbolBuckets;
 
-    for (var i = this.symbolBuckets.length - 1; i >= 0; i--) {
-        this.symbolBuckets[i].placeFeatures(collisionTile, collisionDebug);
+    for (var i = buckets.length - 1; i >= 0; i--) {
+        buckets[i].placeFeatures(collisionTile, collisionDebug);
     }
+
+    buckets = filterEmptyBuckets(buckets);
 
     return {
         result: {
-            buckets: this.symbolBuckets.map(function(bucket) { return bucket.serialize(); })
+            buckets: buckets.map(function(bucket) { return bucket.serialize(); })
         },
-        transferables: getTransferables(this.symbolBuckets)
+        transferables: getTransferables(buckets)
     };
 };
+
+function filterEmptyBuckets(buckets) {
+    return buckets.filter(function(bucket) {
+        for (var bufferName in bucket.buffers) {
+            if (bucket.buffers[bufferName].length > 0) return true;
+        }
+        return false;
+    });
+}
 
 function getTransferables(buckets) {
     var transferables = [];
