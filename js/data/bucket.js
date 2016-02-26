@@ -66,9 +66,7 @@ Bucket.EXTENT = 8192;
 function Bucket(options) {
     this.zoom = options.zoom;
     this.overscaling = options.overscaling;
-
-    this.layer = StyleLayer.create(options.layer);
-    this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+    this.layer = options.layer;
 
     this.layers = [this.layer.id];
     this.type = this.layer.type;
@@ -93,6 +91,7 @@ function Bucket(options) {
  * @private
  */
 Bucket.prototype.addFeatures = function() {
+    this.createStyleLayer();
     this.resetBuffers();
 
     for (var i = 0; i < this.features.length; i++) {
@@ -218,6 +217,13 @@ Bucket.prototype.serialize = function() {
             return buffer.serialize();
         })
     };
+};
+
+Bucket.prototype.createStyleLayer = function() {
+    if (!(this.layer instanceof StyleLayer)) {
+        this.layer = StyleLayer.create(this.layer);
+        this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+    }
 };
 
 

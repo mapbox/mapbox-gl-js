@@ -28,18 +28,6 @@ function SymbolBucket(options) {
     Bucket.apply(this, arguments);
     this.collisionDebug = options.collisionDebug;
     this.overscaling = options.overscaling;
-
-    // To reduce the number of labels that jump around when zooming we need
-    // to use a text-size value that is the same for all zoom levels.
-    // This calculates text-size at a high zoom level so that all tiles can
-    // use the same value when calculating anchor positions.
-    var zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-
-    this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', 18, zoomHistory);
-    this.adjustedTextSize = this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory);
-
-    this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', 18, zoomHistory);
-    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory);
 }
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
@@ -126,7 +114,18 @@ SymbolBucket.prototype.shaderInterfaces = {
 };
 
 SymbolBucket.prototype.addFeatures = function(collisionTile, stacks, icons) {
+    this.createStyleLayer();
     this.resetBuffers();
+
+    // To reduce the number of labels that jump around when zooming we need
+    // to use a text-size value that is the same for all zoom levels.
+    // This calculates text-size at a high zoom level so that all tiles can
+    // use the same value when calculating anchor positions.
+    var zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+    this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', 18, zoomHistory);
+    this.adjustedTextSize = this.layer.getLayoutValue('text-size', this.zoom + 1, zoomHistory);
+    this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', 18, zoomHistory);
+    this.adjustedIconSize = this.layer.getLayoutValue('icon-size', this.zoom + 1, zoomHistory);
 
     var tileSize = 512 * this.overscaling;
     this.tilePixelRatio = EXTENT / tileSize;
@@ -481,6 +480,8 @@ SymbolBucket.prototype.addSymbols = function(shaderName, quads, scale, keepUprig
 };
 
 SymbolBucket.prototype.updateIcons = function(icons) {
+    this.createStyleLayer();
+
     var iconValue = this.layer.layout['icon-image'];
     if (!iconValue) return;
 
@@ -492,6 +493,8 @@ SymbolBucket.prototype.updateIcons = function(icons) {
 };
 
 SymbolBucket.prototype.updateFont = function(stacks) {
+    this.createStyleLayer();
+
     var fontName = this.layer.layout['text-font'],
         stack = stacks[fontName] = stacks[fontName] || {};
 
