@@ -16,7 +16,6 @@ module.exports = ImageSource;
  * @param {Object} [options]
  * @param {string} options.url A string URL of an image file
  * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
- * starting at the top left: tl, tr, br, bl
  * @example
  * var sourceObj = new mapboxgl.ImageSource({
  *    url: 'https://www.mapbox.com/images/foo.png',
