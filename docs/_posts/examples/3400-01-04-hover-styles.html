@@ -61,10 +61,10 @@ map.on('style.load', function () {
     map.on("mousemove", function(e) {
         map.featuresAt(e.point, {
             radius: 5,
-            layers: ["states-fill"]
+            layer: ["state-fills"]
         }, function (err, features) {
             if (!err && features.length) {
-                map.setFilter("route-hover", ["==", "name", features[0].properties.name || ""]);
+                map.setFilter("route-hover", ["==", "name", features[0].properties.name]);
             } else {
                 map.setFilter("route-hover", ["==", "name", ""]);
             }
