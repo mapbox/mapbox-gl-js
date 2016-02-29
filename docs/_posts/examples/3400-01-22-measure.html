@@ -92,7 +92,7 @@ map.on('style.load', function() {
         map.featuresAt(e.point, {
             radius: 5,
             includeGeometry: true,
-            layer: 'points'
+            layer: 'measure-points'
         }, function (err, features) {
             if (err) return;
 
@@ -148,7 +148,7 @@ map.on('style.load', function() {
 map.on('mousemove', function (e) {
     map.featuresAt(e.point, {
         radius: 5,
-        layer: 'points'
+        layer: 'measure-points'
     }, function (err, features) {
         // UI indicator for clicking/hovering a point on the map
         map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : 'crosshair';
