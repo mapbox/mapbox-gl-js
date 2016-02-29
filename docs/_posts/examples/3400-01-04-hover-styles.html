@@ -64,7 +64,7 @@ map.on('style.load', function () {
             layers: ["states-fill"]
         }, function (err, features) {
             if (!err && features.length) {
-                map.setFilter("route-hover", ["==", "name", features[0].properties.name]);
+                map.setFilter("route-hover", ["==", "name", features[0].properties.name || ""]);
             } else {
                 map.setFilter("route-hover", ["==", "name", ""]);
             }
