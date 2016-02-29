@@ -1,60 +1,35 @@
 ---
 layout: example
 category: example
-title: Filter markers by toggling a list
-description: Filter a set of markers based on a property value in the data.
+title: Filter markers by text input
+description: Filter markers by icon name by typing in a text input.
 ---
 <style>
-    .filter-group {
-        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-        font-weight: 600;
+    .filter-ctrl {
         position: absolute;
         top: 10px;
         right: 10px;
         z-index: 1;
-        border-radius: 3px;
-        width: 120px;
-        color: #fff;
+        width: 180px;
     }
 
-    .filter-group input[type=checkbox]:first-child + label {
-        border-radius: 3px 3px 0 0;
-    }
-
-    .filter-group label:last-child {
-        border-radius: 0 0 3px 3px;
-        border: none;
-    }
-
-    .filter-group input[type=checkbox] {
-        display: none;
-    }
-
-    .filter-group input[type=checkbox] + label {
-        background-color: #3386c0;
-        display: block;
-        cursor: pointer;
+    .filter-ctrl input[type=text] {
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        width: 100%;
+        border: 0;
+        background-color: #fff;
+        height: 40px;
+        margin: 0;
+        color: rgba(0,0,0,.5);
         padding: 10px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-    }
-
-    .filter-group input[type=checkbox] + label {
-        background-color: #3386c0;
-        text-transform: capitalize;
-    }
-
-    .filter-group input[type=checkbox] + label:hover,
-    .filter-group input[type=checkbox]:checked + label {
-        background-color: #4ea0da;
-    }
-
-    .filter-group input[type=checkbox]:checked + label:before {
-        content: '✔';
-        margin-right: 5px;
+        box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+        border-radius: 3px;
     }
 </style>
 <div id='map'></div>
-<nav id='filter-group' class='filter-group'></nav>
+<div class='filter-ctrl'>
+    <input id='filter-input' type='text' name='filter' placeholder='Filter by marker name' />
+</div>
 
 <script>
 var markers = {
@@ -125,7 +100,8 @@ var markers = {
     }]
 };
 
-var filterGroup = document.getElementById('filter-group');
+var layerIDs = []; // Will contain a list used to filter against.
+var filterInput = document.getElementById('filter-input');
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v8',
@@ -135,7 +111,7 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
     // Add marker data as a new GeoJSON source.
-    map.addSource("markers", {
+    map.addSource('markers', {
         "type": "geojson",
         "data": markers
     });
@@ -157,24 +133,18 @@ map.on('load', function() {
                 "filter": ["==", "marker-symbol", symbol]
             });
 
-            // Add checkbox and label elements for the layer.
-            var input = document.createElement('input');
-            input.type = 'checkbox';
-            input.id = layerID;
-            input.checked = true;
-            filterGroup.appendChild(input);
-
-            var label = document.createElement('label');
-            label.setAttribute('for', layerID);
-            label.textContent = symbol;
-            filterGroup.appendChild(label);
-
-            // When the checkbox changes, update the visibility of the layer.
-            input.addEventListener('change', function(e) {
-                map.setLayoutProperty(layerID, 'visibility',
-                    e.target.checked ? 'visible' : 'none');
-            });
+            layerIDs.push(layerID);
         }
+    });
+
+    filterInput.addEventListener('keyup', function(e) {
+        // If the input value matches a layerID set
+        // it's visibility to 'visible' or else hide it.
+        var value = e.target.value.trim().toLowerCase();
+        layerIDs.forEach(function(layerID) {
+            map.setLayoutProperty(layerID, 'visibility',
+                layerID.indexOf(value) > -1 ? 'visible' : 'none');
+        });
     });
 });
 </script>
