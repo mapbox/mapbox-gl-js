@@ -12,7 +12,7 @@ function drawRaster(painter, source, layer, coords) {
     // Change depth function to prevent double drawing in areas where tiles overlap.
     gl.depthFunc(gl.LESS);
 
-    for (var i = coords.length - 1; i >= 0; i--) {
+    for (var i = 0; i < coords.length; i++) {
         drawRasterTile(painter, source, layer, coords[i]);
     }
 
