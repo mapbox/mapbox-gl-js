@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = CollisionBox;
+var createStructArrayType = require('../util/struct_array');
+var Point = require('point-geometry');
+
 
 /**
  * A collision box represents an area of the map that that is covered by a
@@ -45,29 +47,39 @@ module.exports = CollisionBox;
  * @param {Array<string>} layerIDs The IDs of the layers that this CollisionBox is a part of.
  * @private
  */
-function CollisionBox(anchorPoint, x1, y1, x2, y2, maxScale, feature, layerIDs) {
-    // the box is centered around the anchor point
-    this.anchorPoint = anchorPoint;
 
-    // distances to the edges from the anchor
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
+module.exports = createStructArrayType([
+        // the box is centered around the anchor point
+        // TODO: this should be an Int16 but it's causing some render tests to fail.
+        { type: 'Float32', name: 'anchorPointX' },
+        { type: 'Float32', name: 'anchorPointY' },
 
-    // the box is only valid for scales < maxScale.
-    // The box does not block other boxes at scales >= maxScale;
-    this.maxScale = maxScale;
+        // distances to the edges from the anchor
+        { type: 'Int16', name: 'x1' },
+        { type: 'Int16', name: 'y1' },
+        { type: 'Int16', name: 'x2' },
+        { type: 'Int16', name: 'y2' },
 
-    // the index of the feature in the original vectortile
-    this.feature = feature;
+        // the box is only valid for scales < maxScale.
+        // The box does not block other boxes at scales >= maxScale;
+        { type: 'Float32', name: 'maxScale' },
 
-    // the IDs of the layers this feature collision box appears in
-    this.layerIDs = layerIDs;
+        // the index of the feature in the original vectortile
+        { type: 'Uint32', name: 'featureIndex' },
+        // the source layer the feature appears in
+        { type: 'Uint16', name: 'sourceLayerIndex' },
+        // the bucket the feature appears in
+        { type: 'Uint16', name: 'bucketIndex' },
 
-    // the scale at which the label can first be shown
-    this.placementScale = 0;
+        // rotated and scaled bbox used for indexing
+        { type: 'Int16', name: 'bbox0' },
+        { type: 'Int16', name: 'bbox1' },
+        { type: 'Int16', name: 'bbox2' },
+        { type: 'Int16', name: 'bbox3' },
 
-    // rotated and scaled bbox used for indexing
-    this[0] = this[1] = this[2] = this[3] = 0;
-}
+        { type: 'Float32', name: 'placementScale' }
+], {
+    get anchorPoint() {
+        return new Point(this.anchorPointX, this.anchorPointY);
+    }
+});

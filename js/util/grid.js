@@ -38,27 +38,27 @@ function Grid(n, extent, padding) {
 }
 
 
-Grid.prototype.insert = function(bbox, key) {
-    this._forEachCell(bbox, this._insertCell, this.uid++);
+Grid.prototype.insert = function(key, x1, y1, x2, y2) {
+    this._forEachCell(x1, y1, x2, y2, this._insertCell, this.uid++);
     this.keys.push(key);
-    this.bboxes.push(bbox[0]);
-    this.bboxes.push(bbox[1]);
-    this.bboxes.push(bbox[2]);
-    this.bboxes.push(bbox[3]);
+    this.bboxes.push(x1);
+    this.bboxes.push(y1);
+    this.bboxes.push(x2);
+    this.bboxes.push(y2);
 };
 
-Grid.prototype._insertCell = function(bbox, cellIndex, uid) {
+Grid.prototype._insertCell = function(x1, y1, x2, y2, cellIndex, uid) {
     this.cells[cellIndex].push(uid);
 };
 
-Grid.prototype.query = function(bbox) {
+Grid.prototype.query = function(x1, y1, x2, y2) {
     var result = [];
     var seenUids = {};
-    this._forEachCell(bbox, this._queryCell, result, seenUids);
+    this._forEachCell(x1, y1, x2, y2, this._queryCell, result, seenUids);
     return result;
 };
 
-Grid.prototype._queryCell = function(bbox, cellIndex, result, seenUids) {
+Grid.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {
     var cell = this.cells[cellIndex];
     var keys = this.keys;
     var bboxes = this.bboxes;
@@ -66,10 +66,10 @@ Grid.prototype._queryCell = function(bbox, cellIndex, result, seenUids) {
         var uid = cell[u];
         if (seenUids[uid] === undefined) {
             var offset = uid * 4;
-            if ((bbox[0] <= bboxes[offset + 2]) &&
-                (bbox[1] <= bboxes[offset + 3]) &&
-                (bbox[2] >= bboxes[offset + 0]) &&
-                (bbox[3] >= bboxes[offset + 1])) {
+            if ((x1 <= bboxes[offset + 2]) &&
+                (y1 <= bboxes[offset + 3]) &&
+                (x2 >= bboxes[offset + 0]) &&
+                (y2 >= bboxes[offset + 1])) {
                 seenUids[uid] = true;
                 result.push(keys[uid]);
             } else {
@@ -79,15 +79,15 @@ Grid.prototype._queryCell = function(bbox, cellIndex, result, seenUids) {
     }
 };
 
-Grid.prototype._forEachCell = function(bbox, fn, arg1, arg2) {
-    var x1 = this._convertToCellCoord(bbox[0]);
-    var y1 = this._convertToCellCoord(bbox[1]);
-    var x2 = this._convertToCellCoord(bbox[2]);
-    var y2 = this._convertToCellCoord(bbox[3]);
-    for (var x = x1; x <= x2; x++) {
-        for (var y = y1; y <= y2; y++) {
+Grid.prototype._forEachCell = function(x1, y1, x2, y2, fn, arg1, arg2) {
+    var cx1 = this._convertToCellCoord(x1);
+    var cy1 = this._convertToCellCoord(y1);
+    var cx2 = this._convertToCellCoord(x2);
+    var cy2 = this._convertToCellCoord(y2);
+    for (var x = cx1; x <= cx2; x++) {
+        for (var y = cy1; y <= cy2; y++) {
             var cellIndex = this.d * y + x;
-            if (fn.call(this, bbox, cellIndex, arg1, arg2)) return;
+            if (fn.call(this, x1, y1, x2, y2, cellIndex, arg1, arg2)) return;
         }
     }
 };

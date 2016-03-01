@@ -1,8 +1,5 @@
 'use strict';
 
-var CollisionBox = require('./collision_box');
-var Point = require('point-geometry');
-
 module.exports = CollisionFeature;
 
 /**
@@ -23,14 +20,14 @@ module.exports = CollisionFeature;
  *
  * @private
  */
-function CollisionFeature(line, anchor, feature, IDs, shaped, boxScale, padding, alignLine, straight) {
+function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight) {
 
     var y1 = shaped.top * boxScale - padding;
     var y2 = shaped.bottom * boxScale + padding;
     var x1 = shaped.left * boxScale - padding;
     var x2 = shaped.right * boxScale + padding;
 
-    this.boxes = [];
+    this.boxStartIndex = collisionBoxArray.length;
 
     if (alignLine) {
 
@@ -46,15 +43,18 @@ function CollisionFeature(line, anchor, feature, IDs, shaped, boxScale, padding,
             // used for icon labels that are aligned with the line, but don't curve along it
             var vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
             var straightLine = [anchor.sub(vector), anchor.add(vector)];
-            this._addLineCollisionBoxes(straightLine, anchor, 0, length, height, feature, IDs);
+            this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
         } else {
             // used for text labels that curve along a line
-            this._addLineCollisionBoxes(line, anchor, anchor.segment, length, height, feature, IDs);
+            this._addLineCollisionBoxes(collisionBoxArray, line, anchor, anchor.segment, length, height, featureIndex, sourceLayerIndex, bucketIndex);
         }
 
     } else {
-        this.boxes.push(new CollisionBox(new Point(anchor.x, anchor.y), x1, y1, x2, y2, Infinity, feature, IDs));
+        collisionBoxArray.emplaceBack(anchor.x, anchor.y, x1, y1, x2, y2, Infinity, featureIndex, sourceLayerIndex, bucketIndex,
+                0, 0, 0, 0, 0);
     }
+
+    this.boxEndIndex = collisionBoxArray.length;
 }
 
 /**
@@ -69,7 +69,7 @@ function CollisionFeature(line, anchor, feature, IDs, shaped, boxScale, padding,
  *
  * @private
  */
-CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, segment, labelLength, boxSize, feature, IDs) {
+CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
     var step = boxSize / 2;
     var nBoxes = Math.floor(labelLength / step);
 
@@ -122,7 +122,10 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(line, anchor, segme
         var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
 
-        bboxes.push(new CollisionBox(boxAnchorPoint, -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale, feature, IDs));
+        collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
+                -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,
+                featureIndex, sourceLayerIndex, bucketIndex,
+                0, 0, 0, 0, 0);
     }
 
     return bboxes;
