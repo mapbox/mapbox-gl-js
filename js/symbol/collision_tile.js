@@ -18,9 +18,7 @@ module.exports = CollisionTile;
  */
 function CollisionTile(angle, pitch, collisionBoxArray) {
     this.grid = new Grid(12, EXTENT, 6);
-    this.gridFeatures = [];
     this.ignoredGrid = new Grid(12, EXTENT, 0);
-    this.ignoredGridFeatures = [];
 
     this.angle = angle;
 
@@ -159,12 +157,21 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
     return minPlacementScale;
 };
 
-CollisionTile.prototype.getFeaturesAt = function(queryBox, scale) {
-    var features = [];
+CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, scale) {
+    var sourceLayerFeatures = {};
     var result = [];
 
     var rotationMatrix = this.rotationMatrix;
-    var anchorPoint = queryBox.anchorPoint.matMult(rotationMatrix);
+    var anchorPoint = new Point(minX, minY)._matMult(rotationMatrix);
+
+    var queryBox = this.tempCollisionBox;
+    queryBox.anchorX = anchorPoint.x;
+    queryBox.anchorY = anchorPoint.y;
+    queryBox.x1 = 0;
+    queryBox.y1 = 0;
+    queryBox.x2 = maxX - minX;
+    queryBox.y2 = maxY - minY;
+    queryBox.maxScale = scale;
 
     var searchBox = [
         anchorPoint.x + queryBox.x1 / scale,
@@ -173,27 +180,27 @@ CollisionTile.prototype.getFeaturesAt = function(queryBox, scale) {
         anchorPoint.y + queryBox.y2 / scale * this.yStretch
     ];
 
-    var blockingBoxes = [];
-    var blockingBoxKeys = this.grid.query(searchBox);
-    for (var j = 0; j < blockingBoxKeys.length; j++) {
-        blockingBoxes.push(this.gridFeatures[blockingBoxKeys[j]]);
-    }
-    blockingBoxKeys = this.ignoredGrid.query(searchBox);
-    for (var k = 0; k < blockingBoxKeys.length; k++) {
-        blockingBoxes.push(this.ignoredGridFeatures[blockingBoxKeys[k]]);
+    var blockingBoxKeys = this.grid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
+    var blockingBoxKeys2 = this.ignoredGrid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
+    for (var k = 0; k < blockingBoxKeys2.length; k++) {
+        blockingBoxKeys.push(blockingBoxKeys2[k]);
     }
 
-    for (var i = 0; i < blockingBoxes.length; i++) {
-        var blocking = blockingBoxes[i];
+    var blocking = this.collisionBoxArray._struct;
+    for (var i = 0; i < blockingBoxKeys.length; i++) {
+        blocking._setIndex(blockingBoxKeys[i]);
         var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
         var minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
         if (minPlacementScale >= scale) {
-            if (features.indexOf(blocking.feature) < 0) {
-                features.push(blocking.feature);
-                result.push({
-                    feature: blocking.feature,
-                    layerIDs: blocking.layerIDs
-                });
+
+            var sourceLayer = blocking.sourceLayerIndex;
+            if (sourceLayerFeatures[sourceLayer] === undefined) {
+                sourceLayerFeatures[sourceLayer] = {};
+            }
+
+            if (!sourceLayerFeatures[sourceLayer][blocking.featureIndex]) {
+                sourceLayerFeatures[sourceLayer][blocking.featureIndex] = true;
+                result.push(blockingBoxKeys[i]);
             }
         }
     }

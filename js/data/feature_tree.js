@@ -4,35 +4,54 @@ var rbush = require('rbush');
 var Point = require('point-geometry');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
-var CollisionBox = require('../symbol/collision_box');
 var EXTENT = require('./bucket').EXTENT;
 var featureFilter = require('feature-filter');
+var createStructArrayType = require('../util/struct_array');
+var Grid = require('../util/grid');
+var StringNumberMapping = require('../util/string_number_mapping');
+
+var FeatureIndexArray = createStructArrayType([
+        // the index of the feature in the original vectortile
+        { type: 'Uint32', name: 'featureIndex' },
+        // the source layer the feature appears in
+        { type: 'Uint16', name: 'sourceLayerIndex' },
+        // the bucket the feature appears in
+        { type: 'Uint16', name: 'bucketIndex' }
+]);
 
 module.exports = FeatureTree;
 
-function FeatureTree(coord, overscaling, collisionTile) {
+function FeatureTree(coord, overscaling, collisionTile, vtLayers) {
     this.x = coord.x;
     this.y = coord.y;
     this.z = coord.z - Math.log(overscaling) / Math.LN2;
     this.rtree = rbush(9);
     this.toBeInserted = [];
+    this.grid = new Grid(16, EXTENT, 0);
+    this.featureIndexArray = new FeatureIndexArray();
     this.setCollisionTile(collisionTile);
+    this.vtLayers = vtLayers;
+    this.sourceLayerNumberMapping = new StringNumberMapping(vtLayers ? Object.keys(vtLayers).sort() : []);
 }
 
-FeatureTree.prototype.insert = function(bbox, layerIDs, feature) {
-    var scale = EXTENT / feature.extent;
+FeatureTree.prototype.insert = function(bbox, extent, featureIndex, sourceLayerIndex, bucketIndex) {
+    var scale = EXTENT / extent;
     bbox[0] *= scale;
     bbox[1] *= scale;
     bbox[2] *= scale;
     bbox[3] *= scale;
-    bbox.layerIDs = layerIDs;
-    bbox.feature = feature;
+    bbox.key = this.featureIndexArray.length;
+    this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
     this.toBeInserted.push(bbox);
 };
 
 // bulk insert into tree
 FeatureTree.prototype._load = function() {
     this.rtree.load(this.toBeInserted);
+    for (var i = 0; i < this.toBeInserted.length; i++) {
+        var bbox = this.toBeInserted[i];
+        this.grid.insert(i, bbox[0], bbox[1], bbox[2], bbox[3]);
+    }
     this.toBeInserted = [];
 };
 
@@ -46,6 +65,7 @@ function translateDistance(translate) {
 
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, styleLayersByID) {
+    if (!this.vtLayers) return [];
     if (this.toBeInserted.length) this._load();
 
     var params = args.params || {},
@@ -89,55 +109,68 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
     }
 
     var bounds = [minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius];
-    var symbolQueryBox = new CollisionBox(new Point(minX, minY), 0, 0, maxX - minX, maxY - minY, args.scale, null);
+    var treeMatching = this.rtree.search(bounds);
 
-    var matching = this.rtree.search(bounds).concat(this.collisionTile.getFeaturesAt(symbolQueryBox, args.scale));
+    var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
+    var match = this.featureIndexArray.at(0);
+    filterMatching.call(this, matching, match);
 
-    for (var k = 0; k < matching.length; k++) {
-        var feature = matching[k].feature,
-            layerIDs = matching[k].layerIDs;
+    if (matching.length !== treeMatching.length) throw Error("asdf");
 
-        if (!filter(feature)) continue;
+    var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
+    var match2 = this.collisionTile.collisionBoxArray.at(0);
+    filterMatching.call(this, matchingSymbols, match2);
 
-        var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
+    function filterMatching(matching, match) {
+        for (var k = 0; k < matching.length; k++) {
+            match._setIndex(matching[k]);
+            var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
+            var sourceLayer = this.vtLayers[sourceLayerName];
+            var feature = sourceLayer.feature(match.featureIndex);
+            var layerIDs = this.numberToLayerIDs[match.bucketIndex];
 
-        if (!params.includeGeometry) {
-            geoJSON.geometry = null;
-        }
+            if (!filter(feature)) continue;
 
-        for (var l = 0; l < layerIDs.length; l++) {
-            var layerID = layerIDs[l];
+            var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
 
-            if (params.layerIds && params.layerIds.indexOf(layerID) < 0) {
-                continue;
+            if (!params.includeGeometry) {
+                geoJSON.geometry = null;
             }
 
-            styleLayer = styleLayersByID[layerID];
-            var geometry = loadGeometry(feature);
+            for (var l = 0; l < layerIDs.length; l++) {
+                var layerID = layerIDs[l];
 
-            var translatedPolygon;
-            if (styleLayer.type === 'symbol') {
-                // all symbols already match the style
-
-            } else if (styleLayer.type === 'line') {
-                translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
-                var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
-                if (styleLayer.paint['line-offset']) {
-                    geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                if (params.layerIds && params.layerIds.indexOf(layerID) < 0) {
+                    continue;
                 }
-                if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
-            } else if (styleLayer.type === 'fill') {
-                translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
-                if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+                styleLayer = styleLayersByID[layerID];
+                var geometry = loadGeometry(feature);
 
-            } else if (styleLayer.type === 'circle') {
-                translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
-                var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
-                if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
+                var translatedPolygon;
+                if (styleLayer.type === 'symbol') {
+                    // all symbols already match the style
+
+                } else if (styleLayer.type === 'line') {
+                    translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
+                    var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
+                    if (styleLayer.paint['line-offset']) {
+                        geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                    }
+                    if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
+
+                } else if (styleLayer.type === 'fill') {
+                    translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
+                    if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+
+                } else if (styleLayer.type === 'circle') {
+                    translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
+                    var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
+                    if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
+                }
+
+                result.push(util.extend({layer: layerID}, geoJSON));
             }
-
-            result.push(util.extend({layer: layerID}, geoJSON));
         }
     }
 

@@ -5,6 +5,7 @@ var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
 var featureFilter = require('feature-filter');
 var CollisionBoxArray = require('../symbol/collision_box');
+var StringNumberMapping = require('../util/string_number_mapping');
 
 module.exports = WorkerTile;
 
@@ -27,7 +28,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
 
     this.collisionBoxArray = new CollisionBoxArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-    this.featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile);
+    this.featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
+    var sourceLayerNumberMapping = new StringNumberMapping(data.layers ? Object.keys(data.layers).sort() : []);
 
     var stats = { _total: 0 };
 
@@ -54,7 +56,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             zoom: this.zoom,
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
-            collisionBoxArray: this.collisionBoxArray
+            collisionBoxArray: this.collisionBoxArray,
+            sourceLayerIndex: sourceLayerNumberMapping.stringToNumber[layer['source-layer']]
         });
         bucket.createFilter();
 
@@ -90,6 +93,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     function sortLayerIntoBuckets(layer, buckets) {
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
+            feature.index = i;
             for (var id in buckets) {
                 if (buckets[id].filter(feature))
                     buckets[id].features.push(feature);
@@ -101,9 +105,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
+    this.featureTree.numberToLayerIDs = [];
+
     for (var id in bucketsById) {
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
+
+        bucket.index = this.featureTree.numberToLayerIDs.length;
+        this.featureTree.numberToLayerIDs.push(bucket.layerIDs);
 
         buckets.push(bucket);
 
@@ -171,10 +180,11 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
         bucket.populateBuffers(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
+
         if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
-                tile.featureTree.insert(feature.bbox(), bucket.layerIDs, feature);
+                tile.featureTree.insert(feature.bbox(), feature.extent, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
         }
 
