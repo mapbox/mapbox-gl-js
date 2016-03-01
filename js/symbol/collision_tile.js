@@ -1,9 +1,9 @@
 'use strict';
 
-var rbush = require('rbush');
 var CollisionBox = require('./collision_box');
 var Point = require('point-geometry');
 var EXTENT = require('../data/bucket').EXTENT;
+var Grid = require('../util/grid');
 
 module.exports = CollisionTile;
 
@@ -18,8 +18,11 @@ module.exports = CollisionTile;
  * @private
  */
 function CollisionTile(angle, pitch) {
-    this.tree = rbush();
-    this.ignoredTree = rbush();
+    this.grid = new Grid(12, EXTENT, 6);
+    this.gridFeatures = [];
+    this.ignoredGrid = new Grid(12, EXTENT, 0);
+    this.ignoredGridFeatures = [];
+
     this.angle = angle;
 
     var sin = Math.sin(angle),
@@ -78,10 +81,10 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
             box[2] = x + box.x2;
             box[3] = y + box.y2 * yStretch;
 
-            var blockingBoxes = this.tree.search(box);
+            var blockingBoxes = this.grid.query(box);
 
             for (var i = 0; i < blockingBoxes.length; i++) {
-                var blocking = blockingBoxes[i];
+                var blocking = this.gridFeatures[blockingBoxes[i]];
                 var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
 
                 minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
@@ -131,7 +134,15 @@ CollisionTile.prototype.getFeaturesAt = function(queryBox, scale) {
         anchorPoint.y + queryBox.y2 / scale * this.yStretch
     ];
 
-    var blockingBoxes = this.tree.search(searchBox).concat(this.ignoredTree.search(searchBox));
+    var blockingBoxes = [];
+    var blockingBoxKeys = this.grid.query(searchBox);
+    for (var j = 0; j < blockingBoxKeys.length; j++) {
+        blockingBoxes.push(this.gridFeatures[blockingBoxKeys[j]]);
+    }
+    blockingBoxKeys = this.ignoredGrid.query(searchBox);
+    for (var k = 0; k < blockingBoxKeys.length; k++) {
+        blockingBoxes.push(this.ignoredGridFeatures[blockingBoxKeys[k]]);
+    }
 
     for (var i = 0; i < blockingBoxes.length; i++) {
         var blocking = blockingBoxes[i];
@@ -207,9 +218,25 @@ CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minP
 
     if (minPlacementScale < this.maxScale) {
         if (ignorePlacement) {
-            this.ignoredTree.load(boxes);
+            this.insertIgnoredGrid(boxes);
         } else {
-            this.tree.load(boxes);
+            this.insertGrid(boxes);
         }
+    }
+};
+
+CollisionTile.prototype.insertGrid = function(boxes) {
+    for (var i = 0; i < boxes.length; i++) {
+        var box = boxes[i];
+        this.grid.insert(box, this.gridFeatures.length);
+        this.gridFeatures.push(box);
+    }
+};
+
+CollisionTile.prototype.insertIgnoredGrid = function(boxes) {
+    for (var i = 0; i < boxes.length; i++) {
+        var box = boxes[i];
+        this.ignoredGrid.insert(box, this.ignoredGridFeatures.length);
+        this.ignoredGridFeatures.push(box);
     }
 };
