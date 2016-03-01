@@ -18,13 +18,27 @@ test('LRUCache', function(t) {
     t.end();
 });
 
+test('LRUCache - duplicate add', function(t) {
+    var cache = new LRUCache(10, function() {
+        t.fail();
+    });
+
+    cache.add('a', 'b');
+    cache.add('a', 'c');
+
+    t.deepEqual(cache.keys(), ['a']);
+    t.ok(cache.has('a'));
+    t.equal(cache.get('a'), 'c');
+    t.end();
+});
+
 test('LRUCache - overflow', function(t) {
     var cache = new LRUCache(1, function(removed) {
-        t.equal(removed, 'c');
+        t.equal(removed, 'b');
         t.end();
     });
     cache.add('a', 'b');
-    cache.add('a', 'c');
+    cache.add('c', 'd');
 });
 
 test('LRUCache#reset', function(t) {

@@ -44,12 +44,20 @@ LRUCache.prototype.reset = function() {
  * @private
  */
 LRUCache.prototype.add = function(key, data) {
-    this.data[key] = data;
-    this.order.push(key);
 
-    if (this.order.length > this.max) {
-        var removedData = this.get(this.order[0]);
-        if (removedData) this.onRemove(removedData);
+    if (this.has(key)) {
+        this.order.splice(this.order.indexOf(key), 1);
+        this.data[key] = data;
+        this.order.push(key);
+
+    } else {
+        this.data[key] = data;
+        this.order.push(key);
+
+        if (this.order.length > this.max) {
+            var removedData = this.get(this.order[0]);
+            if (removedData) this.onRemove(removedData);
+        }
     }
 
     return this;
