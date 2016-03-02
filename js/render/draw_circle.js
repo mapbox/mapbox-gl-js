@@ -50,16 +50,13 @@ function drawCircles(painter, source, layer, coords) {
 
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];
-            var offset = group.vertexStartIndex * vertex.itemSize;
+            var count = group.elementLength * 3;
 
             vertex.bind(gl);
-            bucket.setAttribPointers('circle', gl, program, offset, [{$zoom: painter.transform.zoom}]);
-
             elements.bind(gl);
 
-            var count = group.elementLength * 3;
-            var elementOffset = group.elementStartIndex * elements.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+            bucket.setAttribPointers('circle', gl, program, group.vertexOffset, [{$zoom: painter.transform.zoom}]);
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }
 

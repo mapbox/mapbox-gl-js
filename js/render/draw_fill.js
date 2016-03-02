@@ -121,12 +121,10 @@ function drawFill(painter, source, layer, coord) {
 
     for (var i = 0; i < elementGroups.length; i++) {
         var group = elementGroups[i];
-        var offset = group.vertexStartIndex * vertex.itemSize;
-        bucket.setAttribPointers('fill', gl, fillProgram, offset);
+        bucket.setAttribPointers('fill', gl, fillProgram, group.vertexOffset);
 
         var count = group.elementLength * 3;
-        var elementOffset = group.elementStartIndex * elements.itemSize;
-        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -193,12 +191,10 @@ function drawStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < elementGroups.length; k++) {
         var group = elementGroups[k];
-        var offset = group.vertexStartIndex * vertex.itemSize;
-        bucket.setAttribPointers('fill', gl, program, offset);
+        bucket.setAttribPointers('fill', gl, program, group.vertexOffset);
 
         var count = group.secondElementLength * 2;
-        var elementOffset = group.secondElementStartIndex * elements.itemSize;
-        gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, elementOffset);
+        gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, group.secondElementOffset);
     }
 }
 

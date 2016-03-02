@@ -168,13 +168,10 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
-
-            var vtxOffset = group.vertexStartIndex * vertex.itemSize;
-            bucket.setAttribPointers('line', gl, program, vtxOffset);
+            bucket.setAttribPointers('line', gl, program, group.vertexOffset);
 
             var count = group.elementLength * 3;
-            var elementOffset = group.elementStartIndex * element.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }
 
