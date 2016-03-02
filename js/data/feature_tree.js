@@ -8,6 +8,9 @@ var featureFilter = require('feature-filter');
 var createStructArrayType = require('../util/struct_array');
 var Grid = require('../util/grid');
 var StringNumberMapping = require('../util/string_number_mapping');
+var CollisionTile = require('../symbol/collision_tile');
+var vt = require('vector-tile');
+var Protobuf = require('pbf');
 
 var FeatureIndexArray = createStructArrayType([
         // the index of the feature in the original vectortile
@@ -20,16 +23,26 @@ var FeatureIndexArray = createStructArrayType([
 
 module.exports = FeatureTree;
 
-function FeatureTree(coord, overscaling, collisionTile, vtLayers) {
+function FeatureTree(coord, overscaling, collisionTile) {
+    if (coord.grid) {
+        var serialized = coord;
+        coord = serialized.coord;
+        overscaling = serialized.overscaling;
+        collisionTile = new CollisionTile(serialized.collisionTile);
+        this.grid = new Grid(serialized.grid);
+        this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
+        this.rawTileData = serialized.rawTileData;
+        this.numberToLayerIDs = serialized.numberToLayerIDs;
+    } else {
+        this.grid = new Grid(16, EXTENT, 0);
+        this.featureIndexArray = new FeatureIndexArray();
+    }
+    this.coord = coord;
+    this.overscaling = overscaling;
     this.x = coord.x;
     this.y = coord.y;
     this.z = coord.z - Math.log(overscaling) / Math.LN2;
-    this.toBeInserted = [];
-    this.grid = new Grid(16, EXTENT, 0);
-    this.featureIndexArray = new FeatureIndexArray();
     this.setCollisionTile(collisionTile);
-    this.vtLayers = vtLayers;
-    this.sourceLayerNumberMapping = new StringNumberMapping(vtLayers ? Object.keys(vtLayers).sort() : []);
 }
 
 FeatureTree.prototype.insert = function(bbox, extent, featureIndex, sourceLayerIndex, bucketIndex) {
@@ -46,18 +59,43 @@ FeatureTree.prototype.setCollisionTile = function(collisionTile) {
     this.collisionTile = collisionTile;
 };
 
+FeatureTree.prototype.serialize = function() {
+    var collisionTile = this.collisionTile.serialize();
+    var data = {
+        coord: this.coord,
+        overscaling: this.overscaling,
+        collisionTile: collisionTile,
+        grid: this.grid.toArrayBuffer(),
+        featureIndexArray: this.featureIndexArray.arrayBuffer,
+        numberToLayerIDs: this.numberToLayerIDs
+    };
+    return {
+        data: data,
+        transferables: [
+            collisionTile.collisionBoxArray,
+            collisionTile.grid,
+            collisionTile.ignoredGrid,
+            data.grid,
+            data.featureIndexArray
+        ]
+    };
+};
+
 function translateDistance(translate) {
     return Math.sqrt(translate[0] * translate[0] + translate[1] * translate[1]);
 }
 
 // Finds features in this tile at a particular position.
-FeatureTree.prototype.query = function(args, styleLayersByID) {
-    if (!this.vtLayers) return [];
+FeatureTree.prototype.query = function(result, args, styleLayersByID) {
+    if (!this.vtLayers) {
+        if (!this.rawTileData) return [];
+        this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
+        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : []);
+    }
 
     var params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
-        filter = featureFilter(params.filter),
-        result = [];
+        filter = featureFilter(params.filter);
 
     // Features are indexed their original geometries. The rendered geometries may
     // be buffered, translated or offset. Figure out how much the search radius needs to be

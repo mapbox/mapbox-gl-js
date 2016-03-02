@@ -21,7 +21,7 @@ function WorkerTile(params) {
     this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
-WorkerTile.prototype.parse = function(data, layers, actor, callback) {
+WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData) {
 
     this.status = 'parsing';
     this.data = data;
@@ -202,10 +202,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             tile.redoPlacementAfterDone = false;
         }
 
+        var featureTree = tile.featureTree.serialize();
+        featureTree.data.rawTileData = rawTileData;
+
         callback(null, {
             buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
-            bucketStats: stats // TODO put this in a separate message?
-        }, getTransferables(buckets));
+            bucketStats: stats, // TODO put this in a separate message?
+            featureTree: featureTree.data
+        }, getTransferables(buckets).concat(featureTree.transferables.concat(rawTileData)));
     }
 };
 

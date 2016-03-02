@@ -80,7 +80,7 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.actor, callback, data);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;

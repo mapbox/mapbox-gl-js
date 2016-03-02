@@ -3,6 +3,7 @@
 var Point = require('point-geometry');
 var EXTENT = require('../data/bucket').EXTENT;
 var Grid = require('../util/grid');
+var CollisionBox = require('../symbol/collision_box');
 
 module.exports = CollisionTile;
 
@@ -17,10 +18,20 @@ module.exports = CollisionTile;
  * @private
  */
 function CollisionTile(angle, pitch, collisionBoxArray) {
-    this.grid = new Grid(12, EXTENT, 6);
-    this.ignoredGrid = new Grid(12, EXTENT, 0);
+    if (typeof angle === 'object') {
+        var serialized = angle;
+        angle = serialized.angle;
+        pitch = serialized.pitch;
+        collisionBoxArray = new CollisionBox(serialized.collisionBoxArray);
+        this.grid = new Grid(serialized.grid);
+        this.ignoredGrid = new Grid(serialized.ignoredGrid);
+    } else {
+        this.grid = new Grid(12, EXTENT, 6);
+        this.ignoredGrid = new Grid(12, EXTENT, 0);
+    }
 
     this.angle = angle;
+    this.pitch = pitch;
 
     var sin = Math.sin(angle),
         cos = Math.cos(angle);
@@ -68,6 +79,16 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
         collisionBoxArray.at(4)
     ];
 }
+
+CollisionTile.prototype.serialize = function() {
+    return {
+        angle: this.angle,
+        pitch: this.pitch,
+        collisionBoxArray: this.collisionBoxArray.arrayBuffer.slice(),
+        grid: this.grid.toArrayBuffer(),
+        ignoredGrid: this.ignoredGrid.toArrayBuffer()
+    };
+};
 
 CollisionTile.prototype.minScale = 0.25;
 CollisionTile.prototype.maxScale = 2;
