@@ -153,7 +153,10 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
             secondElementStartIndex: secondElementArray && secondElementArray.length,
             elementLength: 0,
             vertexLength: 0,
-            secondElementLength: 0
+            secondElementLength: 0,
+            elementOffset: elementArray && elementArray.length * elementArray.bytesPerElement,
+            secondElementOffset: secondElementArray && secondElementArray.length * secondElementArray.bytesPerElement,
+            vertexOffset: vertexArray && vertexArray.length * vertexArray.bytesPerElement
         };
         groups.push(currentGroup);
     }

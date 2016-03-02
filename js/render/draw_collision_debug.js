@@ -20,7 +20,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
 
         var buffer = bucket.buffers.collisionBoxVertex;
         buffer.bind(gl);
-        bucket.setAttribPointers('collisionBox', gl, program, 0);
+        bucket.setAttribPointers('collisionBox', gl, program, elementGroups[0].vertexOffset);
 
         painter.setPosMatrix(coord.posMatrix);
 

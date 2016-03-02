@@ -146,7 +146,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     painter.frameHistory.bind(gl);
     gl.uniform1i(program.u_fadetexture, 1);
 
-    var group, offset, count, elementOffset;
+    var group, count;
 
     elements.bind(gl);
 
@@ -166,13 +166,11 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
             for (var j = 0; j < elementGroups.length; j++) {
                 group = elementGroups[j];
-                offset = group.vertexStartIndex * vertex.itemSize;
                 vertex.bind(gl);
-                bucket.setAttribPointers(programInterfaceName, gl, program, offset);
+                bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset);
 
                 count = group.elementLength * 3;
-                elementOffset = group.elementStartIndex * elements.itemSize;
-                gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+                gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
             }
         }
 
@@ -183,26 +181,22 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
         for (var i = 0; i < elementGroups.length; i++) {
             group = elementGroups[i];
-            offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            bucket.setAttribPointers(programInterfaceName, gl, program, offset);
+            bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset);
 
             count = group.elementLength * 3;
-            elementOffset = group.elementStartIndex * elements.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
 
     } else {
         gl.uniform1f(program.u_opacity, layer.paint['icon-opacity']);
         for (var k = 0; k < elementGroups.length; k++) {
             group = elementGroups[k];
-            offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            bucket.setAttribPointers(programInterfaceName, gl, program, offset);
+            bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset);
 
             count = group.elementLength * 3;
-            elementOffset = group.elementStartIndex * elements.itemSize;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, elementOffset);
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }
 }
