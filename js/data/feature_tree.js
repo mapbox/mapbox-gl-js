@@ -1,7 +1,6 @@
 'use strict';
 
 var Point = require('point-geometry');
-var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
 var EXTENT = require('./bucket').EXTENT;
 var featureFilter = require('feature-filter');
@@ -11,6 +10,7 @@ var StringNumberMapping = require('../util/string_number_mapping');
 var CollisionTile = require('../symbol/collision_tile');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
+var GeoJSONFeature = require('../util/vectortile_to_geojson');
 
 var FeatureIndexArray = createStructArrayType([
         // the index of the feature in the original vectortile
@@ -172,8 +172,6 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
 
             if (!filter(feature)) continue;
 
-            var geoJSON = null;
-
             for (var l = 0; l < layerIDs.length; l++) {
                 var layerID = layerIDs[l];
 
@@ -208,14 +206,9 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
                     }
                 }
 
-                if (!geoJSON) {
-                    geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
-                    if (!params.includeGeometry) {
-                        geoJSON.geometry = null;
-                    }
-                }
-
-                result.push(util.extend({layer: layerID}, geoJSON));
+                var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
+                geojsonFeature.layer = layerID;
+                result.push(geojsonFeature);
             }
         }
     }

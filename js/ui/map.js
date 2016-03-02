@@ -384,7 +384,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
      * @param {Object} params
      * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
-     * @param {boolean} [params.includeGeometry=false] If `true`, geometry of features will be included in the results at the expense of a much slower query time.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      * @param {featuresCallback} callback function that receives the results
      *
