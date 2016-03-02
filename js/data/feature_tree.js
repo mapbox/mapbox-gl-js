@@ -1,6 +1,5 @@
 'use strict';
 
-var rbush = require('rbush');
 var Point = require('point-geometry');
 var util = require('../util/util');
 var loadGeometry = require('./load_geometry');
@@ -25,7 +24,6 @@ function FeatureTree(coord, overscaling, collisionTile, vtLayers) {
     this.x = coord.x;
     this.y = coord.y;
     this.z = coord.z - Math.log(overscaling) / Math.LN2;
-    this.rtree = rbush(9);
     this.toBeInserted = [];
     this.grid = new Grid(16, EXTENT, 0);
     this.featureIndexArray = new FeatureIndexArray();
@@ -40,19 +38,8 @@ FeatureTree.prototype.insert = function(bbox, extent, featureIndex, sourceLayerI
     bbox[1] *= scale;
     bbox[2] *= scale;
     bbox[3] *= scale;
-    bbox.key = this.featureIndexArray.length;
+    this.grid.insert(this.featureIndexArray.length, bbox[0], bbox[1], bbox[2], bbox[3]);
     this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
-    this.toBeInserted.push(bbox);
-};
-
-// bulk insert into tree
-FeatureTree.prototype._load = function() {
-    this.rtree.load(this.toBeInserted);
-    for (var i = 0; i < this.toBeInserted.length; i++) {
-        var bbox = this.toBeInserted[i];
-        this.grid.insert(i, bbox[0], bbox[1], bbox[2], bbox[3]);
-    }
-    this.toBeInserted = [];
 };
 
 FeatureTree.prototype.setCollisionTile = function(collisionTile) {
@@ -66,7 +53,6 @@ function translateDistance(translate) {
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, styleLayersByID) {
     if (!this.vtLayers) return [];
-    if (this.toBeInserted.length) this._load();
 
     var params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
@@ -108,14 +94,9 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
         maxY = Math.max(maxY, p.y);
     }
 
-    var bounds = [minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius];
-    var treeMatching = this.rtree.search(bounds);
-
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     var match = this.featureIndexArray.at(0);
     filterMatching.call(this, matching, match);
-
-    if (matching.length !== treeMatching.length) throw Error("asdf");
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.at(0);
