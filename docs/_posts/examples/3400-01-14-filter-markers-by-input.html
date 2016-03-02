@@ -28,7 +28,7 @@ description: Filter markers by icon name by typing in a text input.
 </style>
 <div id='map'></div>
 <div class='filter-ctrl'>
-    <input id='filter-input' type='text' name='filter' placeholder='Filter by marker name' />
+    <input id='filter-input' type='text' name='filter' placeholder='Filter by name' />
 </div>
 
 <script>
@@ -104,7 +104,7 @@ var layerIDs = []; // Will contain a list used to filter against.
 var filterInput = document.getElementById('filter-input');
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/light-v8',
     center: [-77.04, 38.907],
     zoom: 11.15
 });
@@ -128,7 +128,12 @@ map.on('load', function() {
                 "source": "markers",
                 "layout": {
                     "icon-image": symbol + "-15",
-                    "icon-allow-overlap": true
+                    "icon-allow-overlap": true,
+                    "text-field": symbol,
+                    "text-offset": [0, 1]
+                },
+                "paint": {
+                    "text-color": "#3887BE"
                 },
                 "filter": ["==", "marker-symbol", symbol]
             });
