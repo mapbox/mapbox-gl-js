@@ -112,12 +112,7 @@ function drawFill(painter, source, layer, coord) {
     // Draw the actual triangle fan into the stencil buffer.
     var fillProgram = painter.useProgram('fill', translatedPosMatrix);
 
-    // Draw all buffers
-    var vertex = bucket.buffers.fillVertex;
-    vertex.bind(gl);
-
-    var elements = bucket.buffers.fillElement;
-    elements.bind(gl);
+    bucket.bindBuffers('fill', gl);
 
     for (var i = 0; i < elementGroups.length; i++) {
         var group = elementGroups[i];
@@ -182,10 +177,7 @@ function drawStroke(painter, source, layer, coord) {
     if (image) { setPattern(image, opacity, tile, coord, painter, program); }
 
     // Draw all buffers
-    var vertex = bucket.buffers.fillVertex;
-    var elements = bucket.buffers.fillSecondElement;
-    vertex.bind(gl);
-    elements.bind(gl);
+    bucket.bindBuffers('fill', gl, {secondElement: true});
 
     painter.enableTileClippingMask(coord);
 

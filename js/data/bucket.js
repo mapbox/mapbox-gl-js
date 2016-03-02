@@ -289,6 +289,25 @@ Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, 
     }
 };
 
+Bucket.prototype.bindBuffers = function(programInterfaceName, gl, options) {
+    var programInterface = this.programInterfaces[programInterfaceName];
+
+    if (programInterface.vertexBuffer) {
+        var vertexBuffer = this.buffers[this.getBufferName(programInterfaceName, 'vertex')];
+        vertexBuffer.bind(gl);
+    }
+
+    if (programInterface.elementBuffer && (!options || !options.secondElement)) {
+        var elementBuffer = this.buffers[this.getBufferName(programInterfaceName, 'element')];
+        elementBuffer.bind(gl);
+    }
+
+    if (programInterface.secondElementBuffer && (options && options.secondElement)) {
+        var secondElementBuffer = this.buffers[this.getBufferName(programInterfaceName, 'secondElement')];
+        secondElementBuffer.bind(gl);
+    }
+};
+
 /**
  * Get the name of the method used to add an item to a buffer.
  * @param {string} programName The name of the program that will use the buffer
