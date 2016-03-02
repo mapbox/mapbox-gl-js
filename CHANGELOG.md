@@ -1,3 +1,14 @@
+## 0.15.0 (March 1 2016)
+
+#### New Features & Improvements
+
+Add `ImageSource#setCoordinates` and `VideoSource#setCoordinates` (#2184)
+
+#### Bugfixes
+
+Fix flickering on raster layers (#2211)
+Fix browser hang when zooming quickly on raster layers (#2211)
+
 ## 0.14.3 (Feb 25 2016)
 
 #### New Features & Improvements
