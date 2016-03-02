@@ -35,6 +35,10 @@ function Grid(n, extent, padding) {
     this.padding = padding;
     this.scale = n / extent;
     this.uid = 0;
+
+    var p = (padding / n) * extent;
+    this.min = -p;
+    this.max = extent + p;
 }
 
 
@@ -52,10 +56,17 @@ Grid.prototype._insertCell = function(x1, y1, x2, y2, cellIndex, uid) {
 };
 
 Grid.prototype.query = function(x1, y1, x2, y2) {
-    var result = [];
-    var seenUids = {};
-    this._forEachCell(x1, y1, x2, y2, this._queryCell, result, seenUids);
-    return result;
+    var min = this.min;
+    var max = this.max;
+    if (x1 <= min && y1 <= min && max <= x2 && max <= y2) {
+        return this.keys.slice();
+
+    } else {
+        var result = [];
+        var seenUids = {};
+        this._forEachCell(x1, y1, x2, y2, this._queryCell, result, seenUids);
+        return result;
+    }
 };
 
 Grid.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {

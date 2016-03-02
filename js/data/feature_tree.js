@@ -124,18 +124,17 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
     function filterMatching(matching, match) {
         for (var k = 0; k < matching.length; k++) {
             match._setIndex(matching[k]);
+
+            var layerIDs = this.numberToLayerIDs[match.bucketIndex];
+            if (params.layerIds && !matchLayers(params.layerIds, layerIDs)) continue;
+
             var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
             var sourceLayer = this.vtLayers[sourceLayerName];
             var feature = sourceLayer.feature(match.featureIndex);
-            var layerIDs = this.numberToLayerIDs[match.bucketIndex];
 
             if (!filter(feature)) continue;
 
-            var geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
-
-            if (!params.includeGeometry) {
-                geoJSON.geometry = null;
-            }
+            var geoJSON = null;
 
             for (var l = 0; l < layerIDs.length; l++) {
                 var layerID = layerIDs[l];
@@ -169,6 +168,13 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
                     if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                 }
 
+                if (!geoJSON) {
+                    geoJSON = feature.toGeoJSON(this.x, this.y, this.z);
+                    if (!params.includeGeometry) {
+                        geoJSON.geometry = null;
+                    }
+                }
+
                 result.push(util.extend({layer: layerID}, geoJSON));
             }
         }
@@ -194,6 +200,13 @@ FeatureTree.prototype.query = function(args, styleLayersByID) {
 
     return result;
 };
+
+function matchLayers(filterLayerIDs, featureLayerIDs) {
+    for (var l = 0; l < featureLayerIDs.length; l++) {
+        if (filterLayerIDs.indexOf(featureLayerIDs[l]) >= 0) return true;
+    }
+    return false;
+}
 
 function offsetLine(rings, offset) {
     var newRings = [];

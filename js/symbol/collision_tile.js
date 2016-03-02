@@ -189,17 +189,18 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
     var blocking = this.collisionBoxArray._struct;
     for (var i = 0; i < blockingBoxKeys.length; i++) {
         blocking._setIndex(blockingBoxKeys[i]);
-        var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
-        var minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
-        if (minPlacementScale >= scale) {
 
-            var sourceLayer = blocking.sourceLayerIndex;
-            if (sourceLayerFeatures[sourceLayer] === undefined) {
-                sourceLayerFeatures[sourceLayer] = {};
-            }
+        var sourceLayer = blocking.sourceLayerIndex;
+        var featureIndex = blocking.featureIndex;
+        if (sourceLayerFeatures[sourceLayer] === undefined) {
+            sourceLayerFeatures[sourceLayer] = {};
+        }
 
-            if (!sourceLayerFeatures[sourceLayer][blocking.featureIndex]) {
-                sourceLayerFeatures[sourceLayer][blocking.featureIndex] = true;
+        if (!sourceLayerFeatures[sourceLayer][featureIndex]) {
+            var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
+            var minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
+            if (minPlacementScale >= scale) {
+                sourceLayerFeatures[sourceLayer][featureIndex] = true;
                 result.push(blockingBoxKeys[i]);
             }
         }
