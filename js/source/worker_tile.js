@@ -184,7 +184,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
         if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
-                tile.featureTree.insert(feature.bbox(), feature.extent, feature.index, bucket.sourceLayerIndex, bucket.index);
+                tile.featureTree.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
         }
 

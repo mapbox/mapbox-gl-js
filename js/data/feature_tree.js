@@ -45,14 +45,27 @@ function FeatureTree(coord, overscaling, collisionTile) {
     this.setCollisionTile(collisionTile);
 }
 
-FeatureTree.prototype.insert = function(bbox, extent, featureIndex, sourceLayerIndex, bucketIndex) {
-    var scale = EXTENT / extent;
-    bbox[0] *= scale;
-    bbox[1] *= scale;
-    bbox[2] *= scale;
-    bbox[3] *= scale;
-    this.grid.insert(this.featureIndexArray.length, bbox[0], bbox[1], bbox[2], bbox[3]);
+FeatureTree.prototype.insert = function(feature, featureIndex, sourceLayerIndex, bucketIndex) {
+    var key = this.featureIndexArray.length;
     this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
+    var geometry = loadGeometry(feature);
+
+    for (var r = 0; r < geometry.length; r++) {
+        var ring = geometry[r];
+
+        // TODO: skip holes when we start using vector tile spec 2.0
+
+        var bbox = [Infinity, Infinity, -Infinity, -Infinity];
+        for (var i = 0; i < ring.length; i++) {
+            var p = ring[i];
+            bbox[0] = Math.min(bbox[0], p.x);
+            bbox[1] = Math.min(bbox[1], p.y);
+            bbox[2] = Math.max(bbox[2], p.x);
+            bbox[3] = Math.max(bbox[3], p.y);
+        }
+
+        this.grid.insert(key, bbox[0], bbox[1], bbox[2], bbox[3]);
+    }
 };
 
 FeatureTree.prototype.setCollisionTile = function(collisionTile) {
@@ -141,8 +154,14 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
     filterMatching.call(this, matchingSymbols, match2);
 
     function filterMatching(matching, match) {
+        var seen = {};
         for (var k = 0; k < matching.length; k++) {
-            match._setIndex(matching[k]);
+            var index = matching[k];
+
+            if (seen[index]) continue;
+            seen[index] = true;
+
+            match._setIndex(index);
 
             var layerIDs = this.numberToLayerIDs[match.bucketIndex];
             if (params.layerIds && !matchLayers(params.layerIds, layerIDs)) continue;
