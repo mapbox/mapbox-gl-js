@@ -182,28 +182,30 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
                 }
 
                 styleLayer = styleLayersByID[layerID];
-                var geometry = loadGeometry(feature);
 
                 var translatedPolygon;
-                if (styleLayer.type === 'symbol') {
+                if (styleLayer.type !== 'symbol') {
                     // all symbols already match the style
 
-                } else if (styleLayer.type === 'line') {
-                    translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
-                    var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
-                    if (styleLayer.paint['line-offset']) {
-                        geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                    var geometry = loadGeometry(feature);
+
+                    if (styleLayer.type === 'line') {
+                        translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
+                        var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
+                        if (styleLayer.paint['line-offset']) {
+                            geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                        }
+                        if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
+
+                    } else if (styleLayer.type === 'fill') {
+                        translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
+                        if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+
+                    } else if (styleLayer.type === 'circle') {
+                        translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
+                        var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
+                        if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                     }
-                    if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
-
-                } else if (styleLayer.type === 'fill') {
-                    translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
-                    if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
-
-                } else if (styleLayer.type === 'circle') {
-                    translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
-                    var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
-                    if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                 }
 
                 if (!geoJSON) {
