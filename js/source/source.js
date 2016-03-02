@@ -105,28 +105,19 @@ exports._querySourceFeatures = function(params, callback) {
         return pyramid.getTile(id);
     });
 
+    var result = [];
+
     var dataTiles = {};
     for (var i = 0; i < tiles.length; i++) {
         var tile = tiles[i];
         var dataID = new TileCoord(Math.min(tile.sourceMaxZoom, tile.coord.z), tile.coord.x, tile.coord.y, 0).id;
         if (!dataTiles[dataID]) {
-            dataTiles[dataID] = tile;
+            dataTiles[dataID] = true;
+            tile.querySourceFeatures(result, params);
         }
     }
 
-    util.asyncAll(Object.keys(dataTiles), function(dataID, callback) {
-        var tile = dataTiles[dataID];
-        this.dispatcher.send('query source features', {
-            uid: tile.uid,
-            source: this.id,
-            params: params
-        }, callback, tile.workerID);
-    }.bind(this), function(err, results) {
-        callback(err, results.reduce(function(array, d) {
-            if (d) array = array.concat(d);
-            return array;
-        }, []));
-    });
+    callback(null, result);
 };
 
 /*

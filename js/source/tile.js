@@ -3,6 +3,10 @@
 var util = require('../util/util');
 var Bucket = require('../data/bucket');
 var FeatureTree = require('../data/feature_tree');
+var vt = require('vector-tile');
+var Protobuf = require('pbf');
+var GeoJSONFeature = require('../util/vectortile_to_geojson');
+var featureFilter = require('feature-filter');
 
 module.exports = Tile;
 
@@ -58,6 +62,7 @@ Tile.prototype = {
         if (!data) return;
 
         this.featureTree = new FeatureTree(data.featureTree);
+        this.rawTileData = data.rawTileData;
         this.buckets = unserializeBuckets(data.buckets);
     },
 
@@ -132,8 +137,37 @@ Tile.prototype = {
         }
     },
 
+<<<<<<< HEAD
     getBucket: function(layer) {
         return this.buckets && this.buckets[layer.ref || layer.id];
+=======
+    getElementGroups: function(layer, shaderName) {
+        return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
+    },
+
+    querySourceFeatures: function(result, params) {
+        if (!this.rawTileData) return;
+
+        if (!this.vtLayers) {
+            this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
+        }
+
+        var layer = this.vtLayers[params.sourceLayer];
+
+        if (!layer) return;
+
+        var filter = featureFilter(params.filter);
+        var coord = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
+
+        for (var i = 0; i < layer.length; i++) {
+            var feature = layer.feature(i);
+            if (filter(feature)) {
+                var geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
+                geojsonFeature.tile = coord;
+                result.push(geojsonFeature);
+            }
+        }
+>>>>>>> move querySourceFeatures to main thread
     }
 };
 

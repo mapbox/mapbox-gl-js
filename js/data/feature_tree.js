@@ -26,12 +26,13 @@ module.exports = FeatureTree;
 function FeatureTree(coord, overscaling, collisionTile) {
     if (coord.grid) {
         var serialized = coord;
+        var rawTileData = overscaling;
         coord = serialized.coord;
         overscaling = serialized.overscaling;
         collisionTile = new CollisionTile(serialized.collisionTile);
         this.grid = new Grid(serialized.grid);
         this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
-        this.rawTileData = serialized.rawTileData;
+        this.rawTileData = rawTileData;
         this.numberToLayerIDs = serialized.numberToLayerIDs;
     } else {
         this.grid = new Grid(16, EXTENT, 0);
