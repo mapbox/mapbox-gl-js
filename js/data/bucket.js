@@ -88,7 +88,9 @@ function Bucket(options) {
                     getValue: createGetAttributeValueMethod(this, interfaceName, attribute)
                 }, attribute));
             } else {
-                interfaceAttributes.enabled.push(attribute);
+                interfaceAttributes.enabled.push(util.extend({
+                    programName: 'a_' + attribute.name
+                }, attribute));
             }
         }
     }
@@ -222,6 +224,18 @@ Bucket.prototype.trimArrays = function() {
 };
 
 /**
+ * @enum {string} AttributeType
+ * @private
+ * @readonly
+ */
+var AttributeType = {
+    Int8:   'BYTE',
+    Uint8:  'UNSIGNED_BYTE',
+    Int16:  'SHORT',
+    Uint16: 'UNSIGNED_SHORT'
+};
+
+/**
  * Set the attribute pointers in a WebGL context
  * @private
  * @param gl The WebGL context
@@ -230,17 +244,43 @@ Bucket.prototype.trimArrays = function() {
  * @param {Array} arguments to be passed to disabled attribute value functions
  */
 Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, args) {
+    var attribute;
+
     // Set disabled attributes
     var disabledAttributes = this.attributes[programName].disabled;
     for (var i = 0; i < disabledAttributes.length; i++) {
-        var attribute = disabledAttributes[i];
+        attribute = disabledAttributes[i];
         var attributeId = program['a_' + attribute.name];
         gl.disableVertexAttribArray(attributeId);
         gl['vertexAttrib' + attribute.components + 'fv'](attributeId, attribute.getValue.apply(this, args));
     }
 
     // Set enabled attributes
-    this.buffers[this.getBufferName(programName, 'vertex')].setAttribPointers(gl, program, offset);
+    var enabledAttributes = this.attributes[programName].enabled;
+    var vertexBuffer = this.buffers[this.getBufferName(programName, 'vertex')];
+
+    for (var j = 0; j < enabledAttributes.length; j++) {
+        attribute = enabledAttributes[j];
+
+        gl.vertexAttribPointer(
+            program[attribute.programName],
+            attribute.components,
+            gl[AttributeType[attribute.type]],
+            false,
+            vertexBuffer.arrayType.bytesPerElement,
+            offset + getMember(attribute.name).offset
+        );
+    }
+
+    function getMember(memberName) {
+        var members = vertexBuffer.arrayType.members;
+        for (var k = 0; k < members.length; k++) {
+            var member = members[k];
+            if (member.name === memberName) {
+                return member;
+            }
+        }
+    }
 };
 
 /**

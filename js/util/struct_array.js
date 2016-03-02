@@ -316,4 +316,3 @@ StructArray.prototype._refreshViews = function() {
         this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
     }
 };
-
