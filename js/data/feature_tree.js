@@ -114,9 +114,8 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
     // be buffered, translated or offset. Figure out how much the search radius needs to be
     // expanded by to include these features.
     var additionalRadius = 0;
-    var styleLayer;
     for (var id in styleLayersByID) {
-        styleLayer = styleLayersByID[id];
+        var styleLayer = styleLayersByID[id];
 
         var styleLayerDistance = 0;
         if (styleLayer.type === 'line') {
@@ -147,92 +146,98 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID) {
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     var match = this.featureIndexArray.at(0);
-    filterMatching.call(this, matching, match);
+    this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIds, styleLayersByID, args.bearing, pixelsToTileUnits);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.at(0);
-    filterMatching.call(this, matchingSymbols, match2);
-
-    function filterMatching(matching, match) {
-        var seen = {};
-        for (var k = 0; k < matching.length; k++) {
-            var index = matching[k];
-
-            if (seen[index]) continue;
-            seen[index] = true;
-
-            match._setIndex(index);
-
-            var layerIDs = this.numberToLayerIDs[match.bucketIndex];
-            if (params.layerIds && !matchLayers(params.layerIds, layerIDs)) continue;
-
-            var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
-            var sourceLayer = this.vtLayers[sourceLayerName];
-            var feature = sourceLayer.feature(match.featureIndex);
-
-            if (!filter(feature)) continue;
-
-            for (var l = 0; l < layerIDs.length; l++) {
-                var layerID = layerIDs[l];
-
-                if (params.layerIds && params.layerIds.indexOf(layerID) < 0) {
-                    continue;
-                }
-
-                styleLayer = styleLayersByID[layerID];
-
-                var translatedPolygon;
-                if (styleLayer.type !== 'symbol') {
-                    // all symbols already match the style
-
-                    var geometry = loadGeometry(feature);
-
-                    if (styleLayer.type === 'line') {
-                        translatedPolygon = translate(styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor']);
-                        var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
-                        if (styleLayer.paint['line-offset']) {
-                            geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
-                        }
-                        if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
-
-                    } else if (styleLayer.type === 'fill') {
-                        translatedPolygon = translate(styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor']);
-                        if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
-
-                    } else if (styleLayer.type === 'circle') {
-                        translatedPolygon = translate(styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor']);
-                        var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
-                        if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
-                    }
-                }
-
-                var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-                geojsonFeature.layer = layerID;
-                result.push(geojsonFeature);
-            }
-        }
-    }
-
-    function translate(translate, translateAnchor) {
-        if (!translate[0] && !translate[1]) {
-            return queryGeometry;
-        }
-
-        translate = Point.convert(translate);
-
-        if (translateAnchor === "viewport") {
-            translate._rotate(-args.bearing);
-        }
-
-        var translated = [];
-        for (var i = 0; i < queryGeometry.length; i++) {
-            translated.push(queryGeometry[i].sub(translate._mult(pixelsToTileUnits)));
-        }
-        return translated;
-    }
+    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIds, styleLayersByID, args.bearing, pixelsToTileUnits);
 
     return result;
 };
+
+FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayersByID, bearing, pixelsToTileUnits) {
+    var seen = {};
+    for (var k = 0; k < matching.length; k++) {
+        var index = matching[k];
+
+        if (seen[index]) continue;
+        seen[index] = true;
+
+        match._setIndex(index);
+
+        var layerIDs = this.numberToLayerIDs[match.bucketIndex];
+        if (filterLayerIDs && !matchLayers(filterLayerIDs, layerIDs)) continue;
+
+        var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
+        var sourceLayer = this.vtLayers[sourceLayerName];
+        var feature = sourceLayer.feature(match.featureIndex);
+
+        if (!filter(feature)) continue;
+
+        for (var l = 0; l < layerIDs.length; l++) {
+            var layerID = layerIDs[l];
+
+            if (filterLayerIDs && filterLayerIDs.indexOf(layerID) < 0) {
+                continue;
+            }
+
+            var styleLayer = styleLayersByID[layerID];
+
+            var translatedPolygon;
+            if (styleLayer.type !== 'symbol') {
+                // all symbols already match the style
+
+                var geometry = loadGeometry(feature);
+
+                if (styleLayer.type === 'line') {
+                    translatedPolygon = translate(queryGeometry,
+                            styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor'],
+                            bearing, pixelsToTileUnits);
+                    var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
+                    if (styleLayer.paint['line-offset']) {
+                        geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                    }
+                    if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
+
+                } else if (styleLayer.type === 'fill') {
+                    translatedPolygon = translate(queryGeometry,
+                            styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor'],
+                            bearing, pixelsToTileUnits);
+                    if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+
+                } else if (styleLayer.type === 'circle') {
+                    translatedPolygon = translate(queryGeometry,
+                            styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor'],
+                            bearing, pixelsToTileUnits);
+                    var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
+                    if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
+                }
+            }
+
+            var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
+            geojsonFeature.layer = layerID;
+            result.push(geojsonFeature);
+        }
+    }
+};
+
+function translate(queryGeometry, translate, translateAnchor, bearing, pixelsToTileUnits) {
+    if (!translate[0] && !translate[1]) {
+        return queryGeometry;
+    }
+
+    translate = Point.convert(translate);
+
+    if (translateAnchor === "viewport") {
+        translate._rotate(-bearing);
+    }
+
+    var translated = [];
+    for (var i = 0; i < queryGeometry.length; i++) {
+        translated.push(queryGeometry[i].sub(translate._mult(pixelsToTileUnits)));
+    }
+    return translated;
+}
 
 function matchLayers(filterLayerIDs, featureLayerIDs) {
     for (var l = 0; l < featureLayerIDs.length; l++) {
@@ -266,12 +271,11 @@ function offsetLine(rings, offset) {
 }
 
 function polygonIntersectsBufferedMultiPoint(polygon, rings, radius) {
-    var multiPolygon = [polygon];
     for (var i = 0; i < rings.length; i++) {
         var ring = rings[i];
         for (var k = 0; k < ring.length; k++) {
             var point = ring[k];
-            if (multiPolygonContainsPoint(multiPolygon, point)) return true;
+            if (polygonContainsPoint(polygon, point)) return true;
             if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
         }
     }
@@ -279,16 +283,20 @@ function polygonIntersectsBufferedMultiPoint(polygon, rings, radius) {
 }
 
 function polygonIntersectsMultiPolygon(polygon, multiPolygon) {
-    for (var i = 0; i < polygon.length; i++) {
-        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
+
+    if (polygon.length === 1) {
+        return multiPolygonContainsPoint(multiPolygon, polygon[0]);
     }
 
-    var polygon_ = [polygon];
     for (var m = 0; m < multiPolygon.length; m++) {
         var ring = multiPolygon[m];
         for (var n = 0; n < ring.length; n++) {
-            if (multiPolygonContainsPoint(polygon_, ring[n])) return true;
+            if (polygonContainsPoint(polygon, ring[n])) return true;
         }
+    }
+
+    for (var i = 0; i < polygon.length; i++) {
+        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
     }
 
     for (var k = 0; k < multiPolygon.length; k++) {
@@ -298,12 +306,11 @@ function polygonIntersectsMultiPolygon(polygon, multiPolygon) {
 }
 
 function polygonIntersectsBufferedMultiLine(polygon, multiLine, radius) {
-    var multiPolygon = [polygon];
     for (var i = 0; i < multiLine.length; i++) {
         var line = multiLine[i];
 
         for (var k = 0; k < line.length; k++) {
-            if (multiPolygonContainsPoint(multiPolygon, line[k])) return true;
+            if (polygonContainsPoint(polygon, line[k])) return true;
         }
 
         if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
@@ -388,6 +395,18 @@ function multiPolygonContainsPoint(rings, p) {
             if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
                 c = !c;
             }
+        }
+    }
+    return c;
+}
+
+function polygonContainsPoint(ring, p) {
+    var c = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        var p1 = ring[i];
+        var p2 = ring[j];
+        if (((p1.y > p.y) !== (p2.y > p.y)) && (p.x < (p2.x - p1.x) * (p.y - p1.y) / (p2.y - p1.y) + p1.x)) {
+            c = !c;
         }
     }
     return c;
