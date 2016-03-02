@@ -44,6 +44,8 @@ Test at least the following examples before continuing
  - [Highlight features under the mouse pointer](http://127.0.0.1:4000/mapbox-gl-js/example/hover-styles/)
  - [Dispay driving directions](http://127.0.0.1:4000/mapbox-gl-js/example/mapbox-gl-directions/)
  - [Set a point after Geocoder result](http://127.0.0.1:4000/mapbox-gl-js/example/point-from-geocoder-result/)
+ - [Display a satellite map](http://127.0.0.1:4000/mapbox-gl-js/example/satellite-map/) (stress test with rapid zooming & panning)
+
 
 ## Update `CHANGELOG.md`
 
@@ -89,8 +91,7 @@ Merge `master` into `mb-pages` and publish the updated documentation.
 ```bash
 git checkout mb-pages &&
 git merge master --no-edit &&
-git push origin mb-pages &&
-git checkout master
+git push origin mb-pages
 ```
 
 ## Publish to npm
@@ -98,6 +99,7 @@ git checkout master
 Publish the release to npm. **There is no going back once you execute this command! A published npm package is forever.**
 
 ```bash
+git checkout master &&
 npm install &&
 npm publish
 ```
