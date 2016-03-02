@@ -161,10 +161,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(program.u_ratio, ratio);
         }
 
-        var vertex = bucket.buffers.lineVertex;
-        vertex.bind(gl);
-        var element = bucket.buffers.lineElement;
-        element.bind(gl);
+        bucket.bindBuffers('line', gl);
 
         for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
