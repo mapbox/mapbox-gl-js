@@ -147,11 +147,14 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
         var elementArray = this.arrays[this.getBufferName(programName, 'element')];
         var secondElementArray = this.arrays[this.getBufferName(programName, 'secondElement')];
 
-        currentGroup = new ElementGroup(
-            vertexArray.length,
-            elementArray && elementArray.length,
-            secondElementArray && secondElementArray.length
-        );
+        currentGroup = {
+            vertexStartIndex: vertexArray.length,
+            elementStartIndex: elementArray && elementArray.length,
+            secondElementStartIndex: secondElementArray && secondElementArray.length,
+            elementLength: 0,
+            vertexLength: 0,
+            secondElementLength: 0
+        };
         groups.push(currentGroup);
     }
 
@@ -422,14 +425,4 @@ function createGetAttributeValueMethod(bucket, interfaceName, attribute) {
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function ElementGroup(vertexStartIndex, elementStartIndex, secondElementStartIndex) {
-    // the offset into the vertex buffer of the first vertex in this group
-    this.vertexStartIndex = vertexStartIndex;
-    this.elementStartIndex = elementStartIndex;
-    this.secondElementStartIndex = secondElementStartIndex;
-    this.elementLength = 0;
-    this.vertexLength = 0;
-    this.secondElementLength = 0;
 }
