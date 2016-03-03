@@ -65,8 +65,8 @@ function Bucket(options) {
     this.zoom = options.zoom;
     this.overscaling = options.overscaling;
     this.layer = options.layer;
+    this.childLayers = options.childLayers;
 
-    this.layerIDs = [this.layer.id];
     this.type = this.layer.type;
     this.features = [];
     this.id = this.layer.id;
@@ -76,7 +76,7 @@ function Bucket(options) {
     this.minZoom = this.layer.minzoom;
     this.maxZoom = this.layer.maxzoom;
 
-    this.createStyleLayer();
+    this.createStyleLayers();
     this.attributes = {};
     for (var interfaceName in this.programInterfaces) {
         var interfaceAttributes = this.attributes[interfaceName] = { enabled: [], disabled: [] };
@@ -120,7 +120,6 @@ function isAttributeDisabled(bucket, attribute) {
  * @private
  */
 Bucket.prototype.populateBuffers = function() {
-    this.createStyleLayer();
     this.createArrays();
 
     for (var i = 0; i < this.features.length; i++) {
@@ -339,17 +338,29 @@ Bucket.prototype.serialize = function() {
         arrays: util.mapObject(this.arrays, function(array) {
             return array.serialize();
         }),
-        arrayTypes: this.arrayTypes
+        arrayTypes: this.arrayTypes,
+        childLayers: this.childLayers.map(function(layer) {
+            return { id: layer.id };
+        })
     };
 };
 
-Bucket.prototype.createStyleLayer = function(layer) {
-    if (layer) {
-        this.layer = layer;
-    } else if (!(this.layer instanceof StyleLayer)) {
-        this.layer = StyleLayer.create(this.layer);
-        this.layer.updatePaintTransitions([], {transition: false});
-        this.layer.recalculate(this.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+Bucket.prototype.createStyleLayers = function(style) {
+    var that = this;
+    var refLayer = this.layer = create(this.layer);
+    this.childLayers = this.childLayers.map(create);
+
+    function create(layer) {
+        if (style) {
+            return style.getLayer(layer.id);
+        } else if (!(layer instanceof StyleLayer)) {
+            layer = StyleLayer.create(layer, refLayer);
+            layer.updatePaintTransitions({}, {transition: false});
+            layer.recalculate(that.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
+            return layer;
+        } else {
+            return layer;
+        }
     }
 };
 

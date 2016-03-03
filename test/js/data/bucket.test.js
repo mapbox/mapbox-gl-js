@@ -58,6 +58,7 @@ test('Bucket', function(t) {
         var Class = createClass();
         return new Class({
             layer: { type: 'circle' },
+            childLayers: [{ type: 'circle' }],
             buffers: {}
         });
     }
@@ -142,7 +143,6 @@ test('Bucket', function(t) {
 
     t.test('layout properties', function(t) {
         var bucket = create();
-        bucket.createStyleLayer();
         t.equal(bucket.layer.layout.visibility, 'visible');
         t.end();
     });

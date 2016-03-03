@@ -13,9 +13,11 @@ var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__
 var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
+    var layer = { id: 'test', type: 'line', layout: {} };
     var bucket = new LineBucket({
         buffers: {},
-        layer: { id: 'test', type: 'line', layout: {} }
+        layer: layer,
+        childLayers: [layer]
     });
     bucket.createArrays();
 

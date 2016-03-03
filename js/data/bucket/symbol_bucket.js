@@ -115,7 +115,6 @@ SymbolBucket.prototype.programInterfaces = {
 };
 
 SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) {
-    this.createStyleLayer();
 
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
@@ -479,8 +478,6 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
 };
 
 SymbolBucket.prototype.updateIcons = function(icons) {
-    this.createStyleLayer();
-
     var iconValue = this.layer.layout['icon-image'];
     if (!iconValue) return;
 
@@ -492,8 +489,6 @@ SymbolBucket.prototype.updateIcons = function(icons) {
 };
 
 SymbolBucket.prototype.updateFont = function(stacks) {
-    this.createStyleLayer();
-
     var fontName = this.layer.layout['text-font'],
         stack = stacks[fontName] = stacks[fontName] || {};
 

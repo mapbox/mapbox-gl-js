@@ -33,7 +33,7 @@ function drawCircles(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        bucket.createStyleLayer(layer);
+        bucket.createStyleLayers(painter.style);
         var elementGroups = bucket.elementGroups.circle;
         if (!elementGroups) continue;
 
