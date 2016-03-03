@@ -57,8 +57,8 @@ test('Bucket', function(t) {
     function create() {
         var Class = createClass();
         return new Class({
-            layer: { type: 'circle' },
-            childLayers: [{ type: 'circle' }],
+            layer: { id: 'layerid', type: 'circle' },
+            childLayers: [{ id: 'layerid', type: 'circle' }],
             buffers: {}
         });
     }
@@ -72,9 +72,9 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.map, 17);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(v0.layerid__map, 17);
+        t.equal(v0.layerid__box0, 34);
+        t.equal(v0.layerid__box1, 84);
 
         var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);
@@ -121,9 +121,9 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.map, 17);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(v0.layerid__map, 17);
+        t.equal(v0.layerid__box0, 34);
+        t.equal(v0.layerid__box1, 84);
 
         var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);

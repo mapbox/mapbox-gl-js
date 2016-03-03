@@ -165,7 +165,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
-            bucket.setAttribPointers('line', gl, program, group.vertexOffset);
+            bucket.setAttribPointers('line', gl, program, group.vertexOffset, layer);
 
             var count = group.elementLength * 3;
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
