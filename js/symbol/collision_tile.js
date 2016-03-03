@@ -78,6 +78,9 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
         collisionBoxArray.at(3),
         collisionBoxArray.at(4)
     ];
+
+    this.box = collisionBoxArray.at(0);
+    this.blocking = collisionBoxArray.at(0);
 }
 
 CollisionTile.prototype.serialize = function() {
@@ -108,8 +111,8 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
     var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
     var boxArray = this.collisionBoxArray;
-    var box = boxArray._struct;
-    var blocking = boxArray.at(0);
+    var box = this.box;
+    var blocking = this.blocking;
 
     for (var b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
 
@@ -207,7 +210,7 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
         blockingBoxKeys.push(blockingBoxKeys2[k]);
     }
 
-    var blocking = this.collisionBoxArray._struct;
+    var blocking = this.blocking;
     for (var i = 0; i < blockingBoxKeys.length; i++) {
         blocking._setIndex(blockingBoxKeys[i]);
 
@@ -285,7 +288,7 @@ CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minP
 
     var grid = ignorePlacement ? this.ignoredGrid : this.grid;
 
-    var box = this.collisionBoxArray._struct;
+    var box = this.box;
     for (var k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
         box._setIndex(k);
         box.placementScale = minPlacementScale;

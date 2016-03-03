@@ -127,7 +127,6 @@ function StructArray(initialAllocatedLength) {
         }
         this.resize(initialAllocatedLength);
     }
-    this._struct = new this.StructType(this, 0);
 }
 
 StructArray.prototype.DEFAULT_ALLOCATED_LENGTH = 100;
