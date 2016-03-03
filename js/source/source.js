@@ -78,21 +78,53 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
     var styleLayers = this.map.style._layers;
     var features = [];
 
-    for (var r = 0; r < tilesIn.length; r++) {
-        var tileIn = tilesIn[r];
-        if (!tileIn.tile.loaded || !tileIn.tile.featureTree) continue;
-        tileIn.tile.featureTree.query(features, {
-            queryGeometry: tileIn.queryGeometry,
-            scale: tileIn.scale,
-            tileSize: tileIn.tile.tileSize,
-            bearing: bearing,
-            params: params
-        }, styleLayers);
-    }
+    var async = true;
+    if (async) {
+        util.asyncAll(tilesIn, function(tileIn, callback) {
 
-    setTimeout(function() {
-        callback(null, features);
-    }, 0);
+            if (!tileIn.tile.loaded || !tileIn.tile.featureTree) return callback();
+
+            var featureTree = tileIn.tile.featureTree.serialize();
+            var collisionTile = tileIn.tile.collisionTile.serialize();
+
+            this.dispatcher.send('query rendered features', {
+                uid: tileIn.tile.uid,
+                source: this.id,
+                queryGeometry: tileIn.queryGeometry,
+                scale: tileIn.scale,
+                tileSize: tileIn.tile.tileSize,
+                classes: classes,
+                zoom: zoom,
+                bearing: bearing,
+                params: params,
+                featureTree: featureTree.data,
+                collisionTile: collisionTile.data,
+                rawTileData: tileIn.tile.rawTileData.slice()
+            }, function(err_, data) {
+                if (data) tileIn.tile.featureTree.makeGeoJSON(features, data);
+                callback();
+            }, tileIn.tile.workerID);
+        }.bind(this), function() {
+            callback(null, features);
+        });
+
+    } else {
+        for (var r = 0; r < tilesIn.length; r++) {
+            var tileIn = tilesIn[r];
+            if (!tileIn.tile.loaded || !tileIn.tile.featureTree) continue;
+            tileIn.tile.featureTree.query(features, {
+                queryGeometry: tileIn.queryGeometry,
+                scale: tileIn.scale,
+                tileSize: tileIn.tile.tileSize,
+                bearing: bearing,
+                params: params
+            }, styleLayers, true);
+        }
+
+        setTimeout(function() {
+            callback(null, features);
+        }, 0);
+    }
 };
 
 exports._querySourceFeatures = function(params, callback) {

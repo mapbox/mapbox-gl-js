@@ -13,6 +13,9 @@ var geojsonvt = require('geojson-vt');
 var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
 
+var CollisionTile = require('../symbol/collision_tile');
+var FeatureTree = require('../data/feature_tree');
+
 module.exports = function(self) {
     return new Worker(self);
 };
@@ -208,7 +211,11 @@ util.extend(Worker.prototype, {
                 }
             }
 
-            callback(null, tile.featureTree.query(params, this.styleLayersByID));
+            var collisionTile = new CollisionTile(params.collisionTile, tile.collisionBoxArray);
+            var featureTree = new FeatureTree(params.featureTree, params.rawTileData, collisionTile);
+
+            var featureArrayBuffer = featureTree.query(undefined, params, this.styleLayersByID, false);
+            callback(null, featureArrayBuffer, [featureArrayBuffer]);
         } else {
             callback(null, []);
         }

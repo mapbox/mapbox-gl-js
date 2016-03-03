@@ -6,9 +6,9 @@ module.exports = Feature;
 
 function Feature(vectorTileFeature, z, x, y) {
     this._vectorTileFeature = vectorTileFeature;
-    this._z = z;
-    this._x = x;
-    this._y = y;
+    vectorTileFeature._z = z;
+    vectorTileFeature._x = x;
+    vectorTileFeature._y = y;
 
     this.properties = vectorTileFeature.properties;
 
@@ -21,12 +21,12 @@ Feature.prototype = {
     type: "Feature",
 
     get geometry() {
-        if (!this._geometry) {
+        if (this._geometry === undefined) {
             var feature = this._vectorTileFeature;
             var coords = projectCoords(
                 feature.loadGeometry(),
                 feature.extent,
-                this._z, this._x, this._y);
+                feature._z, feature._x, feature._y);
 
             var type = VectorTileFeature.types[feature.type];
 
@@ -49,6 +49,19 @@ Feature.prototype = {
             this._vectorTileFeature = null;
         }
         return this._geometry;
+    },
+
+    set geometry(g) {
+        this._geometry = g;
+    },
+
+    toJSON: function() {
+        var json = {};
+        for (var i in this) {
+            if (i === '_geometry' || i === '_vectorTileFeature') continue;
+            json[i] = this[i];
+        }
+        return json;
     }
 };
 

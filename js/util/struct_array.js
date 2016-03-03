@@ -81,6 +81,7 @@ function createEmplaceBack(members, BYTES_PER_ELEMENT) {
     'var pos2 = pos1 / 2;\n' +
     'var pos4 = pos1 / 4;\n' +
     'this.length++;\n' +
+    'this.metadataArray[0]++;\n' +
     'if (this.length > this.allocatedLength) this.resize(this.length);\n';
     for (var m = 0; m < members.length; m++) {
         var member = members[m];
@@ -119,8 +120,8 @@ function StructArray(initialAllocatedLength) {
     if (initialAllocatedLength instanceof ArrayBuffer) {
         this.arrayBuffer = initialAllocatedLength;
         this._refreshViews();
-        this.length = this.uint8Array.length / this.BYTES_PER_ELEMENT;
-        this.size = this.uint8Array.length;
+        this.length = this.metadataArray[0];
+        this.allocatedLength = this.uint8Array.length / this.BYTES_PER_ELEMENT;
     } else {
         if (initialAllocatedLength === undefined) {
             initialAllocatedLength = this.DEFAULT_ALLOCATED_LENGTH;
@@ -133,10 +134,11 @@ StructArray.prototype.DEFAULT_ALLOCATED_LENGTH = 100;
 StructArray.prototype.RESIZE_FACTOR = 1.5;
 StructArray.prototype.allocatedLength = 0;
 StructArray.prototype.length = 0;
+var METADATA_BYTES = align(4, 8);
 
 StructArray.prototype.resize = function(n) {
     this.allocatedLength = Math.max(n, Math.floor(this.allocatedLength * this.RESIZE_FACTOR));
-    this.arrayBuffer = new ArrayBuffer(Math.floor(this.allocatedLength * this.BYTES_PER_ELEMENT / 8) * 8);
+    this.arrayBuffer = new ArrayBuffer(METADATA_BYTES + align(this.allocatedLength * this.BYTES_PER_ELEMENT, 8));
 
     var oldUint8Array = this.uint8Array;
     this._refreshViews();
@@ -145,8 +147,9 @@ StructArray.prototype.resize = function(n) {
 
 StructArray.prototype._refreshViews = function() {
     for (var t in viewTypes) {
-        this[getArrayViewName(t)] = new viewTypes[t](this.arrayBuffer);
+        this[getArrayViewName(t)] = new viewTypes[t](this.arrayBuffer, METADATA_BYTES);
     }
+    this.metadataArray = new Uint32Array(this.arrayBuffer, 0, 1);
 };
 
 StructArray.prototype.at = function(index) {
