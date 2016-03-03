@@ -29,12 +29,14 @@ test('SymbolBucket', function(t) {
     var stacks = { 'Test': glyphs };
 
     function bucketSetup() {
+        var layer = { id: 'test', type: 'symbol', layout: {'text-font': ['Test'] }};
         var bucket = new SymbolBucket({
             buffers: buffers,
             overscaling: 1,
             zoom: 0,
             collisionBoxArray: collisionBoxArray,
-            layer: { id: 'test', type: 'symbol', layout: {'text-font': ['Test'] }},
+            layer: layer,
+            childLayers: [layer],
             tileExtent: 4096
         });
         bucket.createArrays();

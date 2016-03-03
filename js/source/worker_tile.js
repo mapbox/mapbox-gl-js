@@ -40,6 +40,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
     var sourceLayerId;
     var bucket;
 
+    var childLayers = {};
+    for (i = 0; i < layers.length; i++) {
+        layer = layers[i];
+        var key = layer.ref || layer.id;
+        childLayers[key] = childLayers[key] || [];
+        childLayers[key].push(layer);
+    }
+
     // Map non-ref layers to buckets.
     for (i = 0; i < layers.length; i++) {
         layer = layers[i];
@@ -54,6 +62,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         bucket = Bucket.create({
             layer: layer,
             index: i,
+            childLayers: childLayers[layer.id],
             zoom: this.zoom,
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
@@ -68,14 +77,6 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
             sourceLayerId = layer['source-layer'];
             bucketsBySourceLayer[sourceLayerId] = bucketsBySourceLayer[sourceLayerId] || {};
             bucketsBySourceLayer[sourceLayerId][layer.id] = bucket;
-        }
-    }
-
-    // Index ref layers.
-    for (i = 0; i < layers.length; i++) {
-        layer = layers[i];
-        if (layer.source === this.source && layer.ref && bucketsById[layer.ref]) {
-            bucketsById[layer.ref].layerIDs.push(layer.id);
         }
     }
 
@@ -112,7 +113,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
 
-        featureIndex.bucketLayerIDs[bucket.index] = bucket.layerIDs;
+        featureIndex.bucketLayerIDs[bucket.index] = bucket.childLayers.map(getLayerId);
 
         buckets.push(bucket);
 
@@ -268,4 +269,8 @@ function getTransferables(buckets) {
         }
     }
     return transferables;
+}
+
+function getLayerId(layer) {
+    return layer.id;
 }

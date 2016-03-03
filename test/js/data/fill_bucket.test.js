@@ -17,9 +17,11 @@ test('FillBucket', function(t) {
     var warn = console.warn;
     console.warn = function() {};
 
+    var layer = { id: 'test', type: 'fill', layout: {} };
     var bucket = new FillBucket({
         buffers: {},
-        layer: { id: 'test', type: 'fill', layout: {} }
+        layer: layer,
+        childLayers: [layer]
     });
     bucket.createArrays();
 
