@@ -77,23 +77,7 @@ function Bucket(options) {
     this.maxZoom = this.layer.maxzoom;
 
     this.createStyleLayers();
-    this.attributes = {};
-    for (var interfaceName in this.programInterfaces) {
-        var interfaceAttributes = this.attributes[interfaceName] = { enabled: [], disabled: [] };
-        var interface_ = this.programInterfaces[interfaceName];
-        for (var i = 0; i < interface_.attributes.length; i++) {
-            var attribute = interface_.attributes[i];
-            if (isAttributeDisabled(this, attribute)) {
-                interfaceAttributes.disabled.push(util.extend({
-                    getValue: createGetAttributeValueMethod(this, interfaceName, attribute)
-                }, attribute));
-            } else {
-                interfaceAttributes.enabled.push(util.extend({
-                    programName: 'a_' + attribute.name
-                }, attribute));
-            }
-        }
-    }
+    this.attributes = createAttributes(this);
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
@@ -102,16 +86,6 @@ function Bucket(options) {
             var type = (arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
             return new Buffer(array, arrayType, type);
         });
-    }
-}
-
-function isAttributeDisabled(bucket, attribute) {
-    if (attribute.isDisabled === undefined || attribute.isDisabled === false) {
-        return false;
-    } else if (attribute.isDisabled === true) {
-        return true;
-    } else {
-        return !!attribute.isDisabled.call(bucket);
     }
 }
 
@@ -177,8 +151,8 @@ Bucket.prototype.createArrays = function() {
         var programInterface = this.programInterfaces[programName];
 
         if (programInterface.vertexBuffer) {
-            var vertexBufferName = this.getBufferName(programName, 'vertex');
             var vertexAddMethodName = this.getAddMethodName(programName, 'vertex');
+            var vertexBufferName = this.getBufferName(programName, 'vertex');
 
             var VertexArrayType = new StructArrayType({
                 members: this.attributes[programName].enabled,
@@ -188,12 +162,7 @@ Bucket.prototype.createArrays = function() {
             arrays[vertexBufferName] = new VertexArrayType();
             arrayTypes[vertexBufferName] = VertexArrayType.serialize();
 
-            this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(
-                programName,
-                programInterface,
-                this.getBufferName(programName, 'vertex'),
-                this.attributes[programName].enabled
-            );
+            this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(this, programName);
         }
 
         if (programInterface.elementBuffer) {
@@ -248,14 +217,16 @@ var AttributeType = {
  * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
  * @param {Array} arguments to be passed to disabled attribute value functions
  */
-Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, args) {
+Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, args) {
     var attribute;
 
     // Set disabled attributes
     var disabledAttributes = this.attributes[programName].disabled;
     for (var i = 0; i < disabledAttributes.length; i++) {
         attribute = disabledAttributes[i];
-        var attributeId = program['a_' + attribute.name];
+        if (attribute.isLayerConstant === false && layer.id !== attribute.layerId) continue;
+
+        var attributeId = program[attribute.programName];
         gl.disableVertexAttribArray(attributeId);
         gl['vertexAttrib' + attribute.components + 'fv'](attributeId, attribute.getValue.apply(this, args));
     }
@@ -266,6 +237,7 @@ Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, 
 
     for (var j = 0; j < enabledAttributes.length; j++) {
         attribute = enabledAttributes[j];
+        if (attribute.isLayerConstant === false && layer.id !== attribute.layerId) continue;
 
         gl.vertexAttribPointer(
             program[attribute.programName],
@@ -329,10 +301,7 @@ Bucket.prototype.getBufferName = function(programName, type) {
 
 Bucket.prototype.serialize = function() {
     return {
-        layer: {
-            id: this.layer.id,
-            type: this.layer.type
-        },
+        layer: this.layer.serialize(),
         zoom: this.zoom,
         elementGroups: this.elementGroups,
         arrays: util.mapObject(this.arrays, function(array) {
@@ -340,7 +309,7 @@ Bucket.prototype.serialize = function() {
         }),
         arrayTypes: this.arrayTypes,
         childLayers: this.childLayers.map(function(layer) {
-            return { id: layer.id };
+            return layer.serialize();
         })
     };
 };
@@ -374,19 +343,25 @@ Bucket.prototype._premultiplyColor = util.premultiply;
 
 
 var createVertexAddMethodCache = {};
-function createVertexAddMethod(programName, programInterface, bufferName, enabledAttributes) {
-    var body = '';
+function createVertexAddMethod(bucket, interfaceName) {
+    var enabledAttributes = bucket.attributes[interfaceName].enabled;
+    var programInterface = bucket.programInterfaces[interfaceName];
+
+    var body = 'var layer;\n';
 
     var pushArgs = [];
+
     for (var i = 0; i < enabledAttributes.length; i++) {
         var attribute = enabledAttributes[i];
 
         var attributePushArgs = [];
         if (Array.isArray(attribute.value)) {
-            attributePushArgs = attribute.value;
+            attributePushArgs = attributePushArgs.concat(attribute.value);
+            attributePushArgs[0] = 'layer = this.childLayers[' + attribute.layerIndex + '] &&' + attributePushArgs[0];
         } else {
+            body += 'layer = this.childLayers[' + attribute.layerIndex + '];\n';
             var attributeId = '_' + i;
-            body += 'var ' + attributeId + ' = ' + attribute.value + ';';
+            body += 'var ' + attributeId + ' = ' + attribute.value + ';\n';
             for (var j = 0; j < attribute.components; j++) {
                 attributePushArgs.push(attributeId + '[' + j + ']');
             }
@@ -405,6 +380,7 @@ function createVertexAddMethod(programName, programInterface, bufferName, enable
         pushArgs = pushArgs.concat(multipliedAttributePushArgs);
     }
 
+    var bufferName = bucket.getBufferName(interfaceName, 'vertex');
     body += 'return this.arrays.' + bufferName + '.emplaceBack(' + pushArgs.join(',') + ');';
 
     if (!createVertexAddMethodCache[body]) {
@@ -431,24 +407,27 @@ function createElementBufferType(components) {
 }
 
 var _getAttributeValueCache = {};
-function createGetAttributeValueMethod(bucket, interfaceName, attribute) {
+function createGetAttributeValueMethod(bucket, interfaceName, attribute, layerIndex) {
     if (!_getAttributeValueCache[interfaceName]) {
         _getAttributeValueCache[interfaceName] = {};
     }
 
     if (!_getAttributeValueCache[interfaceName][attribute.name]) {
         var bodyArgs = bucket.programInterfaces[interfaceName].attributeArgs;
-        var body = 'return ';
+        var body = '';
+
+        body += 'var layer = this.childLayers[' + layerIndex + '];\n';
 
         if (Array.isArray(attribute.value)) {
-            body += '[' + attribute.value.join(', ') + ']';
+            body += 'return [' + attribute.value.join(', ') + ']';
         } else {
-            body += attribute.value;
+            body += 'return ' + attribute.value;
         }
 
         if (attribute.multiplier) {
             body += '.map(function(v) { return v * ' + attribute.multiplier + '; })';
         }
+        body += ';';
 
         _getAttributeValueCache[interfaceName][attribute.name] = new Function(bodyArgs, body);
     }
@@ -458,4 +437,47 @@ function createGetAttributeValueMethod(bucket, interfaceName, attribute) {
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function createAttributes(bucket) {
+    var attributes = {};
+    for (var interfaceName in bucket.programInterfaces) {
+        var interfaceAttributes = attributes[interfaceName] = { enabled: [], disabled: [] };
+        var interface_ = bucket.programInterfaces[interfaceName];
+        for (var i = 0; i < interface_.attributes.length; i++) {
+            var attribute = interface_.attributes[i];
+            for (var j = 0; j < bucket.childLayers.length; j++) {
+                var layer = bucket.childLayers[j];
+                if (attribute.isLayerConstant !== false && layer.id !== bucket.layer.id) continue;
+                if (isAttributeDisabled(bucket, attribute, layer)) {
+                    interfaceAttributes.disabled.push(util.extend({}, attribute, {
+                        getValue: createGetAttributeValueMethod(bucket, interfaceName, attribute, j),
+                        name: layer.id + '__' + attribute.name,
+                        programName: 'a_' + attribute.name,
+                        layerId: layer.id,
+                        layerIndex: j
+                    }));
+                } else {
+                    interfaceAttributes.enabled.push(util.extend({}, attribute, {
+                        name: layer.id + '__' + attribute.name,
+                        programName: 'a_' + attribute.name,
+                        layerId: layer.id,
+                        layerIndex: j
+                    }));
+                }
+            }
+        }
+    }
+    return attributes;
+}
+
+
+function isAttributeDisabled(bucket, attribute, layer) {
+    if (attribute.isDisabled === undefined || attribute.isDisabled === false) {
+        return false;
+    } else if (attribute.isDisabled === true) {
+        return true;
+    } else {
+        return !!attribute.isDisabled.call(bucket, layer);
+    }
 }
