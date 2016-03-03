@@ -7,6 +7,8 @@ var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var GeoJSONFeature = require('../util/vectortile_to_geojson');
 var featureFilter = require('feature-filter');
+var CollisionTile = require('../symbol/collision_tile');
+var CollisionBoxArray = require('../symbol/collision_box');
 
 module.exports = Tile;
 
@@ -61,7 +63,9 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
-        this.featureTree = new FeatureTree(data.featureTree);
+        this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
+        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
+        this.featureTree = new FeatureTree(data.featureTree, data.rawTileData, this.collisionTile);
         this.rawTileData = data.rawTileData;
         this.buckets = unserializeBuckets(data.buckets);
     },
@@ -76,6 +80,9 @@ Tile.prototype = {
      */
     reloadSymbolData: function(data, painter) {
         if (this.isUnloaded) return;
+
+        this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
+        this.featureTree.setCollisionTile(this.collisionTile);
 
         // Destroy and delete existing symbol buckets
         for (var id in this.buckets) {
@@ -137,12 +144,8 @@ Tile.prototype = {
         }
     },
 
-<<<<<<< HEAD
     getBucket: function(layer) {
         return this.buckets && this.buckets[layer.ref || layer.id];
-=======
-    getElementGroups: function(layer, shaderName) {
-        return this.elementGroups && this.elementGroups[layer.ref || layer.id] && this.elementGroups[layer.ref || layer.id][shaderName];
     },
 
     querySourceFeatures: function(result, params) {
@@ -167,7 +170,6 @@ Tile.prototype = {
                 result.push(geojsonFeature);
             }
         }
->>>>>>> move querySourceFeatures to main thread
     }
 };
 

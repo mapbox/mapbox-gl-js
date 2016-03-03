@@ -3,7 +3,6 @@
 var Point = require('point-geometry');
 var EXTENT = require('../data/bucket').EXTENT;
 var Grid = require('../util/grid');
-var CollisionBox = require('../symbol/collision_box');
 
 module.exports = CollisionTile;
 
@@ -20,9 +19,9 @@ module.exports = CollisionTile;
 function CollisionTile(angle, pitch, collisionBoxArray) {
     if (typeof angle === 'object') {
         var serialized = angle;
+        collisionBoxArray = pitch;
         angle = serialized.angle;
         pitch = serialized.pitch;
-        collisionBoxArray = new CollisionBox(serialized.collisionBoxArray);
         this.grid = new Grid(serialized.grid);
         this.ignoredGrid = new Grid(serialized.ignoredGrid);
     } else {
@@ -84,12 +83,15 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
 }
 
 CollisionTile.prototype.serialize = function() {
-    return {
+    var data = {
         angle: this.angle,
         pitch: this.pitch,
-        collisionBoxArray: this.collisionBoxArray.arrayBuffer.slice(),
         grid: this.grid.toArrayBuffer(),
         ignoredGrid: this.ignoredGrid.toArrayBuffer()
+    };
+    return {
+        data: data,
+        transferables: [data.grid, data.ignoredGrid]
     };
 };
 
@@ -110,7 +112,6 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
     var minPlacementScale = this.minScale;
     var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
-    var boxArray = this.collisionBoxArray;
     var box = this.box;
     var blocking = this.blocking;
 

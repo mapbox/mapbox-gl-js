@@ -28,7 +28,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
 
     this.collisionBoxArray = new CollisionBoxArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-    this.featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
+    var featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
     var sourceLayerNumberMapping = new StringNumberMapping(data.layers ? Object.keys(data.layers).sort() : []);
 
     var stats = { _total: 0 };
@@ -105,14 +105,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    this.featureTree.numberToLayerIDs = [];
+    featureTree.numberToLayerIDs = [];
 
     for (var id in bucketsById) {
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
 
-        bucket.index = this.featureTree.numberToLayerIDs.length;
-        this.featureTree.numberToLayerIDs.push(bucket.layerIDs);
+        bucket.index = featureTree.numberToLayerIDs.length;
+        featureTree.numberToLayerIDs.push(bucket.layerIDs);
 
         buckets.push(bucket);
 
@@ -184,7 +184,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
         if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
-                tile.featureTree.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
+                featureTree.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
         }
 
@@ -202,14 +202,19 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
             tile.redoPlacementAfterDone = false;
         }
 
-        var featureTree = tile.featureTree.serialize();
+        var featureTree_ = featureTree.serialize();
+        var collisionTile_ = collisionTile.serialize();
+        var collisionBoxArray = tile.collisionBoxArray.arrayBuffer.slice();
+        var transferables = [rawTileData, collisionBoxArray].concat(featureTree.transferables).concat(collisionTile_.transferables);
 
         callback(null, {
             buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
             bucketStats: stats, // TODO put this in a separate message?
-            featureTree: featureTree.data,
+            featureTree: featureTree_.data,
+            collisionTile: collisionTile_.data,
+            collisionBoxArray: collisionBoxArray,
             rawTileData: rawTileData
-        }, getTransferables(buckets).concat(featureTree.transferables.concat(rawTileData)));
+        }, getTransferables(buckets).concat(transferables));
     }
 };
 
@@ -222,18 +227,20 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
 
     var collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
 
-    this.featureTree.setCollisionTile(collisionTile);
     var buckets = this.symbolBuckets;
 
     for (var i = buckets.length - 1; i >= 0; i--) {
         buckets[i].placeFeatures(collisionTile, showCollisionBoxes);
     }
 
+    var collisionTile_ = collisionTile.serialize();
+
     return {
         result: {
-            buckets: buckets.filter(isBucketEmpty).map(serializeBucket)
+            buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
+            collisionTile: collisionTile_.data
         },
-        transferables: getTransferables(buckets)
+        transferables: getTransferables(buckets).concat(collisionTile_.transferables)
     };
 };
 

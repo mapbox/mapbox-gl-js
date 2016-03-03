@@ -7,7 +7,6 @@ var featureFilter = require('feature-filter');
 var createStructArrayType = require('../util/struct_array');
 var Grid = require('../util/grid');
 var StringNumberMapping = require('../util/string_number_mapping');
-var CollisionTile = require('../symbol/collision_tile');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var GeoJSONFeature = require('../util/vectortile_to_geojson');
@@ -29,7 +28,6 @@ function FeatureTree(coord, overscaling, collisionTile) {
         var rawTileData = overscaling;
         coord = serialized.coord;
         overscaling = serialized.overscaling;
-        collisionTile = new CollisionTile(serialized.collisionTile);
         this.grid = new Grid(serialized.grid);
         this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
         this.rawTileData = rawTileData;
@@ -74,24 +72,16 @@ FeatureTree.prototype.setCollisionTile = function(collisionTile) {
 };
 
 FeatureTree.prototype.serialize = function() {
-    var collisionTile = this.collisionTile.serialize();
     var data = {
         coord: this.coord,
         overscaling: this.overscaling,
-        collisionTile: collisionTile,
         grid: this.grid.toArrayBuffer(),
         featureIndexArray: this.featureIndexArray.arrayBuffer,
         numberToLayerIDs: this.numberToLayerIDs
     };
     return {
         data: data,
-        transferables: [
-            collisionTile.collisionBoxArray,
-            collisionTile.grid,
-            collisionTile.ignoredGrid,
-            data.grid,
-            data.featureIndexArray
-        ]
+        transferables: [data.grid, data.featureIndexArray]
     };
 };
 
