@@ -155,7 +155,7 @@ Tile.prototype = {
             this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         }
 
-        var layer = this.vtLayers[params.sourceLayer];
+        var layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
 
         if (!layer) return;
 

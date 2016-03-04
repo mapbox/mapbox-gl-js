@@ -12,6 +12,7 @@ var supercluster = require('supercluster');
 var geojsonvt = require('geojson-vt');
 var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
+var vtpbf = require('vt-pbf');
 
 var CollisionTile = require('../symbol/collision_tile');
 var FeatureTree = require('../data/feature_tree');
@@ -184,7 +185,10 @@ util.extend(Worker.prototype, {
         this.loaded[source][params.uid] = tile;
 
         if (geoJSONTile) {
-            tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
+            var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+            geojsonWrapper.name = '_geojsonTileLayer';
+            var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+            tile.parse(geojsonWrapper, this.layers, this.actor, callback, rawTileData);
         } else {
             return callback(null, null); // nothing in the given tile
         }

@@ -10,6 +10,7 @@ module.exports = GeoJSONWrapper;
 function GeoJSONWrapper(features) {
     this.features = features;
     this.length = features.length;
+    this.extent = EXTENT;
 }
 
 GeoJSONWrapper.prototype.feature = function(i) {

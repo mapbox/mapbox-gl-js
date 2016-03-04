@@ -29,7 +29,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
     this.collisionBoxArray = new CollisionBoxArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
     var featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
-    var sourceLayerNumberMapping = new StringNumberMapping(data.layers ? Object.keys(data.layers).sort() : []);
+    var sourceLayerNumberMapping = new StringNumberMapping(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
 
     var stats = { _total: 0 };
 
@@ -57,7 +57,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
             collisionBoxArray: this.collisionBoxArray,
-            sourceLayerIndex: sourceLayerNumberMapping.stringToNumber[layer['source-layer']]
+            sourceLayerIndex: sourceLayerNumberMapping.stringToNumber[layer['source-layer'] || '_geojsonTileLayer']
         });
         bucket.createFilter();
 

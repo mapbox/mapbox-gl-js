@@ -105,7 +105,7 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID, returnGeoJ
     if (!this.vtLayers) {
         if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
-        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : []);
+        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
     if (!returnGeoJSON) {
@@ -241,7 +241,7 @@ FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray) {
     if (!this.vtLayers) {
         if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
-        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : []);
+        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
     featureIndexArray = new FilteredFeatureIndexArray(featureIndexArray);
