@@ -130,10 +130,16 @@ map.on('load', function() {
                     "icon-image": symbol + "-15",
                     "icon-allow-overlap": true,
                     "text-field": symbol,
-                    "text-offset": [0, 1]
+                    "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+                    "text-size": 11,
+                    "text-transform": "uppercase",
+                    "text-letter-spacing": 0.05,
+                    "text-offset": [0, 1.5]
                 },
                 "paint": {
-                    "text-color": "#3887BE"
+                    "text-color": "#202",
+                    "text-halo-color": "#fff",
+                    "text-halo-width": 2
                 },
                 "filter": ["==", "marker-symbol", symbol]
             });
