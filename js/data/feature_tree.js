@@ -354,8 +354,10 @@ function polygonIntersectsBufferedMultiLine(polygon, multiLine, radius) {
     for (var i = 0; i < multiLine.length; i++) {
         var line = multiLine[i];
 
-        for (var k = 0; k < line.length; k++) {
-            if (polygonContainsPoint(polygon, line[k])) return true;
+        if (polygon.length >= 3) {
+            for (var k = 0; k < line.length; k++) {
+                if (polygonContainsPoint(polygon, line[k])) return true;
+            }
         }
 
         if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
@@ -365,11 +367,13 @@ function polygonIntersectsBufferedMultiLine(polygon, multiLine, radius) {
 
 function lineIntersectsBufferedLine(lineA, lineB, radius) {
 
-    if (lineIntersectsLine(lineA, lineB)) return true;
+    if (lineA.length > 1) {
+        if (lineIntersectsLine(lineA, lineB)) return true;
 
-    // Check whether any point in either line is within radius of the other line
-    for (var j = 0; j < lineB.length; j++) {
-        if (pointIntersectsBufferedLine(lineB[j], lineA, radius)) return true;
+        // Check whether any point in either line is within radius of the other line
+        for (var j = 0; j < lineB.length; j++) {
+            if (pointIntersectsBufferedLine(lineB[j], lineA, radius)) return true;
+        }
     }
 
     for (var k = 0; k < lineA.length; k++) {
