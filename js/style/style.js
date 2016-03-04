@@ -415,7 +415,7 @@ Style.prototype = util.inherit(Evented, {
         var error = null;
 
         if (params.layer) {
-            params.layerIds = Array.isArray(params.layer) ? params.layer : [params.layer];
+            params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
         util.asyncAll(Object.keys(this.sources), function(id, callback) {
@@ -427,18 +427,8 @@ Style.prototype = util.inherit(Evented, {
             });
         }.bind(this), function() {
             if (error) return callback(error);
-
-            callback(null, features
-                .filter(function(feature) {
-                    return this._layers[feature.layer] !== undefined;
-                }.bind(this))
-                .map(function(feature) {
-                    feature.layer = this._layers[feature.layer].serialize({
-                        includeRefProperties: true
-                    });
-                    return feature;
-                }.bind(this)));
-        }.bind(this));
+            callback(null, features);
+        });
     },
 
     _remove: function() {

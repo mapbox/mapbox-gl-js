@@ -101,7 +101,7 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
                 collisionTile: collisionTile.data,
                 rawTileData: tileIn.tile.rawTileData.slice()
             }, function(err_, data) {
-                if (data) tileIn.tile.featureTree.makeGeoJSON(features, data);
+                if (data) tileIn.tile.featureTree.makeGeoJSON(features, data, styleLayers);
                 callback();
             }, tileIn.tile.workerID);
         }.bind(this), function() {

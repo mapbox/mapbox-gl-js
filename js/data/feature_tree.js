@@ -152,11 +152,11 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID, returnGeoJ
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     var match = this.featureIndexArray.at(0);
-    this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIds, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.at(0);
-    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIds, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     if (!returnGeoJSON) {
         result = result.arrayBuffer;
@@ -194,6 +194,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
             }
 
             var styleLayer = styleLayersByID[layerID];
+            if (!styleLayer) continue;
 
             var translatedPolygon;
             if (styleLayer.type !== 'symbol') {
@@ -228,7 +229,9 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
 
             if (returnGeoJSON) {
                 var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-                geojsonFeature.layer = layerID;
+                geojsonFeature.layer = styleLayer.serialize({
+                    includeRefProperties: true
+                });
                 result.push(geojsonFeature);
             } else {
                 result.emplaceBack(match.featureIndex, match.sourceLayerIndex, match.bucketIndex, l);
@@ -237,7 +240,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
     }
 };
 
-FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray) {
+FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray, styleLayers) {
     if (!this.vtLayers) {
         if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
@@ -260,8 +263,14 @@ FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray) {
         }
 
         var feature = cachedFeatures[featureIndex] = cachedFeatures[featureIndex] || sourceLayer.feature(featureIndex);
+
+        var styleLayer = styleLayers[this.numberToLayerIDs[indexes.bucketIndex][indexes.layerIndex]];
+        if (!styleLayer) continue;
+
         var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-        geojsonFeature.layer = this.numberToLayerIDs[indexes.bucketIndex][indexes.layerIndex];
+        geojsonFeature.layer = styleLayer.serialize({
+            includeRefProperties: true
+        });
         result.push(geojsonFeature);
     }
 };
