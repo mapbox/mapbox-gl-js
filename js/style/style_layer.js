@@ -239,9 +239,14 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (!(paintName in this._paintTransitions))
                 this.paint[paintName] = this.getPaintValue(paintName);
         }
+        this._layoutFunctions = {};
         for (var layoutName in this._layoutSpecifications) {
-            if (!(layoutName in this._layoutDeclarations))
+            var declaration = this._layoutDeclarations[layoutName];
+            if (declaration && declaration.isFunction) {
+                this._layoutFunctions[layoutName] = true;
+            } else {
                 this.layout[layoutName] = this.getLayoutValue(layoutName);
+            }
         }
     },
 
@@ -250,7 +255,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         for (var paintName in this._paintTransitions) {
             this.paint[paintName] = this.getPaintValue(paintName, zoom, zoomHistory);
         }
-        for (var layoutName in this._layoutDeclarations) {
+        for (var layoutName in this._layoutFunctions) {
             this.layout[layoutName] = this.getLayoutValue(layoutName, zoom, zoomHistory);
         }
     },
