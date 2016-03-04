@@ -176,12 +176,8 @@ StyleLayer.prototype = util.inherit(Evented, {
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
-
-        if (this.getLayoutValue('visibility') === 'none') return true;
-
-        var opacityProperty = this.type + '-opacity';
-        if (this._paintSpecifications[opacityProperty] && this.getPaintValue(opacityProperty) === 0) return true;
-
+        if (this.layout['visibility'] === 'none') return true;
+        if (this.paint[this.type + '-opacity'] === 0) return true;
         return false;
     },
 
