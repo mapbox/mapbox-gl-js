@@ -142,18 +142,21 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _updateData: function() {
         this._dirty = false;
-        var data = this._data;
-        if (typeof data === 'string' && typeof window != 'undefined') {
-            data = urlResolve(window.location.href, data);
-        }
-        this.workerID = this.dispatcher.send('parse geojson', {
-            data: data,
+        var options = {
             tileSize: this.tileSize,
             source: this.id,
             geojsonVtOptions: this.geojsonVtOptions,
             cluster: this.cluster,
             superclusterOptions: this.superclusterOptions
-        }, function(err) {
+        };
+
+        var data = this._data;
+        if (typeof data === 'string') {
+            options.url = typeof window != 'undefined' ? urlResolve(window.location.href, data) : data;
+        } else {
+            options.data = JSON.stringify(data);
+        }
+        this.workerID = this.dispatcher.send('parse geojson', options, function(err) {
             this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});

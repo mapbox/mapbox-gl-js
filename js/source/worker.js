@@ -126,16 +126,17 @@ util.extend(Worker.prototype, {
             callback(null);
         }.bind(this);
 
-        // TODO accept params.url for urls instead
-
         // Not, because of same origin issues, urls must either include an
         // explicit origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
-        if (typeof params.data === 'string') {
-            ajax.getJSON(params.data, indexData);
+        if (params.url) {
+            ajax.getJSON(params.url, indexData);
+        } else if (typeof params.data === 'string') {
+            indexData(null, JSON.parse(params.data));
+        } else {
+            return callback(new Error("Input data is not a valid GeoJSON object."));
         }
-        else indexData(null, params.data);
     },
 
     'load geojson tile': function(params, callback) {
