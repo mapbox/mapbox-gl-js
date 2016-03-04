@@ -395,7 +395,9 @@ test('StyleLayer#serialize', function(t) {
 
     t.test('serializes refed layers', function(t) {
         t.deepEqual(
-            StyleLayer.create(createRefedSymbolLayer(), createSymbolLayer()).serialize(),
+            StyleLayer.create(
+                createRefedSymbolLayer(),
+                StyleLayer.create(createSymbolLayer())).serialize(),
             createRefedSymbolLayer()
         );
         t.end();

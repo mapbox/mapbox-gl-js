@@ -36,6 +36,9 @@ function StyleLayer(layer, refLayer) {
     this.filter = (refLayer || layer).filter;
     this.interactive = (refLayer || layer).interactive;
 
+    this.paint = {};
+    this.layout = {};
+
     this._paintSpecifications = styleSpec['paint_' + this.type];
     this._layoutSpecifications = styleSpec['layout_' + this.type];
 
@@ -63,6 +66,8 @@ function StyleLayer(layer, refLayer) {
             this.setLayoutProperty(layoutName, layer.layout[layoutName]);
         }
     }
+
+    this.recalculateStatic();
 }
 
 StyleLayer.prototype = util.inherit(Evented, {
@@ -201,6 +206,8 @@ StyleLayer.prototype = util.inherit(Evented, {
             applyDeclaration(removedNames[i], new StyleDeclaration(spec, spec.default));
         }
 
+        this.recalculateStatic();
+
         function applyDeclaration(name, declaration) {
             var oldTransition = options.transition ? oldTransitions[name] : undefined;
 
@@ -227,15 +234,23 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
+    recalculateStatic: function() {
+        for (var paintName in this._paintSpecifications) {
+            if (!(paintName in this._paintTransitions))
+                this.paint[paintName] = this.getPaintValue(paintName);
+        }
+        for (var layoutName in this._layoutSpecifications) {
+            if (!(layoutName in this._layoutDeclarations))
+                this.layout[layoutName] = this.getLayoutValue(layoutName);
+        }
+    },
+
     // update zoom
     recalculate: function(zoom, zoomHistory) {
-        this.paint = {};
-        for (var paintName in this._paintSpecifications) {
+        for (var paintName in this._paintTransitions) {
             this.paint[paintName] = this.getPaintValue(paintName, zoom, zoomHistory);
         }
-
-        this.layout = {};
-        for (var layoutName in this._layoutSpecifications) {
+        for (var layoutName in this._layoutDeclarations) {
             this.layout[layoutName] = this.getLayoutValue(layoutName, zoom, zoomHistory);
         }
     },
