@@ -67,7 +67,7 @@ exports._getVisibleCoordinates = function() {
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
-exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
+exports._queryRenderedVectorFeatures = function(resultFeatures, queryGeometry, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
@@ -76,10 +76,10 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
         return callback(null, []);
 
     var styleLayers = this.map.style._layers;
-    var features = [];
 
-    var async = true;
-    if (async) {
+    var isAsync = callback !== undefined;
+
+    if (isAsync) {
         util.asyncAll(tilesIn, function(tileIn, callback) {
 
             if (!tileIn.tile.loaded || !tileIn.tile.featureTree) return callback();
@@ -101,18 +101,18 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
                 collisionTile: collisionTile.data,
                 rawTileData: tileIn.tile.rawTileData.slice()
             }, function(err_, data) {
-                if (data) tileIn.tile.featureTree.makeGeoJSON(features, data, styleLayers);
+                if (data) tileIn.tile.featureTree.makeGeoJSON(resultFeatures, data, styleLayers);
                 callback();
             }, tileIn.tile.workerID);
         }.bind(this), function() {
-            callback(null, features);
+            callback(null);
         });
 
     } else {
         for (var r = 0; r < tilesIn.length; r++) {
             var tileIn = tilesIn[r];
             if (!tileIn.tile.loaded || !tileIn.tile.featureTree) continue;
-            tileIn.tile.featureTree.query(features, {
+            tileIn.tile.featureTree.query(resultFeatures, {
                 queryGeometry: tileIn.queryGeometry,
                 scale: tileIn.scale,
                 tileSize: tileIn.tile.tileSize,
@@ -120,10 +120,6 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
                 params: params
             }, styleLayers, true);
         }
-
-        setTimeout(function() {
-            callback(null, features);
-        }, 0);
     }
 };
 

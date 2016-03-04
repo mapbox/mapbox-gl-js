@@ -411,24 +411,33 @@ Style.prototype = util.inherit(Evented, {
     },
 
     queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing, callback) {
-        var features = [];
+        var resultFeatures = [];
         var error = null;
 
         if (params.layer) {
             params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
-        util.asyncAll(Object.keys(this.sources), function(id, callback) {
-            var source = this.sources[id];
-            source.queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing, function(err, result) {
-                if (result) features = features.concat(result);
-                if (err) error = err;
-                callback();
+        var isAsync = callback !== undefined;
+
+        if (isAsync) {
+            util.asyncAll(Object.keys(this.sources), function(id, callback) {
+                var source = this.sources[id];
+                source.queryRenderedFeatures(resultFeatures, queryGeometry, params, classes, zoom, bearing, function(err) {
+                    if (err) error = err;
+                    callback();
+                });
+            }.bind(this), function() {
+                if (error) return callback(error);
+                callback(null, resultFeatures);
             });
-        }.bind(this), function() {
-            if (error) return callback(error);
-            callback(null, features);
-        });
+        } else {
+            for (var id in this.sources) {
+                this.sources[id].queryRenderedFeatures(resultFeatures, queryGeometry, params, classes, zoom, bearing);
+            }
+
+            return resultFeatures;
+        }
     },
 
     _remove: function() {

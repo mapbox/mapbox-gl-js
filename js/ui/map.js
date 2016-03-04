@@ -400,9 +400,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * });
      */
     queryRenderedFeatures: function(pointOrBox, params, callback) {
-        if (callback === undefined) {
+        if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
             callback = params;
             params = pointOrBox;
+            pointOrBox = undefined;
+        }
+        var queryGeometry = this._makeQueryGeometry(pointOrBox);
+        this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+        return this;
+    },
+
+    queryRenderedFeaturesSync: function(pointOrBox, params) {
+        if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
+            params = pointOrBox;
+            pointOrBox = undefined;
+        }
+        var queryGeometry = this._makeQueryGeometry(pointOrBox);
+        return this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle);
+    },
+
+    _makeQueryGeometry: function(pointOrBox) {
+        if (pointOrBox === undefined) {
             // bounds was omitted: use full viewport
             pointOrBox = [
                 Point.convert([0, 0]),
@@ -431,10 +449,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             return this.transform.locationCoordinate(this.transform.pointLocation(p).wrap());
         }.bind(this));
 
-        this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
-        return this;
+        return queryGeometry;
     },
-
 
     /**
      * Get data from vector tiles as an array of GeoJSON Features.
