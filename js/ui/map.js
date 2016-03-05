@@ -74,9 +74,7 @@ var Map = module.exports = function(options) {
     this.transform = new Transform(options.minZoom, options.maxZoom);
 
     if (options.maxBounds) {
-        var b = LngLatBounds.convert(options.maxBounds);
-        this.transform.lngRange = [b.getWest(), b.getEast()];
-        this.transform.latRange = [b.getSouth(), b.getNorth()];
+        this.setMaxBounds(options.maxBounds);
     }
 
     util.bindAll([
@@ -269,7 +267,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get the map's geographical bounds
+     * Get the map's geographical bounds.
      *
      * @returns {LngLatBounds}
      */
@@ -284,6 +282,29 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         return bounds;
+    },
+
+    /**
+     * Set constraint on the map's geographical bounds. Pan or zoom operations that would result in
+     * displaying regions that fall outside of the bounds instead result in displaying the map at the
+     * closest point and/or zoom level of the requested operation that is within the max bounds.
+     *
+     * @param {LngLatBounds | Array<Array<number>> | null | undefined} lnglatbounds Desired max bounds of the map. If null or undefined, function removes any bounds constraints on the map.
+     * @returns {Map} `this`
+     */
+    setMaxBounds: function (lnglatbounds) {
+        if (lnglatbounds) {
+            var b = LngLatBounds.convert(lnglatbounds);
+            this.transform.lngRange = [b.getWest(), b.getEast()];
+            this.transform.latRange = [b.getSouth(), b.getNorth()];
+            this.transform._constrain();
+            this._update();
+        } else if (lnglatbounds === null || lnglatbounds === undefined) {
+            this.transform.lngRange = [];
+            this.transform.latRange = [];
+            this._update();
+        }
+        return this;
     },
 
     /**

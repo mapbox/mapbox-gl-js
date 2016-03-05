@@ -292,6 +292,43 @@ test('Map', function(t) {
         }
     });
 
+    t.test('#setMaxBounds', function (t) {
+        t.test('constrains map bounds', function (t) {
+            var map = createMap({zoom:0});
+            map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
+            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
+                [-112.5000192114, 24.2068800000],
+                [-79.4531207886, 50.0642000000]]));
+            t.end();
+        });
+
+        t.test('when no argument is passed, map bounds constraints are removed', function (t) {
+            var map = createMap({zoom:0});
+            map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
+            t.deepEqual(toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray()), toFixed([
+                [-166.28906999999964, -27.683527055417144],
+                [-25.664070000000066, 73.8248206696509]]));
+            t.end();
+        });
+
+        t.test('should not zoom out farther than bounds', function (t) {
+            var map = createMap();
+            map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
+            t.notEqual(map.setZoom(0).getZoom(), 0);
+            t.end();
+        });
+        t.end();
+
+        function toFixed(bounds) {
+            var n = 10;
+            return [
+                [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
+                [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
+            ];
+        }
+
+    });
+
     t.test('#remove', function(t) {
         var map = createMap(),
             removedCanvas,
