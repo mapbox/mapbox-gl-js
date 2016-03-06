@@ -27,7 +27,7 @@ SpriteAtlas.prototype = {
             this.canvas.width = this.width * this.pixelRatio;
             this.canvas.height = this.height * this.pixelRatio;
             this.canvas.style.width = this.width + 'px';
-            this.canvas.style.width = this.width + 'px';
+            this.canvas.style.height = this.height + 'px';
             document.body.appendChild(this.canvas);
             this.ctx = this.canvas.getContext('2d');
         } else if (!value && this.canvas) {
