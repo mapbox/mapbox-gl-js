@@ -1,9 +1,6 @@
 {
   "version": 8,
-  "zoom": 5,
-  "center": [10, 10],
-  "bearing": 20,
-  "glyphs": "https://example.com/{fontstack}/{range}",
+  "glyphs": true,
   "sources": {
     "vector": {
       "type": "vector",

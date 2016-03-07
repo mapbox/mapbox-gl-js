@@ -1,5 +1,6 @@
 {
   "version": 8,
+  "glyphs": "https://example.com/{fontstack}/{range}",
   "sources": {
     "vector": {
       "type": "vector",
