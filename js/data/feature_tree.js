@@ -103,7 +103,6 @@ function translateDistance(translate) {
 // Finds features in this tile at a particular position.
 FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     if (!this.vtLayers) {
-        if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
@@ -122,14 +121,15 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     var additionalRadius = 0;
     for (var id in styleLayersByID) {
         var styleLayer = styleLayersByID[id];
+        var paint = styleLayer.paint;
 
         var styleLayerDistance = 0;
         if (styleLayer.type === 'line') {
-            styleLayerDistance = styleLayer.paint['line-width'] / 2 + Math.abs(styleLayer.paint['line-offset']) + translateDistance(styleLayer.paint['line-translate']);
+            styleLayerDistance = getLineWidth(paint) / 2 + Math.abs(paint['line-offset']) + translateDistance(paint['line-translate']);
         } else if (styleLayer.type === 'fill') {
-            styleLayerDistance = translateDistance(styleLayer.paint['fill-translate']);
+            styleLayerDistance = translateDistance(paint['fill-translate']);
         } else if (styleLayer.type === 'circle') {
-            styleLayerDistance = styleLayer.paint['circle-radius'] + translateDistance(styleLayer.paint['circle-translate']);
+            styleLayerDistance = paint['circle-radius'] + translateDistance(paint['circle-translate']);
         }
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }
@@ -165,6 +165,14 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
 
 function topDown(a, b) {
     return b - a;
+}
+
+function getLineWidth(paint) {
+    if (paint['line-gap-width'] > 0) {
+        return paint['line-gap-width'] + 2 * paint['line-width'];
+    } else {
+        return paint['line-width'];
+    }
 }
 
 FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayersByID, bearing, pixelsToTileUnits, returnGeoJSON) {
@@ -204,27 +212,29 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
 
                 if (!geometry) geometry = loadGeometry(feature);
 
+                var paint = styleLayer.paint;
+
                 if (styleLayer.type === 'line') {
                     translatedPolygon = translate(queryGeometry,
-                            styleLayer.paint['line-translate'], styleLayer.paint['line-translate-anchor'],
+                            paint['line-translate'], paint['line-translate-anchor'],
                             bearing, pixelsToTileUnits);
-                    var halfWidth = styleLayer.paint['line-width'] / 2 * pixelsToTileUnits;
-                    if (styleLayer.paint['line-offset']) {
-                        geometry = offsetLine(geometry, styleLayer.paint['line-offset'] * pixelsToTileUnits);
+                    var halfWidth = getLineWidth(paint) / 2 * pixelsToTileUnits;
+                    if (paint['line-offset']) {
+                        geometry = offsetLine(geometry, paint['line-offset'] * pixelsToTileUnits);
                     }
                     if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
                 } else if (styleLayer.type === 'fill') {
                     translatedPolygon = translate(queryGeometry,
-                            styleLayer.paint['fill-translate'], styleLayer.paint['fill-translate-anchor'],
+                            paint['fill-translate'], paint['fill-translate-anchor'],
                             bearing, pixelsToTileUnits);
                     if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
 
                 } else if (styleLayer.type === 'circle') {
                     translatedPolygon = translate(queryGeometry,
-                            styleLayer.paint['circle-translate'], styleLayer.paint['circle-translate-anchor'],
+                            paint['circle-translate'], paint['circle-translate-anchor'],
                             bearing, pixelsToTileUnits);
-                    var circleRadius = styleLayer.paint['circle-radius'] * pixelsToTileUnits;
+                    var circleRadius = paint['circle-radius'] * pixelsToTileUnits;
                     if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                 }
             }
@@ -249,7 +259,6 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
 
 FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     if (!this.vtLayers) {
-        if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
