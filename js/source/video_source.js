@@ -179,14 +179,6 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         return this.tile;
     },
 
-    queryRenderedFeatures: function(point, params, callback) {
-        return callback(null, []);
-    },
-
-    getSourceFeatures: function(params, callback) {
-        return callback(null, []);
-    },
-
     serialize: function() {
         return {
             type: 'video',

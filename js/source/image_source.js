@@ -151,23 +151,6 @@ ImageSource.prototype = util.inherit(Evented, {
         return this.tile;
     },
 
-    /**
-     * An ImageSource doesn't have any vector features that could
-     * be selectable, so always return an empty array.
-     * @private
-     */
-    queryRenderedFeatures: function(point, params, callback) {
-        return callback(null, []);
-    },
-
-    /**
-     * An ImageSource doesn't have any tiled data.
-     * @private
-     */
-    querySourceFeatures: function(params, callback) {
-        return callback(null, []);
-    },
-
     serialize: function() {
         return {
             type: 'image',

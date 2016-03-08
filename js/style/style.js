@@ -432,7 +432,12 @@ Style.prototype = util.inherit(Evented, {
         }
 
         util.asyncAll(Object.keys(this.sources), function(id, callback) {
-            this.sources[id].queryRenderedFeaturesAsync(queryGeometry, params, classes, zoom, bearing, callback);
+            var source = this.sources[id];
+            if (source.queryRenderedFeaturesAsync) {
+                source.queryRenderedFeaturesAsync(queryGeometry, params, classes, zoom, bearing, callback);
+            } else {
+                callback(null, {});
+            }
         }.bind(this), function(err, sourceResults) {
             if (err) return callback(err);
             callback(null, this._flattenRenderedFeatures(sourceResults));
@@ -446,7 +451,10 @@ Style.prototype = util.inherit(Evented, {
 
         var sourceResults = [];
         for (var id in this.sources) {
-            sourceResults.push(this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
+            var source = this.sources[id];
+            if (source.queryRenderedFeatures) {
+                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
+            }
         }
         return this._flattenRenderedFeatures(sourceResults);
     },
