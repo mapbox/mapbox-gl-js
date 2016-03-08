@@ -47,10 +47,8 @@ module.exports = function(style, options, callback) {
             tmp.copy(data, end);
         }
 
-        if (options.at) {
-            map.queryRenderedFeatures(options.at, options, done);
-        } else if (options.in) {
-            map.queryRenderedFeatures(options.in, options, done);
+        if (options.queryGeometry) {
+            done(null, map.queryRenderedFeatures(options.queryGeometry, options));
         } else {
             done(null, []);
         }
@@ -63,7 +61,8 @@ module.exports = function(style, options, callback) {
 
             results = results.map(function (r) {
                 delete r.layer;
-                return r;
+                r.geometry = null;
+                return JSON.parse(JSON.stringify(r));
             });
 
             callback(null, data, results);
