@@ -90,6 +90,10 @@ There are two test suites associated with Mapbox GL JS
  - `npm test` runs quick unit tests
  - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
 
+ ### Running Benchmarks
+
+See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
+
 ### Running the FPS Benchmark
 
 The FPS benchmarking page compares the performance of your local copy of GL JS against previously released versions. Benchmarking configuration is within `bench/fps/site.js`.
@@ -103,7 +107,7 @@ $ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
 
 ### Writing Documentation
 
-See [docs/README.md](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
+See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
 ### Recommended Reading
 

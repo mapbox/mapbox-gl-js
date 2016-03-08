@@ -1,3 +1,8 @@
+'use strict';
+
+var runBenchmark = window.Benchmark;
+var mapboxgl = window.mapboxgl;
+
 var urls = [
     'https://api.tiles.mapbox.com/mapbox-gl-js/v0.15.0/mapbox-gl.js',
     '/dist/mapbox-gl.js',
@@ -7,7 +12,7 @@ var urls = [
 
 var duration = 3000;
 
-Benchmark(urls, duration, setup, teardown);
+runBenchmark(urls, duration, setup, teardown);
 
 function setup(state, callback) {
 

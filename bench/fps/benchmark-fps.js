@@ -1,5 +1,7 @@
+'use strict';
+
 function Benchmark(urls, duration, setup, teardown) {
-    RunBenchmark(urls, duration, setup, teardown, done);
+    runBenchmark(urls, duration, setup, teardown, done);
 
     function done(frames) {
         document.body.innerHTML = '';
@@ -36,7 +38,7 @@ Benchmark.util.mean = function(frames) {
     return (frames.length - 1) * 1000 / (frames[frames.length - 1] - frames[0]);
 };
 
-function RunBenchmark(urls, duration, setup, teardown, done) {
+function runBenchmark(urls, duration, setup, teardown, done) {
 
     var queryString = window.location.href.split('?')[1];
     var versionNum = parseInt(queryString && queryString.split('/')[0], 10);
