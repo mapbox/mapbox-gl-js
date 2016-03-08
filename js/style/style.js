@@ -426,27 +426,29 @@ Style.prototype = util.inherit(Evented, {
         return features;
     },
 
-    queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing, callback) {
+    queryRenderedFeaturesAsync: function(queryGeometry, params, classes, zoom, bearing, callback) {
         if (params.layer) {
             params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
 
-        var isAsync = callback !== undefined;
+        util.asyncAll(Object.keys(this.sources), function(id, callback) {
+            this.sources[id].queryRenderedFeaturesAsync(queryGeometry, params, classes, zoom, bearing, callback);
+        }.bind(this), function(err, sourceResults) {
+            if (err) return callback(err);
+            callback(null, this._flattenRenderedFeatures(sourceResults));
+        }.bind(this));
+    },
 
-        if (isAsync) {
-            util.asyncAll(Object.keys(this.sources), function(id, callback) {
-                this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing, callback);
-            }.bind(this), function(err, sourceResults) {
-                if (err) return callback(err);
-                callback(null, this._flattenRenderedFeatures(sourceResults));
-            }.bind(this));
-        } else {
-            var sourceResults = [];
-            for (var id in this.sources) {
-                sourceResults.push(this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
-            }
-            return this._flattenRenderedFeatures(sourceResults);
+    queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing) {
+        if (params.layer) {
+            params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
+
+        var sourceResults = [];
+        for (var id in this.sources) {
+            sourceResults.push(this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
+        }
+        return this._flattenRenderedFeatures(sourceResults);
     },
 
     _remove: function() {

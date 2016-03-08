@@ -406,7 +406,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             pointOrBox = undefined;
         }
         var queryGeometry = this._makeQueryGeometry(pointOrBox);
-        this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
+        this.style.queryRenderedFeaturesAsync(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
         return this;
     },
 

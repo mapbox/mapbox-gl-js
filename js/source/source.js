@@ -92,64 +92,69 @@ function mergeRenderedFeatureLayers(tiles) {
     return result;
 }
 
-exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
+exports._queryRenderedVectorFeaturesAsync = function(queryGeometry, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
-        return callback(null, []);
+        return callback(null, {});
 
     var tilesIn = this._pyramid.tilesIn(queryGeometry);
-
-    if (!tilesIn)
-        return callback(null, []);
 
     tilesIn.sort(sortTilesIn);
 
     var styleLayers = this.map.style._layers;
 
-    var isAsync = callback !== undefined;
+    util.asyncAll(tilesIn, function(tileIn, callback) {
 
-    if (isAsync) {
-        util.asyncAll(tilesIn, function(tileIn, callback) {
+        if (!tileIn.tile.loaded) return callback();
 
-            if (!tileIn.tile.loaded || !tileIn.tile.featureTree) return callback();
+        var featureTree = tileIn.tile.featureTree.serialize();
+        var collisionTile = tileIn.tile.collisionTile.serialize();
 
-            var featureTree = tileIn.tile.featureTree.serialize();
-            var collisionTile = tileIn.tile.collisionTile.serialize();
+        this.dispatcher.send('query rendered features', {
+            uid: tileIn.tile.uid,
+            source: this.id,
+            queryGeometry: tileIn.queryGeometry,
+            scale: tileIn.scale,
+            tileSize: tileIn.tile.tileSize,
+            classes: classes,
+            zoom: zoom,
+            bearing: bearing,
+            params: params,
+            featureTree: featureTree.data,
+            collisionTile: collisionTile.data,
+            rawTileData: tileIn.tile.rawTileData.slice(0)
+        }, function(err, data) {
+            callback(err, data ? tileIn.tile.featureTree.makeGeoJSON(data, styleLayers) : {});
+        }, tileIn.tile.workerID);
+    }.bind(this), function(err, renderedFeatureLayers) {
+        callback(err, mergeRenderedFeatureLayers(renderedFeatureLayers));
+    });
+};
 
-            this.dispatcher.send('query rendered features', {
-                uid: tileIn.tile.uid,
-                source: this.id,
-                queryGeometry: tileIn.queryGeometry,
-                scale: tileIn.scale,
-                tileSize: tileIn.tile.tileSize,
-                classes: classes,
-                zoom: zoom,
-                bearing: bearing,
-                params: params,
-                featureTree: featureTree.data,
-                collisionTile: collisionTile.data,
-                rawTileData: tileIn.tile.rawTileData.slice(0)
-            }, function(err, data) {
-                callback(err, data ? tileIn.tile.featureTree.makeGeoJSON(data, styleLayers) : {});
-            }, tileIn.tile.workerID);
-        }.bind(this), function(err, renderedFeatureLayers) {
-            callback(err, mergeRenderedFeatureLayers(renderedFeatureLayers));
-        });
 
-    } else {
-        var renderedFeatureLayers = [];
-        for (var r = 0; r < tilesIn.length; r++) {
-            var tileIn = tilesIn[r];
-            if (!tileIn.tile.loaded || !tileIn.tile.featureTree) continue;
-            renderedFeatureLayers.push(tileIn.tile.featureTree.query({
-                queryGeometry: tileIn.queryGeometry,
-                scale: tileIn.scale,
-                tileSize: tileIn.tile.tileSize,
-                bearing: bearing,
-                params: params
-            }, styleLayers, true));
-        }
-        return mergeRenderedFeatureLayers(renderedFeatureLayers);
+exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing) {
+    if (!this._pyramid)
+        return {};
+
+    var tilesIn = this._pyramid.tilesIn(queryGeometry);
+
+    tilesIn.sort(sortTilesIn);
+
+    var styleLayers = this.map.style._layers;
+
+    var renderedFeatureLayers = [];
+    for (var r = 0; r < tilesIn.length; r++) {
+        var tileIn = tilesIn[r];
+        if (!tileIn.tile.loaded) continue;
+
+        renderedFeatureLayers.push(tileIn.tile.featureTree.query({
+            queryGeometry: tileIn.queryGeometry,
+            scale: tileIn.scale,
+            tileSize: tileIn.tile.tileSize,
+            bearing: bearing,
+            params: params
+        }, styleLayers, true));
     }
+    return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
 exports._querySourceFeatures = function(params, callback) {
