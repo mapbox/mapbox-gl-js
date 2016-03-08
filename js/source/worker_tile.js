@@ -204,7 +204,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
 
         var featureTree_ = featureTree.serialize();
         var collisionTile_ = collisionTile.serialize();
-        var collisionBoxArray = tile.collisionBoxArray.arrayBuffer.slice();
+        var collisionBoxArray = tile.collisionBoxArray.arrayBuffer.slice(0);
         var transferables = [rawTileData, collisionBoxArray].concat(featureTree.transferables).concat(collisionTile_.transferables);
 
         callback(null, {

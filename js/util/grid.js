@@ -8,7 +8,8 @@ function Grid(n, extent, padding) {
     var cells = this.cells = [];
 
     if (n instanceof ArrayBuffer) {
-        var array = new Int32Array(n);
+        this.arrayBuffer = n;
+        var array = new Int32Array(this.arrayBuffer);
         n = array[0];
         extent = array[1];
         padding = array[2];
@@ -114,6 +115,8 @@ Grid.prototype._convertToCellCoord = function(x) {
 };
 
 Grid.prototype.toArrayBuffer = function() {
+    if (this.arrayBuffer) return this.arrayBuffer;
+
     var cells = this.cells;
 
     var metadataLength = NUM_PARAMS + this.cells.length + 1 + 1;

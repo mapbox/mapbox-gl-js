@@ -410,10 +410,23 @@ Style.prototype = util.inherit(Evented, {
         }, function(value) { return value !== undefined; });
     },
 
-    queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing, callback) {
-        var resultFeatures = [];
-        var error = null;
+    _flattenRenderedFeatures: function(sourceResults) {
+        var features = [];
+        for (var l = this._order.length - 1; l >= 0; l--) {
+            var layerID = this._order[l];
+            for (var s = 0; s < sourceResults.length; s++) {
+                var layerFeatures = sourceResults[s][layerID];
+                if (layerFeatures) {
+                    for (var f = 0; f < layerFeatures.length; f++) {
+                        features.push(layerFeatures[f]);
+                    }
+                }
+            }
+        }
+        return features;
+    },
 
+    queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing, callback) {
         if (params.layer) {
             params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
         }
@@ -422,21 +435,17 @@ Style.prototype = util.inherit(Evented, {
 
         if (isAsync) {
             util.asyncAll(Object.keys(this.sources), function(id, callback) {
-                var source = this.sources[id];
-                source.queryRenderedFeatures(resultFeatures, queryGeometry, params, classes, zoom, bearing, function(err) {
-                    if (err) error = err;
-                    callback();
-                });
-            }.bind(this), function() {
-                if (error) return callback(error);
-                callback(null, resultFeatures);
-            });
+                this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing, callback);
+            }.bind(this), function(err, sourceResults) {
+                if (err) return callback(err);
+                callback(null, this._flattenRenderedFeatures(sourceResults));
+            }.bind(this));
         } else {
+            var sourceResults = [];
             for (var id in this.sources) {
-                this.sources[id].queryRenderedFeatures(resultFeatures, queryGeometry, params, classes, zoom, bearing);
+                sourceResults.push(this.sources[id].queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
             }
-
-            return resultFeatures;
+            return this._flattenRenderedFeatures(sourceResults);
         }
     },
 

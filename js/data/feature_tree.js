@@ -101,16 +101,16 @@ function translateDistance(translate) {
 }
 
 // Finds features in this tile at a particular position.
-FeatureTree.prototype.query = function(result, args, styleLayersByID, returnGeoJSON) {
+FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     if (!this.vtLayers) {
         if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
-    if (!returnGeoJSON) {
-        result = new FilteredFeatureIndexArray();
-    }
+    var result = returnGeoJSON ?
+        {} :
+        new FilteredFeatureIndexArray();
 
     var params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
@@ -151,19 +151,21 @@ FeatureTree.prototype.query = function(result, args, styleLayersByID, returnGeoJ
     }
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
+    matching.sort(topDown);
     var match = this.featureIndexArray.at(0);
     this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.at(0);
+    matchingSymbols.sort();
     this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
-
-    if (!returnGeoJSON) {
-        result = result.arrayBuffer;
-    }
 
     return result;
 };
+
+function topDown(a, b) {
+    return b - a;
+}
 
 FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayersByID, bearing, pixelsToTileUnits, returnGeoJSON) {
     var seen = {};
@@ -232,7 +234,12 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
                 geojsonFeature.layer = styleLayer.serialize({
                     includeRefProperties: true
                 });
-                result.push(geojsonFeature);
+                var layerResult = result[layerID];
+                if (layerResult === undefined) {
+                    layerResult = result[layerID] = [];
+                }
+                layerResult.push(geojsonFeature);
+
             } else {
                 result.emplaceBack(match.featureIndex, match.sourceLayerIndex, match.bucketIndex, l);
             }
@@ -240,12 +247,14 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
     }
 };
 
-FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray, styleLayers) {
+FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     if (!this.vtLayers) {
         if (!this.rawTileData) return [];
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
+
+    var result = {};
 
     featureIndexArray = new FilteredFeatureIndexArray(featureIndexArray);
     var indexes = featureIndexArray.at(0);
@@ -264,15 +273,22 @@ FeatureTree.prototype.makeGeoJSON = function(result, featureIndexArray, styleLay
 
         var feature = cachedFeatures[featureIndex] = cachedFeatures[featureIndex] || sourceLayer.feature(featureIndex);
 
-        var styleLayer = styleLayers[this.numberToLayerIDs[indexes.bucketIndex][indexes.layerIndex]];
+        var layerID = this.numberToLayerIDs[indexes.bucketIndex][indexes.layerIndex];
+        var styleLayer = styleLayers[layerID];
         if (!styleLayer) continue;
 
         var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
         geojsonFeature.layer = styleLayer.serialize({
             includeRefProperties: true
         });
-        result.push(geojsonFeature);
+        var layerResult = result[layerID];
+        if (layerResult === undefined) {
+            layerResult = result[layerID] = [];
+        }
+        layerResult.push(geojsonFeature);
     }
+
+    return result;
 };
 
 function translate(queryGeometry, translate, translateAnchor, bearing, pixelsToTileUnits) {

@@ -67,13 +67,41 @@ exports._getVisibleCoordinates = function() {
     else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
-exports._queryRenderedVectorFeatures = function(resultFeatures, queryGeometry, params, classes, zoom, bearing, callback) {
+function sortTilesIn(a, b) {
+    var coordA = a.tile.coord;
+    var coordB = b.tile.coord;
+    return (coordA.z - coordB.z) || (coordA.y - coordB.y) || (coordA.x - coordB.x);
+}
+
+function mergeRenderedFeatureLayers(tiles) {
+    var result = tiles[0] || {};
+    for (var i = 1; i < tiles.length; i++) {
+        var tile = tiles[i];
+        for (var layerID in tile) {
+            var tileFeatures = tile[layerID];
+            var resultFeatures = result[layerID];
+            if (resultFeatures === undefined) {
+                resultFeatures = result[layerID] = tileFeatures;
+            } else {
+                for (var f = 0; f < tileFeatures.length; f++) {
+                    resultFeatures.push(tileFeatures[f]);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing, callback) {
     if (!this._pyramid)
         return callback(null, []);
 
     var tilesIn = this._pyramid.tilesIn(queryGeometry);
+
     if (!tilesIn)
         return callback(null, []);
+
+    tilesIn.sort(sortTilesIn);
 
     var styleLayers = this.map.style._layers;
 
@@ -99,27 +127,28 @@ exports._queryRenderedVectorFeatures = function(resultFeatures, queryGeometry, p
                 params: params,
                 featureTree: featureTree.data,
                 collisionTile: collisionTile.data,
-                rawTileData: tileIn.tile.rawTileData.slice()
-            }, function(err_, data) {
-                if (data) tileIn.tile.featureTree.makeGeoJSON(resultFeatures, data, styleLayers);
-                callback();
+                rawTileData: tileIn.tile.rawTileData.slice(0)
+            }, function(err, data) {
+                callback(err, data ? tileIn.tile.featureTree.makeGeoJSON(data, styleLayers) : {});
             }, tileIn.tile.workerID);
-        }.bind(this), function() {
-            callback(null);
+        }.bind(this), function(err, renderedFeatureLayers) {
+            callback(err, mergeRenderedFeatureLayers(renderedFeatureLayers));
         });
 
     } else {
+        var renderedFeatureLayers = [];
         for (var r = 0; r < tilesIn.length; r++) {
             var tileIn = tilesIn[r];
             if (!tileIn.tile.loaded || !tileIn.tile.featureTree) continue;
-            tileIn.tile.featureTree.query(resultFeatures, {
+            renderedFeatureLayers.push(tileIn.tile.featureTree.query({
                 queryGeometry: tileIn.queryGeometry,
                 scale: tileIn.scale,
                 tileSize: tileIn.tile.tileSize,
                 bearing: bearing,
                 params: params
-            }, styleLayers, true);
+            }, styleLayers, true));
         }
+        return mergeRenderedFeatureLayers(renderedFeatureLayers);
     }
 };
 

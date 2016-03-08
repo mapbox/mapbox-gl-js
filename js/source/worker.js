@@ -218,7 +218,7 @@ util.extend(Worker.prototype, {
             var collisionTile = new CollisionTile(params.collisionTile, tile.collisionBoxArray);
             var featureTree = new FeatureTree(params.featureTree, params.rawTileData, collisionTile);
 
-            var featureArrayBuffer = featureTree.query(undefined, params, this.styleLayersByID, false);
+            var featureArrayBuffer = featureTree.query(params, this.styleLayersByID, false).arrayBuffer;
             callback(null, featureArrayBuffer, [featureArrayBuffer]);
         } else {
             callback(null, []);
