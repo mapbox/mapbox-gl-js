@@ -15,7 +15,11 @@ function Grid(n, extent, padding) {
 
         this.d = n + 2 * padding;
         for (var k = 0; k < this.d * this.d; k++) {
-            cells.push(array.subarray(array[NUM_PARAMS + k], array[NUM_PARAMS + k + 1]));
+            var start = array[NUM_PARAMS + k];
+            var end = array[NUM_PARAMS + k + 1];
+            cells.push(start === end ?
+                    null :
+                    array.subarray(start, end));
         }
         var keysOffset = array[NUM_PARAMS + cells.length];
         var bboxesOffset = array[NUM_PARAMS + cells.length + 1];
@@ -71,20 +75,22 @@ Grid.prototype.query = function(x1, y1, x2, y2) {
 
 Grid.prototype._queryCell = function(x1, y1, x2, y2, cellIndex, result, seenUids) {
     var cell = this.cells[cellIndex];
-    var keys = this.keys;
-    var bboxes = this.bboxes;
-    for (var u = 0; u < cell.length; u++) {
-        var uid = cell[u];
-        if (seenUids[uid] === undefined) {
-            var offset = uid * 4;
-            if ((x1 <= bboxes[offset + 2]) &&
-                (y1 <= bboxes[offset + 3]) &&
-                (x2 >= bboxes[offset + 0]) &&
-                (y2 >= bboxes[offset + 1])) {
-                seenUids[uid] = true;
-                result.push(keys[uid]);
-            } else {
-                seenUids[uid] = false;
+    if (cell !== null) {
+        var keys = this.keys;
+        var bboxes = this.bboxes;
+        for (var u = 0; u < cell.length; u++) {
+            var uid = cell[u];
+            if (seenUids[uid] === undefined) {
+                var offset = uid * 4;
+                if ((x1 <= bboxes[offset + 2]) &&
+                    (y1 <= bboxes[offset + 3]) &&
+                    (x2 >= bboxes[offset + 0]) &&
+                    (y2 >= bboxes[offset + 1])) {
+                    seenUids[uid] = true;
+                    result.push(keys[uid]);
+                } else {
+                    seenUids[uid] = false;
+                }
             }
         }
     }
