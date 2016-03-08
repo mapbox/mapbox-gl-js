@@ -459,20 +459,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} params
      * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
-     * @param {callback} callback function that receives the results
      *
-     * @returns {Map} `this`
+     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
      */
-    querySourceFeatures: function(sourceID, params, callback) {
+    querySourceFeatures: function(sourceID, params) {
         var source = this.getSource(sourceID);
-
-        if (!source) {
-            return callback("No source with id '" + sourceID + "'.", []);
-        }
-
-        source.querySourceFeatures(params, callback);
-
-        return this;
+        return source && source.querySourceFeatures ?
+            source.querySourceFeatures(params) :
+            [];
     },
 
     /**
@@ -1005,7 +999,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
 
 /**
- * Callback to receive results from `Map#queryRenderFeatures` and `Map#querySourceFeatures`.
+ * Callback to receive results from `Map#queryRenderFeaturesAsync`
  *
  * Note: because features come from vector tiles or GeoJSON data that is converted to vector tiles internally, the returned features will be:
  *

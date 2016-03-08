@@ -157,9 +157,9 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
-exports._querySourceFeatures = function(params, callback) {
+exports._querySourceFeatures = function(params) {
     if (!this._pyramid) {
-        return callback(null, []);
+        return [];
     }
 
     var pyramid = this._pyramid;
@@ -179,7 +179,7 @@ exports._querySourceFeatures = function(params, callback) {
         }
     }
 
-    callback(null, result);
+    return result;
 };
 
 /*
