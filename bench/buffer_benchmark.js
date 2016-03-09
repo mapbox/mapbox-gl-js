@@ -124,12 +124,16 @@ function preloadAssets(stylesheet, callback) {
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
     var timeStart = performance.now();
 
+    var layers = [];
+    for (var i = 0; i < stylesheet.layers.length; i++) {
+        var layer = stylesheet.layers[i];
+        if (!layer.ref && (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol')) {
+            layers.push(layer);
+        }
+    }
+
     util.asyncAll(coordinates, function(coordinate, eachCallback) {
         var url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
-
-        var stylesheetLayers = stylesheet.layers.filter(function(layer) {
-            return !layer.ref && (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol');
-        });
 
         var workerTile = new WorkerTile({
             coord: coordinate,
@@ -158,7 +162,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         getTile(url, function(err, response) {
             if (err) throw err;
             var data = new VT.VectorTile(new Protobuf(new Uint8Array(response)));
-            workerTile.parse(data, stylesheetLayers, actor, function(err) {
+            workerTile.parse(data, layers, actor, function(err) {
                 if (err) return callback(err);
                 eachCallback();
             });
