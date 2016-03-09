@@ -198,6 +198,9 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
     queryBox.y2 = maxY - minY;
     queryBox.maxScale = scale;
 
+    // maxScale is stored using a Float32. Convert `scale` to the stored Float32 value.
+    scale = queryBox.maxScale;
+
     var searchBox = [
         anchorPoint.x + queryBox.x1 / scale,
         anchorPoint.y + queryBox.y1 / scale * this.yStretch,
