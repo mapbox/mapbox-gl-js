@@ -15,6 +15,8 @@ var inertiaLinearity = 0.3,
  * The `DragPanHandler` allows a user to pan the map by clicking and dragging
  * the cursor.
  * @class DragPanHandler
+ * @property {boolean} enabled Whether the "drag to pan" interaction is currently enabled
+ * @property {boolean} active Whether the "drag to pan" interaction is currently active
  */
 function DragPanHandler(map) {
     this._map = map;
@@ -25,6 +27,9 @@ function DragPanHandler(map) {
 
 DragPanHandler.prototype = {
 
+    enabled: false,
+    active: false,
+
     /**
      * Enable the "drag to pan" interaction.
      * @example
@@ -34,6 +39,7 @@ DragPanHandler.prototype = {
         this.disable();
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
+        this.enabled = true;
     },
 
     /**
@@ -44,6 +50,7 @@ DragPanHandler.prototype = {
     disable: function () {
         this._el.removeEventListener('mousedown', this._onDown);
         this._el.removeEventListener('touchstart', this._onDown);
+        this.enabled = false;
     },
 
     _onDown: function (e) {

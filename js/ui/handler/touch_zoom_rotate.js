@@ -17,6 +17,7 @@ var inertiaLinearity = 0.15,
  * The `TouchZoomRotateHandler` allows a user to zoom and rotate the map by
  * pinching on a touchscreen.
  * @class TouchZoomRotateHandler
+ * @property {boolean} enabled Whether the "pinch to rotate and zoom" interaction is currently enabled
  */
 function TouchZoomRotateHandler(map) {
     this._map = map;
@@ -27,6 +28,8 @@ function TouchZoomRotateHandler(map) {
 
 TouchZoomRotateHandler.prototype = {
 
+    enabled: false,
+
     /**
      * Enable the "pinch to rotate and zoom" interaction.
      * @example
@@ -35,6 +38,7 @@ TouchZoomRotateHandler.prototype = {
     enable: function () {
         this.disable();
         this._el.addEventListener('touchstart', this._onStart, false);
+        this.enabled = true;
     },
 
     /**
@@ -44,6 +48,7 @@ TouchZoomRotateHandler.prototype = {
      */
     disable: function () {
         this._el.removeEventListener('touchstart', this._onStart);
+        this.enabled = false;
     },
 
     /**

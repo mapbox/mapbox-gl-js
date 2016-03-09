@@ -6,6 +6,7 @@ module.exports = DoubleClickZoomHandler;
  * The `DoubleClickZoomHandler` allows a user to zoom the map around point by
  * double clicking.
  * @class DoubleClickZoomHandler
+ * @property {boolean} enabled Whether the "double click to zoom" interaction is currently enabled
  */
 function DoubleClickZoomHandler(map) {
     this._map = map;
@@ -13,6 +14,8 @@ function DoubleClickZoomHandler(map) {
 }
 
 DoubleClickZoomHandler.prototype = {
+
+    enabled: false,
 
     /**
      * Enable the "double click to zoom" interaction.
@@ -22,6 +25,7 @@ DoubleClickZoomHandler.prototype = {
     enable: function () {
         this.disable();
         this._map.on('dblclick', this._onDblClick);
+        this.enabled = true;
     },
 
     /**
@@ -31,6 +35,7 @@ DoubleClickZoomHandler.prototype = {
      */
     disable: function () {
         this._map.off('dblclick', this._onDblClick);
+        this.enabled = false;
     },
 
     _onDblClick: function (e) {
