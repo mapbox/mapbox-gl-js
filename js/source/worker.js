@@ -23,24 +23,19 @@ function Worker(self) {
     this.loading = {};
 
     this.loaded = {};
-    this.layers = [];
     this.geoJSONIndexes = {};
 }
 
 util.extend(Worker.prototype, {
     'set layers': function(layers) {
-        this.layers = layers;
+        this.layers = {};
+        for (var i = 0; i < layers.length; i++) {
+            this.layers[layers[i].id] = layers[i];
+        }
     },
 
     'update layers': function(layers) {
-        var layersById = {};
-        var i;
-        for (i = 0; i < layers.length; i++) {
-            layersById[layers[i].id] = layers[i];
-        }
-        for (i = 0; i < this.layers.length; i++) {
-            this.layers[i] = layersById[this.layers[i].id] || this.layers[i];
-        }
+        util.extend(this.layers, layers);
     },
 
     'load tile': function(params, callback) {
