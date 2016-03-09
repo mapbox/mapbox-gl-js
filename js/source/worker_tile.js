@@ -204,17 +204,19 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData
 
         var featureTree_ = featureTree.serialize();
         var collisionTile_ = collisionTile.serialize();
-        var collisionBoxArray = tile.collisionBoxArray.arrayBuffer.slice(0);
-        var transferables = [rawTileData, collisionBoxArray].concat(featureTree.transferables).concat(collisionTile_.transferables);
+        var collisionBoxArray = tile.collisionBoxArray.serialize();
+        var transferables = [rawTileData].concat(featureTree_.transferables).concat(collisionTile_.transferables);
+
+        var nonEmptyBuckets = buckets.filter(isBucketEmpty);
 
         callback(null, {
-            buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
+            buckets: nonEmptyBuckets.map(serializeBucket),
             bucketStats: stats, // TODO put this in a separate message?
             featureTree: featureTree_.data,
             collisionTile: collisionTile_.data,
             collisionBoxArray: collisionBoxArray,
             rawTileData: rawTileData
-        }, getTransferables(buckets).concat(transferables));
+        }, getTransferables(nonEmptyBuckets).concat(transferables));
     }
 };
 
@@ -235,18 +237,20 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
 
     var collisionTile_ = collisionTile.serialize();
 
+    var nonEmptyBuckets = buckets.filter(isBucketEmpty);
+
     return {
         result: {
-            buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
+            buckets: nonEmptyBuckets.map(serializeBucket),
             collisionTile: collisionTile_.data
         },
-        transferables: getTransferables(buckets).concat(collisionTile_.transferables)
+        transferables: getTransferables(nonEmptyBuckets).concat(collisionTile_.transferables)
     };
 };
 
 function isBucketEmpty(bucket) {
-    for (var bufferName in bucket.buffers) {
-        if (bucket.buffers[bufferName].length > 0) return true;
+    for (var bufferName in bucket.structArrays) {
+        if (bucket.structArrays[bufferName].length > 0) return true;
     }
     return false;
 }
@@ -259,8 +263,8 @@ function getTransferables(buckets) {
     var transferables = [];
     for (var i in buckets) {
         var bucket = buckets[i];
-        for (var j in bucket.buffers) {
-            transferables.push(bucket.buffers[j].arrayBuffer);
+        for (var j in bucket.structArrays) {
+            transferables.push(bucket.structArrays[j].arrayBuffer);
         }
     }
     return transferables;

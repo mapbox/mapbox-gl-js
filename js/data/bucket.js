@@ -4,6 +4,7 @@ var featureFilter = require('feature-filter');
 var Buffer = require('./buffer');
 var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
+var StructArrayType = require('../util/struct_array');
 
 module.exports = Bucket;
 
@@ -22,8 +23,6 @@ Bucket.create = function(options) {
     };
     return new Classes[options.layer.type](options);
 };
-
-Bucket.AttributeType = Buffer.AttributeType;
 
 
 /**
@@ -78,8 +77,10 @@ function Bucket(options) {
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
-        this.buffers = util.mapObject(options.buffers, function(options) {
-            return new Buffer(options);
+        this.buffers = util.mapObject(options.structArrays, function(structArray, bufferName) {
+            var structArrayType = options.structArrayTypes[bufferName];
+            var type = (structArrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
+            return new Buffer(structArray, structArrayType, type);
         });
     }
 }
@@ -90,13 +91,13 @@ function Bucket(options) {
  */
 Bucket.prototype.populateBuffers = function() {
     this.createStyleLayer();
-    this.createBuffers();
+    this.createStructArrays();
 
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
     }
 
-    this.trimBuffers();
+    this.trimArrays();
 };
 
 /**
@@ -112,14 +113,14 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
     var currentGroup = groups.length && groups[groups.length - 1];
 
     if (!currentGroup || currentGroup.vertexLength + numVertices > 65535) {
-        var vertexBuffer = this.buffers[this.getBufferName(shaderName, 'vertex')];
-        var elementBuffer = this.buffers[this.getBufferName(shaderName, 'element')];
-        var secondElementBuffer = this.buffers[this.getBufferName(shaderName, 'secondElement')];
+        var vertexArray = this.structArrays[this.getBufferName(shaderName, 'vertex')];
+        var elementArray = this.structArrays[this.getBufferName(shaderName, 'element')];
+        var secondElementArray = this.structArrays[this.getBufferName(shaderName, 'secondElement')];
 
         currentGroup = new ElementGroup(
-            vertexBuffer.length,
-            elementBuffer && elementBuffer.length,
-            secondElementBuffer && secondElementBuffer.length
+            vertexArray.length,
+            elementArray && elementArray.length,
+            secondElementArray && secondElementArray.length
         );
         groups.push(currentGroup);
     }
@@ -132,9 +133,10 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
  * as necessary.
  * @private
  */
-Bucket.prototype.createBuffers = function() {
+Bucket.prototype.createStructArrays = function() {
     var elementGroups = this.elementGroups = {};
-    var buffers = this.buffers = {};
+    var structArrays = this.structArrays = {};
+    var structArrayTypes = this.structArrayTypes = {};
 
     for (var shaderName in this.shaderInterfaces) {
         var shaderInterface = this.shaderInterfaces[shaderName];
@@ -143,10 +145,13 @@ Bucket.prototype.createBuffers = function() {
             var vertexBufferName = this.getBufferName(shaderName, 'vertex');
             var vertexAddMethodName = this.getAddMethodName(shaderName, 'vertex');
 
-            buffers[vertexBufferName] = new Buffer({
-                type: Buffer.BufferType.VERTEX,
-                attributes: shaderInterface.attributes
+            var VertexArrayType = new StructArrayType({
+                members: shaderInterface.attributes,
+                alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
             });
+
+            structArrays[vertexBufferName] = new VertexArrayType();
+            structArrayTypes[vertexBufferName] = VertexArrayType.serialize();
 
             this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(
                 shaderName,
@@ -155,16 +160,21 @@ Bucket.prototype.createBuffers = function() {
             );
         }
 
+
         if (shaderInterface.elementBuffer) {
             var elementBufferName = this.getBufferName(shaderName, 'element');
-            buffers[elementBufferName] = createElementBuffer(shaderInterface.elementBufferComponents);
-            this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.buffers[elementBufferName]);
+            var ElementArrayType = createElementBufferType(shaderInterface.elementBufferComponents);
+            structArrays[elementBufferName] = new ElementArrayType();
+            structArrayTypes[elementBufferName] = ElementArrayType.serialize();
+            this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.structArrays[elementBufferName]);
         }
 
         if (shaderInterface.secondElementBuffer) {
             var secondElementBufferName = this.getBufferName(shaderName, 'secondElement');
-            buffers[secondElementBufferName] = createElementBuffer(shaderInterface.secondElementBufferComponents);
-            this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.buffers[secondElementBufferName]);
+            var SecondElementArrayType = createElementBufferType(shaderInterface.secondElementBufferComponents);
+            structArrays[secondElementBufferName] = new SecondElementArrayType();
+            structArrayTypes[secondElementBufferName] = SecondElementArrayType.serialize();
+            this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.structArrays[secondElementBufferName]);
         }
 
         elementGroups[shaderName] = [];
@@ -177,9 +187,9 @@ Bucket.prototype.destroy = function(gl) {
     }
 };
 
-Bucket.prototype.trimBuffers = function() {
-    for (var bufferName in this.buffers) {
-        this.buffers[bufferName].trim();
+Bucket.prototype.trimArrays = function() {
+    for (var bufferName in this.structArrays) {
+        this.structArrays[bufferName].trim();
     }
 };
 
@@ -211,9 +221,10 @@ Bucket.prototype.serialize = function() {
         },
         zoom: this.zoom,
         elementGroups: this.elementGroups,
-        buffers: util.mapObject(this.buffers, function(buffer) {
-            return buffer.serialize();
-        })
+        structArrays: util.mapObject(this.structArrays, function(structArray) {
+            return structArray.serialize();
+        }),
+        structArrayTypes: this.structArrayTypes
     };
 };
 
@@ -238,7 +249,7 @@ function createVertexAddMethod(shaderName, shaderInterface, bufferName) {
         pushArgs = pushArgs.concat(shaderInterface.attributes[i].value);
     }
 
-    var body = 'return this.buffers.' + bufferName + '.push(' + pushArgs.join(', ') + ');';
+    var body = 'return this.structArrays.' + bufferName + '.emplaceBack(' + pushArgs.join(', ') + ');';
 
     if (!createVertexAddMethodCache[body]) {
         createVertexAddMethodCache[body] = new Function(shaderInterface.attributeArgs, body);
@@ -249,19 +260,17 @@ function createVertexAddMethod(shaderName, shaderInterface, bufferName) {
 
 function createElementAddMethod(buffer) {
     return function(one, two, three) {
-        return buffer.push(one, two, three);
+        return buffer.emplaceBack(one, two, three);
     };
 }
 
-function createElementBuffer(components) {
-    return new Buffer({
-        type: Buffer.BufferType.ELEMENT,
-        attributes: [{
+function createElementBufferType(components) {
+    return new StructArrayType({
+        members: [{
+            type: Buffer.ELEMENT_ATTRIBUTE_TYPE,
             name: 'vertices',
-            components: components || 3,
-            type: Buffer.ELEMENT_ATTRIBUTE_TYPE
-        }]
-    });
+            components: components || 3
+        }]});
 }
 
 function capitalize(string) {

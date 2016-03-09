@@ -60,7 +60,7 @@ LineBucket.prototype.shaderInterfaces = {
         attributes: [{
             name: 'pos',
             components: 2,
-            type: Bucket.AttributeType.SHORT,
+            type: 'Int16',
             value: [
                 '(point.x << 1) | tx',
                 '(point.y << 1) | ty'
@@ -68,7 +68,7 @@ LineBucket.prototype.shaderInterfaces = {
         }, {
             name: 'data',
             components: 4,
-            type: Bucket.AttributeType.UNSIGNED_BYTE,
+            type: 'Uint8',
             value: [
                 // add 128 to store an byte in an unsigned byte
                 'Math.round(' + EXTRUDE_SCALE + ' * extrude.x) + 128',

@@ -30,7 +30,7 @@ CircleBucket.prototype.shaderInterfaces = {
         attributes: [{
             name: 'pos',
             components: 2,
-            type: Bucket.AttributeType.SHORT,
+            type: 'Int16',
             value: [
                 '(x * 2) + ((extrudeX + 1) / 2)',
                 '(y * 2) + ((extrudeY + 1) / 2)'

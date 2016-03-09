@@ -4,23 +4,25 @@ var Point = require('point-geometry');
 var loadGeometry = require('./load_geometry');
 var EXTENT = require('./bucket').EXTENT;
 var featureFilter = require('feature-filter');
-var createStructArrayType = require('../util/struct_array');
+var StructArrayType = require('../util/struct_array');
 var Grid = require('../util/grid');
 var StringNumberMapping = require('../util/string_number_mapping');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var GeoJSONFeature = require('../util/vectortile_to_geojson');
 
-var FeatureIndexArray = createStructArrayType([
+var FeatureIndexArray = new StructArrayType({
+    members: [
         // the index of the feature in the original vectortile
         { type: 'Uint32', name: 'featureIndex' },
         // the source layer the feature appears in
         { type: 'Uint16', name: 'sourceLayerIndex' },
         // the bucket the feature appears in
         { type: 'Uint16', name: 'bucketIndex' }
-]);
+    ]});
 
-var FilteredFeatureIndexArray = createStructArrayType([
+var FilteredFeatureIndexArray = new StructArrayType({
+    members: [
         // the index of the feature in the original vectortile
         { type: 'Uint32', name: 'featureIndex' },
         // the source layer the feature appears in
@@ -29,7 +31,7 @@ var FilteredFeatureIndexArray = createStructArrayType([
         { type: 'Uint16', name: 'bucketIndex' },
         // the layer the feature appears in
         { type: 'Uint16', name: 'layerIndex' }
-]);
+    ]});
 
 module.exports = FeatureTree;
 
@@ -87,12 +89,12 @@ FeatureTree.prototype.serialize = function() {
         coord: this.coord,
         overscaling: this.overscaling,
         grid: this.grid.toArrayBuffer(),
-        featureIndexArray: this.featureIndexArray.arrayBuffer,
+        featureIndexArray: this.featureIndexArray.serialize(),
         numberToLayerIDs: this.numberToLayerIDs
     };
     return {
         data: data,
-        transferables: [data.grid, data.featureIndexArray]
+        transferables: [data.grid, data.featureIndexArray.arrayBuffer]
     };
 };
 
@@ -152,11 +154,11 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     matching.sort(topDown);
-    var match = this.featureIndexArray.at(0);
+    var match = this.featureIndexArray.get(0);
     this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
-    var match2 = this.collisionTile.collisionBoxArray.at(0);
+    var match2 = this.collisionTile.collisionBoxArray.get(0);
     matchingSymbols.sort();
     this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
@@ -266,7 +268,7 @@ FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     var result = {};
 
     featureIndexArray = new FilteredFeatureIndexArray(featureIndexArray);
-    var indexes = featureIndexArray.at(0);
+    var indexes = featureIndexArray.get(0);
 
     var cachedLayerFeatures = {};
     for (var i = 0; i < featureIndexArray.length; i++) {

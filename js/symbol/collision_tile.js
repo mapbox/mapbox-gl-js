@@ -70,16 +70,16 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
                 0);
     }
 
-    this.tempCollisionBox = collisionBoxArray.at(0);
+    this.tempCollisionBox = collisionBoxArray.get(0);
     this.edges = [
-        collisionBoxArray.at(1),
-        collisionBoxArray.at(2),
-        collisionBoxArray.at(3),
-        collisionBoxArray.at(4)
+        collisionBoxArray.get(1),
+        collisionBoxArray.get(2),
+        collisionBoxArray.get(3),
+        collisionBoxArray.get(4)
     ];
 
-    this.box = collisionBoxArray.at(0);
-    this.blocking = collisionBoxArray.at(0);
+    this.box = collisionBoxArray.get(0);
+    this.blocking = collisionBoxArray.get(0);
 }
 
 CollisionTile.prototype.serialize = function() {

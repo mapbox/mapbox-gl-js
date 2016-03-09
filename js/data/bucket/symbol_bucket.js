@@ -38,12 +38,12 @@ var shaderAttributeArgs = ['x', 'y', 'ox', 'oy', 'tx', 'ty', 'minzoom', 'maxzoom
 var shaderAttributes = [{
     name: 'pos',
     components: 2,
-    type: Bucket.AttributeType.SHORT,
+    type: 'Int16',
     value: ['x', 'y']
 }, {
     name: 'offset',
     components: 2,
-    type: Bucket.AttributeType.SHORT,
+    type: 'Int16',
     value: [
         'Math.round(ox * 64)', // use 1/64 pixels for placement
         'Math.round(oy * 64)'
@@ -51,7 +51,7 @@ var shaderAttributes = [{
 }, {
     name: 'data1',
     components: 4,
-    type: Bucket.AttributeType.UNSIGNED_BYTE,
+    type: 'Uint8',
     value: [
         'tx / 4',                   // tex
         'ty / 4',                   // tex
@@ -61,7 +61,7 @@ var shaderAttributes = [{
 }, {
     name: 'data2',
     components: 2,
-    type: Bucket.AttributeType.UNSIGNED_BYTE,
+    type: 'Uint8',
     value: [
         '(minzoom || 0) * 10',             // minzoom
         'Math.min(maxzoom || 25, 25) * 10' // minzoom
@@ -92,12 +92,12 @@ SymbolBucket.prototype.shaderInterfaces = {
         attributes: [{
             name: 'pos',
             components: 2,
-            type: Bucket.AttributeType.SHORT,
+            type: 'Int16',
             value: [ 'point.x', 'point.y' ]
         }, {
             name: 'extrude',
             components: 2,
-            type: Bucket.AttributeType.SHORT,
+            type: 'Int16',
             value: [
                 'Math.round(extrude.x)',
                 'Math.round(extrude.y)'
@@ -105,7 +105,7 @@ SymbolBucket.prototype.shaderInterfaces = {
         }, {
             name: 'data',
             components: 2,
-            type: Bucket.AttributeType.UNSIGNED_BYTE,
+            type: 'Uint8',
             value: [
                 'maxZoom * 10',
                 'placementZoom * 10'
@@ -230,7 +230,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
 
     this.placeFeatures(collisionTile, this.showCollisionBoxes);
 
-    this.trimBuffers();
+    this.trimArrays();
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, featureIndex) {
@@ -335,7 +335,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
-    this.createBuffers();
+    this.createStructArrays();
 
     var elementGroups = this.elementGroups = {
         glyph: [],
@@ -512,7 +512,7 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
             if (!feature) continue;
 
             for (var b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
-                var box = this.collisionBoxArray.at(b);
+                var box = this.collisionBoxArray.get(b);
                 var anchorPoint = box.anchorPoint;
 
                 var tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);

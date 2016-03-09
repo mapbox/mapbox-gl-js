@@ -24,7 +24,7 @@ FillBucket.prototype.shaderInterfaces = {
         attributes: [{
             name: 'pos',
             components: 2,
-            type: Bucket.AttributeType.SHORT,
+            type: 'Int16',
             value: ['x', 'y']
         }]
     }

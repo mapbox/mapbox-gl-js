@@ -1,7 +1,6 @@
 'use strict';
 
 var test = require('tap').test;
-var Buffer = require('../../../js/data/buffer');
 var Bucket = require('../../../js/data/bucket');
 var util = require('../../../js/util/util');
 
@@ -25,11 +24,12 @@ test('Bucket', function(t) {
 
                 attributes: [{
                     name: 'map',
+                    type: 'Int16',
                     value: ['x']
                 }, {
                     name: 'box',
                     components: 2,
-                    type: Buffer.AttributeType.SHORT,
+                    type: 'Int16',
                     value: ['x * 2', 'y * 2']
                 }]
             }
@@ -68,20 +68,25 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.buffers.testVertex;
-        t.equal(testVertex.type, Buffer.BufferType.VERTEX);
+        var testVertex = bucket.structArrays.testVertex;
         t.equal(testVertex.length, 1);
-        t.deepEqual(testVertex.get(0), { map: [17], box: [34, 84] });
+        var v0 = testVertex.get(0);
+        t.equal(v0.map, 17);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
 
-        var testElement = bucket.buffers.testElement;
-        t.equal(testElement.type, Buffer.BufferType.ELEMENT);
+        var testElement = bucket.structArrays.testElement;
         t.equal(testElement.length, 1);
-        t.deepEqual(testElement.get(0), { vertices: [1, 2, 3] });
+        var e1 = testElement.get(0);
+        t.equal(e1.vertices0, 1);
+        t.equal(e1.vertices1, 2);
+        t.equal(e1.vertices2, 3);
 
-        var testSecondElement = bucket.buffers.testSecondElement;
-        t.equal(testSecondElement.type, Buffer.BufferType.ELEMENT);
+        var testSecondElement = bucket.structArrays.testSecondElement;
         t.equal(testSecondElement.length, 1);
-        t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
+        var e2 = testSecondElement.get(0);
+        t.equal(e2.vertices0, 17);
+        t.equal(e2.vertices1, 42);
 
         t.end();
     });
@@ -92,12 +97,12 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        bucket.createBuffers();
-        var buffers = bucket.buffers;
+        bucket.createStructArrays();
+        var structArrays = bucket.structArrays;
 
-        t.equal(bucket.buffers, buffers);
-        t.equal(buffers.testElement.length, 0);
-        t.equal(buffers.testSecondElement.length, 0);
+        t.equal(bucket.structArrays, structArrays);
+        t.equal(structArrays.testElement.length, 0);
+        t.equal(structArrays.testSecondElement.length, 0);
         t.equal(bucket.elementGroups.test.length, 0);
 
         t.end();
@@ -108,21 +113,29 @@ test('Bucket', function(t) {
 
         bucket.features = [createFeature(1, 5)];
         bucket.populateBuffers();
-        bucket.createBuffers();
+        bucket.createStructArrays();
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.buffers.testVertex;
+        var testVertex = bucket.structArrays.testVertex;
         t.equal(testVertex.length, 1);
-        t.deepEqual(testVertex.get(0), { map: [17], box: [34, 84] });
+        var v0 = testVertex.get(0);
+        t.equal(v0.map, 17);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
 
-        var testElement = bucket.buffers.testElement;
+        var testElement = bucket.structArrays.testElement;
         t.equal(testElement.length, 1);
-        t.deepEqual(testElement.get(0), { vertices: [1, 2, 3] });
+        var e1 = testElement.get(0);
+        t.equal(e1.vertices0, 1);
+        t.equal(e1.vertices1, 2);
+        t.equal(e1.vertices2, 3);
 
-        var testSecondElement = bucket.buffers.testSecondElement;
+        var testSecondElement = bucket.structArrays.testSecondElement;
         t.equal(testSecondElement.length, 1);
-        t.deepEqual(testSecondElement.get(0), { vertices: [17, 42] });
+        var e2 = testSecondElement.get(0);
+        t.equal(e2.vertices0, 17);
+        t.equal(e2.vertices1, 42);
 
         t.end();
     });

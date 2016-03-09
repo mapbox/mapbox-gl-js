@@ -187,7 +187,7 @@ util.extend(Worker.prototype, {
         if (geoJSONTile) {
             var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
             geojsonWrapper.name = '_geojsonTileLayer';
-            var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+            var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }}).buffer;
             tile.parse(geojsonWrapper, this.layers, this.actor, callback, rawTileData);
         } else {
             return callback(null, null); // nothing in the given tile
@@ -218,8 +218,8 @@ util.extend(Worker.prototype, {
             var collisionTile = new CollisionTile(params.collisionTile, tile.collisionBoxArray);
             var featureTree = new FeatureTree(params.featureTree, params.rawTileData, collisionTile);
 
-            var featureArrayBuffer = featureTree.query(params, this.styleLayersByID, false).arrayBuffer;
-            callback(null, featureArrayBuffer, [featureArrayBuffer]);
+            var featureArray = featureTree.query(params, this.styleLayersByID, false).serialize();
+            callback(null, featureArray, [featureArray.arrayBuffer]);
         } else {
             callback(null, []);
         }

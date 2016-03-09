@@ -1,8 +1,10 @@
 'use strict';
 
-var inherit = require('./util').inherit;
+// Note: all "sizes" are measured in bytes
 
-module.exports = createStructArrayType;
+var assert = require('assert');
+
+module.exports = StructArrayType;
 
 var viewTypes = {
     'Int8': Int8Array,
@@ -16,50 +18,135 @@ var viewTypes = {
     'Float64': Float64Array
 };
 
-function createStructArrayType(members, methods) {
-    if (methods === undefined) methods = {};
+/**
+ * @typedef StructMember
+ * @private
+ * @property {string} name
+ * @property {string} type
+ * @property {number} components
+ */
+
+var structArrayTypeCache = {};
+
+/**
+ * `StructArrayType` is used to create new `StructArray` types.
+ *
+ * `StructArray` provides an abstraction over `ArrayBuffer` and `TypedArray` making it behave like
+ * an array of typed structs. A StructArray is comprised of elements. Each element has a set of
+ * members that are defined when the `StructArrayType` is created.
+ *
+ * StructArrays useful for creating large arrays that:
+ * - can be transferred from workers as a Transferable object
+ * - can be copied cheaply
+ * - use less memory for lower-precision members
+ * - can be used as buffers in WebGL.
+ *
+ * @class StructArrayType
+ * @param {Array.<StructMember>}
+ * @param options
+ * @param {number} options.alignment Use `4` to align members to 4 byte boundaries. Default is 1.
+ *
+ * @example
+ *
+ * var PointArrayType = new StructArrayType({
+ *  members: [
+ *      { type: 'Int16', name: 'x' },
+ *      { type: 'Int16', name: 'y' }
+ *  ]});
+ *
+ *  var pointArray = new PointArrayType();
+ *  pointArray.emplaceBack(10, 15);
+ *  pointArray.emplaceBack(20, 35);
+ *
+ *  point = pointArray.get(0);
+ *  assert(point.x === 10);
+ *  assert(point.y === 15);
+ *  point._setIndex(1);
+ *  assert(point.x === 20);
+ *  assert(point.y === 35);
+ *
+ * @private
+ */
+function StructArrayType(options) {
+
+    var key = JSON.stringify(options);
+    if (structArrayTypeCache[key]) {
+        return structArrayTypeCache[key];
+    }
+
+    if (options.alignment === undefined) options.alignment = 1;
 
     function StructType() {
         Struct.apply(this, arguments);
     }
 
-    StructType.prototype = inherit(Struct, methods);
+    StructType.prototype = Object.create(Struct.prototype);
 
     var offset = 0;
     var maxSize = 0;
+    var usedTypes = ['Uint8'];
 
-    for (var m = 0; m < members.length; m++) {
-        var member = members[m];
+    StructType.prototype.members = options.members.map(function(member) {
+        member = {
+            name: member.name,
+            type: member.type,
+            components: member.components || 1
+        };
 
-        if (!viewTypes[member.type]) {
-            throw new Error(JSON.stringify(member.type) + ' is not a valid type');
+        assert(member.name.length);
+        assert(member.type in viewTypes);
+
+        if (usedTypes.indexOf(member.type) < 0) usedTypes.push(member.type);
+
+        var typeSize = sizeOf(member.type);
+        maxSize = Math.max(maxSize, typeSize);
+        member.offset = offset = align(offset, Math.max(options.alignment, typeSize));
+
+        for (var c = 0; c < member.components; c++) {
+            Object.defineProperty(StructType.prototype, member.name + (member.components === 1 ? '' : c), {
+                get: createGetter(member, c),
+                set: createSetter(member, c)
+            });
         }
 
-        var size = sizeOf(member.type);
-        maxSize = Math.max(maxSize, size);
-        offset = member.offset = align(offset, size);
+        offset += typeSize * member.components;
 
-        Object.defineProperty(StructType.prototype, member.name, {
-            get: createGetter(member.type, offset),
-            set: createSetter(member.type, offset)
-        });
+        return member;
+    });
 
-        offset += size;
-    }
-
-    StructType.prototype.BYTE_SIZE = align(offset, maxSize);
+    StructType.prototype.alignment = options.alignment;
+    StructType.prototype.BYTE_SIZE = align(offset, Math.max(maxSize, options.alignment));
 
     function StructArrayType() {
         StructArray.apply(this, arguments);
     }
 
+    StructArrayType.serialize = serializeStructArrayType;
+
     StructArrayType.prototype = Object.create(StructArray.prototype);
     StructArrayType.prototype.StructType = StructType;
     StructArrayType.prototype.BYTES_PER_ELEMENT = StructType.prototype.BYTE_SIZE;
-    StructArrayType.prototype.emplaceBack = createEmplaceBack(members, StructType.prototype.BYTE_SIZE);
+    StructArrayType.prototype.emplaceBack = createEmplaceBack(StructType.prototype.members, StructType.prototype.BYTE_SIZE);
+    StructArrayType.prototype._usedTypes = usedTypes;
+
+
+    structArrayTypeCache[key] = StructArrayType;
 
     return StructArrayType;
 }
+
+/**
+ * Serialize the StructArray type. This serializes the *type* not an instance of the type.
+ * @private
+ */
+function serializeStructArrayType() {
+    return {
+        members: this.prototype.StructType.prototype.members,
+        alignment: this.prototype.StructType.prototype.alignment,
+        BYTES_PER_ELEMENT: this.prototype.BYTES_PER_ELEMENT
+    };
+}
+
 
 function align(offset, size) {
     return Math.ceil(offset / size) * size;
@@ -70,88 +157,178 @@ function sizeOf(type) {
 }
 
 function getArrayViewName(type) {
-    return type.toLowerCase() + 'Array';
+    return type.toLowerCase();
 }
 
 
+/*
+ * > I saw major perf gains by shortening the source of these generated methods (i.e. renaming
+ * > elementIndex to i) (likely due to v8 inlining heuristics).
+ * - lucaswoj
+ */
 function createEmplaceBack(members, BYTES_PER_ELEMENT) {
+    var usedTypeSizes = [];
     var argNames = [];
     var body = '' +
-    'var pos1 = this.length * ' + BYTES_PER_ELEMENT.toFixed(0) + ';\n' +
-    'var pos2 = pos1 / 2;\n' +
-    'var pos4 = pos1 / 4;\n' +
+    'var i = this.length;\n' +
     'this.length++;\n' +
-    'this.metadataArray[0]++;\n' +
-    'if (this.length > this.allocatedLength) this.resize(this.length);\n';
+    'if (this.length > this.capacity) this._resize(this.length);\n';
+
     for (var m = 0; m < members.length; m++) {
         var member = members[m];
-        var argName = 'arg_' + m;
-        var index = 'pos' + sizeOf(member.type).toFixed(0) + ' + ' + (member.offset / sizeOf(member.type)).toFixed(0);
-        body += 'this.' + getArrayViewName(member.type) + '[' + index + '] = ' + argName + ';\n';
-        argNames.push(argName);
+        var size = sizeOf(member.type);
+
+        if (usedTypeSizes.indexOf(size) < 0) {
+            usedTypeSizes.push(size);
+            body += 'var o' + size.toFixed(0) + ' = i * ' + (BYTES_PER_ELEMENT / size).toFixed(0) + ';\n';
+        }
+
+        for (var c = 0; c < member.components; c++) {
+            var argName = 'v' + argNames.length;
+            var index = 'o' + size.toFixed(0) + ' + ' + (member.offset / size + c).toFixed(0);
+            body += 'this.' + getArrayViewName(member.type) + '[' + index + '] = ' + argName + ';\n';
+            argNames.push(argName);
+        }
     }
+
+    body += 'return i;';
+
     return new Function(argNames, body);
 }
 
-function createGetter(type, offset) {
-    var index = 'this._pos' + sizeOf(type).toFixed(0) + ' + ' + (offset / sizeOf(type)).toFixed(0);
-    return new Function([], 'return this._structArray.' + getArrayViewName(type) + '[' + index + '];');
+function createMemberComponentString(member, component) {
+    var elementOffset = 'this._pos' + sizeOf(member.type).toFixed(0);
+    var componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
+    var index = elementOffset + ' + ' + componentOffset;
+    return 'this._structArray.' + getArrayViewName(member.type) + '[' + index + ']';
+
 }
 
-function createSetter(type, offset) {
-    var index = 'this._pos' + sizeOf(type).toFixed(0) + ' + ' + (offset / sizeOf(type)).toFixed(0);
-    return new Function(['x'], 'this._structArray.' + getArrayViewName(type) + '[' + index + '] = x;');
+function createGetter(member, c) {
+    return new Function([], 'return ' + createMemberComponentString(member, c) + ';');
 }
 
+function createSetter(member, c) {
+    return new Function(['x'], createMemberComponentString(member, c) + ' = x;');
+}
 
+/**
+ * @class Struct
+ * @param {StructArray} structArray The StructArray the struct is stored in
+ * @param {number} index The index of the struct in the StructArray.
+ * @private
+ */
 function Struct(structArray, index) {
     this._structArray = structArray;
     this._setIndex(index);
 }
 
+/**
+ * Make this Struct object point to a different instance in the same array.
+ * It can be cheaper to use .setIndex to re-use an existing Struct than to
+ * create a new one.
+ * @param {number} index The index of the struct in the StructArray;
+ * @private
+ */
 Struct.prototype._setIndex = function(index) {
     this._pos1 = index * this.BYTE_SIZE;
     this._pos2 = this._pos1 / 2;
     this._pos4 = this._pos1 / 4;
+    this._pos8 = this._pos1 / 8;
 };
 
 
-function StructArray(initialAllocatedLength) {
-    if (initialAllocatedLength instanceof ArrayBuffer) {
-        this.arrayBuffer = initialAllocatedLength;
+/**
+ * @class StructArray
+ * The StructArray class is inherited by the custom StructArrayType classes created with
+ * `new StructArrayType(members, options)`.
+ * @private
+ */
+function StructArray(serialized) {
+    if (serialized !== undefined) {
+    // Create from an serialized StructArray
+        this.arrayBuffer = serialized.arrayBuffer;
+        this.length = serialized.length;
+        this.capacity = this.arrayBuffer.byteLength / this.BYTES_PER_ELEMENT;
         this._refreshViews();
-        this.length = this.metadataArray[0];
-        this.allocatedLength = this.uint8Array.length / this.BYTES_PER_ELEMENT;
+
+    // Create a new StructArray
     } else {
-        if (initialAllocatedLength === undefined) {
-            initialAllocatedLength = this.DEFAULT_ALLOCATED_LENGTH;
-        }
-        this.resize(initialAllocatedLength);
+        this.length = 0;
+        this.capacity = 0;
+        this._resize(this.DEFAULT_CAPACITY);
     }
 }
 
-StructArray.prototype.DEFAULT_ALLOCATED_LENGTH = 100;
-StructArray.prototype.RESIZE_FACTOR = 1.5;
-StructArray.prototype.allocatedLength = 0;
-StructArray.prototype.length = 0;
-var METADATA_BYTES = align(4, 8);
+/**
+ * @property {number}
+ * @private
+ * @readonly
+ */
+StructArray.prototype.DEFAULT_CAPACITY = 128;
 
-StructArray.prototype.resize = function(n) {
-    this.allocatedLength = Math.max(n, Math.floor(this.allocatedLength * this.RESIZE_FACTOR));
-    this.arrayBuffer = new ArrayBuffer(METADATA_BYTES + align(this.allocatedLength * this.BYTES_PER_ELEMENT, 8));
+/**
+ * @property {number}
+ * @private
+ * @readonly
+ */
+StructArray.prototype.RESIZE_MULTIPLIER = 5;
 
-    var oldUint8Array = this.uint8Array;
-    this._refreshViews();
-    if (oldUint8Array) this.uint8Array.set(oldUint8Array);
+/**
+ * Serialize this StructArray instance
+ * @private
+ */
+StructArray.prototype.serialize = function() {
+    this.trim();
+    return {
+        length: this.length,
+        arrayBuffer: this.arrayBuffer
+    };
 };
 
-StructArray.prototype._refreshViews = function() {
-    for (var t in viewTypes) {
-        this[getArrayViewName(t)] = new viewTypes[t](this.arrayBuffer, METADATA_BYTES);
-    }
-    this.metadataArray = new Uint32Array(this.arrayBuffer, 0, 1);
-};
-
-StructArray.prototype.at = function(index) {
+/**
+ * Return the Struct at the given location in the array.
+ * @private
+ * @param {number} index The index of the element.
+ */
+StructArray.prototype.get = function(index) {
     return new this.StructType(this, index);
 };
+
+/**
+ * Resize the buffer to discard unused capacity.
+ * @private
+ */
+StructArray.prototype.trim = function() {
+    if (this.length !== this.capacity) {
+        this.capacity = this.length;
+        this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.BYTES_PER_ELEMENT);
+        this._refreshViews();
+    }
+};
+
+/**
+ * Resize the array so that it fits at least `n` elements.
+ * @private
+ * @param {number} n The number of elements that must fit in the array after the resize.
+ */
+StructArray.prototype._resize = function(n) {
+    this.capacity = Math.max(n, Math.floor(this.capacity * this.RESIZE_MULTIPLIER));
+    this.arrayBuffer = new ArrayBuffer(this.capacity * this.BYTES_PER_ELEMENT);
+
+    var oldUint8Array = this.uint8;
+    this._refreshViews();
+    if (oldUint8Array) this.uint8.set(oldUint8Array);
+};
+
+/**
+ * Create TypedArray views for the current ArrayBuffer.
+ * @private
+ */
+StructArray.prototype._refreshViews = function() {
+    for (var t = 0; t < this._usedTypes.length; t++) {
+        var type = this._usedTypes[t];
+        this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
+    }
+};
+

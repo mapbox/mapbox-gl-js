@@ -24,7 +24,7 @@ test('CollisionFeature', function(t) {
         var cf = new CollisionFeature(collisionBoxArray, [point], anchor, 0, 0, 0, shapedText, 1, 0, false);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 1);
 
-        var box = collisionBoxArray.at(cf.boxStartIndex);
+        var box = collisionBoxArray.get(cf.boxStartIndex);
         t.equal(box.x1, -50);
         t.equal(box.x2, 50);
         t.equal(box.y1, -10);
@@ -129,7 +129,7 @@ test('CollisionFeature', function(t) {
     function pluckAnchorPoints(cf) {
         var result = [];
         for (var i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
-            result.push(collisionBoxArray.at(i).anchorPoint);
+            result.push(collisionBoxArray.get(i).anchorPoint);
         }
         return result;
     }

@@ -17,7 +17,7 @@ test('LineBucket', function(t) {
         buffers: {},
         layer: { id: 'test', type: 'line', layout: {} }
     });
-    bucket.createBuffers();
+    bucket.createStructArrays();
 
     var pointWithScale = new Point(0, 0);
     pointWithScale.scale = 10;
