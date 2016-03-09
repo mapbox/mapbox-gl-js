@@ -3,7 +3,6 @@
 var createStructArrayType = require('../util/struct_array');
 var Point = require('point-geometry');
 
-
 /**
  * A collision box represents an area of the map that that is covered by a
  * label. CollisionFeature uses one or more of these collision boxes to
@@ -36,23 +35,14 @@ var Point = require('point-geometry');
  * label anymore. Their maxScale is smaller than the current scale.
  *
  *
- * @class CollisionBox
- * @param {Point} anchorPoint The anchor point the box is centered around.
- * @param {number} x1 The distance from the anchor to the left edge.
- * @param {number} y1 The distance from the anchor to the top edge.
- * @param {number} x2 The distance from the anchor to the right edge.
- * @param {number} y2 The distance from the anchor to the bottom edge.
- * @param {number} maxScale The maximum scale this box can block other boxes at.
- * @param {VectorTileFeature} feature The VectorTileFeature that this CollisionBox was created for.
- * @param {Array<string>} layerIDs The IDs of the layers that this CollisionBox is a part of.
+ * @class CollisionBoxArray
  * @private
  */
 
 module.exports = createStructArrayType([
         // the box is centered around the anchor point
-        // TODO: this should be an Int16 but it's causing some render tests to fail.
-        { type: 'Float32', name: 'anchorPointX' },
-        { type: 'Float32', name: 'anchorPointY' },
+        { type: 'Int16', name: 'anchorPointX' },
+        { type: 'Int16', name: 'anchorPointY' },
 
         // distances to the edges from the anchor
         { type: 'Int16', name: 'x1' },
