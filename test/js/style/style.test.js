@@ -871,7 +871,7 @@ test('Style#setLayerZoomRange', function(t) {
     t.end();
 });
 
-test('Style#queryRenderedFeatures - race condition', function(t) {
+test('Style#queryRenderedFeaturesAsync - race condition', function(t) {
     var style = new Style({
         "version": 8,
         "sources": {
@@ -899,7 +899,7 @@ test('Style#queryRenderedFeatures - race condition', function(t) {
         style._cascade([]);
         style._recalculate(0);
 
-        style.sources.mapbox.queryRenderedFeatures = function(position, params, classes, zoom, bearing, callback) {
+        style.sources.mapbox.queryRenderedFeaturesAsync = function(position, params, classes, zoom, bearing, callback) {
             var features = [{
                 type: 'Feature',
                 layer: 'land',
@@ -911,8 +911,8 @@ test('Style#queryRenderedFeatures - race condition', function(t) {
             }, 10);
         };
 
-        t.test('queryRenderedFeatures race condition', function(t) {
-            style.queryRenderedFeatures([256, 256], {}, {}, 0, 0, function(err, results) {
+        t.test('queryRenderedFeaturesAsync race condition', function(t) {
+            style.queryRenderedFeaturesAsync([256, 256], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 t.equal(results.length, 0);
                 t.end();
@@ -923,7 +923,7 @@ test('Style#queryRenderedFeatures - race condition', function(t) {
     });
 });
 
-test('Style#queryRenderedFeatures', function(t) {
+test('Style#queryRenderedFeaturesAsync', function(t) {
     var style = new Style({
         "version": 8,
         "sources": {
@@ -959,31 +959,36 @@ test('Style#queryRenderedFeatures', function(t) {
         style._cascade([]);
         style._recalculate(0);
 
-        style.sources.mapbox.queryRenderedFeatures = function(position, params, classes, zoom, bearing, callback) {
-            var features = [{
-                type: 'Feature',
-                layer: 'land',
-                geometry: {
-                    type: 'Polygon'
-                }
-            }, {
-                type: 'Feature',
-                layer: 'land',
-                geometry: {
-                    type: 'Point'
-                }
-            }, {
-                type: 'Feature',
-                layer: 'landref',
-                geometry: {
-                    type: 'Point'
-                }
-            }];
+        style.sources.mapbox.queryRenderedFeaturesAsync = function(position, params, classes, zoom, bearing, callback) {
+            var features = {
+                'land': [{
+                    type: 'Feature',
+                    layer: style._layers.land,
+                    geometry: {
+                        type: 'Polygon'
+                    }
+                }, {
+                    type: 'Feature',
+                    layer: style._layers.land,
+                    geometry: {
+                        type: 'Point'
+                    }
+                }],
+                'landref': [{
+                    type: 'Feature',
+                    layer: style._layers.landref,
+                    geometry: {
+                        type: 'Line'
+                    }
+                }]
+            };
 
             if (params.layer) {
-                features = features.filter(function(f) {
-                    return params.layerIds.indexOf(f.layer) > -1;
-                });
+                for (var l in features) {
+                    if (params.layerIDs.indexOf(l) < 0) {
+                        delete features[l];
+                    }
+                }
             }
 
             setTimeout(function() {
@@ -992,15 +997,15 @@ test('Style#queryRenderedFeatures', function(t) {
         };
 
         t.test('returns feature type', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
-                t.equal(results[0].geometry.type, 'Polygon');
+                t.equal(results[0].geometry.type, 'Line');
                 t.end();
             });
         });
 
         t.test('filters by `layer` option', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layer: 'land'}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layer: 'land'}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 t.equal(results.length, 2);
                 t.end();
@@ -1008,7 +1013,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('includes layout properties', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 var layout = results[0].layer.layout;
                 t.deepEqual(layout['line-cap'], 'round');
@@ -1017,19 +1022,19 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('includes paint properties', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
-                t.deepEqual(results[0].layer.paint['line-color'], 'red');
+                t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
                 t.end();
             });
         });
 
         t.test('ref layer inherits properties', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
 
                 var layer = results[1].layer;
-                var refLayer = results[2].layer;
+                var refLayer = results[0].layer;
                 t.deepEqual(layer.layout, refLayer.layout);
                 t.deepEqual(layer.type, refLayer.type);
                 t.deepEqual(layer.id, refLayer.ref);
@@ -1040,10 +1045,10 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('includes metadata', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0, function(err, results) {
                 t.error(err);
 
-                var layer = results[0].layer;
+                var layer = results[1].layer;
                 t.equal(layer.metadata.something, 'else');
 
                 t.end();
@@ -1051,7 +1056,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('include multiple layers', function(t) {
-            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layer: ['land', 'landref']}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layer: ['land', 'landref']}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 t.equals(results.length, 3);
                 t.end();

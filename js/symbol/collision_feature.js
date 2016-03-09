@@ -34,19 +34,19 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
         var height = y2 - y1;
         var length = x2 - x1;
 
-        if (height <= 0) return;
+        if (height > 0) {
+            // set minimum box height to avoid very many small labels
+            height = Math.max(10 * boxScale, height);
 
-        // set minimum box height to avoid very many small labels
-        height = Math.max(10 * boxScale, height);
-
-        if (straight) {
-            // used for icon labels that are aligned with the line, but don't curve along it
-            var vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
-            var straightLine = [anchor.sub(vector), anchor.add(vector)];
-            this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
-        } else {
-            // used for text labels that curve along a line
-            this._addLineCollisionBoxes(collisionBoxArray, line, anchor, anchor.segment, length, height, featureIndex, sourceLayerIndex, bucketIndex);
+            if (straight) {
+                // used for icon labels that are aligned with the line, but don't curve along it
+                var vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
+                var straightLine = [anchor.sub(vector), anchor.add(vector)];
+                this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
+            } else {
+                // used for text labels that curve along a line
+                this._addLineCollisionBoxes(collisionBoxArray, line, anchor, anchor.segment, length, height, featureIndex, sourceLayerIndex, bucketIndex);
+            }
         }
 
     } else {
@@ -117,7 +117,7 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, 
 
         var p0 = line[index];
         var p1 = line[index + 1];
-        var boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0);
+        var boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
         var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
         var maxScale = labelLength / 2 / distanceToInnerEdge;
