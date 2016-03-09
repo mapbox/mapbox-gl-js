@@ -118,6 +118,8 @@ styleBatch.prototype = {
 
     setLayoutProperty: function(layerId, name, value) {
         var layer = this._style.getReferentLayer(layerId);
+        layerId = layer.id;
+
         if (layer.getLayoutProperty(name) === value) return this;
 
         layer.setLayoutProperty(name, value);
@@ -133,6 +135,9 @@ styleBatch.prototype = {
     },
 
     setFilter: function(layerId, filter) {
+        var layer = this._style.getReferentLayer(layerId);
+        layerId = layer.id;
+
         if (validateStyle.emitErrors(this._style, validateStyle.filter({
             key: 'layers.' + layerId + '.filter',
             value: filter,
@@ -140,7 +145,6 @@ styleBatch.prototype = {
             styleSpec: styleSpec
         }))) return this;
 
-        var layer = this._style.getReferentLayer(layerId);
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
@@ -155,6 +159,8 @@ styleBatch.prototype = {
 
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         var layer = this._style.getReferentLayer(layerId);
+        layerId = layer.id;
+
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
 
         if (minzoom != null) {

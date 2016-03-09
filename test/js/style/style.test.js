@@ -28,7 +28,7 @@ function createSource() {
     });
 }
 
-function createGeoJSONSourceJSON() {
+function createGeoJSONSource() {
     return {
         "type": "geojson",
         "data": {
@@ -728,76 +728,65 @@ test('Style#removeLayer', function(t) {
 });
 
 test('Style#setFilter', function(t) {
-    t.test('sets a layer filter', function(t) {
-        var style = new Style({
-            "version": 8,
-            "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {
-                        "type": "FeatureCollection",
-                        "features": []
-                    }
-                }
+    function createStyle() {
+        return new Style({
+            version: 8,
+            sources: {
+                geojson: createGeoJSONSource()
             },
-            "layers": [{
-                "id": "symbol",
-                "type": "symbol",
-                "source": "geojson",
-                "filter": ["==", "id", 0]
-            }]
+            layers: [
+                { id: 'symbol', type: 'symbol', source: 'geojson', filter: ['==', 'id', 0] },
+                { id: 'symbol-child', ref: 'symbol' }
+            ]
         });
+    }
+
+    t.test('sets filter', function(t) {
+        var style = createStyle();
 
         style.on('load', function() {
-            style.setFilter('symbol', ["==", "id", 1]);
-            t.deepEqual(style.getFilter('symbol'), ["==", "id", 1]);
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'update layers');
+                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+            };
+
+            style.setFilter('symbol', ['==', 'id', 1]);
+            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
             t.end();
         });
     });
 
-    t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON({
-            "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {
-                        "type": "FeatureCollection",
-                        "features": []
-                    }
-                }
-            },
-            "layers": [{
-                "id": "symbol",
-                "type": "symbol",
-                "source": "geojson",
-                "filter": ["==", "id", 0]
-            }]
-        }));
+    t.test('sets filter on parent', function(t) {
+        var style = createStyle();
+
+        style.on('load', function() {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'update layers');
+                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+            };
+
+            style.setFilter('symbol-child', ['==', 'id', 1]);
+            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
+            t.deepEqual(style.getFilter('symbol-child'), ['==', 'id', 1]);
+            t.end();
+        });
+    });
+
+    t.test('throws if style is not loaded', function(t) {
+        var style = createStyle();
+
         t.throws(function () {
             style.setLayerFilter('symbol', ['==', 'id', 1]);
         }, Error, /load/i);
-        style.on('load', function() {
-            t.end();
-        });
+
+        t.end();
     });
 
     t.test('emits if invalid', function(t) {
-        var style = new Style(createStyleJSON({
-            "sources": {
-                "geojson": {
-                    "type": "geojson",
-                    "data": {}
-                }
-            },
-            "layers": [{
-                "id": "symbol",
-                "type": "symbol",
-                "source": "geojson"
-            }]
-        }));
+        var style = createStyle();
         style.on('load', function() {
             style.on('error', function() {
-                t.notOk(style.getLayer('symbol').serialize().filter);
+                t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
                 t.end();
             });
             style.setFilter('symbol', ['==', '$type', 1]);
@@ -806,20 +795,32 @@ test('Style#setFilter', function(t) {
 });
 
 test('Style#setLayerZoomRange', function(t) {
-    t.test('sets zoom range', function(t) {
-        var style = new Style({
+    function createStyle() {
+        return new Style({
             "version": 8,
             "sources": {
-                "geojson": createGeoJSONSourceJSON()
+                "geojson": createGeoJSONSource()
             },
             "layers": [{
                 "id": "symbol",
                 "type": "symbol",
                 "source": "geojson"
+            }, {
+                "id": "symbol-child",
+                "ref": "symbol"
             }]
         });
+    }
+
+    t.test('sets zoom range', function(t) {
+        var style = createStyle();
 
         style.on('load', function() {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'update layers');
+                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+            };
+
             style.setLayerZoomRange('symbol', 5, 12);
             t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
             t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
@@ -827,18 +828,24 @@ test('Style#setLayerZoomRange', function(t) {
         });
     });
 
+    t.test('sets zoom range on parent layer', function(t) {
+        var style = createStyle();
+
+        style.on('load', function() {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'update layers');
+                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+            };
+
+            style.setLayerZoomRange('symbol-child', 5, 12);
+            t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
+            t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
+            t.end();
+        });
+    });
+
     t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON({
-            "version": 8,
-            "sources": {
-                "geojson": createGeoJSONSourceJSON()
-            },
-            "layers": [{
-                "id": "symbol",
-                "type": "symbol",
-                "source": "geojson"
-            }]
-        }));
+        var style = createStyle();
         t.throws(function () {
             style.setLayerZoomRange('symbol', 5, 12);
         }, Error, /load/i);
@@ -1049,8 +1056,8 @@ test('Style#batch', function(t) {
     t.test('defers expensive methods', function(t) {
         var style = new Style(createStyleJSON({
             "sources": {
-                "streets": createGeoJSONSourceJSON(),
-                "terrain": createGeoJSONSourceJSON()
+                "streets": createGeoJSONSource(),
+                "terrain": createGeoJSONSource()
             }
         }));
 

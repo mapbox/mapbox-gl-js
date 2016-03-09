@@ -460,7 +460,51 @@ test('Map', function(t) {
             });
 
             map.on('style.load', function () {
+                map.style.dispatcher.broadcast = function(key, value) {
+                    t.equal(key, 'update layers');
+                    t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                };
+
                 map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+                t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
+                t.end();
+            });
+        });
+
+        t.test('sets property on parent layer', function (t) {
+            var map = createMap({
+                style: {
+                    "version": 8,
+                    "sources": {
+                        "geojson": {
+                            "type": "geojson",
+                            "data": {
+                                "type": "FeatureCollection",
+                                "features": []
+                            }
+                        }
+                    },
+                    "layers": [{
+                        "id": "symbol",
+                        "type": "symbol",
+                        "source": "geojson",
+                        "layout": {
+                            "text-transform": "uppercase"
+                        }
+                    }, {
+                        "id": "symbol-ref",
+                        "ref": "symbol"
+                    }]
+                }
+            });
+
+            map.on('style.load', function () {
+                map.style.dispatcher.broadcast = function(key, value) {
+                    t.equal(key, 'update layers');
+                    t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                };
+
+                map.setLayoutProperty('symbol-ref', 'text-transform', 'lowercase');
                 t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
                 t.end();
             });
