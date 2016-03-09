@@ -27,14 +27,25 @@ function TouchZoomRotateHandler(map) {
 
 TouchZoomRotateHandler.prototype = {
 
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "pinch to rotate and zoom" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
     /**
      * Enable the "pinch to rotate and zoom" interaction.
      * @example
      *   map.touchZoomRotate.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('touchstart', this._onStart, false);
+        this._enabled = true;
     },
 
     /**
@@ -43,7 +54,9 @@ TouchZoomRotateHandler.prototype = {
      *   map.touchZoomRotate.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('touchstart', this._onStart);
+        this._enabled = false;
     },
 
     /**

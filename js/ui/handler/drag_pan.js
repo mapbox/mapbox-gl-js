@@ -25,15 +25,35 @@ function DragPanHandler(map) {
 
 DragPanHandler.prototype = {
 
+    _enabled: false,
+    _active: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "drag to pan" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
+    /**
+     * Returns true if the "drag to pan" interaction is currently active, i.e. currently being used.
+     * @returns {boolean} active state
+     */
+    isActive: function () {
+        return this._active;
+    },
+
     /**
      * Enable the "drag to pan" interaction.
      * @example
      *   map.dragPan.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
+        this._enabled = true;
     },
 
     /**
@@ -42,13 +62,15 @@ DragPanHandler.prototype = {
      *   map.dragPan.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('mousedown', this._onDown);
         this._el.removeEventListener('touchstart', this._onDown);
+        this._enabled = false;
     },
 
     _onDown: function (e) {
         if (this._ignoreEvent(e)) return;
-        if (this.active) return;
+        if (this.isActive()) return;
 
         if (e.touches) {
             document.addEventListener('touchmove', this._onMove);
@@ -58,7 +80,7 @@ DragPanHandler.prototype = {
             document.addEventListener('mouseup', this._onMouseUp);
         }
 
-        this.active = false;
+        this._active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._inertia = [[Date.now(), this._pos]];
     },
@@ -66,8 +88,8 @@ DragPanHandler.prototype = {
     _onMove: function (e) {
         if (this._ignoreEvent(e)) return;
 
-        if (!this.active) {
-            this.active = true;
+        if (!this.isActive()) {
+            this._active = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
         }
@@ -90,9 +112,9 @@ DragPanHandler.prototype = {
     },
 
     _onUp: function (e) {
-        if (!this.active) return;
+        if (!this.isActive()) return;
 
-        this.active = false;
+        this._active = false;
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
@@ -156,8 +178,8 @@ DragPanHandler.prototype = {
     _ignoreEvent: function (e) {
         var map = this._map;
 
-        if (map.boxZoom && map.boxZoom.active) return true;
-        if (map.dragRotate && map.dragRotate.active) return true;
+        if (map.boxZoom && map.boxZoom.isActive()) return true;
+        if (map.dragRotate && map.dragRotate.isActive()) return true;
         if (e.touches) {
             return (e.touches.length > 1);
         } else {

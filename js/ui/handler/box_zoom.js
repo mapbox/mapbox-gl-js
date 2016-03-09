@@ -21,14 +21,34 @@ function BoxZoomHandler(map) {
 
 BoxZoomHandler.prototype = {
 
+    _enabled: false,
+    _active: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "box zoom" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
+    /**
+     * Returns true if the "box zoom" interaction is currently active, i.e. currently being used.
+     * @returns {boolean} active state
+     */
+    isActive: function () {
+        return this._active;
+    },
+
     /**
      * Enable the "box zoom" interaction.
      * @example
      *   map.boxZoom.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('mousedown', this._onMouseDown, false);
+        this._enabled = true;
     },
 
     /**
@@ -37,7 +57,9 @@ BoxZoomHandler.prototype = {
      *   map.boxZoom.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('mousedown', this._onMouseDown);
+        this._enabled = false;
     },
 
     _onMouseDown: function (e) {
@@ -49,7 +71,7 @@ BoxZoomHandler.prototype = {
 
         DOM.disableDrag();
         this._startPos = DOM.mousePos(this._el, e);
-        this.active = true;
+        this._active = true;
     },
 
     _onMouseMove: function (e) {
@@ -99,7 +121,7 @@ BoxZoomHandler.prototype = {
     },
 
     _finish: function () {
-        this.active = false;
+        this._active = false;
 
         document.removeEventListener('mousemove', this._onMouseMove, false);
         document.removeEventListener('keydown', this._onKeyDown, false);

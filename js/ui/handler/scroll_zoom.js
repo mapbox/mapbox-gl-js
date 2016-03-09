@@ -25,15 +25,26 @@ function ScrollZoomHandler(map) {
 
 ScrollZoomHandler.prototype = {
 
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "scroll to zoom" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
     /**
      * Enable the "scroll to zoom" interaction.
      * @example
      *   map.scrollZoom.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
+        this._enabled = true;
     },
 
     /**
@@ -42,8 +53,10 @@ ScrollZoomHandler.prototype = {
      *   map.scrollZoom.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('wheel', this._onWheel);
         this._el.removeEventListener('mousewheel', this._onWheel);
+        this._enabled = false;
     },
 
     _onWheel: function (e) {

@@ -14,14 +14,25 @@ function DoubleClickZoomHandler(map) {
 
 DoubleClickZoomHandler.prototype = {
 
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "double click to zoom" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
     /**
      * Enable the "double click to zoom" interaction.
      * @example
      *   map.doubleClickZoom.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._map.on('dblclick', this._onDblClick);
+        this._enabled = true;
     },
 
     /**
@@ -30,7 +41,9 @@ DoubleClickZoomHandler.prototype = {
      *   map.doubleClickZoom.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._map.off('dblclick', this._onDblClick);
+        this._enabled = false;
     },
 
     _onDblClick: function (e) {

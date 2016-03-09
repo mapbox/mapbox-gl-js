@@ -30,14 +30,25 @@ function KeyboardHandler(map) {
 
 KeyboardHandler.prototype = {
 
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of keyboard interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
     /**
      * Enable the ability to interact with the map using keyboard input.
      * @example
      *   map.keyboard.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('keydown', this._onKeyDown, false);
+        this._enabled = true;
     },
 
     /**
@@ -46,7 +57,9 @@ KeyboardHandler.prototype = {
      *   map.keyboard.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('keydown', this._onKeyDown);
+        this._enabled = false;
     },
 
     _onKeyDown: function (e) {
