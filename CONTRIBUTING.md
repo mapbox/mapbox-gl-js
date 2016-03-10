@@ -13,9 +13,8 @@ We have divided our labels into categories to make them easier to use.
  - actionable status (red)
  - non-actionable status (grey)
  - issue type (blue)
- - issue topic (purple)
+ - issue topic / project (yellow)
  - difficulty (green)
- - importance (orange)
 
 ## Code Conventions
 
