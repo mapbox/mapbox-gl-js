@@ -1,5 +1,8 @@
 'use strict';
 
+var mapboxgl = require('../js/mapbox-gl');
+var util = require('../js/util/util');
+
 try {
     main();
 } catch (err) {
@@ -8,8 +11,11 @@ try {
 }
 
 function main() {
-    var BENCHMARKS = {
-        buffer: require('./buffer_benchmark')
+    log('dark', 'please keep this window in the foreground and close the debugger');
+
+    var benchmarks = {
+        buffer: require('./buffer_benchmark'),
+        fps: require('./fps_benchmark')
     };
 
     var pathnameArray = location.pathname.split('/');
@@ -17,7 +23,10 @@ function main() {
     var createBenchmark = benchmarks[benchmarkName];
     if (!createBenchmark) throw new Error('unknown benchmark "' + benchmarkName + '"');
 
-    var benchmark = createBenchmark({ accessToken: getAccessToken() });
+    var benchmark = createBenchmark({
+        accessToken: getAccessToken(),
+        createMap: createMap
+    });
 
     benchmark.on('log', function(event) {
         log(event.color || 'blue', event.message);
@@ -40,7 +49,7 @@ function scrollToBottom() {
 }
 
 function log(color, message) {
-    document.getElementById('log').innerHTML += '<div class="log dark fill-' + color + '"><p>' + message + '</p></div>';
+    document.getElementById('logs').innerHTML += '<div class="log dark fill-' + color + '"><p>' + message + '</p></div>';
 }
 
 function getAccessToken() {
@@ -58,4 +67,21 @@ function getURLParameter(name) {
     var regexp = new RegExp('[?&]' + name + '=([^&#]*)', 'i');
     var output = regexp.exec(window.location.href);
     return output && output[1];
+}
+
+function createMap(options) {
+    var mapElement = document.getElementById('map');
+
+    options = util.extend({width: 512, height: 512}, options);
+
+    mapElement.style.display = 'block';
+    mapElement.style.width = options.width + 'px';
+    mapElement.style.height = options.height + 'px';
+
+    mapboxgl.accessToken = getAccessToken();
+    return new mapboxgl.Map(util.extend({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v8',
+        interactive: false
+    }, options));
 }

@@ -95,17 +95,6 @@ There are two test suites associated with Mapbox GL JS
 
 See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
 
-### Running the FPS Benchmark
-
-The FPS benchmarking page compares the performance of your local copy of GL JS against previously released versions. Benchmarking configuration is within `bench/fps/site.js`.
-
-To serve the FPS benchmark page:
-
-```bash
-$ npm start &
-$ open "http://localhost:9966/bench/fps/?access_token="`echo $MapboxAccessToken`
-```
-
 ### Writing Documentation
 
 See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).

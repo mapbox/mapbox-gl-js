@@ -10,22 +10,23 @@
     <link rel='stylesheet' href='/dist/mapbox-gl.css'/>
 
     <style>
-        body {
+        #logs {
+            margin: 25px auto;
             width: 600px;
-            margin: 50px auto;
-        }
-        .mono {
-            font-family: monospace;
         }
         .log {
             padding: 15px 20px;
+        }
+        #map {
+            margin: 25px auto;
+            display: none;
         }
     </style>
 </head>
 
 <body class="prose">
-    <p>Please keep this window in the foreground and close the debugger.</p>
-    <div id="log" />
+    <div id="logs"></div>
+    <div id="map"></div>
     <script src="/bench/index.js"></script>
 </body>
 

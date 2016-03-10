@@ -11,6 +11,7 @@ var util = require('../js/util/util');
 var Evented = require('../js/util/evented');
 var config = require('../js/util/config');
 var coordinates = require('./coordinates');
+var formatNumber = require('./format_number');
 
 var SAMPLE_COUNT = 10;
 
@@ -182,8 +183,4 @@ function asyncTimesSeries(times, work, callback) {
     } else {
         callback();
     }
-}
-
-function formatNumber(x) {
-    return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
