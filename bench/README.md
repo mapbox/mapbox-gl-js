@@ -7,12 +7,13 @@ Benchmarks help us catch performance regressions and improve performance.
 Start the benchmark server
 
 ```bash
-npm run start-bench
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} npm start
 ```
 
-Open the benchmark runner
+Open a benchmark runner page
 
- - [buffer benchmark](http://localhost:6699/bench/?benchmark=buffer)
+ - **buffer benchmark** http://localhost:9966/bench/buffer
+ - **fps benchmark** http://localhost:9966/bench/fps
 
 ## Writing a Benchmark
 
@@ -26,7 +27,14 @@ Good benchmarks
 Benchmarks are implemented as a function that returns an instance of `Evented`.
 
 ```js
-runBenchmark(options: { accessToken: string; }): Evented
+createBenchmark(options: {
+    accessToken: string;
+    createMap: (options: {
+        width: number;
+        height: number;
+        ... // supports all options for the Map constructor
+    }):Map
+}): Evented
 ```
 
 The instance of `Evented` may fire any number of `log` and `error` events. The

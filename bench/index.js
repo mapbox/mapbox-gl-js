@@ -12,12 +12,12 @@ function main() {
         buffer: require('./buffer_benchmark')
     };
 
-    var benchmarkName = getURLParameter('benchmark');
-    if (!benchmarkName) throw new Error('You must provide a "benchmark" url parameter');
-    var runBenchmark = BENCHMARKS[benchmarkName];
-    if (!runBenchmark) throw new Error('Unknown benchmark "' + benchmarkName + '"');
+    var pathnameArray = location.pathname.split('/');
+    var benchmarkName = pathnameArray[pathnameArray.length - 1] || pathnameArray[pathnameArray.length - 2];
+    var createBenchmark = benchmarks[benchmarkName];
+    if (!createBenchmark) throw new Error('unknown benchmark "' + benchmarkName + '"');
 
-    var benchmark = runBenchmark({ accessToken: getAccessToken() });
+    var benchmark = createBenchmark({ accessToken: getAccessToken() });
 
     benchmark.on('log', function(event) {
         log(event.color || 'blue', event.message);

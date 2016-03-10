@@ -65,12 +65,13 @@ npm install
 
 ### Serving the Debug Page
 
-To serve the debug page, run
+Start the debug server
 
 ```bash
-npm start &
-open "http://localhost:9966/debug/?access_token=<INSERT YOUR ACCESS TOKEN>"
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} npm start
 ```
+
+Open the debug page at http://localhost:9966
 
 ### Creating a Standalone Build
 

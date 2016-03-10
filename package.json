@@ -34,11 +34,11 @@
   "devDependencies": {
     "benchmark": "~1.0.0",
     "browserify": "^12.0.1",
-    "budo": "^7.0.2",
     "documentation": "3.0.0",
     "envify": "^3.4.0",
     "eslint": "^1.5.0",
     "eslint-config-mourner": "^1.0.0",
+    "express": "^4.13.4",
     "gl": "^2.1.5",
     "istanbul": "^0.4.1",
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#94546186df06c6d0a7432caff286055b6ae4e908",
@@ -62,8 +62,7 @@
     "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
   },
   "scripts": {
-    "start": "budo js/mapbox-gl.js --serve=debug/mapbox-gl.js --live --port 9966 -- --transform --standalone mapboxgl",
-    "start-bench": "budo bench/index.js --serve=bench/index.js --port 6699 -- --transform unassertify --transform envify --plugin [minifyify --map /bench/index.js.map --output bench/index.js.map]",
+    "start": "node server.js",
     "start-docs": "npm run production && npm run docs && jekyll serve -w",
     "lint": "eslint js test bench && documentation --lint",
     "test": "npm run lint && prova test/js/*/*.js -q",
