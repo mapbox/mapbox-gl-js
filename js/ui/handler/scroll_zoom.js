@@ -15,7 +15,6 @@ var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : 
 /**
  * The `ScrollZoomHandler` allows a user to zoom the map by scrolling.
  * @class ScrollZoomHandler
- * @property {boolean} enabled Whether the "scroll to zoom" interaction is currently enabled
  */
 function ScrollZoomHandler(map) {
     this._map = map;
@@ -26,7 +25,15 @@ function ScrollZoomHandler(map) {
 
 ScrollZoomHandler.prototype = {
 
-    enabled: false,
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "scroll to zoom" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
 
     /**
      * Enable the "scroll to zoom" interaction.
@@ -34,10 +41,10 @@ ScrollZoomHandler.prototype = {
      *   map.scrollZoom.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
-        this.enabled = true;
+        this._enabled = true;
     },
 
     /**
@@ -46,9 +53,10 @@ ScrollZoomHandler.prototype = {
      *   map.scrollZoom.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('wheel', this._onWheel);
         this._el.removeEventListener('mousewheel', this._onWheel);
-        this.enabled = false;
+        this._enabled = false;
     },
 
     _onWheel: function (e) {

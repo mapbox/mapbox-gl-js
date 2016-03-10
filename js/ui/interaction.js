@@ -69,7 +69,7 @@ Interaction.prototype = {
 
     _onMouseUp: function (e) {
         var map = this._map,
-            rotating = map.dragRotate && map.dragRotate.active;
+            rotating = map.dragRotate && map.dragRotate.isActive();
 
         if (this._contextMenuEvent && !rotating) {
             this._fireEvent('contextmenu', this._contextMenuEvent);
@@ -100,8 +100,8 @@ Interaction.prototype = {
         var map = this._map,
             el = this._el;
 
-        if (map.dragPan && map.dragPan.active) return;
-        if (map.dragRotate && map.dragRotate.active) return;
+        if (map.dragPan && map.dragPan.isActive()) return;
+        if (map.dragRotate && map.dragRotate.isActive()) return;
 
         var target = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;

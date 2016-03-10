@@ -20,7 +20,6 @@ var panDelta = 80,
  *  * `Shift+⇡`: increase pitch by 5 degrees
  *  * `Shift+⇣`: decrease pitch by 5 degrees
  * @class KeyboardHandler
- * @property {boolean} enabled Whether keyboard interaction is currently enabled
  */
 function KeyboardHandler(map) {
     this._map = map;
@@ -31,7 +30,15 @@ function KeyboardHandler(map) {
 
 KeyboardHandler.prototype = {
 
-    enabled: false,
+    _enabled: false,
+
+    /**
+     * Returns the current enabled/disabled state of keyboard interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
 
     /**
      * Enable the ability to interact with the map using keyboard input.
@@ -39,9 +46,9 @@ KeyboardHandler.prototype = {
      *   map.keyboard.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('keydown', this._onKeyDown, false);
-        this.enabled = true;
+        this._enabled = true;
     },
 
     /**
@@ -50,8 +57,9 @@ KeyboardHandler.prototype = {
      *   map.keyboard.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('keydown', this._onKeyDown);
-        this.enabled = false;
+        this._enabled = false;
     },
 
     _onKeyDown: function (e) {

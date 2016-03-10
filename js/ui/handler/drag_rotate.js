@@ -16,8 +16,6 @@ var inertiaLinearity = 0.25,
  * The `DragRotateHandler` allows a user to rotate the map by clicking and
  * dragging the cursor while holding the right mouse button or the `ctrl` key.
  * @class DragRotateHandler
- * @property {boolean} enabled Whether the "drag to rotate" interaction is currently enabled
- * @property {boolean} active Whether the "drag to rotate" interaction is currently active
  */
 function DragRotateHandler(map) {
     this._map = map;
@@ -28,8 +26,24 @@ function DragRotateHandler(map) {
 
 DragRotateHandler.prototype = {
 
-    enabled: false,
-    active: false,
+    _enabled: false,
+    _active: false,
+
+    /**
+     * Returns the current enabled/disabled state of the "drag to rotate" interaction.
+     * @returns {boolean} enabled state
+     */
+    isEnabled: function () {
+        return this._enabled;
+    },
+
+    /**
+     * Returns true if the "drag to rotate" interaction is currently active, i.e. currently being used.
+     * @returns {boolean} active state
+     */
+    isActive: function () {
+        return this._active;
+    },
 
     /**
      * Enable the "drag to rotate" interaction.
@@ -37,9 +51,9 @@ DragRotateHandler.prototype = {
      *   map.dragRotate.enable();
      */
     enable: function () {
-        this.disable();
+        if (this.isEnabled()) return;
         this._el.addEventListener('mousedown', this._onDown);
-        this.enabled = true;
+        this._enabled = true;
     },
 
     /**
@@ -48,18 +62,19 @@ DragRotateHandler.prototype = {
      *   map.dragRotate.disable();
      */
     disable: function () {
+        if (!this.isEnabled()) return;
         this._el.removeEventListener('mousedown', this._onDown);
-        this.enbled = false;
+        this._enabled = false;
     },
 
     _onDown: function (e) {
         if (this._ignoreEvent(e)) return;
-        if (this.active) return;
+        if (this.isActive()) return;
 
         document.addEventListener('mousemove', this._onMove);
         document.addEventListener('mouseup', this._onUp);
 
-        this.active = false;
+        this._active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
@@ -79,8 +94,8 @@ DragRotateHandler.prototype = {
     _onMove: function (e) {
         if (this._ignoreEvent(e)) return;
 
-        if (!this.active) {
-            this.active = true;
+        if (!this.isActive()) {
+            this._active = true;
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
         }
@@ -112,9 +127,9 @@ DragRotateHandler.prototype = {
         document.removeEventListener('mousemove', this._onMove);
         document.removeEventListener('mouseup', this._onUp);
 
-        if (!this.active) return;
+        if (!this.isActive()) return;
 
-        this.active = false;
+        this._active = false;
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 
@@ -176,8 +191,8 @@ DragRotateHandler.prototype = {
     _ignoreEvent: function (e) {
         var map = this._map;
 
-        if (map.boxZoom && map.boxZoom.active) return true;
-        if (map.dragPan && map.dragPan.active) return true;
+        if (map.boxZoom && map.boxZoom.isActive()) return true;
+        if (map.dragPan && map.dragPan.isActive()) return true;
         if (e.touches) {
             return (e.touches.length > 1);
         } else {
