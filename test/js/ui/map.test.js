@@ -326,7 +326,58 @@ test('Map', function(t) {
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
             ];
         }
+    });
 
+    t.test('#setMinZoom', function(t) {
+        var map = createMap({zoom:5});
+        map.setMinZoom(3.5);
+        map.setZoom(1);
+        t.equal(map.getZoom(), 3.5);
+        t.end();
+    });
+
+    t.test('unset minZoom', function(t) {
+        var map = createMap({minZoom:5});
+        map.setMinZoom(null);
+        map.setZoom(1);
+        t.equal(map.getZoom(), 1);
+        t.end();
+    });
+
+    t.test('ignore minZooms over maxZoom', function(t) {
+        var map = createMap({zoom:2, maxZoom:5});
+        t.throws(function() {
+            map.setMinZoom(6);
+        });
+        map.setZoom(0);
+        t.equal(map.getZoom(), 0);
+        t.end();
+    });
+
+    t.test('#setMaxZoom', function (t) {
+        var map = createMap({zoom:0});
+        map.setMaxZoom(3.5);
+        map.setZoom(4);
+        t.equal(map.getZoom(), 3.5);
+        t.end();
+    });
+
+    t.test('unset maxZoom', function(t) {
+        var map = createMap({maxZoom:5});
+        map.setMaxZoom(null);
+        map.setZoom(6);
+        t.equal(map.getZoom(), 6);
+        t.end();
+    });
+
+    t.test('ignore maxZooms over minZoom', function(t) {
+        var map = createMap({minZoom:5});
+        t.throws(function() {
+            map.setMaxZoom(4);
+        });
+        map.setZoom(5);
+        t.equal(map.getZoom(), 5);
+        t.end();
     });
 
     t.test('#remove', function(t) {

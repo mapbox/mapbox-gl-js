@@ -21,6 +21,8 @@ var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 
+var defaultMinZoom = 0;
+var defaultMaxZoom = 20;
 /**
  * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
  * whether or not to smoothly transition property changes triggered by the class change.
@@ -145,8 +147,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         bearing: 0,
         pitch: 0,
 
-        minZoom: 0,
-        maxZoom: 20,
+        minZoom: defaultMinZoom,
+        maxZoom: defaultMaxZoom,
 
         interactive: true,
 
@@ -305,8 +307,49 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             this._update();
         }
         return this;
+
+    },
+    /**
+     * Set the map's minimum zoom level, and zooms map to that level if it is currently below it. If no parameter provided, unsets the current minimum zoom (sets it to 0)
+     * @param {zoom} any number between 0 and 20
+     * @returns {Map} `this`
+     */
+    setMinZoom: function(minZoom) {
+
+        minZoom = minZoom === null || minZoom === undefined ? defaultMinZoom : minZoom;
+
+        if (minZoom >= defaultMinZoom && minZoom <= this.options.maxZoom) {
+            this.transform.minZoom = minZoom;
+            this._update();
+
+            if (this.getZoom() < minZoom) this.setZoom(minZoom);
+
+            return this;
+        }
+
+        else throw new Error('minZoom must be between ' + defaultMinZoom + ' and the current maxZoom, inclusive');
     },
 
+    /**
+     * Set the map's maximum zoom level, and zooms map to that level if it is currently above it. If no parameter provided, unsets the current maximum zoom (sets it to 20)
+     * @param {zoom} any number between 0 and 20
+     * @returns {Map} `this`
+     */
+    setMaxZoom: function(maxZoom) {
+
+        maxZoom = maxZoom === null || maxZoom === undefined ? defaultMaxZoom : maxZoom;
+
+        if (maxZoom >= this.options.minZoom && maxZoom <= defaultMaxZoom) {
+            this.transform.maxZoom = maxZoom;
+            this._update();
+
+            if (this.getZoom() > maxZoom) this.setZoom(maxZoom);
+
+            return this;
+        }
+
+        else throw new Error('maxZoom must be between the current minZoom and ' + defaultMaxZoom + ', inclusive');
+    },
     /**
      * Get pixel coordinates (relative to map container) given a geographical location
      *
