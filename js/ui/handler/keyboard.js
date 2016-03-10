@@ -20,7 +20,7 @@ var panDelta = 80,
  *  * `Shift+⇡`: increase pitch by 5 degrees
  *  * `Shift+⇣`: decrease pitch by 5 degrees
  * @class KeyboardHandler
- * @property {boolean} enabled Whether the keyboard interaction is currently enabled
+ * @property {boolean} enabled Whether keyboard interaction is currently enabled
  */
 function KeyboardHandler(map) {
     this._map = map;
