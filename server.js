@@ -29,6 +29,9 @@ app.get('/bench/:name', function(req, res) {
     res.sendFile(__dirname + '/bench/index.html');
 });
 
+app.get('/debug', function(req, res) {
+    res.redirect('/');
+});
 
 app.use(express.static(__dirname + '/debug'));
 app.use('/dist', express.static(__dirname + '/dist'));
