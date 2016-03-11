@@ -813,7 +813,7 @@ test('camera', function(t) {
             var ascended;
 
             camera.on('zoom', function() {
-                if (camera.getZoom() < 1.9) {
+                if (camera.getZoom() < 10) {
                     ascended = true;
                 }
             });
@@ -823,7 +823,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [100, 0], zoom: 18 });
+            camera.flyTo({ center: [100, 0], zoom: 18, duration: 10 });
         });
 
         t.test('pans eastward across the prime meridian', function(t) {
