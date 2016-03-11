@@ -188,10 +188,8 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             tile.redoPlacementAfterDone = false;
         }
 
-        buckets = filterEmptyBuckets(buckets);
-
         callback(null, {
-            buckets: buckets.map(function(bucket) { return bucket.serialize(); }),
+            buckets: buckets.filter(isBucketEmpty).map(serializeBucket),
             bucketStats: stats // TODO put this in a separate message?
         }, getTransferables(buckets));
     }
@@ -211,23 +209,23 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
         buckets[i].placeFeatures(collisionTile, collisionDebug);
     }
 
-    buckets = filterEmptyBuckets(buckets);
-
     return {
         result: {
-            buckets: buckets.map(function(bucket) { return bucket.serialize(); })
+            buckets: buckets.filter(isBucketEmpty).map(serializeBucket)
         },
         transferables: getTransferables(buckets)
     };
 };
 
-function filterEmptyBuckets(buckets) {
-    return buckets.filter(function(bucket) {
-        for (var bufferName in bucket.buffers) {
-            if (bucket.buffers[bufferName].length > 0) return true;
-        }
-        return false;
-    });
+function isBucketEmpty(bucket) {
+    for (var bufferName in bucket.buffers) {
+        if (bucket.buffers[bufferName].length > 0) return true;
+    }
+    return false;
+}
+
+function serializeBucket(bucket) {
+    return bucket.serialize();
 }
 
 function getTransferables(buckets) {
