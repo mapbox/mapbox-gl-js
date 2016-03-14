@@ -3,7 +3,6 @@
 var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
-var featureFilter = require('feature-filter');
 var CollisionBoxArray = require('../symbol/collision_box');
 var StringNumberMapping = require('../util/string_number_mapping');
 
@@ -269,27 +268,3 @@ function getTransferables(buckets) {
     }
     return transferables;
 }
-
-WorkerTile.prototype.querySourceFeatures = function(params) {
-    if (!this.data) return null;
-
-    var layer = this.data.layers ?
-        this.data.layers[params.sourceLayer] :
-        this.data;
-
-    if (!layer) return null;
-
-    var filter = featureFilter(params.filter);
-
-    var features = [];
-    for (var i = 0; i < layer.length; i++) {
-        var feature = layer.feature(i);
-        if (filter(feature)) {
-            var geojsonFeature = feature.toGeoJSON(this.coord.x, this.coord.y, this.coord.z);
-            geojsonFeature.tile = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
-            features.push(geojsonFeature);
-        }
-    }
-
-    return features;
-};
