@@ -41,6 +41,9 @@ var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_S
 
 module.exports = LineBucket;
 
+/**
+ * @private
+ */
 function LineBucket() {
     Bucket.apply(this, arguments);
 }

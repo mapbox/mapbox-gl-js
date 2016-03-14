@@ -7,12 +7,13 @@ var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
 var EXTENT = require('../data/bucket').EXTENT;
 
-/*
+module.exports = Painter;
+
+/**
  * Initialize a new painter object.
  *
  * @param {Canvas} gl an experimental-webgl drawing context
  */
-module.exports = Painter;
 function Painter(gl, transform) {
     this.gl = glutil.extend(gl);
     this.transform = transform;

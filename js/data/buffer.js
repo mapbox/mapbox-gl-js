@@ -233,7 +233,7 @@ Buffer.prototype._createPushMethod = function() {
 };
 
 /**
- * @typedef BufferAttribute
+ * @typedef {Object} BufferAttribute
  * @private
  * @property {string} name
  * @property {number} components
@@ -268,21 +268,18 @@ Buffer.AttributeType = {
  * An `BufferType.ELEMENT` buffer holds indicies of a corresponding `BufferType.VERTEX` buffer.
  * These indicies are stored in the `BufferType.ELEMENT` buffer as `UNSIGNED_SHORT`s.
  *
- * @property {BufferAttributeType}
  * @private
  * @readonly
  */
 Buffer.ELEMENT_ATTRIBUTE_TYPE = Buffer.AttributeType.UNSIGNED_SHORT;
 
 /**
- * @property {number}
  * @private
  * @readonly
  */
 Buffer.CAPACITY_DEFAULT = 1024;
 
 /**
- * @property {number}
  * @private
  * @readonly
  */
@@ -290,7 +287,6 @@ Buffer.CAPACITY_RESIZE_MULTIPLIER = 5;
 
 /**
  * WebGL performs best if buffer sizes are aligned to 2 byte boundaries.
- * @property {number}
  * @private
  * @readonly
  */
@@ -298,7 +294,6 @@ Buffer.CAPACITY_ALIGNMENT = 2;
 
 /**
  * WebGL performs best if vertex attribute offsets are aligned to 4 byte boundaries.
- * @property {number}
  * @private
  * @readonly
  */

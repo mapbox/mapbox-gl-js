@@ -36,7 +36,6 @@ Bucket.AttributeType = Buffer.AttributeType;
  * One bit is lost to support features extending past the extent on the right edge of the tile.
  * This leaves us with 2^13 = 8192
  *
- * @property {number}
  * @private
  * @readonly
  */

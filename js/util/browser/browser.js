@@ -2,15 +2,16 @@
 
 var Canvas = require('./canvas');
 
-/*
+/**
  * Unlike js/util/browser.js, this code is written with the expectation
  * of a browser environment with a global 'window' object
+ * @module browser
+ * @private
  */
 
 /**
  * Provides a function that outputs milliseconds: either performance.now()
  * or a fallback to Date.now()
- * @private
  */
 module.exports.now = (function() {
     if (window.performance &&
