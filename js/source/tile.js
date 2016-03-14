@@ -85,18 +85,20 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    // TODO rewrite this
     reloadSymbolData: function(data, painter) {
         if (this.isUnloaded) return;
 
-        var newBuckets = unserializeBuckets(data.buckets);
-        for (var id in newBuckets) {
-            var newBucket = newBuckets[id];
-            var oldBucket = this.buckets[id];
-
-            oldBucket.destroy(painter.gl);
-            this.buckets[id] = newBucket;
+        // Destroy and delete existing symbol buckets
+        for (var id in this.buckets) {
+            var bucket = this.buckets[id];
+            if (bucket.type === 'symbol') {
+                bucket.destroy(painter.gl);
+                delete this.buckets[id];
+            }
         }
+
+        // Add new symbol buckets
+        util.extend(this.buckets, unserializeBuckets(data.buckets));
     },
 
     /**
