@@ -24,7 +24,7 @@ test('basic', function(t) {
         coord: new TileCoord(1, 1, 1), overscaling: 1 });
 
     t.test('basic worker tile', function(t) {
-        tile.parse(new Wrapper(features), buckets, {}, function(err, result) {
+        tile.parse(new Wrapper(features), buckets, {}, null, function(err, result) {
             t.equal(err, null);
             t.ok(result.buckets[0]);
             t.end();

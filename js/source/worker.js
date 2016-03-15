@@ -84,7 +84,7 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, callback, data);
+            tile.parse(tile.data, this.layers, this.actor, data, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -96,7 +96,7 @@ util.extend(Worker.prototype, {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.layers, this.actor, callback);
+            tile.parse(tile.data, this.layers, this.actor, params.rawTileData, callback);
         }
     },
 
@@ -188,7 +188,7 @@ util.extend(Worker.prototype, {
             var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
             geojsonWrapper.name = '_geojsonTileLayer';
             var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }}).buffer;
-            tile.parse(geojsonWrapper, this.layers, this.actor, callback, rawTileData);
+            tile.parse(geojsonWrapper, this.layers, this.actor, rawTileData, callback);
         } else {
             return callback(null, null); // nothing in the given tile
         }

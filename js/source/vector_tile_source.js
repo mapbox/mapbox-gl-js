@@ -73,6 +73,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
         };
 
         if (tile.workerID) {
+            params.rawTileData = tile.rawTileData;
             this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
         } else {
             tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));

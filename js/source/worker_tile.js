@@ -20,7 +20,7 @@ function WorkerTile(params) {
     this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
-WorkerTile.prototype.parse = function(data, layers, actor, callback, rawTileData) {
+WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback) {
 
     this.status = 'parsing';
     this.data = data;
