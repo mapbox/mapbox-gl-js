@@ -4,9 +4,9 @@ Hi, and thanks in advance for contributing to Mapbox GL. Here's how we work. Ple
 
 Our labeling system should be
 
- - **sparing** The utility of our issue labels is inversely proportional to how many we have.
- - **objective** Labels should be objective enough that any two people would agree on a labeling decision.
- - **useful** A label should tracks state or capture semantic meaning that would otherwise be hard to search for.
+ - **minimalistic:** Labels' usefulness are inversely proportional to how many we have.
+ - **objective:** Labels should be objective enough that any two people would agree on a labeling decision.
+ - **useful:** Labels should track state or capture semantic meaning that would otherwise be hard to search.
 
 We have divided our labels into categories to make them easier to use.
 
@@ -15,6 +15,7 @@ We have divided our labels into categories to make them easier to use.
  - issue type (blue)
  - issue topic / project (yellow)
  - difficulty (green)
+ - priority (green)
 
 ## Code Conventions
 
