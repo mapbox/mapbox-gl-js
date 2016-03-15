@@ -1,5 +1,9 @@
 # Release Procedure
 
+## Check for "Release Blocker" issues or PRs
+
+If there are any [open "Release Blocker" issues or PRs](https://github.com/mapbox/mapbox-gl-js/labels/release%20blocker), we cannot do a release.
+
 ## Get the latest `master`
 
 ```bash
