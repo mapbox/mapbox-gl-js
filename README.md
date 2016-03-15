@@ -91,7 +91,7 @@ There are two test suites associated with Mapbox GL JS
  - `npm test` runs quick unit tests
  - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
 
- ### Running Benchmarks
+### Running Benchmarks
 
 See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
 
