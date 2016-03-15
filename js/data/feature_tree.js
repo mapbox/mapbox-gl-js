@@ -155,12 +155,12 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     matching.sort(topDown);
     var match = this.featureIndexArray.get(0);
-    this.filterMatching(result, matching, match, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matching, match, queryGeometry, filter, params.layers, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.get(0);
     matchingSymbols.sort();
-    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layerIDs, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layers, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     return result;
 };

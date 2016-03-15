@@ -427,10 +427,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     queryRenderedFeaturesAsync: function(queryGeometry, params, classes, zoom, bearing, callback) {
-        if (params.layer) {
-            params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
-        }
-
         util.asyncAll(Object.keys(this.sources), function(id, callback) {
             var source = this.sources[id];
             if (source.queryRenderedFeaturesAsync) {
@@ -445,10 +441,6 @@ Style.prototype = util.inherit(Evented, {
     },
 
     queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing) {
-        if (params.layer) {
-            params.layerIDs = Array.isArray(params.layer) ? params.layer : [params.layer];
-        }
-
         var sourceResults = [];
         for (var id in this.sources) {
             var source = this.sources[id];

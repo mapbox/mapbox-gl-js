@@ -383,19 +383,19 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
      * @param {Object} params
-     * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
+     * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      * @param {featuresCallback} callback function that receives the results
      *
      * @returns {Map} `this`
      *
      * @example
-     * map.queryRenderedFeaturesAsync([20, 35], { layer: 'my-layer-name' }, function(err, features) {
+     * map.queryRenderedFeaturesAsync([20, 35], { layers: ['my-layer-name'] }, function(err, features) {
      *   console.log(features);
      * });
      *
      * @example
-     * map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layer: 'my-layer-name' }, function(err, features) {
+     * map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layers: ['my-layer-name'] }, function(err, features) {
      *   console.log(features);
      * });
      */
@@ -415,16 +415,16 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
      * @param {Object} params
-     * @param {string|Array<string>} [params.layer] Only return features from a given layer or layers
+     * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      *
      * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
      *
      * @example
-     * var features = map.queryRenderedFeatures([20, 35], { layer: 'my-layer-name' });
+     * var features = map.queryRenderedFeatures([20, 35], { layers: ['my-layer-name'] });
      *
      * @example
-     * var features = map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layer: 'my-layer-name' });
+     * var features = map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {

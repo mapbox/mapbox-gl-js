@@ -983,9 +983,9 @@ test('Style#queryRenderedFeaturesAsync', function(t) {
                 }]
             };
 
-            if (params.layer) {
+            if (params.layers) {
                 for (var l in features) {
-                    if (params.layerIDs.indexOf(l) < 0) {
+                    if (params.layers.indexOf(l) < 0) {
                         delete features[l];
                     }
                 }
@@ -1004,8 +1004,8 @@ test('Style#queryRenderedFeaturesAsync', function(t) {
             });
         });
 
-        t.test('filters by `layer` option', function(t) {
-            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layer: 'land'}, {}, 0, 0, function(err, results) {
+        t.test('filters by `layers` option', function(t) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layers: 'land'}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 t.equal(results.length, 2);
                 t.end();
@@ -1056,7 +1056,7 @@ test('Style#queryRenderedFeaturesAsync', function(t) {
         });
 
         t.test('include multiple layers', function(t) {
-            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layer: ['land', 'landref']}, {}, 0, 0, function(err, results) {
+            style.queryRenderedFeaturesAsync([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, {}, 0, 0, function(err, results) {
                 t.error(err);
                 t.equals(results.length, 3);
                 t.end();
