@@ -15,7 +15,7 @@ We have divided our labels into categories to make them easier to use.
  - issue type (blue)
  - issue topic / project (yellow)
  - difficulty (green)
- - priority (green)
+ - priority (orange)
 
 ## Code Conventions
 
