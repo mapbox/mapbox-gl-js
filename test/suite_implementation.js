@@ -47,26 +47,30 @@ module.exports = function(style, options, callback) {
             tmp.copy(data, end);
         }
 
+        var syncResults = [];
         if (options.queryGeometry) {
-            done(null, map.queryRenderedFeatures(options.queryGeometry, options));
+            syncResults = map.queryRenderedFeatures(options.queryGeometry, options);
+            map.queryRenderedFeaturesAsync(options.queryGeometry, options, done);
         } else {
             done(null, []);
         }
 
-        function done(err, results) {
+        function done(err, asyncResults) {
             map.remove();
             gl.destroy();
 
             if (err) return callback(err);
 
-            results = results.map(function (r) {
-                delete r.layer;
-                r.geometry = null;
-                return JSON.parse(JSON.stringify(r));
-            });
+            syncResults = syncResults.map(prepareFeatures);
+            asyncResults = asyncResults.map(prepareFeatures);
 
-            callback(null, data, results);
+            callback(null, data, syncResults, asyncResults);
         }
 
+        function prepareFeatures(r) {
+            delete r.layer;
+            r.geometry = null;
+            return JSON.parse(JSON.stringify(r));
+        }
     });
 };
