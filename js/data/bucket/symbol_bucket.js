@@ -115,7 +115,6 @@ SymbolBucket.prototype.shaderInterfaces = {
 
 SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) {
     this.createStyleLayer();
-    this.createBuffers();
 
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.
@@ -333,6 +332,8 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
 SymbolBucket.prototype.placeFeatures = function(collisionTile, collisionDebug) {
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
+
+    this.createBuffers();
 
     var elementGroups = this.elementGroups = {
         glyph: [],

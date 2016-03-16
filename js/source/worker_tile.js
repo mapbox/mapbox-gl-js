@@ -231,8 +231,9 @@ function serializeBucket(bucket) {
 function getTransferables(buckets) {
     var transferables = [];
     for (var i in buckets) {
-        for (var j in buckets.buffers) {
-            transferables.push(buckets[i].buffers[j].arrayBuffer);
+        var bucket = buckets[i];
+        for (var j in bucket.buffers) {
+            transferables.push(bucket.buffers[j].arrayBuffer);
         }
     }
     return transferables;
