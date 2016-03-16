@@ -119,21 +119,21 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
 
         box._setIndex(b);
 
+        var anchorPoint = box.anchorPoint._matMult(rotationMatrix);
+        var x = anchorPoint.x;
+        var y = anchorPoint.y;
+
+        var x1 = x + box.x1;
+        var y1 = y + box.y1 * yStretch;
+        var x2 = x + box.x2;
+        var y2 = y + box.y2 * yStretch;
+
+        box.bbox0 = x1;
+        box.bbox1 = y1;
+        box.bbox2 = x2;
+        box.bbox3 = y2;
+
         if (!allowOverlap) {
-            var anchorPoint = box.anchorPoint._matMult(rotationMatrix);
-            var x = anchorPoint.x;
-            var y = anchorPoint.y;
-
-            var x1 = x + box.x1;
-            var y1 = y + box.y1 * yStretch;
-            var x2 = x + box.x2;
-            var y2 = y + box.y2 * yStretch;
-
-            box.bbox0 = x1;
-            box.bbox1 = y1;
-            box.bbox2 = x2;
-            box.bbox3 = y2;
-
             var blockingBoxes = this.grid.query(x1, y1, x2, y2);
 
             for (var i = 0; i < blockingBoxes.length; i++) {
