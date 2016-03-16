@@ -180,28 +180,24 @@ map.on('move', function(e) {
 });
 
 map.on('mousemove', function(e) {
-    map.featuresAt(e.point, {
-
+    var features = map.queryRenderedFeatures(e.point, {
         // Collect each layer id we created into an array.
-        layer: layers.map(function(layer, i) {
+        layers: layers.map(function(layer, i) {
             return 'layer-' + i;
         })
-    }, function(err, features) {
-        // Change the cursor style as a UI indicator.
-        map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
-
-        if (err || !features.length) {
-            popup.remove();
-            return;
-        }
-
-        var details = features[0].properties;
-
-        // Initialize a popup and set its coordinates
-        // based on the feature found.
-        popup.setLngLat(e.lngLat)
-            .setHTML(details.name + ': ' + details[facet].toLocaleString())
-            .addTo(map);
     });
+    // Change the cursor style as a UI indicator.
+    map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+
+    if (!features.length) {
+        popup.remove();
+        return;
+    }
+
+    // Initialize a popup and set its coordinates
+    // based on the feature found.
+    popup.setLngLat(e.lngLat)
+        .setHTML(details.name + ': ' + details[facet].toLocaleString())
+        .addTo(map);
 });
 </script>

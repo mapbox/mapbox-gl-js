@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Highlight features within a bounding box
-description: 'Hold <kbd>Shift</kbd> &amp; drag the map to query features using <code>featuresIn</code>.'
+description: 'Hold <kbd>Shift</kbd> &amp; drag the map to query features using <code>queryRenderedFeatures</code>.'
 ---
 <style>
 .boxdraw {
@@ -157,50 +157,43 @@ map.on('load', function() {
             box = null;
         }
 
-        // If bbox exists. use this value as the argument for `featuresIn`
+        // If bbox exists. use this value as the argument for `queryRenderedFeatures`
         if (bbox) {
-            map.featuresIn(bbox, {
-                layer: 'counties'
-            }, function(err, features) {
-                if (err) console.warn(err);
+            var features = map.queryRenderedFeatures(bbox, { layers: ['counties'] });
 
-                if (features.length >= 1000) {
-                    return window.alert('Select a smaller number of features');
-                }
+            if (features.length >= 1000) {
+                return window.alert('Select a smaller number of features');
+            }
 
-                // Run through the selected features and set a filter
-                // to match features with unique FIPS codes to activate
-                // the `counties-highlighted` layer.
-                var filter = features.reduce(function(memo, feature) {
-                    memo.push(feature.properties.FIPS);
-                    return memo;
-                }, ['in', 'FIPS']);
+            // Run through the selected features and set a filter
+            // to match features with unique FIPS codes to activate
+            // the `counties-highlighted` layer.
+            var filter = features.reduce(function(memo, feature) {
+                memo.push(feature.properties.FIPS);
+                return memo;
+            }, ['in', 'FIPS']);
 
-                map.setFilter("counties-highlighted", filter);
-            });
+            map.setFilter("counties-highlighted", filter);
         }
 
         map.dragPan.enable();
     }
 
     map.on('mousemove', function(e) {
-        map.featuresAt(e.point, {
-            layer: 'counties-highlighted'
-        }, function(err, features) {
-            // Change the cursor style as a UI indicator.
-            map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
+        var features = map.queryRenderedFeatures(e.point, { layers: ['counties-highlighted'] });
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
 
-            if (err || !features.length) {
-                popup.remove();
-                return;
-            }
+        if (!features.length) {
+            popup.remove();
+            return;
+        }
 
-            var feature = features[0];
+        var feature = features[0];
 
-            popup.setLngLat(e.lngLat)
-                .setText(feature.properties.COUNTY)
-                .addTo(map);
-        });
+        popup.setLngLat(e.lngLat)
+            .setText(feature.properties.COUNTY)
+            .addTo(map);
     });
 });
 </script>

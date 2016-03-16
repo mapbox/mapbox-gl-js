@@ -89,69 +89,59 @@ map.on('style.load', function() {
     });
 
     map.on('click', function(e) {
-        map.featuresAt(e.point, {
-            radius: 5,
-            includeGeometry: true,
-            layer: 'measure-points'
-        }, function (err, features) {
-            if (err) return;
+        var features = map.queryRenderedFeatures(e.point, { layers: ['measure-points'] });
 
-            // Remove the linestring from the group
-            // So we can redraw it based on the points collection
-            if (geojson.features.length > 1) geojson.features.pop();
+        // Remove the linestring from the group
+        // So we can redraw it based on the points collection
+        if (geojson.features.length > 1) geojson.features.pop();
 
-            // Clear the Distance container to populate it with a new value
-            distanceContainer.innerHTML = '';
+        // Clear the Distance container to populate it with a new value
+        distanceContainer.innerHTML = '';
 
-            // If a marker was clicked, remove it from the
-            if (features.length) {
-                var id = features[0].properties.id;
-                geojson.features = geojson.features.filter(function(point) {
-                    return point.properties.id !== id;
-                });
-            } else {
-                var point = {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            e.lngLat.lng,
-                            e.lngLat.lat
-                        ]
-                    },
-                    "properties": {
-                        "id": new Date().getTime()
-                    }
-                };
+        // If a marker was clicked, remove it from the
+        if (features.length) {
+            var id = features[0].properties.id;
+            geojson.features = geojson.features.filter(function(point) {
+                return point.properties.id !== id;
+            });
+        } else {
+            var point = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        e.lngLat.lng,
+                        e.lngLat.lat
+                    ]
+                },
+                "properties": {
+                    "id": String(new Date().getTime())
+                }
+            };
 
-                geojson.features.push(point);
-            }
+            geojson.features.push(point);
+        }
 
-            if (geojson.features.length > 1) {
-                linestring.geometry.coordinates = geojson.features.map(function(point) {
-                    return point.geometry.coordinates;
-                });
+        if (geojson.features.length > 1) {
+            linestring.geometry.coordinates = geojson.features.map(function(point) {
+                return point.geometry.coordinates;
+            });
 
-                geojson.features.push(linestring);
+            geojson.features.push(linestring);
 
-                // Populate the distanceContainer with total distance
-                var value = document.createElement('pre');
-                value.textContent = 'Total distance: ' + turf.lineDistance(linestring).toLocaleString() + 'km';
-                distanceContainer.appendChild(value);
-            }
+            // Populate the distanceContainer with total distance
+            var value = document.createElement('pre');
+            value.textContent = 'Total distance: ' + turf.lineDistance(linestring).toLocaleString() + 'km';
+            distanceContainer.appendChild(value);
+        }
 
-            map.getSource('geojson').setData(geojson);
-        });
+        map.getSource('geojson').setData(geojson);
     });
 });
 
 map.on('mousemove', function (e) {
-    map.featuresAt(e.point, {
-        radius: 5,
-        layer: 'measure-points'
-    }, function (err, features) {
-        // UI indicator for clicking/hovering a point on the map
-        map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : 'crosshair';
-    });
+    var features = map.queryRenderedFeatures(e.point, { layers: ['measure-points'] });
+    // UI indicator for clicking/hovering a point on the map
+    map.getCanvas().style.cursor = (features.length) ? 'pointer' : 'crosshair';
 });
 </script>

@@ -145,26 +145,21 @@ var popup = new mapboxgl.Popup({
 });
 
 map.on('mousemove', function(e) {
-    map.featuresAt(e.point, {
-        radius: 7.5, // Half the marker size (15px).
-        includeGeometry: true,
-        layer: 'markers'
-    }, function(err, features) {
-        // Change the cursor style as a UI indicator.
-        map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
+    var features = map.queryRenderedFeatures(e.point, { layers: ['markers'] });
+    // Change the cursor style as a UI indicator.
+    map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
 
-        if (err || !features.length) {
-            popup.remove();
-            return;
-        }
+    if (!features.length) {
+        popup.remove();
+        return;
+    }
 
-        var feature = features[0];
+    var feature = features[0];
 
-        // Populate the popup and set its coordinates
-        // based on the feature found.
-        popup.setLngLat(feature.geometry.coordinates)
-            .setHTML(feature.properties.description)
-            .addTo(map);
-    });
+    // Populate the popup and set its coordinates
+    // based on the feature found.
+    popup.setLngLat(feature.geometry.coordinates)
+        .setHTML(feature.properties.description)
+        .addTo(map);
 });
 </script>

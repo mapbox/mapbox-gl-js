@@ -424,7 +424,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * var features = map.queryRenderedFeatures([20, 35], { layers: ['my-layer-name'] });
      *
      * @example
-     * var features = map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
+     * var features = map.queryRenderedFeatures([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {

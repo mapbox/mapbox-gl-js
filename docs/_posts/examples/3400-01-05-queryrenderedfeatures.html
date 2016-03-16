@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Get features under the mouse pointer
-description: Using the featuresAt API to show properties of hovered-over map elements.
+description: Using the queryRenderedFeatures API to show properties of hovered-over map elements.
 ---
 <style>
     #features {
@@ -34,10 +34,8 @@ mapboxgl.util.getJSON('https://api.mapbox.com/styles/v1/mapbox/streets-v8?access
     });
 
     map.on('mousemove', function (e) {
-        map.featuresAt(e.point, {radius: 5}, function (err, features) {
-            if (err) throw err;
-            document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
-        });
+        var features = map.queryRenderedFeatures(e.point);
+        document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
     });
 });
 </script>

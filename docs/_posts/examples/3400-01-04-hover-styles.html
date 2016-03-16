@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Highlight features under the mouse pointer
-description: Using featuresAt and a filter to change hover styles
+description: Using queryRenderedFeatures and a filter to change hover styles
 ---
 <div id='map'></div>
 <script>
@@ -59,16 +59,12 @@ map.on('style.load', function () {
     // If a feature is found, then we'll update the filter in the route-hover
     // layer to only show that state, thus making a hover effect.
     map.on("mousemove", function(e) {
-        map.featuresAt(e.point, {
-            radius: 5,
-            layer: ["state-fills"]
-        }, function (err, features) {
-            if (!err && features.length) {
-                map.setFilter("route-hover", ["==", "name", features[0].properties.name]);
-            } else {
-                map.setFilter("route-hover", ["==", "name", ""]);
-            }
-        });
+        var features = map.queryRenderedFeatures(e.point, { layers: ["state-fills"] });
+        if (features.length) {
+            map.setFilter("route-hover", ["==", "name", features[0].properties.name]);
+        } else {
+            map.setFilter("route-hover", ["==", "name", ""]);
+        }
     });
 });
 </script>

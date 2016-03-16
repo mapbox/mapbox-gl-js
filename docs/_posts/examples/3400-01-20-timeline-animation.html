@@ -68,6 +68,7 @@ var map = new mapboxgl.Map({
 });
 
 var popup = new mapboxgl.Popup({
+    closeOnClick: false,
     closeButton: false
 });
 
@@ -201,44 +202,35 @@ map.on('load', function() {
         });
 
         map.on('mousemove', function(e) {
-            map.featuresAt(e.point, {
-                radius: 30,
-                layer: layerIDs
-            }, function(err, features) {
-                // Change the cursor style as a UI indicator.
-                map.getCanvas().style.cursor = (!err && features.length) ? 'pointer' : '';
-            });
+            var features = map.queryRenderedFeatures(e.point, { layers: layerIDs });
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
         });
 
         map.on('click', function(e) {
-            map.featuresAt(e.point, {
-                includeGeometry: true,
-                radius: 30,
-                layer: layerIDs
-            }, function(err, features) {
-                if (err || !features.length) {
-                    popup.remove();
-                    return;
-                }
+            var features = map.queryRenderedFeatures(e.point, { layers: layerIDs });
+            if (!features.length) {
+                popup.remove();
+                return;
+            }
 
-                var feature = features[0];
+            var feature = features[0];
 
-                var link = document.createElement('a');
-                link.href = feature.properties.url;
-                link.target = '_blank';
-                link.textContent = feature.properties.place;
+            var link = document.createElement('a');
+            link.href = feature.properties.url;
+            link.target = '_blank';
+            link.textContent = feature.properties.place;
 
-                // Use wrapped coordinates to ensure longitude is within (180, -180)
-                var coords = feature.geometry.coordinates;
-                var ll = new mapboxgl.LngLat(coords[0], coords[1]);
-                var wrapped = ll.wrap();
+            // Use wrapped coordinates to ensure longitude is within (180, -180)
+            var coords = feature.geometry.coordinates;
+            var ll = new mapboxgl.LngLat(coords[0], coords[1]);
+            var wrapped = ll.wrap();
 
-                // Center the map to its point.
-                map.flyTo({ center: wrapped });
-                popup.setLngLat(wrapped)
-                    .setHTML(link.outerHTML)
-                    .addTo(map);
-            });
+            // Center the map to its point.
+            map.flyTo({ center: wrapped });
+            popup.setLngLat(wrapped)
+                .setHTML(link.outerHTML)
+                .addTo(map);
         });
     });
 });
