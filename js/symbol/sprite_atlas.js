@@ -17,27 +17,6 @@ function SpriteAtlas(width, height) {
     this.dirty = true;
 }
 
-SpriteAtlas.prototype = {
-    get debug() {
-        return 'canvas' in this;
-    },
-    set debug(value) {
-        if (value && !this.canvas) {
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = this.width * this.pixelRatio;
-            this.canvas.height = this.height * this.pixelRatio;
-            this.canvas.style.width = this.width + 'px';
-            this.canvas.style.height = this.height + 'px';
-            document.body.appendChild(this.canvas);
-            this.ctx = this.canvas.getContext('2d');
-        } else if (!value && this.canvas) {
-            this.canvas.parentNode.removeChild(this.canvas);
-            delete this.ctx;
-            delete this.canvas;
-        }
-    }
-};
-
 function copyBitmap(src, srcStride, srcX, srcY, dst, dstStride, dstX, dstY, width, height, wrap) {
     var srcI = srcY * srcStride + srcX;
     var dstI = dstY * dstStride + dstX;
@@ -241,20 +220,6 @@ SpriteAtlas.prototype.bind = function(gl, linear) {
         }
 
         this.dirty = false;
-
-        // DEBUG
-        if (this.ctx) {
-            var data = this.ctx.getImageData(0, 0, this.width * this.pixelRatio, this.height * this.pixelRatio);
-            data.data.set(new Uint8ClampedArray(this.data.buffer));
-            this.ctx.putImageData(data, 0, 0);
-
-            this.ctx.strokeStyle = 'red';
-            for (var k = 0; k < this.bin.free.length; k++) {
-                var free = this.bin.free[k];
-                this.ctx.strokeRect(free.x * this.pixelRatio, free.y * this.pixelRatio, free.w * this.pixelRatio, free.h * this.pixelRatio);
-            }
-        }
-        // END DEBUG
     }
 };
 

@@ -141,30 +141,3 @@ LineAtlas.prototype.bind = function(gl) {
         }
     }
 };
-
-LineAtlas.prototype.debug = function() {
-
-    var canvas = document.createElement('canvas');
-
-    document.body.appendChild(canvas);
-    canvas.style.position = 'absolute';
-    canvas.style.top = 0;
-    canvas.style.left = 0;
-    canvas.style.background = '#ff0';
-
-    canvas.width = this.width;
-    canvas.height = this.height;
-
-    var ctx = canvas.getContext('2d');
-    var data = ctx.getImageData(0, 0, this.width, this.height);
-    for (var i = 0; i < this.data.length; i++) {
-        if (this.sdf) {
-            var k = i * 4;
-            data.data[k] = data.data[k + 1] = data.data[k + 2] = 0;
-            data.data[k + 3] = this.data[i];
-        } else {
-            data.data[i] = this.data[i];
-        }
-    }
-    ctx.putImageData(data, 0, 0);
-};
