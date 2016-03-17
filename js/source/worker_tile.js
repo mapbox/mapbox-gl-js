@@ -15,7 +15,7 @@ function WorkerTile(params) {
     this.overscaling = params.overscaling;
     this.angle = params.angle;
     this.pitch = params.pitch;
-    this.collisionDebug = params.collisionDebug;
+    this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
 WorkerTile.prototype.parse = function(data, layers, actor, callback) {
@@ -48,7 +48,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
             layer: layer,
             zoom: this.zoom,
             overscaling: this.overscaling,
-            collisionDebug: this.collisionDebug
+            showCollisionBoxes: this.showCollisionBoxes
         });
         bucket.createFilter();
 
@@ -195,7 +195,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, callback) {
     }
 };
 
-WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
+WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) {
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
         this.angle = angle;
@@ -206,7 +206,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, collisionDebug) {
     var buckets = this.symbolBuckets;
 
     for (var i = buckets.length - 1; i >= 0; i--) {
-        buckets[i].placeFeatures(collisionTile, collisionDebug);
+        buckets[i].placeFeatures(collisionTile, showCollisionBoxes);
     }
 
     return {

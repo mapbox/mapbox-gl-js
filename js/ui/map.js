@@ -859,7 +859,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         this.painter.render(this.style, {
-            debug: this.tileDebug,
+            debug: this.showTileBoundaries,
             vertices: this.vertices,
             rotating: this.rotating,
             zooming: this.zooming
@@ -998,31 +998,32 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 util.extendAll(Map.prototype, /** @lends Map.prototype */{
 
     /**
-     * Enable tile debugging mode
+     * Draw an outline around each rendered tile for debugging.
      *
-     * @name tileDebug
+     * @name showTileBoundaries
      * @type {boolean}
      */
-    _tileDebug: false,
-    get tileDebug() { return this._tileDebug; },
-    set tileDebug(value) {
-        if (this._tileDebug === value) return;
-        this._tileDebug = value;
+    _showTileBoundaries: false,
+    get showTileBoundaries() { return this._showTileBoundaries; },
+    set showTileBoundaries(value) {
+        if (this._showTileBoundaries === value) return;
+        this._showTileBoundaries = value;
         this._update();
     },
 
     /**
-     * Show collision boxes: useful for debugging label placement
-     * in styles.
+     * Draw boxes around all symbols in the data source, showing which were
+     * rendered and which were hidden due to collisions with other symbols for
+     * style debugging.
      *
-     * @name collisionDebug
+     * @name showCollisionBoxes
      * @type {boolean}
      */
-    _collisionDebug: false,
-    get collisionDebug() { return this._collisionDebug; },
-    set collisionDebug(value) {
-        if (this._collisionDebug === value) return;
-        this._collisionDebug = value;
+    _showCollisionBoxes: false,
+    get showCollisionBoxes() { return this._showCollisionBoxes; },
+    set showCollisionBoxes(value) {
+        if (this._showCollisionBoxes === value) return;
+        this._showCollisionBoxes = value;
         this.style._redoPlacement();
     },
 

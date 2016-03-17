@@ -133,7 +133,7 @@ Tile.prototype = {
             source: source.id,
             angle: source.map.transform.angle,
             pitch: source.map.transform.pitch,
-            collisionDebug: source.map.collisionDebug
+            showCollisionBoxes: source.map.showCollisionBoxes
         }, done.bind(this), this.workerID);
 
         function done(_, data) {

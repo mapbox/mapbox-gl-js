@@ -28,8 +28,8 @@ suite.run('js', {tests: tests}, function(style, options, callback) {
         attributionControl: false
     });
 
-    if (options.debug) map.tileDebug = true;
-    if (options.collisionDebug) map.collisionDebug = true;
+    if (options.debug) map.showTileBoundaries = true;
+    if (options.collisionDebug) map.showCollisionBoxes = true;
 
     var gl = map.painter.gl;
 

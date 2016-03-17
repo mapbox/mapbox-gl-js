@@ -82,12 +82,12 @@ map.on('click', function(e) {
         .addTo(map);
 });
 
-document.getElementById('tile-debug-checkbox').onclick = function() {
-    map.tileDebug = !!this.checked;
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
 };
 
-document.getElementById('collision-debug-checkbox').onclick = function() {
-    map.collisionDebug = !!this.checked;
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
 };
 
 document.getElementById('buffer-checkbox').onclick = function() {

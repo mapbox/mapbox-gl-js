@@ -26,7 +26,7 @@ module.exports = SymbolBucket;
 
 function SymbolBucket(options) {
     Bucket.apply(this, arguments);
-    this.collisionDebug = options.collisionDebug;
+    this.showCollisionBoxes = options.showCollisionBoxes;
     this.overscaling = options.overscaling;
 }
 
@@ -227,7 +227,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
         }
     }
 
-    this.placeFeatures(collisionTile, this.collisionDebug);
+    this.placeFeatures(collisionTile, this.showCollisionBoxes);
 
     this.trimBuffers();
 };
@@ -329,7 +329,7 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
     return false;
 };
 
-SymbolBucket.prototype.placeFeatures = function(collisionTile, collisionDebug) {
+SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxes) {
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -429,7 +429,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, collisionDebug) {
 
     }
 
-    if (collisionDebug) this.addToDebugBuffers(collisionTile);
+    if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
 };
 
 SymbolBucket.prototype.addSymbols = function(shaderName, quads, scale, keepUpright, alongLine, placementAngle) {

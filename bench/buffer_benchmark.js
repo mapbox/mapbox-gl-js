@@ -143,7 +143,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
             overscaling: 1,
             angle: 0,
             pitch: 0,
-            collisionDebug: false,
+            showCollisionBoxes: false,
             source: 'composite',
             uid: url
         });
