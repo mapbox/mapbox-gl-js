@@ -1,6 +1,6 @@
 Hi, and thanks in advance for contributing to Mapbox GL. Here's how we work. Please follow these conventions when submitting an issue or pull request.
 
-## Issues Labels
+## Issue Labels
 
 Our labeling system should be
 
