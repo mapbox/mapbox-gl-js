@@ -11,7 +11,8 @@ var handlers = {
 };
 
 var DOM = require('../util/dom'),
-    util = require('../util/util');
+    util = require('../util/util'),
+    Point = require('point-geometry');
 
 module.exports = Interaction;
 
@@ -37,9 +38,12 @@ Interaction.prototype = {
 
         el.addEventListener('mousedown', this._onMouseDown, false);
         el.addEventListener('mouseup', this._onMouseUp, false);
-        el.addEventListener('touchstart', this._onTouchStart, false);
-        el.addEventListener('click', this._onClick, false);
         el.addEventListener('mousemove', this._onMouseMove, false);
+        el.addEventListener('touchstart', this._onTouchStart, false);
+        el.addEventListener('touchend', this._onTouchEnd, false);
+        el.addEventListener('touchmove', this._onTouchMove, false);
+        el.addEventListener('touchcancel', this._onTouchCancel, false);
+        el.addEventListener('click', this._onClick, false);
         el.addEventListener('dblclick', this._onDblClick, false);
         el.addEventListener('contextmenu', this._onContextMenu, false);
     },
@@ -54,9 +58,12 @@ Interaction.prototype = {
 
         el.removeEventListener('mousedown', this._onMouseDown);
         el.removeEventListener('mouseup', this._onMouseUp);
-        el.removeEventListener('touchstart', this._onTouchStart);
-        el.removeEventListener('click', this._onClick);
         el.removeEventListener('mousemove', this._onMouseMove);
+        el.removeEventListener('touchstart', this._onTouchStart);
+        el.removeEventListener('touchend', this._onTouchEnd);
+        el.removeEventListener('touchmove', this._onTouchMove);
+        el.removeEventListener('touchcancel', this._onTouchCancel);
+        el.removeEventListener('click', this._onClick);
         el.removeEventListener('dblclick', this._onDblClick);
         el.removeEventListener('contextmenu', this._onContextMenu);
     },
@@ -64,7 +71,7 @@ Interaction.prototype = {
     _onMouseDown: function (e) {
         this._map.stop();
         this._startPos = DOM.mousePos(this._el, e);
-        this._fireEvent('mousedown', e);
+        this._fireMouseEvent('mousedown', e);
     },
 
     _onMouseUp: function (e) {
@@ -72,28 +79,11 @@ Interaction.prototype = {
             rotating = map.dragRotate && map.dragRotate.isActive();
 
         if (this._contextMenuEvent && !rotating) {
-            this._fireEvent('contextmenu', this._contextMenuEvent);
+            this._fireMouseEvent('contextmenu', this._contextMenuEvent);
         }
 
         this._contextMenuEvent = null;
-        this._fireEvent('mouseup', e);
-    },
-
-    _onTouchStart: function (e) {
-        if (!e.touches || e.touches.length > 1) return;
-
-        if (!this._tapped) {
-            this._tapped = setTimeout(this._onTimeout, 300);
-
-        } else {
-            clearTimeout(this._tapped);
-            this._tapped = null;
-            this._fireEvent('dblclick', e);
-        }
-    },
-
-    _onTimeout: function () {
-        this._tapped = null;
+        this._fireMouseEvent('mouseup', e);
     },
 
     _onMouseMove: function (e) {
@@ -107,19 +97,51 @@ Interaction.prototype = {
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
-        this._fireEvent('mousemove', e);
+        this._fireMouseEvent('mousemove', e);
+    },
+
+    _onTouchStart: function (e) {
+        this._map.stop();
+        this._fireTouchEvent('touchstart', e);
+
+        if (!e.touches || e.touches.length > 1) return;
+
+        if (!this._tapped) {
+            this._tapped = setTimeout(this._onTouchTimeout, 300);
+
+        } else {
+            clearTimeout(this._tapped);
+            this._tapped = null;
+            this._fireMouseEvent('dblclick', e);
+        }
+    },
+
+    _onTouchMove: function (e) {
+        this._fireTouchEvent('touchmove', e);
+    },
+
+    _onTouchEnd: function (e) {
+        this._fireTouchEvent('touchend', e);
+    },
+
+    _onTouchCancel: function (e) {
+        this._fireTouchEvent('touchcancel', e);
+    },
+
+    _onTouchTimeout: function () {
+        this._tapped = null;
     },
 
     _onClick: function (e) {
         var pos = DOM.mousePos(this._el, e);
 
         if (pos.equals(this._startPos)) {
-            this._fireEvent('click', e);
+            this._fireMouseEvent('click', e);
         }
     },
 
     _onDblClick: function (e) {
-        this._fireEvent('dblclick', e);
+        this._fireMouseEvent('dblclick', e);
         e.preventDefault();
     },
 
@@ -128,12 +150,27 @@ Interaction.prototype = {
         e.preventDefault();
     },
 
-    _fireEvent: function (type, e) {
+    _fireMouseEvent: function (type, e) {
         var pos = DOM.mousePos(this._el, e);
 
         return this._map.fire(type, {
             lngLat: this._map.unproject(pos),
             point: pos,
+            originalEvent: e
+        });
+    },
+
+    _fireTouchEvent: function (type, e) {
+        var touches = DOM.touchPos(this._el, e),
+            singular = touches.reduce(function (prev, curr, i, arr) {
+                return prev.add(curr.div(arr.length));
+            }, new Point(0, 0));
+
+        return this._map.fire(type, {
+            lngLat: this._map.unproject(singular),
+            point: singular,
+            lngLats: touches.map(function(t) { return this._map.unproject(t); }, this),
+            points: touches,
             originalEvent: e
         });
     }
@@ -179,6 +216,42 @@ Interaction.prototype = {
  * Mouse move event.
  *
  * @event mousemove
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data
+ */
+
+/**
+ * Touch start event.
+ *
+ * @event touchstart
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data
+ */
+
+/**
+ * Touch end event.
+ *
+ * @event touchend
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data
+ */
+
+/**
+ * Touch move event.
+ *
+ * @event touchmove
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data
+ */
+
+/**
+ * Touch cancel event.
+ *
+ * @event touchcancel
  * @memberof Map
  * @instance
  * @property {EventData} data Original event data
