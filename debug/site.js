@@ -82,8 +82,8 @@ map.on('click', function(e) {
         .addTo(map);
 });
 
-document.getElementById('debug-checkbox').onclick = function() {
-    map.debug = !!this.checked;
+document.getElementById('tile-debug-checkbox').onclick = function() {
+    map.tileDebug = !!this.checked;
 };
 
 document.getElementById('collision-debug-checkbox').onclick = function() {

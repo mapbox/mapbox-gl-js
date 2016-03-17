@@ -852,7 +852,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         this.painter.render(this.style, {
-            debug: this.debug,
+            debug: this.tileDebug,
             vertices: this.vertices,
             rotating: this.rotating,
             zooming: this.zooming
@@ -991,16 +991,16 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 util.extendAll(Map.prototype, /** @lends Map.prototype */{
 
     /**
-     * Enable debugging mode
+     * Enable tile debugging mode
      *
-     * @name debug
+     * @name tileDebug
      * @type {boolean}
      */
-    _debug: false,
-    get debug() { return this._debug; },
-    set debug(value) {
-        if (this._debug === value) return;
-        this._debug = value;
+    _tileDebug: false,
+    get tileDebug() { return this._tileDebug; },
+    set tileDebug(value) {
+        if (this._tileDebug === value) return;
+        this._tileDebug = value;
         this._update();
     },
 
