@@ -15,7 +15,9 @@ function main() {
 
     var benchmarks = {
         buffer: require('./buffer_benchmark'),
-        fps: require('./fps_benchmark')
+        fps: require('./fps_benchmark'),
+        'query-point': require('./query_point_benchmark'),
+        'query-box': require('./query_box_benchmark')
     };
 
     var pathnameArray = location.pathname.split('/');
