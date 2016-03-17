@@ -13,25 +13,6 @@ function GlyphAtlas(width, height) {
     this.data = new Uint8Array(width * height);
 }
 
-GlyphAtlas.prototype = {
-    get debug() {
-        return 'canvas' in this;
-    },
-    set debug(value) {
-        if (value && !this.canvas) {
-            this.canvas = document.createElement('canvas');
-            this.canvas.width = this.width;
-            this.canvas.height = this.height;
-            document.body.appendChild(this.canvas);
-            this.ctx = this.canvas.getContext('2d');
-        } else if (!value && this.canvas) {
-            this.canvas.parentNode.removeChild(this.canvas);
-            delete this.ctx;
-            delete this.canvas;
-        }
-    }
-};
-
 GlyphAtlas.prototype.getGlyphs = function() {
     var glyphs = {},
         split,
@@ -179,28 +160,7 @@ GlyphAtlas.prototype.bind = function(gl) {
 GlyphAtlas.prototype.updateTexture = function(gl) {
     this.bind(gl);
     if (this.dirty) {
-
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.ALPHA, gl.UNSIGNED_BYTE, this.data);
-
-        // DEBUG
-        if (this.ctx) {
-            var data = this.ctx.getImageData(0, 0, this.width, this.height);
-            for (var i = 0, j = 0; i < this.data.length; i++, j += 4) {
-                data.data[j] = this.data[i];
-                data.data[j + 1] = this.data[i];
-                data.data[j + 2] = this.data[i];
-                data.data[j + 3] = 255;
-            }
-            this.ctx.putImageData(data, 0, 0);
-
-            this.ctx.strokeStyle = 'red';
-            for (var k = 0; k < this.bin.free.length; k++) {
-                var free = this.bin.free[k];
-                this.ctx.strokeRect(free.x, free.y, free.w, free.h);
-            }
-        }
-        // END DEBUG
-
         this.dirty = false;
     }
 };
