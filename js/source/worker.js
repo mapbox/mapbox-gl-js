@@ -9,6 +9,7 @@ var Protobuf = require('pbf');
 var supercluster = require('supercluster');
 
 var geojsonvt = require('geojson-vt');
+var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
 
 module.exports = function(self) {
@@ -112,6 +113,7 @@ util.extend(Worker.prototype, {
 
     'parse geojson': function(params, callback) {
         var indexData = function(err, data) {
+            rewind(data, true);
             if (err) return callback(err);
             if (typeof data != 'object') {
                 return callback(new Error("Input data is not a valid GeoJSON object."));
