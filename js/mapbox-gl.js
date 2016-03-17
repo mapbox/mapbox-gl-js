@@ -14,6 +14,7 @@ var mapboxgl = module.exports = {};
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Control = require('./ui/control/control');
 mapboxgl.Navigation = require('./ui/control/navigation');
+mapboxgl.Geolocate = require('./ui/control/geolocate');
 mapboxgl.Attribution = require('./ui/control/attribution');
 mapboxgl.Popup = require('./ui/popup');
 
