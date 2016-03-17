@@ -9,6 +9,9 @@ function drawRaster(painter, source, layer, coords) {
 
     var gl = painter.gl;
 
+    gl.enable(gl.DEPTH_TEST);
+    painter.depthMask(true);
+
     // Change depth function to prevent double drawing in areas where tiles overlap.
     gl.depthFunc(gl.LESS);
 
@@ -21,7 +24,8 @@ function drawRaster(painter, source, layer, coords) {
 
 function drawRasterTile(painter, source, layer, coord) {
 
-    painter.setDepthSublayer(0);
+    // the smallest possible coord.z is 10 smaller than the current zoom level, so set that to sublayer 0
+    painter.setDepthSublayer(coord.z - painter.transform.tileZoom + 10);
 
     var gl = painter.gl;
 

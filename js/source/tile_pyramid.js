@@ -40,6 +40,10 @@ function TilePyramid(options) {
     this._filterRendered = this._filterRendered.bind(this);
 }
 
+
+TilePyramid.maxOverzooming = 10;
+TilePyramid.maxUnderzooming = 3;
+
 TilePyramid.prototype = {
     /**
      * Confirm that every tracked tile is loaded.
@@ -236,8 +240,8 @@ TilePyramid.prototype = {
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = Math.max(zoom - 10, this.minzoom);
-        var maxCoveringZoom = Math.max(zoom + 3,  this.minzoom);
+        var minCoveringZoom = Math.max(zoom - TilePyramid.maxOverzooming, this.minzoom);
+        var maxCoveringZoom = Math.max(zoom + TilePyramid.maxUnderzooming,  this.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like

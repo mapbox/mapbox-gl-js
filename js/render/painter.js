@@ -5,6 +5,7 @@ var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
+var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = Painter;
@@ -25,9 +26,9 @@ function Painter(gl, transform) {
 
     this.setup();
 
-    // Within each layer there are 3 distinct z-planes that can be drawn to.
+    // Within each layer there are multiple distinct z-planes that can be drawn to.
     // This is implemented using the WebGL depth buffer.
-    this.numSublayers = 3;
+    this.numSublayers = TilePyramid.maxUnderzooming + TilePyramid.maxOverzooming + 1;
     this.depthEpsilon = 1 / Math.pow(2, 16);
 }
 
