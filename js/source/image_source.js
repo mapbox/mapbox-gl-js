@@ -2,6 +2,7 @@
 
 var util = require('../util/util');
 var Tile = require('./tile');
+var TileCoord = require('./tile_coord');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Evented = require('../util/evented');
@@ -78,6 +79,8 @@ ImageSource.prototype = util.inherit(Evented, {
         });
 
         var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+        centerCoord.column = Math.round(centerCoord.column);
+        centerCoord.row = Math.round(centerCoord.row);
 
         var tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
@@ -95,7 +98,7 @@ ImageSource.prototype = util.inherit(Evented, {
             tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
         ]);
 
-        this.tile = new Tile();
+        this.tile = new Tile(new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row));
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = gl.createBuffer();
@@ -140,7 +143,7 @@ ImageSource.prototype = util.inherit(Evented, {
     },
 
     getVisibleCoordinates: function() {
-        if (this.centerCoord) return [this.centerCoord];
+        if (this.tile) return [this.tile.coord];
         else return [];
     },
 

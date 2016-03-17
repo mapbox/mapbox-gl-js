@@ -15,17 +15,19 @@ function drawRaster(painter, source, layer, coords) {
     // Change depth function to prevent double drawing in areas where tiles overlap.
     gl.depthFunc(gl.LESS);
 
+    var minTileZ = coords.length && coords[0].z;
+
     for (var i = 0; i < coords.length; i++) {
-        drawRasterTile(painter, source, layer, coords[i]);
+        var coord = coords[i];
+        // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
+        painter.setDepthSublayer(coord.z - minTileZ);
+        drawRasterTile(painter, source, layer, coord);
     }
 
     gl.depthFunc(gl.LEQUAL);
 }
 
 function drawRasterTile(painter, source, layer, coord) {
-
-    // the smallest possible coord.z is 10 smaller than the current zoom level, so set that to sublayer 0
-    painter.setDepthSublayer(coord.z - painter.transform.tileZoom + 10);
 
     var gl = painter.gl;
 
