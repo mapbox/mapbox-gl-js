@@ -70,7 +70,11 @@ var defaultMaxZoom = 20;
  */
 var Map = module.exports = function(options) {
 
-    options = this.options = util.inherit(this.options, options);
+    options = util.inherit(this.options, options);
+    this._container = options.container;
+    this._interactive = options.interactive;
+    this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
+    this._preserveDrawingBuffer = options.preserveDrawingBuffer;
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
@@ -318,7 +322,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         minZoom = minZoom === null || minZoom === undefined ? defaultMinZoom : minZoom;
 
-        if (minZoom >= defaultMinZoom && minZoom <= this.options.maxZoom) {
+        if (minZoom >= defaultMinZoom && minZoom <= this.transform.maxZoom) {
             this.transform.minZoom = minZoom;
             this._update();
 
@@ -339,7 +343,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         maxZoom = maxZoom === null || maxZoom === undefined ? defaultMaxZoom : maxZoom;
 
-        if (maxZoom >= this.options.minZoom && maxZoom <= defaultMaxZoom) {
+        if (maxZoom >= this.transform.minZoom && maxZoom <= defaultMaxZoom) {
             this.transform.maxZoom = maxZoom;
             this._update();
 
@@ -736,13 +740,13 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupContainer: function() {
-        var id = this.options.container;
+        var id = this._container;
 
         var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
         container.classList.add('mapboxgl-map');
 
         var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
-        if (this.options.interactive) {
+        if (this._interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
         }
         this._canvas = new Canvas(this, canvasContainer);
@@ -756,8 +760,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     _setupPainter: function() {
         var gl = this._canvas.getWebGLContext({
-            failIfMajorPerformanceCaveat: this.options.failIfMajorPerformanceCaveat,
-            preserveDrawingBuffer: this.options.preserveDrawingBuffer
+            failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
+            preserveDrawingBuffer: this._preserveDrawingBuffer
         });
 
         if (!gl) {
