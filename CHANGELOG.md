@@ -1,3 +1,21 @@
+## master
+
+#### New Features & Improvements
+
+Improve overall rendering performance. (#2221)
+Improve performance of `GeoJSONSource#setData`. (#2222)
+Add `Map#setMaxBounds` method (#2234)
+Add `isActive` and `isEnabled` methods to interaction handlers (#2238)
+Add `Map#setZoomBounds` method (#2243)
+Add touch events (#2195)
+
+#### Bugfixes
+
+Fix calls to `setFilter`, `setLayoutProperty`, and `setLayerZoomRange` on ref children (#2228)
+Fix `undefined` bucket errors after `setFilter` calls (#2244)
+Fix bugs causing hidden symbols to be rendered (#2246, #2276)
+Fix raster flickering (#2236)
+
 ## 0.15.0 (March 1 2016)
 
 #### New Features & Improvements
