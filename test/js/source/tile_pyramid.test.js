@@ -655,8 +655,8 @@ test('TilePyramid#findLoadedParent', function(t) {
         var expectedRetain = {};
         expectedRetain[tile.coord.id] = true;
 
-        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
-        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain, true), undefined);
+        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain, true), tile);
         t.deepEqual(retain, expectedRetain);
         t.end();
     });
@@ -681,8 +681,8 @@ test('TilePyramid#findLoadedParent', function(t) {
         var expectedRetain = {};
         expectedRetain[tile.coord.id] = true;
 
-        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
-        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain, true), undefined);
+        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain, true), tile);
         t.deepEqual(retain, expectedRetain);
         t.equal(pyramid._cache.order.length, 0);
         t.deepEqual(pyramid._tiles[tile.coord.id], tile);
