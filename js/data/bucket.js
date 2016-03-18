@@ -70,6 +70,7 @@ function Bucket(options) {
     this.type = this.layer.type;
     this.features = [];
     this.id = this.layer.id;
+    this.index = options.index;
     this.sourceLayer = this.layer.sourceLayer;
     this.sourceLayerIndex = options.sourceLayerIndex;
     this.minZoom = this.layer.minzoom;

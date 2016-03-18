@@ -45,7 +45,7 @@ function FeatureTree(coord, overscaling, collisionTile) {
         this.grid = new Grid(serialized.grid);
         this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
         this.rawTileData = rawTileData;
-        this.numberToLayerIDs = serialized.numberToLayerIDs;
+        this.bucketLayerIDs = serialized.bucketLayerIDs;
     } else {
         this.grid = new Grid(16, EXTENT, 0);
         this.featureIndexArray = new FeatureIndexArray();
@@ -91,7 +91,7 @@ FeatureTree.prototype.serialize = function() {
         overscaling: this.overscaling,
         grid: this.grid.toArrayBuffer(),
         featureIndexArray: this.featureIndexArray.serialize(),
-        numberToLayerIDs: this.numberToLayerIDs
+        bucketLayerIDs: this.bucketLayerIDs
     };
     return {
         data: data,
@@ -189,7 +189,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
 
         match._setIndex(index);
 
-        var layerIDs = this.numberToLayerIDs[match.bucketIndex];
+        var layerIDs = this.bucketLayerIDs[match.bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs)) continue;
 
         var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
@@ -286,7 +286,7 @@ FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
 
         var feature = cachedFeatures[featureIndex] = cachedFeatures[featureIndex] || sourceLayer.feature(featureIndex);
 
-        var layerID = this.numberToLayerIDs[indexes.bucketIndex][indexes.layerIndex];
+        var layerID = this.bucketLayerIDs[indexes.bucketIndex][indexes.layerIndex];
         var styleLayer = styleLayers[layerID];
         if (!styleLayer) continue;
 

@@ -52,6 +52,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
 
         bucket = Bucket.create({
             layer: layer,
+            index: i,
             zoom: this.zoom,
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
@@ -104,14 +105,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    featureTree.numberToLayerIDs = [];
+    featureTree.bucketLayerIDs = {};
 
     for (var id in bucketsById) {
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
 
-        bucket.index = featureTree.numberToLayerIDs.length;
-        featureTree.numberToLayerIDs.push(bucket.layerIDs);
+        featureTree.bucketLayerIDs[bucket.index] = bucket.layerIDs;
 
         buckets.push(bucket);
 
