@@ -115,7 +115,7 @@ function StructArrayType(options) {
     });
 
     StructType.prototype.alignment = options.alignment;
-    StructType.prototype.BYTE_SIZE = align(offset, Math.max(maxSize, options.alignment));
+    StructType.prototype.size = align(offset, Math.max(maxSize, options.alignment));
 
     function StructArrayType() {
         StructArray.apply(this, arguments);
@@ -125,8 +125,8 @@ function StructArrayType(options) {
 
     StructArrayType.prototype = Object.create(StructArray.prototype);
     StructArrayType.prototype.StructType = StructType;
-    StructArrayType.prototype.BYTES_PER_ELEMENT = StructType.prototype.BYTE_SIZE;
-    StructArrayType.prototype.emplaceBack = createEmplaceBack(StructType.prototype.members, StructType.prototype.BYTE_SIZE);
+    StructArrayType.prototype.bytesPerElement = StructType.prototype.size;
+    StructArrayType.prototype.emplaceBack = createEmplaceBack(StructType.prototype.members, StructType.prototype.size);
     StructArrayType.prototype._usedTypes = usedTypes;
 
 
@@ -143,7 +143,7 @@ function serializeStructArrayType() {
     return {
         members: this.prototype.StructType.prototype.members,
         alignment: this.prototype.StructType.prototype.alignment,
-        BYTES_PER_ELEMENT: this.prototype.BYTES_PER_ELEMENT
+        bytesPerElement: this.prototype.bytesPerElement
     };
 }
 
@@ -166,7 +166,7 @@ function getArrayViewName(type) {
  * > elementIndex to i) (likely due to v8 inlining heuristics).
  * - lucaswoj
  */
-function createEmplaceBack(members, BYTES_PER_ELEMENT) {
+function createEmplaceBack(members, bytesPerElement) {
     var usedTypeSizes = [];
     var argNames = [];
     var body = '' +
@@ -180,7 +180,7 @@ function createEmplaceBack(members, BYTES_PER_ELEMENT) {
 
         if (usedTypeSizes.indexOf(size) < 0) {
             usedTypeSizes.push(size);
-            body += 'var o' + size.toFixed(0) + ' = i * ' + (BYTES_PER_ELEMENT / size).toFixed(0) + ';\n';
+            body += 'var o' + size.toFixed(0) + ' = i * ' + (bytesPerElement / size).toFixed(0) + ';\n';
         }
 
         for (var c = 0; c < member.components; c++) {
@@ -231,7 +231,7 @@ function Struct(structArray, index) {
  * @private
  */
 Struct.prototype._setIndex = function(index) {
-    this._pos1 = index * this.BYTE_SIZE;
+    this._pos1 = index * this.size;
     this._pos2 = this._pos1 / 2;
     this._pos4 = this._pos1 / 4;
     this._pos8 = this._pos1 / 8;
@@ -249,7 +249,7 @@ function StructArray(serialized) {
     // Create from an serialized StructArray
         this.arrayBuffer = serialized.arrayBuffer;
         this.length = serialized.length;
-        this.capacity = this.arrayBuffer.byteLength / this.BYTES_PER_ELEMENT;
+        this.capacity = this.arrayBuffer.byteLength / this.bytesPerElement;
         this._refreshViews();
 
     // Create a new StructArray
@@ -296,13 +296,13 @@ StructArray.prototype.get = function(index) {
 };
 
 /**
- * Resize the buffer to discard unused capacity.
+ * Resize the array to discard unused capacity.
  * @private
  */
 StructArray.prototype.trim = function() {
     if (this.length !== this.capacity) {
         this.capacity = this.length;
-        this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.BYTES_PER_ELEMENT);
+        this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
         this._refreshViews();
     }
 };
@@ -314,7 +314,7 @@ StructArray.prototype.trim = function() {
  */
 StructArray.prototype._resize = function(n) {
     this.capacity = Math.max(n, Math.floor(this.capacity * this.RESIZE_MULTIPLIER));
-    this.arrayBuffer = new ArrayBuffer(this.capacity * this.BYTES_PER_ELEMENT);
+    this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
 
     var oldUint8Array = this.uint8;
     this._refreshViews();

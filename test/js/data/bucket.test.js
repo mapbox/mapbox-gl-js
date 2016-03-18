@@ -68,21 +68,21 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.structArrays.testVertex;
+        var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
         t.equal(v0.map, 17);
         t.equal(v0.box0, 34);
         t.equal(v0.box1, 84);
 
-        var testElement = bucket.structArrays.testElement;
+        var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);
         var e1 = testElement.get(0);
         t.equal(e1.vertices0, 1);
         t.equal(e1.vertices1, 2);
         t.equal(e1.vertices2, 3);
 
-        var testSecondElement = bucket.structArrays.testSecondElement;
+        var testSecondElement = bucket.arrays.testSecondElement;
         t.equal(testSecondElement.length, 1);
         var e2 = testSecondElement.get(0);
         t.equal(e2.vertices0, 17);
@@ -97,12 +97,12 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        bucket.createStructArrays();
-        var structArrays = bucket.structArrays;
+        bucket.createArrays();
+        var arrays = bucket.arrays;
 
-        t.equal(bucket.structArrays, structArrays);
-        t.equal(structArrays.testElement.length, 0);
-        t.equal(structArrays.testSecondElement.length, 0);
+        t.equal(bucket.arrays, arrays);
+        t.equal(arrays.testElement.length, 0);
+        t.equal(arrays.testSecondElement.length, 0);
         t.equal(bucket.elementGroups.test.length, 0);
 
         t.end();
@@ -113,25 +113,25 @@ test('Bucket', function(t) {
 
         bucket.features = [createFeature(1, 5)];
         bucket.populateBuffers();
-        bucket.createStructArrays();
+        bucket.createArrays();
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.structArrays.testVertex;
+        var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
         t.equal(v0.map, 17);
         t.equal(v0.box0, 34);
         t.equal(v0.box1, 84);
 
-        var testElement = bucket.structArrays.testElement;
+        var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);
         var e1 = testElement.get(0);
         t.equal(e1.vertices0, 1);
         t.equal(e1.vertices1, 2);
         t.equal(e1.vertices2, 3);
 
-        var testSecondElement = bucket.structArrays.testSecondElement;
+        var testSecondElement = bucket.arrays.testSecondElement;
         t.equal(testSecondElement.length, 1);
         var e2 = testSecondElement.get(0);
         t.equal(e2.vertices0, 17);

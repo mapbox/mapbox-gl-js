@@ -335,7 +335,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
-    this.createStructArrays();
+    this.createArrays();
 
     var elementGroups = this.elementGroups = {
         glyph: [],

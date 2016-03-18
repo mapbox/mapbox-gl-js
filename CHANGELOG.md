@@ -6,7 +6,7 @@
     - replace `featuresAt` and `featuresIn` with `queryRenderedFeatures`
     - `queryRenderedFeatures` is synchronous. Remove the callback and use the return value. An async version `queryRenderedFeaturesAsync` exists for really slow queries.
     - rename the `layer` parameters to `layers` and make it an array of strings.
-    - remove the `radius` paramter. `queryRenderedFeatures` automatically uses style property values when doing queries.
+    - remove the `radius` parameter. `radius` was often used with `featuresAt` to account for style properties like `line-width` and `circle-radius`. `queryRenderedFeatures` automatically accounts for these style properties. If you need to query a larger area, make the first argument a box instead of a point.
     - remove the `includeGeometry` parameter. `queryRenderedFeatures` always includes geometries.
 
 #### New Features & Improvements

@@ -8,15 +8,15 @@ module.exports = Buffer;
  *
  * @class Buffer
  * @private
- * @param {object} structArray A serialized StructArray.
- * @param {object} structArrayType A serialized StructArrayType.
+ * @param {object} array A serialized StructArray.
+ * @param {object} arrayType A serialized StructArrayType.
  * @param {BufferType} type
  */
-function Buffer(structArray, structArrayType, type) {
-    this.arrayBuffer = structArray.arrayBuffer;
-    this.length = structArray.length;
-    this.attributes = structArrayType.members;
-    this.itemSize = structArrayType.BYTES_PER_ELEMENT;
+function Buffer(array, arrayType, type) {
+    this.arrayBuffer = array.arrayBuffer;
+    this.length = array.length;
+    this.attributes = arrayType.members;
+    this.itemSize = arrayType.bytesPerElement;
     this.type = type;
 }
 

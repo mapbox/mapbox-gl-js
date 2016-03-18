@@ -248,8 +248,8 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
 };
 
 function isBucketEmpty(bucket) {
-    for (var bufferName in bucket.structArrays) {
-        if (bucket.structArrays[bufferName].length > 0) return true;
+    for (var bufferName in bucket.arrays) {
+        if (bucket.arrays[bufferName].length > 0) return true;
     }
     return false;
 }
@@ -262,8 +262,8 @@ function getTransferables(buckets) {
     var transferables = [];
     for (var i in buckets) {
         var bucket = buckets[i];
-        for (var j in bucket.structArrays) {
-            transferables.push(bucket.structArrays[j].arrayBuffer);
+        for (var j in bucket.arrays) {
+            transferables.push(bucket.arrays[j].arrayBuffer);
         }
     }
     return transferables;

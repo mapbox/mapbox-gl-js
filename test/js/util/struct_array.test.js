@@ -27,7 +27,7 @@ test('StructArray', function(t) {
                 type: 'Int16',
                 offset: 4
             }],
-            BYTES_PER_ELEMENT: 8,
+            bytesPerElement: 8,
             alignment: 4
         });
 
@@ -38,7 +38,7 @@ test('StructArray', function(t) {
         var array = new TestArray();
 
         t.equal(array.length, 0);
-        t.equal(array.BYTES_PER_ELEMENT, 8);
+        t.equal(array.bytesPerElement, 8);
         t.ok(array.arrayBuffer);
 
         t.end();
@@ -89,7 +89,7 @@ test('StructArray', function(t) {
 
         array.trim();
         t.equal(array.capacity, 1);
-        t.equal(array.arrayBuffer.byteLength, array.BYTES_PER_ELEMENT);
+        t.equal(array.arrayBuffer.byteLength, array.bytesPerElement);
 
         t.end();
     });

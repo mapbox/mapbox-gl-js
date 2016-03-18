@@ -473,3 +473,17 @@ exports.deepEqual = function deepEqual(a, b) {
     }
     return a === b;
 };
+
+/**
+ * Check if two arrays have at least one common element.
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {boolean}
+ * @private
+ */
+exports.arraysIntersect = function(a, b) {
+    for (var l = 0; l < a.length; l++) {
+        if (b.indexOf(a[l]) >= 0) return true;
+    }
+    return false;
+};

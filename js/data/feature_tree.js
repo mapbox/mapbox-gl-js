@@ -10,6 +10,7 @@ var StringNumberMapping = require('../util/string_number_mapping');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var GeoJSONFeature = require('../util/vectortile_to_geojson');
+var arraysIntersect = require('../util/util').arraysIntersect;
 
 var FeatureIndexArray = new StructArrayType({
     members: [
@@ -103,7 +104,7 @@ function translateDistance(translate) {
 }
 
 // Finds features in this tile at a particular position.
-FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
+FeatureTree.prototype.query = function(args, styleLayers, returnGeoJSON) {
     if (!this.vtLayers) {
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
@@ -121,8 +122,8 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     // be buffered, translated or offset. Figure out how much the search radius needs to be
     // expanded by to include these features.
     var additionalRadius = 0;
-    for (var id in styleLayersByID) {
-        var styleLayer = styleLayersByID[id];
+    for (var id in styleLayers) {
+        var styleLayer = styleLayers[id];
         var paint = styleLayer.paint;
 
         var styleLayerDistance = 0;
@@ -153,19 +154,19 @@ FeatureTree.prototype.query = function(args, styleLayersByID, returnGeoJSON) {
     }
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
-    matching.sort(topDown);
+    matching.sort(topDownFeatureComparator);
     var match = this.featureIndexArray.get(0);
-    this.filterMatching(result, matching, match, queryGeometry, filter, params.layers, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matching, match, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     var match2 = this.collisionTile.collisionBoxArray.get(0);
     matchingSymbols.sort();
-    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layers, styleLayersByID, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     return result;
 };
 
-function topDown(a, b) {
+function topDownFeatureComparator(a, b) {
     return b - a;
 }
 
@@ -177,18 +178,19 @@ function getLineWidth(paint) {
     }
 }
 
-FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayersByID, bearing, pixelsToTileUnits, returnGeoJSON) {
-    var seen = {};
+FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayers, bearing, pixelsToTileUnits, returnGeoJSON) {
+    var previousIndex;
     for (var k = 0; k < matching.length; k++) {
         var index = matching[k];
 
-        if (seen[index]) continue;
-        seen[index] = true;
+        // don't check the same feature more than once
+        if (index === previousIndex) continue;
+        previousIndex = index;
 
         match._setIndex(index);
 
         var layerIDs = this.numberToLayerIDs[match.bucketIndex];
-        if (filterLayerIDs && !matchLayers(filterLayerIDs, layerIDs)) continue;
+        if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs)) continue;
 
         var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
         var sourceLayer = this.vtLayers[sourceLayerName];
@@ -205,7 +207,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
                 continue;
             }
 
-            var styleLayer = styleLayersByID[layerID];
+            var styleLayer = styleLayers[layerID];
             if (!styleLayer) continue;
 
             var translatedPolygon;
@@ -318,13 +320,6 @@ function translate(queryGeometry, translate, translateAnchor, bearing, pixelsToT
         translated.push(queryGeometry[i].sub(translate._mult(pixelsToTileUnits)));
     }
     return translated;
-}
-
-function matchLayers(filterLayerIDs, featureLayerIDs) {
-    for (var l = 0; l < featureLayerIDs.length; l++) {
-        if (filterLayerIDs.indexOf(featureLayerIDs[l]) >= 0) return true;
-    }
-    return false;
 }
 
 function offsetLine(rings, offset) {

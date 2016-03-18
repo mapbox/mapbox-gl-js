@@ -77,10 +77,10 @@ function Bucket(options) {
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
-        this.buffers = util.mapObject(options.structArrays, function(structArray, bufferName) {
-            var structArrayType = options.structArrayTypes[bufferName];
-            var type = (structArrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
-            return new Buffer(structArray, structArrayType, type);
+        this.buffers = util.mapObject(options.arrays, function(array, bufferName) {
+            var arrayType = options.arrayTypes[bufferName];
+            var type = (arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
+            return new Buffer(array, arrayType, type);
         });
     }
 }
@@ -91,7 +91,7 @@ function Bucket(options) {
  */
 Bucket.prototype.populateBuffers = function() {
     this.createStyleLayer();
-    this.createStructArrays();
+    this.createArrays();
 
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
@@ -113,9 +113,9 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
     var currentGroup = groups.length && groups[groups.length - 1];
 
     if (!currentGroup || currentGroup.vertexLength + numVertices > 65535) {
-        var vertexArray = this.structArrays[this.getBufferName(shaderName, 'vertex')];
-        var elementArray = this.structArrays[this.getBufferName(shaderName, 'element')];
-        var secondElementArray = this.structArrays[this.getBufferName(shaderName, 'secondElement')];
+        var vertexArray = this.arrays[this.getBufferName(shaderName, 'vertex')];
+        var elementArray = this.arrays[this.getBufferName(shaderName, 'element')];
+        var secondElementArray = this.arrays[this.getBufferName(shaderName, 'secondElement')];
 
         currentGroup = new ElementGroup(
             vertexArray.length,
@@ -133,10 +133,10 @@ Bucket.prototype.makeRoomFor = function(shaderName, numVertices) {
  * as necessary.
  * @private
  */
-Bucket.prototype.createStructArrays = function() {
+Bucket.prototype.createArrays = function() {
     var elementGroups = this.elementGroups = {};
-    var structArrays = this.structArrays = {};
-    var structArrayTypes = this.structArrayTypes = {};
+    var arrays = this.arrays = {};
+    var arrayTypes = this.arrayTypes = {};
 
     for (var shaderName in this.shaderInterfaces) {
         var shaderInterface = this.shaderInterfaces[shaderName];
@@ -150,8 +150,8 @@ Bucket.prototype.createStructArrays = function() {
                 alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
             });
 
-            structArrays[vertexBufferName] = new VertexArrayType();
-            structArrayTypes[vertexBufferName] = VertexArrayType.serialize();
+            arrays[vertexBufferName] = new VertexArrayType();
+            arrayTypes[vertexBufferName] = VertexArrayType.serialize();
 
             this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(
                 shaderName,
@@ -164,17 +164,17 @@ Bucket.prototype.createStructArrays = function() {
         if (shaderInterface.elementBuffer) {
             var elementBufferName = this.getBufferName(shaderName, 'element');
             var ElementArrayType = createElementBufferType(shaderInterface.elementBufferComponents);
-            structArrays[elementBufferName] = new ElementArrayType();
-            structArrayTypes[elementBufferName] = ElementArrayType.serialize();
-            this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.structArrays[elementBufferName]);
+            arrays[elementBufferName] = new ElementArrayType();
+            arrayTypes[elementBufferName] = ElementArrayType.serialize();
+            this[this.getAddMethodName(shaderName, 'element')] = createElementAddMethod(this.arrays[elementBufferName]);
         }
 
         if (shaderInterface.secondElementBuffer) {
             var secondElementBufferName = this.getBufferName(shaderName, 'secondElement');
             var SecondElementArrayType = createElementBufferType(shaderInterface.secondElementBufferComponents);
-            structArrays[secondElementBufferName] = new SecondElementArrayType();
-            structArrayTypes[secondElementBufferName] = SecondElementArrayType.serialize();
-            this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.structArrays[secondElementBufferName]);
+            arrays[secondElementBufferName] = new SecondElementArrayType();
+            arrayTypes[secondElementBufferName] = SecondElementArrayType.serialize();
+            this[this.getAddMethodName(shaderName, 'secondElement')] = createElementAddMethod(this.arrays[secondElementBufferName]);
         }
 
         elementGroups[shaderName] = [];
@@ -188,8 +188,8 @@ Bucket.prototype.destroy = function(gl) {
 };
 
 Bucket.prototype.trimArrays = function() {
-    for (var bufferName in this.structArrays) {
-        this.structArrays[bufferName].trim();
+    for (var bufferName in this.arrays) {
+        this.arrays[bufferName].trim();
     }
 };
 
@@ -221,10 +221,10 @@ Bucket.prototype.serialize = function() {
         },
         zoom: this.zoom,
         elementGroups: this.elementGroups,
-        structArrays: util.mapObject(this.structArrays, function(structArray) {
-            return structArray.serialize();
+        arrays: util.mapObject(this.arrays, function(array) {
+            return array.serialize();
         }),
-        structArrayTypes: this.structArrayTypes
+        arrayTypes: this.arrayTypes
     };
 };
 
@@ -249,7 +249,7 @@ function createVertexAddMethod(shaderName, shaderInterface, bufferName) {
         pushArgs = pushArgs.concat(shaderInterface.attributes[i].value);
     }
 
-    var body = 'return this.structArrays.' + bufferName + '.emplaceBack(' + pushArgs.join(', ') + ');';
+    var body = 'return this.arrays.' + bufferName + '.emplaceBack(' + pushArgs.join(', ') + ');';
 
     if (!createVertexAddMethodCache[body]) {
         createVertexAddMethodCache[body] = new Function(shaderInterface.attributeArgs, body);
