@@ -14,7 +14,7 @@ module.exports = GeoJSONSource;
  * @class GeoJSONSource
  * @param {Object} [options]
  * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
- * @param {number} [options.maxzoom=14] Maximum zoom to preserve detail at.
+ * @param {number} [options.maxzoom=18] Maximum zoom to preserve detail at.
  * @param {number} [options.buffer] Tile buffer on each side in pixels.
  * @param {number} [options.tolerance] Simplification tolerance (higher means simpler) in pixels.
  * @param {number} [options.cluster] If the data is a collection of point features, setting this to true clusters the points by radius into groups.
@@ -80,7 +80,7 @@ function GeoJSONSource(options) {
 
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
     minzoom: 0,
-    maxzoom: 14,
+    maxzoom: 18,
     tileSize: 512,
     _dirty: true,
     isTileClipped: true,
