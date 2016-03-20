@@ -400,7 +400,7 @@ Transform.prototype = {
         mat4.translate(m, m, [0, 0, -this.altitude]);
 
         // After the rotateX, z values are in pixel units. Convert them to
-        // altitude unites. 1 altitude unit = the screen height.
+        // altitude units. 1 altitude unit = the screen height.
         mat4.scale(m, m, [1, -1, 1 / this.height]);
 
         mat4.rotateX(m, m, this._pitch);
