@@ -12,7 +12,7 @@ function FillBucket() {
 
 FillBucket.prototype = util.inherit(Bucket, {});
 
-FillBucket.prototype.shaderInterfaces = {
+FillBucket.prototype.programInterfaces = {
     fill: {
         vertexBuffer: true,
         elementBuffer: true,

@@ -13,7 +13,7 @@ test('Bucket', function(t) {
 
         Class.prototype = util.inherit(Bucket, {});
 
-        Class.prototype.shaderInterfaces = {
+        Class.prototype.programInterfaces = {
             test: {
                 vertexBuffer: 'testVertex',
                 elementBuffer: 'testElement',

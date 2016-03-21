@@ -1,6 +1,5 @@
 'use strict';
 
-var glutil = require('./gl_util');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
@@ -8,8 +7,23 @@ var TileCoord = require('../source/tile_coord');
 var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+var util = require('../util/util');
 
 module.exports = Painter;
+
+var glPolyfill = {
+    vertexAttrib2fv: function(attribute, values) {
+        this.vertexAttrib2f(attribute, values[0], values[1]);
+    },
+
+    vertexAttrib3fv: function(attribute, values) {
+        this.vertexAttrib3f(attribute, values[0], values[1], values[2]);
+    },
+
+    vertexAttrib4fv: function(attribute, values) {
+        this.vertexAttrib4f(attribute, values[0], values[1], values[2], values[3]);
+    }
+};
 
 /**
  * Initialize a new painter object.
@@ -17,7 +31,7 @@ module.exports = Painter;
  * @param {Canvas} gl an experimental-webgl drawing context
  */
 function Painter(gl, transform) {
-    this.gl = glutil.extend(gl);
+    this.gl = util.extend(gl, glPolyfill);
     this.transform = transform;
 
     this.reusableTextures = {};
@@ -31,7 +45,11 @@ function Painter(gl, transform) {
     // This is implemented using the WebGL depth buffer.
     this.numSublayers = TilePyramid.maxUnderzooming + TilePyramid.maxOverzooming + 1;
     this.depthEpsilon = 1 / Math.pow(2, 16);
+
+    this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 }
+
+util.extend(Painter.prototype, require('./painter/use_program'));
 
 /*
  * Update the GL viewport, projection matrix, and transforms to compensate
@@ -64,59 +82,6 @@ Painter.prototype.setup = function() {
 
     this._depthMask = false;
     gl.depthMask(false);
-
-    // Initialize shaders
-    this.debugShader = gl.initializeShader('debug',
-        ['a_pos'],
-        ['u_matrix', 'u_color']);
-
-    this.rasterShader = gl.initializeShader('raster',
-        ['a_pos', 'a_texture_pos'],
-        ['u_matrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']);
-
-    this.circleShader = gl.initializeShader('circle',
-        ['a_pos'],
-        ['u_matrix', 'u_exmatrix', 'u_blur', 'u_size', 'u_color']);
-
-    this.lineShader = gl.initializeShader('line',
-        ['a_pos', 'a_data'],
-        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix', 'u_offset', 'u_exmatrix']);
-
-    this.linepatternShader = gl.initializeShader('linepattern',
-        ['a_pos', 'a_data'],
-        ['u_matrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity', 'u_extra', 'u_antialiasingmatrix', 'u_offset']);
-
-    this.linesdfpatternShader = gl.initializeShader('linesdfpattern',
-        ['a_pos', 'a_data'],
-        ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix', 'u_extra', 'u_antialiasingmatrix', 'u_offset']);
-
-    this.sdfShader = gl.initializeShader('sdf',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_skewed', 'u_extra']);
-
-    this.iconShader = gl.initializeShader('icon',
-        ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadedist', 'u_minfadezoom', 'u_maxfadezoom', 'u_fadezoom', 'u_opacity', 'u_skewed', 'u_extra']);
-
-    this.outlineShader = gl.initializeShader('outline',
-        ['a_pos'],
-        ['u_matrix', 'u_color', 'u_world']
-    );
-
-    this.patternShader = gl.initializeShader('pattern',
-        ['a_pos'],
-        ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternscale_a', 'u_patternscale_b', 'u_opacity', 'u_image', 'u_offset_a', 'u_offset_b']
-    );
-
-    this.fillShader = gl.initializeShader('fill',
-        ['a_pos'],
-        ['u_matrix', 'u_color']
-    );
-
-    this.collisionBoxShader = gl.initializeShader('collisionbox',
-        ['a_pos', 'a_extrude', 'a_data'],
-        ['u_matrix', 'u_scale', 'u_zoom', 'u_maxzoom']
-    );
 
     this.identityMatrix = mat4.create();
 
@@ -206,11 +171,11 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        gl.switchShader(this.fillShader, this.calculatePosMatrix(coord, sourceMaxZoom));
+        var program = this.useProgram('fill', this.calculatePosMatrix(coord, sourceMaxZoom));
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-        gl.vertexAttribPointer(this.fillShader.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
+        gl.vertexAttribPointer(program.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
     }
 
@@ -321,16 +286,16 @@ Painter.prototype.renderLayer = function(painter, source, layer, coords) {
 // Draws non-opaque areas. This is for debugging purposes.
 Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
-    gl.switchShader(this.fillShader, this.identityMatrix);
+    var program = this.useProgram('fill', this.identityMatrix);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 
     // Drw the filling quad where the stencil buffer isn't set.
     gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(this.fillShader.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.vertexAttribPointer(program.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
 
-    gl.uniform4fv(this.fillShader.u_color, [0, 0, 0, 0.5]);
+    gl.uniform4fv(program.u_color, [0, 0, 0, 0.5]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 };
 
@@ -413,4 +378,30 @@ Painter.prototype.saveTexture = function(texture) {
 Painter.prototype.getTexture = function(size) {
     var textures = this.reusableTextures[size];
     return textures && textures.length > 0 ? textures.pop() : null;
+};
+
+// Update the matrices if necessary. Note: This relies on object identity!
+// This means changing the matrix values without the actual matrix object
+// will FAIL to update the matrix properly.
+Painter.prototype.setPosMatrix = function(posMatrix) {
+    var program = this.currentProgram;
+    if (program.posMatrix !== posMatrix) {
+        this.gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+        program.posMatrix = posMatrix;
+    }
+};
+
+// Update the matrices if necessary. Note: This relies on object identity!
+// This means changing the matrix values without the actual matrix object
+// will FAIL to update the matrix properly.
+Painter.prototype.setExMatrix = function(exMatrix) {
+    var program = this.currentProgram;
+    if (exMatrix && program.exMatrix !== exMatrix && program.u_exmatrix) {
+        this.gl.uniformMatrix4fv(program.u_exmatrix, false, exMatrix);
+        program.exMatrix = exMatrix;
+    }
+};
+
+Painter.prototype.lineWidth = function(width) {
+    this.gl.lineWidth(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
 };

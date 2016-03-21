@@ -275,6 +275,26 @@ test('util', function(t) {
         t.end();
     });
 
+    t.test('objectValues', function(t) {
+
+        t.test('zero', function(t) {
+            t.deepEqual(util.objectValues({}), []);
+            t.end();
+        });
+
+        t.test('one', function(t) {
+            t.deepEqual(util.objectValues({neat: 'map'}), ['map']);
+            t.end();
+        });
+
+        t.test('two', function(t) {
+            t.deepEqual(util.objectValues({swell: 'map', neat: 'box'}), ['map', 'box']);
+            t.end();
+        });
+
+        t.end();
+    });
+
     if (process.browser) {
         t.test('timed: no duration', function(t) {
             var context = { foo: 'bar' };

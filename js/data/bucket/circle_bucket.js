@@ -20,7 +20,7 @@ function CircleBucket() {
 
 CircleBucket.prototype = util.inherit(Bucket, {});
 
-CircleBucket.prototype.shaderInterfaces = {
+CircleBucket.prototype.programInterfaces = {
     circle: {
         vertexBuffer: true,
         elementBuffer: true,

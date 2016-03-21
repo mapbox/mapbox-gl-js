@@ -67,16 +67,21 @@ var AttributeType = {
  * Set the attribute pointers in a WebGL context according to the buffer's attribute layout
  * @private
  * @param gl The WebGL context
- * @param shader The active WebGL shader
+ * @param program The active WebGL program
  * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
  */
-Buffer.prototype.setAttribPointers = function(gl, shader, offset) {
+Buffer.prototype.setAttribPointers = function(gl, program, offset) {
     for (var i = 0; i < this.attributes.length; i++) {
         var attrib = this.attributes[i];
 
         gl.vertexAttribPointer(
-            shader['a_' + attrib.name], attrib.components, gl[AttributeType[attrib.type]],
-            false, this.itemSize, offset + attrib.offset);
+            program['a_' + attrib.name],
+            attrib.components,
+            gl[AttributeType[attrib.type]],
+            false,
+            this.itemSize,
+            offset + attrib.offset
+        );
     }
 };
 

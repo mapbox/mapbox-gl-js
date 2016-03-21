@@ -101,19 +101,16 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     var extra = (topedgelength + x) / topedgelength - 1;
 
     var text = prefix === 'text';
-    var shader, vertex, elements, texsize;
+    var vertex, elements;
 
     if (!text && !painter.style.sprite.loaded())
         return;
 
     gl.activeTexture(gl.TEXTURE0);
 
-    if (sdf) {
-        shader = painter.sdfShader;
-    } else {
-        shader = painter.iconShader;
-    }
+    var program = painter.useProgram(sdf ? 'sdf' : 'icon', posMatrix, exMatrix);
 
+    var texsize;
     if (text) {
         // use the fonstack used when parsing the tile, not the fontstack
         // at the current zoom level (layout['text-font']).
@@ -135,23 +132,22 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         texsize = [painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4];
     }
 
-    gl.switchShader(shader, posMatrix, exMatrix);
-    gl.uniform1i(shader.u_texture, 0);
-    gl.uniform2fv(shader.u_texsize, texsize);
-    gl.uniform1i(shader.u_skewed, skewed);
-    gl.uniform1f(shader.u_extra, extra);
+    gl.uniform1i(program.u_texture, 0);
+    gl.uniform2fv(program.u_texsize, texsize);
+    gl.uniform1i(program.u_skewed, skewed);
+    gl.uniform1f(program.u_extra, extra);
 
     // adjust min/max zooms for variable font sizes
     var zoomAdjust = Math.log(fontSize / elementGroups.adjustedSize) / Math.LN2 || 0;
 
 
-    gl.uniform1f(shader.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
+    gl.uniform1f(program.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
     var f = painter.frameHistory.getFadeProperties(300);
-    gl.uniform1f(shader.u_fadedist, f.fadedist * 10);
-    gl.uniform1f(shader.u_minfadezoom, Math.floor(f.minfadezoom * 10));
-    gl.uniform1f(shader.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
-    gl.uniform1f(shader.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
+    gl.uniform1f(program.u_fadedist, f.fadedist * 10);
+    gl.uniform1f(program.u_minfadezoom, Math.floor(f.minfadezoom * 10));
+    gl.uniform1f(program.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
+    gl.uniform1f(program.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
 
     var group, offset, count, elementOffset;
 
@@ -167,15 +163,15 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
             var haloColor = util.premultiply(layer.paint[prefix + '-halo-color'], layer.paint[prefix + '-opacity']);
 
             // Draw halo underneath the text.
-            gl.uniform1f(shader.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
-            gl.uniform4fv(shader.u_color, haloColor);
-            gl.uniform1f(shader.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
+            gl.uniform1f(program.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
+            gl.uniform4fv(program.u_color, haloColor);
+            gl.uniform1f(program.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.length; j++) {
                 group = elementGroups[j];
                 offset = group.vertexStartIndex * vertex.itemSize;
                 vertex.bind(gl);
-                vertex.setAttribPointers(gl, shader, offset);
+                vertex.setAttribPointers(gl, program, offset);
 
                 count = group.elementLength * 3;
                 elementOffset = group.elementStartIndex * elements.itemSize;
@@ -184,15 +180,15 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         }
 
         var color = util.premultiply(layer.paint[prefix + '-color'], layer.paint[prefix + '-opacity']);
-        gl.uniform1f(shader.u_gamma, gamma * gammaScale);
-        gl.uniform4fv(shader.u_color, color);
-        gl.uniform1f(shader.u_buffer, (256 - 64) / 256);
+        gl.uniform1f(program.u_gamma, gamma * gammaScale);
+        gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.length; i++) {
             group = elementGroups[i];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            vertex.setAttribPointers(gl, shader, offset);
+            vertex.setAttribPointers(gl, program, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;
@@ -200,12 +196,12 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         }
 
     } else {
-        gl.uniform1f(shader.u_opacity, layer.paint['icon-opacity']);
+        gl.uniform1f(program.u_opacity, layer.paint['icon-opacity']);
         for (var k = 0; k < elementGroups.length; k++) {
             group = elementGroups[k];
             offset = group.vertexStartIndex * vertex.itemSize;
             vertex.bind(gl);
-            vertex.setAttribPointers(gl, shader, offset);
+            vertex.setAttribPointers(gl, program, offset);
 
             count = group.elementLength * 3;
             elementOffset = group.elementStartIndex * elements.itemSize;

@@ -33,9 +33,9 @@ function SymbolBucket(options) {
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
 
-var shaderAttributeArgs = ['x', 'y', 'ox', 'oy', 'tx', 'ty', 'minzoom', 'maxzoom', 'labelminzoom'];
+var programAttributeArgs = ['x', 'y', 'ox', 'oy', 'tx', 'ty', 'minzoom', 'maxzoom', 'labelminzoom'];
 
-var shaderAttributes = [{
+var programAttributes = [{
     name: 'pos',
     components: 2,
     type: 'Int16',
@@ -68,20 +68,20 @@ var shaderAttributes = [{
     ]
 }];
 
-SymbolBucket.prototype.shaderInterfaces = {
+SymbolBucket.prototype.programInterfaces = {
 
     glyph: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributeArgs: shaderAttributeArgs,
-        attributes: shaderAttributes
+        attributeArgs: programAttributeArgs,
+        attributes: programAttributes
     },
 
     icon: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributeArgs: shaderAttributeArgs,
-        attributes: shaderAttributes
+        attributeArgs: programAttributeArgs,
+        attributes: programAttributes
     },
 
     collisionBox: {
@@ -430,13 +430,13 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
     if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
 };
 
-SymbolBucket.prototype.addSymbols = function(shaderName, quads, scale, keepUpright, alongLine, placementAngle) {
+SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpright, alongLine, placementAngle) {
 
-    var group = this.makeRoomFor(shaderName, 4 * quads.length);
+    var group = this.makeRoomFor(programName, 4 * quads.length);
 
     // TODO manual curry
-    var addElement = this[this.getAddMethodName(shaderName, 'element')].bind(this);
-    var addVertex = this[this.getAddMethodName(shaderName, 'vertex')].bind(this);
+    var addElement = this[this.getAddMethodName(programName, 'element')].bind(this);
+    var addVertex = this[this.getAddMethodName(programName, 'vertex')].bind(this);
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);

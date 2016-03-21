@@ -50,7 +50,7 @@ function LineBucket() {
 
 LineBucket.prototype = util.inherit(Bucket, {});
 
-LineBucket.prototype.shaderInterfaces = {
+LineBucket.prototype.programInterfaces = {
     line: {
         vertexBuffer: true,
         elementBuffer: true,
