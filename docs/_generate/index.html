@@ -600,6 +600,9 @@ navigation:
           <p>A filter selects specific features from a layer. A filter is an array of one of the following forms:</p>
 
           <div class='col12 clearfix space-bottom2'>
+
+            <h4>Comparison Filters</h4>
+
             <div class='space-bottom1'>
               <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
             </div>
@@ -618,12 +621,18 @@ navigation:
             <div class='space-bottom1'>
               <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
             </div>
+
+            <h4>Set Membership Filters</h4>
+
             <div class='space-bottom1'>
               <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
             </div>
             <div class='space-bottom1'>
               <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
             </div>
+
+            <h4>Combining Filters</h4>
+
             <div class='space-bottom1'>
               <code>["all", <var>f0</var>, ..., <var>fn</var>]</code> <span class='quiet pad1x strong small'>logical <code>AND</code>: <var>f0</var> ∧ ... ∧ <var>fn</var></span>
             </div>
@@ -645,7 +654,12 @@ navigation:
           </p>
 
           <p>
-            The binary and set operators implement strictly-typed comparisons; for example, all of the
+            Set membership filters are a compact and efficient way to test whether a
+            field matches any of multiple values.
+          </p>
+
+          <p>
+            The comparison and set membership filters implement strictly-typed comparisons; for example, all of the
             following evaluate to false: <code>0 < "1"</code>, <code>2 == "2"</code>, <code>"true" in [true, false]</code>.
           </p>
 
@@ -661,11 +675,28 @@ navigation:
 {% endhighlight %}
           </div>
 
+          <p>
+            This filter requires that the <code>class</code> property of
+            each feature is equal to either "street_major", "street_minor",
+            or "street_limited".
+          </p>
+
           <div class='space-bottom1 clearfix'>
 {% highlight json%}
 ["in", "class", "street_major", "street_minor", "street_limited"]
 {% endhighlight %}
           </div>
+
+          <p>
+            The combining filter "all" takes the three other filters that
+            follow it and requires all of them to be true for a feature
+            to be included: a feature must have a <code>class</code> equal
+            to "street_limited", its <code>admin_level</code> must be greater
+            than or equal to 3, and its type cannot be Polygon. You could
+            change the combining filter to "any" to allow features matching
+            any of those criteria to be included - features that are Polygons,
+            but have a different <code>class</code> value, and so on.
+          </p>
 
           <div class='space-bottom1 clearfix'>
 {% highlight json%}
