@@ -155,13 +155,16 @@ util.extend(Worker.prototype, {
 
         // if (!geoJSONTile) console.log('not found', this.geoJSONIndexes[source], coord);
 
-        if (!geoJSONTile) return callback(null, null); // nothing in the given tile
-
-        var tile = new WorkerTile(params);
-        tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
+        var tile = geoJSONTile ? new WorkerTile(params) : undefined;
 
         this.loaded[source] = this.loaded[source] || {};
         this.loaded[source][params.uid] = tile;
+
+        if (geoJSONTile) {
+            tile.parse(new GeoJSONWrapper(geoJSONTile.features), this.layers, this.actor, callback);
+        } else {
+            return callback(null, null); // nothing in the given tile
+        }
     },
 
     'query features': function(params, callback) {
