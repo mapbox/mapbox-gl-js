@@ -78,11 +78,13 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
+
+        gl.uniform1i(shader.u_image, 0);
+        gl.activeTexture(gl.TEXTURE0);
         painter.lineAtlas.bind(gl);
 
         gl.uniform1f(shader.u_tex_y_a, posA.y);
         gl.uniform1f(shader.u_tex_y_b, posB.y);
-        gl.uniform1i(shader.u_image, 0);
         gl.uniform1f(shader.u_mix, dasharray.t);
 
         gl.uniform1f(shader.u_extra, extra);
@@ -94,10 +96,12 @@ module.exports = function drawLine(painter, source, layer, coords) {
         imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
 
-        painter.spriteAtlas.bind(gl, true);
-
         shader = painter.linepatternShader;
         gl.switchShader(shader);
+
+        gl.uniform1i(shader.u_image, 0);
+        gl.activeTexture(gl.TEXTURE0);
+        painter.spriteAtlas.bind(gl, true);
 
         gl.uniform2fv(shader.u_linewidth, [ outset, inset ]);
         gl.uniform1f(shader.u_blur, blur);

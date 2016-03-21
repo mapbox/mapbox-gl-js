@@ -169,6 +169,7 @@ function drawFill(painter, source, layer, coord) {
         gl.uniform2fv(shader.u_offset_a, [offsetAx, offsetAy]);
         gl.uniform2fv(shader.u_offset_b, [offsetBx, offsetBy]);
 
+        gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
     } else {

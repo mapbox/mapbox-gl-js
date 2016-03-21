@@ -26,7 +26,6 @@ function drawBackground(painter, source, layer) {
         // Draw texture fill
         shader = painter.patternShader;
         gl.switchShader(shader);
-        gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
@@ -47,6 +46,8 @@ function drawBackground(painter, source, layer) {
             1 / (imagePosB.size[1] * factor * image.toScale)
         ]);
 
+        gl.uniform1i(shader.u_image, 0);
+        gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
     } else {
