@@ -86,6 +86,7 @@ KeyboardHandler.prototype = {
             if (e.shiftKey) {
                 map.easeTo({ bearing: map.getBearing() - rotateDelta }, eventData);
             } else {
+                e.preventDefault();
                 map.panBy([-panDelta, 0], eventData);
             }
             break;
@@ -94,6 +95,7 @@ KeyboardHandler.prototype = {
             if (e.shiftKey) {
                 map.easeTo({ bearing: map.getBearing() + rotateDelta }, eventData);
             } else {
+                e.preventDefault();
                 map.panBy([panDelta, 0], eventData);
             }
             break;
@@ -102,6 +104,7 @@ KeyboardHandler.prototype = {
             if (e.shiftKey) {
                 map.easeTo({ pitch: map.getPitch() + pitchDelta }, eventData);
             } else {
+                e.preventDefault();
                 map.panBy([0, -panDelta], eventData);
             }
             break;
@@ -110,6 +113,7 @@ KeyboardHandler.prototype = {
             if (e.shiftKey) {
                 map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) }, eventData);
             } else {
+                e.preventDefault();
                 map.panBy([0, panDelta], eventData);
             }
             break;
