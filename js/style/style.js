@@ -19,7 +19,7 @@ module.exports = Style;
 
 function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
+    this.dispatcher = new Dispatcher(Math.max(1), this);
     this.spriteAtlas = new SpriteAtlas(512, 512);
     this.lineAtlas = new LineAtlas(256, 512);
 

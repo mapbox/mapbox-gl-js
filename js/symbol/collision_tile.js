@@ -77,9 +77,6 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
         collisionBoxArray.get(3),
         collisionBoxArray.get(4)
     ];
-
-    this.box = collisionBoxArray.get(0);
-    this.blocking = collisionBoxArray.get(0);
 }
 
 CollisionTile.prototype.serialize = function() {
@@ -109,15 +106,14 @@ CollisionTile.prototype.maxScale = 2;
  */
 CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allowOverlap, avoidEdges) {
 
+    var collisionBoxArray = this.collisionBoxArray;
     var minPlacementScale = this.minScale;
     var rotationMatrix = this.rotationMatrix;
     var yStretch = this.yStretch;
-    var box = this.box;
-    var blocking = this.blocking;
 
     for (var b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
 
-        box._setIndex(b);
+        var box = collisionBoxArray.get(b);
 
         var anchorPoint = box.anchorPoint._matMult(rotationMatrix);
         var x = anchorPoint.x;
@@ -137,7 +133,7 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
             var blockingBoxes = this.grid.query(x1, y1, x2, y2);
 
             for (var i = 0; i < blockingBoxes.length; i++) {
-                blocking._setIndex(blockingBoxes[i]);
+                var blocking = collisionBoxArray.get(blockingBoxes[i]);
                 var blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
 
                 minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
@@ -186,6 +182,7 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
     var sourceLayerFeatures = {};
     var result = [];
 
+    var collisionBoxArray = this.collisionBoxArray;
     var rotationMatrix = this.rotationMatrix;
     var anchorPoint = new Point(minX, minY)._matMult(rotationMatrix);
 
@@ -214,9 +211,8 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
         blockingBoxKeys.push(blockingBoxKeys2[k]);
     }
 
-    var blocking = this.blocking;
     for (var i = 0; i < blockingBoxKeys.length; i++) {
-        blocking._setIndex(blockingBoxKeys[i]);
+        var blocking = collisionBoxArray.get(blockingBoxKeys[i]);
 
         var sourceLayer = blocking.sourceLayerIndex;
         var featureIndex = blocking.featureIndex;
@@ -291,10 +287,10 @@ CollisionTile.prototype.getPlacementScale = function(minPlacementScale, anchorPo
 CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale, ignorePlacement) {
 
     var grid = ignorePlacement ? this.ignoredGrid : this.grid;
+    var collisionBoxArray = this.collisionBoxArray;
 
-    var box = this.box;
     for (var k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
-        box._setIndex(k);
+        var box = collisionBoxArray.get(k);
         box.placementScale = minPlacementScale;
         if (minPlacementScale < this.maxScale) {
             grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);

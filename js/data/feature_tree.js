@@ -155,13 +155,11 @@ FeatureTree.prototype.query = function(args, styleLayers, returnGeoJSON) {
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     matching.sort(topDownFeatureComparator);
-    var match = this.featureIndexArray.get(0);
-    this.filterMatching(result, matching, match, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
-    var match2 = this.collisionTile.collisionBoxArray.get(0);
     matchingSymbols.sort();
-    this.filterMatching(result, matchingSymbols, match2, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matchingSymbols, this.collisionTile.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
 
     return result;
 };
@@ -178,7 +176,7 @@ function getLineWidth(paint) {
     }
 }
 
-FeatureTree.prototype.filterMatching = function(result, matching, match, queryGeometry, filter, filterLayerIDs, styleLayers, bearing, pixelsToTileUnits, returnGeoJSON) {
+FeatureTree.prototype.filterMatching = function(result, matching, array, queryGeometry, filter, filterLayerIDs, styleLayers, bearing, pixelsToTileUnits, returnGeoJSON) {
     var previousIndex;
     for (var k = 0; k < matching.length; k++) {
         var index = matching[k];
@@ -187,7 +185,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, match, queryGe
         if (index === previousIndex) continue;
         previousIndex = index;
 
-        match._setIndex(index);
+        var match = array.get(index);
 
         var layerIDs = this.bucketLayerIDs[match.bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs)) continue;
@@ -270,11 +268,10 @@ FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     var result = {};
 
     featureIndexArray = new FilteredFeatureIndexArray(featureIndexArray);
-    var indexes = featureIndexArray.get(0);
 
     var cachedLayerFeatures = {};
     for (var i = 0; i < featureIndexArray.length; i++) {
-        indexes._setIndex(i);
+        var indexes = featureIndexArray.get(i);
         var sourceLayerName = this.sourceLayerNumberMapping.numberToString[indexes.sourceLayerIndex];
         var sourceLayer = this.vtLayers[sourceLayerName];
         var featureIndex = indexes.featureIndex;

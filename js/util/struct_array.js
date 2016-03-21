@@ -61,9 +61,6 @@ var structArrayTypeCache = {};
  *  point = pointArray.get(0);
  *  assert(point.x === 10);
  *  assert(point.y === 15);
- *  point._setIndex(1);
- *  assert(point.x === 20);
- *  assert(point.y === 35);
  *
  * @private
  */
@@ -220,23 +217,11 @@ function createSetter(member, c) {
  */
 function Struct(structArray, index) {
     this._structArray = structArray;
-    this._setIndex(index);
-}
-
-/**
- * Make this Struct object point to a different instance in the same array.
- * It can be cheaper to use .setIndex to re-use an existing Struct than to
- * create a new one.
- * @param {number} index The index of the struct in the StructArray;
- * @private
- */
-Struct.prototype._setIndex = function(index) {
     this._pos1 = index * this.size;
     this._pos2 = this._pos1 / 2;
     this._pos4 = this._pos1 / 4;
     this._pos8 = this._pos1 / 8;
-};
-
+}
 
 /**
  * @class StructArray
