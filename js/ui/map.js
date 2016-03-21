@@ -71,10 +71,15 @@ var defaultMaxZoom = 20;
 var Map = module.exports = function(options) {
 
     options = util.inherit(this.options, options);
-    this._container = options.container;
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
+
+    if (typeof options.container === 'string') {
+        this._container = document.getElementById(options.container);
+    } else {
+        this._container = options.container;
+    }
 
     this.animationLoop = new AnimationLoop();
     this.transform = new Transform(options.minZoom, options.maxZoom);
@@ -740,9 +745,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupContainer: function() {
-        var id = this._container;
-
-        var container = this._container = typeof id === 'string' ? document.getElementById(id) : id;
+        var container = this._container;
         container.classList.add('mapboxgl-map');
 
         var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
