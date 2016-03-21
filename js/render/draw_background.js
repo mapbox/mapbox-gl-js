@@ -3,7 +3,8 @@
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
 var util = require('../util/util');
-var EXTENT = require('../data/bucket').EXTENT;
+var Tile = require('../source/tile');
+var pixelsToTileUnits = new Tile().pixelsToTileUnits;
 
 module.exports = drawBackground;
 
@@ -26,6 +27,7 @@ function drawBackground(painter, source, layer) {
         // Draw texture fill
         shader = painter.patternShader;
         gl.switchShader(shader);
+        gl.uniform1i(shader.u_image, 0);
         gl.uniform2fv(shader.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(shader.u_pattern_br_a, imagePosA.br);
         gl.uniform2fv(shader.u_pattern_tl_b, imagePosB.tl);
@@ -34,20 +36,6 @@ function drawBackground(painter, source, layer) {
 
         gl.uniform1f(shader.u_mix, image.t);
 
-        var factor = (EXTENT / transform.tileSize) / Math.pow(2, 0);
-
-        gl.uniform2fv(shader.u_patternscale_a, [
-            1 / (imagePosA.size[0] * factor * image.fromScale),
-            1 / (imagePosA.size[1] * factor * image.fromScale)
-        ]);
-
-        gl.uniform2fv(shader.u_patternscale_b, [
-            1 / (imagePosB.size[0] * factor * image.toScale),
-            1 / (imagePosB.size[1] * factor * image.toScale)
-        ]);
-
-        gl.uniform1i(shader.u_image, 0);
-        gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
     } else {
@@ -71,10 +59,45 @@ function drawBackground(painter, source, layer) {
     // we don't have so much going on in the stencil buffer.
     var coords = pyramid.coveringTiles(transform);
     for (var c = 0; c < coords.length; c++) {
-        gl.setPosMatrix(painter.calculatePosMatrix(coords[c]));
+        var coord = coords[c];
+        var tileSize = 512;
+        var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
+        if (imagePosA && imagePosB) {
+            var imageSizeScaledA = [
+                (imagePosA.size[0] * image.fromScale),
+                (imagePosA.size[1] * image.fromScale)
+            ];
+            var imageSizeScaledB = [
+                (imagePosB.size[0] * image.toScale),
+                (imagePosB.size[1] * image.toScale)
+            ];
+
+            gl.uniform2fv(shader.u_patternscale_a, [
+                1 / pixelsToTileUnitsBound(imageSizeScaledA[0], painter.transform.tileZoom),
+                1 / pixelsToTileUnitsBound(imageSizeScaledA[1], painter.transform.tileZoom)
+            ]);
+
+            gl.uniform2fv(shader.u_patternscale_b, [
+                1 / pixelsToTileUnitsBound(imageSizeScaledB[0], painter.transform.tileZoom),
+                1 / pixelsToTileUnitsBound(imageSizeScaledB[1], painter.transform.tileZoom)
+            ]);
+            var tileSizeAtNearestZoom = tileSize * Math.pow(2, painter.transform.tileZoom - coord.z);
+
+            var offsetAx = ((tileSizeAtNearestZoom / imageSizeScaledA[0]) % 1) * (coord.x + coord.w * Math.pow(2, coord.z));
+            var offsetAy = ((tileSizeAtNearestZoom / imageSizeScaledA[1]) % 1) * coord.y;
+
+            var offsetBx = ((tileSizeAtNearestZoom / imageSizeScaledB[0]) % 1) * (coord.x + coord.w * Math.pow(2, coord.z));
+            var offsetBy = ((tileSizeAtNearestZoom / imageSizeScaledB[1]) % 1) * coord.y;
+
+            gl.uniform2fv(shader.u_offset_a, [offsetAx, offsetAy]);
+            gl.uniform2fv(shader.u_offset_b, [offsetBx, offsetBy]);
+        }
+
+        gl.setPosMatrix(painter.calculatePosMatrix(coord));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
     }
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }
+
