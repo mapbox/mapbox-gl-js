@@ -52,3 +52,4 @@ exports.supported = function () {
 exports.devicePixelRatio = 1;
 exports.hardwareConcurrency = 8;
 exports.supportsWebp = false;
+exports.supportsGeolocation = false;
