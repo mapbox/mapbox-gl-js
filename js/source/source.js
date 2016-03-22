@@ -104,7 +104,7 @@ exports._queryRenderedVectorFeaturesAsync = function(queryGeometry, params, clas
 
     util.asyncAll(tilesIn, function(tileIn, callback) {
 
-        if (!tileIn.tile.loaded) return callback();
+        if (!tileIn.tile.loaded || !tileIn.tile.featureTree) return callback();
 
         var featureTree = tileIn.tile.featureTree.serialize();
         var collisionTile = tileIn.tile.collisionTile.serialize();
