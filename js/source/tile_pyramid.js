@@ -190,10 +190,11 @@ TilePyramid.prototype = {
      * @param {Coordinate} coord
      * @param {number} minCoveringZoom
      * @param {boolean} retain
+     * @param {boolean} checkCache
      * @returns {Tile} tile object
      * @private
      */
-    findLoadedParent: function(coord, minCoveringZoom, retain) {
+    findLoadedParent: function(coord, minCoveringZoom, retain, checkCache) {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
             coord = coord.parent(this.maxzoom);
             var tile = this._tiles[coord.id];
@@ -201,7 +202,7 @@ TilePyramid.prototype = {
                 retain[coord.id] = true;
                 return tile;
             }
-            if (this._cache.has(coord.id)) {
+            if (checkCache && this._cache.has(coord.id)) {
                 this.addTile(coord);
                 retain[coord.id] = true;
                 return this._tiles[coord.id];
@@ -266,7 +267,7 @@ TilePyramid.prototype = {
             // The tile we require is not yet loaded.
             // Retain child or parent tiles that cover the same area.
             if (!this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                this.findLoadedParent(coord, minCoveringZoom, retain);
+                this.findLoadedParent(coord, minCoveringZoom, retain, true);
             }
         }
 
@@ -282,7 +283,7 @@ TilePyramid.prototype = {
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
                     retain[id] = true;
                 }
-                this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
+                this.findLoadedParent(coord, minCoveringZoom, parentsForFading, true);
             }
         }
 
