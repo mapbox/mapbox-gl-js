@@ -106,6 +106,8 @@
 
 .mapboxgl-popup {
     position: absolute;
+    top: 0;
+    left: 0;
     display: -webkit-flex;
     display: flex;
     will-change: transform;
