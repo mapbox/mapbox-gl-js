@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Anchor = require('../../../js/symbol/anchor');
 
 test('Anchor', function(t) {
@@ -16,4 +16,6 @@ test('Anchor', function(t) {
         t.deepEqual(a.clone(), a);
         t.end();
     });
+
+    t.end();
 });

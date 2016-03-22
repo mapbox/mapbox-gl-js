@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {
@@ -28,6 +28,8 @@ test('TileCoord', function(t) {
             t.deepEqual(new TileCoord(1, 1, 1).toString(), '1/1/1');
             t.end();
         });
+
+        t.end();
     });
 
     t.test('.fromID', function(t) {
@@ -36,6 +38,8 @@ test('TileCoord', function(t) {
             t.deepEqual(TileCoord.fromID(0), new TileCoord(0, 0, 0, 0));
             t.end();
         });
+
+        t.end();
     });
 
     t.test('.url', function(t) {
@@ -60,6 +64,8 @@ test('TileCoord', function(t) {
             t.equal(TileCoord.fromID(32).parent(), null);
             t.end();
         });
+
+        t.end();
     });
 
     t.test('.cover', function(t) {
@@ -128,6 +134,8 @@ test('TileCoord', function(t) {
             t.end();
         });
 
+        t.end();
     });
 
+    t.end();
 });

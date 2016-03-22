@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Wrapper = require('../../../js/source/geojson_wrapper');
 
 test('geojsonwrapper', function(t) {
@@ -35,4 +35,6 @@ test('geojsonwrapper', function(t) {
         t.deepEqual(feature.bbox(), [0, 1, 0, 1], 'bbox');
         t.end();
     });
+
+    t.end();
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Camera = require('../../../js/ui/camera');
 var Evented = require('../../../js/util/evented');
 var Transform = require('../../../js/geo/transform');
@@ -166,6 +166,8 @@ test('camera', function(t) {
             t.ok(!camera.isEasing());
             t.end();
         });
+
+        t.end();
     });
 
     t.test('#setZoom', function(t) {
@@ -206,6 +208,8 @@ test('camera', function(t) {
             t.ok(!camera.isEasing());
             t.end();
         });
+
+        t.end();
     });
 
     t.test('#setBearing', function(t) {
@@ -239,6 +243,8 @@ test('camera', function(t) {
             t.ok(!camera.isEasing());
             t.end();
         });
+
+        t.end();
     });
 
     t.test('#panBy', function(t) {
@@ -845,7 +851,7 @@ test('camera', function(t) {
             var ascended;
 
             camera.on('zoom', function() {
-                if (camera.getZoom() < 10) {
+                if (camera.getZoom() < 18) {
                     ascended = true;
                 }
             });

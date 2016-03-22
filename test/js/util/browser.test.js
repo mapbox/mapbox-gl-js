@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var browser = require('../../../js/util/browser');
 
 test('browser', function(t) {

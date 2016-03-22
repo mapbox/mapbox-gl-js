@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Buffer = require('../../../js/data/buffer');
 var util = require('../../../js/util/util');
 

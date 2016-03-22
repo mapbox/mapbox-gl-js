@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var mapbox = require('../../../js/util/mapbox');
 var config = require('../../../js/util/config');
 var browser = require('../../../js/util/browser');
@@ -99,6 +99,8 @@ test("mapbox", function(t) {
             t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar', '@2x', '.png'), 'http://www.foo.com/bar@2x.png');
             t.end();
         });
+
+        t.end();
     });
 
     t.test('.normalizeTileURL', function(t) {

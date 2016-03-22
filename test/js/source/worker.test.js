@@ -2,7 +2,7 @@
 
 /* jshint -W079 */
 
-var test = require('prova');
+var test = require('tap').test;
 var http = require('http');
 var Worker = require('../../../js/source/worker');
 
@@ -35,6 +35,8 @@ test('load tile', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('abort tile', function(t) {
@@ -55,6 +57,8 @@ test('abort tile', function(t) {
         t.deepEqual(worker.loading, { source: {} });
         t.end();
     });
+
+    t.end();
 });
 
 test('remove tile', function(t) {
@@ -75,6 +79,8 @@ test('remove tile', function(t) {
         t.deepEqual(worker.loaded, { source: {} });
         t.end();
     });
+
+    t.end();
 });
 
 test('after', function(t) {

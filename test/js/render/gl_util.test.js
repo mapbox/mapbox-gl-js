@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Canvas = require('../../../js/util/canvas');
 var glutil = require('../../../js/render/gl_util');
 
@@ -12,4 +12,6 @@ test('GLUtil', function(t) {
         t.ok(gl.switchShader);
         t.end();
     });
+
+    t.end();
 });

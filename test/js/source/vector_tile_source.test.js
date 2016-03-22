@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var st = require('st');
 var http = require('http');
 var path = require('path');
@@ -22,8 +22,7 @@ test('VectorTileSource', function(t) {
         });
 
         source.on('error', function(e) {
-            t.fail(e.error);
-            t.end();
+            t.error(e.error);
         });
 
         source.on('load', function() {
@@ -42,8 +41,7 @@ test('VectorTileSource', function(t) {
         });
 
         source.on('error', function(e) {
-            t.fail(e.error);
-            t.end();
+            t.error(e.error);
         });
 
         source.on('load', function() {
@@ -102,4 +100,5 @@ test('VectorTileSource', function(t) {
         server.close(t.end);
     });
 
+    t.end();
 });

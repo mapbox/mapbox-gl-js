@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Evented = require('../../../js/util/evented');
 
 test('evented', function(t) {

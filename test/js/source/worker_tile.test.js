@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');
@@ -45,4 +45,6 @@ test('basic', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var AnimationLoop = require('../../../js/style/animation_loop');
 
 test('animationloop', function(t) {

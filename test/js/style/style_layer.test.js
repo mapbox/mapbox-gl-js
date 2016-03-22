@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var StyleLayer = require('../../../js/style/style_layer');
 var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
 var util = require('../../../js/util/util');
@@ -22,6 +22,8 @@ test('StyleLayer', function(t) {
         t.ok(layer instanceof FillStyleLayer);
         t.end();
     });
+
+    t.end();
 });
 
 test('StyleLayer#setPaintProperty', function(t) {
@@ -190,6 +192,8 @@ test('StyleLayer#setPaintProperty', function(t) {
             duration: -10
         });
     });
+
+    t.end();
 });
 
 test('StyleLayer#setLayoutProperty', function(t) {
@@ -248,6 +252,8 @@ test('StyleLayer#setLayoutProperty', function(t) {
         t.equal(layer.getLayoutProperty('text-transform'), undefined);
         t.end();
     });
+
+    t.end();
 });
 
 test('StyleLayer#serialize', function(t) {
@@ -358,6 +364,8 @@ test('StyleLayer#serialize', function(t) {
 
         t.end();
     });
+
+    t.end();
 });
 
 test('StyleLayer#serialize', function(t) {
@@ -454,6 +462,8 @@ test('StyleLayer#serialize', function(t) {
 
         t.end();
     });
+
+    t.end();
 });
 
 function createAnimationLoop() {

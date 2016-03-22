@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var LRUCache = require('../../../js/util/lru_cache');
 
 test('LRUCache', function(t) {

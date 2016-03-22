@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var resolveTokens = require('../../../js/util/token');
 
 test('token', function(t) {

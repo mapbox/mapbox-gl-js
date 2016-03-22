@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var fs = require('fs');
 var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;

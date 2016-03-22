@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var fs = require('fs');
 
 test('production build removes asserts', function(t) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var st = require('st');
 var http = require('http');
 var path = require('path');
@@ -128,6 +128,8 @@ test('Style', function(t) {
             style._layers.background.fire('error', {mapbox: true});
         });
     });
+
+    t.end();
 });
 
 test('Style#_broadcastLayers', function(t) {
@@ -245,6 +247,8 @@ test('Style#_resolve', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('Style#addSource', function(t) {
@@ -345,6 +349,8 @@ test('Style#addSource', function(t) {
             source.fire('tile.remove');
         });
     });
+
+    t.end();
 });
 
 test('Style#removeSource', function(t) {
@@ -434,6 +440,8 @@ test('Style#removeSource', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('Style#addLayer', function(t) {
@@ -617,6 +625,8 @@ test('Style#addLayer', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('Style#removeLayer', function(t) {
@@ -725,6 +735,8 @@ test('Style#removeLayer', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('Style#setFilter', function(t) {
@@ -776,7 +788,7 @@ test('Style#setFilter', function(t) {
         var style = createStyle();
 
         t.throws(function () {
-            style.setLayerFilter('symbol', ['==', 'id', 1]);
+            style.setFilter('symbol', ['==', 'id', 1]);
         }, Error, /load/i);
 
         t.end();
@@ -792,6 +804,8 @@ test('Style#setFilter', function(t) {
             style.setFilter('symbol', ['==', '$type', 1]);
         });
     });
+
+    t.end();
 });
 
 test('Style#setLayerZoomRange', function(t) {
@@ -853,6 +867,8 @@ test('Style#setLayerZoomRange', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });
 
 test('Style#featuresAt - race condition', function(t) {
@@ -903,6 +919,7 @@ test('Style#featuresAt - race condition', function(t) {
             });
             style.removeLayer('land');
         });
+        t.end();
     });
 });
 
@@ -1047,7 +1064,6 @@ test('Style#featuresAt', function(t) {
 
         });
 
-
         t.end();
     });
 });
@@ -1111,4 +1127,6 @@ test('Style#batch', function(t) {
             t.end();
         });
     });
+
+    t.end();
 });

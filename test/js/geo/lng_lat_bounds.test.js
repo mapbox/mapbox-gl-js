@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var LngLat = require('../../../js/geo/lng_lat');
 var LngLatBounds = require('../../../js/geo/lng_lat_bounds');
 
@@ -83,4 +83,6 @@ test('LngLatBounds', function(t) {
         t.deepEqual(llb.toString(), 'LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))');
         t.end();
     });
+
+    t.end();
 });

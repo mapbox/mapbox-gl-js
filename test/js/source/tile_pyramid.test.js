@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var TilePyramid = require('../../../js/source/tile_pyramid');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');
@@ -177,6 +177,8 @@ test('TilePyramid#addTile', function(t) {
 
         t.end();
     });
+
+    t.end();
 });
 
 test('TilePyramid#removeTile', function(t) {
@@ -239,6 +241,8 @@ test('TilePyramid#removeTile', function(t) {
 
         t.end();
     });
+
+    t.end();
 });
 
 test('TilePyramid#tileAt', function(t) {
@@ -313,6 +317,7 @@ test('TilePyramid#tileAt', function(t) {
 
         t.end();
     });
+
     t.end();
 });
 
@@ -510,6 +515,8 @@ test('TilePyramid#update', function(t) {
         t.end();
 
     });
+
+    t.end();
 });
 
 test('TilePyramid#clearTiles', function(t) {
@@ -537,6 +544,8 @@ test('TilePyramid#clearTiles', function(t) {
 
         t.end();
     });
+
+    t.end();
 });
 
 test('TilePyramid#tilesIn', function (t) {
@@ -661,9 +670,7 @@ test('TilePyramid#findLoadedParent', function(t) {
         t.end();
     });
 
-
     t.test('adds from cache', function(t) {
-        t.end();
         var pyramid = createPyramid({});
         var tr = new Transform();
         tr.width = 512;
@@ -682,10 +689,12 @@ test('TilePyramid#findLoadedParent', function(t) {
         expectedRetain[tile.coord.id] = true;
 
         t.equal(pyramid.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
-        t.deepEqual(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.equal(pyramid.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
         t.deepEqual(retain, expectedRetain);
         t.equal(pyramid._cache.order.length, 0);
-        t.deepEqual(pyramid._tiles[tile.coord.id], tile);
+        t.equal(pyramid._tiles[tile.coord.id], tile);
+
+        t.end();
     });
 
     t.end();

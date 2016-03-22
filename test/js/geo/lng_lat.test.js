@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var LngLat = require('../../../js/geo/lng_lat');
 
 test('LngLat', function(t) {
@@ -45,4 +45,6 @@ test('LngLat', function(t) {
         t.equal(new LngLat(10, 20).toString(), 'LngLat(10, 20)');
         t.end();
     });
+
+    t.end();
 });

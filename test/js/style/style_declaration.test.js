@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var StyleDeclaration = require('../../../js/style/style_declaration');
 
 test('StyleDeclaration', function(t) {
@@ -60,4 +60,6 @@ test('StyleDeclaration', function(t) {
         t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate(0), [ 1, 0.2, 0, 1 ]);
         t.end();
     });
+
+    t.end();
 });

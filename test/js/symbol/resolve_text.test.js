@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var resolveText = require('../../../js/symbol/resolve_text');
 
 function mockFeature(obj) {

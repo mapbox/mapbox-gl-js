@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var fs = require('fs');
 var path = require('path');
 var shaping = require('../../../js/symbol/shaping');

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
@@ -164,6 +164,7 @@ test('Map', function(t) {
             });
         });
 
+        t.end();
     });
 
     t.test('#getStyle', function(t) {
@@ -231,6 +232,8 @@ test('Map', function(t) {
                 t.end();
             });
         });
+
+        t.end();
     });
 
     t.test('#resize', function(t) {
@@ -263,6 +266,8 @@ test('Map', function(t) {
 
             t.end();
         });
+
+        t.end();
     });
 
     t.test('#getBounds', function(t) {
@@ -317,7 +322,6 @@ test('Map', function(t) {
             t.notEqual(map.setZoom(0).getZoom(), 0);
             t.end();
         });
-        t.end();
 
         function toFixed(bounds) {
             var n = 10;
@@ -326,6 +330,8 @@ test('Map', function(t) {
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
             ];
         }
+
+        t.end();
     });
 
     t.test('#setMinZoom', function(t) {
@@ -761,6 +767,8 @@ test('Map', function(t) {
                 t.end();
             });
         });
+
+        t.end();
     });
 
     t.test('#setPaintProperty', function (t) {
@@ -798,6 +806,8 @@ test('Map', function(t) {
 
             t.end();
         });
+
+        t.end();
     });
 
     t.test('#onError', function (t) {
@@ -818,7 +828,11 @@ test('Map', function(t) {
                 }
             });
         });
+
+        t.end();
     });
+
+    t.end();
 });
 
 function createStyle() {

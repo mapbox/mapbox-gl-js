@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var mergeLines = require('../../../js/symbol/mergelines');
 var Point = require('point-geometry');
 

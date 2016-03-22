@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Coordinate = require('../../../js/geo/coordinate');
 var util = require('../../../js/util/util');
 
@@ -117,8 +117,8 @@ test('util', function(t) {
         }, function(err, results) {
             t.ifError(err);
             t.deepEqual(results, [0, 1, 2]);
-            t.end();
         }));
+        t.end();
     });
 
     t.test('asyncAll - async', function(t) {
@@ -151,8 +151,8 @@ test('util', function(t) {
         }, function(err, results) {
             t.ifError(err);
             t.deepEqual(results, []);
-            t.end();
         }));
+        t.end();
     });
 
     t.test('coalesce', function(t) {

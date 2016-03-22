@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var Point = require('point-geometry');
 var Transform = require('../../../js/geo/transform');
 var LngLat = require('../../../js/geo/lng_lat');
@@ -104,4 +104,6 @@ test('transform', function(t) {
 
         t.end();
     });
+
+    t.end();
 });

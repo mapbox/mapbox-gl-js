@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var GeoJSONSource = require('../../../js/source/geojson_source');
 var Transform = require('../../../js/geo/transform');
 var LngLat = require('../../../js/geo/lng_lat');
@@ -53,6 +53,8 @@ test('GeoJSONSource#setData', function(t) {
         });
         source.setData({});
     });
+
+    t.end();
 });
 
 test('GeoJSONSource#reload', function(t) {
@@ -182,6 +184,8 @@ test('GeoJSONSource#update', function(t) {
             });
         });
     });
+
+    t.end();
 });
 
 test('GeoJSONSource#serialize', function(t) {
@@ -213,4 +217,6 @@ test('GeoJSONSource#serialize', function(t) {
         });
         t.end();
     });
+
+    t.end();
 });

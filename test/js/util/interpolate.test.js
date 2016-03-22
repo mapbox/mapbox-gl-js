@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('prova');
+var test = require('tap').test;
 var interpolate = require('../../../js/util/interpolate');
 
 test('interpolate.number', function(t) {
