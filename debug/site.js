@@ -9,7 +9,7 @@ var map = new mapboxgl.Map({
     hash: true
 });
 
-// map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.Navigation());
 map.addControl(new mapboxgl.Geolocate());
 
 map.on('load', function() {

@@ -1,6 +1,7 @@
 'use strict';
 
 var Control = require('./control');
+var browser = require('../../util/browser');
 var DOM = require('../../util/dom');
 var util = require('../../util/util');
 
@@ -30,6 +31,8 @@ Geolocate.prototype = util.inherit(Control, {
         var className = 'mapboxgl-ctrl';
 
         var container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        if (!browser.supportsGeolocation) return container;
+
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._geolocateButton = DOM.create('button', (className + '-icon ' + className + '-geolocate'), this._container);
