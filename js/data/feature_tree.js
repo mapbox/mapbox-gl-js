@@ -6,7 +6,7 @@ var EXTENT = require('./bucket').EXTENT;
 var featureFilter = require('feature-filter');
 var StructArrayType = require('../util/struct_array');
 var Grid = require('../util/grid');
-var StringNumberMapping = require('../util/string_number_mapping');
+var DictionaryCoder = require('../util/dictionary_coder');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var GeoJSONFeature = require('../util/vectortile_to_geojson');
@@ -107,7 +107,7 @@ function translateDistance(translate) {
 FeatureTree.prototype.query = function(args, styleLayers, returnGeoJSON) {
     if (!this.vtLayers) {
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
-        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
+        this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
     var result = returnGeoJSON ?
@@ -190,7 +190,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, array, queryGe
         var layerIDs = this.bucketLayerIDs[match.bucketIndex];
         if (filterLayerIDs && !arraysIntersect(filterLayerIDs, layerIDs)) continue;
 
-        var sourceLayerName = this.sourceLayerNumberMapping.numberToString[match.sourceLayerIndex];
+        var sourceLayerName = this.sourceLayerCoder.decode(match.sourceLayerIndex);
         var sourceLayer = this.vtLayers[sourceLayerName];
         var feature = sourceLayer.feature(match.featureIndex);
 
@@ -262,7 +262,7 @@ FeatureTree.prototype.filterMatching = function(result, matching, array, queryGe
 FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     if (!this.vtLayers) {
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
-        this.sourceLayerNumberMapping = new StringNumberMapping(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
+        this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
     var result = {};
@@ -272,7 +272,7 @@ FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
     var cachedLayerFeatures = {};
     for (var i = 0; i < featureIndexArray.length; i++) {
         var indexes = featureIndexArray.get(i);
-        var sourceLayerName = this.sourceLayerNumberMapping.numberToString[indexes.sourceLayerIndex];
+        var sourceLayerName = this.sourceLayerCoder.decode(indexes.sourceLayerIndex);
         var sourceLayer = this.vtLayers[sourceLayerName];
         var featureIndex = indexes.featureIndex;
 

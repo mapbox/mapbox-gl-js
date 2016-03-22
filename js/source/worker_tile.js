@@ -4,7 +4,7 @@ var FeatureTree = require('../data/feature_tree');
 var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
 var CollisionBoxArray = require('../symbol/collision_box');
-var StringNumberMapping = require('../util/string_number_mapping');
+var DictionaryCoder = require('../util/dictionary_coder');
 
 module.exports = WorkerTile;
 
@@ -28,7 +28,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
     this.collisionBoxArray = new CollisionBoxArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
     var featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
-    var sourceLayerNumberMapping = new StringNumberMapping(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
+    var sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
 
     var stats = { _total: 0 };
 
@@ -57,7 +57,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
             collisionBoxArray: this.collisionBoxArray,
-            sourceLayerIndex: sourceLayerNumberMapping.stringToNumber[layer['source-layer'] || '_geojsonTileLayer']
+            sourceLayerIndex: sourceLayerCoder.encode(layer['source-layer'] || '_geojsonTileLayer')
         });
         bucket.createFilter();
 
