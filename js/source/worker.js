@@ -4,7 +4,6 @@ var Actor = require('../util/actor');
 var WorkerTile = require('./worker_tile');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
-var StyleLayer = require('../style/style_layer');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var supercluster = require('supercluster');
@@ -13,9 +12,6 @@ var geojsonvt = require('geojson-vt');
 var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
 var vtpbf = require('vt-pbf');
-
-var CollisionTile = require('../symbol/collision_tile');
-var FeatureTree = require('../data/feature_tree');
 
 module.exports = function(self) {
     return new Worker(self);
@@ -34,25 +30,6 @@ function Worker(self) {
 util.extend(Worker.prototype, {
     'set layers': function(layers) {
         this.layers = layers;
-        this.styleLayersByID = {};
-
-        var layer;
-        this._recalculatedZoom = null;
-        this._cascadedClasses = null;
-
-        for (var i = 0; i < layers.length; i++) {
-            layer = layers[i];
-            if (!layer.ref) {
-                this.styleLayersByID[layer.id] = StyleLayer.create(layer);
-            }
-        }
-
-        for (var k = 0; k < layers.length; k++) {
-            layer = layers[k];
-            if (layer.ref) {
-                this.styleLayersByID[layer.id] = StyleLayer.create(layer, this.styleLayersByID[layer.ref]);
-            }
-        }
     },
 
     'update layers': function(layers) {
@@ -191,37 +168,6 @@ util.extend(Worker.prototype, {
             tile.parse(geojsonWrapper, this.layers, this.actor, rawTileData, callback);
         } else {
             return callback(null, null); // nothing in the given tile
-        }
-    },
-
-    'query rendered features': function(params, callback) {
-        var tile = this.loaded[params.source] && this.loaded[params.source][params.uid];
-        if (tile) {
-
-            var id;
-
-            var classString = Object.keys(params.classes).join(' ');
-            if (this._cascadedClasses !== classString) {
-                this._cascadedClasses = classString;
-                for (id in this.styleLayersByID) {
-                    this.styleLayersByID[id].cascade(params.classes, {transition: false}, {});
-                }
-            }
-
-            if (this._recalculatedZoom !== params.zoom) {
-                this._recalculatedZoom = params.zoom;
-                for (id in this.styleLayersByID) {
-                    this.styleLayersByID[id].recalculate(params.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
-                }
-            }
-
-            var collisionTile = new CollisionTile(params.collisionTile, tile.collisionBoxArray);
-            var featureTree = new FeatureTree(params.featureTree, params.rawTileData, collisionTile);
-
-            var featureArray = featureTree.query(params, this.styleLayersByID, false).serialize();
-            callback(null, featureArray, [featureArray.arrayBuffer]);
-        } else {
-            callback(null, []);
         }
     }
 });

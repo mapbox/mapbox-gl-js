@@ -426,20 +426,6 @@ Style.prototype = util.inherit(Evented, {
         return features;
     },
 
-    queryRenderedFeaturesAsync: function(queryGeometry, params, classes, zoom, bearing, callback) {
-        util.asyncAll(Object.keys(this.sources), function(id, callback) {
-            var source = this.sources[id];
-            if (source.queryRenderedFeaturesAsync) {
-                source.queryRenderedFeaturesAsync(queryGeometry, params, classes, zoom, bearing, callback);
-            } else {
-                callback(null, {});
-            }
-        }.bind(this), function(err, sourceResults) {
-            if (err) return callback(err);
-            callback(null, this._flattenRenderedFeatures(sourceResults));
-        }.bind(this));
-    },
-
     queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing) {
         var sourceResults = [];
         for (var id in this.sources) {

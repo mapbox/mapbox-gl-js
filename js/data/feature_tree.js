@@ -22,18 +22,6 @@ var FeatureIndexArray = new StructArrayType({
         { type: 'Uint16', name: 'bucketIndex' }
     ]});
 
-var FilteredFeatureIndexArray = new StructArrayType({
-    members: [
-        // the index of the feature in the original vectortile
-        { type: 'Uint32', name: 'featureIndex' },
-        // the source layer the feature appears in
-        { type: 'Uint16', name: 'sourceLayerIndex' },
-        // the bucket the feature appears in
-        { type: 'Uint16', name: 'bucketIndex' },
-        // the layer the feature appears in
-        { type: 'Uint16', name: 'layerIndex' }
-    ]});
-
 module.exports = FeatureTree;
 
 function FeatureTree(coord, overscaling, collisionTile) {
@@ -104,15 +92,13 @@ function translateDistance(translate) {
 }
 
 // Finds features in this tile at a particular position.
-FeatureTree.prototype.query = function(args, styleLayers, returnGeoJSON) {
+FeatureTree.prototype.query = function(args, styleLayers) {
     if (!this.vtLayers) {
         this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
         this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 
-    var result = returnGeoJSON ?
-        {} :
-        new FilteredFeatureIndexArray();
+    var result = {};
 
     var params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
@@ -155,11 +141,11 @@ FeatureTree.prototype.query = function(args, styleLayers, returnGeoJSON) {
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
     matching.sort(topDownFeatureComparator);
-    this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
     var matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
     matchingSymbols.sort();
-    this.filterMatching(result, matchingSymbols, this.collisionTile.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits, returnGeoJSON);
+    this.filterMatching(result, matchingSymbols, this.collisionTile.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
     return result;
 };
@@ -176,7 +162,7 @@ function getLineWidth(paint) {
     }
 }
 
-FeatureTree.prototype.filterMatching = function(result, matching, array, queryGeometry, filter, filterLayerIDs, styleLayers, bearing, pixelsToTileUnits, returnGeoJSON) {
+FeatureTree.prototype.filterMatching = function(result, matching, array, queryGeometry, filter, filterLayerIDs, styleLayers, bearing, pixelsToTileUnits) {
     var previousIndex;
     for (var k = 0; k < matching.length; k++) {
         var index = matching[k];
@@ -241,64 +227,17 @@ FeatureTree.prototype.filterMatching = function(result, matching, array, queryGe
                 }
             }
 
-            if (returnGeoJSON) {
-                var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-                geojsonFeature.layer = styleLayer.serialize({
-                    includeRefProperties: true
-                });
-                var layerResult = result[layerID];
-                if (layerResult === undefined) {
-                    layerResult = result[layerID] = [];
-                }
-                layerResult.push(geojsonFeature);
-
-            } else {
-                result.emplaceBack(match.featureIndex, match.sourceLayerIndex, match.bucketIndex, l);
+            var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
+            geojsonFeature.layer = styleLayer.serialize({
+                includeRefProperties: true
+            });
+            var layerResult = result[layerID];
+            if (layerResult === undefined) {
+                layerResult = result[layerID] = [];
             }
+            layerResult.push(geojsonFeature);
         }
     }
-};
-
-FeatureTree.prototype.makeGeoJSON = function(featureIndexArray, styleLayers) {
-    if (!this.vtLayers) {
-        this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
-        this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
-    }
-
-    var result = {};
-
-    featureIndexArray = new FilteredFeatureIndexArray(featureIndexArray);
-
-    var cachedLayerFeatures = {};
-    for (var i = 0; i < featureIndexArray.length; i++) {
-        var indexes = featureIndexArray.get(i);
-        var sourceLayerName = this.sourceLayerCoder.decode(indexes.sourceLayerIndex);
-        var sourceLayer = this.vtLayers[sourceLayerName];
-        var featureIndex = indexes.featureIndex;
-
-        var cachedFeatures = cachedLayerFeatures[sourceLayerName];
-        if (cachedFeatures === undefined) {
-            cachedFeatures = cachedLayerFeatures[sourceLayerName] = {};
-        }
-
-        var feature = cachedFeatures[featureIndex] = cachedFeatures[featureIndex] || sourceLayer.feature(featureIndex);
-
-        var layerID = this.bucketLayerIDs[indexes.bucketIndex][indexes.layerIndex];
-        var styleLayer = styleLayers[layerID];
-        if (!styleLayer) continue;
-
-        var geojsonFeature = new GeoJSONFeature(feature, this.z, this.x, this.y);
-        geojsonFeature.layer = styleLayer.serialize({
-            includeRefProperties: true
-        });
-        var layerResult = result[layerID];
-        if (layerResult === undefined) {
-            layerResult = result[layerID] = [];
-        }
-        layerResult.push(geojsonFeature);
-    }
-
-    return result;
 };
 
 function translate(queryGeometry, translate, translateAnchor, bearing, pixelsToTileUnits) {

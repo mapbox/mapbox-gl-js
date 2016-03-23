@@ -47,25 +47,14 @@ module.exports = function(style, options, callback) {
             tmp.copy(data, end);
         }
 
-        var syncResults = [];
-        if (options.queryGeometry) {
-            syncResults = map.queryRenderedFeatures(options.queryGeometry, options);
-            map.queryRenderedFeaturesAsync(options.queryGeometry, options, done);
-        } else {
-            done(null, []);
-        }
+        var results = options.queryGeometry ?
+            map.queryRenderedFeatures(options.queryGeometry, options) :
+            [];
 
-        function done(err, asyncResults) {
-            map.remove();
-            gl.destroy();
+        map.remove();
+        gl.destroy();
 
-            if (err) return callback(err);
-
-            syncResults = syncResults.map(prepareFeatures);
-            asyncResults = asyncResults.map(prepareFeatures);
-
-            callback(null, data, syncResults, asyncResults);
-        }
+        callback(null, data, results.map(prepareFeatures));
 
         function prepareFeatures(r) {
             delete r.layer;

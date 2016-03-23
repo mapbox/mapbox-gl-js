@@ -4,7 +4,7 @@
 
 - `map.featuresAt` and `map.featuresIn` are removed. Use `map.queryRenderedFeatures` or `map.querySourceFeatures` instead. To migrate:
     - replace `featuresAt` and `featuresIn` with `queryRenderedFeatures`
-    - `queryRenderedFeatures` is synchronous. Remove the callback and use the return value. An async version `queryRenderedFeaturesAsync` exists for really slow queries.
+    - `queryRenderedFeatures` is synchronous. Remove the callback and use the return value.
     - rename the `layer` parameters to `layers` and make it an array of strings.
     - remove the `radius` parameter. `radius` was often used with `featuresAt` to account for style properties like `line-width` and `circle-radius`. `queryRenderedFeatures` automatically accounts for these style properties. If you need to query a larger area, make the first argument a box instead of a point.
     - remove the `includeGeometry` parameter. `queryRenderedFeatures` always includes geometries.
@@ -18,7 +18,6 @@ Add `isActive` and `isEnabled` methods to interaction handlers (#2238)
 Add `Map#setZoomBounds` method (#2243)
 Add touch events (#2195)
 - `map.queryRenderedFeatures` can be used to query the styled and rendered representations of features
-- `map.queryRenderedFeaturesAsync` is an asynchronous version of `map.queryRenderedFeatures`
 - `map.querySourceFeatures` can be used to get features directly from vector tiles, independent of the style.
 - interaction for labels (#303) and style-property-aware hit testing (#316) are possible with `map.queryRenderedFeatures`
 

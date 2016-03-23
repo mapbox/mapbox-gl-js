@@ -484,7 +484,7 @@ test('Map', function(t) {
     });
 
 
-    t.test('#queryRenderedFeaturesAsync', function(t) {
+    t.test('#queryRenderedFeatures', function(t) {
         var map = createMap();
         map.setStyle({
             "version": 8,
@@ -493,25 +493,23 @@ test('Map', function(t) {
         });
 
         map.on('style.load', function() {
-            var callback = function () {};
             var opts = {};
 
             t.test('normal coords', function(t) {
-                map.style.queryRenderedFeaturesAsync = function (coords, o, classes, zoom, bearing, cb) {
+                map.style.queryRenderedFeatures = function (coords, o, classes, zoom, bearing) {
                     t.deepEqual(coords, [{ column: 0.5, row: 0.5, zoom: 0 }]);
                     t.equal(o, opts);
-                    t.equal(cb, callback);
                     t.deepEqual(classes, map._classes);
                     t.equal(bearing, map.transform.angle);
                     t.equal(zoom, map.getZoom());
                     t.end();
                 };
 
-                map.queryRenderedFeaturesAsync(map.project(new LngLat(0, 0)), opts, callback);
+                map.queryRenderedFeatures(map.project(new LngLat(0, 0)), opts);
             });
 
             t.test('wraps coords', function(t) {
-                map.style.queryRenderedFeaturesAsync = function (coords, o, classes, zoom, bearing, cb) {
+                map.style.queryRenderedFeatures = function (coords, o, classes, zoom, bearing) {
                     // avoid floating point issues
                     t.equal(parseFloat(coords[0].column.toFixed(4)), 0.5);
                     t.equal(coords[0].row, 0.5);
@@ -519,14 +517,13 @@ test('Map', function(t) {
 
                     t.equal(o, opts);
                     t.deepEqual(classes, map._classes);
-                    t.equal(zoom, map.transform.angle);
+                    t.equal(bearing, map.transform.angle);
                     t.equal(zoom, map.getZoom());
-                    t.equal(cb, callback);
 
                     t.end();
                 };
 
-                map.queryRenderedFeaturesAsync(map.project(new LngLat(360, 0)), opts, callback);
+                map.queryRenderedFeatures(map.project(new LngLat(360, 0)), opts);
             });
 
             t.end();

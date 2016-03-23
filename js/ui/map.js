@@ -385,38 +385,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} params
      * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
-     * @param {featuresCallback} callback function that receives the results
-     *
-     * @returns {Map} `this`
-     *
-     * @example
-     * map.queryRenderedFeaturesAsync([20, 35], { layers: ['my-layer-name'] }, function(err, features) {
-     *   console.log(features);
-     * });
-     *
-     * @example
-     * map.queryRenderedFeaturesAsync([[10, 20], [30, 50]], { layers: ['my-layer-name'] }, function(err, features) {
-     *   console.log(features);
-     * });
-     */
-    queryRenderedFeaturesAsync: function(pointOrBox, params, callback) {
-        if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
-            callback = params;
-            params = pointOrBox;
-            pointOrBox = undefined;
-        }
-        var queryGeometry = this._makeQueryGeometry(pointOrBox);
-        this.style.queryRenderedFeaturesAsync(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle, callback);
-        return this;
-    },
-
-    /**
-     * Query rendered features within a point or rectangle.
-     *
-     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
-     * @param {Object} params
-     * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
-     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      *
      * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
      *
@@ -1012,23 +980,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.stop().resize()._update();
     }
 });
-
-
-/**
- * Callback to receive results from `Map#queryRenderFeaturesAsync`
- *
- * Note: because features come from vector tiles or GeoJSON data that is converted to vector tiles internally, the returned features will be:
- *
- * 1. Truncated at tile boundaries.
- * 2. Duplicated across tile boundaries.
- *
- * For example, suppose there is a highway running through your rectangle in a `queryRenderFeatures` query. `queryRenderFeatures` will only give you the parts of the highway feature that lie within the map tiles covering your rectangle, even if the road actually extends into other tiles. Also, the portion of the highway within each map tile will come back as a separate feature.
- *
- * @callback featuresCallback
- * @param {?Error} err - An error that occurred during query processing, if any. If this parameter is non-null, the `features` parameter will be null.
- * @param {?Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
- */
-
 
 util.extendAll(Map.prototype, /** @lends Map.prototype */{
 

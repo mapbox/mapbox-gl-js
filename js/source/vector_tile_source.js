@@ -54,7 +54,6 @@ VectorTileSource.prototype = util.inherit(Evented, {
     getTile: Source._getTile,
 
     queryRenderedFeatures: Source._queryRenderedVectorFeatures,
-    queryRenderedFeaturesAsync: Source._queryRenderedVectorFeaturesAsync,
     querySourceFeatures: Source._querySourceFeatures,
 
     _loadTile: function(tile) {
