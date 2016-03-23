@@ -1,6 +1,5 @@
 'use strict';
 
-var browser = require('../util/browser');
 var util = require('../util/util');
 
 module.exports = draw;
@@ -25,7 +24,7 @@ function draw(painter, source, layer, coords) {
     // Draw stroke
     if (!painter.isOpaquePass && layer.paint['fill-antialias'] && !(layer.paint['fill-pattern'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader);
-        gl.lineWidth(2 * browser.devicePixelRatio * 10);
+        gl.lineWidth(2);
 
         if (strokeColor) {
             // If we defined a different color for the fill outline, we are
