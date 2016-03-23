@@ -3,6 +3,7 @@
 var browser = require('../util/browser');
 var mat2 = require('gl-matrix').mat2;
 var util = require('../util/util');
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 /**
  * Draw a line. Under the hood this will read elements from
@@ -143,13 +144,13 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         gl.setPosMatrix(posMatrix);
         gl.setExMatrix(painter.transform.exMatrix);
-        var ratio = 1 / tile.pixelsToTileUnits(1, painter.transform.zoom);
+        var ratio = 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom);
 
         if (dasharray) {
             var widthA = posA.width * dasharray.fromScale;
             var widthB = posB.width * dasharray.toScale;
-            var scaleA = [1 / tile.pixelsToTileUnits(widthA, painter.transform.tileZoom), -posA.height / 2];
-            var scaleB = [1 / tile.pixelsToTileUnits(widthB, painter.transform.tileZoom), -posB.height / 2];
+            var scaleA = [1 / pixelsToTileUnits(tile, widthA, painter.transform.tileZoom), -posA.height / 2];
+            var scaleB = [1 / pixelsToTileUnits(tile, widthB, painter.transform.tileZoom), -posB.height / 2];
             var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_patternscale_a, scaleA);
@@ -159,11 +160,11 @@ module.exports = function drawLine(painter, source, layer, coords) {
         } else if (image) {
             gl.uniform1f(shader.u_ratio, ratio);
             gl.uniform2fv(shader.u_pattern_size_a, [
-                tile.pixelsToTileUnits(imagePosA.size[0] * image.fromScale, painter.transform.tileZoom),
+                pixelsToTileUnits(tile, imagePosA.size[0] * image.fromScale, painter.transform.tileZoom),
                 imagePosB.size[1]
             ]);
             gl.uniform2fv(shader.u_pattern_size_b, [
-                tile.pixelsToTileUnits(imagePosB.size[0] * image.toScale, painter.transform.tileZoom),
+                pixelsToTileUnits(tile, imagePosB.size[0] * image.toScale, painter.transform.tileZoom),
                 imagePosB.size[1]
             ]);
 

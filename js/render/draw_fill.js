@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util');
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = draw;
 
@@ -148,13 +149,13 @@ function drawFill(painter, source, layer, coord) {
         ];
 
         gl.uniform2fv(shader.u_patternscale_a, [
-            1 / tile.pixelsToTileUnits(imageSizeScaledA[0], painter.transform.tileZoom),
-            1 / tile.pixelsToTileUnits(imageSizeScaledA[1], painter.transform.tileZoom)
+            1 / pixelsToTileUnits(tile, imageSizeScaledA[0], painter.transform.tileZoom),
+            1 / pixelsToTileUnits(tile, imageSizeScaledA[1], painter.transform.tileZoom)
         ]);
 
         gl.uniform2fv(shader.u_patternscale_b, [
-            1 / tile.pixelsToTileUnits(imageSizeScaledB[0], painter.transform.tileZoom),
-            1 / tile.pixelsToTileUnits(imageSizeScaledB[1], painter.transform.tileZoom)
+            1 / pixelsToTileUnits(tile, imageSizeScaledB[0], painter.transform.tileZoom),
+            1 / pixelsToTileUnits(tile, imageSizeScaledB[1], painter.transform.tileZoom)
         ]);
 
         var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);

@@ -7,6 +7,7 @@ var FrameHistory = require('./frame_history');
 var TileCoord = require('../source/tile_coord');
 var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = Painter;
 
@@ -352,8 +353,8 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     }
 
     var translation = [
-        tile.pixelsToTileUnits(translate[0], this.transform.zoom),
-        tile.pixelsToTileUnits(translate[1], this.transform.zoom),
+        pixelsToTileUnits(tile, translate[0], this.transform.zoom),
+        pixelsToTileUnits(tile, translate[1], this.transform.zoom),
         0
     ];
 

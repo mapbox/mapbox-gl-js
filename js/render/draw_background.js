@@ -3,8 +3,7 @@
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
 var util = require('../util/util');
-var Tile = require('../source/tile');
-var pixelsToTileUnits = new Tile().pixelsToTileUnits;
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = drawBackground;
 
@@ -61,7 +60,7 @@ function drawBackground(painter, source, layer) {
     for (var c = 0; c < coords.length; c++) {
         var coord = coords[c];
         var tileSize = 512;
-        var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
+        // var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
         if (imagePosA && imagePosB) {
             var imageSizeScaledA = [
                 (imagePosA.size[0] * image.fromScale),
@@ -71,15 +70,16 @@ function drawBackground(painter, source, layer) {
                 (imagePosB.size[0] * image.toScale),
                 (imagePosB.size[1] * image.toScale)
             ];
+            var tile = {coord:coord, tileSize: tileSize};
 
             gl.uniform2fv(shader.u_patternscale_a, [
-                1 / pixelsToTileUnitsBound(imageSizeScaledA[0], painter.transform.tileZoom),
-                1 / pixelsToTileUnitsBound(imageSizeScaledA[1], painter.transform.tileZoom)
+                1 / pixelsToTileUnits(tile, imageSizeScaledA[0], painter.transform.tileZoom),
+                1 / pixelsToTileUnits(tile, imageSizeScaledA[1], painter.transform.tileZoom)
             ]);
 
             gl.uniform2fv(shader.u_patternscale_b, [
-                1 / pixelsToTileUnitsBound(imageSizeScaledB[0], painter.transform.tileZoom),
-                1 / pixelsToTileUnitsBound(imageSizeScaledB[1], painter.transform.tileZoom)
+                1 / pixelsToTileUnits(tile, imageSizeScaledB[0], painter.transform.tileZoom),
+                1 / pixelsToTileUnits(tile, imageSizeScaledB[1], painter.transform.tileZoom)
             ]);
             var tileSizeAtNearestZoom = tileSize * Math.pow(2, painter.transform.tileZoom - coord.z);
 

@@ -5,6 +5,8 @@ var mat4 = require('gl-matrix').mat4;
 var browser = require('../util/browser');
 var drawCollisionDebug = require('./draw_collision_debug');
 var util = require('../util/util');
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+
 
 module.exports = drawSymbols;
 
@@ -79,7 +81,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
     if (skewed) {
         exMatrix = mat4.create();
-        s = tile.pixelsToTileUnits(1, painter.transform.zoom);
+        s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
         gammaScale = 1 / Math.cos(tr._pitch);
     } else {
         exMatrix = mat4.clone(painter.transform.exMatrix);
