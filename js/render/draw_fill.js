@@ -25,6 +25,7 @@ function draw(painter, source, layer, coords) {
     if (!painter.isOpaquePass && layer.paint['fill-antialias'] && !(layer.paint['fill-pattern'] && !strokeColor)) {
         gl.switchShader(painter.outlineShader);
         gl.lineWidth(2);
+        painter.depthMask(false);
 
         if (strokeColor) {
             // If we defined a different color for the fill outline, we are
