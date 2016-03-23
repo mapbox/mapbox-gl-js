@@ -8,3 +8,4 @@ npm-debug.log
 *.sublime-*
 coverage
 .DS_Store
+.nyc_output
