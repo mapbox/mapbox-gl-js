@@ -1,39 +1,35 @@
 'use strict';
 
-var GLOBAL_ATTRIBUTE_PREFIX = '$';
-
-module.exports = create;
-module.exports.is = is;
-
-function create(parameters) {
+function createFunction(parameters, defaultType) {
     var fun;
 
-    if (!is(parameters)) {
+    if (!isFunctionDefinition(parameters)) {
         fun = function() { return parameters; };
         fun.isFeatureConstant = true;
         fun.isGlobalConstant = true;
 
     } else {
         var property = parameters.property === undefined ? '$zoom' : parameters.property;
+        var type = parameters.type || defaultType || 'exponential';
 
         var innerFun;
-        if (!parameters.type || parameters.type === 'exponential') {
+        if (type === 'exponential') {
             innerFun = evaluateExponentialFunction;
-        } else if (parameters.type === 'interval') {
+        } else if (type === 'interval') {
             innerFun = evaluateIntervalFunction;
-        } else if (parameters.type === 'categorical') {
+        } else if (type === 'categorical') {
             innerFun = evaluateCategoricalFunction;
         } else {
-            throw new Error('Unknown function type "' + parameters.type + '"');
+            throw new Error('Unknown function type "' + type + '"');
         }
 
-        if (property[0] === GLOBAL_ATTRIBUTE_PREFIX) {
-            fun = function(global) {
-                return innerFun(parameters, global[property]);
+        if (property === '$zoom') {
+            fun = function(zoom) {
+                return innerFun(parameters, zoom);
             };
             fun.isFeatureConstant = true;
         } else {
-            fun = function(global, feature) {
+            fun = function(zoom, feature) {
                 return innerFun(parameters, feature[property]);
             };
         }
@@ -43,19 +39,19 @@ function create(parameters) {
 }
 
 function evaluateCategoricalFunction(parameters, input) {
-    for (var i = 0; i < parameters.domain.length; i++) {
-        if (input === parameters.domain[i]) {
-            return parameters.range[i];
+    for (var i = 0; i < parameters.stops.length; i++) {
+        if (input === parameters.stops[i][0]) {
+            return parameters.stops[i][1];
         }
     }
-    return parameters.range[0];
+    return parameters.stops[0][1];
 }
 
 function evaluateIntervalFunction(parameters, input) {
-    for (var i = 0; i < parameters.domain.length; i++) {
-        if (input < parameters.domain[i]) break;
+    for (var i = 0; i < parameters.stops.length; i++) {
+        if (input < parameters.stops[i][0]) break;
     }
-    return parameters.range[i];
+    return parameters.stops[Math.max(i - 1, 0)][1];
 }
 
 function evaluateExponentialFunction(parameters, input) {
@@ -63,28 +59,29 @@ function evaluateExponentialFunction(parameters, input) {
 
     var i = 0;
     while (true) {
-        if (i >= parameters.domain.length) break;
-        else if (input <= parameters.domain[i]) break;
+        if (i >= parameters.stops.length) break;
+        else if (input <= parameters.stops[i][0]) break;
         else i++;
     }
 
     if (i === 0) {
-        return parameters.range[i];
+        return parameters.stops[i][1];
 
-    } else if (i === parameters.range.length) {
-        return parameters.range[i - 1];
+    } else if (i === parameters.stops.length) {
+        return parameters.stops[i - 1][1];
 
     } else {
         return interpolate(
             input,
             base,
-            parameters.domain[i - 1],
-            parameters.domain[i],
-            parameters.range[i - 1],
-            parameters.range[i]
+            parameters.stops[i - 1][0],
+            parameters.stops[i][0],
+            parameters.stops[i - 1][1],
+            parameters.stops[i][1]
         );
     }
 }
+
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (outputLower.length) {
@@ -116,6 +113,17 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
     return output;
 }
 
-function is(value) {
-    return typeof value === 'object' && value.range && value.domain;
+function isFunctionDefinition(value) {
+    return typeof value === 'object' && value.stops;
 }
+
+
+module.exports.isFunctionDefinition = isFunctionDefinition;
+
+module.exports.interpolated = function(parameters) {
+    return createFunction(parameters, 'exponential');
+};
+
+module.exports['piecewise-constant'] = function(parameters) {
+    return createFunction(parameters, 'interval');
+};

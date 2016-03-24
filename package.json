@@ -1,10 +1,10 @@
 {
   "name": "mapbox-gl-function",
-  "version": "2.1.0",
+  "version": "1.1.0",
   "description": "Evaluate a Mapbox GL style function",
   "devDependencies": {
     "eslint": "^0.22.1",
-    "mapbox-gl-style-spec": "git+https://github.com/mapbox/mapbox-gl-style-spec.git#aae9d8c08cae5299deea0b2c86d270ef3dc7cac1",
+    "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#fe8f3a3644d38fda8558868f397dbdff3989af67",
     "tape": "^3.5.0"
   },
   "scripts": {

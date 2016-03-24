@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tape');
-var MapboxGLScale = require('../');
+var MapboxGLFunction = require('../').interpolated;
 
 test('function types', function(t) {
 
@@ -10,31 +10,31 @@ test('function types', function(t) {
         t.test('range types', function(t) {
 
             t.test('array', function(t) {
-                var f = MapboxGLScale([1]);
+                var f = MapboxGLFunction([1]);
 
-                t.deepEqual(f({$zoom: 0}), [1]);
-                t.deepEqual(f({$zoom: 1}), [1]);
-                t.deepEqual(f({$zoom: 2}), [1]);
+                t.deepEqual(f(0), [1]);
+                t.deepEqual(f(1), [1]);
+                t.deepEqual(f(2), [1]);
 
                 t.end();
             });
 
             t.test('number', function(t) {
-                var f = MapboxGLScale(1);
+                var f = MapboxGLFunction(1);
 
-                t.equal(f({$zoom: 0}), 1);
-                t.equal(f({$zoom: 1}), 1);
-                t.equal(f({$zoom: 2}), 1);
+                t.equal(f(0), 1);
+                t.equal(f(1), 1);
+                t.equal(f(2), 1);
 
                 t.end();
             });
 
             t.test('string', function(t) {
-                var f = MapboxGLScale('mapbox');
+                var f = MapboxGLFunction('mapbox');
 
-                t.equal(f({$zoom: 0}), 'mapbox');
-                t.equal(f({$zoom: 1}), 'mapbox');
-                t.equal(f({$zoom: 2}), 'mapbox');
+                t.equal(f(0), 'mapbox');
+                t.equal(f(1), 'mapbox');
+                t.equal(f(2), 'mapbox');
 
                 t.end();
             });
@@ -46,67 +46,63 @@ test('function types', function(t) {
     t.test('exponential', function(t) {
 
         t.test('base', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'exponential',
-                domain: [1, 3],
-                range: [2, 6],
+                stops: [[1, 2], [3, 6]],
                 base: 2
             });
 
-            t.equal(f({$zoom: 0}), 2);
-            t.equal(f({$zoom: 1}), 2);
-            t.equal(f({$zoom: 2}), 30 / 9);
-            t.equal(f({$zoom: 3}), 6);
-            t.equal(f({$zoom: 4}), 6);
+            t.equal(f(0), 2);
+            t.equal(f(1), 2);
+            t.equal(f(2), 30 / 9);
+            t.equal(f(3), 6);
+            t.equal(f(4), 6);
 
             t.end();
         });
 
-        t.test('domain & range', function(t) {
+        t.test('stops', function(t) {
             t.test('one element', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
-                    domain: [1],
-                    range: [2]
+                    stops: [[1, 2]]
                 });
 
-                t.equal(f({$zoom: 0}), 2);
-                t.equal(f({$zoom: 1}), 2);
-                t.equal(f({$zoom: 2}), 2);
+                t.equal(f(0), 2);
+                t.equal(f(1), 2);
+                t.equal(f(2), 2);
 
                 t.end();
             });
 
             t.test('two elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
-                    domain: [1, 3],
-                    range: [2, 6]
+                    stops: [[1, 2], [3, 6]]
                 });
 
-                t.equal(f({$zoom: 0}), 2);
-                t.equal(f({$zoom: 1}), 2);
-                t.equal(f({$zoom: 2}), 4);
-                t.equal(f({$zoom: 3}), 6);
-                t.equal(f({$zoom: 4}), 6);
+                t.equal(f(0), 2);
+                t.equal(f(1), 2);
+                t.equal(f(2), 4);
+                t.equal(f(3), 6);
+                t.equal(f(4), 6);
 
                 t.end();
             });
 
             t.test('three elements', function(t) {
-                var f = MapboxGLScale({
+                var f = MapboxGLFunction({
                     type: 'exponential',
-                    domain: [1, 3, 5],
-                    range: [2, 6, 10]
+                    stops: [[1, 2], [3, 6], [5, 10]]
                 });
 
-                t.equal(f({$zoom: 0}), 2);
-                t.equal(f({$zoom: 1}), 2);
-                t.equal(f({$zoom: 2}), 4);
-                t.equal(f({$zoom: 3}), 6);
-                t.equal(f({$zoom: 4}), 8);
-                t.equal(f({$zoom: 5}), 10);
-                t.equal(f({$zoom: 6}), 10);
+                t.equal(f(0), 2);
+                t.equal(f(1), 2);
+                t.equal(f(2), 4);
+                t.equal(f(3), 6);
+                t.equal(f(4), 8);
+                t.equal(f(5), 10);
+                t.equal(f(6), 10);
 
                 t.end();
             });
@@ -118,29 +114,26 @@ test('function types', function(t) {
     t.test('categorical', function(t) {
 
         t.test('one element', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
-                domain: ['umpteen'],
-                range: [42]
+                stops: [['umpteen', 42]]
             });
 
-            t.equal(f({$zoom: 'umpteen'}), 42);
-            t.equal(f({$zoom: 'derp'}), 42);
+            t.equal(f('umpteen'), 42);
+            t.equal(f('derp'), 42);
 
             t.end();
         });
 
         t.test('two elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'categorical',
-                domain: ['umpteen', 'eleventy'],
-                range: [42, 110]
+                stops: [['umpteen', 42], ['eleventy', 110]]
             });
 
-            t.equal(f({$zoom: 'umpteen'}), 42);
-            t.equal(f({$zoom: 'eleventy'}), 110);
-            t.equal(f({$zoom: 'derp'}), 42);
-
+            t.equal(f('umpteen'), 42);
+            t.equal(f('eleventy'), 110);
+            t.equal(f('derp'), 42);
 
             t.end();
         });
@@ -149,32 +142,45 @@ test('function types', function(t) {
 
     t.test('interval', function(t) {
 
-        t.test('one domain element', function(t) {
-            var f = MapboxGLScale({
+        t.test('one domain elements', function(t) {
+            var f = MapboxGLFunction({
                 type: 'interval',
-                domain: [0],
-                range: [11, 111]
+                stops: [[0, 11]]
             });
 
-            t.equal(f({$zoom: -0.5}), 11);
-            t.equal(f({$zoom: 0}), 111);
-            t.equal(f({$zoom: 0.5}), 111);
+            t.equal(f(-0.5), 11);
+            t.equal(f(0), 11);
+            t.equal(f(0.5), 11);
 
             t.end();
         });
 
         t.test('two domain elements', function(t) {
-            var f = MapboxGLScale({
+            var f = MapboxGLFunction({
                 type: 'interval',
-                domain: [0, 1],
-                range: [11, 111, 1111]
+                stops: [[-1, 11], [0, 111]]
             });
 
-            t.equal(f({$zoom: -0.5}), 11);
-            t.equal(f({$zoom: 0}), 111);
-            t.equal(f({$zoom: 0.5}), 111);
-            t.equal(f({$zoom: 1}), 1111);
-            t.equal(f({$zoom: 1.5}), 1111);
+            t.equal(f(-1.5), 11);
+            t.equal(f(-0.5), 11);
+            t.equal(f(0), 111);
+            t.equal(f(0.5), 111);
+
+            t.end();
+        });
+
+        t.test('three domain elements', function(t) {
+            var f = MapboxGLFunction({
+                type: 'interval',
+                stops: [[-1, 11], [0, 111], [1, 1111]]
+            });
+
+            t.equal(f(-1.5), 11);
+            t.equal(f(-0.5), 11);
+            t.equal(f(0), 111);
+            t.equal(f(0.5), 111);
+            t.equal(f(1), 1111);
+            t.equal(f(1.5), 1111);
 
             t.end();
         });
@@ -186,35 +192,32 @@ test('function types', function(t) {
 test('property', function(t) {
 
     t.test('missing property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
-            domain: ['map', 'box'],
-            range: ['neat', 'swell']
+            stops: [['map', 'neat'], ['box', 'swell']]
         });
 
-        t.equal(f({$zoom: 'box'}), 'swell');
+        t.equal(f('box'), 'swell');
 
         t.end();
     });
 
-    t.test('global property', function(t) {
-        var f = MapboxGLScale({
+    t.test('$zoom', function(t) {
+        var f = MapboxGLFunction({
             type: 'categorical',
-            domain: ['map', 'box'],
-            range: ['neat', 'swell'],
-            property: '$mapbox'
+            stops: [['map', 'neat'], ['box', 'swell']],
+            property: '$zoom'
         });
 
-        t.equal(f({$mapbox: 'box'}), 'swell');
+        t.equal(f('box'), 'swell');
 
         t.end();
     });
 
     t.test('feature property', function(t) {
-        var f = MapboxGLScale({
+        var f = MapboxGLFunction({
             type: 'categorical',
-            domain: ['map', 'box'],
-            range: ['neat', 'swell'],
+            stops: [['map', 'neat'], ['box', 'swell']],
             property: 'mapbox'
         });
 
@@ -229,7 +232,7 @@ test('property', function(t) {
 test('isConstant', function(t) {
 
     t.test('constant', function(t) {
-        var f = MapboxGLScale(1);
+        var f = MapboxGLFunction(1);
 
         t.ok(f.isGlobalConstant);
         t.ok(f.isFeatureConstant);
@@ -237,11 +240,10 @@ test('isConstant', function(t) {
         t.end();
     });
 
-    t.test('global', function(t) {
-        var f = MapboxGLScale({
-            domain: [1],
-            range: [1],
-            property: '$mapbox'
+    t.test('zoom', function(t) {
+        var f = MapboxGLFunction({
+            stops: [[1, 1]],
+            property: '$zoom'
         });
 
         t.notOk(f.isGlobalConstant);
@@ -251,9 +253,8 @@ test('isConstant', function(t) {
     });
 
     t.test('feature', function(t) {
-        var f = MapboxGLScale({
-            domain: [1],
-            range: [1],
+        var f = MapboxGLFunction({
+            stops: [[1, 1]],
             property: 'mapbox'
         });
 
