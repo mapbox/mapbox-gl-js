@@ -34,21 +34,6 @@ function Tile(coord, size, sourceMaxZoom) {
 Tile.prototype = {
 
     /**
-     * Given a coordinate position, zoom that coordinate to my zoom and
-     * scale and return a position in x, y, scale
-     * @param {Coordinate} coord
-     * @returns {Object} position
-     * @private
-     */
-    positionAt: function(coord) {
-        var zoomedCoord = coord.zoomTo(Math.min(this.coord.z, this.sourceMaxZoom));
-        return {
-            x: (zoomedCoord.column - this.coord.x) * Bucket.EXTENT,
-            y: (zoomedCoord.row - this.coord.y) * Bucket.EXTENT
-        };
-    },
-
-    /**
      * Given a data object with a 'buffers' property, load it into
      * this tile's elementGroups and buffers properties and set loaded
      * to true. If the data is null, like in the case of an empty

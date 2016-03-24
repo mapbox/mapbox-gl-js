@@ -504,12 +504,12 @@ test('TilePyramid#tilesIn', function (t) {
         t.equal(tiles[0].tile.coord.id, 1);
         t.equal(tiles[0].tile.tileSize, 512);
         t.equal(tiles[0].scale, 1);
-        t.deepEqual(tiles[0].queryGeometry, [{x: 4096, y: 2048}, {x:12288, y: 6144}]);
+        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
         t.equal(tiles[1].tile.coord.id, 33);
         t.equal(tiles[1].tile.tileSize, 512);
         t.equal(tiles[1].scale, 1);
-        t.deepEqual(tiles[1].queryGeometry, [{x: -4096, y: 2048}, {x: 4096, y: 6144}]);
+        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
         t.end();
     });
@@ -546,12 +546,12 @@ test('TilePyramid#tilesIn', function (t) {
         t.equal(tiles[0].tile.coord.id, 2);
         t.equal(tiles[0].tile.tileSize, 1024);
         t.equal(tiles[0].scale, 1);
-        t.deepEqual(tiles[0].queryGeometry, [{x: 4096, y: 2048}, {x:12288, y: 6144}]);
+        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
         t.equal(tiles[1].tile.coord.id, 34);
         t.equal(tiles[1].tile.tileSize, 1024);
         t.equal(tiles[1].scale, 1);
-        t.deepEqual(tiles[1].queryGeometry, [{x: -4096, y: 2048}, {x: 4096, y: 6144}]);
+        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
         t.end();
     });
@@ -589,12 +589,12 @@ test('TilePyramid#tilesIn', function (t) {
         t.equal(tiles[0].tile.coord.id, 1);
         t.equal(tiles[0].tile.tileSize, 512);
         t.equal(tiles[0].scale, 2);
-        t.deepEqual(tiles[0].queryGeometry, [{x: 4096, y: 2048}, {x:12288, y: 6144}]);
+        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
         t.equal(tiles[1].tile.coord.id, 33);
         t.equal(tiles[1].tile.tileSize, 512);
         t.equal(tiles[1].scale, 2);
-        t.deepEqual(tiles[1].queryGeometry, [{x: -4096, y: 2048}, {x: 4096, y: 6144}]);
+        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
         t.end();
     });

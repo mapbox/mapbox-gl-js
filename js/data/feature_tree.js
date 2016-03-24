@@ -123,8 +123,10 @@ FeatureTree.prototype.query = function(args, styleLayers) {
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }
 
-    var queryGeometry = args.queryGeometry.map(function(p) {
-        return new Point(p.x, p.y);
+    var queryGeometry = args.queryGeometry.map(function(q) {
+        return q.map(function(p) {
+            return new Point(p.x, p.y);
+        });
     });
 
     var minX = Infinity;
@@ -132,11 +134,14 @@ FeatureTree.prototype.query = function(args, styleLayers) {
     var maxX = -Infinity;
     var maxY = -Infinity;
     for (var i = 0; i < queryGeometry.length; i++) {
-        var p = queryGeometry[i];
-        minX = Math.min(minX, p.x);
-        minY = Math.min(minY, p.y);
-        maxX = Math.max(maxX, p.x);
-        maxY = Math.max(maxY, p.y);
+        var ring = queryGeometry[i];
+        for (var k = 0; k < ring.length; k++) {
+            var p = ring[k];
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+        }
     }
 
     var matching = this.grid.query(minX - additionalRadius, minY - additionalRadius, maxX + additionalRadius, maxY + additionalRadius);
@@ -210,20 +215,20 @@ FeatureTree.prototype.filterMatching = function(result, matching, array, queryGe
                     if (paint['line-offset']) {
                         geometry = offsetLine(geometry, paint['line-offset'] * pixelsToTileUnits);
                     }
-                    if (!polygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
+                    if (!multiPolygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
                 } else if (styleLayer.type === 'fill') {
                     translatedPolygon = translate(queryGeometry,
                             paint['fill-translate'], paint['fill-translate-anchor'],
                             bearing, pixelsToTileUnits);
-                    if (!polygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+                    if (!multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
 
                 } else if (styleLayer.type === 'circle') {
                     translatedPolygon = translate(queryGeometry,
                             paint['circle-translate'], paint['circle-translate-anchor'],
                             bearing, pixelsToTileUnits);
                     var circleRadius = paint['circle-radius'] * pixelsToTileUnits;
-                    if (!polygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
+                    if (!multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                 }
             }
 
@@ -253,7 +258,12 @@ function translate(queryGeometry, translate, translateAnchor, bearing, pixelsToT
 
     var translated = [];
     for (var i = 0; i < queryGeometry.length; i++) {
-        translated.push(queryGeometry[i].sub(translate._mult(pixelsToTileUnits)));
+        var ring = queryGeometry[i];
+        var translatedRing = [];
+        for (var k = 0; k < ring.length; k++) {
+            translatedRing.push(ring[k].sub(translate._mult(pixelsToTileUnits)));
+        }
+        translated.push(translatedRing);
     }
     return translated;
 }
@@ -282,52 +292,63 @@ function offsetLine(rings, offset) {
     return newRings;
 }
 
-function polygonIntersectsBufferedMultiPoint(polygon, rings, radius) {
-    for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i];
-        for (var k = 0; k < ring.length; k++) {
-            var point = ring[k];
-            if (polygonContainsPoint(polygon, point)) return true;
-            if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
+function multiPolygonIntersectsBufferedMultiPoint(multiPolygon, rings, radius) {
+    for (var j = 0; j < multiPolygon.length; j++) {
+        var polygon = multiPolygon[j];
+        for (var i = 0; i < rings.length; i++) {
+            var ring = rings[i];
+            for (var k = 0; k < ring.length; k++) {
+                var point = ring[k];
+                if (polygonContainsPoint(polygon, point)) return true;
+                if (pointIntersectsBufferedLine(point, polygon, radius)) return true;
+            }
         }
     }
     return false;
 }
 
-function polygonIntersectsMultiPolygon(polygon, multiPolygon) {
+function multiPolygonIntersectsMultiPolygon(multiPolygonA, multiPolygonB) {
 
-    if (polygon.length === 1) {
-        return multiPolygonContainsPoint(multiPolygon, polygon[0]);
+    if (multiPolygonA.length === 1 && multiPolygonA[0].length === 1) {
+        return multiPolygonContainsPoint(multiPolygonB, multiPolygonA[0][0]);
     }
 
-    for (var m = 0; m < multiPolygon.length; m++) {
-        var ring = multiPolygon[m];
+    for (var m = 0; m < multiPolygonB.length; m++) {
+        var ring = multiPolygonB[m];
         for (var n = 0; n < ring.length; n++) {
-            if (polygonContainsPoint(polygon, ring[n])) return true;
+            if (multiPolygonContainsPoint(multiPolygonA, ring[n])) return true;
         }
     }
 
-    for (var i = 0; i < polygon.length; i++) {
-        if (multiPolygonContainsPoint(multiPolygon, polygon[i])) return true;
+    for (var j = 0; j < multiPolygonA.length; j++) {
+        var polygon = multiPolygonA[j];
+        for (var i = 0; i < polygon.length; i++) {
+            if (multiPolygonContainsPoint(multiPolygonB, polygon[i])) return true;
+        }
+
+        for (var k = 0; k < multiPolygonB.length; k++) {
+            if (lineIntersectsLine(polygon, multiPolygonB[k])) return true;
+        }
     }
 
-    for (var k = 0; k < multiPolygon.length; k++) {
-        if (lineIntersectsLine(polygon, multiPolygon[k])) return true;
-    }
     return false;
 }
 
-function polygonIntersectsBufferedMultiLine(polygon, multiLine, radius) {
+function multiPolygonIntersectsBufferedMultiLine(multiPolygon, multiLine, radius) {
     for (var i = 0; i < multiLine.length; i++) {
         var line = multiLine[i];
 
-        if (polygon.length >= 3) {
-            for (var k = 0; k < line.length; k++) {
-                if (polygonContainsPoint(polygon, line[k])) return true;
-            }
-        }
+        for (var j = 0; j < multiPolygon.length; j++) {
+            var polygon = multiPolygon[j];
 
-        if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
+            if (polygon.length >= 3) {
+                for (var k = 0; k < line.length; k++) {
+                    if (polygonContainsPoint(polygon, line[k])) return true;
+                }
+            }
+
+            if (lineIntersectsBufferedLine(polygon, line, radius)) return true;
+        }
     }
     return false;
 }

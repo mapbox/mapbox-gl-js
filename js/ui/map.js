@@ -430,7 +430,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         }
 
         queryGeometry = queryGeometry.map(function(p) {
-            return this.transform.locationCoordinate(this.transform.pointLocation(p).wrap());
+            return this.transform.pointCoordinate(p);
         }.bind(this));
 
         return queryGeometry;

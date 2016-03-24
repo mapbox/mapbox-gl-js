@@ -508,10 +508,10 @@ test('Map', function(t) {
                 map.queryRenderedFeatures(map.project(new LngLat(0, 0)), opts);
             });
 
-            t.test('wraps coords', function(t) {
+            t.test('does not wrap coords', function(t) {
                 map.style.queryRenderedFeatures = function (coords, o, classes, zoom, bearing) {
                     // avoid floating point issues
-                    t.equal(parseFloat(coords[0].column.toFixed(4)), 0.5);
+                    t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
                     t.equal(coords[0].row, 0.5);
                     t.equal(coords[0].zoom, 0);
 
