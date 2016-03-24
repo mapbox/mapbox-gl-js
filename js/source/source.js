@@ -105,9 +105,9 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, 
     var renderedFeatureLayers = [];
     for (var r = 0; r < tilesIn.length; r++) {
         var tileIn = tilesIn[r];
-        if (!tileIn.tile.featureTree) continue;
+        if (!tileIn.tile.featureIndex) continue;
 
-        renderedFeatureLayers.push(tileIn.tile.featureTree.query({
+        renderedFeatureLayers.push(tileIn.tile.featureIndex.query({
             queryGeometry: tileIn.queryGeometry,
             scale: tileIn.scale,
             tileSize: tileIn.tile.tileSize,

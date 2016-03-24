@@ -1,6 +1,6 @@
 'use strict';
 
-var FeatureTree = require('../data/feature_tree');
+var FeatureIndex = require('../data/feature_index');
 var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
 var CollisionBoxArray = require('../symbol/collision_box');
@@ -27,7 +27,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
 
     this.collisionBoxArray = new CollisionBoxArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-    var featureTree = new FeatureTree(this.coord, this.overscaling, collisionTile, data.layers);
+    var featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
     var sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
 
     var stats = { _total: 0 };
@@ -105,13 +105,13 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
-    featureTree.bucketLayerIDs = {};
+    featureIndex.bucketLayerIDs = {};
 
     for (var id in bucketsById) {
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
 
-        featureTree.bucketLayerIDs[bucket.index] = bucket.layerIDs;
+        featureIndex.bucketLayerIDs[bucket.index] = bucket.layerIDs;
 
         buckets.push(bucket);
 
@@ -183,7 +183,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
-                featureTree.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
+                featureIndex.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
         }
 
@@ -201,17 +201,17 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
             tile.redoPlacementAfterDone = false;
         }
 
-        var featureTree_ = featureTree.serialize();
+        var featureIndex_ = featureIndex.serialize();
         var collisionTile_ = collisionTile.serialize();
         var collisionBoxArray = tile.collisionBoxArray.serialize();
-        var transferables = [rawTileData].concat(featureTree_.transferables).concat(collisionTile_.transferables);
+        var transferables = [rawTileData].concat(featureIndex_.transferables).concat(collisionTile_.transferables);
 
         var nonEmptyBuckets = buckets.filter(isBucketEmpty);
 
         callback(null, {
             buckets: nonEmptyBuckets.map(serializeBucket),
             bucketStats: stats, // TODO put this in a separate message?
-            featureTree: featureTree_.data,
+            featureIndex: featureIndex_.data,
             collisionTile: collisionTile_.data,
             collisionBoxArray: collisionBoxArray,
             rawTileData: rawTileData
