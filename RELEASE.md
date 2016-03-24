@@ -15,12 +15,14 @@ git reset origin/master --hard
 ## Merge `mb-pages` into `master`
 
 ```bash
+git checkout master &&
 git merge origin/mb-pages --no-edit
 ```
 
 ## Make sure your environment is in a good state
 
 ```bash
+git checkout master &&
 npm install &&
 npm test &&
 npm run test-suite
@@ -31,6 +33,7 @@ npm run test-suite
 Start the docs server by running
 
 ```bash
+git checkout master &&
 npm run start-docs
 ```
 
@@ -38,7 +41,7 @@ Test at least the following examples before continuing
 
  - [Add GeoJSON markers](http://127.0.0.1:4000/mapbox-gl-js/example/geojson-markers/)
  - [Animate a point](http://127.0.0.1:4000/mapbox-gl-js/example/animate-point-along-line/)
- - [Get features under the mouse pointer](http://127.0.0.1:4000/mapbox-gl-js/example/featuresat/)
+ - [Get features under the mouse pointer](http://127.0.0.1:4000/mapbox-gl-js/example/queryrenderedfeatures/)
  - [Fly to a location based on scroll position](http://127.0.0.1:4000/mapbox-gl-js/example/scroll-fly-to/)
  - [Display markers with popups](http://127.0.0.1:4000/mapbox-gl-js/example/marker-popup/)
  - [Highlight features under the mouse pointer](http://127.0.0.1:4000/mapbox-gl-js/example/hover-styles/)
@@ -62,7 +65,7 @@ Look over the changes and choose a new version number, respecting [semver](http:
 
 ## Update version number
 
-Update the version number in `package.json`, `README.md`, `bench/fps/site.js`, `_config.yml`, and `_config.mb-pages.yml`.
+Update the version number in `package.json`, `README.md`, `_config.yml`, and `_config.mb-pages.yml`.
 
 ## Commit and tag release
 
@@ -71,7 +74,9 @@ After **carefully inspecting the diff**, commit and tag the release.
 The [CI server](https://circleci.com/gh/mapbox/mapbox-gl-js) will automatically publish tagged builds to the Mapbox CDN. **There is no going back once you execute these commands! A published version tag is forever on our CDN.**
 
 ```bash
-VERSION=vX.Y.Z && # UPDATE ME
+VERSION=vX.Y.Z # UPDATE ME
+
+git checkout master &&
 git commit -am $VERSION &&
 git tag $VERSION &&
 git push origin &&
@@ -103,3 +108,5 @@ git checkout master &&
 npm install &&
 npm publish
 ```
+
+
