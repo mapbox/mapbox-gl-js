@@ -2,12 +2,14 @@
 
 #### Breaking Changes
 
-* `map.featuresAt` and `map.featuresIn` are removed. Use `map.queryRenderedFeatures` or `map.querySourceFeatures` instead. To migrate:
-    * replace `featuresAt` and `featuresIn` with `queryRenderedFeatures`
-    * `queryRenderedFeatures` is synchronous. Remove the callback and use the return value.
-    * rename the `layer` parameters to `layers` and make it an array of strings.
-    * remove the `radius` parameter. `radius` was often used with `featuresAt` to account for style properties like `line-width` and `circle-radius`. `queryRenderedFeatures` automatically accounts for these style properties. If you need to query a larger area, make the first argument a box instead of a point.
-    * remove the `includeGeometry` parameter. `queryRenderedFeatures` always includes geometries.
+* Replace `Map#featuresAt` and `Map#featuresIn` with `Map#queryRenderedFeatures` and `map.querySourceFeatures` (#2224)
+    * Replace `featuresAt` and `featuresIn` with `queryRenderedFeatures`
+    * Make `queryRenderedFeatures` synchronous, remove the callback and use the return value.
+    * Rename `layer` parameter to `layers` and make it an array of layer names.
+    * Remove the `radius` parameter. `radius` was used with `featuresAt` to account for style properties like `line-width` and `circle-radius`. `queryRenderedFeatures` accounts for these style properties. If you need to query a larger area, use a bounding box query instead of a point query.
+    * Remove the `includeGeometry` parameter because `queryRenderedFeatures` always includes geometries.
+* `Map#debug` is renamed to `Map#showTileBoundaries` (#2284)
+* `Map#collisionDebug` is renamed to `Map#showCollisionBoxes` (#2284)
 
 #### New Features & Improvements
 
@@ -17,9 +19,10 @@
 * Add `isActive` and `isEnabled` methods to interaction handlers (#2238)
 * Add `Map#setZoomBounds` method (#2243)
 * Add touch events (#2195)
-* `map.queryRenderedFeatures` can be used to query the styled and rendered representations of features
-* `map.querySourceFeatures` can be used to get features directly from vector tiles, independent of the style.
-* interaction for labels (#303) and style-property-aware hit testing (#316) are possible with `map.queryRenderedFeatures`
+* Add `map.queryRenderedFeatures` to query the styled and rendered representations of features (#2224)
+* Add `map.querySourceFeatures` to get features directly from vector tiles, independent of the style (#2224)
+* Add `mapboxgl.Geolocate` control (#1939)
+* Make background patterns render seamlessly across tile boundaries (#2305)
 
 #### Bugfixes
 
@@ -27,6 +30,14 @@
 * Fix `undefined` bucket errors after `setFilter` calls (#2244)
 * Fix bugs causing hidden symbols to be rendered (#2246, #2276)
 * Fix raster flickering (#2236)
+* Fix `queryRenderedFeatures` precision at high zoom levels (#2292)
+* Fix holes in GeoJSON data caused by unexpected winding order (#2285)
+* Fix bug causing deleted features to be returned by `queryRenderedFeatures` (#2306)
+* Fix bug causing unexpected fill patterns to be rendered (#2307)
+* Fix popup location with preceding sibling elements (#2311)
+* Fix polygon anti-aliasing (#2319)
+* Fix slivers between non-adjacent polygons (#2319)
+* Fix keyboard shortcuts causing page to scroll (#2312)
 
 ## 0.15.0 (March 1 2016)
 
