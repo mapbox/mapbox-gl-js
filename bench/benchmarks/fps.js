@@ -1,8 +1,8 @@
 'use strict';
 
-var Evented = require('../js/util/evented');
-var util = require('../js/util/util');
-var formatNumber = require('./format_number');
+var Evented = require('../../js/util/evented');
+var util = require('../../js/util/util');
+var formatNumber = require('../format_number');
 
 var DURATION_MILLISECONDS = 5 * 1000;
 
