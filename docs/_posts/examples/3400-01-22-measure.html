@@ -63,7 +63,6 @@ map.on('style.load', function() {
     map.batch(function(batch) {
         batch.addLayer({
             id: 'measure-points',
-            interactive: true,
             type: 'circle',
             source: 'geojson',
             paint: {

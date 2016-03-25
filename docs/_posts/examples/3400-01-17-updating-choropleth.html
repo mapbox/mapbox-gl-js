@@ -134,7 +134,6 @@ function renderChoropleth() {
     layers.forEach(function(layer, i) {
         map.addLayer({
             "id": "layer-" + i,
-            "interactive": true,
             "type": "fill",
             "source": "choropleth",
             "source-layer": "state_county_population_2014_cen",
