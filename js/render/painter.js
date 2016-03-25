@@ -15,6 +15,7 @@ module.exports = Painter;
  * Initialize a new painter object.
  *
  * @param {Canvas} gl an experimental-webgl drawing context
+ * @private
  */
 function Painter(gl, transform) {
     this.gl = glutil.extend(gl);
