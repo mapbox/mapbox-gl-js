@@ -72,6 +72,9 @@ Interaction.prototype = {
         this._map.stop();
         this._startPos = DOM.mousePos(this._el, e);
         this._fireMouseEvent('mousedown', e);
+
+        // prevent default container dragging behavior
+        e.preventDefault();
     },
 
     _onMouseUp: function (e) {
