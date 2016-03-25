@@ -2,7 +2,7 @@
 
 var Point = require('point-geometry');
 var EXTENT = require('../data/bucket').EXTENT;
-var Grid = require('../util/grid');
+var Grid = require('grid-index');
 
 module.exports = CollisionTile;
 
@@ -25,8 +25,8 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
         this.grid = new Grid(serialized.grid);
         this.ignoredGrid = new Grid(serialized.ignoredGrid);
     } else {
-        this.grid = new Grid(12, EXTENT, 6);
-        this.ignoredGrid = new Grid(12, EXTENT, 0);
+        this.grid = new Grid(EXTENT, 12, 6);
+        this.ignoredGrid = new Grid(EXTENT, 12, 0);
     }
 
     this.angle = angle;

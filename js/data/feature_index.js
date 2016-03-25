@@ -5,7 +5,7 @@ var loadGeometry = require('./load_geometry');
 var EXTENT = require('./bucket').EXTENT;
 var featureFilter = require('feature-filter');
 var StructArrayType = require('../util/struct_array');
-var Grid = require('../util/grid');
+var Grid = require('grid-index');
 var DictionaryCoder = require('../util/dictionary_coder');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
@@ -41,7 +41,7 @@ function FeatureIndex(coord, overscaling, collisionTile) {
         this.rawTileData = rawTileData;
         this.bucketLayerIDs = serialized.bucketLayerIDs;
     } else {
-        this.grid = new Grid(16, EXTENT, 0);
+        this.grid = new Grid(EXTENT, 16, 0);
         this.featureIndexArray = new FeatureIndexArray();
     }
     this.coord = coord;
