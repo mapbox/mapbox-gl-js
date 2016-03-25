@@ -25,6 +25,8 @@ function Interaction(map) {
     }
 
     util.bindHandlers(this);
+
+    this._onMouseMove = util.throttle(this._onMouseMove, 16);
 }
 
 Interaction.prototype = {
