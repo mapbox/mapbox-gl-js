@@ -6,6 +6,10 @@
 // #define scale 63.0
 #define scale 0.015873016
 
+// We scale the distance before adding it to the buffers so that we can store
+// long distances for long segments. Use this value to unscale the distance.
+#define LINE_DISTANCE_SCALE 2.0
+
 attribute vec2 a_pos;
 attribute vec4 a_data;
 
@@ -34,7 +38,7 @@ varying float v_gamma_scale;
 void main() {
     vec2 a_extrude = a_data.xy;
     float a_direction = sign(a_data.z) * mod(a_data.z, 2.0);
-    float a_linesofar = abs(floor(a_data.z / 2.0)) + a_data.w * 64.0;
+    float a_linesofar = (abs(floor(a_data.z / 2.0)) + (a_data.w + 128.0) * 64.0) * LINE_DISTANCE_SCALE;
 
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
