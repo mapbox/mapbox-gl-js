@@ -23,8 +23,8 @@ varying vec2 v_normal;
 varying float v_gamma_scale;
 
 void main() {
-    vec2 a_extrude = a_data.xy;
-    float a_direction = sign(a_data.z) * mod(a_data.z, 2.0);
+    vec2 a_extrude = a_data.xy - 128.0;
+    float a_direction = mod(a_data.z, 4.0) - 1.0;
 
     // We store the texture normals in the most insignificant bit
     // transform y so that 0 => -1 and 1 => 1
