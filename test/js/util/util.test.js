@@ -18,24 +18,6 @@ test('util', function(t) {
     t.deepEqual(util.pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
     t.ok(typeof util.uniqueId() === 'number', 'uniqueId');
 
-    t.test('throttle', function(t) {
-        var values = [];
-        var fn = util.throttle(function(val) {
-            t.deepEqual(this, { foo: 'bar' });
-            values.push(val);
-            if (values.length === 2) {
-                t.deepEqual(values, [1, 42]);
-                t.end();
-            }
-        }, 40, { foo: 'bar' });
-        fn(1);
-        fn(2);
-        fn(3);
-        setTimeout(function() {
-            fn(42);
-        }, 20);
-    });
-
     t.test('inherit', function(t) {
         function Inheritance() { }
         Inheritance.prototype.foo = function() { return 42; };
