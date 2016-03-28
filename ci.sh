@@ -9,6 +9,9 @@ export PATH=$(pwd)/node_modules/.bin:$PATH
 # set up code coverage instrumentation
 rm -rf coverage .nyc_output
 
+# run linters
+npm run lint
+
 # run unit tests
 tap --reporter dot --coverage --no-coverage-report test/js/*/*.js
 
