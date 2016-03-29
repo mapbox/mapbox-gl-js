@@ -60,32 +60,30 @@ map.on('style.load', function() {
     });
 
     // Add styles to the map
-    map.batch(function(batch) {
-        batch.addLayer({
-            id: 'measure-points',
-            interactive: true,
-            type: 'circle',
-            source: 'geojson',
-            paint: {
-                'circle-radius': 5,
-                'circle-color': '#000'
-            },
-            filter: ['in', '$type', 'Point']
-        });
-        batch.addLayer({
-            id: 'measure-lines',
-            type: 'line',
-            source: 'geojson',
-            layout: {
-              'line-cap': 'round',
-              'line-join': 'round'
-            },
-            paint: {
-              'line-color': '#000',
-              'line-width': 2.5
-            },
-            filter: ['in', '$type', 'LineString']
-        });
+    map.addLayer({
+        id: 'measure-points',
+        interactive: true,
+        type: 'circle',
+        source: 'geojson',
+        paint: {
+            'circle-radius': 5,
+            'circle-color': '#000'
+        },
+        filter: ['in', '$type', 'Point']
+    });
+    map.addLayer({
+        id: 'measure-lines',
+        type: 'line',
+        source: 'geojson',
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        },
+        paint: {
+          'line-color': '#000',
+          'line-width': 2.5
+        },
+        filter: ['in', '$type', 'LineString']
     });
 
     map.on('click', function(e) {

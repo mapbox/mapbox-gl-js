@@ -1,7 +1,6 @@
 'use strict';
 
 var Evented = require('../util/evented');
-var styleBatch = require('./style_batch');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
 var GlyphSource = require('../symbol/glyph_source');
@@ -14,6 +13,8 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
+var Source = require('../source/source');
+var styleSpec = require('./style_spec');
 
 module.exports = Style;
 
@@ -27,7 +28,6 @@ function Style(stylesheet, animationLoop) {
     this._order  = [];
     this._groups = [];
     this.sources = {};
-
     this.zoomHistory = {};
 
     util.bindAll([
@@ -47,6 +47,9 @@ function Style(stylesheet, animationLoop) {
 
         this._loaded = true;
         this.stylesheet = stylesheet;
+
+        this._resetMutations();
+        this._mutations.cascade = true;
 
         var sources = stylesheet.sources;
         for (var id in sources) {
@@ -247,19 +250,93 @@ Style.prototype = util.inherit(Evented, {
         zh.lastZoom = z;
     },
 
+    _checkLoaded: function () {
+        if (!this._loaded) {
+            throw new Error('Style is not done loading');
+        }
+    },
+
     /**
-     * Apply multiple style mutations in a batch
-     * @param {function} work Function which accepts the StyleBatch interface
+     * Apply queued style mutations in a batch
      * @private
      */
-    batch: function(work) {
-        styleBatch(this, work);
+    update: function(classes, options) {
+        if (this._mutations.groupLayers) {
+            this._groupLayers();
+        }
+
+        if (this._mutations.updateLayers) {
+            this._broadcastLayers();
+        } else {
+            var updatedIds = Object.keys(this._mutations.layers);
+            if (updatedIds.length) {
+                this._broadcastLayers(updatedIds);
+            }
+        }
+
+        var updatedSourceIds = Object.keys(this._mutations.sources);
+        var i;
+        for (i = 0; i < updatedSourceIds.length; i++) {
+            this._reloadSource(updatedSourceIds[i]);
+        }
+
+        for (i = 0; i < this._mutations.events.length; i++) {
+            var args = this._mutations.events[i];
+            this.fire(args[0], args[1]);
+        }
+
+        if (this._mutations.cascade) {
+            this._cascade(classes, options);
+
+        } else if (this._mutations.change) {
+            this.fire('change');
+        }
+
+        this._resetMutations();
+
+        return this;
+    },
+
+    _resetMutations: function() {
+        this._mutations = {
+            events: [],
+            layers: {},
+            sources: {}
+        };
     },
 
     addSource: function(id, source) {
-        this.batch(function(batch) {
-            batch.addSource(id, source);
-        });
+        this._checkLoaded();
+        if (this.sources[id] !== undefined) {
+            throw new Error('There is already a source with this ID');
+        }
+
+        if (!Source.is(source)) {
+            if (validateStyle.emitErrors(this, validateStyle.source({
+                key: 'sources.' + id,
+                style: this.serialize(),
+                value: source,
+                styleSpec: styleSpec
+            }))) return this;
+        }
+
+        source = Source.create(source);
+        this.sources[id] = source;
+        source.id = id;
+        source.style = this;
+        source.dispatcher = this.dispatcher;
+        source
+            .on('load', this._forwardSourceEvent)
+            .on('error', this._forwardSourceEvent)
+            .on('change', this._forwardSourceEvent)
+            .on('tile.add', this._forwardTileEvent)
+            .on('tile.load', this._forwardTileEvent)
+            .on('tile.error', this._forwardTileEvent)
+            .on('tile.remove', this._forwardTileEvent)
+            .on('tile.stats', this._forwardTileEvent);
+
+        this._mutations.events.push(['source.add', {source: source}]);
+        this._mutations.change = true;
 
         return this;
     },
@@ -272,9 +349,25 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeSource: function(id) {
-        this.batch(function(batch) {
-            batch.removeSource(id);
-        });
+        this._checkLoaded();
+
+        if (this.sources[id] === undefined) {
+            throw new Error('There is no source with this ID');
+        }
+        var source = this.sources[id];
+        delete this.sources[id];
+        source
+            .off('load', this._forwardSourceEvent)
+            .off('error', this._forwardSourceEvent)
+            .off('change', this._forwardSourceEvent)
+            .off('tile.add', this._forwardTileEvent)
+            .off('tile.load', this._forwardTileEvent)
+            .off('tile.error', this._forwardTileEvent)
+            .off('tile.remove', this._forwardTileEvent)
+            .off('tile.stats', this._forwardTileEvent);
+
+        this._mutations.events.push(['source.remove', {source: source}]);
+        this._mutations.change = true;
 
         return this;
     },
@@ -299,9 +392,37 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     addLayer: function(layer, before) {
-        this.batch(function(batch) {
-            batch.addLayer(layer, before);
-        });
+        this._checkLoaded();
+
+        if (!(layer instanceof StyleLayer)) {
+            if (validateStyle.emitErrors(this, validateStyle.layer({
+                key: 'layers.' + layer.id,
+                value: layer,
+                style: this.serialize(),
+                styleSpec: styleSpec,
+                // this layer is not in the style.layers array, so we pass an
+                // impossible array index
+                arrayIndex: -1
+            }))) return this;
+
+            var refLayer = layer.ref && this.getLayer(layer.ref);
+            layer = StyleLayer.create(layer, refLayer);
+        }
+        this._validateLayer(layer);
+
+        layer.on('error', this._forwardLayerEvent);
+
+        this._layers[layer.id] = layer;
+        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
+
+        this._mutations.groupLayers = true;
+        this._mutations.updateLayers = true;
+        if (layer.source) {
+            this._mutations.sources[layer.source] = true;
+        }
+        this._mutations.events.push(['layer.add', {layer: layer}]);
+        this._mutations.change = true;
+        this._mutations.cascade = true;
 
         return this;
     },
@@ -314,9 +435,28 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     removeLayer: function(id) {
-        this.batch(function(batch) {
-            batch.removeLayer(id);
-        });
+        this._checkLoaded();
+
+        var layer = this._layers[id];
+        if (layer === undefined) {
+            throw new Error('There is no layer with this ID');
+        }
+        for (var i in this._layers) {
+            if (this._layers[i].ref === id) {
+                this.removeLayer(i);
+            }
+        }
+
+        layer.off('error', this._forwardLayerEvent);
+
+        delete this._layers[id];
+        this._order.splice(this._order.indexOf(id), 1);
+
+        this._mutations.groupLayers = true;
+        this._mutations.updateLayers = true;
+        this._mutations.events.push(['layer.remove', {layer: layer}]);
+        this._mutations.change = true;
+        this._mutations.cascade = true;
 
         return this;
     },
@@ -348,18 +488,51 @@ Style.prototype = util.inherit(Evented, {
         return layer;
     },
 
-    setFilter: function(layer, filter) {
-        this.batch(function(batch) {
-            batch.setFilter(layer, filter);
-        });
+    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+        this._checkLoaded();
+
+        var layer = this.getReferentLayer(layerId);
+        layerId = layer.id;
+
+        if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
+
+        if (minzoom != null) {
+            layer.minzoom = minzoom;
+        }
+        if (maxzoom != null) {
+            layer.maxzoom = maxzoom;
+        }
+
+        this._mutations.layers[layerId] = true;
+        if (layer.source) {
+            this._mutations.sources[layer.source] = true;
+        }
+        this._mutations.change = true;
 
         return this;
     },
 
-    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
-        this.batch(function(batch) {
-            batch.setLayerZoomRange(layerId, minzoom, maxzoom);
-        });
+    setFilter: function(layerId, filter) {
+        this._checkLoaded();
+
+        var layer = this.getReferentLayer(layerId);
+        layerId = layer.id;
+
+        if (validateStyle.emitErrors(this, validateStyle.filter({
+            key: 'layers.' + layerId + '.filter',
+            value: filter,
+            style: this.serialize(),
+            styleSpec: styleSpec
+        }))) return this;
+
+        if (util.deepEqual(layer.filter, filter)) return this;
+        layer.filter = filter;
+
+        this._mutations.layers[layerId] = true;
+        if (layer.source) {
+            this._mutations.sources[layer.source] = true;
+        }
+        this._mutations.change = true;
 
         return this;
     },
@@ -374,6 +547,27 @@ Style.prototype = util.inherit(Evented, {
         return this.getReferentLayer(layer).filter;
     },
 
+    setLayoutProperty: function(layerId, name, value) {
+        this._checkLoaded();
+
+        var layer = this.getReferentLayer(layerId);
+        layerId = layer.id;
+
+        if (layer.getLayoutProperty(name) === value) return this;
+
+        layer.setLayoutProperty(name, value);
+
+        this._mutations.layers[layerId] = true;
+
+        if (layer.source) {
+            this._mutations.sources[layer.source] = true;
+        }
+        this._mutations.change = true;
+        this._mutations.cascade = true;
+
+        return this;
+    },
+
     /**
      * Get a layout property's value from a given layer
      * @param {string} layer the layer to inspect
@@ -383,6 +577,16 @@ Style.prototype = util.inherit(Evented, {
      */
     getLayoutProperty: function(layer, name) {
         return this.getReferentLayer(layer).getLayoutProperty(name);
+    },
+
+    setPaintProperty: function(layerId, name, value, klass) {
+        this._checkLoaded();
+
+        this.getLayer(layerId).setPaintProperty(name, value, klass);
+        this._mutations.change = true;
+        this._mutations.cascade = true;
+
+        return this;
     },
 
     getPaintProperty: function(layer, name, klass) {

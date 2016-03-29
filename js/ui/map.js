@@ -454,30 +454,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Apply multiple style mutations in a batch
-     *
-     * @param {function} work Function which accepts a `StyleBatch` object,
-     *      a subset of `Map`, with `addLayer`, `removeLayer`,
-     *      `setPaintProperty`, `setLayoutProperty`, `setFilter`,
-     *      `setLayerZoomRange`, `addSource`, and `removeSource`
-     *
-     * @example
-     * map.batch(function (batch) {
-     *     batch.addLayer(layer1);
-     *     batch.addLayer(layer2);
-     *     ...
-     *     batch.addLayer(layerN);
-     * });
-     *
-     */
-    batch: function(work) {
-        this.style.batch(work);
-
-        this.style._cascade(this._classes);
-        this._update(true);
-    },
-
-    /**
      * Replaces the map's style object
      *
      * @param {Object} style A style object formatted as JSON
@@ -561,6 +537,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     addSource: function(id, source) {
         this.style.addSource(id, source);
+        this.style.update();
         return this;
     },
 
@@ -573,6 +550,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     removeSource: function(id) {
         this.style.removeSource(id);
+        this.style.update();
         return this;
     },
 
@@ -596,7 +574,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     addLayer: function(layer, before) {
         this.style.addLayer(layer, before);
-        this.style._cascade(this._classes);
+        this.style.update(this._classes);
         return this;
     },
 
@@ -611,7 +589,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     removeLayer: function(id) {
         this.style.removeLayer(id);
-        this.style._cascade(this._classes);
+        this.style.update(this._classes);
         return this;
     },
 
@@ -634,6 +612,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
+        this.style.update();
         return this;
     },
 
@@ -647,6 +626,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
+        this.style.update();
         return this;
     },
 
@@ -670,10 +650,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setPaintProperty: function(layer, name, value, klass) {
-        this.batch(function(batch) {
-            batch.setPaintProperty(layer, name, value, klass);
-        });
-
+        this.style.setPaintProperty(layer, name, value, klass);
+        this.style.update(this._classes);
         return this;
     },
 
@@ -698,10 +676,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setLayoutProperty: function(layer, name, value) {
-        this.batch(function(batch) {
-            batch.setLayoutProperty(layer, name, value);
-        });
-
+        this.style.setLayoutProperty(layer, name, value);
+        this.style.update(this._classes);
         return this;
     },
 
@@ -948,7 +924,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this.transform.unmodified) {
             this.jumpTo(this.style.stylesheet);
         }
-        this.style._cascade(this._classes, {transition: false});
+        this.style.update(this._classes, {transition: false});
         this._forwardStyleEvent(e);
     },
 

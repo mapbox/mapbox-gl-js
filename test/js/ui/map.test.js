@@ -466,24 +466,6 @@ test('Map', function(t) {
         t.end();
     });
 
-    t.test('#batch', function(t) {
-        var map = createMap();
-        map.setStyle({
-            version: 8,
-            sources: {},
-            layers: []
-        });
-        map.on('style.load', function() {
-            map.batch(function(batch) {
-                batch.addLayer({ id: 'background', type: 'background' });
-            });
-            t.ok(map.getLayer('background'), 'has background');
-
-            t.end();
-        });
-    });
-
-
     t.test('#queryRenderedFeatures', function(t) {
         var map = createMap();
         map.setStyle({
