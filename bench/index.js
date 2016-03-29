@@ -17,7 +17,9 @@ function main() {
         buffer: require('./benchmarks/buffer'),
         fps: require('./benchmarks/fps'),
         'query-point': require('./benchmarks/query_point'),
-        'query-box': require('./benchmarks/query_box')
+        'query-box': require('./benchmarks/query_box'),
+        'geojson-setdata-small': require('./benchmarks/geojson_setdata_small'),
+        'geojson-setdata-large': require('./benchmarks/geojson_setdata_large')
     };
 
     var benchmarksDiv = document.getElementById('benchmarks');

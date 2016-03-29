@@ -10,8 +10,8 @@ var Style = require('../../js/style/style');
 var util = require('../../js/util/util');
 var Evented = require('../../js/util/evented');
 var config = require('../../js/util/config');
-var coordinates = require('../coordinates');
-var formatNumber = require('../format_number');
+var coordinates = require('../lib/coordinates');
+var formatNumber = require('../lib/format_number');
 
 var SAMPLE_COUNT = 10;
 
