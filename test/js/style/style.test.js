@@ -133,7 +133,7 @@ test('Style', function(t) {
     t.end();
 });
 
-test('Style#_broadcastLayers', function(t) {
+test('Style#_updateWorkerLayers', function(t) {
     var style = new Style({
         'version': 8,
         'sources': {
@@ -161,11 +161,11 @@ test('Style#_broadcastLayers', function(t) {
             t.end();
         };
 
-        style._broadcastLayers();
+        style._updateWorkerLayers();
     });
 });
 
-test('Style#_broadcastLayers with specific ids', function(t) {
+test('Style#_updateWorkerLayers with specific ids', function(t) {
     var style = new Style({
         'version': 8,
         'sources': {
@@ -189,7 +189,7 @@ test('Style#_broadcastLayers with specific ids', function(t) {
             t.end();
         };
 
-        style._broadcastLayers(['second', 'third']);
+        style._updateWorkerLayers(['second', 'third']);
     });
 });
 
@@ -1017,7 +1017,7 @@ test('Style defers expensive methods', function(t) {
         // spies to track defered methods
         sinon.spy(style, 'fire');
         sinon.spy(style, '_reloadSource');
-        sinon.spy(style, '_broadcastLayers');
+        sinon.spy(style, '_updateWorkerLayers');
         sinon.spy(style, '_groupLayers');
 
         style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
@@ -1029,7 +1029,7 @@ test('Style defers expensive methods', function(t) {
 
         t.notOk(style.fire.called, 'fire is deferred');
         t.notOk(style._reloadSource.called, '_reloadSource is deferred');
-        t.notOk(style._broadcastLayers.called, '_broadcastLayers is deferred');
+        t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
         t.notOk(style._groupLayers.called, '_groupLayers is deferred');
 
         style.update();
@@ -1047,7 +1047,7 @@ test('Style defers expensive methods', function(t) {
         t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
 
         // called once
-        t.ok(style._broadcastLayers.calledOnce, '_broadcastLayers is called once');
+        t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
         t.ok(style._groupLayers.calledOnce, '_groupLayers is called once');
 
         t.end();

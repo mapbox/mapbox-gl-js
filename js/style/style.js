@@ -48,9 +48,9 @@ function Style(stylesheet, animationLoop) {
         this._loaded = true;
         this.stylesheet = stylesheet;
 
-        this._resetMutations();
-        this._mutations.change = true;
-        this._mutations.cascade = true;
+        this._resetUpdates();
+        this._updates.changed = true;
+        this._updates.cascade = true;
 
         var sources = stylesheet.sources;
         for (var id in sources) {
@@ -149,7 +149,7 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this._groupLayers();
-        this._broadcastLayers();
+        this._updateWorkerLayers();
     },
 
     _groupLayers: function() {
@@ -171,7 +171,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    _broadcastLayers: function(ids) {
+    _updateWorkerLayers: function(ids) {
         this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
     },
 
@@ -258,50 +258,47 @@ Style.prototype = util.inherit(Evented, {
     },
 
     /**
-     * Apply queued style mutations in a batch
+     * Apply queued style updates in a batch
      * @private
      */
     update: function(classes, options) {
-        if (!this._mutations.change) return this;
+        if (!this._updates.changed) return this;
 
-        if (this._mutations.groupLayers) {
+        if (this._updates.allLayers) {
             this._groupLayers();
-        }
-
-        if (this._mutations.updateLayers) {
-            this._broadcastLayers();
+            this._updateWorkerLayers();
         } else {
-            var updatedIds = Object.keys(this._mutations.layers);
+            var updatedIds = Object.keys(this._updates.layers);
             if (updatedIds.length) {
-                this._broadcastLayers(updatedIds);
+                this._updateWorkerLayers(updatedIds);
             }
         }
 
-        var updatedSourceIds = Object.keys(this._mutations.sources);
+        var updatedSourceIds = Object.keys(this._updates.sources);
         var i;
         for (i = 0; i < updatedSourceIds.length; i++) {
             this._reloadSource(updatedSourceIds[i]);
         }
 
-        for (i = 0; i < this._mutations.events.length; i++) {
-            var args = this._mutations.events[i];
+        for (i = 0; i < this._updates.events.length; i++) {
+            var args = this._updates.events[i];
             this.fire(args[0], args[1]);
         }
 
-        if (this._mutations.cascade) {
+        if (this._updates.cascade) {
             this._cascade(classes, options);
 
-        } else if (this._mutations.change) {
+        } else if (this._updates.changed) {
             this.fire('change');
         }
 
-        this._resetMutations();
+        this._resetUpdates();
 
         return this;
     },
 
-    _resetMutations: function() {
-        this._mutations = {
+    _resetUpdates: function() {
+        this._updates = {
             events: [],
             layers: {},
             sources: {}
@@ -338,8 +335,8 @@ Style.prototype = util.inherit(Evented, {
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.stats', this._forwardTileEvent);
 
-        this._mutations.events.push(['source.add', {source: source}]);
-        this._mutations.change = true;
+        this._updates.events.push(['source.add', {source: source}]);
+        this._updates.changed = true;
 
         return this;
     },
@@ -369,8 +366,8 @@ Style.prototype = util.inherit(Evented, {
             .off('tile.remove', this._forwardTileEvent)
             .off('tile.stats', this._forwardTileEvent);
 
-        this._mutations.events.push(['source.remove', {source: source}]);
-        this._mutations.change = true;
+        this._updates.events.push(['source.remove', {source: source}]);
+        this._updates.changed = true;
 
         return this;
     },
@@ -418,14 +415,13 @@ Style.prototype = util.inherit(Evented, {
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
 
-        this._mutations.groupLayers = true;
-        this._mutations.updateLayers = true;
+        this._updates.allLayers = true;
         if (layer.source) {
-            this._mutations.sources[layer.source] = true;
+            this._updates.sources[layer.source] = true;
         }
-        this._mutations.events.push(['layer.add', {layer: layer}]);
-        this._mutations.change = true;
-        this._mutations.cascade = true;
+        this._updates.events.push(['layer.add', {layer: layer}]);
+        this._updates.changed = true;
+        this._updates.cascade = true;
 
         return this;
     },
@@ -455,11 +451,10 @@ Style.prototype = util.inherit(Evented, {
         delete this._layers[id];
         this._order.splice(this._order.indexOf(id), 1);
 
-        this._mutations.groupLayers = true;
-        this._mutations.updateLayers = true;
-        this._mutations.events.push(['layer.remove', {layer: layer}]);
-        this._mutations.change = true;
-        this._mutations.cascade = true;
+        this._updates.allLayers = true;
+        this._updates.events.push(['layer.remove', {layer: layer}]);
+        this._updates.changed = true;
+        this._updates.cascade = true;
 
         return this;
     },
@@ -506,11 +501,11 @@ Style.prototype = util.inherit(Evented, {
             layer.maxzoom = maxzoom;
         }
 
-        this._mutations.layers[layerId] = true;
+        this._updates.layers[layerId] = true;
         if (layer.source) {
-            this._mutations.sources[layer.source] = true;
+            this._updates.sources[layer.source] = true;
         }
-        this._mutations.change = true;
+        this._updates.changed = true;
 
         return this;
     },
@@ -531,11 +526,11 @@ Style.prototype = util.inherit(Evented, {
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
-        this._mutations.layers[layerId] = true;
+        this._updates.layers[layerId] = true;
         if (layer.source) {
-            this._mutations.sources[layer.source] = true;
+            this._updates.sources[layer.source] = true;
         }
-        this._mutations.change = true;
+        this._updates.changed = true;
 
         return this;
     },
@@ -560,13 +555,13 @@ Style.prototype = util.inherit(Evented, {
 
         layer.setLayoutProperty(name, value);
 
-        this._mutations.layers[layerId] = true;
+        this._updates.layers[layerId] = true;
 
         if (layer.source) {
-            this._mutations.sources[layer.source] = true;
+            this._updates.sources[layer.source] = true;
         }
-        this._mutations.change = true;
-        this._mutations.cascade = true;
+        this._updates.changed = true;
+        this._updates.cascade = true;
 
         return this;
     },
@@ -586,8 +581,8 @@ Style.prototype = util.inherit(Evented, {
         this._checkLoaded();
 
         this.getLayer(layerId).setPaintProperty(name, value, klass);
-        this._mutations.change = true;
-        this._mutations.cascade = true;
+        this._updates.changed = true;
+        this._updates.cascade = true;
 
         return this;
     },
