@@ -49,6 +49,7 @@ function Style(stylesheet, animationLoop) {
         this.stylesheet = stylesheet;
 
         this._resetMutations();
+        this._mutations.change = true;
         this._mutations.cascade = true;
 
         var sources = stylesheet.sources;
@@ -261,6 +262,8 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     update: function(classes, options) {
+        if (!this._mutations.change) return this;
+
         if (this._mutations.groupLayers) {
             this._groupLayers();
         }

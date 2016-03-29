@@ -67,28 +67,22 @@ test('Map', function(t) {
                     layers: []
                 });
 
-            function styleEvent(e) {
+            var events = [];
+
+            function checkEvent(e) {
                 t.equal(e.style, style);
+                events.push(e.type);
             }
 
-            function sourceEvent(e) {
-                t.equal(e.style, style);
-            }
-
-            function tileEvent(e) {
-                t.equal(e.style, style);
-            }
-
-            map.on('style.load',    styleEvent);
-            map.on('style.error',   styleEvent);
-            map.on('style.change',  styleEvent);
-            map.on('source.load',   sourceEvent);
-            map.on('source.error',  sourceEvent);
-            map.on('source.change', sourceEvent);
-            map.on('tile.add',      tileEvent);
-            map.on('tile.load',     tileEvent);
-            map.on('tile.error',    tileEvent);
-            map.on('tile.remove',   tileEvent);
+            map.on('style.load',    checkEvent);
+            map.on('style.error',   checkEvent);
+            map.on('style.change',  checkEvent);
+            map.on('source.load',   checkEvent);
+            map.on('source.error',  checkEvent);
+            map.on('source.change', checkEvent);
+            map.on('tile.add',      checkEvent);
+            map.on('tile.error',    checkEvent);
+            map.on('tile.remove',   checkEvent);
 
             map.off('style.error', map.onError);
             map.off('source.error', map.onError);
@@ -103,7 +97,6 @@ test('Map', function(t) {
             style.fire('source.error');
             style.fire('source.change');
             style.fire('tile.add');
-            style.fire('tile.load');
             style.fire('tile.error');
             style.fire('tile.remove');
             style.fire('layer.error');
@@ -544,6 +537,7 @@ test('Map', function(t) {
                 };
 
                 map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
+                map.style.update();
                 t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
                 t.end();
             });
@@ -583,6 +577,7 @@ test('Map', function(t) {
                 };
 
                 map.setLayoutProperty('symbol-ref', 'text-transform', 'lowercase');
+                map.style.update();
                 t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
                 t.end();
             });

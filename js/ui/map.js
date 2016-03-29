@@ -537,7 +537,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     addSource: function(id, source) {
         this.style.addSource(id, source);
-        this.style.update();
+        this._update(true);
         return this;
     },
 
@@ -550,7 +550,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     removeSource: function(id) {
         this.style.removeSource(id);
-        this.style.update();
+        this._update(true);
         return this;
     },
 
@@ -574,7 +574,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     addLayer: function(layer, before) {
         this.style.addLayer(layer, before);
-        this.style.update(this._classes);
+        this._update(true);
         return this;
     },
 
@@ -589,7 +589,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     removeLayer: function(id) {
         this.style.removeLayer(id);
-        this.style.update(this._classes);
+        this._update(true);
         return this;
     },
 
@@ -612,7 +612,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
-        this.style.update();
+        this._update(true);
         return this;
     },
 
@@ -626,7 +626,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setLayerZoomRange: function(layerId, minzoom, maxzoom) {
         this.style.setLayerZoomRange(layerId, minzoom, maxzoom);
-        this.style.update();
+        this._update(true);
         return this;
     },
 
@@ -651,7 +651,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setPaintProperty: function(layer, name, value, klass) {
         this.style.setPaintProperty(layer, name, value, klass);
-        this.style.update(this._classes);
+        this._update(true);
         return this;
     },
 
@@ -677,7 +677,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setLayoutProperty: function(layer, name, value) {
         this.style.setLayoutProperty(layer, name, value);
-        this.style.update(this._classes);
+        this._update(true);
         return this;
     },
 
@@ -829,6 +829,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     _render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
+            this.style.update(this._classes);
             this.style._recalculate(this.transform.zoom);
         }
 
