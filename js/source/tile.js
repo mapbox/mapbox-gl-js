@@ -96,6 +96,10 @@ Tile.prototype = {
             bucket.destroy(painter.gl);
         }
 
+        this.collisionBoxArray = null;
+        this.collisionTile = null;
+        this.featureIndex = null;
+        this.rawTileData = null;
         this.buckets = null;
         this.loaded = false;
         this.isUnloaded = true;
