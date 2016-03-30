@@ -7,6 +7,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
 var FillBucket = require('../../../js/data/bucket/fill_bucket');
 var path = require('path');
+var StyleLayer = require('../../../js/style/style_layer');
 
 // Load a fill feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
@@ -17,7 +18,7 @@ test('FillBucket', function(t) {
     var warn = console.warn;
     console.warn = function() {};
 
-    var layer = { id: 'test', type: 'fill', layout: {} };
+    var layer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
     var bucket = new FillBucket({
         buffers: {},
         layer: layer,

@@ -3,6 +3,7 @@
 var test = require('tap').test;
 var Bucket = require('../../../js/data/bucket');
 var util = require('../../../js/util/util');
+var StyleLayer = require('../../../js/style/style_layer');
 
 test('Bucket', function(t) {
 
@@ -57,8 +58,8 @@ test('Bucket', function(t) {
     function create() {
         var Class = createClass();
         return new Class({
-            layer: { id: 'layerid', type: 'circle' },
-            childLayers: [{ id: 'layerid', type: 'circle' }],
+            layer: new StyleLayer({ id: 'layerid', type: 'circle' }),
+            childLayers: [new StyleLayer({ id: 'layerid', type: 'circle' })],
             buffers: {}
         });
     }

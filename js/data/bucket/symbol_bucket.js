@@ -331,6 +331,8 @@ SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor)
 };
 
 SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxes) {
+    this.recalculateStyleLayers();
+
     // Calculate which labels can be shown and when they can be shown and
     // create the bufers used for rendering.
 
@@ -478,6 +480,7 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
 };
 
 SymbolBucket.prototype.updateIcons = function(icons) {
+    this.recalculateStyleLayers();
     var iconValue = this.layer.layout['icon-image'];
     if (!iconValue) return;
 
@@ -489,6 +492,7 @@ SymbolBucket.prototype.updateIcons = function(icons) {
 };
 
 SymbolBucket.prototype.updateFont = function(stacks) {
+    this.recalculateStyleLayers();
     var fontName = this.layer.layout['text-font'],
         stack = stacks[fontName] = stacks[fontName] || {};
 

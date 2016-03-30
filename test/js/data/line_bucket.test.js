@@ -7,13 +7,14 @@ var Protobuf = require('pbf');
 var VectorTile = require('vector-tile').VectorTile;
 var Point = require('point-geometry');
 var LineBucket = require('../../../js/data/bucket/line_bucket');
+var StyleLayer = require('../../../js/style/style_layer');
 
 // Load a line feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
 var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
-    var layer = { id: 'test', type: 'line', layout: {} };
+    var layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
     var bucket = new LineBucket({
         buffers: {},
         layer: layer,

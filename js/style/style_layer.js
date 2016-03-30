@@ -25,60 +25,64 @@ StyleLayer.create = function(layer, refLayer) {
 };
 
 function StyleLayer(layer, refLayer) {
-    this.id = layer.id;
-    this.ref = layer.ref;
-    this.metadata = layer.metadata;
-    this.type = (refLayer || layer).type;
-    this.source = (refLayer || layer).source;
-    this.sourceLayer = (refLayer || layer)['source-layer'];
-    this.minzoom = (refLayer || layer).minzoom;
-    this.maxzoom = (refLayer || layer).maxzoom;
-    this.filter = (refLayer || layer).filter;
-
-    this.paint = {};
-    this.layout = {};
-
-    this._paintSpecifications = styleSpec['paint_' + this.type];
-    this._layoutSpecifications = styleSpec['layout_' + this.type];
-
-    this._paintTransitions = {}; // {[propertyName]: StyleTransition}
-    this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
-    this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
-    this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
-    this._layoutFunctions = {}; // {[propertyName]: Boolean}
-
-    var paintName, layoutName;
-
-    // Resolve paint declarations
-    for (var key in layer) {
-        var match = key.match(/^paint(?:\.(.*))?$/);
-        if (match) {
-            var klass = match[1] || '';
-            for (paintName in layer[key]) {
-                this.setPaintProperty(paintName, layer[key][paintName], klass);
-            }
-        }
-    }
-
-    // Resolve layout declarations
-    if (this.ref) {
-        this._layoutDeclarations = refLayer._layoutDeclarations;
-    } else {
-        for (layoutName in layer.layout) {
-            this.setLayoutProperty(layoutName, layer.layout[layoutName]);
-        }
-    }
-
-    // set initial layout/paint values
-    for (paintName in this._paintSpecifications) {
-        this.paint[paintName] = this.getPaintValue(paintName);
-    }
-    for (layoutName in this._layoutSpecifications) {
-        this._updateLayoutValue(layoutName);
-    }
+    this.set(layer, refLayer);
 }
 
 StyleLayer.prototype = util.inherit(Evented, {
+
+    set: function(layer, refLayer) {
+        this.id = layer.id;
+        this.ref = layer.ref;
+        this.metadata = layer.metadata;
+        this.type = (refLayer || layer).type;
+        this.source = (refLayer || layer).source;
+        this.sourceLayer = (refLayer || layer)['source-layer'];
+        this.minzoom = (refLayer || layer).minzoom;
+        this.maxzoom = (refLayer || layer).maxzoom;
+        this.filter = (refLayer || layer).filter;
+
+        this.paint = {};
+        this.layout = {};
+
+        this._paintSpecifications = styleSpec['paint_' + this.type];
+        this._layoutSpecifications = styleSpec['layout_' + this.type];
+
+        this._paintTransitions = {}; // {[propertyName]: StyleTransition}
+        this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
+        this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
+        this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
+        this._layoutFunctions = {}; // {[propertyName]: Boolean}
+
+        var paintName, layoutName;
+
+        // Resolve paint declarations
+        for (var key in layer) {
+            var match = key.match(/^paint(?:\.(.*))?$/);
+            if (match) {
+                var klass = match[1] || '';
+                for (paintName in layer[key]) {
+                    this.setPaintProperty(paintName, layer[key][paintName], klass);
+                }
+            }
+        }
+
+        // Resolve layout declarations
+        if (this.ref) {
+            this._layoutDeclarations = refLayer._layoutDeclarations;
+        } else {
+            for (layoutName in layer.layout) {
+                this.setLayoutProperty(layoutName, layer.layout[layoutName]);
+            }
+        }
+
+        // set initial layout/paint values
+        for (paintName in this._paintSpecifications) {
+            this.paint[paintName] = this.getPaintValue(paintName);
+        }
+        for (layoutName in this._layoutSpecifications) {
+            this._updateLayoutValue(layoutName);
+        }
+    },
 
     setLayoutProperty: function(name, value) {
 

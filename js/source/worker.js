@@ -2,6 +2,7 @@
 
 var Actor = require('../util/actor');
 var WorkerTile = require('./worker_tile');
+var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
@@ -29,13 +30,62 @@ function Worker(self) {
 util.extend(Worker.prototype, {
     'set layers': function(layers) {
         this.layers = {};
+        var that = this;
+
+        // Filter layers and create an id -> layer map
+        var childLayerIndicies = [];
         for (var i = 0; i < layers.length; i++) {
-            this.layers[layers[i].id] = layers[i];
+            var layer = layers[i];
+            if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
+                if (layer.ref) {
+                    childLayerIndicies.push(i);
+                } else {
+                    setLayer(layer);
+                }
+            }
         }
+
+        // Create an instance of StyleLayer per layer
+        for (var j = 0; j < childLayerIndicies.length; j++) {
+            setLayer(layers[childLayerIndicies[j]]);
+        }
+
+        function setLayer(serializedLayer) {
+            var styleLayer = StyleLayer.create(
+                serializedLayer,
+                serializedLayer.ref && that.layers[serializedLayer.ref]
+            );
+            styleLayer.updatePaintTransitions({}, {transition: false});
+            that.layers[styleLayer.id] = styleLayer;
+        }
+
     },
 
     'update layers': function(layers) {
-        util.extend(this.layers, layers);
+        var that = this;
+        var id;
+        var layer;
+
+        // Update ref parents
+        for (id in layers) {
+            layer = layers[id];
+            if (layer.ref) updateLayer(layer);
+        }
+
+        // Update ref children
+        for (id in layers) {
+            layer = layers[id];
+            if (!layer.ref) updateLayer(layer);
+        }
+
+        function updateLayer(layer) {
+            if (that.layers[layer.id]) {
+                that.layers[layer.id].set(layer);
+            } else {
+                that.layers[layer.id] = StyleLayer.create(layer, that.layers[layer.ref]);
+            }
+            that.layers[layer.id].updatePaintTransitions({}, {transition: false});
+        }
     },
 
     'load tile': function(params, callback) {

@@ -89,7 +89,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             return;
         }
 
-        tile.loadVectorData(data);
+        tile.loadVectorData(data, this.map.style);
 
         if (tile.redoWhenDone) {
             tile.redoWhenDone = false;

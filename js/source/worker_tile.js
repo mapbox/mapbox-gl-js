@@ -52,7 +52,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         if (layer.minzoom && this.zoom < layer.minzoom) continue;
         if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
         if (layer.layout && layer.layout.visibility === 'none') continue;
-        if (data.layers && !data.layers[layer['source-layer']]) continue;
+        if (data.layers && !data.layers[layer.sourceLayer]) continue;
 
         bucket = Bucket.create({
             layer: layer,
@@ -62,14 +62,14 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
             collisionBoxArray: this.collisionBoxArray,
-            sourceLayerIndex: sourceLayerCoder.encode(layer['source-layer'] || '_geojsonTileLayer')
+            sourceLayerIndex: sourceLayerCoder.encode(layer.sourceLayer || '_geojsonTileLayer')
         });
         bucket.createFilter();
 
         bucketsById[layer.id] = bucket;
 
         if (data.layers) { // vectortile
-            sourceLayerId = layer['source-layer'];
+            sourceLayerId = layer.sourceLayer;
             bucketsBySourceLayer[sourceLayerId] = bucketsBySourceLayer[sourceLayerId] || {};
             bucketsBySourceLayer[sourceLayerId][layer.id] = bucket;
         }
