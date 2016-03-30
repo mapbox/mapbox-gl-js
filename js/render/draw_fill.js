@@ -110,7 +110,8 @@ function drawFill(painter, source, layer, coord) {
     painter.depthMask(false);
 
     // Draw the actual triangle fan into the stencil buffer.
-    var fillProgram = painter.useProgram('fill', translatedPosMatrix);
+    var fillProgram = painter.useProgram('fill');
+    painter.setPosMatrix(translatedPosMatrix);
 
     bucket.bindBuffers('fill', gl);
 
@@ -134,7 +135,7 @@ function drawFill(painter, source, layer, coord) {
 
     if (image) {
         // Draw texture fill
-        program = painter.useProgram('pattern', posMatrix);
+        program = painter.useProgram('pattern');
         setPattern(image, opacity, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
@@ -142,9 +143,11 @@ function drawFill(painter, source, layer, coord) {
 
     } else {
         // Draw filling rectangle.
-        program = painter.useProgram('fill', posMatrix);
+        program = painter.useProgram('fill');
         gl.uniform4fv(fillProgram.u_color, color);
     }
+
+    painter.setPosMatrix(posMatrix);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
