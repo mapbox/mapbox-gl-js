@@ -9,7 +9,9 @@ function drawCircles(painter, source, layer, coords) {
 
     var gl = painter.gl;
 
-    var program = painter.useProgram('circle');
+    var program = painter.useProgram('circle', {
+        colorType: 'attribute'
+    });
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);

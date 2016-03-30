@@ -61,19 +61,19 @@ var definitions = {
     }
 };
 
-module.exports._createProgram = function(name) {
+module.exports._createProgram = function(name, tokens) {
     var gl = this.gl;
     var program = gl.createProgram();
     var definition = definitions[name];
 
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, definition.fragmentSource);
+    gl.shaderSource(fragmentShader, applyTokens(definition.fragmentSource, tokens));
     gl.compileShader(fragmentShader);
     assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
     gl.attachShader(program, fragmentShader);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, definition.vertexSource);
+    gl.shaderSource(vertexShader, applyTokens(definition.vertexSource, tokens));
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
     gl.attachShader(program, vertexShader);
@@ -103,18 +103,19 @@ module.exports._createProgram = function(name) {
     }, attributes, uniforms);
 };
 
-module.exports._createProgramCached = function(name) {
+module.exports._createProgramCached = function(name, tokens) {
     this.cache = this.cache || {};
-    if (!this.cache[name]) {
-        this.cache[name] = this._createProgram(name);
+    var key = JSON.stringify({name: name, tokens: tokens});
+    if (!this.cache[key]) {
+        this.cache[key] = this._createProgram(name, tokens);
     }
-    return this.cache[name];
+    return this.cache[key];
 };
 
-module.exports.useProgram = function (nextProgramName) {
+module.exports.useProgram = function (nextProgramName, tokens) {
     var gl = this.gl;
 
-    var nextProgram = this._createProgramCached(nextProgramName);
+    var nextProgram = this._createProgramCached(nextProgramName, tokens);
     var previousProgram = this.currentProgram;
 
     if (previousProgram !== nextProgram) {
@@ -140,3 +141,12 @@ module.exports.useProgram = function (nextProgramName) {
 
     return nextProgram;
 };
+
+function applyTokens(string, tokens) {
+    tokens = tokens || {};
+    for (var key in tokens) {
+        var value = tokens[key];
+        string = string.replace('{{' + key + '}}', value);
+    }
+    return string;
+}
