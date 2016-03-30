@@ -84,14 +84,14 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     packWidth += (4 - packWidth % 4);
     packHeight += (4 - packHeight % 4);
 
-    var rect = this.bin.allocate(packWidth, packHeight);
-    if (rect.x < 0) {
+    var rect = this.bin.packOne(packWidth, packHeight);
+    if (!rect) {
         this.resize();
-        rect = this.bin.allocate(packWidth, packHeight);
+        rect = this.bin.packOne(packWidth, packHeight);
     }
-    if (rect.x < 0) {
+    if (!rect) {
         console.warn('glyph bitmap overflow');
-        return { glyph: glyph, rect: null };
+        return null;
     }
 
     this.index[key] = rect;
