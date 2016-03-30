@@ -10,11 +10,11 @@
  */
 
 exports.frame = function(fn) {
-    return setTimeout(fn, 0);
+    return setImmediate(fn);
 };
 
 exports.cancelFrame = function(id) {
-    return clearTimeout(id);
+    return clearImmediate(id);
 };
 
 module.exports.now = Date.now.bind(Date);

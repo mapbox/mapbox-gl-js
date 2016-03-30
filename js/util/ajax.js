@@ -19,7 +19,17 @@ var PNG = require('pngjs').PNG;
  *     map.setStyle(style);
  * });
  */
+
+var cache = {};
+
+function cached(data, callback) {
+    setImmediate(function () {
+        callback(null, data);
+    });
+}
+
 exports.getJSON = function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
     return request(url, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             var data;
@@ -28,6 +38,7 @@ exports.getJSON = function(url, callback) {
             } catch (err) {
                 return callback(err);
             }
+            cache[url] = data;
             callback(null, data);
         } else {
             callback(error || new Error(response.statusCode));
@@ -36,6 +47,7 @@ exports.getJSON = function(url, callback) {
 };
 
 exports.getArrayBuffer = function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             var ab = new ArrayBuffer(body.length);
@@ -43,6 +55,7 @@ exports.getArrayBuffer = function(url, callback) {
             for (var i = 0; i < body.length; ++i) {
                 view[i] = body[i];
             }
+            cache[url] = ab;
             callback(null, ab);
         } else {
             callback(error || new Error(response.statusCode));
@@ -50,19 +63,25 @@ exports.getArrayBuffer = function(url, callback) {
     });
 };
 
+function fakeImage(png) {
+    return {
+        width: png.width,
+        height: png.height,
+        data: png.data.slice(),
+        complete: true,
+        addEventListener: function() {},
+        getData: function() { return this.data; }
+    };
+}
+
 exports.getImage = function(url, callback) {
+    if (cache[url]) return cached(fakeImage(cache[url]), callback);
     return request({url: url, encoding: null}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             new PNG().parse(body, function(err, png) {
                 if (err) return callback(err);
-                callback(null, {
-                    width: png.width,
-                    height: png.height,
-                    data: png.data,
-                    complete: true,
-                    addEventListener: function() {},
-                    getData: function() { return this.data; }
-                });
+                cache[url] = png;
+                callback(null, fakeImage(png));
             });
         } else {
             callback(error || new Error(response.statusCode));
