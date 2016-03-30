@@ -551,7 +551,7 @@ Style.prototype = util.inherit(Evented, {
         var layer = this.getReferentLayer(layerId);
         layerId = layer.id;
 
-        if (layer.getLayoutProperty(name) === value) return this;
+        if (util.deepEqual(layer.getLayoutProperty(name), value)) return this;
 
         layer.setLayoutProperty(name, value);
 
@@ -582,7 +582,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getLayer(layerId);
 
-        if (layer.getPaintProperty(name, klass) === value) return this;
+        if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
         layer.setPaintProperty(name, value, klass);
         this._updates.changed = true;
