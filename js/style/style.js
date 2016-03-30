@@ -580,7 +580,11 @@ Style.prototype = util.inherit(Evented, {
     setPaintProperty: function(layerId, name, value, klass) {
         this._checkLoaded();
 
-        this.getLayer(layerId).setPaintProperty(name, value, klass);
+        var layer = this.getLayer(layerId);
+
+        if (layer.getPaintProperty(name, klass) === value) return this;
+
+        layer.setPaintProperty(name, value, klass);
         this._updates.changed = true;
         this._updates.cascade = true;
 
