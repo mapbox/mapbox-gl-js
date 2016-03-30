@@ -5,7 +5,8 @@ uniform mat4 u_exmatrix;
 uniform mediump float u_size;
 
 attribute vec2 a_pos;
-attribute lowp vec4 a_color;
+
+{{colorType}} lowp vec4 a_color;
 
 varying vec2 v_extrude;
 varying lowp vec4 v_color;
