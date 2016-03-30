@@ -686,7 +686,7 @@ test('Map', function(t) {
                     "sources": {
                         "drone": {
                             "type": "video",
-                            "urls": ["https://www.mapbox.com/drone/video/drone.mp4", "https://www.mapbox.com/drone/video/drone.webm"],
+                            "urls": [],
                             "coordinates": [
                                 [-122.51596391201019, 37.56238816766053],
                                 [-122.51467645168304, 37.56410183312965],
@@ -720,7 +720,7 @@ test('Map', function(t) {
                     "sources": {
                         "image": {
                             "type": "image",
-                            "url": "https://www.mapbox.com/drone/video/drone.mp4",
+                            "url": "",
                             "coordinates": [
                                 [-122.51596391201019, 37.56238816766053],
                                 [-122.51467645168304, 37.56410183312965],
