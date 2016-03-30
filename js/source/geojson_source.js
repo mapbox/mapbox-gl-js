@@ -195,7 +195,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
                 return;
             }
 
-            tile.loadVectorData(data);
+            tile.loadVectorData(data, this.map.style);
 
             if (tile.redoWhenDone) {
                 tile.redoWhenDone = false;

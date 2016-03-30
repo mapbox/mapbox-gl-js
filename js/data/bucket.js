@@ -2,7 +2,6 @@
 
 var featureFilter = require('feature-filter');
 var Buffer = require('./buffer');
-var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
 var StructArrayType = require('../util/struct_array');
 
@@ -76,7 +75,6 @@ function Bucket(options) {
     this.minZoom = this.layer.minzoom;
     this.maxZoom = this.layer.maxzoom;
 
-    this.createStyleLayers();
     this.attributes = createAttributes(this);
 
     if (options.elementGroups) {
@@ -95,6 +93,7 @@ function Bucket(options) {
  */
 Bucket.prototype.populateBuffers = function() {
     this.createArrays();
+    this.recalculateStyleLayers();
 
     for (var i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
@@ -301,36 +300,17 @@ Bucket.prototype.getBufferName = function(programName, type) {
 
 Bucket.prototype.serialize = function() {
     return {
-        layer: this.layer.serialize(),
+        layerId: this.layer.id,
         zoom: this.zoom,
         elementGroups: this.elementGroups,
         arrays: util.mapObject(this.arrays, function(array) {
             return array.serialize();
         }),
         arrayTypes: this.arrayTypes,
-        childLayers: this.childLayers.map(function(layer) {
-            return layer.serialize();
+        childLayerIds: this.childLayers.map(function(layer) {
+            return layer.id;
         })
     };
-};
-
-Bucket.prototype.createStyleLayers = function(style) {
-    var that = this;
-    var refLayer = this.layer = create(this.layer);
-    this.childLayers = this.childLayers.map(create);
-
-    function create(layer) {
-        if (style) {
-            return style.getLayer(layer.id);
-        } else if (!(layer instanceof StyleLayer)) {
-            layer = StyleLayer.create(layer, refLayer);
-            layer.updatePaintTransitions({}, {transition: false});
-            layer.recalculate(that.zoom, { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 });
-            return layer;
-        } else {
-            return layer;
-        }
-    }
 };
 
 Bucket.prototype.createFilter = function() {
@@ -341,6 +321,12 @@ Bucket.prototype.createFilter = function() {
 
 Bucket.prototype._premultiplyColor = util.premultiply;
 
+var FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+Bucket.prototype.recalculateStyleLayers = function() {
+    for (var i = 0; i < this.childLayers.length; i++) {
+        this.childLayers[i].recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+    }
+};
 
 var createVertexAddMethodCache = {};
 function createVertexAddMethod(bucket, interfaceName) {

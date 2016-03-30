@@ -9,6 +9,7 @@ var SymbolBucket = require('../../../js/data/bucket/symbol_bucket');
 var Collision = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
 var GlyphAtlas = require('../../../js/symbol/glyph_atlas');
+var StyleLayer = require('../../../js/style/style_layer');
 
 // Load a point feature from fixture tile.
 var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
@@ -29,7 +30,12 @@ test('SymbolBucket', function(t) {
     var stacks = { 'Test': glyphs };
 
     function bucketSetup() {
-        var layer = { id: 'test', type: 'symbol', layout: {'text-font': ['Test'] }};
+        var layer = new StyleLayer({
+            id: 'test',
+            type: 'symbol',
+            layout: { 'text-font': ['Test'] }
+        });
+
         var bucket = new SymbolBucket({
             buffers: buffers,
             overscaling: 1,

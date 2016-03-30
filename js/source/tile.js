@@ -42,7 +42,7 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    loadVectorData: function(data) {
+    loadVectorData: function(data, style) {
         this.loaded = true;
 
         // empty GeoJSON tile
@@ -52,7 +52,7 @@ Tile.prototype = {
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
         this.rawTileData = data.rawTileData;
-        this.buckets = unserializeBuckets(data.buckets);
+        this.buckets = unserializeBuckets(data.buckets, style);
     },
 
     /**
@@ -63,7 +63,7 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData: function(data, painter) {
+    reloadSymbolData: function(data, painter, style) {
         if (this.isUnloaded) return;
 
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
@@ -79,7 +79,7 @@ Tile.prototype = {
         }
 
         // Add new symbol buckets
-        util.extend(this.buckets, unserializeBuckets(data.buckets));
+        util.extend(this.buckets, unserializeBuckets(data.buckets, style));
     },
 
     /**
@@ -122,7 +122,7 @@ Tile.prototype = {
         }, done.bind(this), this.workerID);
 
         function done(_, data) {
-            this.reloadSymbolData(data, source.map.painter);
+            this.reloadSymbolData(data, source.map.painter, source.map.style);
             source.fire('tile.load', {tile: this});
 
             this.redoingPlacement = false;
@@ -162,10 +162,13 @@ Tile.prototype = {
     }
 };
 
-function unserializeBuckets(input) {
+function unserializeBuckets(input, style) {
     var output = {};
     for (var i = 0; i < input.length; i++) {
-        var bucket = Bucket.create(input[i]);
+        var bucket = Bucket.create(util.extend({
+            childLayers: input[i].childLayerIds.map(style.getLayer.bind(style)),
+            layer: style.getLayer(input[i].layerId)
+        }, input[i]));
         output[bucket.id] = bucket;
     }
     return output;

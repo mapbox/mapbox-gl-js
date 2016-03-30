@@ -4,6 +4,7 @@ var test = require('tap').test;
 var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');
+var StyleLayer = require('../../../js/style/style_layer');
 
 test('basic', function(t) {
     var features = [{
@@ -24,13 +25,13 @@ test('basic', function(t) {
 
     t.test('basic worker tile', function(t) {
         var layers = {
-            test: {
+            test: new StyleLayer({
                 id: 'test',
                 source: 'source',
                 type: 'circle',
                 layout: {},
                 compare: function () { return true; }
-            }
+            })
         };
 
         tile.parse(new Wrapper(features), layers, {}, null, function(err, result) {
@@ -42,20 +43,20 @@ test('basic', function(t) {
 
     t.test('hidden layers', function(t) {
         var layers = {
-            'test': {
+            'test': new StyleLayer({
                 id: 'test',
                 source: 'source',
                 type: 'circle',
                 layout: {},
                 compare: function () { return true; }
-            },
-            'test-hidden': {
+            }),
+            'test-hidden': new StyleLayer({
                 id: 'test-hidden',
                 source: 'source',
                 type: 'fill',
                 layout: { visibility: 'none' },
                 compare: function () { return true; }
-            }
+            })
         };
 
         tile.parse(new Wrapper(features), layers, {}, null, function(err, result) {
