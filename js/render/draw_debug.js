@@ -23,7 +23,8 @@ function drawDebugTile(painter, source, coord) {
     painter.lineWidth(1 * browser.devicePixelRatio);
 
     var posMatrix = coord.posMatrix;
-    var program = painter.useProgram('debug', posMatrix);
+    var program = painter.useProgram('debug');
+    painter.setPosMatrix(posMatrix);
 
     // draw bounding rectangle
     gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);

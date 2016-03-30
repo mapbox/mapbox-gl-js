@@ -170,7 +170,8 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var program = this.useProgram('fill', coord.posMatrix);
+        var program = this.useProgram('fill');
+        this.setPosMatrix(coord.posMatrix);
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -289,7 +290,8 @@ Painter.prototype.renderLayer = function(painter, source, layer, coords) {
 // Draws non-opaque areas. This is for debugging purposes.
 Painter.prototype.drawStencilBuffer = function() {
     var gl = this.gl;
-    var program = this.useProgram('fill', this.identityMatrix);
+    var program = this.useProgram('fill');
+    this.setPosMatrix(this.identityMatrix);
 
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);

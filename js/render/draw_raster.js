@@ -36,7 +36,8 @@ function drawRasterTile(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var posMatrix = painter.transform.calculatePosMatrix(coord, source.maxzoom);
 
-    var program = painter.useProgram('raster', posMatrix);
+    var program = painter.useProgram('raster');
+    painter.setPosMatrix(posMatrix);
 
     // color parameters
     gl.uniform1f(program.u_brightness_low, layer.paint['raster-brightness-min']);

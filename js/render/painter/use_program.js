@@ -111,7 +111,7 @@ module.exports._createProgramCached = function(name) {
     return this.cache[name];
 };
 
-module.exports.useProgram = function (nextProgramName, posMatrix, exMatrix) {
+module.exports.useProgram = function (nextProgramName) {
     var gl = this.gl;
 
     var nextProgram = this._createProgramCached(nextProgramName);
@@ -137,9 +137,6 @@ module.exports.useProgram = function (nextProgramName, posMatrix, exMatrix) {
 
         this.currentProgram = nextProgram;
     }
-
-    if (posMatrix !== undefined) this.setPosMatrix(posMatrix);
-    if (exMatrix !== undefined) this.setExMatrix(exMatrix);
 
     return nextProgram;
 };

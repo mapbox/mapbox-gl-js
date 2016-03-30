@@ -106,7 +106,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
     gl.activeTexture(gl.TEXTURE0);
 
-    var program = painter.useProgram(sdf ? 'sdf' : 'icon', posMatrix, exMatrix);
+    var program = painter.useProgram(sdf ? 'sdf' : 'icon');
+    painter.setPosMatrix(posMatrix);
+    painter.setExMatrix(exMatrix);
 
     var texsize;
     if (text) {
