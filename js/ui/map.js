@@ -333,9 +333,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             if (this.getZoom() < minZoom) this.setZoom(minZoom);
 
             return this;
-        }
 
-        else throw new Error('minZoom must be between ' + defaultMinZoom + ' and the current maxZoom, inclusive');
+        } else throw new Error('minZoom must be between ' + defaultMinZoom + ' and the current maxZoom, inclusive');
     },
 
     /**
@@ -354,9 +353,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             if (this.getZoom() > maxZoom) this.setZoom(maxZoom);
 
             return this;
-        }
 
-        else throw new Error('maxZoom must be between the current minZoom and ' + defaultMaxZoom + ', inclusive');
+        } else throw new Error('maxZoom must be between the current minZoom and ' + defaultMaxZoom + ', inclusive');
     },
     /**
      * Get pixel coordinates (relative to map container) given a geographical location

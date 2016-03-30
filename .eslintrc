@@ -7,6 +7,11 @@
     "space-before-function-paren": 0,
     "quotes": 0,
     "no-eq-null": 0,
+    "consistent-return": 0,
+    "global-require": 0,
     "block-scoped-var": 2
+  },
+  "env": {
+    "es6": true
   }
 }
