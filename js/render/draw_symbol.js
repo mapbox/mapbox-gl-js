@@ -143,11 +143,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
     gl.uniform1f(program.u_zoom, (painter.transform.zoom - zoomAdjust) * 10); // current zoom level
 
-    var f = painter.frameHistory.getFadeProperties(300);
-    gl.uniform1f(program.u_fadedist, f.fadedist * 10);
-    gl.uniform1f(program.u_minfadezoom, Math.floor(f.minfadezoom * 10));
-    gl.uniform1f(program.u_maxfadezoom, Math.floor(f.maxfadezoom * 10));
-    gl.uniform1f(program.u_fadezoom, (painter.transform.zoom + f.bump) * 10);
+    gl.activeTexture(gl.TEXTURE1);
+    painter.frameHistory.bind(gl);
+    gl.uniform1i(program.u_fadetexture, 1);
 
     var group, offset, count, elementOffset;
 

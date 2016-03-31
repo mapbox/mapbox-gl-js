@@ -3,64 +3,68 @@
 module.exports = FrameHistory;
 
 function FrameHistory() {
-    this.frameHistory = [];
+    this.changeTimes = new Float64Array(256);
+    this.changeOpacities = new Uint8Array(256);
+    this.opacities = new Uint8ClampedArray(256);
+    this.array = new Uint8Array(this.opacities.buffer);
+
+    this.fadeDuration = 300;
+    this.previousZoom = 0;
+    this.firstFrame = true;
 }
 
-FrameHistory.prototype.getFadeProperties = function(duration) {
-    if (duration === undefined) duration = 300;
-    var currentTime = (new Date()).getTime();
+FrameHistory.prototype.record = function(zoom) {
+    var now = Date.now();
 
-    // Remove frames until only one is outside the duration, or until there are only three
-    while (this.frameHistory.length > 3 && this.frameHistory[1].time + duration < currentTime) {
-        this.frameHistory.shift();
+    if (this.firstFrame) {
+        now = 0;
+        this.firstFrame = false;
     }
 
-    if (this.frameHistory[1].time + duration < currentTime) {
-        this.frameHistory[0].z = this.frameHistory[1].z;
+    zoom = Math.floor(zoom * 10);
+
+    var z;
+    if (zoom < this.previousZoom) {
+        for (z = zoom + 1; z <= this.previousZoom; z++) {
+            this.changeTimes[z] = now;
+            this.changeOpacities[z] = this.opacities[z];
+        }
+    } else {
+        for (z = zoom; z > this.previousZoom; z--) {
+            this.changeTimes[z] = now;
+            this.changeOpacities[z] = this.opacities[z];
+        }
     }
 
-    var frameLen = this.frameHistory.length;
-    if (frameLen < 3) console.warn('there should never be less than three frames in the history');
+    for (z = 0; z < 256; z++) {
+        var timeSince = now - this.changeTimes[z];
+        var opacityChange = timeSince / this.fadeDuration * 255;
+        if (z <= zoom) {
+            this.opacities[z] = this.changeOpacities[z] + opacityChange;
+        } else {
+            this.opacities[z] = this.changeOpacities[z] - opacityChange;
+        }
+    }
 
-    // Find the range of zoom levels we want to fade between
-    var startingZ = this.frameHistory[0].z,
-        lastFrame = this.frameHistory[frameLen - 1],
-        endingZ = lastFrame.z,
-        lowZ = Math.min(startingZ, endingZ),
-        highZ = Math.max(startingZ, endingZ);
-
-    // Calculate the speed of zooming, and how far it would zoom in terms of zoom levels in one duration
-    var zoomDiff = lastFrame.z - this.frameHistory[1].z,
-        timeDiff = lastFrame.time - this.frameHistory[1].time;
-    var fadedist = zoomDiff / (timeDiff / duration);
-
-    if (isNaN(fadedist)) console.warn('fadedist should never be NaN');
-
-    // At end of a zoom when the zoom stops changing continue pretending to zoom at that speed
-    // bump is how much farther it would have been if it had continued zooming at the same rate
-    var bump = (currentTime - lastFrame.time) / duration * fadedist;
-
-    return {
-        fadedist: fadedist,
-        minfadezoom: lowZ,
-        maxfadezoom: highZ,
-        bump: bump
-    };
+    this.changed = true;
+    this.previousZoom = zoom;
 };
 
-// Record frame history that will be used to calculate fading params
-FrameHistory.prototype.record = function(zoom) {
-    var currentTime = (new Date()).getTime();
+FrameHistory.prototype.bind = function(gl) {
+    if (!this.texture) {
+        this.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, 256, 1, 0, gl.ALPHA, gl.UNSIGNED_BYTE, this.array);
 
-    // first frame ever
-    if (!this.frameHistory.length) {
-        this.frameHistory.push({time: 0, z: zoom }, {time: 0, z: zoom });
-    }
-
-    if (this.frameHistory.length === 2 || this.frameHistory[this.frameHistory.length - 1].z !== zoom) {
-        this.frameHistory.push({
-            time: currentTime,
-            z: zoom
-        });
+    } else {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        if (this.changed) {
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 1, gl.ALPHA, gl.UNSIGNED_BYTE, this.array);
+            this.changed = false;
+        }
     }
 };
