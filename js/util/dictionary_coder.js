@@ -1,5 +1,7 @@
 'use strict';
 
+var assert = require('assert');
+
 module.exports = DictionaryCoder;
 
 function DictionaryCoder(strings) {
@@ -13,9 +15,11 @@ function DictionaryCoder(strings) {
 }
 
 DictionaryCoder.prototype.encode = function(string) {
+    assert(string in this._stringToNumber);
     return this._stringToNumber[string];
 };
 
 DictionaryCoder.prototype.decode = function(n) {
+    assert(n < this._numberToString.length);
     return this._numberToString[n];
 };

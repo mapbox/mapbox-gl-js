@@ -49,6 +49,7 @@ WorkerTile.prototype.parse = function(data, layers, actor, rawTileData, callback
         if (layer.minzoom && this.zoom < layer.minzoom) continue;
         if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
         if (layer.layout && layer.layout.visibility === 'none') continue;
+        if (data.layers && !data.layers[layer['source-layer']]) continue;
 
         bucket = Bucket.create({
             layer: layer,
