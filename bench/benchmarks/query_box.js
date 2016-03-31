@@ -1,25 +1,16 @@
 'use strict';
 
-var Evented = require('../js/util/evented');
-var util = require('../js/util/util');
+var Evented = require('../../js/util/evented');
+var util = require('../../js/util/util');
 
 var width = 1024;
 var height = 768;
 
+var numSamples = 10;
+
 var zoomLevels = [];
 for (var i = 4; i < 19; i++) {
     zoomLevels.push(i);
-}
-
-var queryPoints = [];
-var d = 20;
-for (var x = 0; x < d; x++) {
-    for (var y = 0; y < d; y++) {
-        queryPoints.push([
-            (x / d) * width,
-            (y / d) * height
-        ]);
-    }
 }
 
 module.exports = function(options) {
@@ -43,10 +34,9 @@ module.exports = function(options) {
 
             var zoomSum = 0;
             var zoomCount = 0;
-            asyncSeries(queryPoints.length, function(n, callback) {
-                var queryPoint = queryPoints[queryPoints.length - n];
+            asyncSeries(numSamples, function(n, callback) {
                 var start = performance.now();
-                map.queryRenderedFeatures(queryPoint);
+                map.queryRenderedFeatures();
                 var duration = performance.now() - start;
                 sum += duration;
                 count++;
