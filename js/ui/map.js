@@ -456,10 +456,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
      */
     querySourceFeatures: function(sourceID, params) {
-        var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ?
-            source.querySourceFeatures(params) :
-            [];
+        return this.style.querySourceFeatures(sourceID, params);
     },
 
     /**

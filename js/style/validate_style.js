@@ -12,3 +12,11 @@ module.exports.emitErrors = function throwErrors(emitter, errors) {
         return false;
     }
 };
+
+module.exports.throwErrors = function throwErrors(emitter, errors) {
+    if (errors) {
+        for (var i = 0; i < errors.length; i++) {
+            throw new Error(errors[i].message);
+        }
+    }
+};

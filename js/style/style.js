@@ -629,6 +629,15 @@ Style.prototype = util.inherit(Evented, {
     },
 
     queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
+        if (params.filter) {
+            validateStyle.throwErrors(this, validateStyle.filter({
+                key: 'queryRenderedFeatures.filter',
+                value: params.filter,
+                style: this.serialize(),
+                styleSpec: styleSpec
+            }));
+        }
+
         var sourceResults = [];
         for (var id in this.sources) {
             var source = this.sources[id];
@@ -637,6 +646,22 @@ Style.prototype = util.inherit(Evented, {
             }
         }
         return this._flattenRenderedFeatures(sourceResults);
+    },
+
+    querySourceFeatures: function(sourceID, params) {
+        if (params.filter) {
+            validateStyle.throwErrors(this, validateStyle.filter({
+                key: 'querySourceFeatures.filter',
+                value: params.filter,
+                style: this.serialize(),
+                styleSpec: styleSpec
+            }));
+        }
+
+        var source = this.getSource(sourceID);
+        return source && source.querySourceFeatures ?
+            source.querySourceFeatures(params) :
+            [];
     },
 
     _remove: function() {

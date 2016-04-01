@@ -1053,3 +1053,48 @@ test('Style defers expensive methods', function(t) {
         t.end();
     });
 });
+
+test('Style#query*Features', function(t) {
+
+    // These tests only cover filter validation. Most tests for these methods
+    // live in mapbox-gl-test-suite.
+
+    function createStyle() {
+        return new Style({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }, {
+                "id": "symbol-child",
+                "ref": "symbol"
+            }]
+        });
+    }
+
+    t.test('querySourceFeatures emits an error on incorrect filter', function(t) {
+        var style = createStyle();
+        style.on('load', function() {
+            t.throws(function() {
+                t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
+            }, /querySourceFeatures\.filter/);
+            t.end();
+        });
+    });
+
+    t.test('queryRenderedFeatures emits an error on incorrect filter', function(t) {
+        var style = createStyle();
+        style.on('load', function() {
+            t.throws(function() {
+                t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
+            }, /queryRenderedFeatures\.filter/);
+            t.end();
+        });
+    });
+
+    t.end();
+});
