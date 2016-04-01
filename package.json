@@ -26,7 +26,7 @@
     "request": "^2.39.0",
     "resolve-url": "^0.2.1",
     "shelf-pack": "^1.0.0",
-    "supercluster": "^2.0.0",
+    "supercluster": "^2.0.1",
     "unassertify": "^2.0.0",
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.2.0",
