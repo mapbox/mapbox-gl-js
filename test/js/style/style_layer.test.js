@@ -26,6 +26,32 @@ test('StyleLayer', function(t) {
     t.end();
 });
 
+test('StyleLayer#cascade', function (t) {
+    t.test('respects classes regardless of layer properties order', function (t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "fill",
+            "paint.blue": {
+                "fill-color": "#8ccbf7",
+                "fill-opacity": 1
+            },
+            "paint": {
+                "fill-opacity": 0
+            }
+        });
+
+        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        t.equal(layer.getPaintValue('fill-opacity'), 0);
+
+        layer.cascade({blue: true}, {transition: false}, null, createAnimationLoop());
+        t.equal(layer.getPaintValue('fill-opacity'), 1);
+
+        t.end();
+    });
+
+    t.end();
+});
+
 test('StyleLayer#setPaintProperty', function(t) {
     t.test('sets new property value', function(t) {
         var layer = StyleLayer.create({
