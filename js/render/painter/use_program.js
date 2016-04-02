@@ -9,81 +9,55 @@ var util = require('../../util/util');
 var definitions = {
     debug: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/debug.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/debug.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_color']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/debug.vertex.glsl'), 'utf8')
     },
     fill: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/fill.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/fill.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_color']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/fill.vertex.glsl'), 'utf8')
     },
     circle: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/circle.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/circle.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_exmatrix', 'u_blur', 'u_size', 'u_color']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/circle.vertex.glsl'), 'utf8')
     },
     line: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/line.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/line.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_data'],
-        uniformNames: ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_extra', 'u_antialiasingmatrix', 'u_offset', 'u_exmatrix']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/line.vertex.glsl'), 'utf8')
     },
     linepattern: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linepattern.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linepattern.vertex.glsl'), 'utf8'),
-        attributeNames:['a_pos', 'a_data'],
-        uniformNames:['u_matrix', 'u_linewidth', 'u_ratio', 'u_pattern_size_a', 'u_pattern_size_b', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_blur', 'u_fade', 'u_opacity', 'u_extra', 'u_antialiasingmatrix', 'u_offset']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linepattern.vertex.glsl'), 'utf8')
     },
     linesdfpattern: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linesdfpattern.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linesdfpattern.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_data'],
-        uniformNames: ['u_matrix', 'u_linewidth', 'u_color', 'u_ratio', 'u_blur', 'u_patternscale_a', 'u_tex_y_a', 'u_patternscale_b', 'u_tex_y_b', 'u_image', 'u_sdfgamma', 'u_mix', 'u_extra', 'u_antialiasingmatrix', 'u_offset']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/linesdfpattern.vertex.glsl'), 'utf8')
     },
     outline: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outline.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outline.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_color', 'u_world']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outline.vertex.glsl'), 'utf8')
     },
     outlinepattern: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outlinepattern.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outlinepattern.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_world', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternscale_a', 'u_patternscale_b', 'u_opacity', 'u_image', 'u_offset_a', 'u_offset_b']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/outlinepattern.vertex.glsl'), 'utf8')
     },
     pattern: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/pattern.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/pattern.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos'],
-        uniformNames: ['u_matrix', 'u_pattern_tl_a', 'u_pattern_br_a', 'u_pattern_tl_b', 'u_pattern_br_b', 'u_mix', 'u_patternscale_a', 'u_patternscale_b', 'u_opacity', 'u_image', 'u_offset_a', 'u_offset_b']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/pattern.vertex.glsl'), 'utf8')
     },
     raster: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/raster.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/raster.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_texture_pos'],
-        uniformNames: ['u_matrix', 'u_brightness_low', 'u_brightness_high', 'u_saturation_factor', 'u_spin_weights', 'u_contrast_factor', 'u_opacity0', 'u_opacity1', 'u_image0', 'u_image1', 'u_tl_parent', 'u_scale_parent', 'u_buffer_scale']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/raster.vertex.glsl'), 'utf8')
     },
     icon: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/icon.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/icon.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        uniformNames: ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_zoom', 'u_fadetexture', 'u_opacity', 'u_skewed', 'u_extra']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/icon.vertex.glsl'), 'utf8')
     },
     sdf: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/sdf.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/sdf.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_offset', 'a_data1', 'a_data2'],
-        uniformNames: ['u_matrix', 'u_exmatrix', 'u_texture', 'u_texsize', 'u_color', 'u_gamma', 'u_buffer', 'u_zoom', 'u_fadetexture', 'u_skewed', 'u_extra']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/sdf.vertex.glsl'), 'utf8')
     },
     collisionbox: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../../../shaders/collisionbox.fragment.glsl'), 'utf8'),
-        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/collisionbox.vertex.glsl'), 'utf8'),
-        attributeNames: ['a_pos', 'a_extrude', 'a_data'],
-        uniformNames: ['u_matrix', 'u_scale', 'u_zoom', 'u_maxzoom']
+        vertexSource: fs.readFileSync(path.join(__dirname, '../../../shaders/collisionbox.vertex.glsl'), 'utf8')
     }
 };
 
@@ -108,16 +82,17 @@ module.exports._createProgram = function(name) {
     assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
 
     var attributes = {};
-    for (var i = 0; i < definition.attributeNames.length; i++) {
-        var attributeName = definition.attributeNames[i];
-        attributes[attributeName] = gl.getAttribLocation(program, attributeName);
-        assert(attributes[attributeName] >= 0);
+    var numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    for (var i = 0; i < numAttributes; i++) {
+        var attribute = gl.getActiveAttrib(program, i);
+        attributes[attribute.name] = i;
     }
 
     var uniforms = {};
-    for (var j = 0; j < definition.uniformNames.length; j++) {
-        var uniformName = definition.uniformNames[j];
-        uniforms[uniformName] = gl.getUniformLocation(program, uniformName);
+    var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    for (var ui = 0; ui < numUniforms; ui++) {
+        var uniform = gl.getActiveUniform(program, ui);
+        uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name);
     }
 
     return util.extend({
