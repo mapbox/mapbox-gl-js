@@ -66,7 +66,7 @@ function StyleLayer(layer, refLayer) {
         }
     }
 
-    this.recalculateStatic();
+    this.updateConstantValues();
 }
 
 StyleLayer.prototype = util.inherit(Evented, {
@@ -180,56 +180,53 @@ StyleLayer.prototype = util.inherit(Evented, {
         return false;
     },
 
-    // update classes
-    cascade: function(classes, options, globalTransitionOptions, animationLoop) {
-        var oldTransitions = this._paintTransitions;
-        var newTransitions = this._paintTransitions = {};
-        var that = this;
-
-        // Apply new declarations in all active classes
-        for (var klass in this._paintDeclarations) {
-            if (klass !== "" && !classes[klass]) continue;
-            for (var name in this._paintDeclarations[klass]) {
-                applyDeclaration(name, this._paintDeclarations[klass][name]);
-            }
+    // update all paint transitions and layout/paint constant values
+    cascade: function(classes, options, globalOptions, animationLoop) {
+        var declarations = util.extend({}, this._paintDeclarations['']);
+        for (var klass in classes) {
+            util.extend(declarations, this._paintDeclarations[klass]);
         }
 
-        // Apply removed declarations
-        var removedNames = util.keysDifference(oldTransitions, newTransitions);
-        for (var i = 0; i < removedNames.length; i++) {
-            var spec = this._paintSpecifications[removedNames[i]];
-            applyDeclaration(removedNames[i], new StyleDeclaration(spec, spec.default));
+        var name;
+        for (name in declarations) { // apply new declarations
+            this.updatePaintTransition(name, declarations[name], options, globalOptions, animationLoop);
+        }
+        for (name in this._paintTransitions) {
+            if (!(name in declarations)) // apply removed declarations
+                this.updatePaintTransition(name, null, options, globalOptions, animationLoop);
         }
 
-        this.recalculateStatic();
+        this.updateConstantValues();
+    },
 
-        function applyDeclaration(name, declaration) {
-            var oldTransition = options.transition ? oldTransitions[name] : undefined;
+    updatePaintTransition: function (name, declaration, options, globalOptions, animationLoop) {
+        var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
 
-            if (oldTransition && oldTransition.declaration.json === declaration.json) {
-                newTransitions[name] = oldTransition;
+        if (declaration === null) {
+            var spec = this._paintSpecifications[name];
+            declaration = new StyleDeclaration(spec, spec.default);
+        }
 
-            } else {
-                var newTransition = new StyleTransition(declaration, oldTransition, util.extend(
-                    {duration: 300, delay: 0},
-                    globalTransitionOptions,
-                    that.getPaintProperty(name + TRANSITION_SUFFIX)
-                ));
+        if (oldTransition && oldTransition.declaration.json === declaration.json) return;
 
-                if (!newTransition.instant()) {
-                    newTransition.loopID = animationLoop.set(newTransition.endTime - (new Date()).getTime());
-                }
+        var transitionOptions = util.extend({
+            duration: 300,
+            delay: 0
+        }, globalOptions, this.getPaintProperty(name + TRANSITION_SUFFIX));
 
-                if (oldTransition) {
-                    animationLoop.cancel(oldTransition.loopID);
-                }
+        var newTransition = this._paintTransitions[name] =
+                new StyleTransition(declaration, oldTransition, transitionOptions);
 
-                newTransitions[name] = newTransition;
-            }
+        if (!newTransition.instant()) {
+            newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
+        }
+        if (oldTransition) {
+            animationLoop.cancel(oldTransition.loopID);
         }
     },
 
-    recalculateStatic: function() {
+    // update all constant layout/paint values
+    updateConstantValues: function() {
         for (var paintName in this._paintSpecifications) {
             if (!(paintName in this._paintTransitions))
                 this.paint[paintName] = this.getPaintValue(paintName);
@@ -245,7 +242,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
-    // update zoom
+    // update all zoom-dependent layout/paint values
     recalculate: function(zoom, zoomHistory) {
         for (var paintName in this._paintTransitions) {
             this.paint[paintName] = this.getPaintValue(paintName, zoom, zoomHistory);
