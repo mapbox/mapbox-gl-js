@@ -28,6 +28,7 @@ public:
     Uniform<GLfloat>                u_opacity        = {"u_opacity",        *this};
     Uniform<GLfloat>                u_extra          = {"u_extra",          *this};
     Uniform<GLfloat>                u_offset         = {"u_offset",         *this};
+    Uniform<GLint>                  u_image          = {"u_image",          *this};
     UniformMatrix<2>                u_antialiasingmatrix  = {"u_antialiasingmatrix",  *this};
 
 private:
