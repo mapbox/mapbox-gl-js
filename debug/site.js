@@ -1,7 +1,7 @@
 
 mapboxgl.accessToken = getAccessToken();
 
-var map = new mapboxgl.Map({
+var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
     center: [-77.01866, 38.888],
