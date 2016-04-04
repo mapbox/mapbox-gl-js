@@ -40,10 +40,10 @@ test('StyleLayer#cascade', function (t) {
             }
         });
 
-        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        layer.cascade([], {transition: false}, null, createAnimationLoop());
         t.equal(layer.getPaintValue('fill-opacity'), 0);
 
-        layer.cascade({blue: true}, {transition: false}, null, createAnimationLoop());
+        layer.cascade(['blue'], {transition: false}, null, createAnimationLoop());
         t.equal(layer.getPaintValue('fill-opacity'), 1);
 
         t.end();
@@ -89,9 +89,9 @@ test('StyleLayer#setPaintProperty', function(t) {
                 "background-opacity": 1
             }
         });
-        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        layer.cascade([], {transition: false}, null, createAnimationLoop());
         layer.setPaintProperty('background-color', null);
-        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        layer.cascade([], {transition: false}, null, createAnimationLoop());
 
         t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 0, 1]);
         t.equal(layer.getPaintProperty('background-color'), undefined);
@@ -129,12 +129,12 @@ test('StyleLayer#setPaintProperty', function(t) {
                 "background-opacity": 0.1
             }
         });
-        layer.cascade({night: true}, {transition: false}, null, createAnimationLoop());
+        layer.cascade(['night'], {transition: false}, null, createAnimationLoop());
         t.deepEqual(layer.getPaintProperty('background-color', 'night'), 'blue');
         t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 1, 1]);
 
         layer.setPaintProperty('background-color', null, 'night');
-        layer.cascade({night: true}, {transition: false}, null, createAnimationLoop());
+        layer.cascade(['night'], {transition: false}, null, createAnimationLoop());
         t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
         t.equal(layer.getPaintProperty('background-color', 'night'), undefined);
 
@@ -184,7 +184,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         });
 
         layer.setPaintProperty('background-color-transition', {duration: 400}, 'background-color');
-        layer.cascade({}, {transition: false}, null, createAnimationLoop());
+        layer.cascade([], {transition: false}, null, createAnimationLoop());
         t.deepEqual(layer.getPaintProperty('background-color-transition', 'background-color'), {duration: 400});
         t.end();
     });

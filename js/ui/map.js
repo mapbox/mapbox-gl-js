@@ -131,7 +131,7 @@ var Map = module.exports = function(options) {
     }
 
     this.stacks = {};
-    this._classes = {};
+    this._classes = [];
 
     this.resize();
 
@@ -198,11 +198,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     addClass: function(klass, options) {
-        if (this._classes[klass]) return;
-        this._classes[klass] = true;
+        if (this._classes.indexOf(klass) >= 0 || klass === '') return this;
+        this._classes.push(klass);
         this._classOptions = options;
+
         if (this.style) this.style.cascade();
-        this._update(true);
+        return this._update(true);
     },
 
     /**
@@ -214,11 +215,13 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     removeClass: function(klass, options) {
-        if (!this._classes[klass]) return;
-        delete this._classes[klass];
+        var i = this._classes.indexOf(klass);
+        if (i < 0 || klass === '') return this;
+        this._classes.splice(i, 1);
         this._classOptions = options;
+
         if (this.style) this.style.cascade();
-        this._update(true);
+        return this._update(true);
     },
 
     /**
@@ -230,13 +233,15 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setClasses: function(klasses, options) {
-        this._classes = {};
-        this._classOptions = options;
+        var uniqueClasses = {};
         for (var i = 0; i < klasses.length; i++) {
-            this._classes[klasses[i]] = true;
+            if (klasses[i] !== '') uniqueClasses[klasses[i]] = true;
         }
+        this._classes = Object.keys(uniqueClasses);
+        this._classOptions = options;
+
         if (this.style) this.style.cascade();
-        this._update(true);
+        return this._update(true);
     },
 
     /**
@@ -246,7 +251,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {boolean}
      */
     hasClass: function(klass) {
-        return !!this._classes[klass];
+        return this._classes.indexOf(klass) >= 0;
     },
 
     /**
@@ -255,7 +260,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {boolean}
      */
     getClasses: function() {
-        return Object.keys(this._classes);
+        return this._classes;
     },
 
     /**
@@ -404,7 +409,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             pointOrBox = undefined;
         }
         var queryGeometry = this._makeQueryGeometry(pointOrBox);
-        return this.style.queryRenderedFeatures(queryGeometry, params, this._classes, this.transform.zoom, this.transform.angle);
+        return this.style.queryRenderedFeatures(queryGeometry, params, this.transform.zoom, this.transform.angle);
     },
 
     _makeQueryGeometry: function(pointOrBox) {

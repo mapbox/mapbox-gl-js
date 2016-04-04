@@ -183,8 +183,8 @@ StyleLayer.prototype = util.inherit(Evented, {
     // update all paint transitions and layout/paint constant values
     cascade: function(classes, options, globalOptions, animationLoop) {
         var declarations = util.extend({}, this._paintDeclarations['']);
-        for (var klass in classes) {
-            util.extend(declarations, this._paintDeclarations[klass]);
+        for (var i = 0; i < classes.length; i++) {
+            util.extend(declarations, this._paintDeclarations[classes[i]]);
         }
 
         var name;
