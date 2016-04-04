@@ -202,7 +202,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._classes.push(klass);
         this._classOptions = options;
 
-        if (this.style) this.style.cascade();
+        if (this.style) this.style.updateClasses();
         return this._update(true);
     },
 
@@ -220,7 +220,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._classes.splice(i, 1);
         this._classOptions = options;
 
-        if (this.style) this.style.cascade();
+        if (this.style) this.style.updateClasses();
         return this._update(true);
     },
 
@@ -240,7 +240,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._classes = Object.keys(uniqueClasses);
         this._classOptions = options;
 
-        if (this.style) this.style.cascade();
+        if (this.style) this.style.updateClasses();
         return this._update(true);
     },
 

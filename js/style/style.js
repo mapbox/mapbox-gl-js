@@ -50,7 +50,7 @@ function Style(stylesheet, animationLoop) {
         this._loaded = true;
         this.stylesheet = stylesheet;
 
-        this.cascade();
+        this.updateClasses();
 
         var sources = stylesheet.sources;
         for (var id in sources) {
@@ -185,20 +185,27 @@ Style.prototype = util.inherit(Evented, {
         return serialized;
     },
 
-    _cascade: function(classes, options) {
+    _applyClasses: function(classes, options) {
         if (!this._loaded) return;
 
-        options = options || {
-            transition: true
-        };
+        classes = classes || [];
+        options = options || {transition: true};
+        var transition = this.stylesheet.transition || {};
 
-        for (var id in this._layers) {
-            this._layers[id].cascade(classes || [], options,
-                this.stylesheet.transition || {},
-                this.animationLoop);
+        var layers = this._updates.allPaintProps ? this._layers : this._updates.paintProps;
+
+        for (var id in layers) {
+            var layer = this._layers[id];
+            var props = this._updates.paintProps[id];
+
+            if (this._updates.allPaintProps || props.all) {
+                layer.updatePaintTransitions(classes, options, transition, this.animationLoop);
+            } else {
+                for (var paintName in props) {
+                    this._layers[id].updatePaintTransition(paintName, classes, options, transition, this.animationLoop);
+                }
+            }
         }
-
-        this.fire('change');
     },
 
     _recalculate: function(z) {
@@ -285,10 +292,9 @@ Style.prototype = util.inherit(Evented, {
             this.fire(args[0], args[1]);
         }
 
-        if (this._updates.cascade) {
-            this._cascade(classes, options);
+        this._applyClasses(classes, options);
 
-        } else if (this._updates.changed) {
+        if (this._updates.changed) {
             this.fire('change');
         }
 
@@ -301,7 +307,8 @@ Style.prototype = util.inherit(Evented, {
         this._updates = {
             events: [],
             layers: {},
-            sources: {}
+            sources: {},
+            paintProps: {}
         };
     },
 
@@ -421,7 +428,7 @@ Style.prototype = util.inherit(Evented, {
         }
         this._updates.events.push(['layer.add', {layer: layer}]);
 
-        return this.cascade();
+        return this.updateClasses(layer.id);
     },
 
     /**
@@ -451,8 +458,9 @@ Style.prototype = util.inherit(Evented, {
 
         this._updates.allLayers = true;
         this._updates.events.push(['layer.remove', {layer: layer}]);
+        this._updates.changed = true;
 
-        return this.cascade();
+        return this;
     },
 
     /**
@@ -486,7 +494,6 @@ Style.prototype = util.inherit(Evented, {
         this._checkLoaded();
 
         var layer = this.getReferentLayer(layerId);
-        layerId = layer.id;
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
 
@@ -496,24 +503,16 @@ Style.prototype = util.inherit(Evented, {
         if (maxzoom != null) {
             layer.maxzoom = maxzoom;
         }
-
-        this._updates.layers[layerId] = true;
-        if (layer.source) {
-            this._updates.sources[layer.source] = true;
-        }
-        this._updates.changed = true;
-
-        return this;
+        return this._updateLayer(layer);
     },
 
     setFilter: function(layerId, filter) {
         this._checkLoaded();
 
         var layer = this.getReferentLayer(layerId);
-        layerId = layer.id;
 
         if (validateStyle.emitErrors(this, validateStyle.filter({
-            key: 'layers.' + layerId + '.filter',
+            key: 'layers.' + layer.id + '.filter',
             value: filter,
             style: this.serialize(),
             styleSpec: styleSpec
@@ -522,13 +521,7 @@ Style.prototype = util.inherit(Evented, {
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
 
-        this._updates.layers[layerId] = true;
-        if (layer.source) {
-            this._updates.sources[layer.source] = true;
-        }
-        this._updates.changed = true;
-
-        return this;
+        return this._updateLayer(layer);
     },
 
     /**
@@ -545,18 +538,11 @@ Style.prototype = util.inherit(Evented, {
         this._checkLoaded();
 
         var layer = this.getReferentLayer(layerId);
-        layerId = layer.id;
 
         if (util.deepEqual(layer.getLayoutProperty(name), value)) return this;
 
         layer.setLayoutProperty(name, value);
-
-        this._updates.layers[layerId] = true;
-
-        if (layer.source) {
-            this._updates.sources[layer.source] = true;
-        }
-        return this.cascade();
+        return this._updateLayer(layer);
     },
 
     /**
@@ -578,16 +564,22 @@ Style.prototype = util.inherit(Evented, {
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
         layer.setPaintProperty(name, value, klass);
-        return this.cascade();
+        return this.updateClasses(layerId, name);
     },
 
     getPaintProperty: function(layer, name, klass) {
         return this.getLayer(layer).getPaintProperty(name, klass);
     },
 
-    cascade: function () {
+    updateClasses: function (layerId, paintName) {
         this._updates.changed = true;
-        this._updates.cascade = true;
+        if (!layerId) {
+            this._updates.allPaintProps = true;
+        } else {
+            var props = this._updates.paintProps;
+            if (!props[layerId]) props[layerId] = {};
+            props[layerId][paintName || 'all'] = true;
+        }
         return this;
     },
 
@@ -610,6 +602,15 @@ Style.prototype = util.inherit(Evented, {
                 return this._layers[id].serialize();
             }, this)
         }, function(value) { return value !== undefined; });
+    },
+
+    _updateLayer: function (layer) {
+        this._updates.layers[layer.id] = true;
+        if (layer.source) {
+            this._updates.sources[layer.source] = true;
+        }
+        this._updates.changed = true;
+        return this;
     },
 
     _flattenRenderedFeatures: function(sourceResults) {

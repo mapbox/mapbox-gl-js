@@ -910,7 +910,7 @@ test('Style#queryRenderedFeatures', function(t) {
     });
 
     style.on('load', function() {
-        style._cascade([]);
+        style._applyClasses([]);
         style._recalculate(0);
 
         style.sources.mapbox.queryRenderedFeatures = function(position, params) {
