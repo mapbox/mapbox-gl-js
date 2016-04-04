@@ -226,8 +226,7 @@ Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, 
         if (attribute.isLayerConstant === false && layer.id !== attribute.layerId) continue;
 
         var attributeId = program[attribute.programName];
-        gl.disableVertexAttribArray(attributeId);
-        gl['vertexAttrib' + attribute.components + 'fv'](attributeId, attribute.getValue.apply(this, args));
+        gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue.apply(this, args));
     }
 
     // Set enabled attributes
@@ -326,6 +325,26 @@ Bucket.prototype.recalculateStyleLayers = function() {
     for (var i = 0; i < this.childLayers.length; i++) {
         this.childLayers[i].recalculate(this.zoom, FAKE_ZOOM_HISTORY);
     }
+};
+
+Bucket.prototype.getUseProgramTokens = function(programInterface, layer) {
+    var tokens = {};
+
+    var enabledAttributes = this.attributes[programInterface].enabled;
+    for (var i = 0; i < enabledAttributes.length; i++) {
+        var enabledAttribute = enabledAttributes[i];
+        if (enabledAttribute.isLayerConstant !== false && enabledAttribute.layerId !== layer.id) continue;
+        tokens[enabledAttribute.typeTokenName] = 'attribute';
+    }
+
+    var disabledAttributes = this.attributes[programInterface].disabled;
+    for (var j = 0; j < this.attributes[programInterface].disabled.length; j++) {
+        var disabledAttribute = disabledAttributes[j];
+        if (disabledAttribute.isLayerConstant !== false && disabledAttribute.layerId !== layer.id) continue;
+        tokens[disabledAttribute.typeTokenName] = 'uniform';
+    }
+
+    return tokens;
 };
 
 var createVertexAddMethodCache = {};
@@ -441,14 +460,16 @@ function createAttributes(bucket) {
                         name: layer.id + '__' + attribute.name,
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
-                        layerIndex: j
+                        layerIndex: j,
+                        typeTokenName: attribute.name + 'Type'
                     }));
                 } else {
                     interfaceAttributes.enabled.push(util.extend({}, attribute, {
                         name: layer.id + '__' + attribute.name,
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
-                        layerIndex: j
+                        layerIndex: j,
+                        typeTokenName: attribute.name + 'Type'
                     }));
                 }
             }
