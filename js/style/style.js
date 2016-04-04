@@ -193,7 +193,7 @@ Style.prototype = util.inherit(Evented, {
         };
 
         for (var id in this._layers) {
-            this._layers[id].cascade(classes, options,
+            this._layers[id].cascade(classes || [], options,
                 this.stylesheet.transition || {},
                 this.animationLoop);
         }
@@ -628,12 +628,12 @@ Style.prototype = util.inherit(Evented, {
         return features;
     },
 
-    queryRenderedFeatures: function(queryGeometry, params, classes, zoom, bearing) {
+    queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
         var sourceResults = [];
         for (var id in this.sources) {
             var source = this.sources[id];
             if (source.queryRenderedFeatures) {
-                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, classes, zoom, bearing));
+                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
             }
         }
         return this._flattenRenderedFeatures(sourceResults);

@@ -471,10 +471,9 @@ test('Map', function(t) {
             var opts = {};
 
             t.test('normal coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, classes, zoom, bearing) {
+                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
                     t.deepEqual(coords, [{ column: 0.5, row: 0.5, zoom: 0 }]);
                     t.equal(o, opts);
-                    t.deepEqual(classes, map._classes);
                     t.equal(bearing, map.transform.angle);
                     t.equal(zoom, map.getZoom());
                     t.end();
@@ -484,14 +483,13 @@ test('Map', function(t) {
             });
 
             t.test('does not wrap coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, classes, zoom, bearing) {
+                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
                     // avoid floating point issues
                     t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
                     t.equal(coords[0].row, 0.5);
                     t.equal(coords[0].zoom, 0);
 
                     t.equal(o, opts);
-                    t.deepEqual(classes, map._classes);
                     t.equal(bearing, map.transform.angle);
                     t.equal(zoom, map.getZoom());
 

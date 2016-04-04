@@ -92,7 +92,7 @@ function mergeRenderedFeatureLayers(tiles) {
     return result;
 }
 
-exports._queryRenderedVectorFeatures = function(queryGeometry, params, classes, zoom, bearing) {
+exports._queryRenderedVectorFeatures = function(queryGeometry, params, zoom, bearing) {
     if (!this._pyramid)
         return {};
 

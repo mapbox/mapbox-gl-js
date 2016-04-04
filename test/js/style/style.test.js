@@ -949,32 +949,32 @@ test('Style#queryRenderedFeatures', function(t) {
         };
 
         t.test('returns feature type', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             t.equal(results[0].geometry.type, 'Line');
             t.end();
         });
 
         t.test('filters by `layers` option', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: 'land'}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: 'land'}, 0, 0);
             t.equal(results.length, 2);
             t.end();
         });
 
         t.test('includes layout properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             var layout = results[0].layer.layout;
             t.deepEqual(layout['line-cap'], 'round');
             t.end();
         });
 
         t.test('includes paint properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
             t.end();
         });
 
         t.test('ref layer inherits properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             var layer = results[1].layer;
             var refLayer = results[0].layer;
             t.deepEqual(layer.layout, refLayer.layout);
@@ -985,7 +985,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('includes metadata', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
 
             var layer = results[1].layer;
             t.equal(layer.metadata.something, 'else');
@@ -994,7 +994,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('include multiple layers', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, {}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
             t.equals(results.length, 3);
             t.end();
         });
