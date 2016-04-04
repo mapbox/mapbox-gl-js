@@ -9,10 +9,6 @@ function drawCircles(painter, source, layer, coords) {
 
     var gl = painter.gl;
 
-    var program = painter.useProgram('circle', {
-        colorType: 'attribute'
-    });
-
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
@@ -26,9 +22,6 @@ function drawCircles(painter, source, layer, coords) {
     // are inversely related.
     var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
 
-    gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
-    gl.uniform1f(program.u_size, layer.paint['circle-radius']);
-
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
 
@@ -37,6 +30,11 @@ function drawCircles(painter, source, layer, coords) {
         if (!bucket) continue;
         var elementGroups = bucket.elementGroups.circle;
         if (!elementGroups) continue;
+
+        var program = painter.useProgram('circle', bucket.getUseProgramTokens('circle', layer));
+
+        gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
+        gl.uniform1f(program.u_size, layer.paint['circle-radius']);
 
         painter.setPosMatrix(painter.translatePosMatrix(
             coord.posMatrix,
@@ -54,6 +52,4 @@ function drawCircles(painter, source, layer, coords) {
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }
-
-    gl.enableVertexAttribArray(program.a_color);
 }
