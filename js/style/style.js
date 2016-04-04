@@ -37,6 +37,8 @@ function Style(stylesheet, animationLoop) {
         '_redoPlacement'
     ], this);
 
+    this._resetUpdates();
+
     var loaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
@@ -48,9 +50,7 @@ function Style(stylesheet, animationLoop) {
         this._loaded = true;
         this.stylesheet = stylesheet;
 
-        this._resetUpdates();
-        this._updates.changed = true;
-        this._updates.cascade = true;
+        this.cascade();
 
         var sources = stylesheet.sources;
         for (var id in sources) {
@@ -420,10 +420,8 @@ Style.prototype = util.inherit(Evented, {
             this._updates.sources[layer.source] = true;
         }
         this._updates.events.push(['layer.add', {layer: layer}]);
-        this._updates.changed = true;
-        this._updates.cascade = true;
 
-        return this;
+        return this.cascade();
     },
 
     /**
@@ -453,10 +451,8 @@ Style.prototype = util.inherit(Evented, {
 
         this._updates.allLayers = true;
         this._updates.events.push(['layer.remove', {layer: layer}]);
-        this._updates.changed = true;
-        this._updates.cascade = true;
 
-        return this;
+        return this.cascade();
     },
 
     /**
@@ -560,10 +556,7 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
-        this._updates.changed = true;
-        this._updates.cascade = true;
-
-        return this;
+        return this.cascade();
     },
 
     /**
@@ -585,14 +578,17 @@ Style.prototype = util.inherit(Evented, {
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
         layer.setPaintProperty(name, value, klass);
-        this._updates.changed = true;
-        this._updates.cascade = true;
-
-        return this;
+        return this.cascade();
     },
 
     getPaintProperty: function(layer, name, klass) {
         return this.getLayer(layer).getPaintProperty(name, klass);
+    },
+
+    cascade: function () {
+        this._updates.changed = true;
+        this._updates.cascade = true;
+        return this;
     },
 
     serialize: function() {

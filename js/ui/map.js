@@ -200,7 +200,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     addClass: function(klass, options) {
         if (this._classes[klass]) return;
         this._classes[klass] = true;
-        if (this.style) this.style._cascade(this._classes, options);
+        this._classOptions = options;
+        if (this.style) this.style.cascade();
+        this._update(true);
     },
 
     /**
@@ -214,7 +216,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     removeClass: function(klass, options) {
         if (!this._classes[klass]) return;
         delete this._classes[klass];
-        if (this.style) this.style._cascade(this._classes, options);
+        this._classOptions = options;
+        if (this.style) this.style.cascade();
+        this._update(true);
     },
 
     /**
@@ -227,10 +231,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setClasses: function(klasses, options) {
         this._classes = {};
+        this._classOptions = options;
         for (var i = 0; i < klasses.length; i++) {
             this._classes[klasses[i]] = true;
         }
-        if (this.style) this.style._cascade(this._classes, options);
+        if (this.style) this.style.cascade();
+        this._update(true);
     },
 
     /**
@@ -827,7 +833,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     _render: function() {
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
-            this.style.update(this._classes);
+            this.style.update(this._classes, this._classOptions);
+            this._classOptions = null;
             this.style._recalculate(this.transform.zoom);
         }
 
