@@ -85,13 +85,8 @@ StyleLayer.prototype = util.inherit(Evented, {
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
-            if (validateStyle.emitErrors(this, validateStyle.layoutProperty({
-                key: 'layers.' + this.id + '.layout.' + name,
-                layerType: this.type,
-                objectKey: name,
-                value: value,
-                styleSpec: styleSpec
-            }))) return;
+            var key = 'layers.' + this.id + '.layout.' + name;
+            if (this._handleErrors(validateStyle.layoutProperty, key, name, value)) return;
             this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
         this._updateLayoutValue(name);
@@ -125,13 +120,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (value === null || value === undefined) {
                 delete this._paintTransitionOptions[klass || ''][name];
             } else {
-                if (validateStyle.emitErrors(this, validateStyle.paintProperty({
-                    key: validateStyleKey,
-                    layerType: this.type,
-                    objectKey: name,
-                    value: value,
-                    styleSpec: styleSpec
-                }))) return;
+                if (this._handleErrors(validateStyle.paintProperty, validateStyleKey, name, value)) return;
                 this._paintTransitionOptions[klass || ''][name] = value;
             }
         } else {
@@ -141,13 +130,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (value === null || value === undefined) {
                 delete this._paintDeclarations[klass || ''][name];
             } else {
-                if (validateStyle.emitErrors(this, validateStyle.paintProperty({
-                    key: validateStyleKey,
-                    layerType: this.type,
-                    objectKey: name,
-                    value: value,
-                    styleSpec: styleSpec
-                }))) return;
+                if (this._handleErrors(validateStyle.paintProperty, validateStyleKey, name, value)) return;
                 this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
             }
         }
@@ -290,6 +273,16 @@ StyleLayer.prototype = util.inherit(Evented, {
             delete this._layoutFunctions[name];
             this.layout[name] = this.getLayoutValue(name);
         }
+    },
+
+    _handleErrors: function(validate, key, name, value) {
+        return validateStyle.emitErrors(this, validate.call(validateStyle, {
+            key: key,
+            layerType: this.type,
+            objectKey: name,
+            value: value,
+            styleSpec: styleSpec
+        }));
     }
 });
 

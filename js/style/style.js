@@ -317,15 +317,7 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
-
-        if (!Source.is(source)) {
-            if (validateStyle.emitErrors(this, validateStyle.source({
-                key: 'sources.' + id,
-                style: this.serialize(),
-                value: source,
-                styleSpec: styleSpec
-            }))) return this;
-        }
+        if (!Source.is(source) && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
         source = Source.create(source);
         this.sources[id] = source;
@@ -402,15 +394,9 @@ Style.prototype = util.inherit(Evented, {
         this._checkLoaded();
 
         if (!(layer instanceof StyleLayer)) {
-            if (validateStyle.emitErrors(this, validateStyle.layer({
-                key: 'layers.' + layer.id,
-                value: layer,
-                style: this.serialize(),
-                styleSpec: styleSpec,
-                // this layer is not in the style.layers array, so we pass an
-                // impossible array index
-                arrayIndex: -1
-            }))) return this;
+            // this layer is not in the style.layers array, so we pass an impossible array index
+            if (this._handleErrors(validateStyle.layer,
+                    'layers.' + layer.id, layer, false, {arrayIndex: -1})) return this;
 
             var refLayer = layer.ref && this.getLayer(layer.ref);
             layer = StyleLayer.create(layer, refLayer);
@@ -511,12 +497,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (validateStyle.emitErrors(this, validateStyle.filter({
-            key: 'layers.' + layer.id + '.filter',
-            value: filter,
-            style: this.serialize(),
-            styleSpec: styleSpec
-        }))) return this;
+        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = filter;
@@ -631,12 +612,7 @@ Style.prototype = util.inherit(Evented, {
 
     queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
         if (params.filter) {
-            validateStyle.throwErrors(this, validateStyle.filter({
-                key: 'queryRenderedFeatures.filter',
-                value: params.filter,
-                style: this.serialize(),
-                styleSpec: styleSpec
-            }));
+            this._handleErrors(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, true);
         }
 
         var sourceResults = [];
@@ -651,18 +627,21 @@ Style.prototype = util.inherit(Evented, {
 
     querySourceFeatures: function(sourceID, params) {
         if (params.filter) {
-            validateStyle.throwErrors(this, validateStyle.filter({
-                key: 'querySourceFeatures.filter',
-                value: params.filter,
-                style: this.serialize(),
-                styleSpec: styleSpec
-            }));
+            this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
         }
-
         var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ?
-            source.querySourceFeatures(params) :
-            [];
+        return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+    },
+
+    _handleErrors: function(validate, key, value, throws, props) {
+        var action = throws ? validateStyle.throwErrors : validateStyle.emitErrors;
+        var result = validate.call(validateStyle, util.extend({
+            key: key,
+            style: this.serialize(),
+            value: value,
+            styleSpec: styleSpec
+        }, props));
+        return action.call(validateStyle, this, result);
     },
 
     _remove: function() {
