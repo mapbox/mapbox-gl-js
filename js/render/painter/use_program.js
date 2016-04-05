@@ -98,7 +98,8 @@ module.exports._createProgram = function(name) {
     return util.extend({
         program: program,
         definition: definition,
-        attributes: attributes
+        attributes: attributes,
+        numAttributes: numAttributes
     }, attributes, uniforms);
 };
 
@@ -119,27 +120,19 @@ module.exports.useProgram = function (nextProgramName, posMatrix, exMatrix) {
     if (previousProgram !== nextProgram) {
         gl.useProgram(nextProgram.program);
 
-        // Disable all attributes from the existing program that aren't used in
+        var numNextAttributes = nextProgram.numAttributes;
+        var numPrevAttributes = previousProgram ? previousProgram.numAttributes : 0;
+        var i;
+
+        // Disable all attributes from the previous program that aren't used in
         // the new program. Note: attribute indices are *not* program specific!
-        var nextAttributes = util.objectValues(nextProgram.attributes);
-        var previousAttributes = util.objectValues((previousProgram && previousProgram.attributes) || {});
-
-        for (var i = 0; i < previousAttributes.length; i++) {
-            if (nextAttributes.indexOf(previousAttributes[i]) < 0) {
-
-                // WebGL breaks if you disable attribute 0.
-                // http://stackoverflow.com/questions/20305231
-                assert(previousAttributes[i] !== 0);
-
-                gl.disableVertexAttribArray(previousAttributes[i]);
-            }
+        // WebGL breaks if you disable attribute 0. http://stackoverflow.com/questions/20305231
+        for (i = Math.max(1, numNextAttributes); i < numPrevAttributes; i++) {
+            gl.disableVertexAttribArray(i);
         }
-
         // Enable all attributes for the new program.
-        for (var j = 0; j < nextAttributes.length; j++) {
-            if (previousAttributes.indexOf(nextAttributes[j]) < 0) {
-                gl.enableVertexAttribArray(nextAttributes[j]);
-            }
+        for (i = numPrevAttributes; i < numNextAttributes; i++) {
+            gl.enableVertexAttribArray(i);
         }
 
         this.currentProgram = nextProgram;
