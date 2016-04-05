@@ -3,7 +3,6 @@
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
-var TileCoord = require('../source/tile_coord');
 var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -244,7 +243,7 @@ Painter.prototype.renderPass = function(options) {
         if (source) {
             coords = source.getVisibleCoordinates();
             for (j = 0; j < coords.length; j++) {
-                coords[j].posMatrix = this.calculatePosMatrix(coords[j], source.maxzoom);
+                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], source.maxzoom);
             }
             this.clearStencil();
             if (source.prepare) source.prepare();
@@ -330,43 +329,6 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     var translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
-};
-
-/**
- * Calculate the posMatrix that this tile uses to display itself in a map,
- * given a coordinate as (z, x, y) and a transform
- * @param {Object} transform
- * @private
- */
-Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
-
-    if (coord instanceof TileCoord) {
-        coord = coord.toCoordinate();
-    }
-    var transform = this.transform;
-
-    if (maxZoom === undefined) maxZoom = Infinity;
-
-    // Initialize model-view matrix that converts from the tile coordinates
-    // to screen coordinates.
-
-    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-    // so calculate the matrix the maxzoom tile would use.
-    var z = Math.min(coord.zoom, maxZoom);
-    var x = coord.column;
-    var y = coord.row;
-
-    var scale = transform.worldSize / Math.pow(2, z);
-
-    // The position matrix
-    var posMatrix = new Float64Array(16);
-
-    mat4.identity(posMatrix);
-    mat4.translate(posMatrix, posMatrix, [x * scale, y * scale, 0]);
-    mat4.scale(posMatrix, posMatrix, [ scale / EXTENT, scale / EXTENT, 1 ]);
-    mat4.multiply(posMatrix, transform.projMatrix, posMatrix);
-
-    return new Float32Array(posMatrix);
 };
 
 Painter.prototype.saveTexture = function(texture) {
