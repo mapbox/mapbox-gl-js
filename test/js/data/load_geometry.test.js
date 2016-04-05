@@ -35,7 +35,7 @@ test('loadGeometry extent error', function(t) {
 
     loadGeometry(feature);
 
-    t.equal(numWarnings, 877);
+    t.equal(numWarnings, 1);
 
     // Put it back
     console.warn = warn;
