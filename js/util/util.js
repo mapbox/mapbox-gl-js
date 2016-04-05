@@ -411,20 +411,6 @@ exports.filterObject = function(input, iterator, context) {
 };
 
 /**
- * Get an array of all values in an object
- * @param {Object} object
- * @returns {Object}
- * @private
- */
-exports.objectValues = function(object) {
-    var values = [];
-    for (var key in object) {
-        values.push(object[key]);
-    }
-    return values;
-};
-
-/**
  * Deeply compares two object literals.
  * @param {Object} obj1
  * @param {Object} obj2
