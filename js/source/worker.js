@@ -79,10 +79,11 @@ util.extend(Worker.prototype, {
         }
 
         function updateLayer(layer) {
+            var refLayer = that.layers[layer.ref];
             if (that.layers[layer.id]) {
-                that.layers[layer.id].set(layer);
+                that.layers[layer.id].set(layer, refLayer);
             } else {
-                that.layers[layer.id] = StyleLayer.create(layer, that.layers[layer.ref]);
+                that.layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
             that.layers[layer.id].updatePaintTransitions({}, {transition: false});
         }

@@ -15,6 +15,7 @@ var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
 var styleSpec = require('./style_spec');
+var StyleFunction = require('./style_function');
 
 module.exports = Style;
 
@@ -544,7 +545,17 @@ Style.prototype = util.inherit(Evented, {
 
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
+        var wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
         layer.setPaintProperty(name, value, klass);
+        var isFeatureConstant = !(StyleFunction.isFunctionDefinition(value) && value.property !== '$zoom' && value.property !== undefined);
+
+        if (!isFeatureConstant || !wasFeatureConstant) {
+            this._updates.layers[layerId] = true;
+            if (layer.source) {
+                this._updates.sources[layer.source] = true;
+            }
+        }
+
         return this.updateClasses(layerId, name);
     },
 
