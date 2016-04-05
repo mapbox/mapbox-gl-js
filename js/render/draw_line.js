@@ -20,15 +20,6 @@ module.exports = function drawLine(painter, source, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    var i, bucket;
-
-    var hasData = false;
-    for (i = 0; i < coords.length; i++) {
-        bucket = source.getTile(coords[i]).getBucket(layer);
-        if (bucket && bucket.elementGroups.line) hasData = true;
-    }
-    if (!hasData) return;
-
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
@@ -130,7 +121,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
     for (var k = 0; k < coords.length; k++) {
         var coord = coords[k];
         var tile = source.getTile(coord);
-        bucket = tile.getBucket(layer);
+        var bucket = tile.getBucket(layer);
         if (!bucket) continue;
         var elementGroups = bucket.elementGroups.line;
         if (!elementGroups) continue;
@@ -175,7 +166,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var element = bucket.buffers.lineElement;
         element.bind(gl);
 
-        for (i = 0; i < elementGroups.length; i++) {
+        for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
 
             var vtxOffset = group.vertexStartIndex * vertex.itemSize;
