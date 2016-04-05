@@ -236,6 +236,7 @@ Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, 
     for (var j = 0; j < enabledAttributes.length; j++) {
         attribute = enabledAttributes[j];
         if (attribute.isLayerConstant === false && layer.id !== attribute.layerId) continue;
+        if (!getMember(attribute.name)) continue;
 
         gl.vertexAttribPointer(
             program[attribute.programName],
@@ -333,15 +334,17 @@ Bucket.prototype.getUseProgramTokens = function(programInterface, layer) {
     var enabledAttributes = this.attributes[programInterface].enabled;
     for (var i = 0; i < enabledAttributes.length; i++) {
         var enabledAttribute = enabledAttributes[i];
-        if (enabledAttribute.isLayerConstant !== false && enabledAttribute.layerId !== layer.id) continue;
-        tokens[enabledAttribute.typeTokenName] = 'attribute';
+        if (enabledAttribute.isLayerConstant || enabledAttribute.layerId === layer.id) {
+            tokens[enabledAttribute.typeTokenName] = 'attribute';
+        }
     }
 
     var disabledAttributes = this.attributes[programInterface].disabled;
     for (var j = 0; j < this.attributes[programInterface].disabled.length; j++) {
         var disabledAttribute = disabledAttributes[j];
-        if (disabledAttribute.isLayerConstant !== false && disabledAttribute.layerId !== layer.id) continue;
-        tokens[disabledAttribute.typeTokenName] = 'uniform';
+        if (disabledAttribute.isLayerConstant || disabledAttribute.layerId === layer.id) {
+            tokens[disabledAttribute.typeTokenName] = 'uniform';
+        }
     }
 
     return tokens;
@@ -453,7 +456,8 @@ function createAttributes(bucket) {
             var attribute = interface_.attributes[i];
             for (var j = 0; j < bucket.childLayers.length; j++) {
                 var layer = bucket.childLayers[j];
-                if (attribute.isLayerConstant !== false && layer.id !== bucket.layer.id) continue;
+                var isLayerConstant = attribute.isLayerConstant === true || attribute.isLayerConstant === undefined;
+                if (isLayerConstant && layer.id !== bucket.layer.id) continue;
                 if (isAttributeDisabled(bucket, attribute, layer)) {
                     interfaceAttributes.disabled.push(util.extend({}, attribute, {
                         getValue: createGetAttributeValueMethod(bucket, interfaceName, attribute, j),
@@ -461,7 +465,8 @@ function createAttributes(bucket) {
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
                         layerIndex: j,
-                        typeTokenName: attribute.name + 'Type'
+                        typeTokenName: attribute.name + 'Type',
+                        isLayerConstant: isLayerConstant
                     }));
                 } else {
                     interfaceAttributes.enabled.push(util.extend({}, attribute, {
@@ -469,7 +474,8 @@ function createAttributes(bucket) {
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
                         layerIndex: j,
-                        typeTokenName: attribute.name + 'Type'
+                        typeTokenName: attribute.name + 'Type',
+                        isLayerConstant: isLayerConstant
                     }));
                 }
             }
