@@ -151,7 +151,7 @@ Painter.prototype.clearDepth = function() {
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
-Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
+Painter.prototype._renderTileClippingMasks = function(coords) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
@@ -171,7 +171,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var program = this.useProgram('fill', this.calculatePosMatrix(coord, sourceMaxZoom));
+        var program = this.useProgram('fill', coord.posMatrix);
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -239,13 +239,17 @@ Painter.prototype.renderPass = function(options) {
         var group = groups[isOpaquePass ? groups.length - 1 - i : i];
         var source = this.style.sources[group.source];
 
+        var j;
         var coords = [];
         if (source) {
             coords = source.getVisibleCoordinates();
+            for (j = 0; j < coords.length; j++) {
+                coords[j].posMatrix = this.calculatePosMatrix(coords[j], source.maxzoom);
+            }
             this.clearStencil();
             if (source.prepare) source.prepare();
             if (source.isTileClipped) {
-                this._renderTileClippingMasks(coords, source.maxzoom);
+                this._renderTileClippingMasks(coords);
             }
         }
 
@@ -258,7 +262,7 @@ Painter.prototype.renderPass = function(options) {
             coords.reverse();
         }
 
-        for (var j = 0; j < group.length; j++) {
+        for (j = 0; j < group.length; j++) {
             var layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
             this.renderLayer(this, source, layer, coords);

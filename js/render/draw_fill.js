@@ -81,7 +81,7 @@ function drawFill(painter, source, layer, coord) {
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
+    var posMatrix = coord.posMatrix;
     var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
 
     // Draw the stencil mask.
@@ -175,7 +175,7 @@ function drawStroke(painter, source, layer, coord) {
     var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
 
     painter.setPosMatrix(painter.translatePosMatrix(
-        painter.calculatePosMatrix(coord, source.maxzoom),
+        coord.posMatrix,
         tile,
         layer.paint['fill-translate'],
         layer.paint['fill-translate-anchor']

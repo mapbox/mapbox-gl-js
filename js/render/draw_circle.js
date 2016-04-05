@@ -43,7 +43,7 @@ function drawCircles(painter, source, layer, coords) {
         var elements = bucket.buffers.circleElement;
 
         painter.setPosMatrix(painter.translatePosMatrix(
-            painter.calculatePosMatrix(coord, source.maxzoom),
+            coord.posMatrix,
             tile,
             layer.paint['circle-translate'],
             layer.paint['circle-translate-anchor']
