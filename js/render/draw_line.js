@@ -20,12 +20,6 @@ module.exports = function drawLine(painter, source, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    var hasData = coords.some(function(coord) {
-        var bucket = source.getTile(coord).getBucket(layer);
-        return bucket && bucket.elementGroups.line;
-    });
-    if (!hasData) return;
-
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
