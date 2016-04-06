@@ -249,16 +249,16 @@ footer:
             <a class='block pad1y icon globe' href='/mapbox.js/api/'>Mapbox.js</a>
           </div>
           <div class='col4'>
-            <a class='block pad1y icon marker' href='/developers/api/geocoding/'>Geocoding API</a>
-            <a class='block pad1y icon paint' href='/developers/api/styles/'>Styles API</a>
-            <a class='block pad1y icon up' href='/developers/api/uploads/'>Uploads API</a>
+            <a class='block pad1y icon marker' href='/api-documentation/#geocoding'>Geocoding API</a>
+            <a class='block pad1y icon paint' href='/api-documentation/#styles'>Styles API</a>
+            <a class='block pad1y icon up' href='/api-documentation/#uploads'>Uploads API</a>
             <a class='block pad1y icon inspect' href='/developers/api/surface/'>Surface API</a>
           </div>
           <div class='col4'>
-            <a class='block pad1y icon compass' href='/developers/api/directions/'>Directions API</a>
-            <a class='block pad1y icon point-line' href='/developers/api/distance/'>Distance API</a>
-            <a class='block pad1y icon picture' href='/developers/api/static/'>Static API</a>
-            <a class='block pad1y icon data' href='/developers/api/maps/'>Tiles API</a>
+            <a class='block pad1y icon compass' href='/api-documentation/#directions'>Directions API</a>
+            <a class='block pad1y icon point-line' href='/api-documentation/#distance'>Distance API</a>
+            <a class='block pad1y icon picture' href='/api-documentation/#static'>Static API</a>
+            <a class='block pad1y icon data' href='/api-documentation/#maps'>Tiles API</a>
           </div>
         </div>
         <div class='col3 margin1r subnavcol'>
@@ -480,6 +480,8 @@ $dropdownTriggers.each(function() {
       $dropdownArea.removeClass('show');
       $dropdownTriggers.removeClass('show');
     }
+  }).options({
+    timeout: 1000
   });
 });
 
