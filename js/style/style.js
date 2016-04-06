@@ -611,7 +611,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
-        if (params.filter) {
+        if (params && params.filter) {
             this._handleErrors(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, true);
         }
 
@@ -626,7 +626,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     querySourceFeatures: function(sourceID, params) {
-        if (params.filter) {
+        if (params && params.filter) {
             this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
         }
         var source = this.getSource(sourceID);
