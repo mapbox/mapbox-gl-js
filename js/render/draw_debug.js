@@ -22,7 +22,7 @@ function drawDebugTile(painter, source, coord) {
     gl.disable(gl.STENCIL_TEST);
     painter.lineWidth(1 * browser.devicePixelRatio);
 
-    var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
+    var posMatrix = coord.posMatrix;
     var program = painter.useProgram('debug', posMatrix);
 
     // draw bounding rectangle

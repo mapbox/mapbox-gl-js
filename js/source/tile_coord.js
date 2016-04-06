@@ -22,6 +22,9 @@ function TileCoord(z, x, y, w) {
     if (w < 0) w = w * -1 - 1;
     var dim = 1 << this.z;
     this.id = ((dim * dim * w + dim * this.y + this.x) * 32) + this.z;
+
+    // for caching pos matrix calculation when rendering
+    this.posMatrix = null;
 }
 
 TileCoord.prototype.toString = function() {

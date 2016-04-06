@@ -3,7 +3,6 @@
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var FrameHistory = require('./frame_history');
-var TileCoord = require('../source/tile_coord');
 var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
@@ -151,7 +150,7 @@ Painter.prototype.clearDepth = function() {
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
-Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
+Painter.prototype._renderTileClippingMasks = function(coords) {
     var gl = this.gl;
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
@@ -171,7 +170,7 @@ Painter.prototype._renderTileClippingMasks = function(coords, sourceMaxZoom) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var program = this.useProgram('fill', this.calculatePosMatrix(coord, sourceMaxZoom));
+        var program = this.useProgram('fill', coord.posMatrix);
 
         // Draw the clipping mask
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
@@ -239,13 +238,17 @@ Painter.prototype.renderPass = function(options) {
         var group = groups[isOpaquePass ? groups.length - 1 - i : i];
         var source = this.style.sources[group.source];
 
+        var j;
         var coords = [];
         if (source) {
             coords = source.getVisibleCoordinates();
+            for (j = 0; j < coords.length; j++) {
+                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], source.maxzoom);
+            }
             this.clearStencil();
             if (source.prepare) source.prepare();
             if (source.isTileClipped) {
-                this._renderTileClippingMasks(coords, source.maxzoom);
+                this._renderTileClippingMasks(coords);
             }
         }
 
@@ -258,7 +261,7 @@ Painter.prototype.renderPass = function(options) {
             coords.reverse();
         }
 
-        for (var j = 0; j < group.length; j++) {
+        for (j = 0; j < group.length; j++) {
             var layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
             this.renderLayer(this, source, layer, coords);
@@ -326,43 +329,6 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     var translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
-};
-
-/**
- * Calculate the posMatrix that this tile uses to display itself in a map,
- * given a coordinate as (z, x, y) and a transform
- * @param {Object} transform
- * @private
- */
-Painter.prototype.calculatePosMatrix = function(coord, maxZoom) {
-
-    if (coord instanceof TileCoord) {
-        coord = coord.toCoordinate();
-    }
-    var transform = this.transform;
-
-    if (maxZoom === undefined) maxZoom = Infinity;
-
-    // Initialize model-view matrix that converts from the tile coordinates
-    // to screen coordinates.
-
-    // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
-    // so calculate the matrix the maxzoom tile would use.
-    var z = Math.min(coord.zoom, maxZoom);
-    var x = coord.column;
-    var y = coord.row;
-
-    var scale = transform.worldSize / Math.pow(2, z);
-
-    // The position matrix
-    var posMatrix = new Float64Array(16);
-
-    mat4.identity(posMatrix);
-    mat4.translate(posMatrix, posMatrix, [x * scale, y * scale, 0]);
-    mat4.scale(posMatrix, posMatrix, [ scale / EXTENT, scale / EXTENT, 1 ]);
-    mat4.multiply(posMatrix, transform.projMatrix, posMatrix);
-
-    return new Float32Array(posMatrix);
 };
 
 Painter.prototype.saveTexture = function(texture) {

@@ -22,8 +22,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
         buffer.bind(gl);
         buffer.setAttribPointers(gl, program, 0);
 
-        var posMatrix = painter.calculatePosMatrix(coord, source.maxzoom);
-        painter.setPosMatrix(posMatrix);
+        painter.setPosMatrix(coord.posMatrix);
 
         painter.enableTileClippingMask(coord);
 

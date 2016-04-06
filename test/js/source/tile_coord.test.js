@@ -78,7 +78,7 @@ test('TileCoord', function(t) {
                     {column: 0, row: 2, zoom: 2}
                 ],
                 res = TileCoord.cover(z, coords, z);
-            t.deepEqual(res, [{id: 130, w: 0, x: 0, y: 1, z: 2}]);
+            t.deepEqual(res, [{id: 130, w: 0, x: 0, y: 1, z: 2, posMatrix: null}]);
             t.end();
         });
 
@@ -91,7 +91,7 @@ test('TileCoord', function(t) {
                     {column: 12, row: 2, zoom: 2}
                 ],
                 res = TileCoord.cover(z, coords, z);
-            t.deepEqual(res, [{id: 3202, w: 3, x: 0, y: 1, z: 2}]);
+            t.deepEqual(res, [{id: 3202, w: 3, x: 0, y: 1, z: 2, posMatrix: null}]);
             t.end();
         });
 
@@ -104,7 +104,7 @@ test('TileCoord', function(t) {
                     {column: -1, row: 2, zoom: 2}
                 ],
                 res = TileCoord.cover(z, coords, z);
-            t.deepEqual(res, [{id: 738, w: -1, x: 3, y: 1, z: 2}]);
+            t.deepEqual(res, [{id: 738, w: -1, x: 3, y: 1, z: 2, posMatrix: null}]);
             t.end();
         });
 
@@ -117,7 +117,7 @@ test('TileCoord', function(t) {
                     {column: -13, row: 2, zoom: 2}
                 ],
                 res = TileCoord.cover(z, coords, z);
-            t.deepEqual(res, [{id: 3810, w: -4, x: 3, y: 1, z: 2}]);
+            t.deepEqual(res, [{id: 3810, w: -4, x: 3, y: 1, z: 2, posMatrix: null}]);
             t.end();
         });
 
@@ -130,7 +130,9 @@ test('TileCoord', function(t) {
                     {column: -0.5, row: 2, zoom: 2}
                 ],
                 res = TileCoord.cover(z, coords, z);
-            t.deepEqual(res, [{id: 130, w: 0, x: 0, y: 1, z: 2}, {id: 738, w: -1, x: 3, y: 1, z: 2}]);
+            t.deepEqual(res, [
+                {id: 130, w: 0, x: 0, y: 1, z: 2, posMatrix: null},
+                {id: 738, w: -1, x: 3, y: 1, z: 2, posMatrix: null}]);
             t.end();
         });
 

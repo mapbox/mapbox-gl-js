@@ -129,7 +129,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         painter.enableTileClippingMask(coord);
 
         // set uniforms that are different for each tile
-        var posMatrix = painter.translatePosMatrix(painter.calculatePosMatrix(coord, source.maxzoom), tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        var posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
 
         painter.setPosMatrix(posMatrix);
         painter.setExMatrix(painter.transform.exMatrix);
