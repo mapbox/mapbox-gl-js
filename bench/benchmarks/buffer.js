@@ -125,11 +125,11 @@ function preloadAssets(stylesheet, callback) {
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
     var timeStart = performance.now();
 
-    var layers = [];
+    var layers = {};
     for (var i = 0; i < stylesheet.layers.length; i++) {
         var layer = stylesheet.layers[i];
         if (!layer.ref && (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol')) {
-            layers.push(layer);
+            layers[layer.id] = layer;
         }
     }
 
