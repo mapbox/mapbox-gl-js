@@ -281,7 +281,9 @@ StyleLayer.prototype = util.inherit(Evented, {
             layerType: this.type,
             objectKey: name,
             value: value,
-            styleSpec: styleSpec
+            styleSpec: styleSpec,
+            // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
+            style: {glyphs: true, sprite: true}
         }));
     }
 });
