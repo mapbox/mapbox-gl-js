@@ -59,6 +59,7 @@ util.extend(Worker.prototype, {
             that.layers[styleLayer.id] = styleLayer;
         }
 
+        this.layerFamilies = createLayerFamilies(this.layers);
     },
 
     'update layers': function(layers) {
@@ -87,6 +88,8 @@ util.extend(Worker.prototype, {
             }
             that.layers[layer.id].updatePaintTransitions({}, {transition: false});
         }
+
+        this.layerFamilies = createLayerFamilies(this.layers);
     },
 
     'load tile': function(params, callback) {
@@ -107,7 +110,7 @@ util.extend(Worker.prototype, {
             if (err) return callback(err);
 
             tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layers, this.actor, data, callback);
+            tile.parse(tile.data, this.layerFamilies, this.actor, data, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -119,7 +122,7 @@ util.extend(Worker.prototype, {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.layers, this.actor, params.rawTileData, callback);
+            tile.parse(tile.data, this.layerFamilies, this.actor, params.rawTileData, callback);
         }
     },
 
@@ -211,9 +214,30 @@ util.extend(Worker.prototype, {
             var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
             geojsonWrapper.name = '_geojsonTileLayer';
             var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }}).buffer;
-            tile.parse(geojsonWrapper, this.layers, this.actor, rawTileData, callback);
+            tile.parse(geojsonWrapper, this.layerFamilies, this.actor, rawTileData, callback);
         } else {
             return callback(null, null); // nothing in the given tile
         }
     }
 });
+
+function createLayerFamilies(layers) {
+    var families = {};
+
+    for (var layerId in layers) {
+        var layer = layers[layerId];
+        var parentLayerId = layer.ref || layer.id;
+        var parentLayer = layers[parentLayerId];
+
+        if (parentLayer.layout && parentLayer.layout.visibility === 'none') continue;
+
+        families[parentLayerId] = families[parentLayerId] || [];
+        if (layerId === parentLayerId) {
+            families[parentLayerId].unshift(layer);
+        } else {
+            families[parentLayerId].push(layer);
+        }
+    }
+
+    return families;
+}

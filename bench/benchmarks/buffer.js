@@ -5,6 +5,7 @@ var Protobuf = require('pbf');
 var assert = require('assert');
 
 var WorkerTile = require('../../js/source/worker_tile');
+var Worker = require('../../js/source/worker');
 var ajax = require('../../js/util/ajax');
 var Style = require('../../js/style/style');
 var util = require('../../js/util/util');
@@ -125,9 +126,7 @@ function preloadAssets(stylesheet, callback) {
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
     var timeStart = performance.now();
 
-    var layers = stylesheet.layers.filter(function(layer) {
-        return !layer.ref && (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol');
-    });
+    var layerFamilies = createLayerFamilies(stylesheet.layers);
 
     util.asyncAll(coordinates, function(coordinate, eachCallback) {
         var url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
@@ -159,7 +158,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         getTile(url, function(err, response) {
             if (err) throw err;
             var data = new VT.VectorTile(new Protobuf(new Uint8Array(response)));
-            workerTile.parse(data, layers, actor, null, function(err) {
+            workerTile.parse(data, layerFamilies, actor, null, function(err) {
                 if (err) return callback(err);
                 eachCallback();
             });
@@ -179,4 +178,17 @@ function asyncTimesSeries(times, work, callback) {
     } else {
         callback();
     }
+}
+
+var createLayerFamiliesCacheKey;
+var createLayerFamiliesCacheValue;
+function createLayerFamilies(layers) {
+    if (layers !== createLayerFamiliesCacheKey) {
+        var worker = new Worker({addEventListener: function() {} });
+        worker['set layers'](layers);
+
+        createLayerFamiliesCacheKey = layers;
+        createLayerFamiliesCacheValue = worker.layerFamilies;
+    }
+    return createLayerFamiliesCacheValue;
 }

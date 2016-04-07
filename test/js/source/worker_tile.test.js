@@ -24,17 +24,17 @@ test('basic', function(t) {
     });
 
     t.test('basic worker tile', function(t) {
-        var layers = {
-            test: new StyleLayer({
+        var layerFamilies = {
+            test: [new StyleLayer({
                 id: 'test',
                 source: 'source',
                 type: 'circle',
                 layout: {},
                 compare: function () { return true; }
-            })
+            })]
         };
 
-        tile.parse(new Wrapper(features), layers, {}, null, function(err, result) {
+        tile.parse(new Wrapper(features), layerFamilies, {}, null, function(err, result) {
             t.equal(err, null);
             t.ok(result.buckets[0]);
             t.end();
@@ -42,24 +42,24 @@ test('basic', function(t) {
     });
 
     t.test('hidden layers', function(t) {
-        var layers = {
-            'test': new StyleLayer({
+        var layerFamilies = {
+            'test': [new StyleLayer({
                 id: 'test',
                 source: 'source',
                 type: 'circle',
                 layout: {},
                 compare: function () { return true; }
-            }),
-            'test-hidden': new StyleLayer({
+            })],
+            'test-hidden': [new StyleLayer({
                 id: 'test-hidden',
                 source: 'source',
                 type: 'fill',
                 layout: { visibility: 'none' },
                 compare: function () { return true; }
-            })
+            })]
         };
 
-        tile.parse(new Wrapper(features), layers, {}, null, function(err, result) {
+        tile.parse(new Wrapper(features), layerFamilies, {}, null, function(err, result) {
             t.equal(err, null);
             t.equal(Object.keys(result.buckets[0].elementGroups).length, 1, 'element groups exclude hidden layer');
             t.end();
