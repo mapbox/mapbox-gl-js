@@ -23,6 +23,9 @@ function MessageBus(addListeners, postListeners) {
 }
 
 function Dispatcher(length, parent) {
+
+    this.actors = new Array(length);
+
     var parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),
