@@ -24,6 +24,11 @@ html, body, #map {
     padding: 10px;
 }
 
+#checkboxes label {
+    padding-left: 5px;
+    font: 14px sans-serif;
+}
+
 #map.blur {
     background: #000;
     -webkit-transition-property: all;
@@ -83,10 +88,8 @@ html, body, #map {
 <body>
 <div id='map'></div>
 <div id='checkboxes'>
-  <input id='show-console' name='show-console' type='checkbox'> <label for='show-console'>Show console</label><br/>
+  <input id='show-console' name='show-console' type='checkbox'><label for='show-console'>Show console</label><br/>
   <hr/>
-  <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'> <label for='show-tile-boundaries'>tile debug</label><br/>
-  <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'> <label for='show-symbol-collision-boxes'>collision debug</label><br/>
 </div>
 
 <div id='console' class='hide'></div>
@@ -113,7 +116,7 @@ var consoleContainer = document.querySelector('#console');
             method(text);
             var msg = document.createElement('code');
             msg.classList.add(verb);
-            msg.textContent = verb + ': ' + text;
+            msg.textContent = formatTimestamp() + ' ' + verb + ': ' + text;
             container.appendChild(msg);
             container.scrollTop = container.scrollHeight;
 
@@ -125,19 +128,20 @@ var consoleContainer = document.querySelector('#console');
 });
 
 
-document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
-    map.showTileBoundaries = !!this.checked;
-};
-
-document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
-    map.showCollisionBoxes = !!this.checked;
-};
-
 document.getElementById('show-console').onclick = function() {
     var node = document.getElementById('console');
     if (!node) return;
     this.checked ? node.classList.remove('hide') : node.classList.add('hide');
     blurMap(this.checked);
+};
+
+function formatTimestamp() {
+    var d = new Date();
+    var hr  = '00' + d.getHours();
+    var min = '00' + d.getMinutes();
+    var sec = '00' + d.getSeconds();
+    var ms = '000' + d.getMilliseconds();
+    return hr.substr(-2) + ':' + min.substr(-2) + ':' + sec.substr(-2) + '.' + ms.substr(-3);
 };
 
 function blurMap(val) {
@@ -160,6 +164,49 @@ function getURLParameter(name) {
     var output = regexp.exec(window.location.href);
     return output && output[1];
 }
+
+function checkEvent(type, checked) {
+    map.off(type);
+    if (!checked) return;
+    map.on(type, function(data) {
+        var e = (data && data.originalEvent) || {};
+        var dbg =
+            (typeof data.point !== 'undefined' ? ' point = ' + JSON.stringify(data.point) : '') +
+            (typeof e.button !== 'undefined' ? ' button = ' + e.button : '');
+
+        console.log(type + ': ' + dbg);
+    });
+}
+
+// Which map events do we want to observe?
+var checkboxContainer = document.querySelector('#checkboxes');
+
+['touchstart', 'touchend', 'touchmove', 'touchcancel',
+ 'mousedown', 'mouseup', 'mousemove',
+ 'click', 'dblclick', 'contextmenu',
+ 'dragstart', 'drag', 'dragend',
+ 'movestart', 'move', 'moveend',
+ 'zoomstart', 'zoom', 'zoomend',
+ 'rotatestart', 'rotate', 'rotateend',
+ 'pitchstart', 'pitch', 'pitchend',
+ 'boxzoomstart', 'boxzoomend', 'boxzoomcancel'
+].forEach(function (type) {
+    var name = 'show-' + type;
+    var input = document.createElement('input');
+    input.id = name + '-checkbox';
+    input.type = 'checkbox';
+    input.name = name;
+    input.onclick = function() { checkEvent(type, !!this.checked); };
+    checkboxContainer.appendChild(input);
+
+    var label = document.createElement('label');
+    label.for = name;
+    label.textContent = type;
+    checkboxContainer.appendChild(label);
+
+    checkboxContainer.appendChild(document.createElement('br'));
+});
+
 
 </script>
 </body>
