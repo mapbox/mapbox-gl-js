@@ -7,7 +7,7 @@ var StyleLayer = require('../../../js/style/style_layer');
 
 test('Bucket', function(t) {
 
-    function createClass() {
+    function createClass(options) {
         function Class() {
             Bucket.apply(this, arguments);
         }
@@ -21,17 +21,19 @@ test('Bucket', function(t) {
                 secondElementBuffer: 'testSecondElement',
                 secondElementBufferComponents: 2,
 
-                attributeArgs: ['x', 'y'],
+                attributeArgs: options.attributeArgs || ['x', 'y'],
 
-                attributes: [{
+                attributes: options.attributes || [{
                     name: 'map',
                     type: 'Int16',
-                    value: ['x']
+                    value: ['x'],
+                    isLayerConstant: false
                 }, {
                     name: 'box',
                     components: 2,
                     type: 'Int16',
-                    value: ['x * 2', 'y * 2']
+                    value: ['x * 2', 'y * 2'],
+                    isLayerConstant: true
                 }]
             }
         };
@@ -55,11 +57,18 @@ test('Bucket', function(t) {
         };
     }
 
-    function create() {
-        var Class = createClass();
+    function create(options) {
+        options = options || {};
+
+        var serializedLayers = (options.layers || [{ id: 'layerid', type: 'circle' }]);
+        var layers = serializedLayers.map(function(serializedLayer) {
+            return new StyleLayer(serializedLayer);
+        });
+
+        var Class = createClass(options);
         return new Class({
-            layer: new StyleLayer({ id: 'layerid', type: 'circle' }),
-            childLayers: [new StyleLayer({ id: 'layerid', type: 'circle' })],
+            layer: layers[0],
+            childLayers: layers,
             buffers: {}
         });
     }
@@ -89,6 +98,64 @@ test('Bucket', function(t) {
         var e2 = testSecondElement.get(0);
         t.equal(e2.vertices0, 17);
         t.equal(e2.vertices1, 42);
+
+        t.end();
+    });
+
+    t.test('add features, multiple layers', function(t) {
+        var bucket = create({layers: [
+            { id: 'one', type: 'circle' },
+            { id: 'two', type: 'circle' }
+        ]});
+
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateBuffers();
+
+        var v0 = bucket.arrays.testVertex.get(0);
+        t.equal(v0.one__map, 17);
+        t.equal(v0.two__map, 17);
+        t.equal(v0.one__box0, 34);
+        t.equal(v0.one__box1, 84);
+
+        t.end();
+    });
+
+    t.test('add features, disabled attribute', function(t) {
+        var bucket = create({
+            attributes: [{
+                name: 'map',
+                type: 'Int16',
+                value: ['5'],
+                isDisabled: true
+            }]
+        });
+
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateBuffers();
+
+        t.equal(bucket.arrays.testVertex.bytesPerElement, 0);
+        t.deepEqual(
+            bucket.attributes.test.disabled[0].getValue.call(bucket),
+            [5]
+        );
+
+        t.end();
+    });
+
+    t.test('add features, array type attribute', function(t) {
+        var bucket = create({
+            attributes: [{
+                name: 'map',
+                type: 'Int16',
+                value: '[17]'
+            }]
+        });
+
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateBuffers();
+
+        var v0 = bucket.arrays.testVertex.get(0);
+        t.equal(v0.layerid__map, 17);
 
         t.end();
     });
@@ -145,6 +212,35 @@ test('Bucket', function(t) {
     t.test('layout properties', function(t) {
         var bucket = create();
         t.equal(bucket.layer.layout.visibility, 'visible');
+        t.end();
+    });
+
+    t.test('add features', function(t) {
+        var bucket = create();
+
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateBuffers();
+
+        var testVertex = bucket.arrays.testVertex;
+        t.equal(testVertex.length, 1);
+        var v0 = testVertex.get(0);
+        t.equal(v0.layerid__map, 17);
+        t.equal(v0.layerid__box0, 34);
+        t.equal(v0.layerid__box1, 84);
+
+        var testElement = bucket.arrays.testElement;
+        t.equal(testElement.length, 1);
+        var e1 = testElement.get(0);
+        t.equal(e1.vertices0, 1);
+        t.equal(e1.vertices1, 2);
+        t.equal(e1.vertices2, 3);
+
+        var testSecondElement = bucket.arrays.testSecondElement;
+        t.equal(testSecondElement.length, 1);
+        var e2 = testSecondElement.get(0);
+        t.equal(e2.vertices0, 17);
+        t.equal(e2.vertices1, 42);
+
         t.end();
     });
 
