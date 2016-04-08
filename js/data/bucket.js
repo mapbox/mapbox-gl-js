@@ -466,7 +466,8 @@ function createAttributes(bucket) {
                         layerId: layer.id,
                         layerIndex: j,
                         typeTokenName: attribute.name + 'Type',
-                        isLayerConstant: isLayerConstant
+                        isLayerConstant: isLayerConstant,
+                        components: attribute.components || 1
                     }));
                 } else {
                     interfaceAttributes.enabled.push(util.extend({}, attribute, {
@@ -475,7 +476,8 @@ function createAttributes(bucket) {
                         layerId: layer.id,
                         layerIndex: j,
                         typeTokenName: attribute.name + 'Type',
-                        isLayerConstant: isLayerConstant
+                        isLayerConstant: isLayerConstant,
+                        components: attribute.components || 1
                     }));
                 }
             }
