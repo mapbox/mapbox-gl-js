@@ -328,26 +328,16 @@ Bucket.prototype.recalculateStyleLayers = function() {
     }
 };
 
-Bucket.prototype.getUseProgramTokens = function(programInterface, layer) {
-    var tokens = {};
-
+Bucket.prototype.getProgramMacros = function(programInterface, layer) {
+    var macros = [];
     var enabledAttributes = this.attributes[programInterface].enabled;
     for (var i = 0; i < enabledAttributes.length; i++) {
         var enabledAttribute = enabledAttributes[i];
-        if (enabledAttribute.isLayerConstant || enabledAttribute.layerId === layer.id) {
-            tokens[enabledAttribute.typeTokenName] = 'attribute';
+        if (enabledAttribute.isLayerConstant === false && enabledAttribute.layerId === layer.id) {
+            macros.push(enabledAttribute.macro);
         }
     }
-
-    var disabledAttributes = this.attributes[programInterface].disabled;
-    for (var j = 0; j < this.attributes[programInterface].disabled.length; j++) {
-        var disabledAttribute = disabledAttributes[j];
-        if (disabledAttribute.isLayerConstant || disabledAttribute.layerId === layer.id) {
-            tokens[disabledAttribute.typeTokenName] = 'uniform';
-        }
-    }
-
-    return tokens;
+    return macros;
 };
 
 var createVertexAddMethodCache = {};
@@ -465,7 +455,6 @@ function createAttributes(bucket) {
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
                         layerIndex: j,
-                        typeTokenName: attribute.name + 'Type',
                         isLayerConstant: isLayerConstant,
                         components: attribute.components || 1
                     }));
@@ -475,7 +464,7 @@ function createAttributes(bucket) {
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
                         layerIndex: j,
-                        typeTokenName: attribute.name + 'Type',
+                        macro: 'ATTRIBUTE_' + attribute.name.toUpperCase(),
                         isLayerConstant: isLayerConstant,
                         components: attribute.components || 1
                     }));
