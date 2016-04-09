@@ -40,19 +40,9 @@ CircleBucket.prototype.programInterfaces = {
             components: 4,
             type: 'Uint8',
             isLayerConstant: false,
-            value: (
-                'this._premultiplyColor(' +
-                    'layer.getPaintValue("circle-color", globalProperties, featureProperties),' +
-                    'layer.getPaintValue("circle-opacity", globalProperties, featureProperties)' +
-                ')'
-            ),
+            value: 'this._premultiplyColor(layer.getPaintValue("circle-color", globalProperties, featureProperties), 1)',
             multiplier: 255,
-            isDisabled: function(layer) {
-                return (
-                    layer.isPaintValueFeatureConstant("circle-color") &&
-                    layer.isPaintValueFeatureConstant('circle-opacity')
-                );
-            }
+            paintProperty: 'circle-color'
         }, {
             name: 'radius',
             components: 1,
@@ -60,9 +50,7 @@ CircleBucket.prototype.programInterfaces = {
             isLayerConstant: false,
             value: ['layer.getPaintValue("circle-radius", globalProperties, featureProperties)'],
             multiplier: 10,
-            isDisabled: function(layer) {
-                return layer.isPaintValueFeatureConstant("circle-radius");
-            }
+            paintProperty: 'circle-radius'
         }]
     }
 };

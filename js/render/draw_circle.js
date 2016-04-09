@@ -29,6 +29,7 @@ function drawCircles(painter, source, layer, coords) {
 
         gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
+        gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);
 
         painter.setPosMatrix(painter.translatePosMatrix(
             coord.posMatrix,
