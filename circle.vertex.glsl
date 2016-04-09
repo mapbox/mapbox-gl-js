@@ -6,7 +6,11 @@ uniform mediump float u_size;
 
 attribute vec2 a_pos;
 
-{{colorType}} lowp vec4 a_color;
+#ifdef ATTRIBUTE_COLOR
+attribute lowp vec4 a_color;
+#else
+uniform lowp vec4 a_color;
+#endif
 
 varying vec2 v_extrude;
 varying lowp vec4 v_color;
