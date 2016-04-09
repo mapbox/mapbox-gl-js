@@ -448,7 +448,7 @@ function createAttributes(bucket) {
                 var layer = bucket.childLayers[j];
                 var isLayerConstant = attribute.isLayerConstant === true || attribute.isLayerConstant === undefined;
                 if (isLayerConstant && layer.id !== bucket.layer.id) continue;
-                if (isAttributeDisabled(bucket, attribute, layer)) {
+                if (isAttributeDisabled(attribute, layer)) {
                     interfaceAttributes.disabled.push(util.extend({}, attribute, {
                         getValue: createGetAttributeValueMethod(bucket, interfaceName, attribute, j),
                         name: layer.id + '__' + attribute.name,
@@ -476,12 +476,7 @@ function createAttributes(bucket) {
 }
 
 
-function isAttributeDisabled(bucket, attribute, layer) {
-    if (attribute.isDisabled === undefined || attribute.isDisabled === false) {
-        return false;
-    } else if (attribute.isDisabled === true) {
-        return true;
-    } else {
-        return !!attribute.isDisabled.call(bucket, layer);
-    }
+function isAttributeDisabled(attribute, layer) {
+    return attribute.paintProperty !== undefined &&
+        layer.isPaintValueFeatureConstant(attribute.paintProperty);
 }

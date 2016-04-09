@@ -126,7 +126,7 @@ test('Bucket', function(t) {
                 name: 'map',
                 type: 'Int16',
                 value: ['5'],
-                isDisabled: true
+                paintProperty: 'circle-color'
             }]
         });
 
