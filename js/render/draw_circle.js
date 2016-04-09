@@ -31,7 +31,7 @@ function drawCircles(painter, source, layer, coords) {
         var elementGroups = bucket.elementGroups.circle;
         if (!elementGroups) continue;
 
-        var program = painter.useProgram('circle', bucket.getUseProgramTokens('circle', layer));
+        var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
         gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
         gl.uniform1f(program.u_size, layer.paint['circle-radius']);
