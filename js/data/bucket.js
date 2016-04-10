@@ -202,75 +202,23 @@ Bucket.prototype.trimArrays = function() {
 };
 
 /**
- * @enum {string} AttributeType
- * @private
- * @readonly
- */
-var AttributeType = {
-    Int8:   'BYTE',
-    Uint8:  'UNSIGNED_BYTE',
-    Int16:  'SHORT',
-    Uint16: 'UNSIGNED_SHORT'
-};
-
-/**
  * Set the attribute pointers in a WebGL context
  * @private
  * @param gl The WebGL context
  * @param program The active WebGL program
  * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
- * @param {Array} arguments to be passed to disabled attribute value functions
  */
-Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, globalProperties, bindPaint) {
-    var attribute;
+Bucket.prototype.setAttribPointers = function(programName, gl, program, offset) {
+    var vertexBuffer = this.buffers[this.getBufferName(programName, 'vertex')];
+    vertexBuffer.setVertexAttribPointers(gl, program, offset / vertexBuffer.itemSize);
+};
 
-    if (bindPaint) {
-        // Set disabled attributes
-        var disabledAttributes = this.attributes[programName].paintAttributes[layer.id].disabled;
-        for (var i = 0; i < disabledAttributes.length; i++) {
-            attribute = disabledAttributes[i];
-            var attributeId = program[attribute.name];
-            gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue(layer, globalProperties));
-        }
-    }
-
-    // Set enabled attributes
-    var enabledAttributes = bindPaint ?
-        this.attributes[programName].paintAttributes[layer.id].enabled :
-        this.attributes[programName].coreAttributes;
-
-    var vertexBuffer = bindPaint ?
-        this.buffers[this.getBufferName(layer.id, programName)] :
-        this.buffers[this.getBufferName(programName, 'vertex')];
-
-    if (bindPaint) {
-        // TODO remove
-        var bytesPerElement = this.buffers[this.getBufferName(programName, 'vertex')].itemSize;
-        offset = offset / bytesPerElement * vertexBuffer.itemSize;
-    }
-
-    for (var j = 0; j < enabledAttributes.length; j++) {
-        attribute = enabledAttributes[j];
-        if (!getMember(attribute.name)) continue;
-
-        gl.vertexAttribPointer(
-            program[attribute.name],
-            attribute.components,
-            gl[AttributeType[attribute.type]],
-            false,
-            vertexBuffer.arrayType.bytesPerElement,
-            offset + getMember(attribute.name).offset
-        );
-    }
-
-    function getMember(memberName) {
-        var members = vertexBuffer.arrayType.members;
-        for (var k = 0; k < members.length; k++) {
-            var member = members[k];
-            if (member.name === memberName) {
-                return member;
-            }
-        }
+Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalProperties) {
+    var disabledAttributes = this.attributes[programName].paintAttributes[layer.id].disabled;
+    for (var i = 0; i < disabledAttributes.length; i++) {
+        var attribute = disabledAttributes[i];
+        var attributeId = program[attribute.name];
+        gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue(layer, globalProperties));
     }
 };
 
@@ -293,8 +241,10 @@ Bucket.prototype.bindBuffers = function(programInterfaceName, gl, options) {
     }
 };
 
-Bucket.prototype.bindPaintBuffer = function(programInterfaceName, gl, layerID) {
-    this.buffers[this.getBufferName(layerID, programInterfaceName)].bind(gl);
+Bucket.prototype.bindPaintBuffer = function(gl, interfaceName, layerID, program, vertexStartIndex) {
+    var buffer = this.buffers[this.getBufferName(layerID, interfaceName)];
+    buffer.bind(gl);
+    buffer.setVertexAttribPointers(gl, program, vertexStartIndex);
 };
 
 /**
