@@ -115,7 +115,7 @@ function drawFill(painter, source, layer, coord) {
     var fillProgram = painter.useProgram('fill');
     painter.setPosMatrix(translatedPosMatrix);
 
-    bucket.bindBuffers('fill', gl);
+    bucket.bindLayoutBuffers('fill', gl);
 
     for (var i = 0; i < elementGroups.length; i++) {
         var group = elementGroups[i];
@@ -183,7 +183,7 @@ function drawStroke(painter, source, layer, coord) {
     if (image) { setPattern(image, opacity, tile, coord, painter, program); }
 
     // Draw all buffers
-    bucket.bindBuffers('fill', gl, {secondElement: true});
+    bucket.bindLayoutBuffers('fill', gl, {secondElement: true});
 
     painter.enableTileClippingMask(coord);
 

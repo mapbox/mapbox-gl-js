@@ -1,5 +1,7 @@
 'use strict';
 
+var assert = require('assert');
+
 module.exports = Buffer;
 
 /**
@@ -39,6 +41,42 @@ Buffer.prototype.bind = function(gl) {
         this.arrayBuffer = null;
     } else {
         gl.bindBuffer(type, this.buffer);
+    }
+};
+
+/**
+ * @enum {string} AttributeType
+ * @private
+ * @readonly
+ */
+var AttributeType = {
+    Int8:   'BYTE',
+    Uint8:  'UNSIGNED_BYTE',
+    Int16:  'SHORT',
+    Uint16: 'UNSIGNED_SHORT'
+};
+
+/**
+ * Set the attribute pointers in a WebGL context
+ * @private
+ * @param gl The WebGL context
+ * @param program The active WebGL program
+ * @param {number} offset The index offset of the attribute data in the currently bound GL buffer.
+ */
+Buffer.prototype.setVertexAttribPointers = function(gl, program, offset) {
+    for (var j = 0; j < this.attributes.length; j++) {
+        var member = this.attributes[j];
+        var attribIndex = program[member.name];
+        assert(attribIndex !== undefined, 'array member "' + member.name + '" name does not match shader attribute name');
+
+        gl.vertexAttribPointer(
+            attribIndex,
+            member.components,
+            gl[AttributeType[member.type]],
+            false,
+            this.arrayType.bytesPerElement,
+            offset * this.arrayType.bytesPerElement + member.offset
+        );
     }
 };
 
