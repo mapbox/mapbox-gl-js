@@ -145,7 +145,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
     var group, count;
 
-    bucket.bindBuffers(programInterfaceName, gl);
+    bucket.bindLayoutBuffers(programInterfaceName, gl);
 
     if (sdf) {
         var sdfPx = 8;
@@ -179,7 +179,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
         for (var i = 0; i < elementGroups.length; i++) {
             group = elementGroups[i];
-            bucket.bindBuffers(programInterfaceName, gl);
+            bucket.bindLayoutBuffers(programInterfaceName, gl);
             bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset, layer);
 
             count = group.elementLength * 3;

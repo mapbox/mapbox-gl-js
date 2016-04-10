@@ -163,7 +163,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(program.u_ratio, ratio);
         }
 
-        bucket.bindBuffers('line', gl);
+        bucket.bindLayoutBuffers('line', gl);
 
         for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
