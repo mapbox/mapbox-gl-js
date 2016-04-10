@@ -4,6 +4,7 @@ var featureFilter = require('feature-filter');
 var Buffer = require('./buffer');
 var util = require('../util/util');
 var StructArrayType = require('../util/struct_array');
+var VertexArrayObject = require('../render/vertex_array_object');
 
 module.exports = Bucket;
 
@@ -76,6 +77,18 @@ function Bucket(options) {
 
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
+
+        for (var l = 0; l < this.childLayers.length; l++) {
+            for (var s in this.elementGroups) {
+                var elementGroups = this.elementGroups[s];
+                if (elementGroups) {
+                    for (var i = 0; i < elementGroups.length; i++) {
+                        elementGroups[i].vao = new VertexArrayObject();
+                    }
+                }
+            }
+        }
+
         this.buffers = util.mapObject(options.arrays, function(array, bufferName) {
             var arrayType = options.arrayTypes[bufferName];
             var type = (arrayType.members.length && arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);

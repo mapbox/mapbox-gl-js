@@ -31,6 +31,8 @@ function drawCircles(painter, source, layer, coords) {
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
         gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);
 
+        bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
+
         painter.setPosMatrix(painter.translatePosMatrix(
             coord.posMatrix,
             tile,
@@ -39,14 +41,16 @@ function drawCircles(painter, source, layer, coords) {
         ));
         painter.setExMatrix(painter.transform.exMatrix);
 
+        var vertexBuffer = bucket.buffers.circleVertex;
+        var paintVertexBuffer = bucket.buffers[layer.id + 'Circle'];
+        var elementBuffer = bucket.buffers.circleElement;
+
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];
             var count = group.elementLength * 3;
-            bucket.bindLayoutBuffers('circle', gl);
-            bucket.setAttribPointers('circle', gl, program, group.vertexOffset);
-            bucket.bindPaintBuffer(gl, 'circle', layer.id, program, group.vertexStartIndex);
-            bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
+            group.vao.bind(gl, program, vertexBuffer, paintVertexBuffer, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+            group.vao.unbind(gl);
         }
     }
 }
