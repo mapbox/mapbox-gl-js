@@ -154,11 +154,12 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
 
         if (layer.paint[prefix + '-halo-width']) {
-            var haloColor = util.premultiply(layer.paint[prefix + '-halo-color'], layer.paint[prefix + '-opacity']);
+            var haloColor = util.premultiply(layer.paint[prefix + '-halo-color']);
 
             // Draw halo underneath the text.
             gl.uniform1f(program.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
             gl.uniform4fv(program.u_color, haloColor);
+            gl.uniform1f(program.u_opacity, layer.paint[prefix + '-opacity']);
             gl.uniform1f(program.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.length; j++) {
@@ -170,9 +171,10 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
             }
         }
 
-        var color = util.premultiply(layer.paint[prefix + '-color'], layer.paint[prefix + '-opacity']);
+        var color = util.premultiply(layer.paint[prefix + '-color']);
         gl.uniform1f(program.u_gamma, gamma * gammaScale);
         gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_opacity, layer.paint[prefix + '-opacity']);
         gl.uniform1f(program.u_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.length; i++) {

@@ -2,6 +2,7 @@ precision mediump float;
 
 uniform vec2 u_linewidth;
 uniform lowp vec4 u_color;
+uniform lowp float u_opacity;
 uniform float u_blur;
 uniform sampler2D u_image;
 uniform float u_sdfgamma;
@@ -27,5 +28,5 @@ void main() {
     float sdfdist = mix(sdfdist_a, sdfdist_b, u_mix);
     alpha *= smoothstep(0.5 - u_sdfgamma, 0.5 + u_sdfgamma, sdfdist);
 
-    gl_FragColor = u_color * alpha;
+    gl_FragColor = u_color * (alpha * u_opacity);
 }

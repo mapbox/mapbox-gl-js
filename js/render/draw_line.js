@@ -45,7 +45,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
     }
 
     var outset = offset + edgeWidth + antialiasing / 2 + shift;
-    var color = util.premultiply(layer.paint['line-color'], layer.paint['line-opacity']);
+    var color = util.premultiply(layer.paint['line-color']);
 
     var tr = painter.transform;
 
@@ -69,6 +69,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.uniform2fv(program.u_linewidth, [ outset, inset ]);
         gl.uniform1f(program.u_blur, blur);
         gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_opacity, layer.paint['line-opacity']);
 
         posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -116,6 +117,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.uniform1f(program.u_offset, -layer.paint['line-offset']);
         gl.uniformMatrix2fv(program.u_antialiasingmatrix, false, antialiasingMatrix);
         gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_opacity, layer.paint['line-opacity']);
     }
 
     for (var k = 0; k < coords.length; k++) {

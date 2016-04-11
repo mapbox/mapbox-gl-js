@@ -9,12 +9,13 @@ function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
+    var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
-    var strokeColor = util.premultiply(layer.paint['fill-outline-color'], layer.paint['fill-opacity']);
+    var strokeColor = util.premultiply(layer.paint['fill-outline-color']);
+    var opacity = layer.paint['fill-opacity'];
 
     // Draw fill
-    if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1)) {
+    if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         for (var i = 0; i < coords.length; i++) {
@@ -44,6 +45,7 @@ function draw(painter, source, layer, coords) {
             }
             gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
             gl.uniform4fv(outlineProgram.u_color, strokeColor ? strokeColor : color);
+            gl.uniform1f(outlineProgram.u_opacity, opacity);
 
             for (var j = 0; j < coords.length; j++) {
                 drawStroke(painter, source, layer, coords[j]);
@@ -77,7 +79,7 @@ function drawFill(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var color = util.premultiply(layer.paint['fill-color'], layer.paint['fill-opacity']);
+    var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
 
@@ -145,6 +147,7 @@ function drawFill(painter, source, layer, coord) {
         // Draw filling rectangle.
         program = painter.useProgram('fill');
         gl.uniform4fv(fillProgram.u_color, color);
+        gl.uniform1f(fillProgram.u_opacity, opacity);
     }
 
     painter.setPosMatrix(posMatrix);

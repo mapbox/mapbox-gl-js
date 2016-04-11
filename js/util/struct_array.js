@@ -116,6 +116,7 @@ function StructArrayType(options) {
 
     function StructArrayType() {
         StructArray.apply(this, arguments);
+        this.members = StructType.prototype.members;
     }
 
     StructArrayType.serialize = serializeStructArrayType;
