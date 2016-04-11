@@ -27,13 +27,12 @@ test('Bucket', function(t) {
                     name: 'map',
                     type: 'Int16',
                     value: ['x'],
-                    isLayerConstant: false
+                    paintProperty: 'circle-color'
                 }, {
                     name: 'box',
                     components: 2,
                     type: 'Int16',
-                    value: ['x * 2', 'y * 2'],
-                    isLayerConstant: true
+                    value: ['x * 2', 'y * 2']
                 }]
             }
         };
@@ -57,13 +56,29 @@ test('Bucket', function(t) {
         };
     }
 
+    var dataDrivenPaint = {
+        'circle-color': {
+            stops: [[0, 'red'], [100, 'violet']],
+            property: 'mapbox'
+        }
+    };
+
+    var constantPaint = {};
+
     function create(options) {
         options = options || {};
 
-        var serializedLayers = (options.layers || [{ id: 'layerid', type: 'circle' }]);
+        var serializedLayers = (options.layers || [{
+            id: 'layerid',
+            type: 'circle',
+            paint: dataDrivenPaint
+        }]);
         var layers = serializedLayers.map(function(serializedLayer) {
-            return new StyleLayer(serializedLayer);
+            var styleLayer = new StyleLayer(serializedLayer);
+            styleLayer.updatePaintTransitions([], {}, {});
+            return styleLayer;
         });
+
 
         var Class = createClass(options);
         return new Class({
@@ -104,8 +119,8 @@ test('Bucket', function(t) {
 
     t.test('add features, multiple layers', function(t) {
         var bucket = create({layers: [
-            { id: 'one', type: 'circle' },
-            { id: 'two', type: 'circle' }
+            { id: 'one', type: 'circle', paint: dataDrivenPaint },
+            { id: 'two', type: 'circle', paint: dataDrivenPaint }
         ]});
 
         bucket.features = [createFeature(17, 42)];
@@ -127,7 +142,10 @@ test('Bucket', function(t) {
                 type: 'Int16',
                 value: ['5'],
                 paintProperty: 'circle-color'
-            }]
+            }],
+            layers: [
+                { id: 'one', type: 'circle', paint: constantPaint }
+            ]
         });
 
         bucket.features = [createFeature(17, 42)];
