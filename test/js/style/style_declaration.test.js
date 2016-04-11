@@ -7,6 +7,8 @@ test('StyleDeclaration', function(t) {
     t.test('constant', function(t) {
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate({$zoom: 0}), 5);
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate({$zoom: 100}), 5);
+        t.ok((new StyleDeclaration({type: "number"}, 5)).isFeatureConstant);
+        t.ok((new StyleDeclaration({type: "number"}, 5)).isGlobalConstant);
         t.end();
     });
 
@@ -20,6 +22,8 @@ test('StyleDeclaration', function(t) {
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [1, 10], [2, 20]] })).calculate({$zoom: 2}), 20);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [1, 10], [2, 20]] })).calculate({$zoom: 1}), 10);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0]] })).calculate({$zoom: 6}), 0);
+        t.ok((new StyleDeclaration(reference, { stops: [[0, 1]] })).isFeatureConstant);
+        t.notOk((new StyleDeclaration(reference, { stops: [[0, 1]] })).isGlobalConstant);
         t.end();
     });
 
@@ -66,6 +70,18 @@ test('StyleDeclaration', function(t) {
         // cached
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate({$zoom: 0}), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate({$zoom: 0}), [ 1, 0.2, 0, 1 ]);
+        t.end();
+    });
+
+    t.test('property functions', function(t) {
+        var declaration = new StyleDeclaration(
+            {type: "number", function: "interpolated"},
+            { stops: [[0, 1]], property: 'mapbox' }
+        );
+
+        t.notOk(declaration.isFeatureConstant);
+        t.notOk(declaration.isGlobalConstant);
+
         t.end();
     });
 
