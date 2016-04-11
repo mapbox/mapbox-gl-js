@@ -53,6 +53,16 @@ CircleBucket.prototype.programInterfaces = {
                     layer.isPaintValueFeatureConstant('circle-opacity')
                 );
             }
+        }, {
+            name: 'radius',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false,
+            value: ['layer.getPaintValue("circle-radius", globalProperties, featureProperties)'],
+            multiplier: 10,
+            isDisabled: function(layer) {
+                return layer.isPaintValueFeatureConstant("circle-radius");
+            }
         }]
     }
 };
