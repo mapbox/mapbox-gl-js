@@ -12,6 +12,10 @@ function FillBucket() {
 
 FillBucket.prototype = util.inherit(Bucket, {});
 
+FillBucket.prototype.addFillVertex = function(x, y) {
+    return this.arrays.fillVertex.emplaceBack(x, y);
+};
+
 FillBucket.prototype.programInterfaces = {
     fill: {
         vertexBuffer: true,
@@ -19,13 +23,10 @@ FillBucket.prototype.programInterfaces = {
         secondElementBuffer: true,
         secondElementBufferComponents: 2,
 
-        attributeArgs: ['x', 'y'],
-
         attributes: [{
             name: 'pos',
             components: 2,
-            type: 'Int16',
-            value: ['x', 'y']
+            type: 'Int16'
         }]
     }
 };

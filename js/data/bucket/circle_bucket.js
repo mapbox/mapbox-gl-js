@@ -20,21 +20,21 @@ function CircleBucket() {
 
 CircleBucket.prototype = util.inherit(Bucket, {});
 
+CircleBucket.prototype.addCircleVertex = function(x, y, extrudeX, extrudeY) {
+    return this.arrays.circleVertex.emplaceBack(
+            (x * 2) + ((extrudeX + 1) / 2),
+            (y * 2) + ((extrudeY + 1) / 2));
+};
+
 CircleBucket.prototype.programInterfaces = {
     circle: {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributeArgs: ['globalProperties', 'featureProperties', 'x', 'y', 'extrudeX', 'extrudeY'],
-
         attributes: [{
             name: 'pos',
             components: 2,
-            type: 'Int16',
-            value: [
-                '(x * 2) + ((extrudeX + 1) / 2)',
-                '(y * 2) + ((extrudeY + 1) / 2)'
-            ]
+            type: 'Int16'
         }, {
             name: 'color',
             components: 4,
@@ -84,10 +84,10 @@ CircleBucket.prototype.addFeature = function(feature) {
 
             var group = this.makeRoomFor('circle', 4);
 
-            var index = this.addCircleVertex(globalProperties, feature.properties, x, y, -1, -1) - group.vertexStartIndex;
-            this.addCircleVertex(globalProperties, feature.properties, x, y, 1, -1);
-            this.addCircleVertex(globalProperties, feature.properties, x, y, 1, 1);
-            this.addCircleVertex(globalProperties, feature.properties, x, y, -1, 1);
+            var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
+            this.addCircleVertex(x, y, 1, -1);
+            this.addCircleVertex(x, y, 1, 1);
+            this.addCircleVertex(x, y, -1, 1);
             group.vertexLength += 4;
 
             this.addCircleElement(index, index + 1, index + 2);

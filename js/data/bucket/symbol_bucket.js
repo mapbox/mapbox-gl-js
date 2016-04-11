@@ -33,83 +33,84 @@ function SymbolBucket(options) {
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
 
-var programAttributeArgs = ['x', 'y', 'ox', 'oy', 'tx', 'ty', 'minzoom', 'maxzoom', 'labelminzoom'];
-
 var programAttributes = [{
     name: 'pos',
     components: 2,
-    type: 'Int16',
-    value: ['x', 'y']
+    type: 'Int16'
 }, {
     name: 'offset',
     components: 2,
-    type: 'Int16',
-    value: [
-        'Math.round(ox * 64)', // use 1/64 pixels for placement
-        'Math.round(oy * 64)'
-    ]
+    type: 'Int16'
 }, {
     name: 'data1',
     components: 4,
-    type: 'Uint8',
-    value: [
-        'tx / 4',                   // tex
-        'ty / 4',                   // tex
-        '(labelminzoom || 0) * 10', // labelminzoom
-        '0'
-    ]
+    type: 'Uint8'
 }, {
     name: 'data2',
     components: 2,
-    type: 'Uint8',
-    value: [
-        '(minzoom || 0) * 10',             // minzoom
-        'Math.min(maxzoom || 25, 25) * 10' // minzoom
-    ]
+    type: 'Uint8'
 }];
+
+function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+    return array.emplaceBack(
+            // pos
+            x,
+            y,
+            // offset
+            Math.round(ox * 64), // use 1/64 pixels for placement
+            Math.round(oy * 64),
+            // data1
+            tx / 4,                   // tex
+            ty / 4,                   // tex
+            (labelminzoom || 0) * 10, // labelminzoom
+            0,
+            // data2
+            (minzoom || 0) * 10,               // minzoom
+            Math.min(maxzoom || 25, 25) * 10); // minzoom
+}
+
+SymbolBucket.prototype.addCollisionBoxVertex = function(point, extrude, maxZoom, placementZoom) {
+    return this.arrays.collisionBoxVertex.emplaceBack(
+            // pos
+            point.x,
+            point.y,
+            // extrude
+            Math.round(extrude.x),
+            Math.round(extrude.y),
+            // data
+            maxZoom * 10,
+            placementZoom * 10);
+};
 
 SymbolBucket.prototype.programInterfaces = {
 
     glyph: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributeArgs: programAttributeArgs,
         attributes: programAttributes
     },
 
     icon: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributeArgs: programAttributeArgs,
         attributes: programAttributes
     },
 
     collisionBox: {
         vertexBuffer: true,
 
-        attributeArgs: ['point', 'extrude', 'maxZoom', 'placementZoom'],
-
         attributes: [{
             name: 'pos',
             components: 2,
-            type: 'Int16',
-            value: [ 'point.x', 'point.y' ]
+            type: 'Int16'
         }, {
             name: 'extrude',
             components: 2,
-            type: 'Int16',
-            value: [
-                'Math.round(extrude.x)',
-                'Math.round(extrude.y)'
-            ]
+            type: 'Int16'
         }, {
             name: 'data',
             components: 2,
-            type: 'Uint8',
-            value: [
-                'maxZoom * 10',
-                'placementZoom * 10'
-            ]
+            type: 'Uint8'
         }]
     }
 };
@@ -437,7 +438,7 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
 
     // TODO manual curry
     var addElement = this[this.getAddMethodName(programName, 'element')].bind(this);
-    var addVertex = this[this.getAddMethodName(programName, 'vertex')].bind(this);
+    var vertexArray = this.arrays[this.getBufferName(programName, 'vertex')];
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -466,10 +467,10 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var index = addVertex(anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom) - group.vertexStartIndex;
-        addVertex(anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        addVertex(anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        addVertex(anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom) - group.vertexStartIndex;
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
         group.vertexLength += 4;
 
         addElement(index, index + 1, index + 2);

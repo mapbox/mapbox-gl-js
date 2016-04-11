@@ -47,9 +47,6 @@ Bucket.EXTENT = 8192;
  * style spec layer type. Because `Bucket` is an abstract class,
  * instances should be created via the `Bucket.create` method.
  *
- * For performance reasons, `Bucket` creates its "add"s methods at
- * runtime using `new Function(...)`.
- *
  * @class Bucket
  * @private
  * @param options
@@ -150,7 +147,6 @@ Bucket.prototype.createArrays = function() {
         var programInterface = this.programInterfaces[programName];
 
         if (programInterface.vertexBuffer) {
-            var vertexAddMethodName = this.getAddMethodName(programName, 'vertex');
             var vertexBufferName = this.getBufferName(programName, 'vertex');
 
             var VertexArrayType = new StructArrayType({
@@ -160,8 +156,6 @@ Bucket.prototype.createArrays = function() {
 
             arrays[vertexBufferName] = new VertexArrayType();
             arrayTypes[vertexBufferName] = VertexArrayType.serialize();
-
-            this[vertexAddMethodName] = this[vertexAddMethodName] || createVertexAddMethod(this, programName);
         }
 
         if (programInterface.elementBuffer) {
@@ -358,45 +352,6 @@ Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, 
         }
     }
 };
-
-var createVertexAddMethodCache = {};
-function createVertexAddMethod(bucket, interfaceName) {
-    var enabledAttributes = bucket.attributes[interfaceName].enabled;
-    var programInterface = bucket.programInterfaces[interfaceName];
-
-    var body = 'var layer;\n';
-
-    var pushArgs = [];
-
-    for (var i = 0; i < enabledAttributes.length; i++) {
-        var attribute = enabledAttributes[i];
-        if (attribute.paintProperty) continue;
-
-        var attributePushArgs = [];
-        attributePushArgs = attributePushArgs.concat(attribute.value);
-
-        var multipliedAttributePushArgs;
-        if (attribute.multiplier) {
-            multipliedAttributePushArgs = [];
-            for (var k = 0; k < attributePushArgs.length; k++) {
-                multipliedAttributePushArgs[k] = attributePushArgs[k] + '*' + attribute.multiplier;
-            }
-        } else {
-            multipliedAttributePushArgs = attributePushArgs;
-        }
-
-        pushArgs = pushArgs.concat(multipliedAttributePushArgs);
-    }
-
-    var bufferName = bucket.getBufferName(interfaceName, 'vertex');
-    body += 'return this.arrays.' + bufferName + '.emplaceBack(' + pushArgs.join(',') + ');';
-
-    if (!createVertexAddMethodCache[body]) {
-        createVertexAddMethodCache[body] = new Function(programInterface.attributeArgs, body);
-    }
-
-    return createVertexAddMethodCache[body];
-}
 
 function createElementAddMethod(buffer) {
     return function(one, two, three) {

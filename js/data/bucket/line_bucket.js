@@ -50,38 +50,37 @@ function LineBucket() {
 
 LineBucket.prototype = util.inherit(Bucket, {});
 
+LineBucket.prototype.addLineVertex = function(point, extrude, tx, ty, dir, linesofar) {
+    return this.arrays.lineVertex.emplaceBack(
+            // a_pos
+            (point.x << 1) | tx,
+            (point.y << 1) | ty,
+            // a_data
+            // add 128 to store an byte in an unsigned byte
+            Math.round(EXTRUDE_SCALE * extrude.x) + 128,
+            Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+            // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
+            // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
+            // room for the direction value). The upper 8 bits of `linesofar` are placed in
+            // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
+            // we can store longer distances while sacrificing precision.
+            ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
+            (linesofar * LINE_DISTANCE_SCALE) >> 6);
+};
+
 LineBucket.prototype.programInterfaces = {
     line: {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributeArgs: ['point', 'extrude', 'tx', 'ty', 'dir', 'linesofar'],
-
         attributes: [{
             name: 'pos',
             components: 2,
-            type: 'Int16',
-            value: [
-                '(point.x << 1) | tx',
-                '(point.y << 1) | ty'
-            ]
+            type: 'Int16'
         }, {
             name: 'data',
             components: 4,
-            type: 'Uint8',
-            value: [
-                // add 128 to store an byte in an unsigned byte
-                'Math.round(' + EXTRUDE_SCALE + ' * extrude.x) + 128',
-                'Math.round(' + EXTRUDE_SCALE + ' * extrude.y) + 128',
-
-                // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
-                // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
-                // room for the direction value). The upper 8 bits of `linesofar` are placed in
-                // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
-                // we can store longer distances while sacrificing precision.
-                '((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * ' + LINE_DISTANCE_SCALE + ') & 0x3F) << 2)',
-                '(linesofar * ' + LINE_DISTANCE_SCALE + ') >> 6'
-            ]
+            type: 'Uint8'
         }]
     }
 };
