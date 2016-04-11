@@ -21,13 +21,10 @@ test('Bucket', function(t) {
                 secondElementBuffer: 'testSecondElement',
                 secondElementBufferComponents: 2,
 
-                attributeArgs: options.attributeArgs || ['x', 'y'],
-
                 attributes: options.attributes || [{
                     name: 'box',
                     components: 2,
-                    type: 'Int16',
-                    value: ['x * 2', 'y * 2']
+                    type: 'Int16'
                 }, {
                     name: 'map',
                     type: 'Int16',
@@ -37,6 +34,10 @@ test('Bucket', function(t) {
                     paintProperty: 'circle-color'
                 }]
             }
+        };
+
+        Class.prototype.addTestVertex = function(x, y) {
+            return this.arrays.testVertex.emplaceBack(x * 2, y * 2);
         };
 
         Class.prototype.addFeature = function(feature) {
@@ -171,8 +172,7 @@ test('Bucket', function(t) {
         var bucket = create({
             attributes: [{
                 name: 'map',
-                type: 'Int16',
-                value: '[17]'
+                type: 'Int16'
             }]
         });
 
@@ -180,7 +180,7 @@ test('Bucket', function(t) {
         bucket.populateBuffers();
 
         var v0 = bucket.arrays.testVertex.get(0);
-        t.equal(v0.layerid__map, 17);
+        t.equal(v0.layerid__map, 34);
 
         t.end();
     });
