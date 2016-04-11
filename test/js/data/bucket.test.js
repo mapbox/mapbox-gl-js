@@ -24,15 +24,17 @@ test('Bucket', function(t) {
                 attributeArgs: options.attributeArgs || ['x', 'y'],
 
                 attributes: options.attributes || [{
-                    name: 'map',
-                    type: 'Int16',
-                    value: ['x'],
-                    paintProperty: 'circle-color'
-                }, {
                     name: 'box',
                     components: 2,
                     type: 'Int16',
                     value: ['x * 2', 'y * 2']
+                }, {
+                    name: 'map',
+                    type: 'Int16',
+                    getValue: function(layer, globalProperties, featureProperties) {
+                        return [featureProperties.x];
+                    },
+                    paintProperty: 'circle-color'
                 }]
             }
         };
@@ -40,9 +42,11 @@ test('Bucket', function(t) {
         Class.prototype.addFeature = function(feature) {
             this.makeRoomFor('test', 1);
             var point = feature.loadGeometry()[0][0];
+            var startIndex = this.arrays.testVertex.length;
             this.addTestVertex(point.x, point.y);
             this.addTestElement(1, 2, 3);
             this.addTestSecondElement(point.x, point.y);
+            this.addPaintAttributes('test', {}, feature.properties, startIndex, this.arrays.testVertex.length, this.debug);
         };
 
         return Class;
@@ -52,6 +56,9 @@ test('Bucket', function(t) {
         return {
             loadGeometry: function() {
                 return [[{x: x, y: y}]];
+            },
+            properties: {
+                x: x
             }
         };
     }
@@ -140,7 +147,7 @@ test('Bucket', function(t) {
             attributes: [{
                 name: 'map',
                 type: 'Int16',
-                value: ['5'],
+                getValue: function() { return [5]; },
                 paintProperty: 'circle-color'
             }],
             layers: [
