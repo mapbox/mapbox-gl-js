@@ -39,7 +39,9 @@ CircleBucket.prototype.programInterfaces = {
             name: 'color',
             components: 4,
             type: 'Uint8',
-            value: 'this._premultiplyColor(layer.getPaintValue("circle-color", globalProperties, featureProperties))',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return util.premultiply(layer.getPaintValue("circle-color", globalProperties, featureProperties));
+            },
             multiplier: 255,
             paintProperty: 'circle-color'
         }, {
@@ -47,7 +49,9 @@ CircleBucket.prototype.programInterfaces = {
             components: 1,
             type: 'Uint16',
             isLayerConstant: false,
-            value: ['layer.getPaintValue("circle-radius", globalProperties, featureProperties)'],
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("circle-radius", globalProperties, featureProperties)];
+            },
             multiplier: 10,
             paintProperty: 'circle-radius'
         }]
@@ -57,6 +61,8 @@ CircleBucket.prototype.programInterfaces = {
 CircleBucket.prototype.addFeature = function(feature) {
     var globalProperties = {zoom: this.zoom};
     var geometries = loadGeometry(feature);
+
+    var startIndex = this.arrays.circleVertex.length;
 
     for (var j = 0; j < geometries.length; j++) {
         for (var k = 0; k < geometries[j].length; k++) {
@@ -90,4 +96,5 @@ CircleBucket.prototype.addFeature = function(feature) {
         }
     }
 
+    this.addPaintAttributes('circle', globalProperties, feature.properties, startIndex, this.arrays.circleVertex.length);
 };

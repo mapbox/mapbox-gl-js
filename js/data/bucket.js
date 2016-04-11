@@ -216,7 +216,7 @@ var AttributeType = {
  * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
  * @param {Array} arguments to be passed to disabled attribute value functions
  */
-Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, args) {
+Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, globalProperties) {
     var attribute;
 
     // Set disabled attributes
@@ -226,7 +226,7 @@ Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, 
         if (layer.id !== attribute.layerId) continue;
 
         var attributeId = program[attribute.programName];
-        gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue.apply(this, args));
+        gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue(layer, globalProperties));
     }
 
     // Set enabled attributes
@@ -319,8 +319,6 @@ Bucket.prototype.createFilter = function() {
     }
 };
 
-Bucket.prototype._premultiplyColor = util.premultiply;
-
 var FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 Bucket.prototype.recalculateStyleLayers = function() {
     for (var i = 0; i < this.childLayers.length; i++) {
@@ -340,6 +338,27 @@ Bucket.prototype.getProgramMacros = function(programInterface, layer) {
     return macros;
 };
 
+Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startIndex, endIndex) {
+    var enabled = this.attributes[interfaceName].enabled;
+    var vertexArray = this.arrays[this.getBufferName(interfaceName, 'vertex')];
+    for (var m = 0; m < enabled.length; m++) {
+        var attribute = enabled[m];
+
+        if (attribute.paintProperty === undefined) continue;
+
+        var value = attribute.getValue(this.childLayers[attribute.layerIndex], globalProperties, featureProperties);
+        var multiplier = attribute.multiplier || 1;
+
+        for (var i = startIndex; i < endIndex; i++) {
+            var vertex = vertexArray.get(i);
+            for (var c = 0; c < attribute.components; c++) {
+                var memberName = attribute.components > 1 ? (attribute.name + c) : attribute.name;
+                vertex[memberName] = value[c] * multiplier;
+            }
+        }
+    }
+};
+
 var createVertexAddMethodCache = {};
 function createVertexAddMethod(bucket, interfaceName) {
     var enabledAttributes = bucket.attributes[interfaceName].enabled;
@@ -351,19 +370,10 @@ function createVertexAddMethod(bucket, interfaceName) {
 
     for (var i = 0; i < enabledAttributes.length; i++) {
         var attribute = enabledAttributes[i];
+        if (attribute.paintProperty) continue;
 
         var attributePushArgs = [];
-        if (Array.isArray(attribute.value)) {
-            attributePushArgs = attributePushArgs.concat(attribute.value);
-            attributePushArgs[0] = '(layer = this.childLayers[' + attribute.layerIndex + '] ,' + attributePushArgs[0] + ')';
-        } else {
-            body += 'layer = this.childLayers[' + attribute.layerIndex + '];\n';
-            var attributeId = '_' + i;
-            body += 'var ' + attributeId + ' = ' + attribute.value + ';\n';
-            for (var j = 0; j < attribute.components; j++) {
-                attributePushArgs.push(attributeId + '[' + j + ']');
-            }
-        }
+        attributePushArgs = attributePushArgs.concat(attribute.value);
 
         var multipliedAttributePushArgs;
         if (attribute.multiplier) {
@@ -404,35 +414,6 @@ function createElementBufferType(components) {
     });
 }
 
-var _getAttributeValueCache = {};
-function createGetAttributeValueMethod(bucket, interfaceName, attribute, layerIndex) {
-    if (!_getAttributeValueCache[interfaceName]) {
-        _getAttributeValueCache[interfaceName] = {};
-    }
-
-    if (!_getAttributeValueCache[interfaceName][attribute.name]) {
-        var bodyArgs = bucket.programInterfaces[interfaceName].attributeArgs;
-        var body = '';
-
-        body += 'var layer = this.childLayers[' + layerIndex + '];\n';
-
-        if (Array.isArray(attribute.value)) {
-            body += 'return [' + attribute.value.join(', ') + ']';
-        } else {
-            body += 'return ' + attribute.value;
-        }
-
-        if (attribute.multiplier) {
-            body += '.map(function(v) { return v * ' + attribute.multiplier + '; })';
-        }
-        body += ';';
-
-        _getAttributeValueCache[interfaceName][attribute.name] = new Function(bodyArgs, body);
-    }
-
-    return _getAttributeValueCache[interfaceName][attribute.name];
-}
-
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -449,7 +430,7 @@ function createAttributes(bucket) {
                 if (!attribute.paintProperty && layer.id !== bucket.layer.id) continue;
                 if (attribute.paintProperty && layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     interfaceAttributes.disabled.push(util.extend({}, attribute, {
-                        getValue: createGetAttributeValueMethod(bucket, interfaceName, attribute, j),
+                        getValue: attribute.getValue,
                         name: layer.id + '__' + attribute.name,
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
@@ -458,6 +439,7 @@ function createAttributes(bucket) {
                     }));
                 } else {
                     interfaceAttributes.enabled.push(util.extend({}, attribute, {
+                        getValue: attribute.getValue,
                         name: layer.id + '__' + attribute.name,
                         programName: 'a_' + attribute.name,
                         layerId: layer.id,
