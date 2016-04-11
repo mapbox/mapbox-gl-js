@@ -214,10 +214,10 @@ StyleLayer.prototype = util.inherit(Evented, {
     // update all zoom-dependent layout/paint values
     recalculate: function(zoom, zoomHistory) {
         for (var paintName in this._paintTransitions) {
-            this.paint[paintName] = this.getPaintValue(paintName, {$zoom: zoom, $zoomHistory: zoomHistory});
+            this.paint[paintName] = this.getPaintValue(paintName, {zoom: zoom, zoomHistory: zoomHistory});
         }
         for (var layoutName in this._layoutFunctions) {
-            this.layout[layoutName] = this.getLayoutValue(layoutName, {$zoom: zoom, $zoomHistory: zoomHistory});
+            this.layout[layoutName] = this.getLayoutValue(layoutName, {zoom: zoom, zoomHistory: zoomHistory});
         }
     },
 

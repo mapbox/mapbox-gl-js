@@ -68,7 +68,7 @@ CircleBucket.prototype.programInterfaces = {
 };
 
 CircleBucket.prototype.addFeature = function(feature) {
-    var globalProperties = {$zoom: this.zoom};
+    var globalProperties = {zoom: this.zoom};
     var geometries = loadGeometry(feature);
 
     for (var j = 0; j < geometries.length; j++) {

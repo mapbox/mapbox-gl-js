@@ -46,17 +46,17 @@ StyleTransition.prototype.instant = function() {
  */
 StyleTransition.prototype.calculate = function(globalProperties, featureProperties) {
     var value = this.declaration.calculate(
-        util.extend({}, globalProperties, {$duration: this.duration}),
+        util.extend({}, globalProperties, {duration: this.duration}),
         featureProperties
     );
 
     if (this.instant()) return value;
 
-    var t = globalProperties.$time || Date.now();
+    var t = globalProperties.time || Date.now();
 
     if (t < this.endTime) {
         var oldValue = this.oldTransition.calculate(
-            util.extend({}, globalProperties, {$time: this.startTime}),
+            util.extend({}, globalProperties, {time: this.startTime}),
             featureProperties
         );
         var eased = this.ease((t - this.startTime - this.delay) / this.duration);

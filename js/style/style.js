@@ -547,7 +547,7 @@ Style.prototype = util.inherit(Evented, {
 
         var wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
         layer.setPaintProperty(name, value, klass);
-        var isFeatureConstant = !(StyleFunction.isFunctionDefinition(value) && value.property !== '$zoom' && value.property !== undefined);
+        var isFeatureConstant = !(StyleFunction.isFunctionDefinition(value) && value.property !== 'zoom' && value.property !== undefined);
 
         if (!isFeatureConstant || !wasFeatureConstant) {
             this._updates.layers[layerId] = true;

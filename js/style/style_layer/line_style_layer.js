@@ -17,7 +17,7 @@ LineStyleLayer.prototype = util.inherit(StyleLayer, {
         // If the line is dashed, scale the dash lengths by the line
         // width at the previous round zoom level.
         if (value && name === 'line-dasharray') {
-            var flooredZoom = Math.floor(globalProperties.$zoom);
+            var flooredZoom = Math.floor(globalProperties.zoom);
             if (this._flooredZoom !== flooredZoom) {
                 this._flooredZoom = flooredZoom;
                 this._flooredLineWidth = this.getPaintValue('line-width', globalProperties, featureProperties);

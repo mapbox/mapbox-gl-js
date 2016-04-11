@@ -47,7 +47,7 @@ function drawCircles(painter, source, layer, coords) {
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];
             var count = group.elementLength * 3;
-            bucket.setAttribPointers('circle', gl, program, group.vertexOffset, layer, [{$zoom: painter.transform.zoom}]);
+            bucket.setAttribPointers('circle', gl, program, group.vertexOffset, layer, [{zoom: painter.transform.zoom}]);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }
