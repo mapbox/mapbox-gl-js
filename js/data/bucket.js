@@ -365,7 +365,7 @@ function createVertexAddMethod(bucket, interfaceName) {
         var attributePushArgs = [];
         if (Array.isArray(attribute.value)) {
             attributePushArgs = attributePushArgs.concat(attribute.value);
-            attributePushArgs[0] = 'layer = this.childLayers[' + attribute.layerIndex + '] &&' + attributePushArgs[0];
+            attributePushArgs[0] = '(layer = this.childLayers[' + attribute.layerIndex + '] ,' + attributePushArgs[0] + ')';
         } else {
             body += 'layer = this.childLayers[' + attribute.layerIndex + '];\n';
             var attributeId = '_' + i;
