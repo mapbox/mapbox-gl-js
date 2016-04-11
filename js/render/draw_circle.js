@@ -34,7 +34,6 @@ function drawCircles(painter, source, layer, coords) {
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
         gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
-        gl.uniform1f(program.u_size, layer.paint['circle-radius']);
 
         painter.setPosMatrix(painter.translatePosMatrix(
             coord.posMatrix,
