@@ -39,7 +39,6 @@ CircleBucket.prototype.programInterfaces = {
             name: 'color',
             components: 4,
             type: 'Uint8',
-            isLayerConstant: false,
             value: 'this._premultiplyColor(layer.getPaintValue("circle-color", globalProperties, featureProperties), 1)',
             multiplier: 255,
             paintProperty: 'circle-color'
