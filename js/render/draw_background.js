@@ -10,7 +10,7 @@ module.exports = drawBackground;
 function drawBackground(painter, source, layer) {
     var gl = painter.gl;
     var transform = painter.transform;
-    var color = util.premultiply(layer.paint['background-color'], layer.paint['background-opacity']);
+    var color = util.premultiply(layer.paint['background-color']);
     var image = layer.paint['background-pattern'];
     var opacity = layer.paint['background-opacity'];
     var program;
@@ -42,6 +42,7 @@ function drawBackground(painter, source, layer) {
 
         program = painter.useProgram('fill');
         gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_opacity, opacity);
     }
 
     gl.disable(gl.STENCIL_TEST);

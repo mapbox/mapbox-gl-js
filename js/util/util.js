@@ -55,14 +55,12 @@ exports.ease = exports.bezier(0.25, 0.1, 0.25, 1);
  * by the A (alpha) component
  *
  * @param {Array<number>} color color array
- * @param {number} [additionalOpacity] additional opacity to be multiplied into
- *     the color's alpha component.
  * @returns {Array<number>} premultiplied color array
  * @private
  */
-exports.premultiply = function (color, additionalOpacity) {
+exports.premultiply = function (color) {
     if (!color) return null;
-    var opacity = color[3] * additionalOpacity;
+    var opacity = color[3];
     return [
         color[0] * opacity,
         color[1] * opacity,
