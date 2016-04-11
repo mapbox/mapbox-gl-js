@@ -2,6 +2,7 @@ precision highp float;
 
 uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
+uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
 
@@ -12,13 +13,14 @@ uniform lowp vec4 a_color;
 #endif
 
 #ifdef ATTRIBUTE_RADIUS
-attribute lowp float a_radius;
+attribute mediump float a_radius;
 #else
-uniform lowp float a_radius;
+uniform mediump float a_radius;
 #endif
 
 varying vec2 v_extrude;
 varying lowp vec4 v_color;
+varying lowp float v_antialiasblur;
 
 void main(void) {
     // unencode the extrusion vector that we snuck into the a_pos vector
@@ -34,4 +36,9 @@ void main(void) {
     gl_Position += extrude * gl_Position.w;
 
     v_color = a_color / 255.0;
+
+    // This is a minimum blur distance that serves as a faux-antialiasing for
+    // the circle. since blur is a ratio of the circle's size and the intent is
+    // to keep the blur at roughly 1px, the two are inversely related.
+    v_antialiasblur = 1.0 / u_devicepixelratio / (a_radius / 10.0);
 }

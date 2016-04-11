@@ -16,12 +16,6 @@ function drawCircles(painter, source, layer, coords) {
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
-    // antialiasing factor: this is a minimum blur distance that serves as
-    // a faux-antialiasing for the circle. since blur is a ratio of the circle's
-    // size and the intent is to keep the blur at roughly 1px, the two
-    // are inversely related.
-    var antialias = 1 / browser.devicePixelRatio / layer.paint['circle-radius'];
-
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
 
@@ -33,7 +27,8 @@ function drawCircles(painter, source, layer, coords) {
 
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
-        gl.uniform1f(program.u_blur, Math.max(layer.paint['circle-blur'], antialias));
+        gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
+        gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
 
         painter.setPosMatrix(painter.translatePosMatrix(
             coord.posMatrix,

@@ -56,7 +56,7 @@ CircleBucket.prototype.programInterfaces = {
         }, {
             name: 'radius',
             components: 1,
-            type: 'Uint8',
+            type: 'Uint16',
             isLayerConstant: false,
             value: ['layer.getPaintValue("circle-radius", globalProperties, featureProperties)'],
             multiplier: 10,
