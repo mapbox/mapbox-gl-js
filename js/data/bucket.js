@@ -78,7 +78,7 @@ function Bucket(options) {
         this.elementGroups = options.elementGroups;
         this.buffers = util.mapObject(options.arrays, function(array, bufferName) {
             var arrayType = options.arrayTypes[bufferName];
-            var type = (arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
+            var type = (arrayType.members.length && arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
             return new Buffer(array, arrayType, type);
         });
     }
@@ -150,12 +150,25 @@ Bucket.prototype.createArrays = function() {
             var vertexBufferName = this.getBufferName(programName, 'vertex');
 
             var VertexArrayType = new StructArrayType({
-                members: this.attributes[programName].enabled,
+                members: this.attributes[programName].coreAttributes,
                 alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
             });
 
             arrays[vertexBufferName] = new VertexArrayType();
             arrayTypes[vertexBufferName] = VertexArrayType.serialize();
+
+            var layerPaintAttributes = this.attributes[programName].paintAttributes;
+            for (var layerName in layerPaintAttributes) {
+                var paintVertexBufferName = this.getBufferName(layerName, programName);
+
+                var PaintVertexArrayType = new StructArrayType({
+                    members: layerPaintAttributes[layerName].enabled,
+                    alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
+                });
+
+                arrays[paintVertexBufferName] = new PaintVertexArrayType();
+                arrayTypes[paintVertexBufferName] = PaintVertexArrayType.serialize();
+            }
         }
 
         if (programInterface.elementBuffer) {
@@ -208,30 +221,40 @@ var AttributeType = {
  * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
  * @param {Array} arguments to be passed to disabled attribute value functions
  */
-Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, globalProperties) {
+Bucket.prototype.setAttribPointers = function(programName, gl, program, offset, layer, globalProperties, bindPaint) {
     var attribute;
 
-    // Set disabled attributes
-    var disabledAttributes = this.attributes[programName].disabled;
-    for (var i = 0; i < disabledAttributes.length; i++) {
-        attribute = disabledAttributes[i];
-        if (layer.id !== attribute.layerId) continue;
-
-        var attributeId = program[attribute.programName];
-        gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue(layer, globalProperties));
+    if (bindPaint) {
+        // Set disabled attributes
+        var disabledAttributes = this.attributes[programName].paintAttributes[layer.id].disabled;
+        for (var i = 0; i < disabledAttributes.length; i++) {
+            attribute = disabledAttributes[i];
+            var attributeId = program[attribute.name];
+            gl['uniform' + attribute.components + 'fv'](attributeId, attribute.getValue(layer, globalProperties));
+        }
     }
 
     // Set enabled attributes
-    var enabledAttributes = this.attributes[programName].enabled;
-    var vertexBuffer = this.buffers[this.getBufferName(programName, 'vertex')];
+    var enabledAttributes = bindPaint ?
+        this.attributes[programName].paintAttributes[layer.id].enabled :
+        this.attributes[programName].coreAttributes;
+
+    var vertexBuffer = bindPaint ?
+        this.buffers[this.getBufferName(layer.id, programName)] :
+        this.buffers[this.getBufferName(programName, 'vertex')];
+
+    if (bindPaint) {
+        // TODO remove
+        var bytesPerElement = this.buffers[this.getBufferName(programName, 'vertex')].itemSize;
+        offset = offset / bytesPerElement * vertexBuffer.itemSize;
+    }
 
     for (var j = 0; j < enabledAttributes.length; j++) {
         attribute = enabledAttributes[j];
-        if (attribute.paintProperty && layer.id !== attribute.layerId) continue;
         if (!getMember(attribute.name)) continue;
 
         gl.vertexAttribPointer(
-            program[attribute.programName],
+            program[attribute.name],
             attribute.components,
             gl[AttributeType[attribute.type]],
             false,
@@ -270,6 +293,10 @@ Bucket.prototype.bindBuffers = function(programInterfaceName, gl, options) {
     }
 };
 
+Bucket.prototype.bindPaintBuffer = function(programInterfaceName, gl, layerID) {
+    this.buffers[this.getBufferName(layerID, programInterfaceName)].bind(gl);
+};
+
 /**
  * Get the name of a buffer.
  * @param {string} programName The name of the program that will use the buffer
@@ -289,6 +316,7 @@ Bucket.prototype.serialize = function() {
             return array.serialize();
         }),
         arrayTypes: this.arrayTypes,
+
         childLayerIds: this.childLayers.map(function(layer) {
             return layer.id;
         })
@@ -310,32 +338,35 @@ Bucket.prototype.recalculateStyleLayers = function() {
 
 Bucket.prototype.getProgramMacros = function(programInterface, layer) {
     var macros = [];
-    var enabledAttributes = this.attributes[programInterface].enabled;
+    var enabledAttributes = this.attributes[programInterface].paintAttributes[layer.id].enabled;
     for (var i = 0; i < enabledAttributes.length; i++) {
-        var enabledAttribute = enabledAttributes[i];
-        if (enabledAttribute.paintProperty && enabledAttribute.layerId === layer.id) {
-            macros.push(enabledAttribute.macro);
-        }
+        macros.push('ATTRIBUTE_' + enabledAttributes[i].name.toUpperCase());
     }
     return macros;
 };
 
 Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startIndex, endIndex) {
-    var enabled = this.attributes[interfaceName].enabled;
-    var vertexArray = this.arrays[this.getBufferName(interfaceName, 'vertex')];
-    for (var m = 0; m < enabled.length; m++) {
-        var attribute = enabled[m];
+    for (var l = 0; l < this.childLayers.length; l++) {
+        var layer = this.childLayers[l];
+        var length = this.arrays[this.getBufferName(interfaceName, 'vertex')].length;
+        var vertexArray = this.arrays[this.getBufferName(layer.id, interfaceName)];
+        var enabled = this.attributes[interfaceName].paintAttributes[layer.id].enabled;
+        for (var m = 0; m < enabled.length; m++) {
+            var attribute = enabled[m];
 
-        if (attribute.paintProperty === undefined) continue;
+            if (attribute.paintProperty === undefined) continue;
 
-        var value = attribute.getValue(this.childLayers[attribute.layerIndex], globalProperties, featureProperties);
-        var multiplier = attribute.multiplier || 1;
+            var value = attribute.getValue(layer, globalProperties, featureProperties);
+            var multiplier = attribute.multiplier || 1;
+            var components = attribute.components || 1;
 
-        for (var i = startIndex; i < endIndex; i++) {
-            var vertex = vertexArray.get(i);
-            for (var c = 0; c < attribute.components; c++) {
-                var memberName = attribute.components > 1 ? (attribute.name + c) : attribute.name;
-                vertex[memberName] = value[c] * multiplier;
+            vertexArray.resize(length);
+            for (var i = startIndex; i < endIndex; i++) {
+                var vertex = vertexArray.get(i);
+                for (var c = 0; c < components; c++) {
+                    var memberName = components > 1 ? (attribute.name + c) : attribute.name;
+                    vertex[memberName] = value[c] * multiplier;
+                }
             }
         }
     }
@@ -358,32 +389,30 @@ function capitalize(string) {
 function createAttributes(bucket) {
     var attributes = {};
     for (var interfaceName in bucket.programInterfaces) {
-        var interfaceAttributes = attributes[interfaceName] = { enabled: [], disabled: [] };
+        var interfaceAttributes = attributes[interfaceName] = { coreAttributes: [], paintAttributes: {} };
+        var layerPaintAttributes = interfaceAttributes.paintAttributes;
+
+        for (var c = 0; c < bucket.childLayers.length; c++) {
+            var childLayer = bucket.childLayers[c];
+            layerPaintAttributes[childLayer.id] = { enabled: [], disabled: [] };
+        }
+
         var interface_ = bucket.programInterfaces[interfaceName];
         for (var i = 0; i < interface_.attributes.length; i++) {
             var attribute = interface_.attributes[i];
-            for (var j = 0; j < bucket.childLayers.length; j++) {
-                var layer = bucket.childLayers[j];
-                if (!attribute.paintProperty && layer.id !== bucket.layer.id) continue;
-                if (attribute.paintProperty && layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
-                    interfaceAttributes.disabled.push(util.extend({}, attribute, {
-                        getValue: attribute.getValue,
-                        name: layer.id + '__' + attribute.name,
-                        programName: 'a_' + attribute.name,
-                        layerId: layer.id,
-                        layerIndex: j,
-                        components: attribute.components || 1
-                    }));
-                } else {
-                    interfaceAttributes.enabled.push(util.extend({}, attribute, {
-                        getValue: attribute.getValue,
-                        name: layer.id + '__' + attribute.name,
-                        programName: 'a_' + attribute.name,
-                        layerId: layer.id,
-                        layerIndex: j,
-                        macro: 'ATTRIBUTE_' + attribute.name.toUpperCase(),
-                        components: attribute.components || 1
-                    }));
+
+            if (attribute.paintProperty === undefined) {
+                interfaceAttributes.coreAttributes.push(attribute);
+            } else {
+                for (var j = 0; j < bucket.childLayers.length; j++) {
+                    var layer = bucket.childLayers[j];
+                    var paintAttributes = layerPaintAttributes[layer.id];
+
+                    if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
+                        paintAttributes.disabled.push(attribute);
+                    } else {
+                        paintAttributes.enabled.push(attribute);
+                    }
                 }
             }
         }

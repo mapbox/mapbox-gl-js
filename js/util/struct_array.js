@@ -170,7 +170,7 @@ function createEmplaceBack(members, bytesPerElement) {
     var body = '' +
     'var i = this.length;\n' +
     'this.length++;\n' +
-    'if (this.length > this.capacity) this._resize(this.length);\n';
+    'if (this.length > this.capacity) this.reserve(this.length);\n';
 
     for (var m = 0; m < members.length; m++) {
         var member = members[m];
@@ -242,7 +242,7 @@ function StructArray(serialized) {
     } else {
         this.length = 0;
         this.capacity = 0;
-        this._resize(this.DEFAULT_CAPACITY);
+        this.reserve(this.DEFAULT_CAPACITY);
     }
 }
 
@@ -296,15 +296,26 @@ StructArray.prototype.trim = function() {
 /**
  * Resize the array so that it fits at least `n` elements.
  * @private
- * @param {number} n The number of elements that must fit in the array after the resize.
+ * @param {number} n The number of elements that must fit in allocated buffer.
  */
-StructArray.prototype._resize = function(n) {
+StructArray.prototype.reserve = function(n) {
     this.capacity = Math.max(n, Math.floor(this.capacity * this.RESIZE_MULTIPLIER));
     this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
 
     var oldUint8Array = this.uint8;
     this._refreshViews();
     if (oldUint8Array) this.uint8.set(oldUint8Array);
+};
+
+/**
+ * Resize the array.
+ * If `n` is greater than the current length then additional elements with undefined values are added.
+ * If `n` is less than the current length then the array will be reduced to the first `n` elements.
+ * @param {number} n The new size of the array.
+ */
+StructArray.prototype.resize = function(n) {
+    this.length = n;
+    if (this.length > this.capacity) this.reserve(n);
 };
 
 /**

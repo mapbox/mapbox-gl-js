@@ -32,11 +32,11 @@ CircleBucket.prototype.programInterfaces = {
         elementBuffer: true,
 
         attributes: [{
-            name: 'pos',
+            name: 'a_pos',
             components: 2,
             type: 'Int16'
         }, {
-            name: 'color',
+            name: 'a_color',
             components: 4,
             type: 'Uint8',
             getValue: function(layer, globalProperties, featureProperties) {
@@ -45,7 +45,7 @@ CircleBucket.prototype.programInterfaces = {
             multiplier: 255,
             paintProperty: 'circle-color'
         }, {
-            name: 'radius',
+            name: 'a_radius',
             components: 1,
             type: 'Uint16',
             isLayerConstant: false,
