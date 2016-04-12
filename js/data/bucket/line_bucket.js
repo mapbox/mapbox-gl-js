@@ -375,7 +375,7 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
     this.e3 = this.addLineVertex(currentVertex, extrude, tx, 0, endLeft, distance) - group.vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.addLineElement(this.e1, this.e2, this.e3);
+        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
         group.elementLength++;
     }
     this.e1 = this.e2;
@@ -385,7 +385,7 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
     if (endRight) extrude._sub(normal.perp()._mult(endRight));
     this.e3 = this.addLineVertex(currentVertex, extrude, tx, 1, -endRight, distance) - group.vertexStartIndex;
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.addLineElement(this.e1, this.e2, this.e3);
+        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
         group.elementLength++;
     }
     this.e1 = this.e2;
@@ -420,7 +420,7 @@ LineBucket.prototype.addPieSliceVertex = function(currentVertex, distance, extru
     group.vertexLength++;
 
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.addLineElement(this.e1, this.e2, this.e3);
+        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
         group.elementLength++;
     }
 

@@ -163,7 +163,6 @@ Bucket.prototype.createArrays = function() {
             var ElementArrayType = createElementBufferType(programInterface.elementBufferComponents);
             arrays[elementBufferName] = new ElementArrayType();
             arrayTypes[elementBufferName] = ElementArrayType.serialize();
-            this[this.getAddMethodName(programName, 'element')] = createElementAddMethod(this.arrays[elementBufferName]);
         }
 
         if (programInterface.secondElementBuffer) {
@@ -171,7 +170,6 @@ Bucket.prototype.createArrays = function() {
             var SecondElementArrayType = createElementBufferType(programInterface.secondElementBufferComponents);
             arrays[secondElementBufferName] = new SecondElementArrayType();
             arrayTypes[secondElementBufferName] = SecondElementArrayType.serialize();
-            this[this.getAddMethodName(programName, 'secondElement')] = createElementAddMethod(this.arrays[secondElementBufferName]);
         }
 
         elementGroups[programName] = [];
@@ -273,16 +271,6 @@ Bucket.prototype.bindBuffers = function(programInterfaceName, gl, options) {
 };
 
 /**
- * Get the name of the method used to add an item to a buffer.
- * @param {string} programName The name of the program that will use the buffer
- * @param {string} type One of "vertex", "element", or "secondElement"
- * @returns {string}
- */
-Bucket.prototype.getAddMethodName = function(programName, type) {
-    return 'add' + capitalize(programName) + capitalize(type);
-};
-
-/**
  * Get the name of a buffer.
  * @param {string} programName The name of the program that will use the buffer
  * @param {string} type One of "vertex", "element", or "secondElement"
@@ -352,12 +340,6 @@ Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, 
         }
     }
 };
-
-function createElementAddMethod(buffer) {
-    return function(one, two, three) {
-        return buffer.emplaceBack(one, two, three);
-    };
-}
 
 function createElementBufferType(components) {
     return new StructArrayType({

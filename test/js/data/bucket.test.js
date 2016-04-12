@@ -45,8 +45,8 @@ test('Bucket', function(t) {
             var point = feature.loadGeometry()[0][0];
             var startIndex = this.arrays.testVertex.length;
             this.addTestVertex(point.x, point.y);
-            this.addTestElement(1, 2, 3);
-            this.addTestSecondElement(point.x, point.y);
+            this.arrays.testElement.emplaceBack(1, 2, 3);
+            this.arrays.testSecondElement.emplaceBack(point.x, point.y);
             this.addPaintAttributes('test', {}, feature.properties, startIndex, this.arrays.testVertex.length, this.debug);
         };
 

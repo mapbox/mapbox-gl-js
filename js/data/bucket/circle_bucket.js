@@ -90,8 +90,8 @@ CircleBucket.prototype.addFeature = function(feature) {
             this.addCircleVertex(x, y, -1, 1);
             group.vertexLength += 4;
 
-            this.addCircleElement(index, index + 1, index + 2);
-            this.addCircleElement(index, index + 3, index + 2);
+            this.arrays.circleElement.emplaceBack(index, index + 1, index + 2);
+            this.arrays.circleElement.emplaceBack(index, index + 3, index + 2);
             group.elementLength += 2;
         }
     }
