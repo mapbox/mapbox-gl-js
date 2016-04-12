@@ -47,7 +47,7 @@ test('Bucket', function(t) {
             this.addTestVertex(point.x, point.y);
             this.arrays.testElement.emplaceBack(1, 2, 3);
             this.arrays.testSecondElement.emplaceBack(point.x, point.y);
-            this.addPaintAttributes('test', {}, feature.properties, startIndex, this.arrays.testVertex.length, this.debug);
+            this.addPaintAttributes('test', {}, feature.properties, startIndex, this.arrays.testVertex.length);
         };
 
         return Class;
@@ -105,9 +105,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.layerid__map, 17);
-        t.equal(v0.layerid__box0, 34);
-        t.equal(v0.layerid__box1, 84);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
+        var paintVertex = bucket.arrays.layeridTest;
+        t.equal(paintVertex.length, 1);
+        var p0 = paintVertex.get(0);
+        t.equal(p0.map, 17);
 
         var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);
@@ -135,10 +138,12 @@ test('Bucket', function(t) {
         bucket.populateBuffers();
 
         var v0 = bucket.arrays.testVertex.get(0);
-        t.equal(v0.one__map, 17);
-        t.equal(v0.two__map, 17);
-        t.equal(v0.one__box0, 34);
-        t.equal(v0.one__box1, 84);
+        var a0 = bucket.arrays.oneTest.get(0);
+        var b0 = bucket.arrays.twoTest.get(0);
+        t.equal(a0.map, 17);
+        t.equal(b0.map, 17);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
 
         t.end();
     });
@@ -161,7 +166,7 @@ test('Bucket', function(t) {
 
         t.equal(bucket.arrays.testVertex.bytesPerElement, 0);
         t.deepEqual(
-            bucket.attributes.test.disabled[0].getValue.call(bucket),
+            bucket.attributes.test.paintAttributes.one.disabled[0].getValue.call(bucket),
             [5]
         );
 
@@ -180,7 +185,7 @@ test('Bucket', function(t) {
         bucket.populateBuffers();
 
         var v0 = bucket.arrays.testVertex.get(0);
-        t.equal(v0.layerid__map, 34);
+        t.equal(v0.map, 34);
 
         t.end();
     });
@@ -214,9 +219,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.layerid__map, 17);
-        t.equal(v0.layerid__box0, 34);
-        t.equal(v0.layerid__box1, 84);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
+        var testPaintVertex = bucket.arrays.layeridTest;
+        t.equal(testPaintVertex.length, 1);
+        var p0 = testPaintVertex.get(0);
+        t.equal(p0.map, 17);
 
         var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);
@@ -249,9 +257,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrays.testVertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.layerid__map, 17);
-        t.equal(v0.layerid__box0, 34);
-        t.equal(v0.layerid__box1, 84);
+        t.equal(v0.box0, 34);
+        t.equal(v0.box1, 84);
+        var testPaintVertex = bucket.arrays.layeridTest;
+        t.equal(testPaintVertex.length, 1);
+        var p0 = testPaintVertex.get(0);
+        t.equal(p0.map, 17);
 
         var testElement = bucket.arrays.testElement;
         t.equal(testElement.length, 1);

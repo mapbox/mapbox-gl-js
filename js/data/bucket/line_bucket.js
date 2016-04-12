@@ -74,11 +74,11 @@ LineBucket.prototype.programInterfaces = {
         elementBuffer: true,
 
         attributes: [{
-            name: 'pos',
+            name: 'a_pos',
             components: 2,
             type: 'Int16'
         }, {
-            name: 'data',
+            name: 'a_data',
             components: 4,
             type: 'Uint8'
         }]
