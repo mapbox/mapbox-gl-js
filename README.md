@@ -1,7 +1,5 @@
 [Mapbox GL style functions](https://www.mapbox.com/mapbox-gl-style-spec/#function) are used to specify a property value that varies according to zoom level. This library implements the semantics of interpolated and piecewise-constant functions as specified by the [Mapbox GL Style Specification](https://github.com/mapbox/mapbox-gl-style-spec).
 
-Note that other Mapbox tools currently use v1, not v2.
-
 ### Usage
 
 ``` javascript
