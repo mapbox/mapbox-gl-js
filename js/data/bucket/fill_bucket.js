@@ -24,7 +24,7 @@ FillBucket.prototype.programInterfaces = {
         secondElementBufferComponents: 2,
 
         attributes: [{
-            name: 'pos',
+            name: 'a_pos',
             components: 2,
             type: 'Int16'
         }]

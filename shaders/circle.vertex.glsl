@@ -6,13 +6,13 @@ uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
 
-#ifdef ATTRIBUTE_COLOR
+#ifdef ATTRIBUTE_A_COLOR
 attribute lowp vec4 a_color;
 #else
 uniform lowp vec4 a_color;
 #endif
 
-#ifdef ATTRIBUTE_RADIUS
+#ifdef ATTRIBUTE_A_RADIUS
 attribute mediump float a_radius;
 #else
 uniform mediump float a_radius;
@@ -24,7 +24,7 @@ varying lowp float v_antialiasblur;
 
 void main(void) {
 
-#ifdef ATTRIBUTE_RADIUS
+#ifdef ATTRIBUTE_A_RADIUS
     mediump float radius = a_radius / 10.0;
 #else
     mediump float radius = a_radius;
@@ -42,7 +42,7 @@ void main(void) {
     // Multiply the extrude by it so that it isn't affected by it.
     gl_Position += extrude * gl_Position.w;
 
-#ifdef ATTRIBUTE_COLOR
+#ifdef ATTRIBUTE_A_COLOR
     v_color = a_color / 255.0;
 #else
     v_color = a_color;

@@ -39,11 +39,13 @@ function drawCircles(painter, source, layer, coords) {
         ));
         painter.setExMatrix(painter.transform.exMatrix);
 
-        bucket.bindBuffers('circle', gl);
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];
             var count = group.elementLength * 3;
+            bucket.bindBuffers('circle', gl);
             bucket.setAttribPointers('circle', gl, program, group.vertexOffset, layer, {zoom: painter.transform.zoom});
+            bucket.bindPaintBuffer('circle', gl, layer.id);
+            bucket.setAttribPointers('circle', gl, program, group.vertexOffset, layer, {zoom: painter.transform.zoom}, true);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
         }
     }

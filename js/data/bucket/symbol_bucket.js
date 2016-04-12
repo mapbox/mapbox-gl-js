@@ -34,19 +34,19 @@ function SymbolBucket(options) {
 SymbolBucket.prototype = util.inherit(Bucket, {});
 
 var programAttributes = [{
-    name: 'pos',
+    name: 'a_pos',
     components: 2,
     type: 'Int16'
 }, {
-    name: 'offset',
+    name: 'a_offset',
     components: 2,
     type: 'Int16'
 }, {
-    name: 'data1',
+    name: 'a_data1',
     components: 4,
     type: 'Uint8'
 }, {
-    name: 'data2',
+    name: 'a_data2',
     components: 2,
     type: 'Uint8'
 }];
@@ -100,15 +100,15 @@ SymbolBucket.prototype.programInterfaces = {
         vertexBuffer: true,
 
         attributes: [{
-            name: 'pos',
+            name: 'a_pos',
             components: 2,
             type: 'Int16'
         }, {
-            name: 'extrude',
+            name: 'a_extrude',
             components: 2,
             type: 'Int16'
         }, {
-            name: 'data',
+            name: 'a_data',
             components: 2,
             type: 'Uint8'
         }]
