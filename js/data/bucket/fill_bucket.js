@@ -67,12 +67,12 @@ FillBucket.prototype.addFill = function(vertices) {
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            this.addFillElement(firstIndex, prevIndex, currentIndex);
+            this.arrays.fillElement.emplaceBack(firstIndex, prevIndex, currentIndex);
             group.elementLength++;
         }
 
         if (i >= 1) {
-            this.addFillSecondElement(prevIndex, currentIndex);
+            this.arrays.fillSecondElement.emplaceBack(prevIndex, currentIndex);
             group.secondElementLength++;
         }
 

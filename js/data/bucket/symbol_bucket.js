@@ -437,7 +437,7 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
     var group = this.makeRoomFor(programName, 4 * quads.length);
 
     // TODO manual curry
-    var addElement = this[this.getAddMethodName(programName, 'element')].bind(this);
+    var elementArray = this.arrays[this.getBufferName(programName, 'element')];
     var vertexArray = this.arrays[this.getBufferName(programName, 'vertex')];
 
     var zoom = this.zoom;
@@ -473,8 +473,8 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
         addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
         group.vertexLength += 4;
 
-        addElement(index, index + 1, index + 2);
-        addElement(index + 1, index + 2, index + 3);
+        elementArray.emplaceBack(index, index + 1, index + 2);
+        elementArray.emplaceBack(index + 1, index + 2, index + 3);
         group.elementLength += 2;
     }
 
