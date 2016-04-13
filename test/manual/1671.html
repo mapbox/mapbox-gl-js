@@ -35,6 +35,16 @@
             .setLngLat(e.lngLat)
             .addTo(map);
     });
+
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject([10, 10]))
+        .setText('confirm no setText regression')
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject([100, 100]))
+        .setHTML('<em>confirm</em><span> no </span><code>setHTML</code> regression')
+        .addTo(map);
 </script>
 </body>
 </html>

@@ -111,18 +111,16 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setHTML: function(html) {
-        this._createContent();
-
+        var frag = document.createDocumentFragment();
         var temp = document.createElement('body'), child;
         temp.innerHTML = html;
         while (true) {
             child = temp.firstChild;
             if (!child) break;
-            this._content.appendChild(child);
+            frag.appendChild(child);
         }
 
-        this._update();
-        return this;
+        return this.setDOMContent(frag);
     },
 
     /**
