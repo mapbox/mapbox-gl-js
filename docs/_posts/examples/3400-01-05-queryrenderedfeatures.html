@@ -18,24 +18,15 @@ description: Using the queryRenderedFeatures API to show properties of hovered-o
 <div id='map'></div>
 <pre id='features'></pre>
 <script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8',
+    center: [-96, 37.8],
+    zoom: 3
+});
 
-mapboxgl.util.getJSON('https://api.mapbox.com/styles/v1/mapbox/streets-v8?access_token=' + mapboxgl.accessToken, function (err, style) {
-    if (err) throw err;
-
-    style.layers.forEach(function (layer) {
-        layer.interactive = true;
-    });
-
-    var map = new mapboxgl.Map({
-        container: 'map',
-        style: style,
-        center: [-96, 37.8],
-        zoom: 3
-    });
-
-    map.on('mousemove', function (e) {
-        var features = map.queryRenderedFeatures(e.point);
-        document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
-    });
+map.on('mousemove', function (e) {
+    var features = map.queryRenderedFeatures(e.point);
+    document.getElementById('features').innerHTML = JSON.stringify(features, null, 2);
 });
 </script>

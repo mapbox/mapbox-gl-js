@@ -102,7 +102,6 @@ map.on('load', function() {
 
     map.addLayer({
         "id": "point",
-        "interactive": true,
         "type": "circle",
         "source": "point",
         "paint": {
@@ -114,25 +113,21 @@ map.on('load', function() {
     // If a feature is found on map movement,
     // set a flag to permit a mousedown events.
     map.on('mousemove', function(e) {
-        map.featuresAt(e.point, {
-            radius: 10,
-            includeGeometry: true,
-            layer: 'point'
-        }, function(err, features) {
-            // Change point and cursor style as a UI indicator
-            // and set a flag to enable other mouse events.
-            if (!err && features.length) {
-                map.setPaintProperty ('point', 'circle-color', '#3bb2d0');
-                canvas.style.cursor = 'move';
-                isCursorOverPoint = true;
-                map.dragPan.disable();
-            } else {
-                map.setPaintProperty ('point', 'circle-color', '#3887be');
-                canvas.style.cursor = '';
-                isCursorOverPoint = false;
-                map.dragPan.enable();
-            }
-        });
+        var features = map.queryRenderedFeatures(e.point, { layers: ['point'] });
+
+        // Change point and cursor style as a UI indicator
+        // and set a flag to enable other mouse events.
+        if (features.length) {
+            map.setPaintProperty ('point', 'circle-color', '#3bb2d0');
+            canvas.style.cursor = 'move';
+            isCursorOverPoint = true;
+            map.dragPan.disable();
+        } else {
+            map.setPaintProperty ('point', 'circle-color', '#3887be');
+            canvas.style.cursor = '';
+            isCursorOverPoint = false;
+            map.dragPan.enable();
+        }
     });
 
     // Set `true` to dispatch the event before other functions call it. This

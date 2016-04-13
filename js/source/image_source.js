@@ -52,7 +52,7 @@ function ImageSource(options) {
     }.bind(this));
 }
 
-ImageSource.prototype = util.inherit(Evented, {
+ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype */ {
     onAdd: function(map) {
         this.map = map;
         if (this.image) {

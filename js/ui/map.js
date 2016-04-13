@@ -330,8 +330,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
     /**
      * Set the map's minimum zoom level, and zooms map to that level if it is currently below it. If no parameter provided, unsets the current minimum zoom (sets it to 0)
-     * @param {zoom} any number between 0 and 20
-     * @returns {Map} `this`
+     * @param {number} minZoom Minimum zoom level. Must be between 0 and 20.
+     * @returns {Map} `this
      */
     setMinZoom: function(minZoom) {
 
@@ -350,7 +350,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * Set the map's maximum zoom level, and zooms map to that level if it is currently above it. If no parameter provided, unsets the current maximum zoom (sets it to 20)
-     * @param {zoom} any number between 0 and 20
+     * @param {number} maxZoom Maximum zoom level. Must be between 0 and 20.
      * @returns {Map} `this`
      */
     setMaxZoom: function(maxZoom) {

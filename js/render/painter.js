@@ -28,6 +28,7 @@ var glPolyfill = {
  * Initialize a new painter object.
  *
  * @param {Canvas} gl an experimental-webgl drawing context
+ * @private
  */
 function Painter(gl, transform) {
     this.gl = util.extend(gl, glPolyfill);
