@@ -102,7 +102,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setText: function(text) {
-        return this.setContent(document.createTextNode(text));
+        return this.setDOMContent(document.createTextNode(text));
     },
 
     /**
