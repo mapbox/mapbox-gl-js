@@ -1,3 +1,29 @@
+## 0.17.0 (April 13 2016)
+
+#### Breaking Changes
+
+* Remove `map.batch` in favor of automatically batching style mutations (i.e. calls to `Map#setLayoutProperty`, `Map#setPaintProperty`, `Map#setFilter`, `Map#setClasses`, etc.) and applying them once per frame, significantly improving performance when updating the style frequently #2355 #2380
+* Remove `util.throttle` #2345
+
+#### New Features & Improvements
+
+* Improve performance of all style mutation methods by only recalculating affected properties #2339
+* Improve fading of labels and icons #2376
+* Improve rendering performance by reducing work done on the main thread #2394
+* Validate filters passed to `Map#queryRenderedFeatures` and `Map#querySourceFeatures` #2349
+* Display a warning if a vector tile's geometry extent is larger than supported  #2383
+* Implement property functions (i.e. data-driven styling) for `circle-color` and `circle-size` #1932
+* Add `Popup#setDOMContent` method #2436
+
+#### Bugfixes
+
+* Fix a performance regression caused by using 1 `WebWorker` instead of `# cpus - 1` `WebWorker`s, slowing down tile loading times #2408
+* Fix a bug in which `Map#queryRenderedFeatures` would sometimes return features that had been removed #2353
+* Fix `clusterMaxZoom` option on `GeoJSONSource` not working as expected #2374
+* Fix anti-aliased rendering for pattern fills #2372
+* Fix exception caused by calling `Map#queryRenderedFeatures` or `Map#querySourceFeatures` with no arguments
+* Fix exception caused by calling `Map#setLayoutProperty` for `text-field` or `icon-image` #2407
+
 ## 0.16.0 (March 24 2016)
 
 #### Breaking Changes
