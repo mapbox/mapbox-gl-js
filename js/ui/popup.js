@@ -102,11 +102,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setText: function(text) {
-        this._createContent();
-        this._content.appendChild(document.createTextNode(text));
-
-        this._update();
-        return this;
+        return this.setDOMContent(document.createTextNode(text));
     },
 
     /**
@@ -115,16 +111,26 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setHTML: function(html) {
-        this._createContent();
-
+        var frag = document.createDocumentFragment();
         var temp = document.createElement('body'), child;
         temp.innerHTML = html;
         while (true) {
             child = temp.firstChild;
             if (!child) break;
-            this._content.appendChild(child);
+            frag.appendChild(child);
         }
 
+        return this.setDOMContent(frag);
+    },
+
+    /**
+     * Fill a popup element with DOM content
+     * @param {HTMLElement|Text} htmlNode Popup content as a DOM node
+     * @returns {Popup} `this`
+     */
+    setDOMContent: function(htmlNode) {
+        this._createContent();
+        this._content.appendChild(htmlNode);
         this._update();
         return this;
     },
