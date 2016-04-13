@@ -2,7 +2,7 @@
 
 A WebGL JavaScript interactive maps library that can render [Mapbox Vector Tiles](https://www.mapbox.com/blog/vector-tiles/).
 
-## Using mapbox-gl-js
+## Using `mapbox-gl-js`
 
 Include the source via HTML tags:
 
@@ -11,13 +11,24 @@ Include the source via HTML tags:
 <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.17.0/mapbox-gl.css' rel='stylesheet' />
 ```
 
-For more information, see the [API documentation](https://www.mapbox.com/mapbox-gl-js/api/) and [examples](https://www.mapbox.com/mapbox-gl-js/examples/).
+For more information, see the [API documentation]() and [examples]().
 
 Alternatively, you can `npm install mapbox-gl` and use it as a bundled dependency with browserify.
 
-## [Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/)
+### Documentation
 
-## Developing mapbox-gl-js
+ - [API Documentation](https://www.mapbox.com/mapbox-gl-js/api)
+ - [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec)
+ - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
+
+### Related Projects
+
+ - [**`mapbox/mapbox-gl`** central place for discussions about the Mapbox GL ecosystem](https://github.com/mapbox/mapbox-gl)
+ - [**`mapbox/mapbox-gl-native`** compatible renderer written in C++ with bindings for desktop and mobile platforms](https://www.mapbox.com/mapbox-gl-native)
+ - [**`mapbox/awesome-vector-tiles`** directory of vector tile tools](https://github.com/mapbox/awesome-vector-tiles)
+ - [**`Smartrak/mapbox-gl-js-typescript`** typescript definitions](https://github.com/Smartrak/mapbox-gl-js-typescript)
+
+## Developing `mapbox-gl-js`
 
 ### Preparing your Development Environment
 
