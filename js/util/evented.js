@@ -13,6 +13,7 @@ var Evented = {
      *
      * @param {string} type Event type
      * @param {Function} listener Function to be called when the event is fired
+     * @returns {Object} `this`
      */
     on: function(type, listener) {
         this._events = this._events || {};
@@ -27,6 +28,7 @@ var Evented = {
      *
      * @param {string} [type] Event type. If none is specified, remove all listeners
      * @param {Function} [listener] Function to be called when the event is fired. If none is specified all listeners are removed
+     * @returns {Object} `this`
      */
     off: function(type, listener) {
         if (!type) {
@@ -57,6 +59,7 @@ var Evented = {
      *
      * @param {string} type Event type.
      * @param {Function} listener Function to be called once when the event is fired
+     * @returns {Object} `this`
      */
     once: function(type, listener) {
         var wrapper = function(data) {
