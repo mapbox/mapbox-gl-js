@@ -31,11 +31,12 @@ CircleBucket.prototype.programInterfaces = {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributes: [{
+        layoutAttributes: [{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
-        }, {
+        }],
+        paintAttributes: [{
             name: 'a_color',
             components: 4,
             type: 'Uint8',

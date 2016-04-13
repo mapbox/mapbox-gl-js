@@ -73,7 +73,7 @@ LineBucket.prototype.programInterfaces = {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributes: [{
+        layoutAttributes: [{
             name: 'a_pos',
             components: 2,
             type: 'Int16'

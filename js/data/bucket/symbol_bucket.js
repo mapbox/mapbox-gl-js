@@ -87,19 +87,19 @@ SymbolBucket.prototype.programInterfaces = {
     glyph: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributes: programAttributes
+        layoutAttributes: programAttributes
     },
 
     icon: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributes: programAttributes
+        layoutAttributes: programAttributes
     },
 
     collisionBox: {
         vertexBuffer: true,
 
-        attributes: [{
+        layoutAttributes: [{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
