@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel='stylesheet' href='../../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<script src='../../dist/mapbox-gl-dev.js'></script>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamZpcmUiLCJhIjoiZTFlNmQ3N2MzYmM2YzVjMzhkOTM2NTRhYzNiNGZiNGYifQ.1W47kmoEUpTJa3YIFefxUQ';
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/bright-v8'
+    });
+
+    var tooltip = new mapboxgl.Popup({closeOnClick: false});
+
+    var popupContent = document.createElement('div');
+    popupContent.innerHTML = '<h1>Position</h1><span id="popup-position" ></span>';
+    tooltip.setDOMContent(popupContent)
+
+    map.on('mousemove', function(e) {
+        popupContent.querySelector('#popup-position').innerText = e.lngLat;
+        tooltip
+            .setLngLat(e.lngLat)
+            .addTo(map);
+    });
+
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject([10, 10]))
+        .setText('confirm no setText regression')
+        .addTo(map);
+
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject([100, 100]))
+        .setHTML('<em>confirm</em><span> no </span><code>setHTML</code> regression')
+        .addTo(map);
+</script>
+</body>
+</html>
