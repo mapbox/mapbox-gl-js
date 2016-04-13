@@ -102,11 +102,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setText: function(text) {
-        this._createContent();
-        this._content.appendChild(document.createTextNode(text));
-
-        this._update();
-        return this;
+        return this.setContent(document.createTextNode(text));
     },
 
     /**
@@ -125,6 +121,18 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             this._content.appendChild(child);
         }
 
+        this._update();
+        return this;
+    },
+
+    /**
+     * Fill a popup element with DOM content
+     * @param {HTMLElement|Text} htmlNode Popup content as a DOM node
+     * @returns {Popup} `this`
+     */
+    setDOMContent: function(htmlNode) {
+        this._createContent();
+        this._content.appendChild(htmlNode);
         this._update();
         return this;
     },
