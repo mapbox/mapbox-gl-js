@@ -23,13 +23,6 @@ var Attribution = require('./control/attribution');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
-/**
- * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
- * whether or not to smoothly transition property changes triggered by the class change.
- *
- * @typedef {Object} StyleOptions
- * @property {boolean} transition
- */
 
 /**
  * Creates a map instance.
@@ -1018,3 +1011,24 @@ function removeNode(node) {
         node.parentNode.removeChild(node);
     }
 }
+
+/**
+ * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
+ * whether or not to smoothly transition property changes triggered by the class change.
+ *
+ * @typedef {Object} StyleOptions
+ * @property {boolean} transition
+ */
+
+ /**
+  * This event is fired whenever the map is drawn to the screen because of
+  *
+  *  - a change in map position, zoom, pitch, or bearing
+  *  - a change to the map style
+  *  - a change to a GeoJSON source
+  *  - a vector tile, GeoJSON file, glyph, or sprite being loaded
+  *
+  * @event render
+  * @memberof Map
+  * @instance
+  */
