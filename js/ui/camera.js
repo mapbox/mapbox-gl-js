@@ -365,7 +365,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = 0;
+        options.bearing = options.pitch = 0;
 
         return options.linear ?
             this.easeTo(options) :
