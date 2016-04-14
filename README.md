@@ -11,8 +11,6 @@ Include the source via HTML tags:
 <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.17.0/mapbox-gl.css' rel='stylesheet' />
 ```
 
-For more information, see the [API documentation]() and [examples]().
-
 Alternatively, you can `npm install mapbox-gl` and use it as a bundled dependency with browserify.
 
 ### Documentation
