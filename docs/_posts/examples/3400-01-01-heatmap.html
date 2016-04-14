@@ -15,7 +15,7 @@ var map = new mapboxgl.Map({
     zoom: 3,
 });
 
-map.on('style.load', function(){
+map.on('load', function(){
 
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true.

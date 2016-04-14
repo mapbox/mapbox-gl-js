@@ -118,7 +118,7 @@ var map = new mapboxgl.Map({
     zoom: 11.15
 });
 
-map.on('style.load', function () {
+map.on('load', function () {
     // Add marker data as a new GeoJSON source.
     map.addSource("markers", {
         "type": "geojson",

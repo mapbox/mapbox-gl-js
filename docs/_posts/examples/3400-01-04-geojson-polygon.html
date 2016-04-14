@@ -13,7 +13,7 @@ var map = new mapboxgl.Map({
     zoom: 5
 });
 
-map.on('style.load', function () {
+map.on('load', function () {
     map.addSource('maine', {
         'type': 'geojson',
         'data': {

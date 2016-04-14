@@ -53,7 +53,7 @@ var linestring = {
     }
 };
 
-map.on('style.load', function() {
+map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
         "data": geojson

@@ -59,7 +59,7 @@ var map = new mapboxgl.Map({
 var slider = document.getElementById('slider');
 var sliderValue = document.getElementById('slider-value');
 
-map.on('style.load', function() {
+map.on('load', function() {
 
     // Add source/layers
     map.addSource('chicago', {
