@@ -13,11 +13,12 @@ var Evented = {
      *
      * @param {string} type Event type
      * @param {Function} listener Function to be called when the event is fired
+     * @returns {Object} `this`
      */
-    on: function(type, fn) {
+    on: function(type, listener) {
         this._events = this._events || {};
         this._events[type] = this._events[type] || [];
-        this._events[type].push(fn);
+        this._events[type].push(listener);
 
         return this;
     },
@@ -27,8 +28,9 @@ var Evented = {
      *
      * @param {string} [type] Event type. If none is specified, remove all listeners
      * @param {Function} [listener] Function to be called when the event is fired. If none is specified all listeners are removed
+     * @returns {Object} `this`
      */
-    off: function(type, fn) {
+    off: function(type, listener) {
         if (!type) {
             // clear all listeners if no arguments specified
             delete this._events;
@@ -37,8 +39,8 @@ var Evented = {
 
         if (!this.listens(type)) return this;
 
-        if (fn) {
-            var idx = this._events[type].indexOf(fn);
+        if (listener) {
+            var idx = this._events[type].indexOf(listener);
             if (idx >= 0) {
                 this._events[type].splice(idx, 1);
             }
@@ -57,11 +59,12 @@ var Evented = {
      *
      * @param {string} type Event type.
      * @param {Function} listener Function to be called once when the event is fired
+     * @returns {Object} `this`
      */
-    once: function(type, fn) {
+    once: function(type, listener) {
         var wrapper = function(data) {
             this.off(type, wrapper);
-            fn.call(this, data);
+            listener.call(this, data);
         }.bind(this);
         this.on(type, wrapper);
         return this;
