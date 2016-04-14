@@ -8,12 +8,21 @@ attribute vec2 a_pos;
 
 #ifdef ATTRIBUTE_A_COLOR
 attribute lowp vec4 a_color;
+#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_COLOR0
+uniform lowp float u_color_t;
+attribute lowp vec4 a_color0;
+attribute lowp vec4 a_color1;
+attribute lowp vec4 a_color2;
+attribute lowp vec4 a_color3;
 #else
 uniform lowp vec4 a_color;
 #endif
 
 #ifdef ATTRIBUTE_A_RADIUS
 attribute mediump float a_radius;
+#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_RADIUS
+uniform lowp float u_radius_t;
+attribute mediump vec4 a_radius;
 #else
 uniform mediump float a_radius;
 #endif
@@ -22,10 +31,32 @@ varying vec2 v_extrude;
 varying lowp vec4 v_color;
 varying lowp float v_antialiasblur;
 
+float evaluate_zoom_function_1(const vec4 values, const float t) {
+    if (t < 1.0) {
+        return mix(values[0], values[1], t);
+    } else if (t < 2.0) {
+        return mix(values[1], values[2], t - 1.0);
+    } else {
+        return mix(values[2], values[3], t - 2.0);
+    }
+}
+
+vec4 evaluate_zoom_function_4(const vec4 value0, const vec4 value1, const vec4 value2, const vec4 value3, const float t) {
+    if (t < 1.0) {
+        return mix(value0, value1, t);
+    } else if (t < 2.0) {
+        return mix(value1, value2, t - 1.0);
+    } else {
+        return mix(value2, value3, t - 2.0);
+    }
+}
+
 void main(void) {
 
 #ifdef ATTRIBUTE_A_RADIUS
     mediump float radius = a_radius / 10.0;
+#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_RADIUS
+    mediump float radius = evaluate_zoom_function_1(a_radius, u_radius_t) / 10.0;
 #else
     mediump float radius = a_radius;
 #endif
@@ -44,6 +75,8 @@ void main(void) {
 
 #ifdef ATTRIBUTE_A_COLOR
     v_color = a_color / 255.0;
+#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_COLOR0
+    v_color = evaluate_zoom_function_4(a_color0, a_color1, a_color2, a_color3, u_color_t) / 255.0;
 #else
     v_color = a_color;
 #endif

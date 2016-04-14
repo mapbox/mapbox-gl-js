@@ -169,6 +169,20 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
+    getPaintValueStopZoomLevels: function(name) {
+        var transition = this._paintTransitions[name];
+        if (transition) {
+            return transition.declaration.stopZoomLevels;
+        } else {
+            return [];
+        }
+    },
+
+    getPaintInterpolationT: function(name, zoom) {
+        var transition = this._paintTransitions[name];
+        return transition.declaration.calculateInterpolationT({ zoom: zoom });
+    },
+
     isPaintValueFeatureConstant: function(name) {
         var transition = this._paintTransitions[name];
 
@@ -178,6 +192,17 @@ StyleLayer.prototype = util.inherit(Evented, {
             return true;
         }
     },
+
+    isPaintValueZoomConstant: function(name) {
+        var transition = this._paintTransitions[name];
+
+        if (transition) {
+            return transition.declaration.isZoomConstant;
+        } else {
+            return true;
+        }
+    },
+
 
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;

@@ -21,11 +21,12 @@ test('Bucket', function(t) {
                 secondElementBuffer: 'testSecondElement',
                 secondElementBufferComponents: 2,
 
-                attributes: options.attributes || [{
+                layoutAttributes: options.layoutAttributes || [{
                     name: 'box',
                     components: 2,
                     type: 'Int16'
-                }, {
+                }],
+                paintAttributes: options.paintAttributes || [{
                     name: 'map',
                     type: 'Int16',
                     getValue: function(layer, globalProperties, featureProperties) {
@@ -150,12 +151,13 @@ test('Bucket', function(t) {
 
     t.test('add features, disabled attribute', function(t) {
         var bucket = create({
-            attributes: [{
+            paintAttributes: [{
                 name: 'map',
                 type: 'Int16',
                 getValue: function() { return [5]; },
                 paintProperty: 'circle-color'
             }],
+            layoutAttributes: [],
             layers: [
                 { id: 'one', type: 'circle', paint: constantPaint }
             ]
@@ -166,7 +168,7 @@ test('Bucket', function(t) {
 
         t.equal(bucket.arrays.testVertex.bytesPerElement, 0);
         t.deepEqual(
-            bucket.attributes.test.paintAttributes.one.disabled[0].getValue.call(bucket),
+            bucket.paintAttributes.test.one.uniforms[0].getValue.call(bucket),
             [5]
         );
 
@@ -175,7 +177,8 @@ test('Bucket', function(t) {
 
     t.test('add features, array type attribute', function(t) {
         var bucket = create({
-            attributes: [{
+            paintAttributes: [],
+            layoutAttributes: [{
                 name: 'map',
                 type: 'Int16'
             }]

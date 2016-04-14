@@ -8,7 +8,7 @@ exports.interpolated = function(parameters) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };
     outer.isFeatureConstant = inner.isFeatureConstant;
-    outer.isGlobalConstant = inner.isGlobalConstant;
+    outer.isZoomConstant = inner.isZoomConstant;
     return outer;
 };
 
@@ -18,7 +18,7 @@ exports['piecewise-constant'] = function(parameters) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };
     outer.isFeatureConstant = inner.isFeatureConstant;
-    outer.isGlobalConstant = inner.isGlobalConstant;
+    outer.isZoomConstant = inner.isZoomConstant;
     return outer;
 };
 
