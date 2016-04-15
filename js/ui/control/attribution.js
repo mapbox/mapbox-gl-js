@@ -49,6 +49,15 @@ Attribution.prototype = util.inherit(Control, {
             }
         }
 
+        // remove any entries that are duplicates or strict substrings of another entry.
+        attributions.sort();
+        attributions = attributions.filter(function (attrib, i) {
+            for (var j = i + 1; j < attributions.length; j++) {
+                if (attributions[j].indexOf(attrib) >= 0) { return false; }
+            }
+            return true;
+        });
+
         this._container.innerHTML = attributions.join(' | ');
         this._editLink = this._container.getElementsByClassName('mapbox-improve-map')[0];
         this._updateEditLink();
