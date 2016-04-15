@@ -29,6 +29,8 @@ Canvas.prototype.resize = function(width, height) {
     this.canvas.style.height = height + 'px';
 };
 
+// If you update this object, you must also update mapbox-gl-js-supported
+// https://github.com/mapbox/mapbox-gl-js-supported/blob/gh-pages/index.js#L94
 var requiredContextAttributes = {
     antialias: false,
     alpha: true,
@@ -41,22 +43,6 @@ Canvas.prototype.getWebGLContext = function(attributes) {
 
     return this.canvas.getContext('webgl', attributes) ||
         this.canvas.getContext('experimental-webgl', attributes);
-};
-
-Canvas.prototype.supportsWebGLContext = function(failIfMajorPerformanceCaveat) {
-    var attributes = util.extend({
-        failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat
-    }, requiredContextAttributes);
-
-    if ('probablySupportsContext' in this.canvas) {
-        return this.canvas.probablySupportsContext('webgl', attributes) ||
-            this.canvas.probablySupportsContext('experimental-webgl', attributes);
-    } else if ('supportsContext' in this.canvas) {
-        return this.canvas.supportsContext('webgl', attributes) ||
-            this.canvas.supportsContext('experimental-webgl', attributes);
-    }
-
-    return !!window.WebGLRenderingContext && !!this.getWebGLContext(failIfMajorPerformanceCaveat);
 };
 
 Canvas.prototype.getElement = function() {
