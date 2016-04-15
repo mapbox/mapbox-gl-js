@@ -109,6 +109,76 @@ test('function types', function(t) {
 
         });
 
+        t.test('zoom + data stops', function(t) {
+            t.test('one element', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    stops: [[{ zoom: 1, value: 1 }, 2]]
+                });
+
+                t.equal(f(0, { prop: 0 }), 2);
+                t.equal(f(1, { prop: 0 }), 2);
+                t.equal(f(2, { prop: 0 }), 2);
+                t.equal(f(0, { prop: 1 }), 2);
+                t.equal(f(1, { prop: 1 }), 2);
+                t.equal(f(2, { prop: 1 }), 2);
+                t.equal(f(0, { prop: 2 }), 2);
+                t.equal(f(1, { prop: 2 }), 2);
+                t.equal(f(2, { prop: 2 }), 2);
+
+                t.end();
+            });
+
+            t.test('two elements', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    base: 1,
+                    stops: [
+                        [{ zoom: 1, value: 0 }, 0],
+                        [{ zoom: 1, value: 2 }, 4],
+                        [{ zoom: 3, value: 0 }, 0],
+                        [{ zoom: 3, value: 2 }, 12]]
+                });
+
+                t.equal(f(0, { prop: 1 }), 2);
+                t.equal(f(1, { prop: 1 }), 2);
+                t.equal(f(2, { prop: 1 }), 4);
+                t.equal(f(3, { prop: 1 }), 6);
+                t.equal(f(4, { prop: 1 }), 6);
+
+                t.equal(f(2, { prop: -1}), 0);
+                t.equal(f(2, { prop: 0}), 0);
+                t.equal(f(2, { prop: 2}), 8);
+                t.equal(f(2, { prop: 3}), 8);
+
+                t.end();
+            });
+
+            t.test('three elements', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    base: 1,
+                    stops: [
+                        [{ zoom: 1, value: 0}, 0],
+                        [{ zoom: 1, value: 2}, 4],
+                        [{ zoom: 3, value: 0}, 0],
+                        [{ zoom: 3, value: 2}, 12],
+                        [{ zoom: 5, value: 0}, 0],
+                        [{ zoom: 5, value: 2}, 20]]
+                });
+
+                t.equal(f(0, { prop: 1 }), 2);
+                t.equal(f(1, { prop: 1 }), 2);
+                t.equal(f(2, { prop: 1 }), 4);
+
+                t.end();
+            });
+        });
+
+
     });
 
     t.test('categorical', function(t) {
@@ -202,11 +272,10 @@ test('property', function(t) {
         t.end();
     });
 
-    t.test('$zoom', function(t) {
+    t.test('zoom', function(t) {
         var f = MapboxGLFunction({
             type: 'categorical',
-            stops: [['map', 'neat'], ['box', 'swell']],
-            property: '$zoom'
+            stops: [['map', 'neat'], ['box', 'swell']]
         });
 
         t.equal(f('box'), 'swell');
@@ -234,7 +303,7 @@ test('isConstant', function(t) {
     t.test('constant', function(t) {
         var f = MapboxGLFunction(1);
 
-        t.ok(f.isGlobalConstant);
+        t.ok(f.isZoomConstant);
         t.ok(f.isFeatureConstant);
 
         t.end();
@@ -242,11 +311,10 @@ test('isConstant', function(t) {
 
     t.test('zoom', function(t) {
         var f = MapboxGLFunction({
-            stops: [[1, 1]],
-            property: '$zoom'
+            stops: [[1, 1]]
         });
 
-        t.notOk(f.isGlobalConstant);
+        t.notOk(f.isZoomConstant);
         t.ok(f.isFeatureConstant);
 
         t.end();
@@ -258,7 +326,19 @@ test('isConstant', function(t) {
             property: 'mapbox'
         });
 
-        t.notOk(f.isGlobalConstant);
+        t.ok(f.isZoomConstant);
+        t.notOk(f.isFeatureConstant);
+
+        t.end();
+    });
+
+    t.test('zoom + feature', function(t) {
+        var f = MapboxGLFunction({
+            stops: [[{ zoom: 1, data: 1 }, 1]],
+            property: 'mapbox'
+        });
+
+        t.notOk(f.isZoomConstant);
         t.notOk(f.isFeatureConstant);
 
         t.end();

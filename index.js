@@ -6,10 +6,12 @@ function createFunction(parameters, defaultType) {
     if (!isFunctionDefinition(parameters)) {
         fun = function() { return parameters; };
         fun.isFeatureConstant = true;
-        fun.isGlobalConstant = true;
+        fun.isZoomConstant = true;
 
     } else {
-        var property = parameters.property === undefined ? '$zoom' : parameters.property;
+        var zoomAndFeatureDependent = typeof parameters.stops[0][0] === 'object';
+        var featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
+        var zoomDependent = zoomAndFeatureDependent || !featureDependent;
         var type = parameters.type || defaultType || 'exponential';
 
         var innerFun;
@@ -23,15 +25,42 @@ function createFunction(parameters, defaultType) {
             throw new Error('Unknown function type "' + type + '"');
         }
 
-        if (property === '$zoom') {
+        if (zoomAndFeatureDependent) {
+            var featureFunctions = {};
+            var featureFunctionStops = [];
+            for (var s = 0; s < parameters.stops.length; s++) {
+                var stop = parameters.stops[s];
+                if (featureFunctions[stop[0].zoom] === undefined) {
+                    featureFunctions[stop[0].zoom] = {
+                        type: parameters.type,
+                        property: parameters.property,
+                        stops: []
+                    };
+                }
+                featureFunctions[stop[0].zoom].stops.push([stop[0].value, stop[1]]);
+            }
+
+            for (var z in featureFunctions) {
+                featureFunctionStops.push([parseInt(z), createFunction(featureFunctions[z])]);
+            }
+            fun = function(zoom, feature) {
+                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature);
+            };
+            fun.isFeatureConstant = false;
+            fun.isZoomConstant = false;
+
+        } else if (zoomDependent) {
             fun = function(zoom) {
                 return innerFun(parameters, zoom);
             };
             fun.isFeatureConstant = true;
+            fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                return innerFun(parameters, feature[property]);
+                return innerFun(parameters, feature[parameters.property]);
             };
+            fun.isFeatureConstant = false;
+            fun.isZoomConstant = true;
         }
     }
 
@@ -84,7 +113,13 @@ function evaluateExponentialFunction(parameters, input) {
 
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    if (outputLower.length) {
+    if (typeof outputLower === 'function') {
+        return function() {
+            var evaluatedLower = outputLower.apply(undefined, arguments);
+            var evaluatedUpper = outputUpper.apply(undefined, arguments);
+            return interpolate(input, base, inputLower, inputUpper, evaluatedLower, evaluatedUpper);
+        };
+    } else if (outputLower.length) {
         return interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper);
     } else {
         return interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper);
