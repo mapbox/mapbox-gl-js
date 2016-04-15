@@ -59,7 +59,7 @@ var map = new mapboxgl.Map({
     center: [-71.97722138410576, -13.517379300798098]
 });
 
-map.on('style.load', function () {
+map.on('load', function () {
     map.addSource('museums', {
         type: 'vector',
         url: 'mapbox://mapbox.2opop9hr'
@@ -68,6 +68,9 @@ map.on('style.load', function () {
         'id': 'museums',
         'type': 'circle',
         'source': 'museums',
+        'layout': {
+            'visibility': 'visible'
+        },
         'paint': {
             'circle-radius': 8,
             'circle-color': 'rgba(55,148,179,1)'
@@ -85,6 +88,7 @@ map.on('style.load', function () {
         'source': 'contours',
         'source-layer': 'contour',
         'layout': {
+            'visibility': 'visible',
             'line-join': 'round',
             'line-cap': 'round'
         },
