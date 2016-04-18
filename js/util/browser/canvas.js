@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util');
+var isSupported = require('mapbox-gl-js-supported');
 
 module.exports = Canvas;
 
@@ -29,17 +30,8 @@ Canvas.prototype.resize = function(width, height) {
     this.canvas.style.height = height + 'px';
 };
 
-// If you update this object, you must also update mapbox-gl-js-supported
-// https://github.com/mapbox/mapbox-gl-js-supported/blob/gh-pages/index.js#L94
-var requiredContextAttributes = {
-    antialias: false,
-    alpha: true,
-    stencil: true,
-    depth: true
-};
-
 Canvas.prototype.getWebGLContext = function(attributes) {
-    attributes = util.extend({}, attributes, requiredContextAttributes);
+    attributes = util.extend({}, attributes, isSupported.webGLContextAttributes);
 
     return this.canvas.getContext('webgl', attributes) ||
         this.canvas.getContext('experimental-webgl', attributes);
