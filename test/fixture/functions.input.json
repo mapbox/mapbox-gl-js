@@ -165,6 +165,68 @@
           "stops": [[0.5, true]]
         }
       }
+    },
+    {
+      "id": "mixed-stop-key-types",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [
+              [{ "zoom": 0, "value": 1 }, true],
+              [0.5, true]]
+        }
+      }
+    },
+    {
+      "id": "missing stop zoom",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [[{"value": "asdf"}, true]]
+        }
+      }
+    },
+    {
+      "id": "missing stop feature value",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [[{"zoom": 1}, true]]
+        }
+      }
+    },
+    {
+      "id": "invalid stop zoom type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [[{"zoom": "1", "value": "asdf"}, true]]
+        }
+      }
+    },
+    {
+      "id": "invalid stop feature value type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [[{"zoom": 1, "value": { "asdf": true }}, true]]
+        }
+      }
     }
   ]
 }
