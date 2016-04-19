@@ -99,7 +99,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
             mid = Math.floor((low + high) / 2);
             properties = layer.feature(mid).properties;
 
-            if (properties.d - time < 0) {
+            if (properties.close_date - time < 0) {
                 low = mid + 1;
             } else {
                 high = mid;
@@ -152,7 +152,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         var values = {};
         for (var i = 1; i < filter.length; i++) {
             var filterSpec = filter[i];
-            if (filterSpec[1] === 'd') {
+            if (filterSpec[1] === 'close_date') {
                 if (filterSpec[0].charAt(0) === '>') {
                     values.startTime = filterSpec[2];
                 } else {
