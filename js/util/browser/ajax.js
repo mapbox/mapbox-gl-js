@@ -8,7 +8,8 @@ exports.getJSON = function(url, callback) {
         callback(e);
     };
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        // xhr.status does not need to be checked because onload implies success
+        if (xhr.response) {
             var data;
             try {
                 data = JSON.parse(xhr.response);
@@ -32,7 +33,8 @@ exports.getArrayBuffer = function(url, callback) {
         callback(e);
     };
     xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        // xhr.status does not need to be checked because onload implies success
+        if (xhr.response) {
             callback(null, xhr.response);
         } else {
             callback(new Error(xhr.statusText));
