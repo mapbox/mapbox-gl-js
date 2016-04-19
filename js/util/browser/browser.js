@@ -1,7 +1,5 @@
 'use strict';
 
-var Canvas = require('./canvas');
-
 /**
  * Unlike js/util/browser.js, this code is written with the expectation
  * of a browser environment with a global 'window' object
@@ -66,77 +64,15 @@ exports.timed = function (fn, dur, ctx) {
     return function() { abort = true; };
 };
 
-exports.supportsWebGL = {};
-
 /**
- * Test whether the basic JavaScript and DOM features required for Mapbox GL are present.
+ * Test if the current browser supports Mapbox GL JS
  * @param {Object} options
- * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the implementation determines that the performance of the created WebGL context would be dramatically lower than expected.
- * @return {boolean} Returns true if Mapbox GL should be expected to work, and false if not.
- * @memberof mapboxgl
- * @static
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] Return `false`
+ *   if the performance of Mapbox GL JS would be dramatically worse than
+ *   expected (i.e. a software renderer would be used)
+ * @return {boolean}
  */
-exports.supported = function(options) {
-
-    var supports = [
-
-        function() { return typeof window !== 'undefined'; },
-
-        function() { return typeof document !== 'undefined'; },
-
-        function () {
-            return !!(Array.prototype &&
-                Array.prototype.every &&
-                Array.prototype.filter &&
-                Array.prototype.forEach &&
-                Array.prototype.indexOf &&
-                Array.prototype.lastIndexOf &&
-                Array.prototype.map &&
-                Array.prototype.some &&
-                Array.prototype.reduce &&
-                Array.prototype.reduceRight &&
-                Array.isArray);
-        },
-
-        function() {
-            return !!(Function.prototype && Function.prototype.bind) &&
-                !!(Object.keys &&
-                    Object.create &&
-                    Object.getPrototypeOf &&
-                    Object.getOwnPropertyNames &&
-                    Object.isSealed &&
-                    Object.isFrozen &&
-                    Object.isExtensible &&
-                    Object.getOwnPropertyDescriptor &&
-                    Object.defineProperty &&
-                    Object.defineProperties &&
-                    Object.seal &&
-                    Object.freeze &&
-                    Object.preventExtensions);
-        },
-
-        function() {
-            return 'JSON' in window && 'parse' in JSON && 'stringify' in JSON;
-        },
-
-        function() {
-            var opt = (options && options.failIfMajorPerformanceCaveat) || false,
-                fimpc = 'fimpc_' + String(opt);
-            if (exports.supportsWebGL[fimpc] === undefined) {
-                var canvas = new Canvas();
-                exports.supportsWebGL[fimpc] = canvas.supportsWebGLContext(opt);
-            }
-            return exports.supportsWebGL[fimpc];
-        },
-
-        function() { return 'Worker' in window; }
-    ];
-
-    for (var i = 0; i < supports.length; i++) {
-        if (!supports[i]()) return false;
-    }
-    return true;
-};
+exports.supported = require('mapbox-gl-js-supported');
 
 exports.hardwareConcurrency = navigator.hardwareConcurrency || 8;
 
