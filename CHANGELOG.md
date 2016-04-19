@@ -1,5 +1,11 @@
 ## master
 
+## 8.6.0
+
+v8.0.0 styles are fully compatible with v8.6.0.
+
+* Added support for zoom and feature driven functions.
+
 ## 8.4.2
 
 v8.0.0 styles are fully compatible with v8.4.2.
