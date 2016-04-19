@@ -176,6 +176,26 @@ test('function types', function(t) {
 
                 t.end();
             });
+
+            t.test('fractional zoom', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    property: 'prop',
+                    base: 1,
+                    stops: [
+                        [{ zoom: 1.9, value: 0 }, 4],
+                        [{ zoom: 2.1, value: 0 }, 8]
+                    ]
+                });
+
+                t.equal(f(1.9, { prop: 1 }), 4);
+                t.equal(f(2, { prop: 1 }), 6);
+                t.equal(f(2.1, { prop: 1 }), 8);
+
+                t.end();
+            });
+
+
         });
 
 

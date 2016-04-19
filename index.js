@@ -32,6 +32,7 @@ function createFunction(parameters, defaultType) {
                 var stop = parameters.stops[s];
                 if (featureFunctions[stop[0].zoom] === undefined) {
                     featureFunctions[stop[0].zoom] = {
+                        zoom: stop[0].zoom,
                         type: parameters.type,
                         property: parameters.property,
                         stops: []
@@ -41,7 +42,7 @@ function createFunction(parameters, defaultType) {
             }
 
             for (var z in featureFunctions) {
-                featureFunctionStops.push([parseInt(z), createFunction(featureFunctions[z])]);
+                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
             }
             fun = function(zoom, feature) {
                 return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature);
