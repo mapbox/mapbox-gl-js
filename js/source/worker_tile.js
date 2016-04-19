@@ -85,7 +85,44 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         sortLayerIntoBuckets(data, bucketsById);
     }
 
+    // PATCH BEGINS HERE
+
+    function featuresFind(layer, time) {
+        // Finds the index of the first point with close_date greater than the given time.
+        // See: http://stackoverflow.com/questions/6553970/find-the-first-element-in-an-array-that-is-greater-than-the-target
+        var low = 0;
+        var high = layer.length;
+        var mid;
+        var properties;
+
+        while (low !== high) {
+            mid = Math.floor((low + high) / 2);
+            properties = layer.feature(mid).properties;
+
+            if (properties.close_date - time < 0) {
+                low = mid + 1;
+            } else {
+                high = mid;
+            }
+        }
+
+        // null means the searched for value is greater than all values in layer features.
+        return low === layer.length ? null : low;
+    }
+
+    function featuresSlice(layer, begin, end) {
+        var n = end - begin;
+        var slice = new Array(n);
+        while (n--) {
+            slice[n] = layer.feature(n + begin);
+        }
+        return slice;
+    }
+
     function sortLayerIntoBuckets(layer, buckets) {
+        if (layer.name === 'markers') {
+            return sortLayerIntoBucketsBinarySearch(layer, buckets);
+        }
         for (var i = 0; i < layer.length; i++) {
             var feature = layer.feature(i);
             feature.index = i;
@@ -95,6 +132,38 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
             }
         }
     }
+
+    function sortLayerIntoBucketsBinarySearch(layer, buckets) {
+        for (var id in buckets) {
+            var filterValues = getFilters(buckets[id].layer.filter);
+
+            var startIdx = featuresFind(layer, filterValues.startTime);
+            var endIdx = featuresFind(layer, filterValues.endTime);
+            if (startIdx && !endIdx) {
+                endIdx = layer.length;
+            }
+            var featureSlice = featuresSlice(layer, startIdx, endIdx);
+
+            buckets[id].features = featureSlice;
+        }
+    }
+
+    function getFilters(filter) {
+        var values = {};
+        for (var i = 1; i < filter.length; i++) {
+            var filterSpec = filter[i];
+            if (filterSpec[1] === 'close_date') {
+                if (filterSpec[0].charAt(0) === '>') {
+                    values.startTime = filterSpec[2];
+                } else {
+                    values.endTime = filterSpec[2];
+                }
+            }
+        }
+        return values;
+    }
+
+    // PATCH ENDS HERE
 
     var buckets = [],
         symbolBuckets = this.symbolBuckets = [],
