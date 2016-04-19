@@ -254,7 +254,7 @@ StyleLayer.prototype = util.inherit(Evented, {
     _applyPaintDeclaration: function (name, declaration, options, globalOptions, animationLoop) {
         var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
 
-        if (declaration === null) {
+        if (declaration === null || declaration === undefined) {
             var spec = this._paintSpecifications[name];
             declaration = new StyleDeclaration(spec, spec.default);
         }
