@@ -20,8 +20,6 @@ function WorkerTile(params) {
     this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
-var COLOR_OFFSET = 10000000000;
-
 WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, callback) {
 
     this.status = 'parsing';
@@ -89,10 +87,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
 
     // PATCH BEGINS HERE
 
-    function featuresFind(layer, color, time) {
+    function featuresFind(layer, time) {
         // Finds the index of the first point with close_date greater than the given time.
         // See: http://stackoverflow.com/questions/6553970/find-the-first-element-in-an-array-that-is-greater-than-the-target
-        var find = time + color * COLOR_OFFSET;
         var low = 0;
         var high = layer.length;
         var mid;
@@ -102,15 +99,14 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
             mid = Math.floor((low + high) / 2);
             properties = layer.feature(mid).properties;
 
-            if ((properties.d + properties.c * COLOR_OFFSET) - find < 0) {
+            if (properties.d - time < 0) {
                 low = mid + 1;
             } else {
                 high = mid;
             }
         }
 
-        // null means the searched for value is greater than all values in
-        // layer features.
+        // null means the searched for value is greater than all values in layer features.
         return low === layer.length ? null : low;
     }
 
@@ -141,8 +137,8 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         for (var id in buckets) {
             var filterValues = getFilters(buckets[id].layer.filter);
 
-            var startIdx = featuresFind(layer, filterValues.colorIdx, filterValues.startTime);
-            var endIdx = featuresFind(layer, filterValues.colorIdx, filterValues.endTime);
+            var startIdx = featuresFind(layer, filterValues.startTime);
+            var endIdx = featuresFind(layer, filterValues.endTime);
             if (startIdx && !endIdx) {
                 endIdx = layer.length;
             }
@@ -156,9 +152,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         var values = {};
         for (var i = 1; i < filter.length; i++) {
             var filterSpec = filter[i];
-            if (filterSpec[1] === 'c') {
-                values.colorIdx = filterSpec[2];
-            } else if (filterSpec[1] === 'd') {
+            if (filterSpec[1] === 'd') {
                 if (filterSpec[0].charAt(0) === '>') {
                     values.startTime = filterSpec[2];
                 } else {
