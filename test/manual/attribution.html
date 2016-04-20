@@ -28,6 +28,29 @@
 
     new mapboxgl.Attribution({position: 'top-left'})
         .addTo(map);
+
+    map.on('style.load', function () {
+    map.addSource('foo', new mapboxgl.GeoJSONSource({
+        data: {
+            type: 'FeatureCollection', features: []
+        }
+    }));
+    map.style.sources.foo.attribution = '<a href="https://www.mapbox.com/about/maps/" target="_blank">&copy; Mapbox</a> <a href="http://www.openstreetmap.org/about/" target="_blank">&copy; OpenStreetMap</a> <a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a> &copy; Someone else like DG'
+
+    map.addSource('bar', new mapboxgl.GeoJSONSource({
+        data: {
+            type: 'FeatureCollection', features: []
+        }
+    }));
+    map.style.sources.bar.attribution = 'Another Source';
+
+    map.addSource('baz', new mapboxgl.GeoJSONSource({
+        data: {
+            type: 'FeatureCollection', features: []
+        }
+    }));
+    map.style.sources.baz.attribution = 'Another Source';
+});
 </script>
 </body>
 </html>
