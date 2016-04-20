@@ -1028,3 +1028,13 @@ function removeNode(node) {
         node.parentNode.removeChild(node);
     }
 }
+
+/**
+ * This event is fired when the map becomes "render stable." The map is
+ * considered "render stable" when all the resources needed to display the
+ * current viewport have been loaded. See also `Map#isRenderStable`.
+ *
+ * @event renderstable
+ * @memberof Map
+ * @instance
+ */
