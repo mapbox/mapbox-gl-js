@@ -41,9 +41,9 @@ function drawCircles(painter, source, layer, coords) {
         ));
         painter.setExMatrix(painter.transform.exMatrix);
 
-        var vertexBuffer = bucket.buffers.circleVertex;
-        var paintVertexBuffer = bucket.buffers[layer.id + 'Circle'];
-        var elementBuffer = bucket.buffers.circleElement;
+        var vertexBuffer = bucket.buffers.circle.layout.vertex;
+        var elementBuffer = bucket.buffers.circle.layout.element;
+        var paintVertexBuffer = bucket.buffers.circle.paint[layer.id];
 
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];

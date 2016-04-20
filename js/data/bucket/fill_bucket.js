@@ -13,7 +13,7 @@ function FillBucket() {
 FillBucket.prototype = util.inherit(Bucket, {});
 
 FillBucket.prototype.addFillVertex = function(x, y) {
-    return this.arrays.fillVertex.emplaceBack(x, y);
+    return this.arrays.fill.layout.vertex.emplaceBack(x, y);
 };
 
 FillBucket.prototype.programInterfaces = {
@@ -67,12 +67,12 @@ FillBucket.prototype.addFill = function(vertices) {
 
         // Only add triangles that have distinct vertices.
         if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            this.arrays.fillElement.emplaceBack(firstIndex, prevIndex, currentIndex);
+            this.arrays.fill.layout.element.emplaceBack(firstIndex, prevIndex, currentIndex);
             group.elementLength++;
         }
 
         if (i >= 1) {
-            this.arrays.fillSecondElement.emplaceBack(prevIndex, currentIndex);
+            this.arrays.fill.layout.secondElement.emplaceBack(prevIndex, currentIndex);
             group.secondElementLength++;
         }
 

@@ -70,7 +70,7 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) 
 }
 
 SymbolBucket.prototype.addCollisionBoxVertex = function(point, extrude, maxZoom, placementZoom) {
-    return this.arrays.collisionBoxVertex.emplaceBack(
+    return this.arrays.collisionBox.layout.vertex.emplaceBack(
             // pos
             point.x,
             point.y,
@@ -436,9 +436,8 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
 
     var group = this.makeRoomFor(programName, 4 * quads.length);
 
-    // TODO manual curry
-    var elementArray = this.arrays[this.getBufferName(programName, 'element')];
-    var vertexArray = this.arrays[this.getBufferName(programName, 'vertex')];
+    var elementArray = this.arrays[programName].layout.element;
+    var vertexArray = this.arrays[programName].layout.vertex;
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
