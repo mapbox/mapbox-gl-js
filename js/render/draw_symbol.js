@@ -33,48 +33,86 @@ function drawSymbols(painter, source, layer, coords) {
     painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
-    var tile, elementGroups, bucket;
+    drawLayerSymbols(painter, source, layer, coords, false,
+            layer.paint['icon-translate'],
+            layer.paint['icon-translate-anchor'],
+            layer.layout['icon-rotation-alignment'],
+            layer.layout['icon-size'],
+            layer.paint['icon-halo-width'],
+            layer.paint['icon-halo-color'],
+            layer.paint['icon-halo-blur'],
+            layer.paint['icon-opacity'],
+            layer.paint['icon-color']);
 
-    for (var i = 0; i < coords.length; i++) {
-        tile = source.getTile(coords[i]);
-        bucket = tile.getBucket(layer);
-        if (!bucket) continue;
-        elementGroups = bucket.elementGroups;
-        if (!elementGroups.icon.length) continue;
-
-        painter.enableTileClippingMask(coords[i]);
-        drawSymbol(painter, layer, coords[i].posMatrix, tile, bucket, elementGroups.icon, 'icon', elementGroups.sdfIcons, elementGroups.iconsNeedLinear);
-    }
-
-    for (var j = 0; j < coords.length; j++) {
-        tile = source.getTile(coords[j]);
-        bucket = tile.getBucket(layer);
-        if (!bucket) continue;
-        elementGroups = bucket.elementGroups;
-        if (!elementGroups.glyph.length) continue;
-
-        painter.enableTileClippingMask(coords[j]);
-        drawSymbol(painter, layer, coords[j].posMatrix, tile, bucket, elementGroups.glyph, 'text', true, false);
-    }
+    drawLayerSymbols(painter, source, layer, coords, true,
+            layer.paint['text-translate'],
+            layer.paint['text-translate-anchor'],
+            layer.layout['text-rotation-alignment'],
+            layer.layout['text-size'],
+            layer.paint['text-halo-width'],
+            layer.paint['text-halo-color'],
+            layer.paint['text-halo-blur'],
+            layer.paint['text-opacity'],
+            layer.paint['text-color']);
 
     gl.enable(gl.DEPTH_TEST);
 
     drawCollisionDebug(painter, source, layer, coords);
 }
 
-var defaultSizes = {
-    icon: 1,
-    text: 24
-};
+function drawLayerSymbols(painter, source, layer, coords, isText,
+        translate,
+        translateAnchor,
+        rotationAlignment,
+        size,
+        haloWidth,
+        haloColor,
+        haloBlur,
+        opacity,
+        color) {
 
-function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, prefix, sdf, iconsNeedLinear) {
+    haloColor = util.premultiply(haloColor);
+    color = util.premultiply(color);
+
+    for (var j = 0; j < coords.length; j++) {
+        var tile = source.getTile(coords[j]);
+        var bucket = tile.getBucket(layer);
+        if (!bucket) continue;
+        var bothElementGroups = bucket.elementGroups;
+        var elementGroups = isText ? bothElementGroups.glyph : bothElementGroups.icon;
+        if (!elementGroups.length) continue;
+
+        painter.enableTileClippingMask(coords[j]);
+        drawSymbol(painter, layer, coords[j].posMatrix, tile, bucket, elementGroups, isText,
+                isText || bothElementGroups.sdfIcons, !isText && bothElementGroups.iconsNeedLinear,
+                translate,
+                translateAnchor,
+                rotationAlignment,
+                size,
+                haloWidth,
+                haloColor,
+                haloBlur,
+                opacity,
+                color);
+    }
+}
+
+function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, isText, sdf, iconsNeedLinear,
+        translate,
+        translateAnchor,
+        rotationAlignment,
+        size,
+        haloWidth,
+        haloColor,
+        haloBlur,
+        opacity,
+        color) {
     var gl = painter.gl;
 
-    posMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint[prefix + '-translate'], layer.paint[prefix + '-translate-anchor']);
-    var programInterfaceName = prefix === 'text' ? 'glyph' : 'icon';
+    var programInterfaceName = isText ? 'glyph' : 'icon';
 
     var tr = painter.transform;
-    var alignedWithMap = layer.layout[prefix + '-rotation-alignment'] === 'map';
+    var alignedWithMap = rotationAlignment === 'map';
     var skewed = alignedWithMap;
     var exMatrix, s, gammaScale;
 
@@ -89,8 +127,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     }
     mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
-    var fontSize = layer.layout[prefix + '-size'];
-    var fontScale = fontSize / defaultSizes[prefix];
+    var fontSize = size;
+    var defaultSize = isText ? 24 : 1;
+    var fontScale = fontSize / defaultSize;
     mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
 
     // calculate how much longer the real world distance is at the top of the screen
@@ -99,9 +138,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     var x = tr.height / 2 * Math.tan(tr._pitch);
     var extra = (topedgelength + x) / topedgelength - 1;
 
-    var text = prefix === 'text';
-
-    if (!text && !painter.style.sprite.loaded())
+    if (!isText && !painter.style.sprite.loaded())
         return;
 
     gl.activeTexture(gl.TEXTURE0);
@@ -111,7 +148,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
     painter.setExMatrix(exMatrix);
 
     var texsize;
-    if (text) {
+    if (isText) {
         // use the fonstack used when parsing the tile, not the fontstack
         // at the current zoom level (layout['text-font']).
         var fontstack = elementGroups.fontstack;
@@ -153,16 +190,14 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         var sdfPx = 8;
         var blurOffset = 1.19;
         var haloOffset = 6;
-        var gamma = 0.105 * defaultSizes[prefix] / fontSize / browser.devicePixelRatio;
+        var gamma = 0.105 * defaultSize / fontSize / browser.devicePixelRatio;
 
-        if (layer.paint[prefix + '-halo-width']) {
-            var haloColor = util.premultiply(layer.paint[prefix + '-halo-color']);
-
+        if (haloWidth) {
             // Draw halo underneath the text.
-            gl.uniform1f(program.u_gamma, (layer.paint[prefix + '-halo-blur'] * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
+            gl.uniform1f(program.u_gamma, (haloBlur * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
             gl.uniform4fv(program.u_color, haloColor);
-            gl.uniform1f(program.u_opacity, layer.paint[prefix + '-opacity']);
-            gl.uniform1f(program.u_buffer, (haloOffset - layer.paint[prefix + '-halo-width'] / fontScale) / sdfPx);
+            gl.uniform1f(program.u_opacity, opacity);
+            gl.uniform1f(program.u_buffer, (haloOffset - haloWidth / fontScale) / sdfPx);
 
             for (var j = 0; j < elementGroups.length; j++) {
                 group = elementGroups[j];
@@ -172,10 +207,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
             }
         }
 
-        var color = util.premultiply(layer.paint[prefix + '-color']);
         gl.uniform1f(program.u_gamma, gamma * gammaScale);
         gl.uniform4fv(program.u_color, color);
-        gl.uniform1f(program.u_opacity, layer.paint[prefix + '-opacity']);
+        gl.uniform1f(program.u_opacity, opacity);
         gl.uniform1f(program.u_buffer, (256 - 64) / 256);
 
         for (var i = 0; i < elementGroups.length; i++) {
@@ -186,7 +220,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
         }
 
     } else {
-        gl.uniform1f(program.u_opacity, layer.paint['icon-opacity']);
+        gl.uniform1f(program.u_opacity, opacity);
         for (var k = 0; k < elementGroups.length; k++) {
             group = elementGroups[k];
             count = group.elementLength * 3;
