@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util/util');
+var StructArrayType = require('../util/struct_array');
 
 module.exports = drawRaster;
 
@@ -26,6 +27,13 @@ function drawRaster(painter, source, layer, coords) {
 
     gl.depthFunc(gl.LEQUAL);
 }
+
+drawRaster.RasterBoundsArray = new StructArrayType({
+    members: [
+        { name: 'a_pos', type: 'Int16', components: 2 },
+        { name: 'a_texture_pos', type: 'Int16', components: 2 }
+    ]
+});
 
 function drawRasterTile(painter, source, layer, coord) {
 
@@ -73,11 +81,11 @@ function drawRasterTile(painter, source, layer, coord) {
     gl.uniform1i(program.u_image0, 0);
     gl.uniform1i(program.u_image1, 1);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, tile.boundsBuffer || painter.tileExtentBuffer);
-
-    gl.vertexAttribPointer(program.a_pos,         2, gl.SHORT, false, 8, 0);
-    gl.vertexAttribPointer(program.a_texture_pos, 2, gl.SHORT, false, 8, 4);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    var buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
+    var vao = tile.boundsVAO || painter.rasterBoundsVAO;
+    vao.bind(gl, program, buffer, undefined, 0, undefined);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+    vao.unbind(gl);
 }
 
 function spinWeights(angle) {

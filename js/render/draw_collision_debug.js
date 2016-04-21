@@ -29,13 +29,13 @@ function drawCollisionDebug(painter, source, layer, coords) {
 
         var buffers = bucket.buffers.collisionBox;
         var vertexBuffer = buffers.layout.vertex;
-        elementGroups[0].vao.bind(gl, program, vertexBuffer, undefined, elementGroups[0].vertexStartIndex, undefined);
+        elementGroups[0].vaos[layer.id].bind(gl, program, vertexBuffer, undefined, elementGroups[0].vertexStartIndex, undefined);
         gl.drawArrays(
             gl.LINES,
             elementGroups[0].vertexStartIndex,
             elementGroups[0].vertexLength
         );
-        elementGroups[0].vao.unbind(gl);
+        elementGroups[0].vaos[layer.id].unbind(gl);
 
     }
 }

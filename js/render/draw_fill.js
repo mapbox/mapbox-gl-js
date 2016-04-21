@@ -145,20 +145,28 @@ function drawFill(painter, source, layer, coord) {
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
+        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer, undefined, 0, undefined);
+
     } else {
         // Draw filling rectangle.
         program = painter.useProgram('fill');
         gl.uniform4fv(fillProgram.u_color, color);
         gl.uniform1f(fillProgram.u_opacity, opacity);
+        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer, undefined, 0, undefined);
     }
 
     painter.setPosMatrix(posMatrix);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-    gl.vertexAttribPointer(program.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
+
+    if (image) {
+        painter.tileExtentPatternVAO.unbind(gl);
+    } else {
+        painter.tileExtentVAO.unbind(gl);
+    }
 
     gl.stencilMask(0x00);
 }

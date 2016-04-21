@@ -7,6 +7,10 @@ var TilePyramid = require('../source/tile_pyramid');
 var EXTENT = require('../data/bucket').EXTENT;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var util = require('../util/util');
+var StructArrayType = require('../util/struct_array');
+var Buffer = require('../data/buffer');
+var VertexArrayObject = require('./vertex_array_object');
+var RasterBoundsArray = require('./draw_raster').RasterBoundsArray;
 
 module.exports = Painter;
 
@@ -68,36 +72,35 @@ Painter.prototype.setup = function() {
     this._depthMask = false;
     gl.depthMask(false);
 
-    // The tileExtentBuffer is used when drawing to a full *tile*
-    this.tileExtentBuffer = gl.createBuffer();
-    this.tileExtentBuffer.itemSize = 4;
-    this.tileExtentBuffer.itemCount = 4;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Int16Array([
-            // tile coord x, tile coord y, texture coord x, texture coord y
-            0, 0, 0, 0,
-            EXTENT, 0, 32767, 0,
-            0, EXTENT, 0, 32767,
-            EXTENT, EXTENT,  32767, 32767
-        ]),
-        gl.STATIC_DRAW);
+    var PosArray = this.PosArray = new StructArrayType({
+        members: [{ name: 'a_pos', type: 'Int16', components: 2 }]
+    });
 
-    // The debugBuffer is used to draw tile outlines for debugging
-    this.debugBuffer = gl.createBuffer();
-    this.debugBuffer.itemSize = 2;
-    this.debugBuffer.itemCount = 5;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.debugBuffer);
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Int16Array([
-            0, 0, EXTENT, 0, EXTENT, EXTENT, 0, EXTENT, 0, 0]),
-        gl.STATIC_DRAW);
+    var tileExtentArray = new PosArray();
+    tileExtentArray.emplaceBack(0, 0);
+    tileExtentArray.emplaceBack(EXTENT, 0);
+    tileExtentArray.emplaceBack(0, EXTENT);
+    tileExtentArray.emplaceBack(EXTENT, EXTENT);
+    this.tileExtentBuffer = new Buffer(tileExtentArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+    this.tileExtentVAO = new VertexArrayObject();
+    this.tileExtentPatternVAO = new VertexArrayObject();
 
-    // The debugTextBuffer is used to draw tile IDs for debugging
-    this.debugTextBuffer = gl.createBuffer();
-    this.debugTextBuffer.itemSize = 2;
+    var debugArray = new PosArray();
+    debugArray.emplaceBack(0, 0);
+    debugArray.emplaceBack(EXTENT, 0);
+    debugArray.emplaceBack(EXTENT, EXTENT);
+    debugArray.emplaceBack(0, EXTENT);
+    debugArray.emplaceBack(0, 0);
+    this.debugBuffer = new Buffer(debugArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+    this.debugVAO = new VertexArrayObject();
+
+    var rasterBoundsArray = new RasterBoundsArray();
+    rasterBoundsArray.emplaceBack(0, 0, 0, 0);
+    rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
+    rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
+    rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
+    this.rasterBoundsBuffer = new Buffer(rasterBoundsArray.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+    this.rasterBoundsVAO = new VertexArrayObject();
 };
 
 /*
@@ -151,9 +154,9 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
         this.setPosMatrix(coord.posMatrix);
 
         // Draw the clipping mask
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.tileExtentBuffer);
-        gl.vertexAttribPointer(program.a_pos, this.tileExtentBuffer.itemSize, gl.SHORT, false, 8, 0);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
+        this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer, undefined, 0, undefined);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
+        this.tileExtentVAO.unbind(gl);
     }
 
     gl.stencilMask(0x00);
