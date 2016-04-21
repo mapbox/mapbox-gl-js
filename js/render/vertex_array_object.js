@@ -87,3 +87,11 @@ VertexArrayObject.prototype.unbind = function(gl) {
         ext.bindVertexArrayOES(null);
     }
 };
+
+VertexArrayObject.prototype.destroy = function(gl) {
+    var ext = gl.extVertexArrayObject;
+    if (ext && this.vao) {
+        ext.deleteVertexArrayOES(this.vao);
+        this.vao = null;
+    }
+};

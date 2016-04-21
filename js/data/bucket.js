@@ -219,7 +219,21 @@ Bucket.prototype.destroy = function(gl) {
         for (var layoutBuffer in programBuffers.layout) {
             programBuffers.layout[layoutBuffer].destroy(gl);
         }
+
+        var elementGroups = this.elementGroups[programName];
+        if (elementGroups) {
+            for (var i = 0; i < elementGroups.length; i++) {
+                var elementGroup = elementGroups[i];
+                for (var j in elementGroup.vaos) {
+                    elementGroup.vaos[j].destroy(gl);
+                }
+                for (var k in elementGroup.secondVaos) {
+                    elementGroup.secondVaos[k].destroy(gl);
+                }
+            }
+        }
     }
+
 };
 
 Bucket.prototype.trimArrays = function() {
