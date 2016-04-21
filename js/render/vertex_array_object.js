@@ -54,9 +54,13 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuf
 
         vertexBuffer.bind(gl);
         vertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
-        vertexBuffer2.bind(gl);
-        vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
-        elementBuffer.bind(gl);
+        if (vertexBuffer2) {
+            vertexBuffer2.bind(gl);
+            vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
+        }
+        if (elementBuffer) {
+            elementBuffer.bind(gl);
+        }
 
         if (ext) {
             // store the arguments so that we can verify them when the vao is bound again
@@ -78,7 +82,7 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuf
 };
 
 VertexArrayObject.prototype.unbind = function(gl) {
-    var ext = gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
+    var ext = gl.extVertexArrayObject;
     if (ext) {
         ext.bindVertexArrayOES(null);
     }

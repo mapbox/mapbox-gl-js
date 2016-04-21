@@ -41,16 +41,17 @@ function drawCircles(painter, source, layer, coords) {
         ));
         painter.setExMatrix(painter.transform.exMatrix);
 
-        var vertexBuffer = bucket.buffers.circle.layout.vertex;
-        var elementBuffer = bucket.buffers.circle.layout.element;
-        var paintVertexBuffer = bucket.buffers.circle.paint[layer.id];
+        var buffers = bucket.buffers.circle;
+        var vertexBuffer = buffers.layout.vertex;
+        var elementBuffer = buffers.layout.element;
+        var paintVertexBuffer = buffers.paint[layer.id];
 
         for (var k = 0; k < elementGroups.length; k++) {
             var group = elementGroups[k];
             var count = group.elementLength * 3;
-            group.vao.bind(gl, program, vertexBuffer, paintVertexBuffer, group.vertexStartIndex, elementBuffer);
+            group.vaos[layer.id].bind(gl, program, vertexBuffer, paintVertexBuffer, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
-            group.vao.unbind(gl);
+            group.vaos[layer.id].unbind(gl);
         }
     }
 }

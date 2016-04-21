@@ -163,14 +163,16 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(program.u_ratio, ratio);
         }
 
-        bucket.bindLayoutBuffers('line', gl);
+        var buffers = bucket.buffers.line;
+        var vertexBuffer = buffers.layout.vertex;
+        var elementBuffer = buffers.layout.element;
 
         for (var i = 0; i < elementGroups.length; i++) {
             var group = elementGroups[i];
-            bucket.setAttribPointers('line', gl, program, group.vertexOffset, layer);
-
             var count = group.elementLength * 3;
+            group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+            group.vaos[layer.id].unbind(gl);
         }
     }
 

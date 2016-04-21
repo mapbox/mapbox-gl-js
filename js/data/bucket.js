@@ -78,12 +78,19 @@ function Bucket(options) {
     if (options.elementGroups) {
         this.elementGroups = options.elementGroups;
 
-        for (var l = 0; l < this.childLayers.length; l++) {
-            for (var s in this.elementGroups) {
-                var elementGroups = this.elementGroups[s];
-                if (elementGroups) {
-                    for (var i = 0; i < elementGroups.length; i++) {
-                        elementGroups[i].vao = new VertexArrayObject();
+        for (var programName in this.elementGroups) {
+            var elementGroups = this.elementGroups[programName];
+            if (elementGroups) {
+                for (var i = 0; i < elementGroups.length; i++) {
+                    var elementGroup = elementGroups[i];
+                    elementGroup.vaos = {};
+                    elementGroup.secondVaos = {};
+                    for (var l = 0; l < this.childLayers.length; l++) {
+                        var layerName = this.childLayers[l].id;
+                        elementGroup.vaos[layerName] = new VertexArrayObject();
+                        if (elementGroup.secondElementLength) {
+                            elementGroup.secondVaos[layerName] = new VertexArrayObject();
+                        }
                     }
                 }
             }
@@ -227,18 +234,6 @@ Bucket.prototype.trimArrays = function() {
     }
 };
 
-/**
- * Set the attribute pointers in a WebGL context
- * @private
- * @param gl The WebGL context
- * @param program The active WebGL program
- * @param {number} offset The offset of the attribute data in the currently bound GL buffer.
- */
-Bucket.prototype.setAttribPointers = function(programName, gl, program, offset) {
-    var vertexBuffer = this.buffers[programName].layout.vertex;
-    vertexBuffer.setVertexAttribPointers(gl, program, offset / vertexBuffer.itemSize);
-};
-
 Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalProperties) {
     var uniforms = this.paintAttributes[programName][layer.id].uniforms;
     for (var i = 0; i < uniforms.length; i++) {
@@ -246,31 +241,6 @@ Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalP
         var uniformLocation = program[uniform.name];
         gl['uniform' + uniform.components + 'fv'](uniformLocation, uniform.getValue(layer, globalProperties));
     }
-};
-
-Bucket.prototype.bindLayoutBuffers = function(programInterfaceName, gl, options) {
-    var programInterface = this.programInterfaces[programInterfaceName];
-
-    if (programInterface.vertexBuffer) {
-        var vertexBuffer = this.buffers[programInterfaceName].layout.vertex;
-        vertexBuffer.bind(gl);
-    }
-
-    if (programInterface.elementBuffer && (!options || !options.secondElement)) {
-        var elementBuffer = this.buffers[programInterfaceName].layout.element;
-        elementBuffer.bind(gl);
-    }
-
-    if (programInterface.secondElementBuffer && (options && options.secondElement)) {
-        var secondElementBuffer = this.buffers[programInterfaceName].layout.secondElement;
-        secondElementBuffer.bind(gl);
-    }
-};
-
-Bucket.prototype.bindPaintBuffer = function(gl, interfaceName, layerID, program, vertexStartIndex) {
-    var buffer = this.buffers[interfaceName].paint[layerID];
-    buffer.bind(gl);
-    buffer.setVertexAttribPointers(gl, program, vertexStartIndex);
 };
 
 Bucket.prototype.serialize = function() {
@@ -349,10 +319,6 @@ function createElementBufferType(components) {
             components: components || 3
         }]
     });
-}
-
-function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function createPaintAttributes(bucket) {

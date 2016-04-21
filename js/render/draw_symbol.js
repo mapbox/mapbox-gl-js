@@ -145,7 +145,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
     var group, count;
 
-    bucket.bindLayoutBuffers(programInterfaceName, gl);
+    var buffers = bucket.buffers[programInterfaceName].layout;
+    var vertexBuffer = buffers.vertex;
+    var elementBuffer = buffers.element;
 
     if (sdf) {
         var sdfPx = 8;
@@ -164,10 +166,10 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
             for (var j = 0; j < elementGroups.length; j++) {
                 group = elementGroups[j];
-                bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset, layer);
-
                 count = group.elementLength * 3;
+                group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
                 gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+                group.vaos[layer.id].unbind(gl);
             }
         }
 
@@ -179,21 +181,20 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, pref
 
         for (var i = 0; i < elementGroups.length; i++) {
             group = elementGroups[i];
-            bucket.bindLayoutBuffers(programInterfaceName, gl);
-            bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset, layer);
-
             count = group.elementLength * 3;
+            group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+            group.vaos[layer.id].unbind(gl);
         }
 
     } else {
         gl.uniform1f(program.u_opacity, layer.paint['icon-opacity']);
         for (var k = 0; k < elementGroups.length; k++) {
             group = elementGroups[k];
-            bucket.setAttribPointers(programInterfaceName, gl, program, group.vertexOffset, layer);
-
             count = group.elementLength * 3;
+            group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+            group.vaos[layer.id].unbind(gl);
         }
     }
 }

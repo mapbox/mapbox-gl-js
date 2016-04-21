@@ -18,9 +18,6 @@ function drawCollisionDebug(painter, source, layer, coords) {
         if (!bucket.buffers) continue;
         if (elementGroups[0].vertexLength === 0) continue;
 
-        bucket.bindLayoutBuffers('collisionBox', gl);
-        bucket.setAttribPointers('collisionBox', gl, program, elementGroups[0].vertexOffset, layer);
-
         painter.setPosMatrix(coord.posMatrix);
 
         painter.enableTileClippingMask(coord);
@@ -30,11 +27,15 @@ function drawCollisionDebug(painter, source, layer, coords) {
         gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
         gl.uniform1f(program.u_maxzoom, (tile.coord.z + 1) * 10);
 
+        var buffers = bucket.buffers.collisionBox;
+        var vertexBuffer = buffers.layout.vertex;
+        elementGroups[0].vao.bind(gl, program, vertexBuffer, undefined, elementGroups[0].vertexStartIndex, undefined);
         gl.drawArrays(
             gl.LINES,
             elementGroups[0].vertexStartIndex,
             elementGroups[0].vertexLength
         );
+        elementGroups[0].vao.unbind(gl);
 
     }
 }

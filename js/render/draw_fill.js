@@ -115,14 +115,16 @@ function drawFill(painter, source, layer, coord) {
     var fillProgram = painter.useProgram('fill');
     painter.setPosMatrix(translatedPosMatrix);
 
-    bucket.bindLayoutBuffers('fill', gl);
+    var buffers = bucket.buffers.fill.layout;
+    var vertexBuffer = buffers.vertex;
+    var elementBuffer = buffers.element;
 
     for (var i = 0; i < elementGroups.length; i++) {
         var group = elementGroups[i];
-        bucket.setAttribPointers('fill', gl, fillProgram, group.vertexOffset, layer);
-
         var count = group.elementLength * 3;
+        group.vaos[layer.id].bind(gl, fillProgram, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+        group.vaos[layer.id].unbind(gl);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -182,17 +184,18 @@ function drawStroke(painter, source, layer, coord) {
 
     if (image) { setPattern(image, opacity, tile, coord, painter, program); }
 
-    // Draw all buffers
-    bucket.bindLayoutBuffers('fill', gl, {secondElement: true});
+    var buffers = bucket.buffers.fill.layout;
+    var vertexBuffer = buffers.vertex;
+    var elementBuffer = buffers.secondElement;
 
     painter.enableTileClippingMask(coord);
 
     for (var k = 0; k < elementGroups.length; k++) {
         var group = elementGroups[k];
-        bucket.setAttribPointers('fill', gl, program, group.vertexOffset, layer);
-
         var count = group.secondElementLength * 2;
+        group.secondVaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
         gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, group.secondElementOffset);
+        group.secondVaos[layer.id].unbind(gl);
     }
 }
 
