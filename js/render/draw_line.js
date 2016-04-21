@@ -172,7 +172,6 @@ module.exports = function drawLine(painter, source, layer, coords) {
             var count = group.elementLength * 3;
             group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
             gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
-            group.vaos[layer.id].unbind(gl);
         }
     }
 

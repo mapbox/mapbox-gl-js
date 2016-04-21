@@ -124,7 +124,6 @@ function drawFill(painter, source, layer, coord) {
         var count = group.elementLength * 3;
         group.vaos[layer.id].bind(gl, fillProgram, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
         gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
-        group.vaos[layer.id].unbind(gl);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -162,12 +161,6 @@ function drawFill(painter, source, layer, coord) {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
 
-    if (image) {
-        painter.tileExtentPatternVAO.unbind(gl);
-    } else {
-        painter.tileExtentVAO.unbind(gl);
-    }
-
     gl.stencilMask(0x00);
 }
 
@@ -203,7 +196,6 @@ function drawStroke(painter, source, layer, coord) {
         var count = group.secondElementLength * 2;
         group.secondVaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
         gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, group.secondElementOffset);
-        group.secondVaos[layer.id].unbind(gl);
     }
 }
 

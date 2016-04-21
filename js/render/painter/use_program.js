@@ -131,22 +131,6 @@ module.exports.useProgram = function (nextProgramName, macros) {
 
     if (previousProgram !== nextProgram) {
         gl.useProgram(nextProgram.program);
-
-        var numNextAttributes = nextProgram.numAttributes;
-        var numPrevAttributes = previousProgram ? previousProgram.numAttributes : 0;
-        var i;
-
-        // Disable all attributes from the previous program that aren't used in
-        // the new program. Note: attribute indices are *not* program specific!
-        // WebGL breaks if you disable attribute 0. http://stackoverflow.com/questions/20305231
-        for (i = Math.max(1, numNextAttributes); i < numPrevAttributes; i++) {
-            gl.disableVertexAttribArray(i);
-        }
-        // Enable all attributes for the new program.
-        for (i = numPrevAttributes; i < numNextAttributes; i++) {
-            gl.enableVertexAttribArray(i);
-        }
-
         this.currentProgram = nextProgram;
     }
 

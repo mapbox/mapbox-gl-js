@@ -95,12 +95,6 @@ function drawBackground(painter, source, layer) {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 
-    if (imagePosA && imagePosB) {
-        painter.tileExtentPatternVAO.unbind(gl);
-    } else {
-        painter.tileExtentVAO.unbind(gl);
-    }
-
     gl.stencilMask(0x00);
     gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
 }

@@ -35,7 +35,5 @@ function drawCollisionDebug(painter, source, layer, coords) {
             elementGroups[0].vertexStartIndex,
             elementGroups[0].vertexLength
         );
-        elementGroups[0].vaos[layer.id].unbind(gl);
-
     }
 }

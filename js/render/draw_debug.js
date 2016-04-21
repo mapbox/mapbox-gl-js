@@ -31,7 +31,6 @@ function drawDebugTile(painter, source, coord) {
     gl.uniform4f(program.u_color, 1, 0, 0, 1);
     painter.debugVAO.bind(gl, program, painter.debugBuffer, undefined, 0, undefined);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
-    painter.debugVAO.unbind(gl);
 
     var vertices = textVertices(coord.toString(), 50, 200, 5);
     var debugTextArray = new painter.PosArray();
@@ -57,6 +56,4 @@ function drawDebugTile(painter, source, coord) {
     gl.uniform4f(program.u_color, 0, 0, 0, 1);
     painter.setPosMatrix(posMatrix);
     gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
-
-    debugTextVAO.unbind(gl);
 }

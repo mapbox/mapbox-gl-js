@@ -156,7 +156,6 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
         // Draw the clipping mask
         this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer, undefined, 0, undefined);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
-        this.tileExtentVAO.unbind(gl);
     }
 
     gl.stencilMask(0x00);

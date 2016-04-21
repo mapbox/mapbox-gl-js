@@ -85,7 +85,6 @@ function drawRasterTile(painter, source, layer, coord) {
     var vao = tile.boundsVAO || painter.rasterBoundsVAO;
     vao.bind(gl, program, buffer, undefined, 0, undefined);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
-    vao.unbind(gl);
 }
 
 function spinWeights(angle) {
