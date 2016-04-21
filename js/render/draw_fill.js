@@ -113,7 +113,7 @@ function drawFill(painter, source, layer, coord) {
 
     // Draw the actual triangle fan into the stencil buffer.
     var fillProgram = painter.useProgram('fill');
-    painter.setPosMatrix(translatedPosMatrix);
+    gl.uniformMatrix4fv(fillProgram.u_matrix, false, translatedPosMatrix);
 
     var buffers = bucket.buffers.fill.layout;
     var vertexBuffer = buffers.vertex;
@@ -154,7 +154,7 @@ function drawFill(painter, source, layer, coord) {
         painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer, undefined, 0, undefined);
     }
 
-    painter.setPosMatrix(posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
@@ -176,7 +176,7 @@ function drawStroke(painter, source, layer, coord) {
     var opacity = layer.paint['fill-opacity'];
     var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
 
-    painter.setPosMatrix(painter.translatePosMatrix(
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
         layer.paint['fill-translate'],

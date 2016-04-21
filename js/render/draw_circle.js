@@ -27,19 +27,19 @@ function drawCircles(painter, source, layer, coords) {
 
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
+        gl. uniformMatrix4fv(program.u_exmatrix, false, painter.transform.exMatrix);
         gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
         gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);
 
-        bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
-
-        painter.setPosMatrix(painter.translatePosMatrix(
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
             coord.posMatrix,
             tile,
             layer.paint['circle-translate'],
             layer.paint['circle-translate-anchor']
         ));
-        painter.setExMatrix(painter.transform.exMatrix);
+
+        bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
 
         var buffers = bucket.buffers.circle;
         var vertexBuffer = buffers.layout.vertex;

@@ -151,7 +151,7 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
         var program = this.useProgram('fill');
-        this.setPosMatrix(coord.posMatrix);
+        gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         // Draw the clipping mask
         this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer, undefined, 0, undefined);
@@ -267,6 +267,7 @@ Painter.prototype.depthMask = function(mask) {
 Painter.prototype.renderLayer = function(painter, source, layer, coords) {
     if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
+    this.id = layer.id;
     draw[layer.type](painter, source, layer, coords);
 };
 
@@ -312,28 +313,6 @@ Painter.prototype.saveTexture = function(texture) {
 Painter.prototype.getTexture = function(size) {
     var textures = this.reusableTextures[size];
     return textures && textures.length > 0 ? textures.pop() : null;
-};
-
-// Update the matrices if necessary. Note: This relies on object identity!
-// This means changing the matrix values without the actual matrix object
-// will FAIL to update the matrix properly.
-Painter.prototype.setPosMatrix = function(posMatrix) {
-    var program = this.currentProgram;
-    if (program.posMatrix !== posMatrix) {
-        this.gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
-        program.posMatrix = posMatrix;
-    }
-};
-
-// Update the matrices if necessary. Note: This relies on object identity!
-// This means changing the matrix values without the actual matrix object
-// will FAIL to update the matrix properly.
-Painter.prototype.setExMatrix = function(exMatrix) {
-    var program = this.currentProgram;
-    if (exMatrix && program.exMatrix !== exMatrix && program.u_exmatrix) {
-        this.gl.uniformMatrix4fv(program.u_exmatrix, false, exMatrix);
-        program.exMatrix = exMatrix;
-    }
 };
 
 Painter.prototype.lineWidth = function(width) {

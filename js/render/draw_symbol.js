@@ -144,8 +144,8 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, isTe
     gl.activeTexture(gl.TEXTURE0);
 
     var program = painter.useProgram(sdf ? 'sdf' : 'icon');
-    painter.setPosMatrix(posMatrix);
-    painter.setExMatrix(exMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(posMatrix, tile, translate, translateAnchor));
+    gl.uniformMatrix4fv(program.u_exmatrix, false, exMatrix);
 
     var texsize;
     if (isText) {

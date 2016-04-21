@@ -91,7 +91,7 @@ function drawBackground(painter, source, layer) {
             gl.uniform2fv(program.u_offset_b, [offsetBx, offsetBy]);
         }
 
-        painter.setPosMatrix(painter.transform.calculatePosMatrix(coord));
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 

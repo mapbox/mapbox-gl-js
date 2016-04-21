@@ -18,7 +18,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
         if (!bucket.buffers) continue;
         if (elementGroups[0].vertexLength === 0) continue;
 
-        painter.setPosMatrix(coord.posMatrix);
+        gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         painter.enableTileClippingMask(coord);
 

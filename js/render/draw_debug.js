@@ -26,8 +26,8 @@ function drawDebugTile(painter, source, coord) {
 
     var posMatrix = coord.posMatrix;
     var program = painter.useProgram('debug');
-    painter.setPosMatrix(posMatrix);
 
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
     gl.uniform4f(program.u_color, 1, 0, 0, 1);
     painter.debugVAO.bind(gl, program, painter.debugBuffer, undefined, 0, undefined);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
@@ -49,11 +49,11 @@ function drawDebugTile(painter, source, coord) {
     var translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (var i = 0; i < translations.length; i++) {
         var translation = translations[i];
-        painter.setPosMatrix(mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
+        gl.uniformMatrix4fv(program.u_matrix, false, mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]))
         gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
     }
 
     gl.uniform4f(program.u_color, 0, 0, 0, 1);
-    painter.setPosMatrix(posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
     gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
 }
