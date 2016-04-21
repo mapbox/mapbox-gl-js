@@ -10,20 +10,6 @@ var util = require('../util/util');
 
 module.exports = Painter;
 
-var glPolyfill = {
-    vertexAttrib2fv: function(attribute, values) {
-        this.vertexAttrib2f(attribute, values[0], values[1]);
-    },
-
-    vertexAttrib3fv: function(attribute, values) {
-        this.vertexAttrib3f(attribute, values[0], values[1], values[2]);
-    },
-
-    vertexAttrib4fv: function(attribute, values) {
-        this.vertexAttrib4f(attribute, values[0], values[1], values[2], values[3]);
-    }
-};
-
 /**
  * Initialize a new painter object.
  *
@@ -31,7 +17,7 @@ var glPolyfill = {
  * @private
  */
 function Painter(gl, transform) {
-    this.gl = util.extend(gl, glPolyfill);
+    this.gl = gl;
     this.transform = transform;
 
     this.reusableTextures = {};
@@ -81,15 +67,6 @@ Painter.prototype.setup = function() {
 
     this._depthMask = false;
     gl.depthMask(false);
-
-    this.identityMatrix = mat4.create();
-
-    // The backgroundBuffer is used when drawing to the full *canvas*
-    this.backgroundBuffer = gl.createBuffer();
-    this.backgroundBuffer.itemSize = 2;
-    this.backgroundBuffer.itemCount = 4;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
     // The tileExtentBuffer is used when drawing to a full *tile*
     this.tileExtentBuffer = gl.createBuffer();
@@ -289,23 +266,6 @@ Painter.prototype.renderLayer = function(painter, source, layer, coords) {
     if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
     draw[layer.type](painter, source, layer, coords);
-};
-
-// Draws non-opaque areas. This is for debugging purposes.
-Painter.prototype.drawStencilBuffer = function() {
-    var gl = this.gl;
-    var program = this.useProgram('fill');
-    this.setPosMatrix(this.identityMatrix);
-
-    gl.stencilMask(0x00);
-    gl.stencilFunc(gl.EQUAL, 0x80, 0x80);
-
-    // Drw the filling quad where the stencil buffer isn't set.
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.backgroundBuffer);
-    gl.vertexAttribPointer(program.a_pos, this.backgroundBuffer.itemSize, gl.SHORT, false, 0, 0);
-
-    gl.uniform4fv(program.u_color, [0, 0, 0, 0.5]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.itemCount);
 };
 
 Painter.prototype.setDepthSublayer = function(n) {
