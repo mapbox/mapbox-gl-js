@@ -6,6 +6,16 @@ var formatNumber = require('../lib/format_number');
 
 var DURATION_MILLISECONDS = 1 * 5000;
 
+// The goal of this benchmark is to measure the time it takes to run the cpu
+// part of rendering. While the gpu rendering happens asynchronously, sometimes
+// when the gpu falls behind the cpu commands synchronously wait for the gpu to catch up.
+// This ends up affecting the duration of the call on the cpu.
+//
+// Setting the devicePixelRatio to a small number makes the canvas very small.
+// This greatly reduces the amount of work the gpu needs to do and reduces the
+// impact the actual rendering has on this benchmark.
+window.devicePixelRatio = 1 / 16;
+
 var zooms = [4, 8, 11, 13, 15, 17];
 var results = [];
 
@@ -20,7 +30,7 @@ module.exports = function(options) {
         measureFrameTime(options, zooms[index], function(err_, result) {
             results[index] = result;
             evented.fire('log', {
-                message: formatNumber(result.sum / result.count) + ' ms per frame at zoom ' + zooms[index] + '. ' +
+                message: formatNumber(result.sum / result.count * 10) / 10 + ' ms per frame at zoom ' + zooms[index] + '. ' +
                     formatNumber(result.countAbove16 / result.count * 100) + '% of frames took longer than 16ms.'
             });
             callback();
