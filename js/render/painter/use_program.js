@@ -112,6 +112,10 @@ module.exports._createProgram = function(name, macros) {
 
 module.exports._createProgramCached = function(name, macros) {
     this.cache = this.cache || {};
+    if (this._showOverdrawInspector) {
+        macros = macros || [];
+        macros.push('OVERDRAW_INSPECTOR');
+    }
     var key = JSON.stringify({name: name, macros: macros});
     if (!this.cache[key]) {
         this.cache[key] = this._createProgram(name, macros);

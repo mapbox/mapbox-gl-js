@@ -877,6 +877,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         this.painter.render(this.style, {
             debug: this.showTileBoundaries,
+            showOverdrawInspector: this._showOverdrawInspector,
             vertices: this.vertices,
             rotating: this.rotating,
             zooming: this.zooming
@@ -1025,6 +1026,21 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
         if (this._showCollisionBoxes === value) return;
         this._showCollisionBoxes = value;
         this.style._redoPlacement();
+    },
+
+    /*
+     * Show how many times each fragment has been shaded. White fragments have
+     * been shaded 8 or more times. Black fragments have been shaded 0 times.
+     *
+     * @name showOverdraw
+     * @type {boolean}
+     */
+    _showOverdrawInspector: false,
+    get showOverdrawInspector() { return this._showOverdrawInspector; },
+    set showOverdrawInspector(value) {
+        if (this._showOverdrawInspector === value) return;
+        this._showOverdrawInspector = value;
+        this._update();
     },
 
     /**

@@ -107,6 +107,10 @@ document.getElementById('show-symbol-collision-boxes-checkbox').onclick = functi
     map.showCollisionBoxes = !!this.checked;
 };
 
+document.getElementById('show-overdraw-checkbox').onclick = function() {
+    map.showOverdrawInspector = !!this.checked;
+};
+
 document.getElementById('buffer-checkbox').onclick = function() {
     document.getElementById('buffer').style.display = this.checked ? 'block' : 'none';
 };

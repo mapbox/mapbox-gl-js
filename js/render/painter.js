@@ -64,7 +64,6 @@ Painter.prototype.resize = function(width, height) {
 
 };
 
-
 Painter.prototype.setup = function() {
     var gl = this.gl;
 
@@ -225,6 +224,8 @@ Painter.prototype.render = function(style, options) {
     this.clearColor();
     this.clearDepth();
 
+    this.showOverdrawInspector(options.showOverdrawInspector);
+
     this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
     this.renderPass({isOpaquePass: true});
@@ -255,7 +256,9 @@ Painter.prototype.renderPass = function(options) {
         }
 
         if (isOpaquePass) {
-            this.gl.disable(this.gl.BLEND);
+            if (!this._showOverdrawInspector) {
+                this.gl.disable(this.gl.BLEND);
+            }
             this.isOpaquePass = true;
         } else {
             this.gl.enable(this.gl.BLEND);
@@ -373,4 +376,21 @@ Painter.prototype.setExMatrix = function(exMatrix) {
 
 Painter.prototype.lineWidth = function(width) {
     this.gl.lineWidth(util.clamp(width, this.lineWidthRange[0], this.lineWidthRange[1]));
+};
+
+Painter.prototype.showOverdrawInspector = function(enabled) {
+    if (!enabled && !this._showOverdrawInspector) return;
+    this._showOverdrawInspector = enabled;
+
+    var gl = this.gl;
+    if (enabled) {
+        gl.blendFunc(gl.CONSTANT_COLOR, gl.ONE);
+        var numOverdrawSteps = 8;
+        var a = 1 / numOverdrawSteps;
+        gl.blendColor(a, a, a, 0);
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    } else {
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    }
 };

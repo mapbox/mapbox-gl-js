@@ -23,4 +23,8 @@ void main() {
     vec4 color2 = texture2D(u_image, pos2);
 
     gl_FragColor = mix(color1, color2, u_mix) * u_opacity;
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(1.0);
+#endif
 }
