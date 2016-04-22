@@ -1,7 +1,5 @@
 'use strict';
 
-var mat4 = require('gl-matrix').mat4;
-
 var browser = require('../util/browser');
 var drawCollisionDebug = require('./draw_collision_debug');
 var util = require('../util/util');
@@ -113,24 +111,23 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, isTe
 
     var tr = painter.transform;
     var alignedWithMap = rotationAlignment === 'map';
-    var skewed = alignedWithMap;
-    var exMatrix, s, gammaScale;
-
-    if (skewed) {
-        exMatrix = mat4.create();
-        s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        gammaScale = 1 / Math.cos(tr._pitch);
-    } else {
-        exMatrix = mat4.clone(painter.transform.exMatrix);
-        s = painter.transform.altitude;
-        gammaScale = 1;
-    }
-    mat4.scale(exMatrix, exMatrix, [s, s, 1]);
 
     var fontSize = size;
     var defaultSize = isText ? 24 : 1;
     var fontScale = fontSize / defaultSize;
-    mat4.scale(exMatrix, exMatrix, [ fontScale, fontScale, 1 ]);
+
+    var skewed = alignedWithMap;
+    var extrudeScale, s, gammaScale;
+
+    if (skewed) {
+        s = pixelsToTileUnits(tile, 1, painter.transform.zoom) * fontScale;
+        gammaScale = 1 / Math.cos(tr._pitch);
+        extrudeScale = [s, s];
+    } else {
+        s = painter.transform.altitude * fontScale;
+        gammaScale = 1;
+        extrudeScale = [ tr.pixelsToGLUnits[0] * s, tr.pixelsToGLUnits[1] * s];
+    }
 
     // calculate how much longer the real world distance is at the top of the screen
     // than at the middle of the screen.
@@ -145,7 +142,6 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, isTe
 
     var program = painter.useProgram(sdf ? 'sdf' : 'icon');
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(posMatrix, tile, translate, translateAnchor));
-    gl.uniformMatrix4fv(program.u_exmatrix, false, exMatrix);
 
     var texsize;
     if (isText) {
@@ -169,6 +165,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, elementGroups, isTe
     gl.uniform2fv(program.u_texsize, texsize);
     gl.uniform1i(program.u_skewed, skewed);
     gl.uniform1f(program.u_extra, extra);
+    gl.uniform2fv(program.u_extrude_scale, extrudeScale);
 
     // adjust min/max zooms for variable font sizes
     var zoomAdjust = Math.log(fontSize / elementGroups.adjustedSize) / Math.LN2 || 0;

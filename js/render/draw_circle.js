@@ -27,7 +27,7 @@ function drawCircles(painter, source, layer, coords) {
 
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
-        gl. uniformMatrix4fv(program.u_exmatrix, false, painter.transform.exMatrix);
+        gl.uniform2fv(program.u_extrude_scale, painter.transform.pixelsToGLUnits);
         gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
         gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);
