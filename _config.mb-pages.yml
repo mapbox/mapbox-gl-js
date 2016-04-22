@@ -1,9 +1,9 @@
 url: https://www.mapbox.com
 api: https://www.mapbox.com/core
-tileApi: https://api.tiles.mapbox.com
+tileApi: https://api.mapbox.com
 source: docs
 permalink: /:categories/:title
-baseurl: /mapbox-gl-js
+baseurl: https://www.mapbox.com/mapbox-gl-js
 highlighter: pygments
 excerpt_separator: ""
 version: v0.17.0
