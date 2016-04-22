@@ -17,4 +17,8 @@ void main() {
     lowp float gamma = u_gamma * v_gamma_scale;
     lowp float alpha = smoothstep(u_buffer - gamma, u_buffer + gamma, dist) * fade_alpha;
     gl_FragColor = u_color * (alpha * u_opacity);
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(1.0);
+#endif
 }
