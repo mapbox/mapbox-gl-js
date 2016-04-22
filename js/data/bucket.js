@@ -75,34 +75,28 @@ function Bucket(options) {
 
     this.paintAttributes = createPaintAttributes(this);
 
-    if (options.elementGroups) {
-        this.elementGroups = options.elementGroups;
+    if (options.arrays) {
+        var childLayers = this.childLayers;
+        this.bufferGroups = util.mapObject(options.arrays, function(programArrayGroups, programName) {
+            return programArrayGroups.map(function(programArrayGroup) {
 
-        for (var programName in this.elementGroups) {
-            var elementGroups = this.elementGroups[programName];
-            if (elementGroups) {
-                for (var i = 0; i < elementGroups.length; i++) {
-                    var elementGroup = elementGroups[i];
-                    elementGroup.vaos = {};
-                    elementGroup.secondVaos = {};
-                    for (var l = 0; l < this.childLayers.length; l++) {
-                        var layerName = this.childLayers[l].id;
-                        elementGroup.vaos[layerName] = new VertexArrayObject();
-                        if (elementGroup.secondElementLength) {
-                            elementGroup.secondVaos[layerName] = new VertexArrayObject();
-                        }
-                    }
-                }
-            }
-        }
-
-        this.buffers = util.mapObject(options.arrays, function(programArrays, programName) {
-            return util.mapObject(programArrays, function(arrays, layoutOrPaint) {
-                return util.mapObject(arrays, function(array, name) {
-                    var arrayType = options.arrayTypes[programName][layoutOrPaint][name];
-                    var type = (arrayType.members.length && arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
-                    return new Buffer(array, arrayType, type);
+                var group = util.mapObject(programArrayGroup, function(arrays, layoutOrPaint) {
+                    return util.mapObject(arrays, function(array, name) {
+                        var arrayType = options.arrayTypes[programName][layoutOrPaint][name];
+                        var type = (arrayType.members.length && arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
+                        return new Buffer(array, arrayType, type);
+                    });
                 });
+
+                group.vaos = {};
+                if (group.layout.element2) group.secondVaos = {};
+                for (var l = 0; l < childLayers.length; l++) {
+                    var layerName = childLayers[l].id;
+                    group.vaos[layerName] = new VertexArrayObject();
+                    if (group.layout.element2) group.secondVaos[layerName] = new VertexArrayObject();
+                }
+
+                return group;
             });
         });
     }
@@ -132,26 +126,32 @@ Bucket.prototype.populateBuffers = function() {
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
  */
 Bucket.prototype.makeRoomFor = function(programName, numVertices) {
-    var groups = this.elementGroups[programName];
+    var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.vertexLength + numVertices > 65535) {
-        var layoutArrays = this.arrays[programName].layout;
-        var vertexArray = layoutArrays.vertex;
-        var elementArray = layoutArrays.element;
-        var secondElementArray = layoutArrays.secondElement;
+    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > 65535) {
+
+        var arrayTypes = this.arrayTypes[programName];
+        var VertexArrayType = arrayTypes.layout.vertex;
+        var ElementArrayType = arrayTypes.layout.element;
+        var ElementArrayType2 = arrayTypes.layout.element2;
 
         currentGroup = {
-            vertexStartIndex: vertexArray.length,
-            elementStartIndex: elementArray && elementArray.length,
-            secondElementStartIndex: secondElementArray && secondElementArray.length,
-            elementLength: 0,
-            vertexLength: 0,
-            secondElementLength: 0,
-            elementOffset: elementArray && elementArray.length * elementArray.bytesPerElement,
-            secondElementOffset: secondElementArray && secondElementArray.length * secondElementArray.bytesPerElement,
-            vertexOffset: vertexArray && vertexArray.length * vertexArray.bytesPerElement
+            index: groups.length,
+            layout: {},
+            paint: {}
         };
+
+        currentGroup.layout.vertex = new VertexArrayType();
+        if (ElementArrayType) currentGroup.layout.element = new ElementArrayType();
+        if (ElementArrayType2) currentGroup.layout.element2 = new ElementArrayType2();
+
+        for (var i = 0; i < this.childLayers.length; i++) {
+            var layerName = this.childLayers[i].id;
+            var PaintVertexArrayType = arrayTypes.paint[layerName];
+            currentGroup.paint[layerName] = new PaintVertexArrayType();
+        }
+
         groups.push(currentGroup);
     }
 
@@ -164,14 +164,13 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
  * @private
  */
 Bucket.prototype.createArrays = function() {
-    var elementGroups = this.elementGroups = {};
-    this.arrays = {};
+    this.arrayGroups = {};
     this.arrayTypes = {};
 
     for (var programName in this.programInterfaces) {
         var programInterface = this.programInterfaces[programName];
-        var programArrays = this.arrays[programName] = { layout: {}, paint: {} };
         var programArrayTypes = this.arrayTypes[programName] = { layout: {}, paint: {} };
+        this.arrayGroups[programName] = [];
 
         if (programInterface.vertexBuffer) {
             var VertexArrayType = new StructArrayType({
@@ -179,8 +178,7 @@ Bucket.prototype.createArrays = function() {
                 alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
             });
 
-            programArrays.layout.vertex = new VertexArrayType();
-            programArrayTypes.layout.vertex = VertexArrayType.serialize();
+            programArrayTypes.layout.vertex = VertexArrayType;
 
             var layerPaintAttributes = this.paintAttributes[programName];
             for (var layerName in layerPaintAttributes) {
@@ -189,47 +187,38 @@ Bucket.prototype.createArrays = function() {
                     alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
                 });
 
-                programArrays.paint[layerName] = new PaintVertexArrayType();
-                programArrayTypes.paint[layerName] = PaintVertexArrayType.serialize();
+                programArrayTypes.paint[layerName] = PaintVertexArrayType;
             }
         }
 
         if (programInterface.elementBuffer) {
             var ElementArrayType = createElementBufferType(programInterface.elementBufferComponents);
-            programArrays.layout.element = new ElementArrayType();
-            programArrayTypes.layout.element = ElementArrayType.serialize();
+            programArrayTypes.layout.element = ElementArrayType;
         }
 
-        if (programInterface.secondElementBuffer) {
-            var SecondElementArrayType = createElementBufferType(programInterface.secondElementBufferComponents);
-            programArrays.layout.secondElement = new SecondElementArrayType();
-            programArrayTypes.layout.secondElement = SecondElementArrayType.serialize();
+        if (programInterface.elementBuffer2) {
+            var ElementArrayType2 = createElementBufferType(programInterface.elementBuffer2Components);
+            programArrayTypes.layout.element2 = ElementArrayType2;
         }
-
-        elementGroups[programName] = [];
     }
 };
 
 Bucket.prototype.destroy = function(gl) {
-    for (var programName in this.buffers) {
-        var programBuffers = this.buffers[programName];
-        for (var paintBuffer in programBuffers.paint) {
-            programBuffers.paint[paintBuffer].destroy(gl);
-        }
-        for (var layoutBuffer in programBuffers.layout) {
-            programBuffers.layout[layoutBuffer].destroy(gl);
-        }
-
-        var elementGroups = this.elementGroups[programName];
-        if (elementGroups) {
-            for (var i = 0; i < elementGroups.length; i++) {
-                var elementGroup = elementGroups[i];
-                for (var j in elementGroup.vaos) {
-                    elementGroup.vaos[j].destroy(gl);
-                }
-                for (var k in elementGroup.secondVaos) {
-                    elementGroup.secondVaos[k].destroy(gl);
-                }
+    for (var programName in this.bufferGroups) {
+        var programBufferGroups = this.bufferGroups[programName];
+        for (var i = 0; i < programBufferGroups.length; i++) {
+            var programBuffers = programBufferGroups[i];
+            for (var paintBuffer in programBuffers.paint) {
+                programBuffers.paint[paintBuffer].destroy(gl);
+            }
+            for (var layoutBuffer in programBuffers.layout) {
+                programBuffers.layout[layoutBuffer].destroy(gl);
+            }
+            for (var j in programBuffers.vaos) {
+                programBuffers.vaos[j].destroy(gl);
+            }
+            for (var k in programBuffers.secondVaos) {
+                programBuffers.secondVaos[k].destroy(gl);
             }
         }
     }
@@ -237,8 +226,8 @@ Bucket.prototype.destroy = function(gl) {
 };
 
 Bucket.prototype.trimArrays = function() {
-    for (var programName in this.arrays) {
-        var programArrays = this.arrays[programName];
+    for (var programName in this.arrayGroups) {
+        var programArrays = this.arrayGroups[programName];
         for (var paintArray in programArrays.paint) {
             programArrays.paint[paintArray].trim();
         }
@@ -261,15 +250,22 @@ Bucket.prototype.serialize = function() {
     return {
         layerId: this.layer.id,
         zoom: this.zoom,
-        elementGroups: this.elementGroups,
-        arrays: util.mapObject(this.arrays, function(programArrays) {
-            return util.mapObject(programArrays, function(arrays) {
-                return util.mapObject(arrays, function(array) {
-                    return array.serialize();
+        arrays: util.mapObject(this.arrayGroups, function(programArrayGroups) {
+            return programArrayGroups.map(function(arrayGroup) {
+                return util.mapObject(arrayGroup, function(arrays) {
+                    return util.mapObject(arrays, function(array) {
+                        return array.serialize();
+                    });
                 });
             });
         }),
-        arrayTypes: this.arrayTypes,
+        arrayTypes: util.mapObject(this.arrayTypes, function(programArrayTypes) {
+            return util.mapObject(programArrayTypes, function(arrayTypes) {
+                return util.mapObject(arrayTypes, function(arrayType) {
+                    return arrayType.serialize();
+                });
+            });
+        }),
 
         childLayerIds: this.childLayers.map(function(layer) {
             return layer.id;
@@ -300,25 +296,30 @@ Bucket.prototype.getProgramMacros = function(programInterface, layer) {
     return macros;
 };
 
-Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startIndex, endIndex) {
+Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
     for (var l = 0; l < this.childLayers.length; l++) {
         var layer = this.childLayers[l];
-        var length = this.arrays[interfaceName].layout.vertex.length;
-        var vertexArray = this.arrays[interfaceName].paint[layer.id];
-        var attributes = this.paintAttributes[interfaceName][layer.id].attributes;
-        for (var m = 0; m < attributes.length; m++) {
-            var attribute = attributes[m];
-
-            var value = attribute.getValue(layer, globalProperties, featureProperties);
-            var multiplier = attribute.multiplier || 1;
-            var components = attribute.components || 1;
-
+        var groups = this.arrayGroups[interfaceName];
+        for (var g = startGroup.index; g < groups.length; g++) {
+            var group = groups[g];
+            var length = group.layout.vertex.length;
+            var vertexArray = group.paint[layer.id];
             vertexArray.resize(length);
-            for (var i = startIndex; i < endIndex; i++) {
-                var vertex = vertexArray.get(i);
-                for (var c = 0; c < components; c++) {
-                    var memberName = components > 1 ? (attribute.name + c) : attribute.name;
-                    vertex[memberName] = value[c] * multiplier;
+
+            var attributes = this.paintAttributes[interfaceName][layer.id].attributes;
+            for (var m = 0; m < attributes.length; m++) {
+                var attribute = attributes[m];
+
+                var value = attribute.getValue(layer, globalProperties, featureProperties);
+                var multiplier = attribute.multiplier || 1;
+                var components = attribute.components || 1;
+
+                for (var i = startIndex; i < length; i++) {
+                    var vertex = vertexArray.get(i);
+                    for (var c = 0; c < components; c++) {
+                        var memberName = components > 1 ? (attribute.name + c) : attribute.name;
+                        vertex[memberName] = value[c] * multiplier;
+                    }
                 }
             }
         }

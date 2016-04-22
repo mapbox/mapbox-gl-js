@@ -83,7 +83,7 @@ function drawRasterTile(painter, source, layer, coord) {
 
     var buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
     var vao = tile.boundsVAO || painter.rasterBoundsVAO;
-    vao.bind(gl, program, buffer, undefined, 0, undefined);
+    vao.bind(gl, program, buffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 }
 

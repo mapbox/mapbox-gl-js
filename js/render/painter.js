@@ -154,7 +154,7 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         // Draw the clipping mask
-        this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer, undefined, 0, undefined);
+        this.tileExtentVAO.bind(gl, program, this.tileExtentBuffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.tileExtentBuffer.length);
     }
 

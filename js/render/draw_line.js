@@ -125,8 +125,8 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var elementGroups = bucket.elementGroups.line;
-        if (!elementGroups) continue;
+        var bufferGroups = bucket.bufferGroups.line;
+        if (!bufferGroups) continue;
 
         painter.enableTileClippingMask(coord);
 
@@ -162,15 +162,10 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(program.u_ratio, ratio);
         }
 
-        var buffers = bucket.buffers.line;
-        var vertexBuffer = buffers.layout.vertex;
-        var elementBuffer = buffers.layout.element;
-
-        for (var i = 0; i < elementGroups.length; i++) {
-            var group = elementGroups[i];
-            var count = group.elementLength * 3;
-            group.vaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+        for (var i = 0; i < bufferGroups.length; i++) {
+            var group = bufferGroups[i];
+            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
+            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 

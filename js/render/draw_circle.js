@@ -22,8 +22,8 @@ function drawCircles(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var elementGroups = bucket.elementGroups.circle;
-        if (!elementGroups) continue;
+        var bufferGroups = bucket.bufferGroups.circle;
+        if (!bufferGroups) continue;
 
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
@@ -41,16 +41,10 @@ function drawCircles(painter, source, layer, coords) {
 
         bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
 
-        var buffers = bucket.buffers.circle;
-        var vertexBuffer = buffers.layout.vertex;
-        var elementBuffer = buffers.layout.element;
-        var paintVertexBuffer = buffers.paint[layer.id];
-
-        for (var k = 0; k < elementGroups.length; k++) {
-            var group = elementGroups[k];
-            var count = group.elementLength * 3;
-            group.vaos[layer.id].bind(gl, program, vertexBuffer, paintVertexBuffer, group.vertexStartIndex, elementBuffer);
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+        for (var k = 0; k < bufferGroups.length; k++) {
+            var group = bufferGroups[k];
+            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
+            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 }
