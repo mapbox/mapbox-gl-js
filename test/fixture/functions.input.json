@@ -227,6 +227,29 @@
           "stops": [[{"zoom": 1, "value": { "asdf": true }}, true]]
         }
       }
+  },
+  {
+    "id": "invalid object-keyed string stop for zoom function",
+    "type": "fill",
+    "source": "source",
+    "source-layer": "layer",
+    "paint": {
+      "fill-antialias": {
+        "stops": [["bad", true]]
+      }
     }
+  },
+  {
+    "id": "valid object-keyed string stop for property function",
+    "type": "fill",
+    "source": "source",
+    "source-layer": "layer",
+    "paint": {
+      "fill-antialias": {
+        "property": "mapbox",
+        "stops": [["good", true]]
+      }
+    }
+  }
   ]
 }
