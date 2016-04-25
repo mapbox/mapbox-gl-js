@@ -1,7 +1,8 @@
 'use strict';
 
 /*
- * Adds positional coordinates to URL hashes. Passed as an option to the map object
+ * Adds the map's position to its page's location hash.
+ * Passed as an option to the map object.
  *
  * @class mapboxgl.Hash
  * @returns {Hash} `this`
@@ -18,7 +19,8 @@ function Hash() {
 }
 
 Hash.prototype = {
-    /* Map element to listen for coordinate changes
+    /*
+     * Map element to listen for coordinate changes
      *
      * @param {Object} map
      * @returns {Hash} `this`
@@ -30,7 +32,8 @@ Hash.prototype = {
         return this;
     },
 
-    /* Removes hash
+    /*
+     * Removes hash
      *
      * @returns {Popup} `this`
      */

@@ -47,7 +47,7 @@ DragPanHandler.prototype = {
     /**
      * Enable the "drag to pan" interaction.
      * @example
-     *   map.dragPan.enable();
+     * map.dragPan.enable();
      */
     enable: function () {
         if (this.isEnabled()) return;
@@ -59,7 +59,7 @@ DragPanHandler.prototype = {
     /**
      * Disable the "drag to pan" interaction.
      * @example
-     *   map.dragPan.disable();
+     * map.dragPan.disable();
      */
     disable: function () {
         if (!this.isEnabled()) return;

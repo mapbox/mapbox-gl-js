@@ -52,7 +52,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Removes the popup from the map
+     * Removes the popup from a map
      * @example
      * var popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
@@ -78,7 +78,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Get the current coordinates of popup element relative to map
+     * Get the popup's geographical location
      * @returns {LngLat}
      */
     getLngLat: function() {
@@ -86,7 +86,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Set the coordinates of a popup element to a map
+     * Set the popup's geographical position and move it.
      * @param {LngLat} lnglat
      * @returns {Popup} `this`
      */
@@ -106,7 +106,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Fill a popup element with HTML content
+     * Fill a popup element with HTML content, provided as a string.
      * @param {string} html
      * @returns {Popup} `this`
      */

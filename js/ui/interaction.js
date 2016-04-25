@@ -200,7 +200,7 @@ Interaction.prototype = {
  * @event mousedown
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [mousedown event](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
  */
 
 /**
@@ -209,7 +209,7 @@ Interaction.prototype = {
  * @event mouseup
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [mouseup event](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
  */
 
 /**
@@ -218,7 +218,7 @@ Interaction.prototype = {
  * @event mousemove
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [mousemouse event](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
  */
 
 /**
@@ -227,7 +227,7 @@ Interaction.prototype = {
  * @event touchstart
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [touchstart event](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart).
  */
 
 /**
@@ -236,7 +236,7 @@ Interaction.prototype = {
  * @event touchend
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [touchcancel event](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel).
  */
 
 /**
@@ -245,7 +245,7 @@ Interaction.prototype = {
  * @event touchmove
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [touchmove event](https://developer.mozilla.org/en-US/docs/Web/Events/touchmove).
  */
 
 /**
@@ -254,7 +254,7 @@ Interaction.prototype = {
  * @event touchcancel
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [touchcancel event](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel).
  */
 
 /**
@@ -263,7 +263,7 @@ Interaction.prototype = {
  * @event click
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {EventData} data Original event data: a [click event](https://developer.mozilla.org/en-US/docs/Web/Events/click)
  */
 
 /**
