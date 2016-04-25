@@ -8,9 +8,8 @@ var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 
 /**
- * Options common to Map#jumpTo, Map#easeTo, and Map#flyTo, controlling the destination
- * location, zoom level, bearing and pitch. All properties are options; unspecified
- * options will default to the current value for that property.
+ * Options common to `Map#jumpTo`, `Map#easeTo`, and `Map#flyTo`, controlling the destination
+ * location, zoom level, bearing and pitch.
  *
  * @typedef {Object} CameraOptions
  * @property {LngLat} center Map center
