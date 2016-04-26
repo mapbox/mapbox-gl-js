@@ -131,10 +131,7 @@ Transform.prototype = {
         this.width = width;
         this.height = height;
 
-        // The extrusion matrix
-        this.exMatrix = mat4.create();
-        mat4.ortho(this.exMatrix, 0, width, height, 0, 0, -1);
-
+        this.pixelsToGLUnits = [2 / width, -2 / height];
         this._calcProjMatrix();
         this._constrain();
     },

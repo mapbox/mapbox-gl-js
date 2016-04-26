@@ -8,14 +8,13 @@ function VertexArrayObject() {
     this.boundProgram = null;
     this.boundVertexBuffer = null;
     this.boundVertexBuffer2 = null;
-    this.boundVertexOffset = null;
     this.boundElementBuffer = null;
     this.vao = null;
 }
 
 var reported = false;
 
-VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuffer2, vertexOffset, elementBuffer) {
+VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
 
     var ext = gl.extVertexArrayObject;
     if (ext === undefined) {
@@ -53,10 +52,10 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuf
         }
 
         vertexBuffer.bind(gl);
-        vertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
+        vertexBuffer.setVertexAttribPointers(gl, program);
         if (vertexBuffer2) {
             vertexBuffer2.bind(gl);
-            vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
+            vertexBuffer2.setVertexAttribPointers(gl, program);
         }
         if (elementBuffer) {
             elementBuffer.bind(gl);
@@ -67,7 +66,6 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuf
             this.boundProgram = program;
             this.boundVertexBuffer = vertexBuffer;
             this.boundVertexBuffer2 = vertexBuffer2;
-            this.boundVertexOffset = vertexOffset;
             this.boundElementBuffer = elementBuffer;
         }
 
@@ -76,7 +74,6 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, vertexBuf
         assert(this.boundProgram === program, 'trying to bind a VAO to a different shader');
         assert(this.boundVertexBuffer === vertexBuffer, 'trying to bind a VAO to a different vertex buffer');
         assert(this.boundVertexBuffer2 === vertexBuffer2, 'trying to bind a VAO to a different vertex buffer');
-        assert(this.boundVertexOffset === vertexOffset, 'trying to bind a VAO to a different vertex offset');
         assert(this.boundElementBuffer === elementBuffer, 'trying to bind a VAO to a different element buffer');
     }
 };

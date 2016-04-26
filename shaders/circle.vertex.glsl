@@ -1,7 +1,7 @@
 precision highp float;
 
 uniform mat4 u_matrix;
-uniform mat4 u_exmatrix;
+uniform vec2 u_extrude_scale;
 uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
@@ -64,14 +64,14 @@ void main(void) {
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
 
-    vec4 extrude = u_exmatrix * vec4(v_extrude * radius, 0, 0);
+    vec2 extrude = v_extrude * radius * u_extrude_scale;
     // multiply a_pos by 0.5, since we had it * 2 in order to sneak
     // in extrusion data
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0, 1);
 
     // gl_Position is divided by gl_Position.w after this shader runs.
     // Multiply the extrude by it so that it isn't affected by it.
-    gl_Position += extrude * gl_Position.w;
+    gl_Position.xy += extrude * gl_Position.w;
 
 #ifdef ATTRIBUTE_A_COLOR
     v_color = a_color / 255.0;

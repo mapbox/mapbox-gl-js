@@ -243,12 +243,15 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
 };
 
 function isBucketEmpty(bucket) {
-    for (var programName in bucket.arrays) {
-        var programArrays = bucket.arrays[programName];
-        for (var layoutOrPaint in programArrays) {
-            var arrays = programArrays[layoutOrPaint];
-            for (var bufferName in arrays) {
-                if (arrays[bufferName].length > 0) return true;
+    for (var programName in bucket.arrayGroups) {
+        var programArrayGroups = bucket.arrayGroups[programName];
+        for (var k = 0; k < programArrayGroups.length; k++) {
+            var programArrayGroup = programArrayGroups[k];
+            for (var layoutOrPaint in programArrayGroup) {
+                var arrays = programArrayGroup[layoutOrPaint];
+                for (var bufferName in arrays) {
+                    if (arrays[bufferName].length > 0) return true;
+                }
             }
         }
     }
@@ -263,12 +266,15 @@ function getTransferables(buckets) {
     var transferables = [];
     for (var i in buckets) {
         var bucket = buckets[i];
-        for (var programName in bucket.arrays) {
-            var programArrays = bucket.arrays[programName];
-            for (var layoutOrPaint in programArrays) {
-                var arrays = programArrays[layoutOrPaint];
-                for (var bufferName in arrays) {
-                    transferables.push(arrays[bufferName].arrayBuffer);
+        for (var programName in bucket.arrayGroups) {
+            var programArrayGroups = bucket.arrayGroups[programName];
+            for (var k = 0; k < programArrayGroups.length; k++) {
+                var programArrayGroup = programArrayGroups[k];
+                for (var layoutOrPaint in programArrayGroup) {
+                    var arrays = programArrayGroup[layoutOrPaint];
+                    for (var bufferName in arrays) {
+                        transferables.push(arrays[bufferName].arrayBuffer);
+                    }
                 }
             }
         }

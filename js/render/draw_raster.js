@@ -45,7 +45,7 @@ function drawRasterTile(painter, source, layer, coord) {
     var posMatrix = painter.transform.calculatePosMatrix(coord, source.maxzoom);
 
     var program = painter.useProgram('raster');
-    painter.setPosMatrix(posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
     // color parameters
     gl.uniform1f(program.u_brightness_low, layer.paint['raster-brightness-min']);
@@ -83,7 +83,7 @@ function drawRasterTile(painter, source, layer, coord) {
 
     var buffer = tile.boundsBuffer || painter.rasterBoundsBuffer;
     var vao = tile.boundsVAO || painter.rasterBoundsVAO;
-    vao.bind(gl, program, buffer, undefined, 0, undefined);
+    vao.bind(gl, program, buffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 }
 

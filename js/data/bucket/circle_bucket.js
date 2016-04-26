@@ -20,8 +20,8 @@ function CircleBucket() {
 
 CircleBucket.prototype = util.inherit(Bucket, {});
 
-CircleBucket.prototype.addCircleVertex = function(x, y, extrudeX, extrudeY) {
-    return this.arrays.circle.layout.vertex.emplaceBack(
+CircleBucket.prototype.addCircleVertex = function(vertexArray, x, y, extrudeX, extrudeY) {
+    return vertexArray.emplaceBack(
             (x * 2) + ((extrudeX + 1) / 2),
             (y * 2) + ((extrudeY + 1) / 2));
 };
@@ -63,7 +63,8 @@ CircleBucket.prototype.addFeature = function(feature) {
     var globalProperties = {zoom: this.zoom};
     var geometries = loadGeometry(feature);
 
-    var startIndex = this.arrays.circle.layout.vertex.length;
+    var startGroup = this.makeRoomFor('circle', 0);
+    var startIndex = startGroup.layout.vertex.length;
 
     for (var j = 0; j < geometries.length; j++) {
         for (var k = 0; k < geometries[j].length; k++) {
@@ -84,18 +85,17 @@ CircleBucket.prototype.addFeature = function(feature) {
             // └─────────┘
 
             var group = this.makeRoomFor('circle', 4);
+            var vertexArray = group.layout.vertex;
 
-            var index = this.addCircleVertex(x, y, -1, -1) - group.vertexStartIndex;
-            this.addCircleVertex(x, y, 1, -1);
-            this.addCircleVertex(x, y, 1, 1);
-            this.addCircleVertex(x, y, -1, 1);
-            group.vertexLength += 4;
+            var index = this.addCircleVertex(vertexArray, x, y, -1, -1);
+            this.addCircleVertex(vertexArray, x, y, 1, -1);
+            this.addCircleVertex(vertexArray, x, y, 1, 1);
+            this.addCircleVertex(vertexArray, x, y, -1, 1);
 
-            this.arrays.circle.layout.element.emplaceBack(index, index + 1, index + 2);
-            this.arrays.circle.layout.element.emplaceBack(index, index + 3, index + 2);
-            group.elementLength += 2;
+            group.layout.element.emplaceBack(index, index + 1, index + 2);
+            group.layout.element.emplaceBack(index, index + 3, index + 2);
         }
     }
 
-    this.addPaintAttributes('circle', globalProperties, feature.properties, startIndex, this.arrays.circle.layout.vertex.length);
+    this.addPaintAttributes('circle', globalProperties, feature.properties, startGroup, startIndex);
 };

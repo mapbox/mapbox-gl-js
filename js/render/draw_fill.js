@@ -74,8 +74,8 @@ function drawFill(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var elementGroups = bucket.elementGroups.fill;
-    if (!elementGroups) return;
+    var bufferGroups = bucket.bufferGroups.fill;
+    if (!bufferGroups) return;
 
     var gl = painter.gl;
 
@@ -113,17 +113,12 @@ function drawFill(painter, source, layer, coord) {
 
     // Draw the actual triangle fan into the stencil buffer.
     var fillProgram = painter.useProgram('fill');
-    painter.setPosMatrix(translatedPosMatrix);
+    gl.uniformMatrix4fv(fillProgram.u_matrix, false, translatedPosMatrix);
 
-    var buffers = bucket.buffers.fill.layout;
-    var vertexBuffer = buffers.vertex;
-    var elementBuffer = buffers.element;
-
-    for (var i = 0; i < elementGroups.length; i++) {
-        var group = elementGroups[i];
-        var count = group.elementLength * 3;
-        group.vaos[layer.id].bind(gl, fillProgram, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
-        gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+    for (var i = 0; i < bufferGroups.length; i++) {
+        var group = bufferGroups[i];
+        group.vaos[layer.id].bind(gl, fillProgram, group.layout.vertex, group.layout.element);
+        gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
     }
 
     // Now that we have the stencil mask in the stencil buffer, we can start
@@ -144,17 +139,17 @@ function drawFill(painter, source, layer, coord) {
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
-        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer, undefined, 0, undefined);
+        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
 
     } else {
         // Draw filling rectangle.
         program = painter.useProgram('fill');
         gl.uniform4fv(fillProgram.u_color, color);
         gl.uniform1f(fillProgram.u_opacity, opacity);
-        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer, undefined, 0, undefined);
+        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
     }
 
-    painter.setPosMatrix(posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
     // Only draw regions that we marked
     gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
@@ -170,13 +165,13 @@ function drawStroke(painter, source, layer, coord) {
     if (!bucket) return;
 
     var gl = painter.gl;
-    var elementGroups = bucket.elementGroups.fill;
+    var bufferGroups = bucket.bufferGroups.fill;
 
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
     var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
 
-    painter.setPosMatrix(painter.translatePosMatrix(
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
         layer.paint['fill-translate'],
@@ -185,17 +180,12 @@ function drawStroke(painter, source, layer, coord) {
 
     if (image) { setPattern(image, opacity, tile, coord, painter, program); }
 
-    var buffers = bucket.buffers.fill.layout;
-    var vertexBuffer = buffers.vertex;
-    var elementBuffer = buffers.secondElement;
-
     painter.enableTileClippingMask(coord);
 
-    for (var k = 0; k < elementGroups.length; k++) {
-        var group = elementGroups[k];
-        var count = group.secondElementLength * 2;
-        group.secondVaos[layer.id].bind(gl, program, vertexBuffer, undefined, group.vertexStartIndex, elementBuffer);
-        gl.drawElements(gl.LINES, count, gl.UNSIGNED_SHORT, group.secondElementOffset);
+    for (var k = 0; k < bufferGroups.length; k++) {
+        var group = bufferGroups[k];
+        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2);
+        gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
 
