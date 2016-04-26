@@ -11,8 +11,10 @@ var LngLat = require('../geo/lng_lat');
  * Creates a popup component
  * @class Popup
  * @param {Object} options
- * @param {boolean} options.closeButton
- * @param {boolean} options.closeOnClick
+ * @param {boolean} options.closeButton whether to show a close button in the
+ * top right corner of the popup.
+ * @param {boolean} options.closeOnClick whether to close the popup when the
+ * map is clicked.
  * @param {string} options.anchor - One of "top", "bottom", "left", "right", "top-left",
  * "top-right", "bottom-left", or "bottom-right", describing where the popup's anchor
  * relative to the coordinate set via `setLngLat`.
@@ -97,9 +99,17 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Fill a popup element with text only content
+     * Fill a popup element with text only content. This creates a text node
+     * in the DOM, so it cannot end up appending raw HTML. Use this method
+     * if you want an added level of security against XSS if the popup
+     * content is user-provided.
      * @param {string} text
      * @returns {Popup} `this`
+     * @example
+     * var tooltip = new mapboxgl.Popup()
+     *   .setLngLat(e.lngLat)
+     *   .setText('Hello, world!')
+     *   .addTo(map);
      */
     setText: function(text) {
         return this.setDOMContent(document.createTextNode(text));
@@ -127,6 +137,14 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * Fill a popup element with DOM content
      * @param {Node} htmlNode Popup content as a DOM node
      * @returns {Popup} `this`
+     * @example
+     * // create an element with the popup content
+     * var div = document.createElement('div');
+     * div.innerHTML = 'Hello, world!';
+     * var tooltip = new mapboxgl.Popup()
+     *   .setLngLat(e.lngLat)
+     *   .setDOMContent(div)
+     *   .addTo(map);
      */
     setDOMContent: function(htmlNode) {
         this._createContent();

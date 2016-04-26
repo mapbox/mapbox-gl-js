@@ -23,6 +23,7 @@ var Attribution = require('./control/attribution');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
+
 /**
  * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
  * whether or not to smoothly transition property changes triggered by the class change.
