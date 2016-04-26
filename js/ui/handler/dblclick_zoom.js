@@ -27,7 +27,7 @@ DoubleClickZoomHandler.prototype = {
     /**
      * Enable the "double click to zoom" interaction.
      * @example
-     *   map.doubleClickZoom.enable();
+     * map.doubleClickZoom.enable();
      */
     enable: function () {
         if (this.isEnabled()) return;
@@ -38,7 +38,7 @@ DoubleClickZoomHandler.prototype = {
     /**
      * Disable the "double click to zoom" interaction.
      * @example
-     *   map.doubleClickZoom.disable();
+     * map.doubleClickZoom.disable();
      */
     disable: function () {
         if (!this.isEnabled()) return;
