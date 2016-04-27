@@ -823,18 +823,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Is this map fully loaded? If the style isn't loaded
-     * or it has a change to the sources or style that isn't
-     * propagated to its style, return false.
-     *
-     * @returns {boolean} whether the map is loaded
+     * @returns {boolean} True if all the resources needed to display the
+     *   current viewport have been loaded.
      */
-    loaded: function() {
-        if (this._styleDirty || this._sourcesDirty)
-            return false;
-        if (!this.style || !this.style.loaded())
-            return false;
-        return true;
+    isRenderStable: function() {
+        return (!this._styleDirty && !this.sourcesDirty && this.style && this.style.loaded());
     },
 
     /**
@@ -885,9 +878,18 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         this.fire('render');
 
-        if (this.loaded() && !this._loaded) {
-            this._loaded = true;
-            this.fire('load');
+        if (this.isRenderStable()) {
+            if (!this._wasLoaded) {
+                this._wasLoaded = true;
+                this.fire('load');
+            }
+
+            if (!this._wasRenderStable) {
+                this._wasRenderStable = true;
+                this.fire('renderstable');
+            }
+        } else {
+            this._wasRenderStable = false;
         }
 
         this._frameId = null;
@@ -956,6 +958,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _forwardTileEvent: function(e) {
+        if (e.type === 'tile.load' || e.type === 'tile.add') {
+            this._wasRenderStable = false;
+        }
         this.fire(e.type, util.extend({style: e.target}, e));
     },
 
@@ -993,6 +998,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     _onWindowResize: function() {
         this.stop().resize()._update();
+    },
+
+    _onMoveend: function() {
+        this.animationLoop.set(300); // text fading
+        this._rerender();
     }
 });
 
@@ -1064,3 +1074,13 @@ function removeNode(node) {
         node.parentNode.removeChild(node);
     }
 }
+
+/**
+ * This event is fired when the map becomes "render stable." The map is
+ * considered "render stable" when all the resources needed to display the
+ * current viewport have been loaded. See also `Map#isRenderStable`.
+ *
+ * @event renderstable
+ * @memberof Map
+ * @instance
+ */
