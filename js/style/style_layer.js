@@ -231,7 +231,10 @@ StyleLayer.prototype = util.inherit(Evented, {
     updatePaintTransition: function(name, classes, options, globalOptions, animationLoop) {
         var declaration = this._paintDeclarations[''][name];
         for (var i = 0; i < classes.length; i++) {
-            declaration = this._paintDeclarations[classes[i]][name] || declaration;
+            var classPaintDeclarations = this._paintDeclarations[classes[i]];
+            if (classPaintDeclarations && classPaintDeclarations[name]) {
+                declaration = classPaintDeclarations[name];
+            }
         }
         this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop);
     },

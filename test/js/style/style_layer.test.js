@@ -26,6 +26,53 @@ test('StyleLayer', function(t) {
     t.end();
 });
 
+test('StyleLayer#updatePaintTransition', function (t) {
+
+    t.test('updates paint transition', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "red"
+            }
+        });
+        layer.updatePaintTransition('background-color', [], {});
+        t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
+        t.end();
+    });
+
+    t.test('updates paint transition with class', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "red"
+            },
+            "paint.mapbox": {
+                "background-color": "blue"
+            }
+        });
+        layer.updatePaintTransition('background-color', ['mapbox'], {});
+        t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 1, 1]);
+        t.end();
+    });
+
+    t.test('updates paint transition with extraneous class', function(t) {
+        var layer = StyleLayer.create({
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "red"
+            }
+        });
+        layer.updatePaintTransition('background-color', ['mapbox'], {});
+        t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
+        t.end();
+    });
+
+    t.end();
+});
+
 test('StyleLayer#updatePaintTransitions', function (t) {
     t.test('respects classes regardless of layer properties order', function (t) {
         var layer = StyleLayer.create({
