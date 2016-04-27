@@ -16,8 +16,10 @@ attribute vec2 a_pos;
 attribute vec4 a_data;
 
 uniform mat4 u_matrix;
-uniform mediump vec2 u_linewidth;
 uniform mediump float u_ratio;
+uniform mediump float u_linewidth;
+uniform mediump float u_gapwidth;
+uniform mediump float u_antialiasing;
 uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
@@ -27,6 +29,7 @@ uniform mat2 u_antialiasingmatrix;
 uniform mediump float u_offset;
 
 varying vec2 v_normal;
+varying vec2 v_linewidth;
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
@@ -44,9 +47,12 @@ void main() {
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
+    float inset = u_gapwidth + (u_gapwidth > 0.0 ? u_antialiasing : 0.0);
+    float outset = u_gapwidth + u_linewidth * (u_gapwidth > 0.0 ? 2.0 : 1.0) + u_antialiasing;
+
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-    mediump vec4 dist = vec4(u_linewidth.s * a_extrude * scale, 0.0, 0.0);
+    mediump vec4 dist = vec4(outset * a_extrude * scale, 0.0, 0.0);
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -72,5 +78,6 @@ void main() {
     // how much features are squished in all directions by the perspectiveness
     float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
 
+    v_linewidth = vec2(outset, inset);
     v_gamma_scale = perspective_scale * squish_scale;
 }
