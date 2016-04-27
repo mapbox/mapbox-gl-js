@@ -31,20 +31,6 @@ module.exports = function drawLine(painter, source, layer, coords) {
     var antialiasing = 1 / browser.devicePixelRatio;
 
     var blur = layer.paint['line-blur'] + antialiasing;
-    var edgeWidth = layer.paint['line-width'] / 2;
-    var inset = -1;
-    var offset = 0;
-    var shift = 0;
-
-    if (layer.paint['line-gap-width'] > 0) {
-        inset = layer.paint['line-gap-width'] / 2 + antialiasing * 0.5;
-        edgeWidth = layer.paint['line-width'];
-
-        // shift outer lines half a pixel towards the middle to eliminate the crack
-        offset = inset - antialiasing / 2;
-    }
-
-    var outset = offset + edgeWidth + antialiasing / 2 + shift;
     var color = util.premultiply(layer.paint['line-color']);
 
     var tr = painter.transform;
@@ -66,7 +52,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
     if (dasharray) {
         program = painter.useProgram('linesdfpattern');
 
-        gl.uniform2fv(program.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
+        gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
+        gl.uniform1f(program.u_antialiasing, antialiasing / 2);
         gl.uniform1f(program.u_blur, blur);
         gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_opacity, layer.paint['line-opacity']);
@@ -96,7 +84,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
-        gl.uniform2fv(program.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
+        gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
+        gl.uniform1f(program.u_antialiasing, antialiasing / 2);
         gl.uniform1f(program.u_blur, blur);
         gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
@@ -111,7 +101,9 @@ module.exports = function drawLine(painter, source, layer, coords) {
     } else {
         program = painter.useProgram('line');
 
-        gl.uniform2fv(program.u_linewidth, [ outset, inset ]);
+        gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
+        gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
+        gl.uniform1f(program.u_antialiasing, antialiasing / 2);
         gl.uniform1f(program.u_blur, blur);
         gl.uniform1f(program.u_extra, extra);
         gl.uniform1f(program.u_offset, -layer.paint['line-offset']);
