@@ -5,7 +5,7 @@ options: full
 ---
 
 
-<div class='round doc clip fill-white keyline-all'>
+<div class='round doc clip fill-white keyline-all space-bottom'>
 
   <section class='pad4 keyline-bottom contain'>
 
@@ -18,39 +18,47 @@ options: full
     </h1>
 
     <div class='prose space-bottom2'>
-      <p>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='https://www.mapbox.com/blog/vector-tiles'>vector tiles</a> and <a href='https://www.mapbox.com/mapbox-gl-style-spec'>Mapbox GL styles</a><p>
-      <p>It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a> which includes <a href='https://www.mapbox.com/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
-      <a href='https://www.mapbox.com/gallery/'><img width='981' alt='Mapbox GL JS gallery' src='{{site.baseurl}}/assets/gallery.png'></a>
+      <p>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.url}}/mapbox-gl-style-spec'>Mapbox GL styles</a>.<p>
+      <p>It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a> which includes <a href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
     </div>
-
-    <h2 class='space'>Using Mapbox GL JS with a <code>&lt;script&gt;</code> tag</h2>
-
-    <div class='prose space-bottom2'>
-      <p>To use the <a href='https://www.mapbox.com/maps/'>vector tiles</a> and styles hosted on <a href='http://mapbox.com'>Mapbox</a>, you must <a href='https://www.mapbox.com/studio/signup/'>create an account</a> and <a href='https://www.mapbox.com/studio/account/tokens/'>obtain an access token</a>. You can learn more about access tokens <a href='https://www.mapbox.com/help/define-access-token/'>here</a>.
-
-      <pre>
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-  &lt;script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'&gt;&lt;/script&gt;
-  &lt;link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet'&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-  &lt;div id='map' style='width: 400px; height: 300px;' /&gt;
-
-  &lt;script&gt;
-    mapboxgl.accessToken = '&lt;your access token here&gt;';
-    var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v8'
-    });
-  &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-      </pre>
-    </div>
+    <a href='https://www.mapbox.com/gallery/'><img alt='Mapbox GL JS gallery' src='{{site.baseurl}}/assets/gallery.png'></a>
   </section>
+</div>
 
+<div class='keyline-all fill-darken0 space-bottom round'>
+  <div class='pad1y pad2x keyline-bottom strong small clearfix'>
+    <span class='fill-darken1 pad1x round dark inline fr'>mapbox-gl.js {{site.version}}</span>
+    Get started
+  </div>
+  <div class='pad2'>
+    <div class='fill-white space-bottom1'>{% highlight html %}
+<script src='{{site.tileApi}}/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
+<link href='{{site.tileApi}}/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />{% endhighlight html %}
+    </div>
+    <div class='pad1x small quiet space-bottom1'>
+      Include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.
+    </div>
+
+    <div class='fill-white space-bottom1'>
+{% capture getting_started_html %}
+<div id='map' style='width: 400px; height: 300px;'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v8'
+});
+</script>
+{% endcapture %}
+
+      {% highlight html %}{{ getting_started_html | insert_token }}{% endhighlight %}
+    </div>
+    <div class='pad1x small quiet'>
+      Include this code in the <code>&lt;body&gt;</code> of your HTML file to initialize a map on the page.
+      <a class='truncate rcon next' href='{{site.baseurl}}/examples/'>View basic example</a>
+    </div>
+  </div>
+</div>
+
+<div class='round doc clip fill-white keyline-all space-top'>
   {{ content }}
 </div>
