@@ -31,8 +31,8 @@ TileCoord.prototype.toString = function() {
     return this.z + "/" + this.x + "/" + this.y;
 };
 
-TileCoord.prototype.toCoordinate = function() {
-    var zoom = this.z;
+TileCoord.prototype.toCoordinate = function(sourceMaxZoom) {
+    var zoom = Math.min(this.z, sourceMaxZoom);
     var tileScale = Math.pow(2, zoom);
     var row = this.y;
     var column = this.x + tileScale * this.w;
