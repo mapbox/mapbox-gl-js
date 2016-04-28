@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('../util');
+var isSupported = require('mapbox-gl-js-supported');
 
 module.exports = Canvas;
 
@@ -29,34 +30,11 @@ Canvas.prototype.resize = function(width, height) {
     this.canvas.style.height = height + 'px';
 };
 
-var requiredContextAttributes = {
-    antialias: false,
-    alpha: true,
-    stencil: true,
-    depth: true
-};
-
 Canvas.prototype.getWebGLContext = function(attributes) {
-    attributes = util.extend({}, attributes, requiredContextAttributes);
+    attributes = util.extend({}, attributes, isSupported.webGLContextAttributes);
 
     return this.canvas.getContext('webgl', attributes) ||
         this.canvas.getContext('experimental-webgl', attributes);
-};
-
-Canvas.prototype.supportsWebGLContext = function(failIfMajorPerformanceCaveat) {
-    var attributes = util.extend({
-        failIfMajorPerformanceCaveat: failIfMajorPerformanceCaveat
-    }, requiredContextAttributes);
-
-    if ('probablySupportsContext' in this.canvas) {
-        return this.canvas.probablySupportsContext('webgl', attributes) ||
-            this.canvas.probablySupportsContext('experimental-webgl', attributes);
-    } else if ('supportsContext' in this.canvas) {
-        return this.canvas.supportsContext('webgl', attributes) ||
-            this.canvas.supportsContext('experimental-webgl', attributes);
-    }
-
-    return !!window.WebGLRenderingContext && !!this.getWebGLContext(failIfMajorPerformanceCaveat);
 };
 
 Canvas.prototype.getElement = function() {

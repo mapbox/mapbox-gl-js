@@ -169,6 +169,20 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
+    getPaintValueStopZoomLevels: function(name) {
+        var transition = this._paintTransitions[name];
+        if (transition) {
+            return transition.declaration.stopZoomLevels;
+        } else {
+            return [];
+        }
+    },
+
+    getPaintInterpolationT: function(name, zoom) {
+        var transition = this._paintTransitions[name];
+        return transition.declaration.calculateInterpolationT({ zoom: zoom });
+    },
+
     isPaintValueFeatureConstant: function(name) {
         var transition = this._paintTransitions[name];
 
@@ -178,6 +192,17 @@ StyleLayer.prototype = util.inherit(Evented, {
             return true;
         }
     },
+
+    isPaintValueZoomConstant: function(name) {
+        var transition = this._paintTransitions[name];
+
+        if (transition) {
+            return transition.declaration.isZoomConstant;
+        } else {
+            return true;
+        }
+    },
+
 
     isHidden: function(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
@@ -206,7 +231,10 @@ StyleLayer.prototype = util.inherit(Evented, {
     updatePaintTransition: function(name, classes, options, globalOptions, animationLoop) {
         var declaration = this._paintDeclarations[''][name];
         for (var i = 0; i < classes.length; i++) {
-            declaration = this._paintDeclarations[classes[i]][name] || declaration;
+            var classPaintDeclarations = this._paintDeclarations[classes[i]];
+            if (classPaintDeclarations && classPaintDeclarations[name]) {
+                declaration = classPaintDeclarations[name];
+            }
         }
         this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop);
     },
@@ -254,7 +282,7 @@ StyleLayer.prototype = util.inherit(Evented, {
     _applyPaintDeclaration: function (name, declaration, options, globalOptions, animationLoop) {
         var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
 
-        if (declaration === null) {
+        if (declaration === null || declaration === undefined) {
             var spec = this._paintSpecifications[name];
             declaration = new StyleDeclaration(spec, spec.default);
         }

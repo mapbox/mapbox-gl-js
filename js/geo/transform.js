@@ -131,10 +131,7 @@ Transform.prototype = {
         this.width = width;
         this.height = height;
 
-        // The extrusion matrix
-        this.exMatrix = mat4.create();
-        mat4.ortho(this.exMatrix, 0, width, height, 0, 0, -1);
-
+        this.pixelsToGLUnits = [2 / width, -2 / height];
         this._calcProjMatrix();
         this._constrain();
     },
@@ -333,8 +330,8 @@ Transform.prototype = {
      * @private
      */
     calculatePosMatrix: function(coord, maxZoom) {
-        if (coord instanceof TileCoord) coord = coord.toCoordinate();
         if (maxZoom === undefined) maxZoom = Infinity;
+        if (coord instanceof TileCoord) coord = coord.toCoordinate(maxZoom);
 
         // Initialize model-view matrix that converts from the tile coordinates to screen coordinates.
 

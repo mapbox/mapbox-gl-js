@@ -60,9 +60,8 @@ var AttributeType = {
  * @private
  * @param gl The WebGL context
  * @param program The active WebGL program
- * @param {number} offset The index offset of the attribute data in the currently bound GL buffer.
  */
-Buffer.prototype.setVertexAttribPointers = function(gl, program, offset) {
+Buffer.prototype.setVertexAttribPointers = function(gl, program) {
     for (var j = 0; j < this.attributes.length; j++) {
         var member = this.attributes[j];
         var attribIndex = program[member.name];
@@ -74,7 +73,7 @@ Buffer.prototype.setVertexAttribPointers = function(gl, program, offset) {
             gl[AttributeType[member.type]],
             false,
             this.arrayType.bytesPerElement,
-            offset * this.arrayType.bytesPerElement + member.offset
+            member.offset
         );
     }
 };

@@ -50,11 +50,23 @@ map.on('load', function() {
         "type": "circle",
         "source": "geojson-random-points",
         "paint": {
-            "circle-radius": 5,
-            "circle-opacity": 0.5,
+            "circle-radius": {
+                property: "mapbox",
+                stops: [
+                    [{ zoom: 0, value: 0 }, 2],
+                    [{ zoom: 0, value: 100 }, 10],
+                    [{ zoom: 6, value: 0 }, 20],
+                    [{ zoom: 6, value: 100 }, 100]
+                ]
+            },
             "circle-color": {
-                stops: [[0, 'red'], [100, 'violet']],
-                property: 'mapbox'
+                property: "mapbox",
+                stops: [
+                    [{ zoom: 0, value: 0 }, 'red'],
+                    [{ zoom: 0, value: 100 }, 'violet'],
+                    [{ zoom: 6, value: 0 }, 'blue'],
+                    [{ zoom: 6, value: 100 }, 'green']
+                ]
             }
         }
     });
@@ -93,6 +105,10 @@ document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
 
 document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
     map.showCollisionBoxes = !!this.checked;
+};
+
+document.getElementById('show-overdraw-checkbox').onclick = function() {
+    map.showOverdrawInspector = !!this.checked;
 };
 
 document.getElementById('buffer-checkbox').onclick = function() {

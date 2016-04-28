@@ -8,7 +8,7 @@ test('StyleDeclaration', function(t) {
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate({zoom: 0}), 5);
         t.equal((new StyleDeclaration({type: "number"}, 5)).calculate({zoom: 100}), 5);
         t.ok((new StyleDeclaration({type: "number"}, 5)).isFeatureConstant);
-        t.ok((new StyleDeclaration({type: "number"}, 5)).isGlobalConstant);
+        t.ok((new StyleDeclaration({type: "number"}, 5)).isZoomConstant);
         t.end();
     });
 
@@ -23,7 +23,7 @@ test('StyleDeclaration', function(t) {
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [1, 10], [2, 20]] })).calculate({zoom: 1}), 10);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0]] })).calculate({zoom: 6}), 0);
         t.ok((new StyleDeclaration(reference, { stops: [[0, 1]] })).isFeatureConstant);
-        t.notOk((new StyleDeclaration(reference, { stops: [[0, 1]] })).isGlobalConstant);
+        t.notOk((new StyleDeclaration(reference, { stops: [[0, 1]] })).isZoomConstant);
         t.end();
     });
 
@@ -80,7 +80,7 @@ test('StyleDeclaration', function(t) {
         );
 
         t.notOk(declaration.isFeatureConstant);
-        t.notOk(declaration.isGlobalConstant);
+        t.ok(declaration.isZoomConstant);
 
         t.end();
     });

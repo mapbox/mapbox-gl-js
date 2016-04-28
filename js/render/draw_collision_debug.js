@@ -12,16 +12,13 @@ function drawCollisionDebug(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var elementGroups = bucket.elementGroups.collisionBox;
+        var bufferGroups = bucket.bufferGroups.collisionBox;
 
-        if (!elementGroups) continue;
-        if (!bucket.buffers) continue;
-        if (elementGroups[0].vertexLength === 0) continue;
+        if (!bufferGroups || !bufferGroups.length) continue;
+        var group = bufferGroups[0];
+        if (group.layout.vertex.length === 0) continue;
 
-        bucket.bindLayoutBuffers('collisionBox', gl);
-        bucket.setAttribPointers('collisionBox', gl, program, elementGroups[0].vertexOffset, layer);
-
-        painter.setPosMatrix(coord.posMatrix);
+        gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         painter.enableTileClippingMask(coord);
 
@@ -30,11 +27,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
         gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
         gl.uniform1f(program.u_maxzoom, (tile.coord.z + 1) * 10);
 
-        gl.drawArrays(
-            gl.LINES,
-            elementGroups[0].vertexStartIndex,
-            elementGroups[0].vertexLength
-        );
-
+        group.vaos[layer.id].bind(gl, program, group.layout.vertex);
+        gl.drawArrays(gl.LINES, 0, group.layout.vertex.length);
     }
 }

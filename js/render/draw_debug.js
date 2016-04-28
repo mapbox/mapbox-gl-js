@@ -4,6 +4,8 @@ var textVertices = require('../lib/debugtext');
 var browser = require('../util/browser');
 var mat4 = require('gl-matrix').mat4;
 var EXTENT = require('../data/bucket').EXTENT;
+var Buffer = require('../data/buffer');
+var VertexArrayObject = require('./vertex_array_object');
 
 module.exports = drawDebug;
 
@@ -24,18 +26,20 @@ function drawDebugTile(painter, source, coord) {
 
     var posMatrix = coord.posMatrix;
     var program = painter.useProgram('debug');
-    painter.setPosMatrix(posMatrix);
 
-    // draw bounding rectangle
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugBuffer);
-    gl.vertexAttribPointer(program.a_pos, painter.debugBuffer.itemSize, gl.SHORT, false, 0, 0);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
     gl.uniform4f(program.u_color, 1, 0, 0, 1);
-    gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.itemCount);
+    painter.debugVAO.bind(gl, program, painter.debugBuffer);
+    gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
     var vertices = textVertices(coord.toString(), 50, 200, 5);
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.debugTextBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Int16Array(vertices), gl.STREAM_DRAW);
-    gl.vertexAttribPointer(program.a_pos, painter.debugTextBuffer.itemSize, gl.SHORT, false, 0, 0);
+    var debugTextArray = new painter.PosArray();
+    for (var v = 0; v < vertices.length; v += 2) {
+        debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
+    }
+    var debugTextBuffer = new Buffer(debugTextArray.serialize(), painter.PosArray.serialize(), Buffer.BufferType.VERTEX);
+    var debugTextVAO = new VertexArrayObject();
+    debugTextVAO.bind(gl, program, debugTextBuffer);
     gl.uniform4f(program.u_color, 1, 1, 1, 1);
 
     // Draw the halo with multiple 1px lines instead of one wider line because
@@ -45,11 +49,11 @@ function drawDebugTile(painter, source, coord) {
     var translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (var i = 0; i < translations.length; i++) {
         var translation = translations[i];
-        painter.setPosMatrix(mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
-        gl.drawArrays(gl.LINES, 0, vertices.length / painter.debugTextBuffer.itemSize);
+        gl.uniformMatrix4fv(program.u_matrix, false, mat4.translate([], posMatrix, [onePixel * translation[0], onePixel * translation[1], 0]));
+        gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
     }
 
     gl.uniform4f(program.u_color, 0, 0, 0, 1);
-    painter.setPosMatrix(posMatrix);
-    gl.drawArrays(gl.LINES, 0, vertices.length / painter.debugTextBuffer.itemSize);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.drawArrays(gl.LINES, 0, debugTextBuffer.length);
 }

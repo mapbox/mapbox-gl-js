@@ -43,7 +43,7 @@ KeyboardHandler.prototype = {
     /**
      * Enable the ability to interact with the map using keyboard input.
      * @example
-     *   map.keyboard.enable();
+     * map.keyboard.enable();
      */
     enable: function () {
         if (this.isEnabled()) return;
@@ -54,7 +54,7 @@ KeyboardHandler.prototype = {
     /**
      * Disable the ability to interact with the map using keyboard input.
      * @example
-     *   map.keyboard.disable();
+     * map.keyboard.disable();
      */
     disable: function () {
         if (!this.isEnabled()) return;

@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "main": "js/mapbox-gl.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -17,8 +17,9 @@
     "geojson-vt": "^2.1.0",
     "gl-matrix": "^2.3.1",
     "grid-index": "^0.1.0",
-    "mapbox-gl-function": "^1.1.0",
-    "mapbox-gl-style-spec": "^8.5.0",
+    "mapbox-gl-function": "^1.2.1",
+    "mapbox-gl-js-supported": "^1.1.0",
+    "mapbox-gl-style-spec": "^8.6.0",
     "minifyify": "^7.0.1",
     "pbf": "^1.3.2",
     "pngjs": "^2.2.0",
@@ -30,8 +31,8 @@
     "unassertify": "^2.0.0",
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.2.0",
-    "webworkify": "^1.0.2",
-    "vt-pbf": "^2.0.2"
+    "vt-pbf": "^2.0.2",
+    "webworkify": "^1.0.2"
   },
   "devDependencies": {
     "benchmark": "~2.1.0",
@@ -44,7 +45,7 @@
     "express": "^4.13.4",
     "gl": "^2.1.5",
     "istanbul": "^0.4.2",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#90c37718286cdc3644857e123472a9063e0ec999",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#2960d05a0135e5132271f0b0485db217380ed78a",
     "nyc": "^6.1.1",
     "sinon": "^1.15.4",
     "st": "^1.0.0",

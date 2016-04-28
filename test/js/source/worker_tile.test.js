@@ -61,7 +61,7 @@ test('basic', function(t) {
 
         tile.parse(new Wrapper(features), layerFamilies, {}, null, function(err, result) {
             t.equal(err, null);
-            t.equal(Object.keys(result.buckets[0].elementGroups).length, 1, 'element groups exclude hidden layer');
+            t.equal(Object.keys(result.buckets[0].arrays).length, 1, 'array groups exclude hidden layer');
             t.end();
         });
     });

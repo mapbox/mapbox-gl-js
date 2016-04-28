@@ -8,6 +8,9 @@ var Point = require('point-geometry');
 var Evented = require('../util/evented');
 var ajax = require('../util/ajax');
 var EXTENT = require('../data/bucket').EXTENT;
+var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
+var Buffer = require('../data/buffer');
+var VertexArrayObject = require('../render/vertex_array_object');
 
 module.exports = VideoSource;
 
@@ -116,21 +119,18 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        var gl = map.painter.gl;
         var maxInt16 = 32767;
-        var array = new Int16Array([
-            tileCoords[0].x, tileCoords[0].y, 0, 0,
-            tileCoords[1].x, tileCoords[1].y, maxInt16, 0,
-            tileCoords[3].x, tileCoords[3].y, 0, maxInt16,
-            tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16
-        ]);
+        var array = new RasterBoundsArray();
+        array.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
+        array.emplaceBack(tileCoords[1].x, tileCoords[1].y, maxInt16, 0);
+        array.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, maxInt16);
+        array.emplaceBack(tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16);
 
         this.tile = new Tile(new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row));
         this.tile.buckets = {};
 
-        this.tile.boundsBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.tile.boundsBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
+        this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+        this.tile.boundsVAO = new VertexArrayObject();
 
         this.fire('change');
 

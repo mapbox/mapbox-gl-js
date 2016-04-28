@@ -165,9 +165,14 @@ Tile.prototype = {
 function unserializeBuckets(input, style) {
     var output = {};
     for (var i = 0; i < input.length; i++) {
+        var layer = style.getLayer(input[i].layerId);
+        if (!layer) continue;
+
         var bucket = Bucket.create(util.extend({
-            childLayers: input[i].childLayerIds.map(style.getLayer.bind(style)),
-            layer: style.getLayer(input[i].layerId)
+            layer: layer,
+            childLayers: input[i].childLayerIds
+                .map(style.getLayer.bind(style))
+                .filter(function(layer) { return layer; })
         }, input[i]));
         output[bucket.id] = bucket;
     }

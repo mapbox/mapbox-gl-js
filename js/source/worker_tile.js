@@ -243,8 +243,17 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
 };
 
 function isBucketEmpty(bucket) {
-    for (var bufferName in bucket.arrays) {
-        if (bucket.arrays[bufferName].length > 0) return true;
+    for (var programName in bucket.arrayGroups) {
+        var programArrayGroups = bucket.arrayGroups[programName];
+        for (var k = 0; k < programArrayGroups.length; k++) {
+            var programArrayGroup = programArrayGroups[k];
+            for (var layoutOrPaint in programArrayGroup) {
+                var arrays = programArrayGroup[layoutOrPaint];
+                for (var bufferName in arrays) {
+                    if (arrays[bufferName].length > 0) return true;
+                }
+            }
+        }
     }
     return false;
 }
@@ -257,8 +266,17 @@ function getTransferables(buckets) {
     var transferables = [];
     for (var i in buckets) {
         var bucket = buckets[i];
-        for (var j in bucket.arrays) {
-            transferables.push(bucket.arrays[j].arrayBuffer);
+        for (var programName in bucket.arrayGroups) {
+            var programArrayGroups = bucket.arrayGroups[programName];
+            for (var k = 0; k < programArrayGroups.length; k++) {
+                var programArrayGroup = programArrayGroups[k];
+                for (var layoutOrPaint in programArrayGroup) {
+                    var arrays = programArrayGroup[layoutOrPaint];
+                    for (var bufferName in arrays) {
+                        transferables.push(arrays[bufferName].arrayBuffer);
+                    }
+                }
+            }
         }
     }
     return transferables;

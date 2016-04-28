@@ -36,6 +36,7 @@ function drawBackground(painter, source, layer) {
 
         painter.spriteAtlas.bind(gl, true);
 
+        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
     } else {
         // Draw filling rectangle.
         if (painter.isOpaquePass !== (color[3] === 1)) return;
@@ -43,12 +44,10 @@ function drawBackground(painter, source, layer) {
         program = painter.useProgram('fill');
         gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_opacity, opacity);
+        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
     }
 
     gl.disable(gl.STENCIL_TEST);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, painter.tileExtentBuffer);
-    gl.vertexAttribPointer(program.a_pos, painter.tileExtentBuffer.itemSize, gl.SHORT, false, 0, 0);
 
     // We need to draw the background in tiles in order to use calculatePosMatrix
     // which applies the projection matrix (transform.projMatrix). Otherwise
@@ -92,8 +91,8 @@ function drawBackground(painter, source, layer) {
             gl.uniform2fv(program.u_offset_b, [offsetBx, offsetBy]);
         }
 
-        painter.setPosMatrix(painter.transform.calculatePosMatrix(coord));
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.itemCount);
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 
     gl.stencilMask(0x00);

@@ -29,4 +29,8 @@ void main() {
     
 
     gl_FragColor = mix(color1, color2, u_mix) * alpha * u_opacity;
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(1.0);
+#endif
 }

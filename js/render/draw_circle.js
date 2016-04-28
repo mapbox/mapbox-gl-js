@@ -22,31 +22,29 @@ function drawCircles(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var elementGroups = bucket.elementGroups.circle;
-        if (!elementGroups) continue;
+        var bufferGroups = bucket.bufferGroups.circle;
+        if (!bufferGroups) continue;
 
         var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
 
+        gl.uniform2fv(program.u_extrude_scale, painter.transform.pixelsToGLUnits);
         gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
         gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);
 
-        painter.setPosMatrix(painter.translatePosMatrix(
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
             coord.posMatrix,
             tile,
             layer.paint['circle-translate'],
             layer.paint['circle-translate-anchor']
         ));
-        painter.setExMatrix(painter.transform.exMatrix);
 
-        for (var k = 0; k < elementGroups.length; k++) {
-            var group = elementGroups[k];
-            var count = group.elementLength * 3;
-            bucket.bindLayoutBuffers('circle', gl);
-            bucket.setAttribPointers('circle', gl, program, group.vertexOffset);
-            bucket.bindPaintBuffer(gl, 'circle', layer.id, program, group.vertexStartIndex);
-            bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+        bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
+
+        for (var k = 0; k < bufferGroups.length; k++) {
+            var group = bufferGroups[k];
+            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
+            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 }

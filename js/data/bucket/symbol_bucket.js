@@ -29,9 +29,25 @@ function SymbolBucket(options) {
     this.showCollisionBoxes = options.showCollisionBoxes;
     this.overscaling = options.overscaling;
     this.collisionBoxArray = options.collisionBoxArray;
+
+    this.sdfIcons = options.sdfIcons;
+    this.iconsNeedLinear = options.iconsNeedLinear;
+    this.adjustedTextSize = options.adjustedTextSize;
+    this.adjustedIconSize = options.adjustedIconSize;
+    this.fontstack = options.fontstack;
 }
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
+
+SymbolBucket.prototype.serialize = function() {
+    var serialized = Bucket.prototype.serialize.apply(this);
+    serialized.sdfIcons = this.sdfIcons;
+    serialized.iconsNeedLinear = this.iconsNeedLinear;
+    serialized.adjustedTextSize = this.adjustedTextSize;
+    serialized.adjustedIconSize = this.adjustedIconSize;
+    serialized.fontstack = this.fontstack;
+    return serialized;
+};
 
 var programAttributes = [{
     name: 'a_pos',
@@ -69,8 +85,8 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) 
             Math.min(maxzoom || 25, 25) * 10); // minzoom
 }
 
-SymbolBucket.prototype.addCollisionBoxVertex = function(point, extrude, maxZoom, placementZoom) {
-    return this.arrays.collisionBoxVertex.emplaceBack(
+SymbolBucket.prototype.addCollisionBoxVertex = function(vertexArray, point, extrude, maxZoom, placementZoom) {
+    return vertexArray.emplaceBack(
             // pos
             point.x,
             point.y,
@@ -87,19 +103,19 @@ SymbolBucket.prototype.programInterfaces = {
     glyph: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributes: programAttributes
+        layoutAttributes: programAttributes
     },
 
     icon: {
         vertexBuffer: true,
         elementBuffer: true,
-        attributes: programAttributes
+        layoutAttributes: programAttributes
     },
 
     collisionBox: {
         vertexBuffer: true,
 
-        attributes: [{
+        layoutAttributes: [{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -175,7 +191,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
     var maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
     var spacing = layout['text-letter-spacing'] * oneEm;
     var textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
-    var fontstack = layout['text-font'].join(',');
+    var fontstack = this.fontstack = layout['text-font'].join(',');
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
@@ -339,22 +355,9 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
     this.createArrays();
 
-    var elementGroups = this.elementGroups = {
-        glyph: [],
-        icon: [],
-        sdfIcons: this.sdfIcons,
-        iconsNeedLinear: this.iconsNeedLinear
-    };
-
     var layout = this.layer.layout;
+
     var maxScale = collisionTile.maxScale;
-
-    elementGroups.glyph.adjustedSize = this.adjustedTextSize;
-    elementGroups.icon.adjustedSize = this.adjustedIconSize;
-
-    // Transfer the name of the fonstack back to the main thread along with the buffers.
-    // The draw function needs to know which fonstack's glyph atlas to bind when rendering.
-    elementGroups.glyph.fontstack = layout['text-font'].join(',');
 
     var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
     var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
@@ -436,9 +439,8 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
 
     var group = this.makeRoomFor(programName, 4 * quads.length);
 
-    // TODO manual curry
-    var elementArray = this.arrays[this.getBufferName(programName, 'element')];
-    var vertexArray = this.arrays[this.getBufferName(programName, 'vertex')];
+    var elementArray = group.layout.element;
+    var vertexArray = group.layout.vertex;
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -467,15 +469,13 @@ SymbolBucket.prototype.addSymbols = function(programName, quads, scale, keepUpri
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom) - group.vertexStartIndex;
+        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
         addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
         addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
         addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        group.vertexLength += 4;
 
         elementArray.emplaceBack(index, index + 1, index + 2);
         elementArray.emplaceBack(index + 1, index + 2, index + 3);
-        group.elementLength += 2;
     }
 
 };
@@ -501,8 +501,8 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
-    this.elementGroups.collisionBox = [];
     var group = this.makeRoomFor('collisionBox', 0);
+    var vertexArray = group.layout.vertex;
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
 
@@ -523,15 +523,14 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
                 var maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                 var placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                this.addCollisionBoxVertex(anchorPoint, tl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, tr, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, tr, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, br, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, br, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, bl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, bl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(anchorPoint, tl, maxZoom, placementZoom);
-                group.vertexLength += 8;
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, tl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, tr, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, tr, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, br, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, br, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(vertexArray, anchorPoint, tl, maxZoom, placementZoom);
             }
         }
     }

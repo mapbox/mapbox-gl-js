@@ -30,9 +30,5 @@ Canvas.prototype.getWebGLContext = function() {
     return this.context;
 };
 
-Canvas.prototype.supportsWebGLContext = function() {
-    return true;
-};
-
 Canvas.prototype.getElement = function() {
 };

@@ -50,8 +50,8 @@ function LineBucket() {
 
 LineBucket.prototype = util.inherit(Bucket, {});
 
-LineBucket.prototype.addLineVertex = function(point, extrude, tx, ty, dir, linesofar) {
-    return this.arrays.lineVertex.emplaceBack(
+LineBucket.prototype.addLineVertex = function(vertexBuffer, point, extrude, tx, ty, dir, linesofar) {
+    return vertexBuffer.emplaceBack(
             // a_pos
             (point.x << 1) | tx,
             (point.y << 1) | ty,
@@ -73,7 +73,7 @@ LineBucket.prototype.programInterfaces = {
         vertexBuffer: true,
         elementBuffer: true,
 
-        attributes: [{
+        layoutAttributes: [{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -368,25 +368,24 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;
     var extrude;
-    var group = this.elementGroups.line[this.elementGroups.line.length - 1];
-    group.vertexLength += 2;
+    var layoutArrays = this.arrayGroups.line[this.arrayGroups.line.length - 1].layout;
+    var vertexArray = layoutArrays.vertex;
+    var elementArray = layoutArrays.element;
 
     extrude = normal.clone();
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 0, endLeft, distance) - group.vertexStartIndex;
+    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, tx, 0, endLeft, distance);
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
-        group.elementLength++;
+        elementArray.emplaceBack(this.e1, this.e2, this.e3);
     }
     this.e1 = this.e2;
     this.e2 = this.e3;
 
     extrude = normal.mult(-1);
     if (endRight) extrude._sub(normal.perp()._mult(endRight));
-    this.e3 = this.addLineVertex(currentVertex, extrude, tx, 1, -endRight, distance) - group.vertexStartIndex;
+    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, tx, 1, -endRight, distance);
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
-        group.elementLength++;
+        elementArray.emplaceBack(this.e1, this.e2, this.e3);
     }
     this.e1 = this.e2;
     this.e2 = this.e3;
@@ -414,14 +413,14 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
 LineBucket.prototype.addPieSliceVertex = function(currentVertex, distance, extrude, lineTurnsLeft) {
     var ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-    var group = this.elementGroups.line[this.elementGroups.line.length - 1];
+    var layoutArrays = this.arrayGroups.line[this.arrayGroups.line.length - 1].layout;
+    var vertexArray = layoutArrays.vertex;
+    var elementArray = layoutArrays.element;
 
-    this.e3 = this.addLineVertex(currentVertex, extrude, 0, ty, 0, distance) - group.vertexStartIndex;
-    group.vertexLength++;
+    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, 0, ty, 0, distance);
 
     if (this.e1 >= 0 && this.e2 >= 0) {
-        this.arrays.lineElement.emplaceBack(this.e1, this.e2, this.e3);
-        group.elementLength++;
+        elementArray.emplaceBack(this.e1, this.e2, this.e3);
     }
 
     if (lineTurnsLeft) {

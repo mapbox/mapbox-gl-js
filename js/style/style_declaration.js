@@ -2,13 +2,14 @@
 
 var MapboxGLFunction = require('./style_function');
 var parseColor = require('./parse_color');
+var util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
 function StyleDeclaration(reference, value) {
     this.type = reference.type;
     this.transitionable = reference.transition;
-    this.value = value;
+    this.value = util.clone(value);
     this.isFunction = !!value.stops;
 
     // immutable representation of value. used for comparison
@@ -17,10 +18,28 @@ function StyleDeclaration(reference, value) {
     var parsedValue = this.type === 'color' ? parseColor(this.value) : value;
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
-    this.isGlobalConstant = this.calculate.isGlobalConstant;
+    this.isZoomConstant = this.calculate.isZoomConstant;
 
     if (reference.function === 'piecewise-constant' && reference.transition) {
         this.calculate = transitioned(this.calculate);
+    }
+
+    if (!this.isFeatureConstant && !this.isZoomConstant) {
+        this.stopZoomLevels = [];
+        var interpolationAmountStops = [];
+        var stops = this.value.stops;
+        for (var i = 0; i < this.value.stops.length; i++) {
+            var zoom = stops[i][0].zoom;
+            if (this.stopZoomLevels.indexOf(zoom) < 0) {
+                this.stopZoomLevels.push(zoom);
+                interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
+            }
+        }
+
+        this.calculateInterpolationT = MapboxGLFunction.interpolated({
+            stops: interpolationAmountStops,
+            base: value.base
+        });
     }
 }
 

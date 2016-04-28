@@ -1,31 +1,10 @@
 Hi, and thanks in advance for contributing to Mapbox GL. Here's how we work. Please follow these conventions when submitting an issue or pull request.
 
-## Issue Labels
-
-Our labeling system should be
-
- - **minimalistic:** Labels' usefulness are inversely proportional to how many we have.
- - **objective:** Labels should be objective enough that any two people would agree on a labeling decision.
- - **useful:** Labels should track state or capture semantic meaning that would otherwise be hard to search.
-
-We have divided our labels into categories to make them easier to use.
-
- - actionable status (red)
- - non-actionable status (grey)
- - issue type (blue)
- - issue topic / project (yellow)
- - difficulty (green)
- - priority (orange)
-
 ## Code Conventions
 
 * Our code conventions are mostly enforced with eslint, which will be run as part of `npm test`.
 * In internal / private methods, we check preconditions with `assert`, helping us catch mistakes within the library. For performance, these checks are removed from the production build with [unassertify](https://www.npmjs.com/package/unassertify).
 * In external / public methods, we check preconditions where appropriate and emit an error. "Emit" can mean throwing an `Error`, passing an `Error` as a first callback argument, or emitting an `error` event, as appropriate for the context. These checks remain present in production builds, helping downstream authors avoid common mistakes.
-
-## Documentation Conventions
-
-See [docs/README.md](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
 ## Git Conventions
 
@@ -40,3 +19,119 @@ In particular **do not** use the "Merge pull request" button on GitHub.
 This applies when merging pull-requests from external contributors as well. If necessary, rebase and clean up the commits yourself before manually merging them. Then comment in the PR thanking the contributor and noting the final commit hash(es), and close it.
 
 Never merge a branch that is failing CI.
+
+## Preparing your Development Environment
+
+### OSX
+
+Install the Xcode Command Line Tools Package
+```bash
+xcode-select --install
+```
+
+Install [node.js](https://nodejs.org/)
+```bash
+brew install node
+```
+
+Clone the repository
+```bash
+git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install node module dependencies
+```bash
+cd mapbox-gl-js &&
+npm install
+```
+
+### Linux
+
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
+```bash
+sudo apt-get update &&
+sudo apt-get install build-essential git nodejs libglew-dev
+```
+
+Clone the repository
+```bash
+git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install node module dependencies
+```bash
+cd mapbox-gl-js &&
+npm install
+```
+
+## Serving the Debug Page
+
+Start the debug server
+
+```bash
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} npm start
+```
+
+Open the debug page at [http://localhost:9966](http://localhost:9966)
+
+## Creating a Standalone Build
+
+A standalone build allows you to turn the contents of this repository into `mapbox-gl.js` and `mapbox-gl.css` files that can be included on an html page.
+
+To create a standalone build, run
+```bash
+npm run production
+```
+
+Once that command finishes, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
+
+## Running Tests
+
+There are two test suites associated with Mapbox GL JS
+
+ - `npm test` runs quick unit tests
+ - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+
+## Running Benchmarks
+
+See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
+
+## Writing Documentation
+
+See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
+
+## Issue Labels
+
+Our labeling system is
+
+ - **minimalistic:** Labels' usefulness are inversely proportional to how many we have.
+ - **objective:** Labels should be objective enough that any two people would agree on a labeling decision.
+ - **useful:** Labels should track state or capture semantic meaning that would otherwise be hard to search.
+
+We have divided our labels into categories to make them easier to use.
+
+ - actionable status (red)
+ - non-actionable status (grey)
+ - issue type (blue)
+ - issue topic / project (yellow)
+ - difficulty (green)
+ - priority (orange)
+
+## Recommended Reading
+
+### Learning WebGL
+
+- [Greggman's WebGL articles](http://webglfundamentals.org/)
+- [WebGL reference card](http://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf)
+
+### GL performance
+
+- [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
+- [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
+
+### Misc
+
+- [drawing antialiased lines](https://www.mapbox.com/blog/drawing-antialiased-lines/)
+- [drawing text with signed distance fields](https://www.mapbox.com/blog/text-signed-distance-fields/)
+- [label placement](https://www.mapbox.com/blog/placing-labels/)
+- [distance fields](http://bytewrangler.blogspot.com/2011/10/signed-distance-fields.html)

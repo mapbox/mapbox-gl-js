@@ -48,7 +48,7 @@ DragRotateHandler.prototype = {
     /**
      * Enable the "drag to rotate" interaction.
      * @example
-     *   map.dragRotate.enable();
+     * map.dragRotate.enable();
      */
     enable: function () {
         if (this.isEnabled()) return;
@@ -59,7 +59,7 @@ DragRotateHandler.prototype = {
     /**
      * Disable the "drag to rotate" interaction.
      * @example
-     *   map.dragRotate.disable();
+     * map.dragRotate.disable();
      */
     disable: function () {
         if (!this.isEnabled()) return;

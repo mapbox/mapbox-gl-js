@@ -125,16 +125,15 @@ module.exports = function drawLine(painter, source, layer, coords) {
         var tile = source.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var elementGroups = bucket.elementGroups.line;
-        if (!elementGroups) continue;
+        var bufferGroups = bucket.bufferGroups.line;
+        if (!bufferGroups) continue;
 
         painter.enableTileClippingMask(coord);
 
         // set uniforms that are different for each tile
         var posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+        gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
-        painter.setPosMatrix(posMatrix);
-        painter.setExMatrix(painter.transform.exMatrix);
         var ratio = 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom);
 
         if (dasharray) {
@@ -163,14 +162,10 @@ module.exports = function drawLine(painter, source, layer, coords) {
             gl.uniform1f(program.u_ratio, ratio);
         }
 
-        bucket.bindLayoutBuffers('line', gl);
-
-        for (var i = 0; i < elementGroups.length; i++) {
-            var group = elementGroups[i];
-            bucket.setAttribPointers('line', gl, program, group.vertexOffset, layer);
-
-            var count = group.elementLength * 3;
-            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, group.elementOffset);
+        for (var i = 0; i < bufferGroups.length; i++) {
+            var group = bufferGroups[i];
+            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
+            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 
