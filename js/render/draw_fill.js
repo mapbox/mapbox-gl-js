@@ -197,7 +197,6 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
     if (!imagePosA || !imagePosB) return;
 
-
     gl.uniform1i(program.u_image, 0);
     gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
     gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
@@ -206,36 +205,19 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     gl.uniform1f(program.u_opacity, opacity);
     gl.uniform1f(program.u_mix, image.t);
 
-    var imageSizeScaledA = [
-        (imagePosA.size[0] * image.fromScale),
-        (imagePosA.size[1] * image.fromScale)
-    ];
-    var imageSizeScaledB = [
-        (imagePosB.size[0] * image.toScale),
-        (imagePosB.size[1] * image.toScale)
-    ];
-
-    gl.uniform2fv(program.u_patternscale_a, [
-        1 / pixelsToTileUnits(tile, imageSizeScaledA[0], painter.transform.tileZoom),
-        1 / pixelsToTileUnits(tile, imageSizeScaledA[1], painter.transform.tileZoom)
-    ]);
-
-    gl.uniform2fv(program.u_patternscale_b, [
-        1 / pixelsToTileUnits(tile, imageSizeScaledB[0], painter.transform.tileZoom),
-        1 / pixelsToTileUnits(tile, imageSizeScaledB[1], painter.transform.tileZoom)
-    ]);
+    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
+    gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
+    gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
+    gl.uniform1f(program.u_scale_a, image.fromScale);
+    gl.uniform1f(program.u_scale_b, image.toScale);
 
     var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-    // shift images to match at tile boundaries
-    var offsetAx = ((tileSizeAtNearestZoom / imageSizeScaledA[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var offsetAy = ((tileSizeAtNearestZoom / imageSizeScaledA[1]) % 1) * tile.coord.y;
-
-    var offsetBx = ((tileSizeAtNearestZoom / imageSizeScaledB[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var offsetBy = ((tileSizeAtNearestZoom / imageSizeScaledB[1]) % 1) * tile.coord.y;
-
-    gl.uniform2fv(program.u_offset_a, [offsetAx, offsetAy]);
-    gl.uniform2fv(program.u_offset_b, [offsetBx, offsetBy]);
+    var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+    var pixelY = tileSizeAtNearestZoom * tile.coord.y;
+    // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
+    gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
+    gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);

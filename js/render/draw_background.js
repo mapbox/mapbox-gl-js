@@ -34,6 +34,11 @@ function drawBackground(painter, source, layer) {
 
         gl.uniform1f(program.u_mix, image.t);
 
+        gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
+        gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
+        gl.uniform1f(program.u_scale_a, image.fromScale);
+        gl.uniform1f(program.u_scale_b, image.toScale);
+
         painter.spriteAtlas.bind(gl, true);
 
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
@@ -60,35 +65,17 @@ function drawBackground(painter, source, layer) {
         var tileSize = 512;
         // var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
         if (imagePosA && imagePosB) {
-            var imageSizeScaledA = [
-                (imagePosA.size[0] * image.fromScale),
-                (imagePosA.size[1] * image.fromScale)
-            ];
-            var imageSizeScaledB = [
-                (imagePosB.size[0] * image.toScale),
-                (imagePosB.size[1] * image.toScale)
-            ];
             var tile = {coord:coord, tileSize: tileSize};
 
-            gl.uniform2fv(program.u_patternscale_a, [
-                1 / pixelsToTileUnits(tile, imageSizeScaledA[0], painter.transform.tileZoom),
-                1 / pixelsToTileUnits(tile, imageSizeScaledA[1], painter.transform.tileZoom)
-            ]);
+            gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
 
-            gl.uniform2fv(program.u_patternscale_b, [
-                1 / pixelsToTileUnits(tile, imageSizeScaledB[0], painter.transform.tileZoom),
-                1 / pixelsToTileUnits(tile, imageSizeScaledB[1], painter.transform.tileZoom)
-            ]);
-            var tileSizeAtNearestZoom = tileSize * Math.pow(2, painter.transform.tileZoom - coord.z);
+            var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-            var offsetAx = ((tileSizeAtNearestZoom / imageSizeScaledA[0]) % 1) * (coord.x + coord.w * Math.pow(2, coord.z));
-            var offsetAy = ((tileSizeAtNearestZoom / imageSizeScaledA[1]) % 1) * coord.y;
-
-            var offsetBx = ((tileSizeAtNearestZoom / imageSizeScaledB[0]) % 1) * (coord.x + coord.w * Math.pow(2, coord.z));
-            var offsetBy = ((tileSizeAtNearestZoom / imageSizeScaledB[1]) % 1) * coord.y;
-
-            gl.uniform2fv(program.u_offset_a, [offsetAx, offsetAy]);
-            gl.uniform2fv(program.u_offset_b, [offsetBx, offsetBy]);
+            var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+            var pixelY = tileSizeAtNearestZoom * tile.coord.y;
+            // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
+            gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
+            gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
         }
 
         gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
