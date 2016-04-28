@@ -1,3 +1,19 @@
+## 0.18.0 (April 13 2016)
+
+#### New Features & Improvements
+
+* Implement zoom-and-property functions for `circle-color` and `circle-size` #2454
+* Dedupe attributions that are substrings of others #2453
+* Misc performance improvements #2483 #2488
+
+#### Bugfixes
+
+* Fix errors when unsetting and resetting a style property #2464
+* Fix errors when updating paint properties while using classes #2496
+* Fix errors caused by race condition in unserializeBuckets #2497
+* Fix overzoomed tiles in wrapped worlds #2482
+* Fix errors caused by mutating a filter object after calling `Map#setFilter` #2495
+
 ## 0.17.0 (April 13 2016)
 
 #### Breaking Changes
