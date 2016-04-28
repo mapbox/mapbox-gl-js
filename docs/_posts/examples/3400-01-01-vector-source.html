@@ -13,7 +13,7 @@ var map = new mapboxgl.Map({
     center: [-122.447303, 37.753574]
 });
 
-map.on('style.load', function () {
+map.on('load', function () {
     map.addSource('terrain-data', {
         type: 'vector',
         url: 'mapbox://mapbox.mapbox-terrain-v2'

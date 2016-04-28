@@ -13,7 +13,7 @@ var map = new mapboxgl.Map({
     zoom: 8
 });
 
-map.on('style.load', function () {
+map.on('load', function () {
 
     // add geojson data as a new source
     map.addSource("symbols", {

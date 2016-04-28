@@ -21,7 +21,7 @@ window.setInterval(function() {
     source.setData(url);
 }, 2000);
 
-map.on('style.load', function () {
+map.on('load', function () {
     map.addSource('drone', source);
     map.addLayer({
         "id": "drone",

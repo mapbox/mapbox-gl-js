@@ -765,3 +765,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         return easing;
     }
 });
+
+/**
+ * Pitch event. This event is emitted whenever the map's pitch changes.
+ *
+ * @event pitch
+ * @memberof Map
+ * @instance
+ * @property {EventData} data Original event data
+ */

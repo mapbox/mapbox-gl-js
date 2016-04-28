@@ -25,14 +25,6 @@ var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
 
 /**
- * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
- * whether or not to smoothly transition property changes triggered by the class change.
- *
- * @typedef {Object} StyleOptions
- * @property {boolean} transition
- */
-
-/**
  * Creates a map instance. This is usually the beginning of your map:
  * you tell Mapbox GL JS where to put the map by specifying a `container`
  * option, and the map's style with `style` and other attributes of the map,
@@ -1064,3 +1056,24 @@ function removeNode(node) {
         node.parentNode.removeChild(node);
     }
 }
+
+/**
+ * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
+ * whether or not to smoothly transition property changes triggered by the class change.
+ *
+ * @typedef {Object} StyleOptions
+ * @property {boolean} transition
+ */
+
+ /**
+  * This event is fired whenever the map is drawn to the screen because of
+  *
+  *  - a change in map position, zoom, pitch, or bearing
+  *  - a change to the map style
+  *  - a change to a GeoJSON source
+  *  - a vector tile, GeoJSON file, glyph, or sprite being loaded
+  *
+  * @event render
+  * @memberof Map
+  * @instance
+  */
