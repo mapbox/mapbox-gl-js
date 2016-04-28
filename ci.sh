@@ -35,10 +35,6 @@ for DUMP in $(find ./ -maxdepth 1 -name 'core*' -print); do
     rm -rf ${DUMP}
 done
 
-# send coverage report to coveralls
-nyc report --reporter=lcov
-node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info
-
 # return original error code
 if [[ ${EXIT_CODE} != 0 ]]; then
     exit $EXIT_CODE
