@@ -330,8 +330,8 @@ Transform.prototype = {
      * @private
      */
     calculatePosMatrix: function(coord, maxZoom) {
-        if (coord instanceof TileCoord) coord = coord.toCoordinate();
         if (maxZoom === undefined) maxZoom = Infinity;
+        if (coord instanceof TileCoord) coord = coord.toCoordinate(maxZoom);
 
         // Initialize model-view matrix that converts from the tile coordinates to screen coordinates.
 
