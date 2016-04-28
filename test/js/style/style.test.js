@@ -766,12 +766,34 @@ test('Style#setFilter', function(t) {
         style.on('load', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
-                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                t.deepEqual(value[0].id, 'symbol');
+                t.deepEqual(value[0].filter, ['==', 'id', 1]);
+                t.end();
             };
 
             style.setFilter('symbol', ['==', 'id', 1]);
             t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
-            t.end();
+            style.update({}, {}); // trigger dispatcher broadcast
+        });
+    });
+
+    t.test('sets again mutated filter', function(t) {
+        var style = createStyle();
+
+        style.on('load', function() {
+            var filter = ['==', 'id', 1];
+            style.setFilter('symbol', filter);
+            style.update({}, {}); // flush pending operations
+
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'update layers');
+                t.deepEqual(value[0].id, 'symbol');
+                t.deepEqual(value[0].filter, ['==', 'id', 2]);
+                t.end();
+            };
+            filter[2] = 2;
+            style.setFilter('symbol', filter);
+            style.update({}, {}); // trigger dispatcher broadcast
         });
     });
 

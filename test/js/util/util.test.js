@@ -257,6 +257,42 @@ test('util', function(t) {
         t.end();
     });
 
+    t.test('clone', function(t) {
+        t.test('array', function(t) {
+            var input = [false, 1, 'two'];
+            var output = util.clone(input);
+            t.notEqual(input, output);
+            t.deepEqual(input, output);
+            t.end();
+        });
+
+        t.test('object', function(t) {
+            var input = {a: false, b: 1, c: 'two'};
+            var output = util.clone(input);
+            t.notEqual(input, output);
+            t.deepEqual(input, output);
+            t.end();
+        });
+
+        t.test('deep object', function(t) {
+            var input = {object: {a: false, b: 1, c: 'two'}};
+            var output = util.clone(input);
+            t.notEqual(input.object, output.object);
+            t.deepEqual(input.object, output.object);
+            t.end();
+        });
+
+        t.test('deep array', function(t) {
+            var input = {array: [false, 1, 'two']};
+            var output = util.clone(input);
+            t.notEqual(input.array, output.array);
+            t.deepEqual(input.array, output.array);
+            t.end();
+        });
+
+        t.end();
+    });
+
     if (process.browser) {
         t.test('timed: no duration', function(t) {
             var context = { foo: 'bar' };

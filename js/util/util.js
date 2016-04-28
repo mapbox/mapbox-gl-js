@@ -436,6 +436,23 @@ exports.deepEqual = function deepEqual(a, b) {
 };
 
 /**
+ * Deeply clones two objects.
+ * @param {Object} obj1
+ * @param {Object} obj2
+ * @returns {boolean}
+ * @private
+ */
+exports.clone = function deepEqual(input) {
+    if (Array.isArray(input)) {
+        return input.map(exports.clone);
+    } else if (typeof input === 'object') {
+        return exports.mapObject(input, exports.clone);
+    } else {
+        return input;
+    }
+};
+
+/**
  * Check if two arrays have at least one common element.
  * @param {Array} a
  * @param {Array} b

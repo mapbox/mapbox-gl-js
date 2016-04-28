@@ -2,13 +2,14 @@
 
 var MapboxGLFunction = require('./style_function');
 var parseColor = require('./parse_color');
+var util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
 function StyleDeclaration(reference, value) {
     this.type = reference.type;
     this.transitionable = reference.transition;
-    this.value = value;
+    this.value = util.clone(value);
     this.isFunction = !!value.stops;
 
     // immutable representation of value. used for comparison
