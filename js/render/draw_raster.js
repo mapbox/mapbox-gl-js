@@ -62,13 +62,15 @@ function drawRasterTile(painter, source, layer, coord) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tile.texture);
 
-    if (parentTile) {
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
+    gl.activeTexture(gl.TEXTURE1);
 
+    if (parentTile) {
+        gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
         parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
         parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
+
     } else {
+        gl.bindTexture(gl.TEXTURE_2D, tile.texture);
         opacities[1] = 0;
     }
 
