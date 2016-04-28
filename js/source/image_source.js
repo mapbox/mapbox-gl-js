@@ -14,7 +14,7 @@ module.exports = ImageSource;
 /**
  * Create an Image source instance given an options object
  * @class ImageSource
- * @param {Object} [options]
+ * @param {Object} options
  * @param {string} options.url A string URL of an image file
  * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
  * @example
@@ -31,7 +31,7 @@ module.exports = ImageSource;
  * map.removeSource('some id');  // remove
  */
 function ImageSource(options) {
-    this.urls = options.urls;
+    this.url = options.url;
     this.coordinates = options.coordinates;
 
     ajax.getImage(options.url, function(err, image) {
@@ -154,7 +154,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     serialize: function() {
         return {
             type: 'image',
-            urls: this.urls,
+            urls: this.url,
             coordinates: this.coordinates
         };
     }

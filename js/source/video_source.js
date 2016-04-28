@@ -14,7 +14,7 @@ module.exports = VideoSource;
 /**
  * Create a Video data source instance given an options object
  * @class VideoSource
- * @param {Object} [options]
+ * @param {Object} options
  * @param {Array<string>} options.urls An array of URLs to video files
  * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the video. Does not have to be a rectangle.
  * @example
