@@ -1058,7 +1058,8 @@ function removeNode(node) {
 }
 
 /**
- * Options common to Map#addClass, Map#removeClass, and Map#setClasses, controlling
+ * Options common to {@link Map#addClass}, {@link Map#removeClass},
+ * and {@link Map#setClasses}, controlling
  * whether or not to smoothly transition property changes triggered by the class change.
  *
  * @typedef {Object} StyleOptions
