@@ -31,15 +31,17 @@ options: full
     Get started
   </div>
   <div class='pad2'>
-    <div class='fill-white space-bottom1'>{% highlight html %}
+    <div class='fill-white js-replace-token' id='head-code'>{% highlight html %}
 <script src='{{site.tileApi}}/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
 <link href='{{site.tileApi}}/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />{% endhighlight html %}
     </div>
+    <a class='button icon clipboard col12 round-bottom js-clipboard space-bottom1' href='#' data-clipboard-target='head-code'>Copy code</a>
+
     <div class='pad1x small quiet space-bottom1'>
       Include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.
     </div>
 
-    <div class='fill-white space-bottom1'>
+    <div class='fill-white js-replace-token' id='body-code'>
 {% capture getting_started_html %}
 <div id='map' style='width: 400px; height: 300px;'></div>
 <script>
@@ -52,6 +54,8 @@ var map = new mapboxgl.Map({
 
       {% highlight html %}{{ getting_started_html | insert_token }}{% endhighlight %}
     </div>
+    <a class='button icon clipboard col12 round-bottom js-clipboard space-bottom1' href='#' data-clipboard-target='body-code'>Copy code</a>
+
     <div class='pad1x small quiet'>
       Include this code in the <code>&lt;body&gt;</code> of your HTML file to initialize a map on the page.
       <a class='truncate rcon next' href='{{site.baseurl}}/examples/'>View basic example</a>
