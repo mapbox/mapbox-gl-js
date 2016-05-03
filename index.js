@@ -21,35 +21,41 @@ function compile(filter) {
     var op = filter[0];
     if (filter.length <= 1) return op === 'any' ? 'false' : 'true';
     var str =
-        op === '==' ? compare(filter[1], filter[2], '===', false) :
-        op === '!=' ? compare(filter[1], filter[2], '!==', false) :
+        op === '==' ? compileComparisonOp(filter[1], filter[2], '===', false) :
+        op === '!=' ? compileComparisonOp(filter[1], filter[2], '!==', false) :
         op === '<' ||
         op === '>' ||
         op === '<=' ||
-        op === '>=' ? compare(filter[1], filter[2], op, true) :
-        op === 'any' ? filter.slice(1).map(compile).join('||') :
-        op === 'all' ? filter.slice(1).map(compile).join('&&') :
-        op === 'none' ? '!(' + filter.slice(1).map(compile).join('||') + ')' :
-        op === 'in' ? compileIn(filter[1], filter.slice(2)) :
-        op === '!in' ? '!(' + compileIn(filter[1], filter.slice(2)) + ')' :
-        op === 'has' ? compileHas(filter[1]) :
-        op === '!has' ? negate(compileHas([filter[1]])) :
+        op === '>=' ? compileComparisonOp(filter[1], filter[2], op, true) :
+        op === 'any' ? compileLogicalOp(filter.slice(1), '||') :
+        op === 'all' ? compileLogicalOp(filter.slice(1), '&&') :
+        op === 'none' ? compileNegation(compileLogicalOp(filter.slice(1), '||')) :
+        op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
+        op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
+        op === 'has' ? compileHasOp(filter[1]) :
+        op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
         'true';
     return '(' + str + ')';
 }
 
-function valueExpr(key) {
-    return key === '$type' ? 'f.type' : 'p[' + JSON.stringify(key) + ']';
+function compilePropertyReference(property) {
+    return property === '$type' ? 'f.type' : 'p[' + JSON.stringify(property) + ']';
 }
-function compare(key, val, op, checkType) {
-    var left = valueExpr(key);
-    var right = key === '$type' ? types.indexOf(val) : JSON.stringify(val);
+
+function compileComparisonOp(property, value, op, checkType) {
+    var left = compilePropertyReference(property);
+    var right = property === '$type' ? types.indexOf(value) : JSON.stringify(value);
     return (checkType ? 'typeof ' + left + '=== typeof ' + right + '&&' : '') + left + op + right;
 }
-function compileIn(key, values) {
-    if (key === '$type') values = values.map(function(value) { return types.indexOf(value); });
-    var left = JSON.stringify(values.sort(compareFn));
-    var right = valueExpr(key);
+
+function compileLogicalOp(expressions, op) {
+    return expressions.map(compile).join(op);
+}
+
+function compileInOp(property, values) {
+    if (property === '$type') values = values.map(function(value) { return types.indexOf(value); });
+    var left = JSON.stringify(values.sort(compare));
+    var right = compilePropertyReference(property);
 
     if (values.length <= 200) return left + '.indexOf(' + right + ') !== -1';
 
@@ -60,14 +66,15 @@ function compileIn(key, values) {
     'return false; }(' + right + ', ' + left + ',0,' + (values.length - 1) + ')';
 }
 
-function compileHas(key) {
-    return JSON.stringify(key) + ' in p';
+function compileHasOp(property) {
+    return JSON.stringify(property) + ' in p';
 }
 
-function compareFn(a, b) {
-    return a < b ? -1 : a > b ? 1 : 0;
-}
-
-function negate(expression) {
+function compileNegation(expression) {
     return '!(' + expression + ')';
+}
+
+// Comparison function to sort numbers and strings
+function compare(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
 }
