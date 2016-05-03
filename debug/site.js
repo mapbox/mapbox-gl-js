@@ -13,64 +13,6 @@ map.addControl(new mapboxgl.Navigation());
 map.addControl(new mapboxgl.Geolocate());
 
 map.on('load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "route.json"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": {
-                "base": 1.5,
-                "stops": [
-                    [
-                        5,
-                        0.75
-                    ],
-                    [
-                        18,
-                        32
-                    ]
-                ]
-            }
-        }
-    }, 'country-label-lg');
-
-    map.addSource('geojson-random-points', {
-        "type": "geojson",
-        "data": "random.geojson"
-    });
-
-    map.addLayer({
-        "id": "random-points",
-        "type": "circle",
-        "source": "geojson-random-points",
-        "paint": {
-            "circle-radius": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 2],
-                    [{ zoom: 0, value: 100 }, 10],
-                    [{ zoom: 6, value: 0 }, 20],
-                    [{ zoom: 6, value: 100 }, 100]
-                ]
-            },
-            "circle-color": {
-                property: "mapbox",
-                stops: [
-                    [{ zoom: 0, value: 0 }, 'red'],
-                    [{ zoom: 0, value: 100 }, 'violet'],
-                    [{ zoom: 6, value: 0 }, 'blue'],
-                    [{ zoom: 6, value: 100 }, 'green']
-                ]
-            }
-        }
-    });
-
     var bufferTimes = {};
     map.on('tile.stats', function(bufferTimes) {
         var _stats = [];
