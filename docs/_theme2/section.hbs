@@ -1,0 +1,119 @@
+<section class='pad2 clearfix prose space-top1 keyline-all fill-white contain'>
+
+  <div class='clearfix'>
+    <h2 class='fl' id='<%- section.namespace %>'>
+      <%- section.name %>
+    </h2>
+    <% if (section.context && section.context.github) { %>
+      <a class='fr space quiet small' href='<%= section.context.github %>'>
+	<%= section.context.path %>
+      </a>
+    <% } %>
+  </div>
+
+  <%= md(section.description) %>
+
+
+  <div class='code pad1 fill-light'><%= signature(section) %></div>
+
+  <% if (section.augments) { %>
+    <p>
+      Extends
+      <% if (section.augments) { %>
+        <%= autolink(section.name) %>
+      <% } %>
+    </p>
+  <% } %>
+
+  <% if (section.version) { %><div>Version: <%- section.version %></div><% }%>
+  <% if (section.license) { %><div>License: <%- section.license %></div><% }%>
+  <% if (section.author) { %><div>Author: <%- section.author %></div><% }%>
+  <% if (section.copyright) { %><div>Copyright: <%- section.copyright %></div><% }%>
+  <% if (section.since) { %><div>Since: <%- section.since %></div><% }%>
+
+  <% if (section.params) { %>
+    <h4>Parameters</h4>
+    <ol>
+      <% section.params.forEach(function(param) { %>
+        <li><code><%- param.name%></code> <em>(<%= formatType(param) %><% if (param.default) { %>
+          (default <code><%- param.default %></code>)
+        <% } %>)</em>: <%= md(param.description, true) %>
+          <% if (param.properties) { %>
+            <ul>
+              <% param.properties.forEach(function(property) { %>
+                <li><code><%- property.name %></code> <em>(<%= formatType(property) %>)</em>
+                  <% if (property.default) { %>
+                    (default <code><%- property.default %></code>)
+                  <% } %>
+                  <%= md(property.description, true) %></li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </li>
+      <% }) %>
+    </ol>
+  <% } %>
+
+  <% if (section.properties) { %>
+    <h4>Properties</h4>
+    <ul>
+      <% section.properties.forEach(function(property) { %>
+        <li><code><%- property.name%></code> <em>(<%= formatType(property) %>)</em><% if (property.default) { %>
+            (default <code><%- property.default %></code>)
+          <% } %><% if (property.description) {
+	    %>: <%= md(property.description, true) %><%
+	  } %>
+          <% if (property.properties) { %>
+            <ul>
+              <% property.properties.forEach(function(property) { %>
+                <li><code><%- name%></code> <%= formatType(property) %>
+                  <% if (property.default) { %>
+                    (default <code><%- property.default %></code>)
+                  <% } %>
+                  <%= md(property.description) %></li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <% if (section.returns) { %>
+    <% section.returns.forEach(function(ret) { %>
+      <h4>Returns</h4>
+      <%= formatType(ret) %><% if (ret.description) { %>:
+        <%= md(ret.description, true) %>
+      <% }%>
+    <% }) %>
+  <% } %>
+
+  <% if (section.throws) { %>
+    <h4>Throws</h4>
+    <ul>
+      <% section.throws.forEach(function(throws) { %>
+        <li><%= formatType(throws) %>: <%= md(throws.description, true) %></li>
+      <% }); %>
+    </ul>
+  <% } %>
+
+  <% if (section.examples) { %>
+    <h4>Examples</h4>
+    <% section.examples.forEach(function(example) { %>
+      <% if (example.caption) { %><p><%= md(example.caption) %></p><% } %>
+      <pre class='p1 overflow-auto fill-light'><%= highlight(example.description) %></pre>
+    <% }) %>
+  <% } %>
+
+  <% if (section.members.static && section.members.static.length) { %>
+    <%= renderSectionList({ members: section.members.static, renderSection: renderSection, noun: 'Static Member' }) %>
+  <% } %>
+
+  <% if (section.members.instance && section.members.instance.length) { %>
+    <%= renderSectionList({ members: section.members.instance, renderSection: renderSection, noun: 'Instance Member' }) %>
+  <% } %>
+
+  <% if (section.members.events && section.members.events.length) { %>
+    <%= renderSectionList({ members: section.members.events, renderSection: renderSection, noun: 'Event' }) %>
+  <% } %>
+</section>

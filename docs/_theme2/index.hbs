@@ -1,0 +1,110 @@
+---
+layout: default
+title: Mapbox GL JS API
+class: fill-light
+options: full
+---
+
+<div class='docnav hide-mobile'>
+  <div class='limiter'>
+    <div class='col3 contain'>
+      <nav class='scroll-styled quiet-scroll small'>
+        <div class='space-bottom1'>
+          <span class='block truncate strong'>API</span>
+        </div>
+        <ul id='toc' class='list-reset h5 py1-ul'>
+          <% docs.forEach(function(doc) { %>
+            <% var hasMembers = doc.members.static.length || doc.members.instance.length %>
+            <li class="<% if (doc.kind === 'note') { %>space-top1<% } %>"><a
+              href='#<%=doc.namespace%>'
+              class="<% if (doc.kind === 'note') { %>quiet strong<% } %><% if (hasMembers) { %> toggle-sibling icon caret-right tight-icon<% } %>">
+              <%- doc.name %>
+            </a>
+            <% if (hasMembers) { %>
+            <div class='toggle-target hidden'>
+              <% if (doc.members.static && doc.members.static.length) { %>
+              <ul class='list-reset pad1x pad0y'>
+                <li class='block quiet strong small truncate '>Static members</li>
+                <% doc.members.static.forEach(function(member) { %>
+                  <li><a
+                    href='#<%=member.namespace%>'
+                    class='block small truncate pre-open'>
+                    .<%- member.name %>
+                  </a></li>
+                <% }) %>
+                </ul>
+              <% } %>
+              <% if (doc.members.instance && doc.members.instance.length) { %>
+                <ul class='list-reset pad1x pad0'>
+                  <li class='block quiet strong small truncate'>Instance members</li>
+                  <% doc.members.instance.forEach(function(member) { %>
+                  <li><a
+                    href='#<%=member.namespace%>'
+                    class='block small truncate pre-open'>
+                    #<%- member.name %>
+                  </a></li>
+                  <% }) %>
+                </ul>
+              <% } %>
+              <% if (doc.members.events && doc.members.events.length) { %>
+                <ul class='list-reset pad1x pad0y'>
+                  <li class='block quiet strong small truncate'>Events</li>
+                  <% doc.members.events.forEach(function(member) { %>
+                    <li><a
+                      href='#<%=member.namespace%>'
+                      class='block small truncate pre-open'>
+                      ⓔ <%- member.name %>
+                    </a></li>
+                  <% }) %>
+                </ul>
+              <% } %>
+            </div>
+            <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class='limiter clearfix'>
+  <div class='pad2y'>
+    <nav class='contain z10 margin3 col9 fill-gradient space-bottom round small'>
+      <div class='col3 dark round-left keyline-right pad1 center truncate'>
+        <div class='pad0y'>
+          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL JS
+        </div>
+      </div>
+      <div class='col9 dark tabs mobile-cols pad1'><!--
+        --><a href='{{site.baseurl}}/api' class='col3 truncate{% if page.category == "api" %} active{% endif %}'>API</a><!--
+        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3 truncate'>Style Reference</a><!--
+        --><a href='{{site.baseurl}}/examples' class='col3 truncate{% if page.category == "example" %} active{% endif %}'>Examples</a><!--
+        --><a href='{{site.baseurl}}/plugins' class='col3 truncate{% if page.url contains "plugins" %} active{% endif %}'>Plugins</a>
+      </div>
+    </nav>
+  </div>
+
+
+  <div class='contain margin3 col9'>
+    <div class='round doc clip space-bottom'>
+      <% docs.forEach(function(s) { %>
+        <% if (s.kind !== 'note') { %>
+          <%=renderSection({
+	    section: s,
+	    renderSection: renderSection,
+	    renderSectionList: renderSectionList
+	  })%>
+        <% } else { %>
+          <div class='keyline-top-not py2'><%=renderNote({ note: s })%></div>
+        <% } %>
+      <% }) %>
+    </div>
+  </div>
+</div>
+
+<link href='{{site.url}}/css/docs.css' rel='stylesheet' />
+<link href='{{site.baseurl}}/site.css' rel='stylesheet' />
+<script src='{{site.baseurl}}/js/site.js'></script>
+<script src='{{site.baseurl}}/api/assets/anchor.js'></script>
+<script src='{{site.baseurl}}/api/assets/site.js'></script>

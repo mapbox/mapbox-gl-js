@@ -1,0 +1,20 @@
+<div class="clearfix">
+  <div class="col6 strong"><%= noun %></div>
+  <div class="col6 strong">Description</div>
+  <% members.forEach(function(member) { %>
+    <div id='<%- member.namespace %>'>
+      <div class="clearfix toggle-sibling">
+        <div class="py1 keyline-top col6 small">
+          <a class='icon caret-right'></a> <span class='code'><%= signature(member) %></span>
+        </div>
+        <div class="py1 keyline-top col6 h5 truncate small"><%= md(member.description, true) %></div>
+      </div>
+      <div class="clearfix hidden toggle-target">
+        <%= renderSection({
+          section: member,
+          renderSection: renderSection
+        }) %>
+      </div>
+    </div>
+  <% }) %>
+</div>

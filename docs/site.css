@@ -1,3 +1,7 @@
+.icon.tight-icon:not(.big):before {
+  margin-right: -5px;
+  margin-left: -5px;
+}
 .fill-gradient { background-image: linear-gradient( to bottom right, #7474BF, #348AC7); }
 .doc pre.dark { background-color: rgba(0,0,0,0.75); }
 .doc .property p { margin-bottom:0; }
