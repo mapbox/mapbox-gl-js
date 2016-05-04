@@ -1,7 +1,10 @@
+.rcon.tight-icon:not(.big):after,
 .icon.tight-icon:not(.big):before {
   margin-right: -5px;
   margin-left: -5px;
+  line-height: 23px;
 }
+
 .fill-gradient { background-image: linear-gradient( to bottom right, #7474BF, #348AC7); }
 .doc pre.dark { background-color: rgba(0,0,0,0.75); }
 .doc .property p { margin-bottom:0; }
@@ -154,3 +157,18 @@ pre .typ,
 pre .atn,
 pre .dec,
 pre .var { color:#0C9DC2; }
+
+
+a.dark-link {
+  color: #404040 ;
+}
+a.dark-link:hover {
+  color: rgba(0,0,0,.5);
+}
+
+a.black-link {
+  color: #404040 ;
+}
+a.black-link:hover {
+  color: #404040 ;
+}

@@ -10,21 +10,21 @@ options: full
     <div class='col3 contain'>
       <nav class='scroll-styled quiet-scroll small'>
         <div class='space-bottom1'>
-          <span class='block truncate strong'>API</span>
+          <span class='block truncate quiet'>API</span>
         </div>
         <ul id='toc' class='list-reset h5 py1-ul'>
           <% docs.forEach(function(doc) { %>
             <% var hasMembers = doc.members.static.length || doc.members.instance.length %>
             <li class="<% if (doc.kind === 'note') { %>space-top1<% } %>"><a
               href='#<%=doc.namespace%>'
-              class="<% if (doc.kind === 'note') { %>quiet strong<% } %><% if (hasMembers) { %> toggle-sibling icon caret-right tight-icon<% } %>">
+              class="<% if (doc.kind === 'note') { %>dark-link<% } %><% if (hasMembers) { %> toggle-sibling rcon caret-right tight-icon<% } %>">
               <%- doc.name %>
             </a>
             <% if (hasMembers) { %>
-            <div class='toggle-target hidden'>
+            <div class='toggle-target space-bottom1 hidden'>
               <% if (doc.members.static && doc.members.static.length) { %>
-              <ul class='list-reset pad1x pad0y'>
-                <li class='block quiet strong small truncate '>Static members</li>
+              <ul class='list-reset pad1x'>
+                <li class='block small quiet truncate'>Static members</li>
                 <% doc.members.static.forEach(function(member) { %>
                   <li><a
                     href='#<%=member.namespace%>'
@@ -35,8 +35,8 @@ options: full
                 </ul>
               <% } %>
               <% if (doc.members.instance && doc.members.instance.length) { %>
-                <ul class='list-reset pad1x pad0'>
-                  <li class='block quiet strong small truncate'>Instance members</li>
+                <ul class='list-reset pad1x'>
+                  <li class='block small quiet truncate'>Instance members</li>
                   <% doc.members.instance.forEach(function(member) { %>
                   <li><a
                     href='#<%=member.namespace%>'
@@ -47,8 +47,8 @@ options: full
                 </ul>
               <% } %>
               <% if (doc.members.events && doc.members.events.length) { %>
-                <ul class='list-reset pad1x pad0y'>
-                  <li class='block quiet strong small truncate'>Events</li>
+                <ul class='list-reset pad1x'>
+                  <li class='block small truncate quiet'>Events</li>
                   <% doc.members.events.forEach(function(member) { %>
                     <li><a
                       href='#<%=member.namespace%>'

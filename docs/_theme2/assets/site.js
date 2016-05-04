@@ -8,7 +8,7 @@ function toggleSibling() {
   var stepSibling = this.parentNode.getElementsByClassName('toggle-target')[0];
   toggleHidden(stepSibling.classList);
 
-  var icon = this.parentNode.getElementsByClassName('icon')[0];
+  var icon = this.parentNode.getElementsByClassName('rcon')[0];
   toggleCaret(icon.classList);
 }
 
@@ -25,10 +25,10 @@ for (var k = 0; k < toclinks.length; k++) {
 function toggleCaret(classList) {
   if (classList.contains('caret-right')) {
     classList.remove('caret-right');
-    classList.add('caret-down');
+    classList.add('caret-down', 'strong');
   } else {
     classList.add('caret-right');
-    classList.remove('caret-down');
+    classList.remove('caret-down', 'strong');
   }
 }
 
@@ -40,9 +40,9 @@ function toggleHidden(classList) {
   }
 }
 
-function preOpen() {
-  toggleCaret(this.classList);
-}
+// function preOpen() {
+//   toggleCaret(this.classList);
+// }
 
 function showHashTarget(targetId) {
   var hashTarget = document.getElementById(targetId);
