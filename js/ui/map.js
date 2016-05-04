@@ -995,6 +995,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showTileBoundaries
      * @type {boolean}
+     * @memberof Map
      */
     _showTileBoundaries: false,
     get showTileBoundaries() { return this._showTileBoundaries; },
@@ -1011,6 +1012,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showCollisionBoxes
      * @type {boolean}
+     * @memberof Map
      */
     _showCollisionBoxes: false,
     get showCollisionBoxes() { return this._showCollisionBoxes; },
@@ -1026,6 +1028,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showOverdraw
      * @type {boolean}
+     * @memberof Map
      */
     _showOverdrawInspector: false,
     get showOverdrawInspector() { return this._showOverdrawInspector; },
@@ -1040,6 +1043,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name repaint
      * @type {boolean}
+     * @memberof Map
      */
     _repaint: false,
     get repaint() { return this._repaint; },
