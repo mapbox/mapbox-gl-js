@@ -1,10 +1,12 @@
-<section class='pad2 clearfix prose'>
+<section class='pad2 space-bottom4 fill-darken0 clearfix prose'>
 
-  <h2 id='<%- note.namespace %>' class='mt0'>
+  <div id='<%- note.namespace %>' class='strong'>
     <%- note.name %>
-  </h2>
+  </div>
 
   <% if (note.description) { %>
-    <%= md(note.description) %>
+    <div class='quiet'>
+      <%= md(note.description) %>
+    </div>
   <% } %>
 </section>

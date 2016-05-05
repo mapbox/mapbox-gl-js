@@ -18,7 +18,7 @@ module.exports = function (comments, options, callback) {
   });
 
   var imports = {
-    signature: function (section) {
+    signature: function (section, hasSectionName) {
       var returns = '';
       var prefix = '';
       if (section.kind === 'class') {
@@ -28,8 +28,14 @@ module.exports = function (comments, options, callback) {
         returns = ': ' +
           formatMarkdown.type(section.returns[0].type, namespaces);
       }
-      return prefix + section.name +
-        formatParameters(section) + returns;
+      if (hasSectionName) {
+        return prefix + section.name +
+          formatParameters(section) + returns;
+      } else if (!hasSectionName && formatParameters(section)) {
+        return section.name + formatParameters(section) + returns;
+      } else {
+        return section.name + '()' + returns;
+      }
     },
     md: function (ast, inline) {
       if (inline && ast && ast.children.length && ast.children[0].type === 'paragraph') {

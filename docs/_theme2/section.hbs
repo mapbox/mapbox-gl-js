@@ -1,12 +1,12 @@
-<section class='pad2 clearfix prose space-top1 keyline-all fill-white contain'>
+<section class='pad2 clearfix prose space-bottom4 fill-white contain'>
 
   <div class='clearfix'>
     <h2 class='fl' id='<%- section.namespace %>'>
       <%- section.name %>
     </h2>
     <% if (section.context && section.context.github) { %>
-      <a class='fr space fill-darken1 dark round pad1x quiet small' href='<%= section.context.github %>'>
-      <span class='space-left0 icon tight-icon coding'></span> <span class='strong'><%= section.context.path %></span>
+      <a class='fr fill-darken0 round round pad1x quiet small' href='<%= section.context.github %>'>
+      <span class=''>&lt;&#47;&gt; <%= section.context.path %></span>
       </a>
     <% } %>
   </div>
@@ -14,7 +14,7 @@
   <%= md(section.description) %>
 
 
-  <div class='code pad1 small fill-light'><%= signature(section) %></div>
+  <div class='code pad1 small round fill-light'><%= signature(section, true) %></div>
 
   <% if (section.augments) { %>
     <p>
@@ -42,7 +42,7 @@
             <% } %>)</code> <%= md(param.description, true) %>
           </div>
           <% if (param.properties) { %>
-          <table class='space-top1 fixed-table small'>
+          <table class='space-top1 space-bottom2 fixed-table small'>
             <colgroup>
               <col width='30%' />
               <col width='70%' />
@@ -118,19 +118,22 @@
     <div class='pad1y quiet space-top2 prose-big'>Example</div>
     <% section.examples.forEach(function(example) { %>
       <% if (example.caption) { %><p><%= md(example.caption) %></p><% } %>
-      <pre class='p1 overflow-auto fill-light'><%= highlight(example.description) %></pre>
+      <pre class='p1 overflow-auto round fill-light'><%= highlight(example.description) %></pre>
     <% }) %>
   <% } %>
 
   <% if (section.members.static && section.members.static.length) { %>
+    <div class='pad1y quiet space-top2 prose-big'>Static Member</div>
     <%= renderSectionList({ members: section.members.static, renderSection: renderSection, noun: 'Static Member' }) %>
   <% } %>
 
   <% if (section.members.instance && section.members.instance.length) { %>
+    <div class='pad1y quiet space-top2 prose-big'>Instance Member</div>
     <%= renderSectionList({ members: section.members.instance, renderSection: renderSection, noun: 'Instance Member' }) %>
   <% } %>
 
   <% if (section.members.events && section.members.events.length) { %>
+    <div class='pad1y quiet space-top2 prose-big'>Events</div>
     <%= renderSectionList({ members: section.members.events, renderSection: renderSection, noun: 'Event' }) %>
   <% } %>
 </section>
