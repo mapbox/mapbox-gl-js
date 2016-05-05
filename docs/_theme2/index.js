@@ -23,6 +23,9 @@ module.exports = function (comments, options, callback) {
       if (section.kind === 'class') {
         prefix = 'new ';
       }
+      if (section.kind !== 'function' && !hasSectionName) {
+        return '';
+      }
       if (hasSectionName) {
         return prefix + section.name + formatParameters(section, true);
       } else if (!hasSectionName && formatParameters(section)) {
@@ -36,6 +39,8 @@ module.exports = function (comments, options, callback) {
       var prefix = '';
       if (section.kind === 'class') {
         prefix = 'new ';
+      } else if (section.kind !== 'function') {
+        return section.name;
       }
       if (section.returns) {
         returns = ': ' +

@@ -1,15 +1,17 @@
 <section class='pad2 clearfix prose space-bottom4 fill-white contain'>
 
+  <% if (typeof nested === 'undefined') { %>
   <div class='clearfix'>
     <h2 class='fl' id='<%- section.namespace %>'>
       <%- section.name %>
     </h2>
     <% if (section.context && section.context.github) { %>
       <a class='fr fill-darken0 round round pad1x quiet small' href='<%= section.context.github %>'>
-      <span class=''>&lt;&#47;&gt; <%= section.context.path %></span>
+      <span><%= section.context.path %></span>
       </a>
     <% } %>
   </div>
+  <% } %>
 
   <%= md(section.description) %>
 

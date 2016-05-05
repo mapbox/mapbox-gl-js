@@ -995,6 +995,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showTileBoundaries
      * @type {boolean}
+     * @instance
      * @memberof Map
      */
     _showTileBoundaries: false,
@@ -1012,6 +1013,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showCollisionBoxes
      * @type {boolean}
+     * @instance
      * @memberof Map
      */
     _showCollisionBoxes: false,
@@ -1028,6 +1030,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showOverdraw
      * @type {boolean}
+     * @instance
      * @memberof Map
      */
     _showOverdrawInspector: false,
@@ -1043,6 +1046,7 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name repaint
      * @type {boolean}
+     * @instance
      * @memberof Map
      */
     _repaint: false,
