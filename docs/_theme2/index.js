@@ -26,9 +26,9 @@ module.exports = function (comments, options, callback) {
       if (hasSectionName) {
         return prefix + section.name + formatParameters(section, true);
       } else if (!hasSectionName && formatParameters(section)) {
-        return section.name + formatParameters(section, true);
+        return formatParameters(section, true);
       } else {
-        return section.name + '()';
+        return '()';
       }
     },
     signature: function (section, hasSectionName) {
