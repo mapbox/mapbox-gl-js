@@ -18,6 +18,19 @@ module.exports = function (comments, options, callback) {
   });
 
   var imports = {
+    shortSignature: function (section, hasSectionName) {
+      var prefix = '';
+      if (section.kind === 'class') {
+        prefix = 'new ';
+      }
+      if (hasSectionName) {
+        return prefix + section.name + formatParameters(section, true);
+      } else if (!hasSectionName && formatParameters(section)) {
+        return section.name + formatParameters(section, true);
+      } else {
+        return section.name + '()';
+      }
+    },
     signature: function (section, hasSectionName) {
       var returns = '';
       var prefix = '';

@@ -14,7 +14,9 @@
   <%= md(section.description) %>
 
 
-  <div class='code pad1 small round fill-light'><%= signature(section, true) %></div>
+  <% if (section.kind === 'function' || section.kind === 'class') { %>
+    <div class='code pad1 small round fill-light'><%= signature(section, true) %></div>
+  <% } %>
 
   <% if (section.augments) { %>
     <p>
