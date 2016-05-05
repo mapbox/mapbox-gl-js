@@ -20,7 +20,6 @@ module.exports = GeoJSONSource;
  * @param {number} [options.cluster] If the data is a collection of point features, setting this to true clusters the points by radius into groups.
  * @param {number} [options.clusterRadius=50] Radius of each cluster when clustering points, in pixels.
  * @param {number} [options.clusterMaxZoom] Max zoom to cluster points on. Defaults to one zoom less than `maxzoom` (so that last zoom features are not clustered).
-
  * @example
  * var sourceObj = new mapboxgl.GeoJSONSource({
  *    data: {
@@ -90,6 +89,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
      *
      * @param {Object|string} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
      * @returns {GeoJSONSource} this
+     * @memberof GeoJSONSource
      */
     setData: function(data) {
         this._data = data;
