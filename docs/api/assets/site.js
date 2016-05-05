@@ -35,7 +35,9 @@ function toggleHidden(classList) {
   }
 }
 
-function showHashTarget(targetId) {
+function showHashTarget(hash) {
+  var targetId = hash && hash.substring(1);
+  if (!targetId) return;
   var hashTarget = document.getElementById(targetId);
   var toggleInside = hashTarget.querySelector('.hidden.toggle-target');
   var toggleSibling = hashTarget.querySelector('.toggle-sibling');
@@ -45,10 +47,10 @@ function showHashTarget(targetId) {
 }
 
 window.addEventListener('hashchange', function() {
-  showHashTarget(location.hash.substring(1));
+  showHashTarget(location.hash);
 });
 
-showHashTarget(location.hash.substring(1));
+showHashTarget(location.hash);
 
 var scriptExample = document.getElementById('script-example');
 var browserifyExample = document.getElementById('browserify-example');

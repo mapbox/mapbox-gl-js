@@ -105,7 +105,7 @@
   <% if (section.returns) { %>
     <% section.returns.forEach(function(ret) { %>
       <div class='pad1y quiet space-top2 prose-big'>Returns</div>
-      <%= formatType(ret) %><% if (ret.description) { %>:
+      <code><%= formatType(ret) %></code><% if (ret.description) { %>:
         <%= md(ret.description, true) %>
       <% }%>
     <% }) %>
