@@ -1,5 +1,7 @@
 'use strict';
+
 var formatMarkdown = require('./format_markdown');
+var Syntax = require('doctrine').Syntax;
 
 /**
  * Format a parameter name. This is used in formatParameters
@@ -11,7 +13,7 @@ var formatMarkdown = require('./format_markdown');
  */
 function formatParameter(param, short) {
   if (short) {
-    return param.name;
+    return param.type.type == Syntax.OptionalType ? '[' + param.name + ']' : param.name;
   } else {
     return param.name + ': ' + formatMarkdown.type(param.type).replace(/\n/g, '');
   }
