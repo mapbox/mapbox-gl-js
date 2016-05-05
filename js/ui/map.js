@@ -35,12 +35,7 @@ var defaultMaxZoom = 20;
  * @param {string|Element} options.container HTML element to initialize the map in (or element id as string)
  * @param {number} [options.minZoom=0] Minimum zoom of the map
  * @param {number} [options.maxZoom=20] Maximum zoom of the map
- * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the predefined Mapbox styles:
- *   * `mapbox://styles/mapbox/basic-v8` - Simple and flexible starting template.
- *   * `mapbox://styles/mapbox/bright-v8` - Template for complex custom basemaps.
- *   * `mapbox://styles/mapbox/streets-v8` - A ready-to-use basemap, perfect for minor customization or incorporating your own data.
- *   * `mapbox://styles/mapbox/light-v8` - Subtle light backdrop for data vizualizations.
- *   * `mapbox://styles/mapbox/dark-v8` - Subtle dark backdrop for data vizualizations.
+ * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of [the predefined Mapbox styles](https://www.mapbox.com/maps/).
  * @param {boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {number} [options.bearingSnap=7] Snap to north threshold in degrees.
