@@ -77,9 +77,11 @@
 
   <% if (section.properties) { %>
     <div class='pad1y quiet space-top2 prose-big'>Properties</div>
-    <ul>
+    <div>
       <% section.properties.forEach(function(property) { %>
-        <li><code><%- property.name%></code> <em>(<%= formatType(property) %>)</em><% if (property.default) { %>
+        <div class='space-bottom0'>
+          <span class='code strong'><%- property.name%></span> <code class='quiet'>(<%= formatType(property) %>)</code>
+          <% if (property.default) { %>
             (default <code><%- property.default %></code>)
           <% } %><% if (property.description) {
 	    %>: <%= md(property.description, true) %><%
@@ -95,9 +97,9 @@
               <% }) %>
             </ul>
           <% } %>
-        </li>
+        </div>
       <% }) %>
-    </ul>
+    </div>
   <% } %>
 
   <% if (section.returns) { %>
