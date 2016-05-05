@@ -1,7 +1,4 @@
 toc:
-  - name: Base map
-    description: |
-      Initialize a base map layer.
   - Map
   - name: Geography
     description: |
