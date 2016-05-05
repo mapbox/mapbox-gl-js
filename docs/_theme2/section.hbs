@@ -5,8 +5,8 @@
       <%- section.name %>
     </h2>
     <% if (section.context && section.context.github) { %>
-      <a class='fr space quiet small' href='<%= section.context.github %>'>
-	<%= section.context.path %>
+      <a class='fr space fill-darken1 dark round pad1x quiet small' href='<%= section.context.github %>'>
+      <span class='space-left0 icon tight-icon coding'></span> <span class='strong'><%= section.context.path %></span>
       </a>
     <% } %>
   </div>
@@ -14,7 +14,7 @@
   <%= md(section.description) %>
 
 
-  <div class='code pad1 fill-light'><%= signature(section) %></div>
+  <div class='code pad1 small fill-light'><%= signature(section) %></div>
 
   <% if (section.augments) { %>
     <p>
@@ -32,30 +32,47 @@
   <% if (section.since) { %><div>Since: <%- section.since %></div><% }%>
 
   <% if (section.params) { %>
-    <h4>Parameters</h4>
-    <ol>
+    <div class='pad1y quiet space-top2 prose-big'>Parameters</div>
+    <div>
       <% section.params.forEach(function(param) { %>
-        <li><code><%- param.name%></code> <em>(<%= formatType(param) %><% if (param.default) { %>
-          (default <code><%- param.default %></code>)
-        <% } %>)</em>: <%= md(param.description, true) %>
+        <div class='space-bottom0'>
+          <div>
+            <span class='code strong'><%- param.name%></span> <code class='quiet'>(<%= formatType(param) %><% if (param.default) { %>
+            (default <code><%- param.default %></code>)
+            <% } %>)</code> <%= md(param.description, true) %>
+          </div>
           <% if (param.properties) { %>
-            <ul>
+          <table class='space-top1 fixed-table small'>
+            <colgroup>
+              <col width='30%' />
+              <col width='70%' />
+            </colgroup>
+            <thead>
+              <tr class='strong fill-light'>
+                <td>Name</td>
+                <td>Description</td>
+              </tr>
+            </thead>
+            <tbody class='space-top1'>
               <% param.properties.forEach(function(property) { %>
-                <li><code><%- property.name %></code> <em>(<%= formatType(property) %>)</em>
+                <tr>
+                  <td class='break-word'><span class='code strong'><%- property.name %></span> <code class='quiet'><%= formatType(property) %></code>
                   <% if (property.default) { %>
                     (default <code><%- property.default %></code>)
-                  <% } %>
-                  <%= md(property.description, true) %></li>
+                  <% } %></td>
+                  <td class='break-word'><span><%= md(property.description, true) %></span></td>
+                </tr>
               <% }) %>
-            </ul>
+            </tbody>
+          </table>
           <% } %>
-        </li>
+        </div>
       <% }) %>
-    </ol>
+    </div>
   <% } %>
 
   <% if (section.properties) { %>
-    <h4>Properties</h4>
+    <div class='pad1y quiet space-top2 prose-big'>Properties</div>
     <ul>
       <% section.properties.forEach(function(property) { %>
         <li><code><%- property.name%></code> <em>(<%= formatType(property) %>)</em><% if (property.default) { %>
@@ -81,7 +98,7 @@
 
   <% if (section.returns) { %>
     <% section.returns.forEach(function(ret) { %>
-      <h4>Returns</h4>
+      <div class='pad1y quiet space-top2 prose-big'>Returns</div>
       <%= formatType(ret) %><% if (ret.description) { %>:
         <%= md(ret.description, true) %>
       <% }%>
@@ -89,7 +106,7 @@
   <% } %>
 
   <% if (section.throws) { %>
-    <h4>Throws</h4>
+    <div class='pad1y quiet space-top2 prose-big'>Throws</div>
     <ul>
       <% section.throws.forEach(function(throws) { %>
         <li><%= formatType(throws) %>: <%= md(throws.description, true) %></li>
@@ -98,7 +115,7 @@
   <% } %>
 
   <% if (section.examples) { %>
-    <h4>Examples</h4>
+    <div class='pad1y quiet space-top2 prose-big'>Example</div>
     <% section.examples.forEach(function(example) { %>
       <% if (example.caption) { %><p><%= md(example.caption) %></p><% } %>
       <pre class='p1 overflow-auto fill-light'><%= highlight(example.description) %></pre>

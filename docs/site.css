@@ -172,3 +172,10 @@ a.black-link {
 a.black-link:hover {
   color: #404040 ;
 }
+.break-word {
+  word-wrap: break-word;
+}
+
+.fixed-table {
+  table-layout:fixed;
+}
