@@ -40,7 +40,7 @@
     "browserify-middleware": "^7.0.0",
     "concat-stream": "1.5.1",
     "coveralls": "^2.11.8",
-    "documentation": "https://github.com/documentationjs/documentation/archive/888f5eccfb73abb651dc47a446f80635f5f6f8d5.tar.gz",
+    "documentation": "https://github.com/documentationjs/documentation/archive/bb41619c734e59ef3fbc3648610032efcfdaaace.tar.gz",
     "documentation-theme-utils": "3.0.0",
     "eslint": "^2.5.3",
     "eslint-config-mourner": "^2.0.0",
