@@ -125,12 +125,12 @@
   <% } %>
 
   <% if (section.members.static && section.members.static.length) { %>
-    <div class='pad1y quiet space-top2 prose-big'>Static Member</div>
+    <div class='pad1y quiet space-top2 prose-big'>Static Members</div>
     <%= renderSectionList({ members: section.members.static, renderSection: renderSection, noun: 'Static Member' }) %>
   <% } %>
 
   <% if (section.members.instance && section.members.instance.length) { %>
-    <div class='pad1y quiet space-top2 prose-big'>Instance Member</div>
+    <div class='pad1y quiet space-top2 prose-big'>Instance Members</div>
     <%= renderSectionList({ members: section.members.instance, renderSection: renderSection, noun: 'Instance Member' }) %>
   <% } %>
 
