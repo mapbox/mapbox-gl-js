@@ -54,12 +54,10 @@ module.exports = function(style, options, callback) {
         map.remove();
         gl.destroy();
 
-        callback(null, data, results.map(prepareFeatures));
-
-        function prepareFeatures(r) {
+        callback(null, data, results.map(function (r) {
+            r = r.toJSON();
             delete r.layer;
-            r.geometry = null;
-            return JSON.parse(JSON.stringify(r));
-        }
+            return r;
+        }));
     });
 };
