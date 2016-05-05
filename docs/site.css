@@ -187,13 +187,6 @@ a.black-link:hover {
 div.toggle-sibling:hover { opacity: 0.7; }
 .line-height15 {line-height: 15px}
 
-
-
-.script-example,
-.browserify-example {
-  display: none;
-}
-
 .example-show {
   display: block;
 }

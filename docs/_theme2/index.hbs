@@ -121,10 +121,10 @@ options: full
              You can choose from one of our professionally designed styles and start developing with it right away.
            </div>
            <div class='rounded-toggle space-bottom2 inline' id='method-toggle'>
-             <a class='method-toggle active' id='script-example' href='#'>&lt;script&gt; tag</a>
-             <a class='method-toggle' id='browserify-example'  href='#'>Browserify</a>
+             <a class='method-toggle active' data-target='script-example' href='#'>&lt;script&gt; tag</a>
+             <a class='method-toggle' data-target='browserify-example'  href='#'>Browserify</a>
            </div>
-           <div class='script-example'>
+           <div id='script-example'>
          <p>To using Mapbox GL JS with a <code>&lt;script&gt;</code> tag, include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.</p>
         <div class='contain ' id='head-code'>
           {% highlight html %}
@@ -148,8 +148,25 @@ options: full
           {% highlight html %}{{ getting_started_html | insert_token }}{% endhighlight %}
         </div>
         </div>
-        <div class='browserify-example'>
-          sssss
+        <div id='browserify-example' class='hidden'>
+<p>Install the mapbox-gl npm package</p>
+
+<pre>
+npm install --save mapbox-gl
+</pre>
+
+<p>Require mapbox-gl and create a map.</p>
+
+<div class='js-replace-token'>
+{% highlight javascript %}
+var mapboxgl = require('mapbox-gl');
+mapboxgl.accessToken = '<your access token here>';
+var map = new mapboxgl.Map({
+    container: '<your HTML element id>',
+    style: 'mapbox://styles/mapbox/streets-v8'
+});
+{% endhighlight %}
+</div>
         </div>
       </div>
       </section>

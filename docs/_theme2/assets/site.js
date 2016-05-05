@@ -17,11 +17,6 @@ for (var j = 0; j < items.length; j++) {
   items[j].addEventListener('click', toggleSibling);
 }
 
-var toclinks = document.getElementsByClassName('pre-open');
-for (var k = 0; k < toclinks.length; k++) {
-  toclinks[k].addEventListener('mousedown', preOpen, false);
-}
-
 function toggleCaret(classList) {
   if (classList.contains('caret-right')) {
     classList.remove('caret-right');
@@ -40,10 +35,6 @@ function toggleHidden(classList) {
   }
 }
 
-// function preOpen() {
-//   toggleCaret(this.classList);
-// }
-
 function showHashTarget(targetId) {
   var hashTarget = document.getElementById(targetId);
   var toggleInside = hashTarget.querySelector('.hidden.toggle-target');
@@ -58,3 +49,23 @@ window.addEventListener('hashchange', function() {
 });
 
 showHashTarget(location.hash.substring(1));
+
+var scriptExample = document.getElementById('script-example');
+var browserifyExample = document.getElementById('browserify-example');
+var toggles = document.getElementsByClassName('method-toggle');
+for (var i = 0; i < toggles.length; i++) {
+  toggles[i].onclick = exampleToggle;
+}
+function exampleToggle(e) {
+  for (var i = 0; i < toggles.length; i++) {
+    toggles[i].className = this === toggles[i] ? 'method-toggle active' : 'method-toggle';
+  }
+  if (this.getAttribute('data-target') === 'script-example') {
+    scriptExample.className = '';
+    browserifyExample.className = 'hidden';
+  } else {
+    scriptExample.className = 'hidden';
+    browserifyExample.className = '';
+  }
+  e.preventDefault();
+}
