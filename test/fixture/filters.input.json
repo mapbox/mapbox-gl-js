@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "sources": {
     "source": {
       "type": "vector",
@@ -123,6 +123,57 @@
       "filter": [
         "any",
         []
+      ]
+    },
+    {
+      "id": "valid-has-filter",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": [
+        "has",
+        "mapbox"
+      ]
+    },
+    {
+      "id": "valid-!has-filter",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": [
+        "!has",
+        "mapbox"
+      ]
+    },
+    {
+      "id": "invalid-has-filter-length",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": [
+        "has",
+        "mapbox",
+        "bad"
+      ]
+    },
+    {
+      "id": "invalid-has-filter-type",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": [
+        "has",
+        {"mapbox": true}
+      ]
+    },
+    {
+      "id": "invalid-has-filter-constant",
+      "type": "line",
+      "source": "source",
+      "source-layer": "source-layer",
+      "filter": [
+        "has",
+        "@mapbox"
       ]
     }
   ]

@@ -800,7 +800,9 @@
       "!in",
       "all",
       "any",
-      "none"
+      "none",
+      "has",
+      "!has"
     ],
     "doc": "The filter operator."
   },

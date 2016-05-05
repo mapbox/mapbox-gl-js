@@ -8,7 +8,7 @@
     "line": 22
   },
   {
-    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none], = found",
+    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], = found",
     "line": 30
   },
   {
@@ -50,5 +50,17 @@
   {
     "message": "layers[11].filter[1]: filter array must have at least 1 element",
     "line": 125
+  },
+  {
+    "message": "layers[14].filter: filter array for \"has\" operator must have 2 elements",
+    "line": 153
+  },
+  {
+    "message": "layers[15].filter[1]: string expected, object found",
+    "line": 166
+  },
+  {
+    "message": "layers[16].filter[1]: filter key cannot be a constant",
+    "line": 176
   }
 ]

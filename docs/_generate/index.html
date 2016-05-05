@@ -601,34 +601,43 @@ navigation:
 
           <div class='col12 clearfix space-bottom2'>
 
+            <h4>Existential Filters</h4>
+
+            <div class='space-bottom1'>
+              <code>["has", <var>key</var>]</code> <span class='quiet pad1x strong small'><var>feature[key]</var> exists</span>
+            </div>
+            <div class='space-bottom1'>
+              <code>["!has", <var>key</var>]</code> <span class='quiet pad1x strong small'><var>feature[key]</var> does not exist</span>
+            </div>
+
             <h4>Comparison Filters</h4>
 
             <div class='space-bottom1'>
-              <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>key</var> = <var>value</var></span>
+              <code>["==", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>equality: <var>feature[key]</var> = <var>value</var></span>
             </div>
             <div class='space-bottom1'>
-              <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>key</var> ≠ <var>value</var></span>
+              <code>["!=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>inequality: <var>feature[key]</var> ≠ <var>value</var></span>
             </div>
             <div class='space-bottom1'>
-              <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>key</var> > <var>value</var></span>
+              <code>["&gt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than: <var>feature[key]</var> > <var>value</var></span>
             </div>
             <div class='space-bottom1'>
-              <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>key</var> ≥ <var>value</var></span>
+              <code>["&gt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>greater than or equal: <var>feature[key]</var> ≥ <var>value</var></span>
             </div>
             <div class='space-bottom1'>
-              <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>key</var> < <var>value</var></span>
+              <code>["&lt;", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than: <var>feature[key]</var> < <var>value</var></span>
             </div>
             <div class='space-bottom1'>
-              <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>key</var> ≤ <var>value</var></span>
+              <code>["&lt;=", <var>key</var>, <var>value</var>]</code> <span class='quiet pad1x strong small'>less than or equal: <var>feature[key]</var> ≤ <var>value</var></span>
             </div>
 
             <h4>Set Membership Filters</h4>
 
             <div class='space-bottom1'>
-              <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>key</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
+              <code>["in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set inclusion: <var>feature[key]</var> ∈ {<var>v0</var>, ..., <var>vn</var>}</span>
             </div>
             <div class='space-bottom1'>
-              <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>key</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
+              <code>["!in", <var>key</var>, <var>v0</var>, ..., <var>vn</var>]</code> <span class='quiet pad1x strong small'>set exclusion: <var>feature[key]</var> ∉ {<var>v0</var>, ..., <var>vn</var>}</span>
             </div>
 
             <h4>Combining Filters</h4>
