@@ -1,0 +1,55 @@
+toc:
+  - Map
+  - name: Geography
+    description: |
+      These are Mapbox GL JS's ways of representing locations
+      and areas on the sphere.
+  - LngLat
+  - LngLatBounds
+  - name: Controls
+    description: |
+      Controls add new functionality and user interface
+      elements to the map.
+  - Navigation
+  - Geolocate
+  - Attribution
+  - Control
+  - name: Handlers
+    description: |
+      Handlers add different kinds of interactivity to the map -
+      mouse interactivity, touch interactions, and other
+      gestures.
+  - BoxZoomHandler
+  - ScrollZoomHandler
+  - DragPanHandler
+  - DragRotateHandler
+  - KeyboardHandler
+  - DoubleClickZoomHandler
+  - TouchZoomRotateHandler
+  - name: Sources
+    description: |
+      Adding sources to a map with these JavaScript
+      methods lets you add content dynamically to your map after
+      it has been loaded, or add GeoJSON content that's generated
+      by other JavaScript. You can also add sources to your map
+      by including them in the Mapbox GL Style that it loads.
+  - GeoJSONSource
+  - VideoSource
+  - ImageSource
+  - name: Options
+    description: |
+      These are shared option types - predictable objects that
+      can be supplied to multiple methods on the mapbox.Map object
+      and others as function arguments.
+  - CameraOptions
+  - AnimationOptions
+  - StyleOptions
+  - name: Popups
+  - Popup
+  - name: Events
+    description: |
+      This event functionality is used by Mapbox GL JS itself
+      and can be useful to other developers who want to create
+      controls or other extensions.
+  - EventData
+  - Evented
