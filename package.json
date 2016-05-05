@@ -80,7 +80,7 @@
     "start": "node server.js",
     "get-benchmark-data": "mkdir -p ./bench/data && curl -s https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson > ./bench/data/naturalearth-land.json",
     "start-docs": "npm run production && npm run docs && jekyll serve -w",
-    "lint": "eslint js test bench && documentation lint",
+    "lint": "eslint js test bench",
     "build": "browserify -d js/mapbox-gl.js --standalone mapboxgl > dist/mapbox-gl-dev.js && npm run docs",
     "production": "browserify js/mapbox-gl.js --debug --transform unassertify --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
