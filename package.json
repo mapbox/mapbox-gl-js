@@ -84,7 +84,7 @@
     "build": "browserify -d js/mapbox-gl.js --standalone mapboxgl > dist/mapbox-gl-dev.js && npm run docs",
     "production": "browserify js/mapbox-gl.js --debug --transform unassertify --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js",
     "prepublish": "npm run build && npm run production",
-    "docs": "documentation build --github --format html -c documentation.yml --theme ./docs/_theme2 --output docs/api/",
+    "docs": "documentation build --github --format html -c documentation.yml --theme ./docs/_theme --output docs/api/",
     "test": "npm run lint && tap --reporter dot test/js/*/*.js # update ci.sh if test invocation changes",
     "test-suite": "node test/render.test.js && node test/query.test.js # update ci.sh if test invocation changes"
   }
