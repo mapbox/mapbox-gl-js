@@ -287,14 +287,15 @@ Bucket.prototype.recalculateStyleLayers = function() {
     }
 };
 
-Bucket.prototype.getProgramMacros = function(programInterface, layer) {
-    var macros = [];
+// TODO make static
+Bucket.prototype.getProgramDefines = function(programInterface, layer) {
+    var defines = [];
     var attributes = this.paintAttributes[programInterface][layer.id].attributes;
     for (var i = 0; i < attributes.length; i++) {
         var attribute = attributes[i];
-        macros.push('ATTRIBUTE_' + (attribute.isFunction ? 'ZOOM_FUNCTION_' : '') + attribute.name.toUpperCase());
+        defines.push('ATTRIBUTE_' + (attribute.isFunction ? 'ZOOM_FUNCTION_' : '') + attribute.name.toUpperCase());
     }
-    return macros;
+    return defines;
 };
 
 Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {

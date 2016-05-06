@@ -61,26 +61,24 @@ var definitions = {
     }
 };
 
-module.exports._createProgram = function(name, macros) {
+module.exports._createProgram = function(name, defines) {
     var gl = this.gl;
     var program = gl.createProgram();
     var definition = definitions[name];
 
-    var defines = '';
-    if (macros) {
-        for (var m = 0; m < macros.length; m++) {
-            defines += '#define ' + macros[m] + '\n';
-        }
+    var definesSource = '';
+    for (var j = 0; definesSource && j < definesSource.length; j++) {
+        definesSource += '#define ' + defines[j] + '\;n';
     }
 
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, defines + definition.fragmentSource);
+    gl.shaderSource(fragmentShader, definesSource + definition.fragmentSource);
     gl.compileShader(fragmentShader);
     assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
     gl.attachShader(program, fragmentShader);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, defines + definition.vertexSource);
+    gl.shaderSource(vertexShader, definesSource + definition.vertexSource);
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
     gl.attachShader(program, vertexShader);
@@ -110,24 +108,26 @@ module.exports._createProgram = function(name, macros) {
     }, attributes, uniforms);
 };
 
-module.exports._createProgramCached = function(name, macros) {
+module.exports._createProgramCached = function(name, defines) {
     this.cache = this.cache || {};
-    if (this._showOverdrawInspector) {
-        macros = macros || [];
-        macros.push('OVERDRAW_INSPECTOR');
-    }
-    var key = JSON.stringify({name: name, macros: macros});
+
+    var key = JSON.stringify({name: name, defines: defines});
     if (!this.cache[key]) {
-        this.cache[key] = this._createProgram(name, macros);
+        this.cache[key] = this._createProgram(name, defines);
     }
     return this.cache[key];
 };
 
-module.exports.useProgram = function (nextProgramName, macros) {
+module.exports.useProgram = function (nextProgramName, defines) {
     var gl = this.gl;
 
-    var nextProgram = this._createProgramCached(nextProgramName, macros);
+    var nextProgram = this._createProgramCached(nextProgramName, defines);
     var previousProgram = this.currentProgram;
+
+    if (this._showOverdrawInspector) {
+        defines = defines || [];
+        defines.push('OVERDRAW_INSPECTOR');
+    }
 
     if (previousProgram !== nextProgram) {
         gl.useProgram(nextProgram.program);
