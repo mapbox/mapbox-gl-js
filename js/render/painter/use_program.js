@@ -61,7 +61,7 @@ var definitions = {
     }
 };
 
-module.exports._createProgram = function(name, defines) {
+module.exports._createProgram = function(name, defines, vertexPragmas, fragmentPragmas) {
     var gl = this.gl;
     var program = gl.createProgram();
     var definition = definitions[name];
@@ -72,13 +72,13 @@ module.exports._createProgram = function(name, defines) {
     }
 
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, definesSource + definition.fragmentSource);
+    gl.shaderSource(fragmentShader, applyPragmas(definesSource + definition.fragmentSource, fragmentPragmas));
     gl.compileShader(fragmentShader);
     assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
     gl.attachShader(program, fragmentShader);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, definesSource + definition.vertexSource);
+    gl.shaderSource(vertexShader, applyPragmas(definesSource + definition.vertexSource, vertexPragmas));
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
     gl.attachShader(program, vertexShader);
@@ -108,20 +108,26 @@ module.exports._createProgram = function(name, defines) {
     }, attributes, uniforms);
 };
 
-module.exports._createProgramCached = function(name, defines) {
+module.exports._createProgramCached = function(name, defines, vertexPragmas, fragmentPragmas) {
     this.cache = this.cache || {};
 
-    var key = JSON.stringify({name: name, defines: defines});
+    var key = JSON.stringify({
+        name: name,
+        defines: defines,
+        vertexPragmas: vertexPragmas,
+        fragmentPragmas: fragmentPragmas
+    });
+
     if (!this.cache[key]) {
-        this.cache[key] = this._createProgram(name, defines);
+        this.cache[key] = this._createProgram(name, defines, vertexPragmas, fragmentPragmas);
     }
     return this.cache[key];
 };
 
-module.exports.useProgram = function (nextProgramName, defines) {
+module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, fragmentPragmas) {
     var gl = this.gl;
 
-    var nextProgram = this._createProgramCached(nextProgramName, defines);
+    var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
     var previousProgram = this.currentProgram;
 
     if (this._showOverdrawInspector) {
@@ -136,3 +142,10 @@ module.exports.useProgram = function (nextProgramName, defines) {
 
     return nextProgram;
 };
+
+function applyPragmas(source, pragmas) {
+    for (var key in pragmas) {
+        source = source.replace('#pragma mapbox: ' + key, pragmas[key]);
+    }
+    return source;
+}
