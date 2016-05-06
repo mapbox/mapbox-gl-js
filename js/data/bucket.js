@@ -298,7 +298,7 @@ Bucket.prototype.getProgramDefines = function(programInterface, layer) {
     return defines;
 };
 
-Bucket.prototype.addPaintAttributes = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
+Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
     for (var l = 0; l < this.childLayers.length; l++) {
         var layer = this.childLayers[l];
         var groups = this.arrayGroups[interfaceName];
