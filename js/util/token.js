@@ -11,7 +11,7 @@ module.exports = resolveTokens;
  * @private
  */
 function resolveTokens(properties, text) {
-    return text.replace(/{([^{}()\[\]<>$=:;.,^]+)}/g, function(match, key) {
+    return text.replace(/{([^{}]+)}/g, function(match, key) {
         return key in properties ? properties[key] : '';
     });
 }
