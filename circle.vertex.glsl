@@ -69,9 +69,7 @@ void main(void) {
     // in extrusion data
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0, 1);
 
-    // gl_Position is divided by gl_Position.w after this shader runs.
-    // Multiply the extrude by it so that it isn't affected by it.
-    gl_Position.xy += extrude * gl_Position.w;
+    gl_Position.xy += extrude;
 
 #ifdef ATTRIBUTE_A_COLOR
     v_color = a_color / 255.0;
