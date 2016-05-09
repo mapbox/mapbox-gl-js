@@ -27,8 +27,15 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBu
         util.warnOnce('Not using VertexArrayObject extension.');
     }
 
-    if (!this.boundProgram) {
+    var isFreshBindRequired = !(
+        this.boundProgram &&
+        this.boundProgram === program &&
+        this.boundVertexBuffer === vertexBuffer &&
+        this.boundVertexBuffer2 === vertexBuffer2 &&
+        this.boundElementBuffer === elementBuffer
+    );
 
+    if (isFreshBindRequired) {
         var numPrevAttributes = ext ? 0 : (gl.currentNumAttributes || 0);
         var numNextAttributes = program.numAttributes;
         var i;
@@ -66,13 +73,6 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBu
             this.boundVertexBuffer2 = vertexBuffer2;
             this.boundElementBuffer = elementBuffer;
         }
-
-    } else {
-        // verify that bind was called with the same arguments
-        assert(this.boundProgram === program, 'trying to bind a VAO to a different shader');
-        assert(this.boundVertexBuffer === vertexBuffer, 'trying to bind a VAO to a different vertex buffer');
-        assert(this.boundVertexBuffer2 === vertexBuffer2, 'trying to bind a VAO to a different vertex buffer');
-        assert(this.boundElementBuffer === elementBuffer, 'trying to bind a VAO to a different element buffer');
     }
 };
 
