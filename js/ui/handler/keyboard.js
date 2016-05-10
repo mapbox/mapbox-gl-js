@@ -68,6 +68,8 @@ KeyboardHandler.prototype = {
         var map = this._map,
             eventData = { originalEvent: e };
 
+        if (map.isEasing()) return;
+
         switch (e.keyCode) {
         case 61:
         case 107:
