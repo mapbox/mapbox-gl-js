@@ -887,13 +887,13 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity given to the fill color.",
+      "doc": "The opacity of the entire fill layer. In contrast to the fill-color, this value will also affect the 1px stroke around the fill, if the stroke is used.",
       "transition": true
     },
     "fill-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color of the fill.",
+      "doc": "The color of the filled part of this layer. This color can be specified as rgba with an alpha component and the color's opacity will not affect the opacity of the 1px stroke, if it is used.",
       "function": "interpolated",
       "transition": true,
       "requires": [
