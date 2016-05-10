@@ -136,6 +136,7 @@ var Map = module.exports = function(options) {
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
+    this.on('error', this.onError);
     this.on('style.error', this.onError);
     this.on('source.error', this.onError);
     this.on('tile.error', this.onError);
@@ -796,7 +797,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this._frameId) {
             browser.cancelFrame(this._frameId);
         }
-        this.fire("webglcontextlost", {originalEvent: event});
+        this.fire('webglcontextlost', {originalEvent: event});
     },
 
     /**
@@ -811,7 +812,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._setupPainter();
         this.resize();
         this._update();
-        this.fire("webglcontextrestored", {originalEvent: event});
+        this.fire('webglcontextrestored', {originalEvent: event});
     },
 
     /**
@@ -855,41 +856,46 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @private
      */
     _render: function() {
-        if (this.style && this._styleDirty) {
-            this._styleDirty = false;
-            this.style.update(this._classes, this._classOptions);
-            this._classOptions = null;
-            this.style._recalculate(this.transform.zoom);
-        }
+        try {
+            if (this.style && this._styleDirty) {
+                this._styleDirty = false;
+                this.style.update(this._classes, this._classOptions);
+                this._classOptions = null;
+                this.style._recalculate(this.transform.zoom);
+            }
 
-        if (this.style && this._sourcesDirty) {
-            this._sourcesDirty = false;
-            this.style._updateSources(this.transform);
-        }
+            if (this.style && this._sourcesDirty) {
+                this._sourcesDirty = false;
+                this.style._updateSources(this.transform);
+            }
 
-        this.painter.render(this.style, {
-            debug: this.showTileBoundaries,
-            showOverdrawInspector: this._showOverdrawInspector,
-            vertices: this.vertices,
-            rotating: this.rotating,
-            zooming: this.zooming
-        });
+            this.painter.render(this.style, {
+                debug: this.showTileBoundaries,
+                showOverdrawInspector: this._showOverdrawInspector,
+                vertices: this.vertices,
+                rotating: this.rotating,
+                zooming: this.zooming
+            });
 
-        this.fire('render');
+            this.fire('render');
 
-        if (this.loaded() && !this._loaded) {
-            this._loaded = true;
-            this.fire('load');
-        }
+            if (this.loaded() && !this._loaded) {
+                this._loaded = true;
+                this.fire('load');
+            }
 
-        this._frameId = null;
+            this._frameId = null;
 
-        if (!this.animationLoop.stopped()) {
-            this._styleDirty = true;
-        }
+            if (!this.animationLoop.stopped()) {
+                this._styleDirty = true;
+            }
 
-        if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
-            this._rerender();
+            if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
+                this._rerender();
+            }
+
+        } catch (error) {
+            this.fire('error', error);
         }
 
         return this;
@@ -920,6 +926,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @example
      * // Disable the default error handler
+     * map.off('error', map.onError);
      * map.off('style.error', map.onError);
      * map.off('source.error', map.onError);
      * map.off('tile.error', map.onError);
