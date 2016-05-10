@@ -92,7 +92,7 @@ module.exports._createProgram = function(name, macros) {
     var numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
     for (var i = 0; i < numAttributes; i++) {
         var attribute = gl.getActiveAttrib(program, i);
-        attributes[attribute.name] = i;
+        attributes[attribute.name] = gl.getAttribLocation(program, attribute.name);
     }
 
     var uniforms = {};
