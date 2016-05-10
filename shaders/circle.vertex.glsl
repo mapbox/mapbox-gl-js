@@ -6,29 +6,10 @@ uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
 
-#ifdef ATTRIBUTE_A_COLOR
-attribute lowp vec4 a_color;
-#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_COLOR0
-uniform lowp float u_color_t;
-attribute lowp vec4 a_color0;
-attribute lowp vec4 a_color1;
-attribute lowp vec4 a_color2;
-attribute lowp vec4 a_color3;
-#else
-uniform lowp vec4 a_color;
-#endif
-
-#ifdef ATTRIBUTE_A_RADIUS
-attribute mediump float a_radius;
-#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_RADIUS
-uniform lowp float u_radius_t;
-attribute mediump vec4 a_radius;
-#else
-uniform mediump float a_radius;
-#endif
+#pragma mapbox: define(color)
+#pragma mapbox: define(radius)
 
 varying vec2 v_extrude;
-varying lowp vec4 v_color;
 varying lowp float v_antialiasblur;
 
 float evaluate_zoom_function_1(const vec4 values, const float t) {
@@ -53,13 +34,8 @@ vec4 evaluate_zoom_function_4(const vec4 value0, const vec4 value1, const vec4 v
 
 void main(void) {
 
-#ifdef ATTRIBUTE_A_RADIUS
-    mediump float radius = a_radius / 10.0;
-#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_RADIUS
-    mediump float radius = evaluate_zoom_function_1(a_radius, u_radius_t) / 10.0;
-#else
-    mediump float radius = a_radius;
-#endif
+    #pragma mapbox: initialize(color)
+    #pragma mapbox: initialize(radius)
 
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
@@ -70,14 +46,6 @@ void main(void) {
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0, 1);
 
     gl_Position.xy += extrude;
-
-#ifdef ATTRIBUTE_A_COLOR
-    v_color = a_color / 255.0;
-#elif defined ATTRIBUTE_ZOOM_FUNCTION_A_COLOR0
-    v_color = evaluate_zoom_function_4(a_color0, a_color1, a_color2, a_color3, u_color_t) / 255.0;
-#else
-    v_color = a_color;
-#endif
 
     // This is a minimum blur distance that serves as a faux-antialiasing for
     // the circle. since blur is a ratio of the circle's size and the intent is

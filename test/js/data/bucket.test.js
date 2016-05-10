@@ -22,12 +22,12 @@ test('Bucket', function(t) {
                 elementBuffer2Components: 2,
 
                 layoutAttributes: options.layoutAttributes || [{
-                    name: 'box',
+                    name: 'a_box',
                     components: 2,
                     type: 'Int16'
                 }],
                 paintAttributes: options.paintAttributes || [{
-                    name: 'map',
+                    name: 'a_map',
                     type: 'Int16',
                     getValue: function(layer, globalProperties, featureProperties) {
                         return [featureProperties.x];
@@ -102,12 +102,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrayGroups.test[0].layout.vertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
         var paintVertex = bucket.arrayGroups.test[0].paint.layerid;
         t.equal(paintVertex.length, 1);
         var p0 = paintVertex.get(0);
-        t.equal(p0.map, 17);
+        t.equal(p0.a_map, 17);
 
         var testElement = bucket.arrayGroups.test[0].layout.element;
         t.equal(testElement.length, 1);
@@ -137,10 +137,10 @@ test('Bucket', function(t) {
         var v0 = bucket.arrayGroups.test[0].layout.vertex.get(0);
         var a0 = bucket.arrayGroups.test[0].paint.one.get(0);
         var b0 = bucket.arrayGroups.test[0].paint.two.get(0);
-        t.equal(a0.map, 17);
-        t.equal(b0.map, 17);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(a0.a_map, 17);
+        t.equal(b0.a_map, 17);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
 
         t.end();
     });
@@ -148,7 +148,7 @@ test('Bucket', function(t) {
     t.test('add features, disabled attribute', function(t) {
         var bucket = create({
             paintAttributes: [{
-                name: 'map',
+                name: 'a_map',
                 type: 'Int16',
                 getValue: function() { return [5]; },
                 paintProperty: 'circle-color'
@@ -175,7 +175,7 @@ test('Bucket', function(t) {
         var bucket = create({
             paintAttributes: [],
             layoutAttributes: [{
-                name: 'map',
+                name: 'a_map',
                 type: 'Int16'
             }]
         });
@@ -184,7 +184,7 @@ test('Bucket', function(t) {
         bucket.populateBuffers();
 
         var v0 = bucket.arrayGroups.test[0].layout.vertex.get(0);
-        t.equal(v0.map, 34);
+        t.equal(v0.a_map, 34);
 
         t.end();
     });
@@ -214,12 +214,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrayGroups.test[0].layout.vertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
         var testPaintVertex = bucket.arrayGroups.test[0].paint.layerid;
         t.equal(testPaintVertex.length, 1);
         var p0 = testPaintVertex.get(0);
-        t.equal(p0.map, 17);
+        t.equal(p0.a_map, 17);
 
         var testElement = bucket.arrayGroups.test[0].layout.element;
         t.equal(testElement.length, 1);
@@ -252,12 +252,12 @@ test('Bucket', function(t) {
         var testVertex = bucket.arrayGroups.test[0].layout.vertex;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
-        t.equal(v0.box0, 34);
-        t.equal(v0.box1, 84);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
         var testPaintVertex = bucket.arrayGroups.test[0].paint.layerid;
         t.equal(testPaintVertex.length, 1);
         var p0 = testPaintVertex.get(0);
-        t.equal(p0.map, 17);
+        t.equal(p0.a_map, 17);
 
         var testElement = bucket.arrayGroups.test[0].layout.element;
         t.equal(testElement.length, 1);

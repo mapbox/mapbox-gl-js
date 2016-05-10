@@ -44,7 +44,8 @@ CircleBucket.prototype.programInterfaces = {
                 return util.premultiply(layer.getPaintValue("circle-color", globalProperties, featureProperties));
             },
             multiplier: 255,
-            paintProperty: 'circle-color'
+            paintProperty: 'circle-color',
+            precision: 'lowp'
         }, {
             name: 'a_radius',
             components: 1,
@@ -54,7 +55,8 @@ CircleBucket.prototype.programInterfaces = {
                 return [layer.getPaintValue("circle-radius", globalProperties, featureProperties)];
             },
             multiplier: 10,
-            paintProperty: 'circle-radius'
+            paintProperty: 'circle-radius',
+            precision: 'mediump'
         }]
     }
 };
