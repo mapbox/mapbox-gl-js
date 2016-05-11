@@ -39,6 +39,7 @@ function drawBackground(painter, source, layer) {
         gl.uniform1f(program.u_scale_a, image.fromScale);
         gl.uniform1f(program.u_scale_b, image.toScale);
 
+        gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
