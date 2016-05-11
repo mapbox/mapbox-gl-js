@@ -52,6 +52,16 @@ test('StyleDeclaration', function(t) {
             { to: 'b.png', toScale: 1, from: 'a.png', fromScale: 2, t: 1 }
         );
 
+        var unset = new StyleDeclaration(reference, undefined);
+        t.deepEqual(
+            unset.calculate({
+                zoom: 1,
+                zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 },
+                duration: 300
+            }),
+            undefined
+        );
+
         t.end();
     });
 
