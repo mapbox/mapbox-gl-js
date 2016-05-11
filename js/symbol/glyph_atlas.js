@@ -1,6 +1,7 @@
 'use strict';
 
 var ShelfPack = require('shelf-pack');
+var util = require('../util/util');
 
 module.exports = GlyphAtlas;
 function GlyphAtlas(width, height) {
@@ -51,10 +52,8 @@ GlyphAtlas.prototype.getRects = function() {
 
 
 GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
-    if (!glyph) {
-        // console.warn('missing glyph', code, String.fromCharCode(code));
-        return null;
-    }
+    if (!glyph) return null;
+
     var key = name + "#" + glyph.id;
 
     // The glyph is already in this texture.
@@ -90,7 +89,7 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         rect = this.bin.packOne(packWidth, packHeight);
     }
     if (!rect) {
-        console.warn('glyph bitmap overflow');
+        util.warnOnce('glyph bitmap overflow');
         return null;
     }
 

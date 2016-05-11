@@ -776,7 +776,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         });
 
         if (!gl) {
-            console.error('Failed to initialize WebGL');
+            this.fire('error', { error: new Error('Failed to initialize WebGL') });
             return;
         }
 

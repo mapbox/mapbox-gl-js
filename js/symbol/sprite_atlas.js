@@ -2,6 +2,7 @@
 
 var ShelfPack = require('shelf-pack');
 var browser = require('../util/browser');
+var util = require('../util/util');
 
 module.exports = SpriteAtlas;
 function SpriteAtlas(width, height) {
@@ -55,7 +56,7 @@ SpriteAtlas.prototype.allocateImage = function(pixelWidth, pixelHeight) {
 
     var rect = this.bin.packOne(packWidth, packHeight);
     if (!rect) {
-        console.warn('SpriteAtlas out of space.');
+        util.warnOnce('SpriteAtlas out of space.');
         return null;
     }
 

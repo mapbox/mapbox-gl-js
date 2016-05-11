@@ -197,13 +197,7 @@ util.extend(Worker.prototype, {
 
         if (!this.geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
 
-        // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
-
         var geoJSONTile = this.geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
-
-        // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
-
-        // if (!geoJSONTile) console.log('not found', this.geoJSONIndexes[source], coord);
 
         var tile = geoJSONTile ? new WorkerTile(params) : undefined;
 

@@ -465,3 +465,12 @@ exports.arraysIntersect = function(a, b) {
     }
     return false;
 };
+
+var warnOnceHistory = {};
+exports.warnOnce = function(message) {
+    if (!warnOnceHistory[message]) {
+        // console isn't defined in some WebWorkers, see #2558
+        if (typeof console !== "undefined") console.warn(message);
+        warnOnceHistory[message] = true;
+    }
+};

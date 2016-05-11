@@ -35,10 +35,9 @@ FillBucket.prototype.addFeature = function(feature) {
 };
 
 FillBucket.prototype.addFill = function(vertices) {
-    if (vertices.length < 3) {
-        //console.warn('a fill must have at least three vertices');
-        return;
-    }
+
+    // a fill must have at least three vertices
+    if (vertices.length < 3) return;
 
     // Calculate the total number of vertices we're going to produce so that we
     // can resize the buffer beforehand, or detect whether the current line
