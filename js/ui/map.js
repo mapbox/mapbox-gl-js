@@ -411,10 +411,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * which are fully evaluated for the given zoom level and feature.
      *
      * @example
-     * var features = map.queryRenderedFeatures([20, 35], { layers: ['my-layer-name'] });
+     * // Find all features at a point
+     * var features = map.queryRenderedFeatures(
+     *   [20, 35],
+     *   { layers: ['my-layer-name'] }
+     * );
      *
      * @example
-     * var features = map.queryRenderedFeatures([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
+     * // Find all features within a static bounding box
+     * var features = map.queryRenderedFeatures(
+     *   [[10, 20], [30, 50]],
+     *   { layers: ['my-layer-name'] }
+     * );
+     *
+     * @example
+     * // Find all features within a bounding box around a point
+     * var width = 10;
+     * var height = 20;
+     * var features = map.queryRenderedFeatures([
+     *   [point.x - width / 2, point.y - height / 2],
+     *   [point.x + width / 2, point.y + height / 2]
+     * ], { layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
