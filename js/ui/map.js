@@ -95,6 +95,7 @@ var Map = module.exports = function(options) {
         '_onSourceAdd',
         '_onSourceRemove',
         '_onSourceUpdate',
+        '_onWindowOnline',
         '_onWindowResize',
         'onError',
         '_update',
@@ -112,6 +113,7 @@ var Map = module.exports = function(options) {
     }.bind(this));
 
     if (typeof window !== 'undefined') {
+        window.addEventListener('online', this._onWindowOnline, false);
         window.addEventListener('resize', this._onWindowResize, false);
     }
 
@@ -988,6 +990,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     _onSourceUpdate: function(e) {
         this._update();
         this._forwardSourceEvent(e);
+    },
+
+    _onWindowOnline: function() {
+        this._update();
     },
 
     _onWindowResize: function() {
