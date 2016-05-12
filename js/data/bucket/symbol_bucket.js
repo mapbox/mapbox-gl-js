@@ -29,6 +29,8 @@ function SymbolBucket(options) {
     this.showCollisionBoxes = options.showCollisionBoxes;
     this.overscaling = options.overscaling;
     this.collisionBoxArray = options.collisionBoxArray;
+    this.symbolQuadsArray = options.symbolQuadsArray;
+    this.symbolInstancesArray = options.symbolInstancesArray;
 
     this.sdfIcons = options.sdfIcons;
     this.iconsNeedLinear = options.iconsNeedLinear;
@@ -327,6 +329,11 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
                         iconBoxScale, iconPadding, iconAlongLine));
         }
     }
+
+    for (var k = 0; k < this.symbolInstances.length; k++) {
+        this.addSymbolInstance(this.symbolInstances[k]);
+    }
+
 };
 
 SymbolBucket.prototype.anchorIsTooClose = function(text, repeatDistance, anchor) {
@@ -558,3 +565,56 @@ function SymbolInstance(anchor, line, shapedText, shapedIcon, layout, addToBuffe
                 shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 }
+
+SymbolBucket.prototype.addSymbolInstance = function(symbolInstance) {
+    var startGlyphIndex, endGlyphIndex, iconQuadIndex;
+    var quads = symbolInstance.glyphQuads ? symbolInstance.glyphQuads : [];
+    for (var i = 0; i < quads.length; i++) {
+        if (i === 0) {
+            startGlyphIndex = this.addSymbolQuad(quads[i]);
+        } else if (i === quads.length - 1) {
+            endGlyphIndex = this.addSymbolQuad(quads[i]);
+        } else {
+            this.addSymbolQuad(quads[i]);
+        }
+    }
+
+    if (symbolInstance.iconQuads && symbolInstance.iconQuads.length === 1) {
+        iconQuadIndex = this.addSymbolQuad(symbolInstance.iconQuads[0]);
+    }
+
+    return this.symbolInstancesArray.emplaceBack(
+        startGlyphIndex || -1,
+        endGlyphIndex || -1,
+        iconQuadIndex || -1,
+        symbolInstance.x,
+        symbolInstance.y,
+        symbolInstance.index);
+
+};
+
+SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
+    return this.symbolQuadsArray.emplaceBack(
+        // anchorPoints
+        symbolQuad.anchorPoint.x,
+        symbolQuad.anchorPoint.y,
+        // corners
+        symbolQuad.tl.x,
+        symbolQuad.tl.y,
+        symbolQuad.tr.x,
+        symbolQuad.tr.y,
+        symbolQuad.bl.x,
+        symbolQuad.bl.y,
+        symbolQuad.br.x,
+        symbolQuad.br.y,
+        // texture
+        symbolQuad.tex.h,
+        symbolQuad.tex.w,
+        symbolQuad.tex.x,
+        symbolQuad.tex.y,
+        //angle
+        symbolQuad.angle,
+        // scales
+        symbolQuad.minScale,
+        symbolQuad.maxScale);
+};
