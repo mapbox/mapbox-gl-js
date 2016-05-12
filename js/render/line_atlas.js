@@ -1,5 +1,7 @@
 'use strict';
 
+var util = require('../util/util');
+
 module.exports = LineAtlas;
 
 /**
@@ -50,7 +52,7 @@ LineAtlas.prototype.addDash = function(dasharray, round) {
     var offset = 128;
 
     if (this.nextRow + height > this.height) {
-        console.warn('LineAtlas out of space');
+        util.warnOnce('LineAtlas out of space');
         return null;
     }
 

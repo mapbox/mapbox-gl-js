@@ -229,7 +229,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
                 if (this.sdfIcons === undefined) {
                     this.sdfIcons = image.sdf;
                 } else if (this.sdfIcons !== image.sdf) {
-                    console.warn('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
+                    util.warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                 }
                 if (image.pixelRatio !== 1) {
                     this.iconsNeedLinear = true;

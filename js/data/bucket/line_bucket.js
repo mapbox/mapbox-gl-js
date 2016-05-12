@@ -106,10 +106,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         len--;
     }
 
-    if (vertices.length < 2) {
-        //console.warn('a line must have at least two vertices');
-        return;
-    }
+    // a line must have at least two vertices
+    if (vertices.length < 2) return;
 
     if (join === 'bevel') miterLimit = 1.05;
 
@@ -122,10 +120,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
     // we could be more precise, but it would only save a negligible amount of space
     this.makeRoomFor('line', len * 10);
 
-    if (len === 2 && closed) {
-        // console.warn('a line may not have coincident points');
-        return;
-    }
+    // a line may not have coincident points
+    if (len === 2 && closed) return;
 
     this.distance = 0;
 

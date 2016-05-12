@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('assert');
+var util = require('../util/util');
 
 module.exports = VertexArrayObject;
 
@@ -12,8 +13,6 @@ function VertexArrayObject() {
     this.vao = null;
 }
 
-var reported = false;
-
 VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
 
     var ext = gl.extVertexArrayObject;
@@ -24,9 +23,8 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBu
     if (ext) {
         if (!this.vao) this.vao = ext.createVertexArrayOES();
         ext.bindVertexArrayOES(this.vao);
-    } else if (!reported) {
-        console.warn('Not using VertexArrayObject extension.');
-        reported = true;
+    } else {
+        util.warnOnce('Not using VertexArrayObject extension.');
     }
 
     if (!this.boundProgram) {
