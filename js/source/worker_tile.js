@@ -5,6 +5,7 @@ var CollisionTile = require('../symbol/collision_tile');
 var Bucket = require('../data/bucket');
 var CollisionBoxArray = require('../symbol/collision_box');
 var DictionaryCoder = require('../util/dictionary_coder');
+var util = require('../util/util');
 
 module.exports = WorkerTile;
 
@@ -76,6 +77,13 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
     // read each layer, and sort its features into buckets
     if (data.layers) { // vectortile
         for (sourceLayerId in bucketsBySourceLayer) {
+            if (layer.version === 1) {
+                util.warnOnce(
+                    'Vector tile source "' + this.source + '" layer "' +
+                    sourceLayerId + '" does not use vector tile spec v2 ' +
+                    'and therefore may have some rendering errors.'
+                );
+            }
             layer = data.layers[sourceLayerId];
             if (layer) {
                 sortLayerIntoBuckets(layer, bucketsBySourceLayer[sourceLayerId]);
