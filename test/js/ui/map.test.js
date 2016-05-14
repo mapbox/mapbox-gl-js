@@ -806,6 +806,31 @@ test('Map', function(t) {
             });
         });
 
+        t.test('logs errors that happen during render', function (t) {
+            var error = console.error;
+
+            console.error = function (e) {
+                console.error = error;
+                t.deepEqual(e.message, 'in render');
+                t.end();
+            };
+
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('render', function () {
+                throw new Error('in render');
+            });
+
+            map._rerender = function () {};
+            map._render();
+        });
+
         t.end();
     });
 

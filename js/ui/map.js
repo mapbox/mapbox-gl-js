@@ -897,7 +897,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             }
 
         } catch (error) {
-            this.fire('error', error);
+            this.fire('error', {error: error});
         }
 
         return this;
