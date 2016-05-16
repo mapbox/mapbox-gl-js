@@ -400,23 +400,36 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Query rendered features within a point or rectangle.
+     * Query rendered features at a point or within a rectangle.
      *
      * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] - The geometry of a query region:
      * either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of
      * a bounding rectangle. Omitting this parameter (i.e. calling `queryRenderedFeatures` with zero arguments,
      * or with a single `params` argument), is equivalent to passing a bounding rectangle encompassing the entire
      * viewport.
-     * @param {Object} params
+     * @param {Object} [params]
      * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
-     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
+     * @param {Array} [params.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      *
-     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features
-     * matching the query parameters. The GeoJSON properties of each feature are taken from
-     * the original source. Each feature object also contains a top-level `layer`
-     * property whose value is an object representing the style layer to which the
-     * feature belongs. Layout and paint properties in this object contain values
-     * which are fully evaluated for the given zoom level and feature.
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
+     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects) satisfying the query parameters.
+     *
+     * The `properties` value of each feature contains the properties of the source feature. For GeoJSON sources, only
+     * string and numeric values are supported; null, Array, and Object values are not supported.
+     *
+     * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
+     * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
+     * for the given zoom level and feature.
+     *
+     * Only visible features are returned. The topmost rendered feature appears first in the returned array, and
+     * subsequent features are sorted by descending z-order. Features which are rendered multiple times due to wrapping
+     * across the antimeridian at low zoom levels are returned only once, subject to the caveat that follows.
+     *
+     * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
+     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
+     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
+     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
      *
      * @example
      * // Find all features at a point
@@ -488,14 +501,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get data from vector tiles as an array of GeoJSON Features.
+     * Query data from vector tile or GeoJSON sources.
      *
      * @param {string} sourceID source ID
      * @param {Object} params
-     * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from.
-     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
+     * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from. For vector tile
+     * sources, this parameter is required. For GeoJSON sources, it is ignored.
+     * @param {Array} [params.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      *
-     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
+     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects) satisfying the query parameters.
+     *
+     * In contrast to `queryRenderedFeatures`, `querySourceFeatures` returns all features matching the query parameters,
+     * whether they are rendered by the current style or not. The domain of the query consists of all currently-loaded
+     * vector tile or GeoJSON source tiles; `querySourceFeatures` does not load additional tiles beyond the currently
+     * visible viewport.
+     *
+     * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
+     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
+     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
+     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
      */
     querySourceFeatures: function(sourceID, params) {
         return this.style.querySourceFeatures(sourceID, params);
