@@ -74,5 +74,9 @@
   {
     "message": "layers[17].paint.fill-antialias.stops[0][0]: number expected, string found",
     "line": 238
+  },
+  {
+    "message": "layers[19].paint.background-color: property functions not supported",
+    "line": 260
   }
 ]

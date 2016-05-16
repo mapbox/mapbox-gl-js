@@ -550,48 +550,105 @@ navigation:
         <div class='pad2 keyline-bottom'>
           <a id='types-function' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-function' title='link to function'>Function</a></h3>
-          <p>The value for any layout or paint property may be specified as a <em>function</em>, allowing you to
-              parameterize the value according to the current zoom level. Functions are written as an array of stops,
-              where each stop is an array with two elements: a zoom level and a corresponding value. Stops must be in
-              ascending zoom order.
-          </p>
-          <p>
-            <span class='icon smooth-ramp quiet micro space-right inline' title='interpolated'></span>
-            Some properties support <em>interpolated functions</em>. The result of an interpolated function is an
-            interpolated value between the last stop whose zoom level is less than or equal to the current zoom level,
-            and the next stop. By default, linear interpolation is used, but you can use a different exponential base
-            for the interpolation curve via the <code>base</code> property. If the current zoom is less than the first
-            stop or greater than the last stop, the result is the value from the first or last stop respectively.
-          </p>
-          <p>
-            <span class='icon step-ramp quiet micro space-right inline' title='piecewise constant'></span>
-            All other properties support <em>piecewise constant</em> functions. The result of a piecewise constant
-            function is the value of the last stop whose zoom value is less than or equal to the current zoom level.
-          </p>
-          <div class='col12 clearfix'>
-            <div class='col6'>
-{% highlight json %}
-{
-    "line-width": {
-        "base": 1.5,
-        "stops": [[5, 1], [7, 2], [11, 3]]
-    }
-}
-{% endhighlight %}
-            </div>
-            <div class='col6 pad1x'>
-              <ul class='space-bottom2 small'>
-                <li class='pad0y'>
-                  <div><span class='code'>base</span><span class='pad1x quiet'>Optional <a href='#number'>number</a>. Default is <%= ref.function.base.default %>.</span></div>
-                  <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With values close to 1 the result increases linearly.</div>
-                </li>
-                <li class='pad0y'>
-                  <div><span class='code'>stops</span><span class='pad1x quiet'>Required <a href='#array'>array</a>.</span></div>
-                  <div class='pad1x'>An array of zoom level and value pairs. The value can be a number or a color value for color properties.</div>
-                </li>
-              </ul>
-            </div>
+
+          <p class='small'>The value for any layout or paint property may be specified as a <em>function</em>. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.</p>
+
+          <div class='col12 pad1x space-bottom2'>
+            <ul class='small'>
+              <li class='pad0y'>
+                <div><span class='code'>stops</span><em class='pad1x quiet'>Required <a href='#types-array'>array</a>.</em></div>
+                <div class='pad1x'>Functions are defined in terms of input and output values. A set of one input value and one output value is known as a "stop."</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>property</span><em class='pad1x quiet'>Optional <a href='#types-string'>string</a>.</em></div>
+                <div class='pad1x'>If specified, the function will take the specified feature property as an input. See <a href="#types-function-zoom-property">Zoom Functions and Property Functions</a> for more information.</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>base</span><em class='pad1x quiet'>Optional <a href='#types-number'>number</a>. Default is <%= ref.function.base.default %>.</em></div>
+                <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.</div>
+              </li>
+              <li class='pad0y'>
+                <div><span class='code'>type</span><em class='pad1x quiet'>Optional <a href='#types-string'>enum</a>. One of <var>continuous</var>, <var>interval</var>, <var>categorical</var>.</em></div>
+                <div class='pad1x'>
+                    <div class=''><var>continuous</var> functions generate an output by interpolating between stops just less than and just greater than the function input. This is the default for <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span> properties.</div>
+                    <div class=''></span><var>interval</var> functions return the output value of the stop just less than the function input. This is the default for <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span> properties.</div>
+                    <div class=''></span><var>categorical</var> functions return the output value of the stop equal to the function input.</div>
+                </ul>
+              </li>
+            </ul>
           </div>
+
+          <a id='types-function-zoom-property' class='anchor'></a>
+          <h4 class='space-bottom1'><a class='quiet' href='#types-function-zoom-property' title='link to zoom function'>Zoom Functions and Property Functions</a></h4>
+
+          <p class='small'><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements, the first is a zoom and the second is a function output value.</p>
+
+          <div class='col12'>
+              {% highlight js %}
+{
+  "circle-radius": {
+    "stops": [
+
+      // zoom is 5 -> circle radius will be 1px
+      [5, 1],
+
+      // zoom is 10 -> circle radius will be 2px
+      [10, 2]
+
+    ]
+  }
+}
+              {% endhighlight %}
+          </div>
+
+          <p class='small'><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
+
+          <div class='col12'>
+              {% highlight js %}
+{
+  "circle-color": {
+    "property": "temperature",
+    "stops": [
+
+      // "temperature" is 0   -> circle color will be blue
+      [0, 'blue'],
+
+      // "temperature" is 100 -> circle color will be red
+      [100, 'red']
+
+    ]
+  }
+}
+              {% endhighlight %}
+          </div>
+
+          <p class='small'><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
+
+          <div class='col12'>
+              {% highlight js %}
+{
+  "circle-radius": {
+    "property": "rating",
+    "stops": [
+
+      // zoom is 0 and "rating" is 0 -> circle radius will be 0px
+      [{zoom: 0, value: 0}, 0],
+
+      // zoom is 0 and "rating" is 5 -> circle radius will be 5px
+      [{zoom: 0, value: 5}, 5],
+
+      // zoom is 20 and "rating" is 0 -> circle radius will be 0px
+      [{zoom: 20, value: 0}, 0],
+
+      // zoom is 20 and "rating" is 5 -> circle radius will be 20px
+      [{zoom: 20, value: 5}, 20]
+
+    ]
+  }
+}
+              {% endhighlight %}
+          </div>
+
         </div>
 
         <div class='pad2'>

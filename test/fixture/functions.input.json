@@ -250,6 +250,18 @@
         "stops": [["good", true]]
       }
     }
+  },
+  {
+    "id": "invalid use of property function",
+    "type": "background",
+    "source": "source",
+    "source-layer": "layer",
+    "paint": {
+      "background-color": {
+        "property": "mapbox",
+        "stops": [["good", "green"]]
+      }
+    }
   }
   ]
 }

@@ -42,6 +42,8 @@ function validSchema(k, t, obj, ref) {
     'doc',
     'example',
     'function',
+    'zoom-function',
+    'property-function',
     'function-output',
     'length',
     'min-length',
