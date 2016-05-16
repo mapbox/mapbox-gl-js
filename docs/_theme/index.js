@@ -57,10 +57,10 @@ module.exports = function (comments, options, callback) {
     },
     md: function (ast, inline) {
       if (inline && ast && ast.children.length && ast.children[0].type === 'paragraph') {
-        return formatMarkdown({
+        ast = {
           type: 'root',
-          children: ast.children[0].children
-        }, namespaces);
+          children: ast.children[0].children.concat(ast.children.slice(1))
+        };
       }
       return formatMarkdown(ast, namespaces);
     },
