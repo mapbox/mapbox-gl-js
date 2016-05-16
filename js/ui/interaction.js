@@ -178,7 +178,7 @@ Interaction.prototype = {
 
 
 /**
- * When an event [fires]{@link #Evented.fire} as a result of a
+ * When an event fires as a result of a
  * user interaction, the event will be called with an EventData
  * object containing the original DOM event along with coordinates of
  * the event target.
