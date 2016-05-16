@@ -677,7 +677,15 @@ Style.prototype = util.inherit(Evented, {
             return callback(new Error('A source type called "' + name + '" already exists.'));
         }
         Source.setType(name, type);
-        callback(null, null);
+
+        if (!type.worker) {
+            return callback(null, null);
+        }
+
+        this.dispatcher.broadcast('load plugin', {
+            name: name,
+            url: type.worker
+        }, callback);
     },
 
     _handleErrors: function(validate, key, value, throws, props) {
@@ -724,6 +732,12 @@ Style.prototype = util.inherit(Evented, {
     },
 
     // Callbacks from web workers
+
+    // convenience for debugging workers, allowing them to write to the console
+    'log': function (params, callback) {
+        console.log(params);
+        if (callback) callback();
+    },
 
     'get sprite json': function(params, callback) {
         var sprite = this.sprite;

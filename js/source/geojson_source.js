@@ -7,7 +7,10 @@ var Source = require('./source');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
+var blobify = require('blobify');
+
 module.exports = GeoJSONSource;
+module.exports.worker = URL.createObjectURL(blobify(require('./geojson_source_worker')));
 
 /**
  * Create a GeoJSON data source instance given an options object
@@ -76,6 +79,7 @@ function GeoJSONSource(options) {
         remove: this._removeTile.bind(this),
         redoPlacement: this._redoTilePlacement.bind(this)
     });
+
 }
 
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
@@ -156,7 +160,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send('parse geojson', options, function(err) {
+        this.workerID = this.dispatcher.send('geojson.parse', options, function(err) {
             this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});
@@ -171,6 +175,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
+            plugin: 'geojson',
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
@@ -183,7 +188,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {
+        tile.workerID = this.dispatcher.send('load tile', params, function(err, data) {
 
             tile.unloadVectorData(this.map.painter);
 

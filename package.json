@@ -9,6 +9,7 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
+    "blobify": "^1.0.0",
     "brfs": "^1.4.0",
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
