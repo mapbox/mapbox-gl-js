@@ -424,6 +424,7 @@ TilePyramid.prototype = {
                 if (tileResult === undefined) {
                     tileResult = tileResults[tile.coord.id] = {
                         tile: tile,
+                        coord: coord,
                         queryGeometry: [],
                         scale: Math.pow(2, this.transform.zoom - tile.coord.z)
                     };

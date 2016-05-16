@@ -68,9 +68,9 @@ exports._getVisibleCoordinates = function() {
 };
 
 function sortTilesIn(a, b) {
-    var coordA = a.tile.coord;
-    var coordB = b.tile.coord;
-    return (coordA.z - coordB.z) || (coordA.y - coordB.y) || (coordA.x - coordB.x);
+    var coordA = a.coord;
+    var coordB = b.coord;
+    return (coordA.z - coordB.z) || (coordA.y - coordB.y) || (coordA.w - coordB.w) || (coordA.x - coordB.x);
 }
 
 function mergeRenderedFeatureLayers(tiles) {
