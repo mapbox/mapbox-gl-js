@@ -403,10 +403,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      *
-     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features
-     * matching the query parameters.
-     *  - Each feature's `properties` property is taken from the original GeoJSON source. Only string and number values are supported because the GeoJSON is converted to vector tiles internally.
-     *  - Each feature has a top-level `layer` property which is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
+     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. Each feature's `properties` property is taken from the original GeoJSON source (only string and number values are supported because the GeoJSON is converted to vector tiles internally). Each feature has a top-level `layer` property which contains a copy of the style spec layer used to draw the feature, with all functions evaluated for the current zoom level.
      *
      * @example
      * <caption>Find all features at a point</caption>
