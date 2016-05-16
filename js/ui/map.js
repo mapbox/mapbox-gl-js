@@ -400,7 +400,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Query rendered features within a point or rectangle.
      *
-     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
+     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: uses the entire viewport if omitted. The `params` object is passed as the first argument if omitted.
      * @param {Object} params
      * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
@@ -417,6 +417,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @example
      * var features = map.queryRenderedFeatures([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
+     *
+     * @example <caption>Query all rendered features from a single layer</caption>
+     * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
