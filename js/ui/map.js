@@ -404,28 +404,26 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
      *
      * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features
-     * matching the query parameters. The GeoJSON properties of each feature are taken from
-     * the original source. Each feature object also contains a top-level `layer`
-     * property whose value is an object representing the style layer to which the
-     * feature belongs. Layout and paint properties in this object contain values
-     * which are fully evaluated for the given zoom level and feature.
+     * matching the query parameters.
+     *  - Each feature's `properties` property is taken from the original GeoJSON source. Only string and number values are supported because the GeoJSON is converted to vector tiles internally.
+     *  - Each feature has a top-level `layer` property which is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
      *
      * @example
-     * // Find all features at a point
+     * <caption>Find all features at a point</caption>
      * var features = map.queryRenderedFeatures(
      *   [20, 35],
      *   { layers: ['my-layer-name'] }
      * );
      *
      * @example
-     * // Find all features within a static bounding box
+     * <caption>Find all features within a static bounding box</caption>
      * var features = map.queryRenderedFeatures(
      *   [[10, 20], [30, 50]],
      *   { layers: ['my-layer-name'] }
      * );
      *
      * @example
-     * // Find all features within a bounding box around a point
+     * <caption>Find all features within a bounding box around a point</caption>
      * var width = 10;
      * var height = 20;
      * var features = map.queryRenderedFeatures([
