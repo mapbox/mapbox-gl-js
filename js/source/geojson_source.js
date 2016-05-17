@@ -7,10 +7,10 @@ var Source = require('./source');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
-var blobify = require('blobify');
+var webworkify = require('webworkify');
 
 module.exports = GeoJSONSource;
-module.exports.worker = URL.createObjectURL(blobify(require('./geojson_source_worker')));
+module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_source_worker'), {bare: true}));
 
 /**
  * Create a GeoJSON data source instance given an options object

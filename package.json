@@ -9,7 +9,6 @@
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
   "dependencies": {
-    "blobify": "^1.0.0",
     "brfs": "^1.4.0",
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
@@ -34,7 +33,7 @@
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.2.0",
     "vt-pbf": "^2.0.2",
-    "webworkify": "^1.0.2"
+    "webworkify": "^1.2.0"
   },
   "devDependencies": {
     "benchmark": "~2.1.0",
