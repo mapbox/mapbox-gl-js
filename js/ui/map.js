@@ -1094,3 +1094,151 @@ function removeNode(node) {
   * @memberof Map
   * @instance
   */
+
+
+  /**
+   * When an event {@link Evented.fire fires} as a result of a
+   * user interaction, the event will be called with an EventData
+   * object containing the original DOM event along with coordinates of
+   * the event target.
+   *
+   * @typedef {Object} EventData
+   * @property {Event} originalEvent The original DOM event
+   * @property {Point} point The pixel location of the event
+   * @property {LngLat} lngLat The geographic location of the event
+   * @example
+   * map.on('click', function(data) {
+   *   var e = data && data.originalEvent;
+   *   console.log('got click ' + (e ? 'button = ' + e.button : ''));
+   * });
+   */
+
+  /**
+   * Mouse down event.
+   *
+   * @event mousedown
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [mousedown event](https://developer.mozilla.org/en-US/docs/Web/Events/mousedown)
+   */
+
+  /**
+   * Mouse up event.
+   *
+   * @event mouseup
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [mouseup event](https://developer.mozilla.org/en-US/docs/Web/Events/mouseup)
+   */
+
+  /**
+   * Mouse move event.
+   *
+   * @event mousemove
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [mousemouse event](https://developer.mozilla.org/en-US/docs/Web/Events/mousemove)
+   */
+
+  /**
+   * Touch start event.
+   *
+   * @event touchstart
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [touchstart event](https://developer.mozilla.org/en-US/docs/Web/Events/touchstart).
+   */
+
+  /**
+   * Touch end event.
+   *
+   * @event touchend
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [touchcancel event](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel).
+   */
+
+  /**
+   * Touch move event.
+   *
+   * @event touchmove
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [touchmove event](https://developer.mozilla.org/en-US/docs/Web/Events/touchmove).
+   */
+
+  /**
+   * Touch cancel event.
+   *
+   * @event touchcancel
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [touchcancel event](https://developer.mozilla.org/en-US/docs/Web/Events/touchcancel).
+   */
+
+  /**
+   * Click event.
+   *
+   * @event click
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [click event](https://developer.mozilla.org/en-US/docs/Web/Events/click)
+   */
+
+  /**
+   * Double click event.
+   *
+   * @event dblclick
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data
+   */
+
+  /**
+   * Context menu event.
+   *
+   * @event contextmenu
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data, if available
+   */
+
+  /**
+   * Load event. This event is emitted immediately after all necessary resources have been downloaded
+   * and the first visually complete rendering has occurred.
+   *
+   * @event load
+   * @memberof Map
+   * @instance
+   * @type {Object}
+   */
+
+  /**
+   * Move start event. This event is emitted just before the map begins a transition from one
+   * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+   *
+   * @event movestart
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data, if fired interactively
+   */
+
+  /**
+   * Move event. This event is emitted repeatedly during animated transitions from one view to
+   * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+   *
+   * @event move
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data, if fired interactively
+   */
+
+  /**
+   * Move end event. This event is emitted just after the map completes a transition from one
+   * view to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+   *
+   * @event moveend
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data, if fired interactively
+   */
