@@ -1,7 +1,8 @@
 'use strict';
 
 var TilePyramid = require('../source/tile_pyramid');
-var pyramid = new TilePyramid({ tileSize: 512 });
+var pyramid = new TilePyramid(null, { tileSize: 512 });
+var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var createUniformPragmas = require('./create_uniform_pragmas');
 
