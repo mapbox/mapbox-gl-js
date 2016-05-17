@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "csscolorparser": "~1.0.2",
-    "glob": "~4.0.2",
     "jsonlint-lines-primitives": "~1.6.0",
     "lodash.isequal": "^3.0.4",
     "minimist": "0.0.8",
@@ -19,11 +18,12 @@
     "sort-object": "^0.3.2"
   },
   "devDependencies": {
-    "coveralls": "~2.10.0",
+    "coveralls": "^2.11.9",
     "coverify": "~1.0.7",
     "dox": "^0.6.1",
     "doxme": "^1.4.2",
     "eslint": "^0.16.2",
+    "glob": "^7.0.3",
     "istanbul": "~0.2.11",
     "tape": "^2.12.1",
     "tap-min": "^1.0.0",
