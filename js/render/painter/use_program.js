@@ -61,6 +61,27 @@ var definitions = {
     }
 };
 
+var vertexSourcePrelude = (
+    'float evaluate_zoom_function_1(const vec4 values, const float t) {' +
+    '    if (t < 1.0) {' +
+    '        return mix(values[0], values[1], t);' +
+    '    } else if (t < 2.0) {' +
+    '        return mix(values[1], values[2], t - 1.0);' +
+    '    } else {' +
+    '        return mix(values[2], values[3], t - 2.0);' +
+    '    }' +
+    '}' +
+    'vec4 evaluate_zoom_function_4(const vec4 value0, const vec4 value1, const vec4 value2, const vec4 value3, const float t) {' +
+    '    if (t < 1.0) {' +
+    '        return mix(value0, value1, t);' +
+    '    } else if (t < 2.0) {' +
+    '        return mix(value1, value2, t - 1.0);' +
+    '    } else {' +
+    '        return mix(value2, value3, t - 2.0);' +
+    '    }' +
+    '}'
+);
+
 module.exports._createProgram = function(name, defines, vertexPragmas, fragmentPragmas) {
     var gl = this.gl;
     var program = gl.createProgram();
@@ -78,7 +99,7 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
     gl.attachShader(program, fragmentShader);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, applyPragmas(definesSource + definition.vertexSource, vertexPragmas));
+    gl.shaderSource(vertexShader, applyPragmas(definesSource + vertexSourcePrelude + definition.vertexSource, vertexPragmas));
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
     gl.attachShader(program, vertexShader);
