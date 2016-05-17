@@ -37,7 +37,7 @@ function signedArea(ring) {
     for (var i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
         p1 = ring[i];
         p2 = ring[j];
-        sum += (p2[0] - p1[0]) * (p1[1] + p2[1]);
+        sum += (p2.x - p1.x) * (p1.y + p2.y);
     }
     return sum;
 }

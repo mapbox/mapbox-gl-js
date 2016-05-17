@@ -32,7 +32,7 @@ FillBucket.prototype.programInterfaces = {
 
 FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
-    var polygons = classifyRings(convertCoords(lines));
+    var polygons = classifyRings(lines);
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
@@ -57,15 +57,15 @@ FillBucket.prototype.addPolygon = function(polygon) {
         for (var v = 0; v < ring.length; v++) {
             var vertex = ring[v];
 
-            var index = group.layout.vertex.emplaceBack(vertex[0], vertex[1]);
+            var index = group.layout.vertex.emplaceBack(vertex.x, vertex.y);
 
             if (v >= 1) {
                 group.layout.element2.emplaceBack(index - 1, index);
             }
 
             // convert to format used by earcut
-            flattened.push(vertex[0]);
-            flattened.push(vertex[1]);
+            flattened.push(vertex.x);
+            flattened.push(vertex.y);
         }
     }
 
@@ -75,16 +75,3 @@ FillBucket.prototype.addPolygon = function(polygon) {
         group.layout.element.emplaceBack(triangleIndices[i] + startIndex);
     }
 };
-
-function convertCoords(rings) {
-    var result = [];
-    for (var i = 0; i < rings.length; i++) {
-        var ring = [];
-        for (var j = 0; j < rings[i].length; j++) {
-            var p = rings[i][j];
-            ring.push([p.x, p.y]);
-        }
-        result.push(ring);
-    }
-    return result;
-}
