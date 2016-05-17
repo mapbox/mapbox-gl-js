@@ -239,6 +239,19 @@ navigation:
 }
 {% endhighlight %}
           </div>
+        <p>
+          This example of a GeoJSON source refers to an external GeoJSON document via its URL. The
+          GeoJSON document must be on the same domain or accessible using 
+          <a href='http://enable-cors.org/'>CORS</a>.
+        </p>
+  <div class='space-bottom1 clearfix'>
+{% highlight json%}
+"geojson-lines": {
+  "type": "geojson",
+  "data": "./lines.geojson"
+}
+{% endhighlight %}
+          </div>
         </div>
         <div id='sources-image' class='pad2 keyline-bottom'>
           <h3 class='space-bottom1'><a href='#sources-image' title='link to image'>image</a></h3>
