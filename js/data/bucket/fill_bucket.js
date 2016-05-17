@@ -3,6 +3,8 @@
 var Bucket = require('../bucket');
 var util = require('../../util/util');
 var loadGeometry = require('../load_geometry');
+var earcut = require('earcut');
+var classifyRings = require('../../util/classify_rings');
 
 module.exports = FillBucket;
 
@@ -16,6 +18,7 @@ FillBucket.prototype.programInterfaces = {
     fill: {
         vertexBuffer: true,
         elementBuffer: true,
+        elementBufferComponents: 1,
         elementBuffer2: true,
         elementBuffer2Components: 2,
 
@@ -29,45 +32,46 @@ FillBucket.prototype.programInterfaces = {
 
 FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
-    for (var i = 0; i < lines.length; i++) {
-        this.addFill(lines[i]);
+    var polygons = classifyRings(lines);
+    for (var i = 0; i < polygons.length; i++) {
+        this.addPolygon(polygons[i]);
     }
 };
 
-FillBucket.prototype.addFill = function(vertices) {
+FillBucket.prototype.addPolygon = function(polygon) {
+    var numVertices = 0;
+    for (var k = 0; k < polygon.length; k++) {
+        numVertices += polygon[k].length;
+    }
 
-    // a fill must have at least three vertices
-    if (vertices.length < 3) return;
+    var group = this.makeRoomFor('fill', numVertices);
+    var flattened = [];
+    var holeIndices = [];
+    var startIndex = group.layout.vertex.length;
 
-    // Calculate the total number of vertices we're going to produce so that we
-    // can resize the buffer beforehand, or detect whether the current line
-    // won't fit into the buffer anymore.
-    // In order to be able to use the vertex buffer for drawing the antialiased
-    // outlines, we separate all polygon vertices with a degenerate (out-of-
-    // viewplane) vertex.
+    for (var r = 0; r < polygon.length; r++) {
+        var ring = polygon[r];
 
-    var len = vertices.length;
+        if (r > 0) holeIndices.push(flattened.length / 2);
 
-    // Expand this geometry buffer to hold all the required vertices.
-    var group = this.makeRoomFor('fill', len + 1);
+        for (var v = 0; v < ring.length; v++) {
+            var vertex = ring[v];
 
-    // We're generating triangle fans, so we always start with the first coordinate in this polygon.
-    var firstIndex, prevIndex;
-    for (var i = 0; i < vertices.length; i++) {
-        var currentVertex = vertices[i];
+            var index = group.layout.vertex.emplaceBack(vertex.x, vertex.y);
 
-        var currentIndex = group.layout.vertex.emplaceBack(currentVertex.x, currentVertex.y);
-        if (i === 0) firstIndex = currentIndex;
+            if (v >= 1) {
+                group.layout.element2.emplaceBack(index - 1, index);
+            }
 
-        // Only add triangles that have distinct vertices.
-        if (i >= 2 && (currentVertex.x !== vertices[0].x || currentVertex.y !== vertices[0].y)) {
-            group.layout.element.emplaceBack(firstIndex, prevIndex, currentIndex);
+            // convert to format used by earcut
+            flattened.push(vertex.x);
+            flattened.push(vertex.y);
         }
+    }
 
-        if (i >= 1) {
-            group.layout.element2.emplaceBack(prevIndex, currentIndex);
-        }
+    var triangleIndices = earcut(flattened, holeIndices);
 
-        prevIndex = currentIndex;
+    for (var i = 0; i < triangleIndices.length; i++) {
+        group.layout.element.emplaceBack(triangleIndices[i] + startIndex);
     }
 };

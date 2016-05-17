@@ -18,6 +18,7 @@ function draw(painter, source, layer, coords) {
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
+        painter.setDepthSublayer(1);
         for (var i = 0; i < coords.length; i++) {
             drawFill(painter, source, layer, coords[i]);
         }
@@ -82,53 +83,6 @@ function drawFill(painter, source, layer, coord) {
     var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
-
-    var posMatrix = coord.posMatrix;
-    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
-
-    // Draw the stencil mask.
-    painter.setDepthSublayer(1);
-
-    // We're only drawFilling to the first seven bits (== support a maximum of
-    // 8 overlapping polygons in one place before we get rendering errors).
-    gl.stencilMask(0x07);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
-
-    // Draw front facing triangles. Wherever the 0x80 bit is 1, we are
-    // increasing the lower 7 bits by one if the triangle is a front-facing
-    // triangle. This means that all visible polygons should be in CCW
-    // orientation, while all holes (see below) are in CW orientation.
-    painter.enableTileClippingMask(coord);
-
-    // When we do a nonzero fill, we count the number of times a pixel is
-    // covered by a counterclockwise polygon, and subtract the number of
-    // times it is "uncovered" by a clockwise polygon.
-    gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
-    gl.stencilOpSeparate(gl.BACK, gl.KEEP, gl.KEEP, gl.DECR_WRAP);
-
-    // When drawFilling a shape, we first drawFill all shapes to the stencil buffer
-    // and incrementing all areas where polygons are
-    gl.colorMask(false, false, false, false);
-    painter.depthMask(false);
-
-    // Draw the actual triangle fan into the stencil buffer.
-    var fillProgram = painter.useProgram('fill');
-    gl.uniformMatrix4fv(fillProgram.u_matrix, false, translatedPosMatrix);
-
-    for (var i = 0; i < bufferGroups.length; i++) {
-        var group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, fillProgram, group.layout.vertex, group.layout.element);
-        gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
-    }
-
-    // Now that we have the stencil mask in the stencil buffer, we can start
-    // writing to the color buffer.
-    gl.colorMask(true, true, true, true);
-    painter.depthMask(true);
-
-    // From now on, we don't want to update the stencil buffer anymore.
-    gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-    gl.stencilMask(0x0);
     var program;
 
     if (image) {
@@ -139,24 +93,26 @@ function drawFill(painter, source, layer, coord) {
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
 
-        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
-
     } else {
-        // Draw filling rectangle.
         program = painter.useProgram('fill');
-        gl.uniform4fv(fillProgram.u_color, color);
-        gl.uniform1f(fillProgram.u_opacity, opacity);
-        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
+        gl.uniform4fv(program.u_color, color);
+        gl.uniform1f(program.u_opacity, opacity);
     }
 
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+        coord.posMatrix,
+        tile,
+        layer.paint['fill-translate'],
+        layer.paint['fill-translate-anchor']
+    ));
 
-    // Only draw regions that we marked
-    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
+    painter.enableTileClippingMask(coord);
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
-
-    gl.stencilMask(0x00);
+    for (var i = 0; i < bufferGroups.length; i++) {
+        var group = bufferGroups[i];
+        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
+        gl.drawElements(gl.TRIANGLES, group.layout.element.length, gl.UNSIGNED_SHORT, 0);
+    }
 }
 
 function drawStroke(painter, source, layer, coord) {

@@ -11,6 +11,7 @@
   "dependencies": {
     "brfs": "^1.4.0",
     "csscolorparser": "^1.0.2",
+    "earcut": "^2.0.3",
     "envify": "^3.4.0",
     "feature-filter": "^2.1.0",
     "geojson-rewind": "^0.1.0",
@@ -45,7 +46,7 @@
     "express": "^4.13.4",
     "gl": "^2.1.5",
     "istanbul": "^0.4.2",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#0bdc384c9ad9457f2f0f30cd6aae21d18a9b73dc",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#d3dc8569b6782cfeead4a0989bf92efe1514071f",
     "nyc": "^6.1.1",
     "sinon": "^1.15.4",
     "st": "^1.0.0",
