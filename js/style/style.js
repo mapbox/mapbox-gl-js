@@ -17,6 +17,12 @@ var Source = require('../source/source');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
 
+var VectorSource = require('../source/vector_tile_source');
+var RasterSource = require('../source/raster_tile_source');
+var GeojsonSource = require('../source/geojson_source');
+var VideoSource = require('../source/video_source');
+var ImageSource = require('../source/image_source');
+
 module.exports = Style;
 
 function Style(stylesheet, animationLoop) {
@@ -40,13 +46,11 @@ function Style(stylesheet, animationLoop) {
 
     this._resetUpdates();
 
-    var loaded = function(err, stylesheet) {
+    var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
         }
-
-        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
 
         this._loaded = true;
         this.stylesheet = stylesheet;
@@ -66,12 +70,35 @@ function Style(stylesheet, animationLoop) {
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
         this.fire('load');
+
+        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
     }.bind(this);
 
-    if (typeof stylesheet === 'string') {
-        ajax.getJSON(normalizeURL(stylesheet), loaded);
+    var sourceTypesLoaded = function(err) {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
+        if (typeof stylesheet === 'string') {
+            ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
+        } else {
+            browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
+        }
+    }.bind(this);
+
+    if (Source.getType('vector')) {
+        sourceTypesLoaded();
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        util.asyncAll([
+          ['vector', VectorSource],
+          ['raster', RasterSource],
+          ['geojson', GeojsonSource],
+          ['video', VideoSource],
+          ['image', ImageSource]
+        ], function (type, done) {
+            this.addSourceType(type[0], type[1], done);
+        }.bind(this), sourceTypesLoaded);
     }
 
     this.on('source.load', function(event) {
@@ -643,6 +670,14 @@ Style.prototype = util.inherit(Evented, {
         }
         var source = this.getSource(sourceID);
         return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+    },
+
+    addSourceType: function (name, type, callback) {
+        if (Source.getType(name)) {
+            return callback(new Error('A source type called "' + name + '" already exists.'));
+        }
+        Source.setType(name, type);
+        callback(null, null);
     },
 
     _handleErrors: function(validate, key, value, throws, props) {

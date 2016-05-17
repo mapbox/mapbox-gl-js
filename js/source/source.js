@@ -143,6 +143,8 @@ exports._querySourceFeatures = function(params) {
     return result;
 };
 
+var sourceTypes = {};
+
 /*
  * Create a tiled data source instance given an options object
  *
@@ -161,33 +163,23 @@ exports._querySourceFeatures = function(params) {
  * map.removeSource('some id');  // remove
  */
 exports.create = function(source) {
-    // This is not at file scope in order to avoid a circular require.
-    var sources = {
-        vector: require('./vector_tile_source'),
-        raster: require('./raster_tile_source'),
-        geojson: require('./geojson_source'),
-        video: require('./video_source'),
-        image: require('./image_source')
-    };
-
-    return exports.is(source) ? source : new sources[source.type](source);
+    return exports.is(source) ? source : new sourceTypes[source.type](source);
 };
 
 exports.is = function(source) {
-    // This is not at file scope in order to avoid a circular require.
-    var sources = {
-        vector: require('./vector_tile_source'),
-        raster: require('./raster_tile_source'),
-        geojson: require('./geojson_source'),
-        video: require('./video_source'),
-        image: require('./image_source')
-    };
-
-    for (var type in sources) {
-        if (source instanceof sources[type]) {
+    for (var type in sourceTypes) {
+        if (source instanceof sourceTypes[type]) {
             return true;
         }
     }
 
     return false;
+};
+
+exports.getType = function (name) {
+    return sourceTypes[name];
+};
+
+exports.setType = function (name, type) {
+    sourceTypes[name] = type;
 };
