@@ -89,6 +89,14 @@ var map = new mapboxgl.Map({
 });
 ```
 
+### Using import
+
+If you're using the ES6 module system, you can import `mapboxgl` like so:
+
+```js
+import mapboxgl from 'mapbox-gl';
+```
+
 ## Contributing to Mapbox GL JS
 
 See [CONTRIBUTING.md](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md).
