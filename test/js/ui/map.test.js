@@ -32,6 +32,45 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('disables handlers', function(t) {
+        t.test('disables all handlers', function(t) {
+            var map = createMap({interactive: false});
+
+            t.notOk(map.boxZoom.isEnabled());
+            t.notOk(map.doubleClickZoom.isEnabled());
+            t.notOk(map.dragPan.isEnabled());
+            t.notOk(map.dragRotate.isEnabled());
+            t.notOk(map.keyboard.isEnabled());
+            t.notOk(map.scrollZoom.isEnabled());
+            t.notOk(map.touchZoomRotate.isEnabled());
+
+            t.end();
+        });
+
+        var handlerNames = [
+            'scrollZoom',
+            'boxZoom',
+            'dragRotate',
+            'dragPan',
+            'keyboard',
+            'doubleClickZoom',
+            'touchZoomRotate'
+        ];
+        handlerNames.forEach(function(handlerName) {
+            t.test('disables "' + handlerName + '" handler', function(t) {
+                var options = {};
+                options[handlerName] = false;
+                var map = createMap(options);
+
+                t.notOk(map[handlerName].isEnabled());
+
+                t.end();
+            });
+        });
+
+        t.end();
+    });
+
     t.test('emits load event after a style is set', function(t) {
         var map = createMap();
 

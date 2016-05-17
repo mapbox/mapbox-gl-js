@@ -13,7 +13,7 @@ var Painter = require('../render/painter');
 var Transform = require('../geo/transform');
 var Hash = require('./hash');
 
-var Interaction = require('./interaction');
+var bindHandlers = require('./bind_handlers');
 
 var Camera = require('./camera');
 var LngLat = require('../geo/lng_lat');
@@ -23,6 +23,34 @@ var Attribution = require('./control/attribution');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
+var defaultOptions = {
+    center: [0, 0],
+    zoom: 0,
+    bearing: 0,
+    pitch: 0,
+
+    minZoom: defaultMinZoom,
+    maxZoom: defaultMaxZoom,
+
+    interactive: true,
+
+    scrollZoom: true,
+    boxZoom: true,
+    dragRotate: true,
+    dragPan: true,
+    keyboard: true,
+    doubleClickZoom: true,
+    touchZoomRotate: true,
+
+    bearingSnap: 7,
+
+    hash: false,
+
+    attributionControl: true,
+
+    failIfMajorPerformanceCaveat: false,
+    preserveDrawingBuffer: false
+};
 
 /**
  * Creates a map instance. This is usually the beginning of your map:
@@ -67,7 +95,7 @@ var defaultMaxZoom = 20;
  */
 var Map = module.exports = function(options) {
 
-    options = util.inherit(this.options, options);
+    options = util.extend({}, defaultOptions, options);
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -117,11 +145,15 @@ var Map = module.exports = function(options) {
         window.addEventListener('resize', this._onWindowResize, false);
     }
 
-    this.interaction = new Interaction(this);
-
-    if (options.interactive) {
-        this.interaction.enable();
-    }
+    bindHandlers(this, {
+        scrollZoom: options.interactive && options.scrollZoom,
+        boxZoom: options.interactive && options.boxZoom,
+        dragRotate: options.interactive && options.dragRotate,
+        dragPan: options.interactive && options.dragPan,
+        keyboard: options.interactive && options.keyboard,
+        doubleClickZoom: options.interactive && options.doubleClickZoom,
+        touchZoomRotate: options.interactive && options.touchZoomRotate
+    });
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
@@ -148,35 +180,6 @@ var Map = module.exports = function(options) {
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Camera.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
-
-    options: {
-        center: [0, 0],
-        zoom: 0,
-        bearing: 0,
-        pitch: 0,
-
-        minZoom: defaultMinZoom,
-        maxZoom: defaultMaxZoom,
-
-        interactive: true,
-
-        scrollZoom: true,
-        boxZoom: true,
-        dragRotate: true,
-        dragPan: true,
-        keyboard: true,
-        doubleClickZoom: true,
-        touchZoomRotate: true,
-
-        bearingSnap: 7,
-
-        hash: false,
-
-        attributionControl: true,
-
-        failIfMajorPerformanceCaveat: false,
-        preserveDrawingBuffer: false
-    },
 
     /**
      * Adds a control to the map, calling `control.addTo(this)`.
