@@ -7,12 +7,6 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
-var supercluster = require('supercluster');
-
-var geojsonvt = require('geojson-vt');
-var rewind = require('geojson-rewind');
-var GeoJSONWrapper = require('./geojson_wrapper');
-var vtpbf = require('vt-pbf');
 
 module.exports = function(self) {
     return new Worker(self);
@@ -21,13 +15,31 @@ module.exports = function(self) {
 function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
-    this.loading = {};
 
+    this.loading = {};
     this.loaded = {};
-    this.geoJSONIndexes = {};
+
+    this.workerSources = {};
+    self.registerWorkerSource = function (name, workerSource) {
+        if (this.workerSources[name]) {
+            throw new Error('Worker source with name "' + name + '" already registered.');
+        }
+        this.workerSources[name] = workerSource;
+    }.bind(this);
 }
 
 util.extend(Worker.prototype, {
+    // used by 'load tile' target
+    loadVectorTile: function (params, callback) {
+        var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
+        return function abort () { xhr.abort(); };
+        function done(err, data) {
+            if (err) { return callback(err); }
+            var tile =  new vt.VectorTile(new Protobuf(new Uint8Array(data)));
+            callback(err, { tile: tile, rawTileData: data });
+        }
+    },
+
     'set layers': function(layers) {
         this.layers = {};
         var that = this;
@@ -92,6 +104,13 @@ util.extend(Worker.prototype, {
         this.layerFamilies = createLayerFamilies(this.layers);
     },
 
+    /*
+     * Load a WorkerSource script at params.url.  The script is run
+     * (using importScripts) with `registerWorkerSource` in scope, which is a
+     * taking `(name, workerSourceObject)`.  `workerSourceObject` can have:
+     *  - a `loadTile` member, which provides an alternative implementation to `Worker.prototype.loadVectorTile`, yielding a VectorTile object.  If this is provided, then a Source can call `'load tile'` with `type: name` in the params to have the worker use this implementation.
+     *  - any other `key: method` pairs, which can be invoked from a source with `dispatcher.send('sourcetype.method', params, callback)`.
+     */
     'load tile': function(params, callback) {
         var source = params.source,
             uid = params.uid;
@@ -99,18 +118,21 @@ util.extend(Worker.prototype, {
         if (!this.loading[source])
             this.loading[source] = {};
 
-
         var tile = this.loading[source][uid] = new WorkerTile(params);
-
-        tile.xhr = ajax.getArrayBuffer(params.url, done.bind(this));
+        if (!params.type) {
+            tile.abort = this.loadVectorTile(params, done.bind(this));
+        } else {
+            tile.abort = this.workerSources[params.type].loadTile(params, done.bind(this));
+        }
 
         function done(err, data) {
             delete this.loading[source][uid];
 
             if (err) return callback(err);
+            if (!data) return callback(null, null);
 
-            tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layerFamilies, this.actor, data, callback);
+            tile.data = data.tile;
+            tile.parse(tile.data, this.layerFamilies, this.actor, data.rawTileData, callback);
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -129,8 +151,8 @@ util.extend(Worker.prototype, {
     'abort tile': function(params) {
         var loading = this.loading[params.source],
             uid = params.uid;
-        if (loading && loading[uid]) {
-            loading[uid].xhr.abort();
+        if (loading && loading[uid] && loading[uid].abort) {
+            loading[uid].abort();
             delete loading[uid];
         }
     },
@@ -161,60 +183,12 @@ util.extend(Worker.prototype, {
         }
     },
 
-    'parse geojson': function(params, callback) {
-        var indexData = function(err, data) {
-            rewind(data, true);
-            if (err) return callback(err);
-            if (typeof data != 'object') {
-                return callback(new Error("Input data is not a valid GeoJSON object."));
-            }
-            try {
-                this.geoJSONIndexes[params.source] = params.cluster ?
-                    supercluster(params.superclusterOptions).load(data.features) :
-                    geojsonvt(data, params.geojsonVtOptions);
-            } catch (err) {
-                return callback(err);
-            }
-            callback(null);
-        }.bind(this);
-
-        // Not, because of same origin issues, urls must either include an
-        // explicit origin or absolute path.
-        // ie: /foo/bar.json or http://example.com/bar.json
-        // but not ../foo/bar.json
-        if (params.url) {
-            ajax.getJSON(params.url, indexData);
-        } else if (typeof params.data === 'string') {
-            indexData(null, JSON.parse(params.data));
-        } else {
-            return callback(new Error("Input data is not a valid GeoJSON object."));
-        }
-    },
-
-    'load geojson tile': function(params, callback) {
-        var source = params.source,
-            coord = params.coord;
-
-        if (!this.geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
-
-        var geoJSONTile = this.geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
-
-        var tile = geoJSONTile ? new WorkerTile(params) : undefined;
-
-        this.loaded[source] = this.loaded[source] || {};
-        this.loaded[source][params.uid] = tile;
-
-        if (geoJSONTile) {
-            var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-            geojsonWrapper.name = '_geojsonTileLayer';
-            var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
-            if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-                // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-                pbf = new Uint8Array(pbf);
-            }
-            tile.parse(geojsonWrapper, this.layerFamilies, this.actor, pbf.buffer, callback);
-        } else {
-            return callback(null, null); // nothing in the given tile
+    'load worker source': function(params, callback) {
+        try {
+            self.importScripts(params.url);
+            callback();
+        } catch (e) {
+            callback(e);
         }
     }
 });
@@ -239,3 +213,4 @@ function createLayerFamilies(layers) {
 
     return families;
 }
+

@@ -37,7 +37,7 @@
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.2.1",
     "vt-pbf": "^2.0.2",
-    "webworkify": "^1.0.2"
+    "webworkify": "^1.2.0"
   },
   "devDependencies": {
     "benchmark": "~2.1.0",

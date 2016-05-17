@@ -1,63 +1,48 @@
 'use strict';
 
 var util = require('../util/util');
-var Evented = require('../util/evented');
 var Source = require('./source');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports = VectorTileSource;
+module.exports.create = function (id, options, dispatcher, onChange, callback) {
+    Source._loadTileJSON(options, function (err, tileJSON) {
+        if (err) {
+            return callback(err);
+        }
+        var vts = new VectorTileSource(id, util.extend(options, tileJSON), dispatcher);
+        util.extend(vts, tileJSON);
+        callback(null, vts);
+    });
+};
 
-function VectorTileSource(options) {
+function VectorTileSource(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     this._options = util.extend({ type: 'vector' }, options);
 
     if (this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
-
-    Source._loadTileJSON.call(this, options);
 }
 
-VectorTileSource.prototype = util.inherit(Evented, {
+VectorTileSource.prototype = {
     minzoom: 0,
     maxzoom: 22,
     scheme: 'xyz',
     tileSize: 512,
     reparseOverscaled: true,
-    _loaded: false,
     isTileClipped: true,
 
     onAdd: function(map) {
         this.map = map;
     },
 
-    loaded: function() {
-        return this._pyramid && this._pyramid.loaded();
-    },
-
-    update: function(transform) {
-        if (this._pyramid) {
-            this._pyramid.update(this.used, transform);
-        }
-    },
-
-    reload: function() {
-        if (this._pyramid) {
-            this._pyramid.reload();
-        }
-    },
-
     serialize: function() {
         return util.extend({}, this._options);
     },
 
-    getVisibleCoordinates: Source._getVisibleCoordinates,
-    getTile: Source._getTile,
-
-    queryRenderedFeatures: Source._queryRenderedVectorFeatures,
-    querySourceFeatures: Source._querySourceFeatures,
-
-    _loadTile: function(tile) {
+    load: function(tile, cb) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
@@ -74,54 +59,36 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
         if (tile.workerID) {
             params.rawTileData = tile.rawTileData;
-            this.dispatcher.send('reload tile', params, this._tileLoaded.bind(this, tile), tile.workerID);
+            this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
         } else {
-            tile.workerID = this.dispatcher.send('load tile', params, this._tileLoaded.bind(this, tile));
+            tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
+        }
+
+        function done(err, data) {
+            if (tile.aborted)
+                return;
+
+            if (err) {
+                return cb(err);
+            }
+
+            tile.loadVectorData(data, this.map.style);
+
+            if (tile.redoWhenDone) {
+                tile.redoWhenDone = false;
+                tile.redoPlacement(this);
+            }
+
+            cb(null, data);
         }
     },
 
-    _tileLoaded: function(tile, err, data) {
-        if (tile.aborted)
-            return;
-
-        if (err) {
-            tile.errored = true;
-            this.fire('tile.error', {tile: tile, error: err});
-            return;
-        }
-
-        tile.loadVectorData(data, this.map.style);
-
-        if (tile.redoWhenDone) {
-            tile.redoWhenDone = false;
-            tile.redoPlacement(this);
-        }
-
-        this.fire('tile.load', {tile: tile});
-        this.fire('tile.stats', data.bucketStats);
-    },
-
-    _abortTile: function(tile) {
-        tile.aborted = true;
+    abort: function(tile) {
         this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
-    _addTile: function(tile) {
-        this.fire('tile.add', {tile: tile});
-    },
-
-    _removeTile: function(tile) {
-        this.fire('tile.remove', {tile: tile});
-    },
-
-    _unloadTile: function(tile) {
+    unload: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
-    },
-
-    redoPlacement: Source.redoPlacement,
-
-    _redoTilePlacement: function(tile) {
-        tile.redoPlacement(this);
     }
-});
+};
