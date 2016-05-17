@@ -1,5 +1,6 @@
 'use strict';
 
+var util = require('../util');
 var Actor = require('../actor');
 var WebWorkify = require('webworkify');
 
@@ -17,9 +18,15 @@ function Dispatcher(length, parent) {
 }
 
 Dispatcher.prototype = {
-    broadcast: function(type, data) {
-        for (var i = 0; i < this.actors.length; i++) {
-            this.actors[i].send(type, data);
+    broadcast: function(type, data, cb) {
+        if (typeof cb !== 'function') {
+            for (var i = 0; i < this.actors.length; i++) {
+                this.actors[i].send(type, data);
+            }
+        } else {
+            util.asyncAll(this.actors, function (actor, done) {
+                actor.send(type, data, done);
+            }, cb);
         }
     },
 

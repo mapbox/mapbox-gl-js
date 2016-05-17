@@ -39,8 +39,8 @@ function Dispatcher(length, parent) {
 }
 
 Dispatcher.prototype = {
-    broadcast: function(type, data) {
-        this.actor.send(type, data);
+    broadcast: function(type, data, callback) {
+        this.actor.send(type, data, callback);
     },
 
     send: function(type, data, callback, targetID, buffers) {
