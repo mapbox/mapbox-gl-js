@@ -139,7 +139,15 @@ navigation:
       <h2><a href='#sources' title='link to sources'>Sources</a></h2>
       <p>
         Sources supply data to be shown on the map. The type of source is specified by the <code>"type"</code> property,
-        and must be one of <var><%= source_types.join(', ') %></var>. Tiled sources (vector and raster) must specify
+        and must be one of <var><%= source_types.join(', ') %></var>. Adding a source
+        won't immediately make data appear on the map because sources don't contain
+        styling details like color or width. Layers refer
+        to a source and give it a visual representation. This makes it possible
+        to style the same source in different ways, like differentiating between
+        types of roads in a highways layer.
+      </p>
+      <p>
+        Tiled sources (vector and raster) must specify
         their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON specification</a>.
         This can be done in two ways:
       </p>
@@ -400,6 +408,13 @@ navigation:
       <p>
         A style's <code>layers</code> property lists all of the layers available in that style. The type of
         layer is specified by the <code>"type"</code> property, and must be one of <var><%= layer_types.join(', ') %></var>.
+      </p>
+      <p>
+        Except for layers of the <var>background</var> type, each layer needs
+        to refer to a source. Layers take the data that they get from a source,
+        optionally filter features, and then define how those features are
+        styled.
+      </p>
         <% if (ref.$root.layers.example) { %>
         <div class='space-bottom1 pad2x clearfix'>
 {% highlight json %}
