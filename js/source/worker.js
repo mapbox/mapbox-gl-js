@@ -26,7 +26,6 @@ function Worker(self) {
         }
         this.plugins[name] = plugin;
     }.bind(this);
-    self.log = this.actor.send.bind(this.actor, 'log');
 }
 
 util.extend(Worker.prototype, {

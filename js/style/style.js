@@ -737,12 +737,6 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    // convenience for debugging workers, allowing them to write to the console
-    'log': function (params, callback) {
-        console.log(params);
-        if (callback) callback();
-    },
-
     'get sprite json': function(params, callback) {
         var sprite = this.sprite;
         if (sprite.loaded()) {
