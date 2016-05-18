@@ -3,6 +3,7 @@
 var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
+var window = require('../util/browser').window;
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 
@@ -49,7 +50,9 @@ var defaultOptions = {
     attributionControl: true,
 
     failIfMajorPerformanceCaveat: false,
-    preserveDrawingBuffer: false
+    preserveDrawingBuffer: false,
+
+    trackResize: true
 };
 
 /**
@@ -84,6 +87,7 @@ var defaultOptions = {
  * @param {boolean} [options.keyboard=true] If `true`, enable keyboard shortcuts (see `KeyboardHandler`).
  * @param {boolean} [options.doubleClickZoom=true] If `true`, enable the "double click to zoom" interaction (see `DoubleClickZoomHandler`).
  * @param {boolean} [options.touchZoomRotate=true] If `true`, enable the "pinch to rotate and zoom" interaction (see `TouchZoomRotateHandler`).
+ * @param {boolean} [options.trackResize=true]  If `true`, automatically resize the map when the browser window resizes.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -99,6 +103,7 @@ var Map = module.exports = function(options) {
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
+    this._trackResize = options.trackResize;
 
     if (typeof options.container === 'string') {
         this._container = document.getElementById(options.container);
@@ -1000,7 +1005,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _onWindowResize: function() {
-        this.stop().resize()._update();
+        if (this._trackResize) {
+            this.stop().resize()._update();
+        }
     }
 });
 

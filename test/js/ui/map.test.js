@@ -2,9 +2,11 @@
 
 var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
+var window = require('../../../js/util/browser').window;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
+var sinon = require('sinon');
 
 var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
@@ -22,7 +24,8 @@ test('Map', function(t) {
                 }
             },
             interactive: false,
-            attributionControl: false
+            attributionControl: false,
+            trackResize: true
         }, options));
     }
 
@@ -302,6 +305,52 @@ test('Map', function(t) {
 
             map.resize();
             t.deepEqual(events, ['movestart', 'move', 'resize', 'moveend']);
+
+            t.end();
+        });
+
+
+        t.test('listen to window resize event', function (t) {
+            window.addEventListener = function(type) {
+                if (type === 'resize') {
+                    //restore empty function not to mess with other tests
+                    window.addEventListener = function() {};
+
+                    t.end();
+                }
+            };
+
+            createMap();
+        });
+
+        t.test('do not resize if trackResize is false', function (t) {
+            var map = createMap({trackResize: false});
+
+            sinon.spy(map, 'stop');
+            sinon.spy(map, '_update');
+            sinon.spy(map, 'resize');
+
+            map._onWindowResize();
+
+            t.notOk(map.stop.called);
+            t.notOk(map._update.called);
+            t.notOk(map.resize.called);
+
+            t.end();
+        });
+
+        t.test('do resize if trackResize is true (default)', function (t) {
+            var map = createMap();
+
+            sinon.spy(map, 'stop');
+            sinon.spy(map, '_update');
+            sinon.spy(map, 'resize');
+
+            map._onWindowResize();
+
+            t.ok(map.stop.called);
+            t.ok(map._update.called);
+            t.ok(map.resize.called);
 
             t.end();
         });
