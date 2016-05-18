@@ -50,7 +50,7 @@ var defaultOptions = {
 
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
-    
+
     trackResize: true
 };
 
@@ -146,7 +146,7 @@ var Map = module.exports = function(options) {
     if (typeof window !== 'undefined') {
         window.addEventListener('online', this._onWindowOnline, false);
         if (options.trackResize) {
-            window.addEventListener('resize', this._onWindowResize, false);    
+            window.addEventListener('resize', this._onWindowResize, false);
         }
     }
 
