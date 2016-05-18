@@ -21,7 +21,7 @@ module.exports = function bindHandlers(map, options) {
 
     for (var name in handlers) {
         map[name] = new handlers[name](map);
-        if (options.name) {
+        if (options[name]) {
             map[name].enable();
         }
     }

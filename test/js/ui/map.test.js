@@ -27,8 +27,15 @@ test('Map', function(t) {
     }
 
     t.test('constructor', function(t) {
-        var map = createMap();
+        var map = createMap({interactive: true});
         t.ok(map.getContainer());
+        t.ok(map.boxZoom.isEnabled());
+        t.ok(map.doubleClickZoom.isEnabled());
+        t.ok(map.dragPan.isEnabled());
+        t.ok(map.dragRotate.isEnabled());
+        t.ok(map.keyboard.isEnabled());
+        t.ok(map.scrollZoom.isEnabled());
+        t.ok(map.touchZoomRotate.isEnabled());
         t.end();
     });
 

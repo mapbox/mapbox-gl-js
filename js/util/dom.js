@@ -5,6 +5,9 @@ exports.create = function (tagName, className, container) {
         offsetWidth: container.offsetWidth,
         offsetHeight: container.offsetHeight,
         remove: function () {},
-        addEventListener: function() {}
+        addEventListener: function() {},
+        classList: {
+            add: function () {}
+        }
     };
 };
