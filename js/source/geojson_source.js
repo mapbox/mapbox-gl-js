@@ -10,7 +10,7 @@ var EXTENT = require('../data/bucket').EXTENT;
 var webworkify = require('webworkify');
 
 module.exports = GeoJSONSource;
-module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_source_worker'), {bare: true}));
+module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_worker_simple'), {bare: true}));
 
 /**
  * Create a GeoJSON data source instance given an options object
@@ -44,28 +44,15 @@ module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_source
  * map.removeSource('some id');  // remove
  */
 function GeoJSONSource(options) {
-    options = options || {};
+    this.options = options = options || {};
 
     this._data = options.data;
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    var scale = EXTENT / this.tileSize;
+    this.type = options.type || 'geojson';
 
-    this.geojsonVtOptions = {
-        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
-        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
-        extent: EXTENT,
-        maxZoom: this.maxzoom
-    };
-
-    this.cluster = options.cluster || false;
-    this.superclusterOptions = {
-        maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
-        extent: EXTENT,
-        radius: (options.clusterRadius || 50) * scale,
-        log: false
-    };
+    this.options = options;
 
     this._pyramid = new TilePyramid({
         tileSize: this.tileSize,
@@ -79,7 +66,6 @@ function GeoJSONSource(options) {
         remove: this._removeTile.bind(this),
         redoPlacement: this._redoTilePlacement.bind(this)
     });
-
 }
 
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
@@ -133,7 +119,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     serialize: function() {
         return {
-            type: 'geojson',
+            type: this.type,
             data: this._data
         };
     },
@@ -146,13 +132,13 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _updateData: function() {
         this._dirty = false;
-        var options = {
-            tileSize: this.tileSize,
+        var options = util.extend({
             source: this.id,
-            geojsonVtOptions: this.geojsonVtOptions,
-            cluster: this.cluster,
-            superclusterOptions: this.superclusterOptions
-        };
+            extent: EXTENT,
+            scale: EXTENT / this.tileSize,
+            minZoom: this.minzoom,
+            maxZoom: this.maxzoom
+        }, this.options);
 
         var data = this._data;
         if (typeof data === 'string') {
@@ -160,7 +146,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send('geojson.parse', options, function(err) {
+        this.workerID = this.dispatcher.send(this.type + '.parse', options, function(err) {
             this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});
@@ -175,7 +161,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            plugin: 'geojson',
+            plugin: this.type,
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,

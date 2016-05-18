@@ -22,6 +22,7 @@ var RasterSource = require('../source/raster_tile_source');
 var GeojsonSource = require('../source/geojson_source');
 var VideoSource = require('../source/video_source');
 var ImageSource = require('../source/image_source');
+var ClusterSource = require('../source/cluster_source');
 
 module.exports = Style;
 
@@ -95,7 +96,8 @@ function Style(stylesheet, animationLoop) {
           ['raster', RasterSource],
           ['geojson', GeojsonSource],
           ['video', VideoSource],
-          ['image', ImageSource]
+          ['image', ImageSource],
+          ['cluster', ClusterSource]
         ], function (type, done) {
             this.addSourceType(type[0], type[1], done);
         }.bind(this), sourceTypesLoaded);
@@ -345,7 +347,9 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
-        if (!Source.is(source) && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
+        var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
+        var shouldValidate = !Source.is(source) && builtIns.indexOf(source.type) >= 0;
+        if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
         source = Source.create(source);
         this.sources[id] = source;
