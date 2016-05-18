@@ -8,7 +8,7 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 module.exports = VectorTileSource;
 
 function VectorTileSource(options) {
-    util.extend(this, util.pick(options, ['url', 'tileSize']));
+    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     this._options = util.extend({ type: 'vector' }, options);
 
     if (this.tileSize !== 512) {
@@ -21,6 +21,7 @@ function VectorTileSource(options) {
 VectorTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
+    scheme: 'xyz',
     tileSize: 512,
     reparseOverscaled: true,
     _loaded: false,
@@ -59,7 +60,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom), this.url),
+            url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,

@@ -9,7 +9,7 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 module.exports = RasterTileSource;
 
 function RasterTileSource(options) {
-    util.extend(this, util.pick(options, ['url', 'tileSize']));
+    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
 
     Source._loadTileJSON.call(this, options);
 }
@@ -18,6 +18,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
     roundZoom: true,
+    scheme: 'xyz',
     tileSize: 512,
     _loaded: false,
 
@@ -51,7 +52,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
     getTile: Source._getTile,
 
     _loadTile: function(tile) {
-        var url = normalizeURL(tile.coord.url(this.tiles), this.url, this.tileSize);
+        var url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
 
