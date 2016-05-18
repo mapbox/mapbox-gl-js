@@ -50,8 +50,6 @@ function GeoJSONSource(options) {
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.type = options.type || 'geojson';
-
     this.options = options;
 
     this._pyramid = new TilePyramid({
@@ -119,7 +117,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     serialize: function() {
         return {
-            type: this.type,
+            type: this.options.type,
             data: this._data
         };
     },
@@ -146,7 +144,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send(this.type + '.parse', options, function(err) {
+        this.workerID = this.dispatcher.send(this.options.type + '.parse', options, function(err) {
             this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});
@@ -161,7 +159,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            plugin: this.type,
+            plugin: this.options.type,
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
