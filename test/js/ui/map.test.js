@@ -307,6 +307,7 @@ test('Map', function(t) {
             t.end();
         });
 
+
         t.test('listen to window resize event by default', function (t) {
             window.addEventListener = function (type) {
                 if (type === 'resize') {
