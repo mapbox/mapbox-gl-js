@@ -644,7 +644,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Add a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map. A layer references a source from which it pulls data and specifies
      * styling for that data.
-     * 
+     *
      * If a value for `before` is provided, the layer will be inserted before the layer
      * with the specified ID. If `before` is omitted, the layer will be inserted above
      * every existing layer.
