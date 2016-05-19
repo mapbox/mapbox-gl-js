@@ -641,11 +641,13 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Add a layer to the map style. The layer will be inserted before the layer with
-     * ID `before`, or appended if `before` is omitted. The layer
-     * needs to [align to the Mapbox GL Style Specification definition of a layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers):
-     * it will usually refer to a source from which it pulls data, and provide
-     * instructions for how that data is styled.
+     * Add a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
+     * to the map. A layer references a source from which it pulls data, and provides
+     * instructions for styping that data.
+     * 
+     * If a value for `before` is provided, the layer will be inserted before the layer
+     * with the specified ID. If `before` is omitted, the layer will be above every other
+     * layer.
      *
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
