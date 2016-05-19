@@ -7,7 +7,10 @@ var Source = require('./source');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
+var webworkify = require('webworkify');
+
 module.exports = GeoJSONSource;
+module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_worker_simple'), {bare: true}));
 
 /**
  * Create a GeoJSON data source instance given an options object
@@ -41,28 +44,13 @@ module.exports = GeoJSONSource;
  * map.removeSource('some id');  // remove
  */
 function GeoJSONSource(options) {
-    options = options || {};
+    this.options = options = options || {};
 
     this._data = options.data;
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    var scale = EXTENT / this.tileSize;
-
-    this.geojsonVtOptions = {
-        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
-        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
-        extent: EXTENT,
-        maxZoom: this.maxzoom
-    };
-
-    this.cluster = options.cluster || false;
-    this.superclusterOptions = {
-        maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
-        extent: EXTENT,
-        radius: (options.clusterRadius || 50) * scale,
-        log: false
-    };
+    this.options = options;
 
     this._pyramid = new TilePyramid({
         tileSize: this.tileSize,
@@ -129,7 +117,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     serialize: function() {
         return {
-            type: 'geojson',
+            type: this.options.type,
             data: this._data
         };
     },
@@ -142,13 +130,13 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _updateData: function() {
         this._dirty = false;
-        var options = {
-            tileSize: this.tileSize,
+        var options = util.extend({
             source: this.id,
-            geojsonVtOptions: this.geojsonVtOptions,
-            cluster: this.cluster,
-            superclusterOptions: this.superclusterOptions
-        };
+            extent: EXTENT,
+            scale: EXTENT / this.tileSize,
+            minZoom: this.minzoom,
+            maxZoom: this.maxzoom
+        }, this.options);
 
         var data = this._data;
         if (typeof data === 'string') {
@@ -156,7 +144,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send('parse geojson', options, function(err) {
+        this.workerID = this.dispatcher.send(this.options.type + '.parse', options, function(err) {
             this._loaded = true;
             if (err) {
                 this.fire('error', {error: err});
@@ -171,6 +159,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _loadTile: function(tile) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
+            plugin: this.options.type,
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
@@ -183,7 +172,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('load geojson tile', params, function(err, data) {
+        tile.workerID = this.dispatcher.send('load tile', params, function(err, data) {
 
             tile.unloadVectorData(this.map.painter);
 
