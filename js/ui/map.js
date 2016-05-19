@@ -239,7 +239,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         for (var i = 0; i < klasses.length; i++) {
             if (klasses[i] !== '') uniqueClasses[klasses[i]] = true;
         }
-        this._classes = Object.keys(uniqueCladasses);
+        this._classes = Object.keys(uniqueClasses);
         this._classOptions = options;
 
         if (this.style) this.style.updateClasses();
