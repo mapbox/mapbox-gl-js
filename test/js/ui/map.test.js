@@ -318,6 +318,9 @@ test('Map', function(t) {
 
             createMap();
 
+            //restore empty function not to mess with other tests
+            window.addEventListener = function () {};
+
             t.end();
         });
 
@@ -329,6 +332,9 @@ test('Map', function(t) {
             };
 
             createMap({trackResize:false});
+
+            //restore empty function not to mess with other tests
+            window.addEventListener = function () {};
 
             t.end();
         });
