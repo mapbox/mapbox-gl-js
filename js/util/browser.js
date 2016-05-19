@@ -9,6 +9,13 @@
  * it's used for tests.
  */
 
+var window = {
+    addEventListener: function() {},
+    removeEventListener: function() {}
+};
+
+exports.window = window;
+
 exports.frame = function(fn) {
     return setImmediate(fn);
 };

@@ -7,6 +7,8 @@
  * @private
  */
 
+exports.window = window;
+
 /**
  * Provides a function that outputs milliseconds: either performance.now()
  * or a fallback to Date.now()

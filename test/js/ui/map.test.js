@@ -2,6 +2,7 @@
 
 var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
+var window = require('../../../js/util/browser').window;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
@@ -22,7 +23,8 @@ test('Map', function(t) {
                 }
             },
             interactive: false,
-            attributionControl: false
+            attributionControl: false,
+            trackResize: true
         }, options));
     }
 
@@ -302,6 +304,37 @@ test('Map', function(t) {
 
             map.resize();
             t.deepEqual(events, ['movestart', 'move', 'resize', 'moveend']);
+
+            t.end();
+        });
+
+
+        t.test('listen to window resize event by default', function (t) {
+            window.addEventListener = function (type) {
+                if (type === 'resize') {
+                    t.ok(true);
+                }
+            };
+
+            createMap();
+
+            //restore empty function not to mess with other tests
+            window.addEventListener = function () {};
+
+            t.end();
+        });
+
+        t.test('do not listen to window resize if trackResize is false', function (t) {
+            window.addEventListener = function (type) {
+                if (type === 'resize') {
+                    t.ok(false);
+                }
+            };
+
+            createMap({trackResize:false});
+
+            //restore empty function not to mess with other tests
+            window.addEventListener = function () {};
 
             t.end();
         });
