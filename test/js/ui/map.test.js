@@ -22,7 +22,8 @@ test('Map', function(t) {
                 }
             },
             interactive: false,
-            attributionControl: false
+            attributionControl: false,
+            trackResize: true
         }, options));
     }
 
@@ -302,6 +303,30 @@ test('Map', function(t) {
 
             map.resize();
             t.deepEqual(events, ['movestart', 'move', 'resize', 'moveend']);
+
+            t.end();
+        });
+
+        t.test('do not listen to window resize if trackResize is false', function (t) {
+            window.addEventListener = function (type) {
+                if (type === 'resize') {
+                    t.ok(true);
+                }
+            };
+
+            createMap();
+
+            t.end();
+        });
+
+        t.test('do not listen to window resize if trackResize is false', function (t) {
+            window.addEventListener = function (type) {
+                if (type === 'resize') {
+                    t.ok(false);
+                }
+            };
+
+            createMap({trackResize:false});
 
             t.end();
         });
