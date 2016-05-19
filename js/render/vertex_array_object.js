@@ -19,22 +19,19 @@ VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBu
         gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
     }
 
-    if (this.isFreshBindRequired(gl, program, vertexBuffer, elementBuffer, vertexBuffer2)) {
-        this.freshBind(gl, program, vertexBuffer, elementBuffer, vertexBuffer2);
-    } else {
-        gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
-    }
-};
-
-VertexArrayObject.prototype.isFreshBindRequired = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
-    return (
+    var isFreshBindRequired = (
         !this.vao ||
-        !this.boundProgram ||
         this.boundProgram !== program ||
         this.boundVertexBuffer !== vertexBuffer ||
         this.boundVertexBuffer2 !== vertexBuffer2 ||
         this.boundElementBuffer !== elementBuffer
     );
+
+    if (!gl.extVertexArrayObject || isFreshBindRequired) {
+        this.freshBind(gl, program, vertexBuffer, elementBuffer, vertexBuffer2);
+    } else {
+        gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
+    }
 };
 
 VertexArrayObject.prototype.freshBind = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
