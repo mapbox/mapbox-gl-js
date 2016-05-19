@@ -239,7 +239,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         for (var i = 0; i < klasses.length; i++) {
             if (klasses[i] !== '') uniqueClasses[klasses[i]] = true;
         }
-        this._classes = Object.keys(uniqueClasses);
+        this._classes = Object.keys(uniqueCladasses);
         this._classOptions = options;
 
         if (this.style) this.style.updateClasses();
@@ -642,12 +642,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * Add a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
-     * to the map. A layer references a source from which it pulls data, and provides
-     * instructions for styping that data.
+     * to the map. A layer references a source from which it pulls data and specifies
+     * styling for that data.
      * 
      * If a value for `before` is provided, the layer will be inserted before the layer
-     * with the specified ID. If `before` is omitted, the layer will be above every other
-     * layer.
+     * with the specified ID. If `before` is omitted, the layer will be inserted above
+     * every existing layer.
      *
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
