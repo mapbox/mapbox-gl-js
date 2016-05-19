@@ -15,65 +15,71 @@ function VertexArrayObject() {
 
 VertexArrayObject.prototype.bind = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
 
-    var ext = gl.extVertexArrayObject;
-    if (ext === undefined) {
-        ext = gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
+    if (gl.extVertexArrayObject === undefined) {
+        gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
     }
 
-    if (ext) {
-        if (!this.vao) this.vao = ext.createVertexArrayOES();
-        ext.bindVertexArrayOES(this.vao);
+    var isFreshBindRequired = (
+        !this.vao ||
+        this.boundProgram !== program ||
+        this.boundVertexBuffer !== vertexBuffer ||
+        this.boundVertexBuffer2 !== vertexBuffer2 ||
+        this.boundElementBuffer !== elementBuffer
+    );
+
+    if (!gl.extVertexArrayObject || isFreshBindRequired) {
+        this.freshBind(gl, program, vertexBuffer, elementBuffer, vertexBuffer2);
     } else {
+        gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
+    }
+};
+
+VertexArrayObject.prototype.freshBind = function(gl, program, vertexBuffer, elementBuffer, vertexBuffer2) {
+    var numPrevAttributes;
+    var numNextAttributes = program.numAttributes;
+
+    if (gl.extVertexArrayObject) {
+        if (this.vao) this.destroy(gl);
+        this.vao = gl.extVertexArrayObject.createVertexArrayOES();
+        gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
+        numPrevAttributes = 0;
+
+        // store the arguments so that we can verify them when the vao is bound again
+        this.boundProgram = program;
+        this.boundVertexBuffer = vertexBuffer;
+        this.boundVertexBuffer2 = vertexBuffer2;
+        this.boundElementBuffer = elementBuffer;
+
+    } else {
+        numPrevAttributes = gl.currentNumAttributes || 0;
         util.warnOnce('Not using VertexArrayObject extension.');
+
+        // Disable all attributes from the previous program that aren't used in
+        // the new program. Note: attribute indices are *not* program specific!
+        for (var i = numNextAttributes; i < numPrevAttributes; i++) {
+            // WebGL breaks if you disable attribute 0.
+            // http://stackoverflow.com/questions/20305231
+            assert(i !== 0);
+            gl.disableVertexAttribArray(i);
+        }
     }
 
-    if (!this.boundProgram) {
-
-        var numPrevAttributes = ext ? 0 : (gl.currentNumAttributes || 0);
-        var numNextAttributes = program.numAttributes;
-        var i;
-
-        // Enable all attributes for the new program.
-        for (i = numPrevAttributes; i < numNextAttributes; i++) {
-            gl.enableVertexAttribArray(i);
-        }
-
-        if (!ext) {
-            // Disable all attributes from the previous program that aren't used in
-            // the new program. Note: attribute indices are *not* program specific!
-            // WebGL breaks if you disable attribute 0. http://stackoverflow.com/questions/20305231
-            assert(i > 0);
-            for (i = numNextAttributes; i < numPrevAttributes; i++) {
-                gl.disableVertexAttribArray(i);
-            }
-            gl.currentNumAttributes = numNextAttributes;
-        }
-
-        vertexBuffer.bind(gl);
-        vertexBuffer.setVertexAttribPointers(gl, program);
-        if (vertexBuffer2) {
-            vertexBuffer2.bind(gl);
-            vertexBuffer2.setVertexAttribPointers(gl, program);
-        }
-        if (elementBuffer) {
-            elementBuffer.bind(gl);
-        }
-
-        if (ext) {
-            // store the arguments so that we can verify them when the vao is bound again
-            this.boundProgram = program;
-            this.boundVertexBuffer = vertexBuffer;
-            this.boundVertexBuffer2 = vertexBuffer2;
-            this.boundElementBuffer = elementBuffer;
-        }
-
-    } else {
-        // verify that bind was called with the same arguments
-        assert(this.boundProgram === program, 'trying to bind a VAO to a different shader');
-        assert(this.boundVertexBuffer === vertexBuffer, 'trying to bind a VAO to a different vertex buffer');
-        assert(this.boundVertexBuffer2 === vertexBuffer2, 'trying to bind a VAO to a different vertex buffer');
-        assert(this.boundElementBuffer === elementBuffer, 'trying to bind a VAO to a different element buffer');
+    // Enable all attributes for the new program.
+    for (var j = numPrevAttributes; j < numNextAttributes; j++) {
+        gl.enableVertexAttribArray(j);
     }
+
+    vertexBuffer.bind(gl);
+    vertexBuffer.setVertexAttribPointers(gl, program);
+    if (vertexBuffer2) {
+        vertexBuffer2.bind(gl);
+        vertexBuffer2.setVertexAttribPointers(gl, program);
+    }
+    if (elementBuffer) {
+        elementBuffer.bind(gl);
+    }
+
+    gl.currentNumAttributes = numNextAttributes;
 };
 
 VertexArrayObject.prototype.unbind = function(gl) {
