@@ -2,6 +2,7 @@
 
 var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
+var window = require('../../../js/util/browser').window;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
