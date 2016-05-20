@@ -147,7 +147,7 @@ module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, f
 
 function applyPragmas(source, pragmas) {
     for (var key in pragmas) {
-        source = source.replace('#pragma mapbox: ' + key, pragmas[key]);
+        source = source.replace(new RegExp('#pragma mapbox: ' + key + '( [a-z0-9]*)*'), pragmas[key]);
     }
     return source;
 }

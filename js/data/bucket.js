@@ -359,24 +359,29 @@ function createPaintAttributes(bucket) {
                 var attributeInputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
                 var attributeInnerName = attribute.name.slice(2);
-                var definePragma = 'define(' + attributeInnerName + ')';
-                var initializePragma = 'initialize(' + attributeInnerName + ')';
+                var definePragma = 'define ' + attributeInnerName;
+                var initializePragma = 'initialize ' + attributeInnerName;
                 var attributeVaryingDefinition;
 
                 paintAttributes.fragmentPragmas[initializePragma] = '';
+
+                // This token is replaced by the first argument to the pragma,
+                // which must be the attribute's precision ("lowp", "mediump",
+                // or "highp")
+                var attributePrecision = '$1';
 
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);
 
                     paintAttributes.fragmentPragmas[definePragma] = paintAttributes.vertexPragmas[definePragma] = [
                         'uniform',
-                        attribute.precision,
+                        attributePrecision,
                         attributeType,
                         attributeInputName
                     ].join(' ') + ';';
 
                     paintAttributes.fragmentPragmas[initializePragma] = paintAttributes.vertexPragmas[initializePragma] = [
-                        attribute.precision,
+                        attributePrecision,
                         attributeType,
                         attributeInnerName,
                         '=',
@@ -390,7 +395,7 @@ function createPaintAttributes(bucket) {
 
                     attributeVaryingDefinition = [
                         'varying',
-                        attribute.precision,
+                        attributePrecision,
                         attributeType,
                         attributeInnerName
                     ].join(' ') + ';\n';
@@ -398,7 +403,7 @@ function createPaintAttributes(bucket) {
                     var attributeAttributeDefinition = [
                         paintAttributes.fragmentPragmas[definePragma],
                         'attribute',
-                        attribute.precision,
+                        attributePrecision,
                         attributeType,
                         attributeInputName
                     ].join(' ') + ';\n';
@@ -433,7 +438,7 @@ function createPaintAttributes(bucket) {
 
                     attributeVaryingDefinition = [
                         'varying',
-                        attribute.precision,
+                        attributePrecision,
                         attributeType,
                         attributeInnerName
                     ].join(' ') + ';\n';
@@ -463,7 +468,7 @@ function createPaintAttributes(bucket) {
 
                         paintAttributes.vertexPragmas[definePragma] += [
                             'attribute',
-                            attribute.precision,
+                            attributePrecision,
                             'vec4',
                             attributeInputName
                         ].join(' ') + ';\n';
@@ -488,7 +493,7 @@ function createPaintAttributes(bucket) {
                             }));
                             paintAttributes.vertexPragmas[definePragma] += [
                                 'attribute',
-                                attribute.precision,
+                                attributePrecision,
                                 attributeType,
                                 attributeInputName + k
                             ].join(' ') + ';\n';
