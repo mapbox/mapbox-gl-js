@@ -10,7 +10,7 @@ app.get('/mapbox-gl.js', browserify('./js/mapbox-gl.js', {
     precompile: true
 }));
 
-app.get('/site.js', browserify('./debug/site.js', {
+app.get('/access-token.js', browserify('./debug/access-token.js', {
     transform: ['envify'],
     debug: true,
     cache: 'dynamic',

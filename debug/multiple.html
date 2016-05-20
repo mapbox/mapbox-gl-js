@@ -16,22 +16,9 @@
 <div class='map' id='map2'></div>
 
 <script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
 <script>
-mapboxgl.accessToken = getAccessToken();
-
-function getAccessToken() {
-    var match = location.search.match(/access_token=([^&\/]*)/);
-    var accessToken = match && match[1];
-
-    if (accessToken) {
-        localStorage.accessToken = accessToken;
-    } else {
-        accessToken = localStorage.accessToken;
-    }
-
-    return accessToken;
-}
-
 var style = {
     "version": 8,
     "sources": {
