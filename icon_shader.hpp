@@ -15,15 +15,12 @@ public:
     UniformMatrix<4>                u_matrix      = {"u_matrix",      *this};
     UniformMatrix<4>                u_exmatrix    = {"u_exmatrix",    *this};
     Uniform<GLfloat>                u_zoom        = {"u_zoom",        *this};
-    Uniform<GLfloat>                u_fadedist    = {"u_fadedist",    *this};
-    Uniform<GLfloat>                u_minfadezoom = {"u_minfadezoom", *this};
-    Uniform<GLfloat>                u_maxfadezoom = {"u_maxfadezoom", *this};
-    Uniform<GLfloat>                u_fadezoom    = {"u_fadezoom",    *this};
     Uniform<GLfloat>                u_opacity     = {"u_opacity",     *this};
     Uniform<std::array<GLfloat, 2>> u_texsize     = {"u_texsize",     *this};
     Uniform<GLint>                  u_skewed      = {"u_skewed",      *this};
     Uniform<GLfloat>                u_extra       = {"u_extra",       *this};
     Uniform<GLint>                  u_texture     = {"u_texture",     *this};
+    Uniform<GLint>                  u_fadetexture = {"u_fadetexture", *this};
 
 protected:
     GLint a_offset = -1;

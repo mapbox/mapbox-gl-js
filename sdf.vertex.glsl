@@ -9,16 +9,12 @@ attribute vec4 a_data2;
 uniform mat4 u_matrix;
 uniform mat4 u_exmatrix;
 uniform float u_zoom;
-uniform float u_fadedist;
-uniform float u_minfadezoom;
-uniform float u_maxfadezoom;
-uniform float u_fadezoom;
 uniform bool u_skewed;
 
 uniform vec2 u_texsize;
 
 varying vec2 v_tex;
-varying float v_alpha;
+varying vec2 v_fade_tex;
 varying float v_gamma_scale;
 
 void main() {
@@ -32,24 +28,6 @@ void main() {
     // u_zoom is the current zoom level adjusted for the change in font size
     float show = step(a_minzoom, u_zoom) * (1.0 - step(a_maxzoom, u_zoom));
 
-    // fade out labels
-    float alpha = clamp((u_fadezoom - a_labelminzoom) / u_fadedist, 0.0, 1.0);
-
-    if (u_fadedist >= 0.0) {
-        v_alpha = alpha;
-    } else {
-        v_alpha = 1.0 - alpha;
-    }
-    if (u_maxfadezoom < a_labelminzoom) {
-        v_alpha = 0.0;
-    }
-    if (u_minfadezoom >= a_labelminzoom) {
-        v_alpha = 1.0;
-    }
-
-    // if label has been faded out, clip it
-    show *= (1.0 - step(v_alpha, 0.0));
-
     if (u_skewed) {
         vec4 extrude = u_exmatrix * vec4(a_offset * show / 64.0, 0, 0);
         gl_Position = u_matrix * vec4(a_pos + extrude.xy, 0, 1);
@@ -61,4 +39,5 @@ void main() {
     v_gamma_scale = (gl_Position.w - 0.5);
 
     v_tex = a_tex / u_texsize;
+    v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
 }
