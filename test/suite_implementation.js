@@ -68,7 +68,13 @@ function applyOperations(map, operations, callback) {
     var operation = operations && operations[0];
 
     if (!operations || operations.length === 0) {
-        setTimeout(callback, 0);
+        map.once('render', function onRender() {
+            if (map.loaded()) {
+                callback();
+            } else {
+                map.once('render', onRender);
+            }
+        });
 
     } else if (operation[0] === 'wait') {
         map.once(operation[1], function() {
