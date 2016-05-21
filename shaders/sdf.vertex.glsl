@@ -12,7 +12,6 @@ uniform mat4 u_matrix;
 
 uniform mediump float u_zoom;
 uniform bool u_skewed;
-uniform float u_extra;
 uniform vec2 u_extrude_scale;
 
 uniform vec2 u_texsize;
@@ -39,11 +38,7 @@ void main() {
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
-    // position of y on the screen
-    float y = gl_Position.y / gl_Position.w;
-    // how much features are squished in all directions by the perspectiveness
-    float perspective_scale = 1.0 / (1.0 - y * u_extra);
-    v_gamma_scale = perspective_scale;
+    v_gamma_scale = (gl_Position.w - 0.5);
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
