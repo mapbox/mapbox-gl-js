@@ -1,7 +1,11 @@
-#ifdef MAPBOX_GL_JS
+#ifdef GL_ES
 precision mediump float;
-
+#else
+#define lowp
+#define mediump
+#define highp
 #endif
+
 uniform float u_opacity;
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;

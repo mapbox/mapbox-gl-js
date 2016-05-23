@@ -1,11 +1,17 @@
+#ifdef GL_ES
+precision highp float;
+#else
+#define lowp
+#define mediump
+#define highp
+#endif
+
 #ifndef MAPBOX_GL_JS
 uniform vec2 u_patternscale_a;
 uniform vec2 u_patternscale_b;
 uniform vec2 u_offset_a;
 uniform vec2 u_offset_b;
 #else
-precision highp float;
-
 uniform vec2 u_pattern_size_a;
 uniform vec2 u_pattern_size_b;
 uniform vec2 u_pixel_coord_upper;

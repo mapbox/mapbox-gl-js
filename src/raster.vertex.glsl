@@ -1,7 +1,11 @@
-#ifdef MAPBOX_GL_JS
+#ifdef GL_ES
 precision highp float;
-
+#else
+#define lowp
+#define mediump
+#define highp
 #endif
+
 uniform mat4 u_matrix;
 #ifndef MAPBOX_GL_JS
 uniform float u_buffer;

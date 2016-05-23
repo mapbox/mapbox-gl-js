@@ -1,8 +1,14 @@
+#ifdef GL_ES
+precision mediump float;
+#else
+#define lowp
+#define mediump
+#define highp
+#endif
+
 #ifndef MAPBOX_GL_JS
 uniform sampler2D u_image;
 uniform float u_opacity;
-#else
-precision mediump float;
 #endif
 
 #ifndef MAPBOX_GL_JS

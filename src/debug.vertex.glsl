@@ -1,8 +1,14 @@
+#ifdef GL_ES
+precision highp float;
+#else
+#define lowp
+#define mediump
+#define highp
+#endif
+
 #ifndef MAPBOX_GL_JS
 uniform mat4 u_matrix;
 uniform float u_size;
-#else
-precision highp float;
 #endif
 
 attribute vec2 a_pos;

@@ -1,7 +1,11 @@
-#ifdef MAPBOX_GL_JS
+#ifdef GL_ES
 precision highp float;
-
+#else
+#define lowp
+#define mediump
+#define highp
 #endif
+
 attribute vec2 a_pos;
 attribute vec2 a_extrude;
 attribute vec2 a_data;
