@@ -28,7 +28,9 @@ module.exports = function(style, options, callback) {
     var gl = map.painter.gl;
 
     map.once('load', function() {
-        applyOperations(map, options.operations, function() {
+        applyOperations(map, options.operations, function(err) {
+            if (err) return callback(err);
+
             var w = options.width * browser.devicePixelRatio;
             var h = options.height * browser.devicePixelRatio;
 
@@ -65,29 +67,26 @@ module.exports = function(style, options, callback) {
 };
 
 function applyOperations(map, operations, callback) {
-    var operation = operations && operations[0];
+    try {
+        var operation = operations && operations[0];
+        if (!operations || operations.length === 0) {
+            callback();
 
-    if (!operations || operations.length === 0) {
-        map.once('render', function onRender() {
-            if (map.loaded()) {
-                callback();
-            } else {
-                map.once('render', onRender);
-            }
-        });
+        } else if (operation[0] === 'wait') {
+            var wait = function() {
+                if (map.loaded()) {
+                    applyOperations(map, operations.slice(1), callback);
+                } else {
+                    map.once('render', wait);
+                }
+            };
+            wait();
 
-    } else if (operation[0] === 'wait') {
-        map.once(operation[1], function() {
-            applyOperations(map, operations.slice(1), callback);
-        });
-
-    } else {
-        try {
+        } else {
             map[operation[0]].apply(map, operation.slice(1));
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
+            applyOperations(map, operations.slice(1), callback);
         }
-        applyOperations(map, operations.slice(1), callback);
+    } catch (e) {
+        callback(e);
     }
 }
