@@ -4,7 +4,15 @@ var Map = require('../js/ui/map');
 var browser = require('../js/util/browser');
 
 
-module.exports = function(style, options, callback) {
+module.exports = function(style, options, _callback) {
+    var wasCallbackCalled = false;
+    function callback() {
+        if (!wasCallbackCalled) {
+            wasCallbackCalled = true;
+            _callback.apply(this, arguments);
+        }
+    }
+
     browser.devicePixelRatio = options.pixelRatio;
 
     var map = new Map({
@@ -22,10 +30,17 @@ module.exports = function(style, options, callback) {
         attributionControl: false
     });
 
+    // Configure the map to never stop the render loop
+    map.repaint = true;
+
     if (options.debug) map.showTileBoundaries = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
 
     var gl = map.painter.gl;
+
+    map.on('error', function(event) {
+        callback(event.error);
+    });
 
     map.once('load', function() {
         applyOperations(map, options.operations, function() {
@@ -60,34 +75,28 @@ module.exports = function(style, options, callback) {
                 delete feature.layer;
                 return feature;
             }));
+
         });
     });
 };
 
 function applyOperations(map, operations, callback) {
     var operation = operations && operations[0];
-
     if (!operations || operations.length === 0) {
-        map.once('render', function onRender() {
-            if (map.loaded()) {
-                callback();
-            } else {
-                map.once('render', onRender);
-            }
-        });
+        callback();
 
     } else if (operation[0] === 'wait') {
-        map.once(operation[1], function() {
-            applyOperations(map, operations.slice(1), callback);
-        });
+        var wait = function() {
+            if (map.loaded()) {
+                applyOperations(map, operations.slice(1), callback);
+            } else {
+                map.once('render', wait);
+            }
+        };
+        wait();
 
     } else {
-        try {
-            map[operation[0]].apply(map, operation.slice(1));
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
+        map[operation[0]].apply(map, operation.slice(1));
         applyOperations(map, operations.slice(1), callback);
     }
 }
