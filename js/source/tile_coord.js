@@ -52,8 +52,20 @@ TileCoord.fromID = function(id) {
 
 // given a list of urls, choose a url template and return a tile URL
 TileCoord.prototype.url = function(urls, sourceMaxZoom) {
+    var halfWidth = 20037508.342789;
+    var halfHeight = 20037508.342789;
+    var tilesAcross = Math.pow(2, this.z);
+    var tileWidth = 2 * (halfWidth / tilesAcross);
+    var tileHeight = 2 * (halfHeight / tilesAcross);
+    var leftPosition = ((this.x / tilesAcross) * 2 * halfWidth) - halfWidth;
+    var topPosition = halfHeight - ((this.y / tilesAcross) * 2 * halfHeight);
+    var bbox = leftPosition + ',' +
+        topPosition + ',' +
+        (leftPosition + tileWidth) + ',' +
+        (topPosition + tileHeight);
     return urls[(this.x + this.y) % urls.length]
         .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
+        .replace('{bbox-epsg-3857}', bbox)
         .replace('{z}', Math.min(this.z, sourceMaxZoom || this.z))
         .replace('{x}', this.x)
         .replace('{y}', this.y);
