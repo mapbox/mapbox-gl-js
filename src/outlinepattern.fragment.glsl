@@ -1,3 +1,7 @@
+#ifdef MAPBOX_GL_JS
+precision mediump float;
+
+#endif
 uniform float u_opacity;
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;
@@ -27,4 +31,13 @@ void main() {
     
 
     gl_FragColor = mix(color1, color2, u_mix) * alpha * u_opacity;
+#ifndef MAPBOX_GL_JS
 }
+#else
+
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(1.0);
+#endif
+}
+#endif

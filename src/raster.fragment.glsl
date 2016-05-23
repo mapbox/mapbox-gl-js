@@ -1,7 +1,20 @@
+#ifndef MAPBOX_GL_JS
 uniform sampler2D u_image;
 uniform float u_opacity;
+#else
+precision mediump float;
+#endif
 
+#ifndef MAPBOX_GL_JS
 varying vec2 v_pos;
+#else
+uniform float u_opacity0;
+uniform float u_opacity1;
+uniform sampler2D u_image0;
+uniform sampler2D u_image1;
+varying vec2 v_pos0;
+varying vec2 v_pos1;
+#endif
 
 uniform float u_brightness_low;
 uniform float u_brightness_high;
@@ -12,7 +25,14 @@ uniform vec3 u_spin_weights;
 
 void main() {
 
+#ifndef MAPBOX_GL_JS
     vec4 color = texture2D(u_image, v_pos) * u_opacity;
+#else
+    // read and cross-fade colors from the main and parent tiles
+    vec4 color0 = texture2D(u_image0, v_pos0);
+    vec4 color1 = texture2D(u_image1, v_pos1);
+    vec4 color = color0 * u_opacity0 + color1 * u_opacity1;
+#endif
     vec3 rgb = color.rgb;
 
     // spin
@@ -33,4 +53,10 @@ void main() {
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
     gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb), color.a);
+#ifdef MAPBOX_GL_JS
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(1.0);
+#endif
+#endif
 }

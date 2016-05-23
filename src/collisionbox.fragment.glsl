@@ -1,3 +1,7 @@
+#ifdef MAPBOX_GL_JS
+precision mediump float;
+
+#endif
 uniform float u_zoom;
 uniform float u_maxzoom;
 
