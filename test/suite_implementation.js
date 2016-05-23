@@ -30,6 +30,9 @@ module.exports = function(style, options, _callback) {
         attributionControl: false
     });
 
+    // Configure the map to never stop the render loop
+    map.repaint = true;
+
     if (options.debug) map.showTileBoundaries = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
 
