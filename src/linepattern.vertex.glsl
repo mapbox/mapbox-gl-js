@@ -90,15 +90,9 @@ void main() {
     // We do this by creating a vector that points towards the extrude, but rotate
     // it when we're drawing round end points (a_direction = -1 or 1) since their
     // extrude vector points in another direction.
-#ifndef MAPBOX_GL_JS
-    float u = 0.5 * a_direction;
-    float t = 1.0 - abs(u);
-    vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
-#else
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
-#endif
 
     // Remove the texture normal bit of the position before scaling it with the
 #ifndef MAPBOX_GL_JS

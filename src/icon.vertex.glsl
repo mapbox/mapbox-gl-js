@@ -17,11 +17,9 @@ attribute vec4 a_data2;
 uniform mat4 u_matrix;
 #ifndef MAPBOX_GL_JS
 uniform mat4 u_exmatrix;
-uniform float u_zoom;
-#else
+#endif
 
 uniform mediump float u_zoom;
-#endif
 uniform bool u_skewed;
 uniform float u_extra;
 #ifdef MAPBOX_GL_JS
@@ -35,25 +33,13 @@ varying vec2 v_fade_tex;
 
 void main() {
     vec2 a_tex = a_data1.xy;
-#ifndef MAPBOX_GL_JS
-    float a_labelminzoom = a_data1[2];
-    float a_angle = a_data1[3];
-    vec2 a_zoom = a_data2.st;
-    float a_minzoom = a_zoom[0];
-    float a_maxzoom = a_zoom[1];
-#else
     mediump float a_labelminzoom = a_data1[2];
     mediump vec2 a_zoom = a_data2.st;
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
-#endif
 
     // u_zoom is the current zoom level adjusted for the change in font size
-#ifndef MAPBOX_GL_JS
-    float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
-#else
     mediump float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
-#endif
 
 #ifdef MAPBOX_GL_JS
     vec2 extrude = u_extrude_scale * (a_offset / 64.0);

@@ -53,11 +53,7 @@ void main() {
     // transform y so that 0 => -1 and 1 => 1
     // In the texture normal, x is 0 if the normal points straight up/down and 1 if it's a round cap
     // y is 1 if the normal points up, and -1 if it points down
-#ifndef MAPBOX_GL_JS
-    vec2 normal = mod(a_pos, 2.0);
-#else
     mediump vec2 normal = mod(a_pos, 2.0);
-#endif
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
@@ -78,15 +74,9 @@ void main() {
     // We do this by creating a vector that points towards the extrude, but rotate
     // it when we're drawing round end points (a_direction = -1 or 1) since their
     // extrude vector points in another direction.
-#ifndef MAPBOX_GL_JS
-    float u = 0.5 * a_direction;
-    float t = 1.0 - abs(u);
-    vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
-#else
     mediump float u = 0.5 * a_direction;
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
-#endif
 
     // Remove the texture normal bit of the position before scaling it with the
 #ifndef MAPBOX_GL_JS
@@ -106,11 +96,7 @@ void main() {
     float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
 
     // how much features are squished in all directions by the perspectiveness
-#ifndef MAPBOX_GL_JS
-    float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.90));
-#else
     float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
-#endif
 
 #ifdef MAPBOX_GL_JS
     v_linewidth = vec2(outset, inset);
