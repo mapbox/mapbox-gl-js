@@ -6,13 +6,8 @@ precision highp float;
 #define highp
 #endif
 
-#ifndef MAPBOX_GL_JS
 attribute vec2 a_pos;
-#endif
 
-#ifdef MAPBOX_GL_JS
-attribute vec2 a_pos;
-#endif
 uniform mat4 u_matrix;
 
 void main() {

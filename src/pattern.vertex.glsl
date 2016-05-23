@@ -10,9 +10,6 @@ precision highp float;
 uniform mat4 u_matrix;
 uniform vec2 u_patternscale_a;
 uniform vec2 u_patternscale_b;
-#endif
-
-#ifndef MAPBOX_GL_JS
 uniform vec2 u_offset_a;
 uniform vec2 u_offset_b;
 #else

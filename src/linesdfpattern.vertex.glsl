@@ -43,9 +43,6 @@ uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
-#ifndef MAPBOX_GL_JS
-
-#endif
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
 #ifdef MAPBOX_GL_JS
