@@ -35,6 +35,7 @@ module.exports = function(style, options, _callback) {
 
     if (options.debug) map.showTileBoundaries = true;
     if (options.collisionDebug) map.showCollisionBoxes = true;
+    if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
     var gl = map.painter.gl;
 
