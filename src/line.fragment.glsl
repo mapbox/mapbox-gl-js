@@ -43,9 +43,9 @@ void main() {
 
 #ifndef MAPBOX_GL_JS
     gl_FragColor = u_color * alpha;
-#else
+#endif
+
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
-#endif
 #endif
 }

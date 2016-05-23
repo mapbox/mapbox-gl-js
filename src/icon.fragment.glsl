@@ -24,10 +24,8 @@ void main() {
     lowp float alpha = texture2D(u_fadetexture, v_fade_tex).a * u_opacity;
 #endif
     gl_FragColor = texture2D(u_texture, v_tex) * alpha;
-#ifdef MAPBOX_GL_JS
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
-#endif
 #endif
 }

@@ -18,9 +18,9 @@ void main() {
     gl_FragColor = u_color;
 #else
     gl_FragColor = u_color * u_opacity;
+#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
-#endif
 #endif
 }

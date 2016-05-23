@@ -79,10 +79,8 @@ void main() {
     alpha *= u_opacity;
 
     gl_FragColor = color * alpha;
-#ifdef MAPBOX_GL_JS
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
-#endif
 #endif
 }
