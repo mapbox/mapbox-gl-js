@@ -4,7 +4,15 @@ var Map = require('../js/ui/map');
 var browser = require('../js/util/browser');
 
 
-module.exports = function(style, options, callback) {
+module.exports = function(style, options, _callback) {
+    var wasCallbackCalled = false;
+    function callback() {
+        if (!wasCallbackCalled) {
+            wasCallbackCalled = true;
+            _callback.apply(this, arguments);
+        }
+    }
+
     browser.devicePixelRatio = options.pixelRatio;
 
     var map = new Map({
@@ -27,10 +35,12 @@ module.exports = function(style, options, callback) {
 
     var gl = map.painter.gl;
 
-    map.once('load', function() {
-        applyOperations(map, options.operations, function(err) {
-            if (err) return callback(err);
+    map.on('error', function(event) {
+        callback(event.error);
+    });
 
+    map.once('load', function() {
+        applyOperations(map, options.operations, function() {
             var w = options.width * browser.devicePixelRatio;
             var h = options.height * browser.devicePixelRatio;
 
@@ -62,31 +72,28 @@ module.exports = function(style, options, callback) {
                 delete feature.layer;
                 return feature;
             }));
+
         });
     });
 };
 
 function applyOperations(map, operations, callback) {
-    try {
-        var operation = operations && operations[0];
-        if (!operations || operations.length === 0) {
-            callback();
+    var operation = operations && operations[0];
+    if (!operations || operations.length === 0) {
+        callback();
 
-        } else if (operation[0] === 'wait') {
-            var wait = function() {
-                if (map.loaded()) {
-                    applyOperations(map, operations.slice(1), callback);
-                } else {
-                    map.once('render', wait);
-                }
-            };
-            wait();
+    } else if (operation[0] === 'wait') {
+        var wait = function() {
+            if (map.loaded()) {
+                applyOperations(map, operations.slice(1), callback);
+            } else {
+                map.once('render', wait);
+            }
+        };
+        wait();
 
-        } else {
-            map[operation[0]].apply(map, operation.slice(1));
-            applyOperations(map, operations.slice(1), callback);
-        }
-    } catch (e) {
-        callback(e);
+    } else {
+        map[operation[0]].apply(map, operation.slice(1));
+        applyOperations(map, operations.slice(1), callback);
     }
 }
