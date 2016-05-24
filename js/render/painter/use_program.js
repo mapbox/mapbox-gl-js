@@ -4,7 +4,7 @@ var assert = require('assert');
 var util = require('../../util/util');
 var shaders = require('mapbox-gl-shaders');
 
-var vertexUtilSource = shaders.util;
+var utilSource = shaders.util;
 
 module.exports._createProgram = function(name, defines, vertexPragmas, fragmentPragmas) {
     var gl = this.gl;
@@ -23,7 +23,7 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
     gl.attachShader(program, fragmentShader);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, applyPragmas(definesSource + vertexUtilSource + definition.vertexSource, vertexPragmas));
+    gl.shaderSource(vertexShader, applyPragmas(definesSource + utilSource + definition.vertexSource, vertexPragmas));
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
     gl.attachShader(program, vertexShader);
