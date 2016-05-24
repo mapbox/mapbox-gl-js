@@ -8,20 +8,13 @@ precision mediump float;
 
 #ifndef MAPBOX_GL_JS
 uniform vec2 u_linewidth;
-#else
-uniform float u_point;
 #endif
 uniform float u_blur;
 
 uniform vec2 u_pattern_size_a;
-#ifdef MAPBOX_GL_JS
 uniform vec2 u_pattern_size_b;
-#endif
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;
-#ifndef MAPBOX_GL_JS
-uniform vec2 u_pattern_size_b;
-#endif
 uniform vec2 u_pattern_tl_b;
 uniform vec2 u_pattern_br_b;
 uniform float u_fade;
@@ -55,26 +48,20 @@ void main() {
 #endif
 
     float x_a = mod(v_linesofar / u_pattern_size_a.x, 1.0);
-#ifndef MAPBOX_GL_JS
-    float y_a = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_a.y);
-    vec2 pos_a = mix(u_pattern_tl_a, u_pattern_br_a, vec2(x_a, y_a));
-#endif
     float x_b = mod(v_linesofar / u_pattern_size_b.x, 1.0);
 #ifndef MAPBOX_GL_JS
+    float y_a = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_a.y);
     float y_b = 0.5 + (v_normal.y * u_linewidth.s / u_pattern_size_b.y);
+    vec2 pos_a = mix(u_pattern_tl_a, u_pattern_br_a, vec2(x_a, y_a));
     vec2 pos_b = mix(u_pattern_tl_b, u_pattern_br_b, vec2(x_b, y_b));
 #else
     float y_a = 0.5 + (v_normal.y * v_linewidth.s / u_pattern_size_a.y);
     float y_b = 0.5 + (v_normal.y * v_linewidth.s / u_pattern_size_b.y);
-    vec2 pos = mix(u_pattern_tl_a, u_pattern_br_a, vec2(x_a, y_a));
-    vec2 pos2 = mix(u_pattern_tl_b, u_pattern_br_b, vec2(x_b, y_b));
+    vec2 pos_a = mix(u_pattern_tl_a, u_pattern_br_a, vec2(x_a, y_a));
+    vec2 pos_b = mix(u_pattern_tl_b, u_pattern_br_b, vec2(x_b, y_b));
 #endif
 
-#ifndef MAPBOX_GL_JS
     vec4 color = mix(texture2D(u_image, pos_a), texture2D(u_image, pos_b), u_fade);
-#else
-    vec4 color = mix(texture2D(u_image, pos), texture2D(u_image, pos2), u_fade);
-#endif
 
     alpha *= u_opacity;
 
