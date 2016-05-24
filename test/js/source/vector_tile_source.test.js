@@ -105,6 +105,20 @@ test('VectorTileSource', function(t) {
         t.end();
     });
 
+    t.test('queryRenderedFeatures', function(t) {
+        t.test('returns an empty object before loaded', function(t) {
+            var source = createSource({
+                minzoom: 1,
+                maxzoom: 10,
+                attribution: "Mapbox",
+                tiles: ["http://example.com/{z}/{x}/{y}.png"]
+            });
+            t.deepEqual(source.queryRenderedFeatures(), {});
+            t.end();
+        });
+        t.end();
+    });
+
     function testScheme(scheme, expectedURL) {
         t.test('scheme "' + scheme + '"', function(t) {
             var source = createSource({
