@@ -4,7 +4,7 @@ module.exports = classifyRings;
 
 // classifies an array of rings into polygons with outer rings and holes
 
-function classifyRings(rings) {
+function classifyRings(rings, maxRings) {
     var len = rings.length;
 
     if (len <= 1) return [rings];
@@ -16,6 +16,8 @@ function classifyRings(rings) {
     for (var i = 0; i < len; i++) {
         var area = signedArea(rings[i]);
         if (area === 0) continue;
+
+        rings[i].area = area;
 
         if (ccw === undefined) ccw = area < 0;
 
@@ -29,7 +31,21 @@ function classifyRings(rings) {
     }
     if (polygon) polygons.push(polygon);
 
+    if (maxRings > 1) {
+        len = polygons.length;
+        for (var j = 0; j < len; j++) {
+            var polygon = polygons[j];
+            var truncated = [polygon.shift()];
+            polygon.sort(sortByArea);
+            polygons[j] = truncated.concat(polygon.slice(0, maxRings-1));
+        }
+    }
+
     return polygons;
+}
+
+function sortByArea(a, b) {
+    return b.area - a.area;
 }
 
 function signedArea(ring) {
