@@ -6,19 +6,17 @@ precision mediump float;
 #define highp
 #endif
 
-#ifndef MAPBOX_GL_JS
-uniform vec2 u_linewidth;
-uniform vec4 u_color;
-#else
 uniform lowp vec4 u_color;
 uniform lowp float u_opacity;
-#endif
 uniform float u_blur;
 
-varying vec2 v_normal;
-#ifdef MAPBOX_GL_JS
+#ifndef MAPBOX_GL_JS
+uniform vec2 u_linewidth;
+#else
 varying vec2 v_linewidth;
 #endif
+
+varying vec2 v_normal;
 varying float v_gamma_scale;
 
 void main() {
@@ -37,13 +35,9 @@ void main() {
     float alpha = clamp(min(dist - (u_linewidth.t - blur), u_linewidth.s - dist) / blur, 0.0, 1.0);
 #else
     float alpha = clamp(min(dist - (v_linewidth.t - blur), v_linewidth.s - dist) / blur, 0.0, 1.0);
+#endif
 
     gl_FragColor = u_color * (alpha * u_opacity);
-#endif
-
-#ifndef MAPBOX_GL_JS
-    gl_FragColor = u_color * alpha;
-#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

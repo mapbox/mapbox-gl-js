@@ -6,26 +6,22 @@ precision mediump float;
 #define highp
 #endif
 
-#ifndef MAPBOX_GL_JS
-uniform vec4 u_color;
-uniform float u_blur;
-uniform float u_size;
-#else
 uniform lowp float u_blur;
 uniform lowp float u_opacity;
+
+#ifndef MAPBOX_GL_JS
+uniform vec4 u_color;
+#else
+#pragma mapbox: define color lowp
+varying lowp float v_antialiasblur;
 #endif
 
 varying vec2 v_extrude;
-#ifdef MAPBOX_GL_JS
-varying lowp float v_antialiasblur;
-
-#pragma mapbox: define color lowp
-#endif
 
 void main() {
 #ifndef MAPBOX_GL_JS
     float t = smoothstep(1.0 - u_blur, 1.0, length(v_extrude));
-    gl_FragColor = u_color * (1.0 - t);
+    gl_FragColor = u_color * (1.0 - t) * u_opacity;
 #else
     #pragma mapbox: initialize color
 

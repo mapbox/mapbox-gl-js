@@ -9,9 +9,7 @@ precision mediump float;
 uniform sampler2D u_texture;
 uniform sampler2D u_fadetexture;
 uniform lowp vec4 u_color;
-#ifdef MAPBOX_GL_JS
 uniform lowp float u_opacity;
-#endif
 uniform lowp float u_buffer;
 uniform lowp float u_gamma;
 
@@ -25,11 +23,7 @@ void main() {
     lowp float gamma = u_gamma * v_gamma_scale;
     lowp float alpha = smoothstep(u_buffer - gamma, u_buffer + gamma, dist) * fade_alpha;
 
-#ifndef MAPBOX_GL_JS
-    gl_FragColor = u_color * alpha;
-#else
     gl_FragColor = u_color * (alpha * u_opacity);
-#endif
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
