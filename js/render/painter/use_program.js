@@ -12,10 +12,9 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
     var definition = shaders[name];
 
     var definesSource = '';
-    for (var j = 0; definesSource && j < definesSource.length; j++) {
-        definesSource += '#define ' + defines[j] + '\;n';
+    for (var j = 0; j < defines.length; j++) {
+        definesSource += '#define ' + defines[j] + ';\n';
     }
-    definesSource += '#define MAPBOX_GL_JS\n';
 
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmentShader, applyPragmas(definesSource + definition.fragmentSource, fragmentPragmas));
@@ -73,13 +72,14 @@ module.exports._createProgramCached = function(name, defines, vertexPragmas, fra
 module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, fragmentPragmas) {
     var gl = this.gl;
 
-    var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
-    var previousProgram = this.currentProgram;
-
+    defines = defines || [];
+    defines.push('MAPBOX_GL_JS');
     if (this._showOverdrawInspector) {
-        defines = defines || [];
         defines.push('OVERDRAW_INSPECTOR');
     }
+
+    var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
+    var previousProgram = this.currentProgram;
 
     if (previousProgram !== nextProgram) {
         gl.useProgram(nextProgram.program);
