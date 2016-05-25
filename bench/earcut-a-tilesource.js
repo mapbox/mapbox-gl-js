@@ -9,21 +9,25 @@ var StyleLayer = require('../js/style/style_layer');
 
 var API_URL = process.env.API_URL || 'https://api.mapbox.com/v4/';
 
-function benchmark_earcut(source, layer, z, x, y, callback) {
-    var url = source.replace(/^mapbox:\/\//, API_URL);
-    url += '/' + z + '/' + x + '/' + y + '.vector.pbf';
-    url += '?' + process.env.MAPBOX_ACCESS_TOKEN;
+function benchmark_earcut(opts, callback) {
+    var url = opts.source.replace(/^mapbox:\/\//, API_URL);
+    url += '/' + opts.z + '/' + opts.x + '/' + opts.y + '.vector.pbf';
+    url += '?access_token=' + process.env.MAPBOX_ACCESS_TOKEN;
+
+    var RUN_COUNT = opts.count;
 
     request(url, {encoding:null, gzip:true}, function(err, response) {
-        if (err || response.statusCode !== 200) return callback(err);
+        if (err) return callback(err);
+        if (response.statusCode !== 200) return callback(new Error('Tile request returned with status code: ' + response.statusCode));
         var diffs = [];
 
         var tile = new VectorTile(new Protobuf(response.body));
-        if (!tile.layers[layer]) return callback(new Error('Layer not found in tile'));
+        if (!tile.layers[opts.layer]) return callback(new Error('Layer not found in tile'));
 
-        var targetLayer = tile.layers[layer];
+        var targetLayer = tile.layers[opts.layer];
         for (var i = 0; i < targetLayer.length; i++) {
             var feature = targetLayer.feature(i);
+            var flattened = earcut.flatten(classifyRings(feature.loadGeometry()));
 
             var styleLayer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
             var bucket = new FillBucket({
@@ -33,30 +37,16 @@ function benchmark_earcut(source, layer, z, x, y, callback) {
             });
             bucket.createArrays();
 
-            var flattened = earcut.flatten(classifyRings(feature.loadGeometry()));
-            /*
-            var result;
-            var start1 = Date.now();
-            for (var j = 0; j < 1000; j++) {
-                result = earcut(flattened.vertices, flattened.holes, flattened.dimensions);
-            }
-            var diff1 = Date.now() - start1;
-            */
-
-            var start2 = Date.now();
-            for (var k = 0; k < 100; k++) {
+            var start = Date.now();
+            for (var j = 0; j < RUN_COUNT; j++) {
                 bucket.addFeature(feature);
             }
-            var diff2 = Date.now() - start2;
+            var diff = Date.now() - start;
 
             diffs.push({
                 vertices: flattened.vertices.length,
                 holes: flattened.holes.length,
-                /*
-                triangles: result.length / 3,
-                avg_ms_earcut: diff1/1000,
-                */
-                avg_ms_bucket_addFeature: diff2/100
+                avg_ms_bucket_addFeature: diff/RUN_COUNT
             });
         }
         return callback(null, diffs);
@@ -110,25 +100,39 @@ function signedArea(ring) {
 module.exports = benchmark_earcut;
 
 if (require.main) {
-    var argv = require('minimist')(process.argv.slice(2));
+    var argv = require('minimist')(process.argv.slice(2), {
+        alias: {
+            n: 'count'
+        }
+    });
 
     if (argv._.length !== 5) {
         console.log('Description:');
         console.log('  Performs a triangulation benchmark on a production tileset');
         console.log('Usage:');
         console.log('  ./bench/earcut-a-tilesource.js <tileset-id> <source-layer> <zoom> <x> <y>');
+        console.log('Options:');
+        console.log('  --count=[number]       Number of iterations to run the benchmark (default 1) (alias -n)');
         console.log('Example:');
-        console.log('  ./bench/earcut-a-tilesource.js mapbox://mapbox.mapbox-streets-v7 water 0 0 0');
+        console.log('  ./bench/earcut-a-tilesource.js mapbox://mapbox.mapbox-streets-v7 water 0 0 0 -n 10');
         process.exit(1);
     }
 
     var source = argv._[0],
         layer = argv._[1],
-        zoom = argv._[2],
+        count = argv.count || 1,
+        z = argv._[2],
         x = argv._[3],
         y = argv._[4];
 
-    benchmark_earcut(source, layer, zoom, x, y, function(err, speeds) {
+    benchmark_earcut({
+        source: source,
+        layer: layer,
+        count: count,
+        z: z,
+        x: x,
+        y: y
+    }, function(err, speeds) {
         if (err) throw err;
 
         console.log(speeds);
