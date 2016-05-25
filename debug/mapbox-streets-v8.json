@@ -137,7 +137,7 @@
     },
     "sources": {
         "composite": {
-            "url": "mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7",
+            "url": "mapbox://lbud.bf968ap7",
             "type": "vector"
         }
     },
@@ -217,10 +217,8 @@
 
 
 
-
         {
             "interactive": true,
-            "minzoom": 15,
             "layout": {
                 "visibility": "visible"
             },
@@ -233,30 +231,24 @@
             "source": "composite",
             "id": "building-fill",
             "paint": {
-                "fill-color": "#d0cbbb",
+                "fill-color": "#e8e0cc",
                 "fill-opacity": 0.3
             },
             "source-layer": "building"
         },
         {
-            "interactive": true,
-            "minzoom": 15,
-            "layout": {
-                "visibility": "visible"
-            },
-            "filter": [
-                "==",
-                "underground",
-                "false"
-            ],
-            "type": "building",
-            "source": "composite",
-            "id": "building",
-            "paint": {
-                "building-color": "#e8e0cc",
-                "building-opacity": 1
-            },
-            "source-layer": "building"
+          "layout": {
+            "visibility": "visible"
+          },
+          "type": "building",
+          "source": "composite",
+          "id": "buildingtada",
+          "paint": {
+            "building-color": "#e8e0cc",
+            "building-opacity": 1
+          },
+          "source-layer": "building",
+          "interactive": true
         }
 
 

@@ -53,8 +53,7 @@ BuildingBucket.prototype.programInterfaces = {
 };
 
 BuildingBucket.prototype.addFeature = function(feature) {
-    // TODO ask Lucas about getting properties to use as levels here
-    var levels = this.levels || 13;
+    var levels = feature.properties && feature.properties.levels || 3;
 
     var lines = loadGeometry(feature);
     var polygons = classifyRings(convertCoords(lines));
