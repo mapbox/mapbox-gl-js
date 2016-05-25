@@ -5,7 +5,7 @@ var util = require('../../util/util');
 var loadGeometry = require('../load_geometry');
 var earcut = require('earcut');
 var classifyRings = require('../../util/classify_rings');
-var EARCUT_MAX_RINGS = 100;
+var EARCUT_MAX_RINGS = 500;
 
 module.exports = FillBucket;
 
