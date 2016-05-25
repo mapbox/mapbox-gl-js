@@ -21,7 +21,7 @@ test('classifyRings', function(assert) {
             {x:0, y:40},
             {x:40, y:40},
             {x:40, y:0},
-            {x:0,y:0}
+            {x:0, y:0}
         ]
     ];
     classified = classifyRings(geometry);
@@ -34,14 +34,14 @@ test('classifyRings', function(assert) {
             {x:0, y:40},
             {x:40, y:40},
             {x:40, y:0},
-            {x:0,y:0}
+            {x:0, y:0}
         ],
         [
             {x:60, y:0},
             {x:60, y:40},
             {x:100, y:40},
             {x:100, y:0},
-            {x:60,y:0}
+            {x:60, y:0}
         ]
     ];
     classified = classifyRings(geometry);

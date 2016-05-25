@@ -11,6 +11,7 @@ function classifyRings(rings, maxRings) {
 
     var polygons = [],
         polygon,
+        truncated,
         ccw;
 
     for (var i = 0; i < len; i++) {
@@ -34,10 +35,10 @@ function classifyRings(rings, maxRings) {
     if (maxRings > 1) {
         len = polygons.length;
         for (var j = 0; j < len; j++) {
-            var polygon = polygons[j];
-            var truncated = [polygon.shift()];
+            polygon = polygons[j];
+            truncated = [polygon.shift()];
             polygon.sort(sortByArea);
-            polygons[j] = truncated.concat(polygon.slice(0, maxRings-1));
+            polygons[j] = truncated.concat(polygon.slice(0, maxRings - 1));
         }
     }
 
