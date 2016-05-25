@@ -31,7 +31,9 @@ function benchmark_earcut(opts, callback) {
             var styleLayers = new Array(RUN_COUNT),
                 buckets = new Array(RUN_COUNT);
 
-            var totalDiff = 0;
+            var totalDiff = 0,
+                minDiff = 10000000000,
+                maxDiff = 0;
             for (var j = 0; j < RUN_COUNT; j++) {
                 styleLayers[j] = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
                 buckets[j] = new FillBucket({
@@ -45,12 +47,16 @@ function benchmark_earcut(opts, callback) {
                 buckets[j].addFeature(feature);
                 var diff = Date.now() - start;
                 totalDiff += diff;
+                minDiff = diff < minDiff ? diff : minDiff;
+                maxDiff = diff > maxDiff ? diff : maxDiff;
             }
 
             diffs.push({
                 vertices: flattened.vertices.length,
                 holes: flattened.holes.length,
-                avg_ms_bucket_addFeature: totalDiff/RUN_COUNT
+                avg_ms_bucket_addFeature: totalDiff/RUN_COUNT,
+                min_ms_bucket_addFeature: minDiff,
+                max_ms_bucket_addFeature: maxDiff
             });
         }
         return callback(null, diffs);
