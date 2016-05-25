@@ -71,6 +71,17 @@ map.on('load', function() {
     });
 
     map.addLayer({
+        id: "symbolTest",
+        type: "symbol",
+        source: "composite",
+        "source-layer": "poi_label",
+        layout: {
+            "icon-image":"fast-food-15",
+            "icon-allow-overlap":true
+        }
+    });
+
+    map.addLayer({
         "id": "route",
         "type": "line",
         "source": "geojson",

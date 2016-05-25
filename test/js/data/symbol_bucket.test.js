@@ -8,6 +8,8 @@ var VectorTile = require('vector-tile').VectorTile;
 var SymbolBucket = require('../../../js/data/bucket/symbol_bucket');
 var Collision = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
+var SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
+var SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
 var GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 var StyleLayer = require('../../../js/style/style_layer');
 
@@ -20,6 +22,8 @@ test('SymbolBucket', function(t) {
     /*eslint new-cap: 0*/
     var buffers = {};
     var collisionBoxArray = new CollisionBoxArray();
+    var symbolQuadsArray = new SymbolQuadsArray();
+    var symbolInstancesArray = new SymbolInstancesArray();
     var collision = new Collision(0, 0, collisionBoxArray);
     var atlas = new GlyphAtlas(1024, 1024);
     for (var id in glyphs) {
@@ -41,6 +45,8 @@ test('SymbolBucket', function(t) {
             overscaling: 1,
             zoom: 0,
             collisionBoxArray: collisionBoxArray,
+            symbolInstancesArray: symbolInstancesArray,
+            symbolQuadsArray: symbolQuadsArray,
             layer: layer,
             childLayers: [layer],
             tileExtent: 4096

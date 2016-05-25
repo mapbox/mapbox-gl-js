@@ -4,7 +4,8 @@ var Point = require('point-geometry');
 
 module.exports = {
     getIconQuads: getIconQuads,
-    getGlyphQuads: getGlyphQuads
+    getGlyphQuads: getGlyphQuads,
+    SymbolQuad: SymbolQuad
 };
 
 var minScale = 0.5; // underscale by 1 zoom level
