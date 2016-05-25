@@ -254,7 +254,6 @@
             "id": "building",
             "paint": {
                 "building-color": "#e8e0cc",
-                "building-outline-color": "#990099",
                 "building-opacity": 1
             },
             "source-layer": "building"
