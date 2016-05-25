@@ -17,7 +17,7 @@ function classifyRings(rings, maxRings) {
         var area = signedArea(rings[i]);
         if (area === 0) continue;
 
-        rings[i].area = area;
+        rings[i].area = Math.abs(area);
 
         if (ccw === undefined) ccw = area < 0;
 

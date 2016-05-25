@@ -105,14 +105,23 @@ test('classifyRings + maxRings', function(assert) {
     classified = classifyRings(geometry);
     assert.equal(classified.length, 1, '1 polygon');
     assert.equal(classified[0].length, 3, 'polygon 1 has 1 exterior, 2 interior');
-    assert.equal(classified[0][0].area, -3200, 'polygon 1 exterior ring has area=-3200');
+    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
     assert.equal(classified[0][1].area, 4, 'polygon 1 interior ring1 has area=4');
     assert.equal(classified[0][2].area, 100, 'polygon 1 interior ring2 has area=100');
 
     classified = classifyRings(geometry, 2);
     assert.equal(classified.length, 1, '1 polygon');
     assert.equal(classified[0].length, 2, 'polygon 1 has 1 exterior, 1 interior');
-    assert.equal(classified[0][0].area, -3200, 'polygon 1 exterior ring has area=-3200');
+    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
+    assert.equal(classified[0][1].area, 100, 'polygon 1 interior ring has area=100');
+
+    geometry[0].reverse();
+    geometry[1].reverse();
+    geometry[2].reverse();
+    classified = classifyRings(geometry, 2);
+    assert.equal(classified.length, 1, '1 polygon');
+    assert.equal(classified[0].length, 2, 'polygon 1 has 1 exterior, 1 interior');
+    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
     assert.equal(classified[0][1].area, 100, 'polygon 1 interior ring has area=100');
 
     geometry = feature.loadGeometry();

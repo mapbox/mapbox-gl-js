@@ -5,6 +5,7 @@ var util = require('../../util/util');
 var loadGeometry = require('../load_geometry');
 var earcut = require('earcut');
 var classifyRings = require('../../util/classify_rings');
+var EARCUT_MAX_RINGS = 100;
 
 module.exports = FillBucket;
 
@@ -32,7 +33,7 @@ FillBucket.prototype.programInterfaces = {
 
 FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
-    var polygons = classifyRings(lines);
+    var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
