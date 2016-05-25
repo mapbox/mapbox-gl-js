@@ -21,38 +21,21 @@ precision highp float;
 attribute vec2 a_pos;
 attribute vec4 a_data;
 
-#ifndef MAPBOX_GL_JS
-// matrix is for the vertex position, exmatrix is for rotating and projecting
-// the extrusion vector.
-#endif
 uniform mat4 u_matrix;
-#ifndef MAPBOX_GL_JS
-uniform mat4 u_exmatrix;
-
-// shared
-uniform float u_ratio;
-uniform vec2 u_linewidth;
-uniform float u_offset;
-#else
 uniform mediump float u_ratio;
 uniform mediump float u_linewidth;
 uniform mediump float u_gapwidth;
 uniform mediump float u_antialiasing;
-#endif
 uniform vec2 u_patternscale_a;
 uniform float u_tex_y_a;
 uniform vec2 u_patternscale_b;
 uniform float u_tex_y_b;
 uniform float u_extra;
 uniform mat2 u_antialiasingmatrix;
-#ifdef MAPBOX_GL_JS
 uniform mediump float u_offset;
-#endif
 
 varying vec2 v_normal;
-#ifdef MAPBOX_GL_JS
 varying vec2 v_linewidth;
-#endif
 varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
@@ -70,18 +53,12 @@ void main() {
     normal.y = sign(normal.y - 0.5);
     v_normal = normal;
 
-#ifdef MAPBOX_GL_JS
     float inset = u_gapwidth + (u_gapwidth > 0.0 ? u_antialiasing : 0.0);
     float outset = u_gapwidth + u_linewidth * (u_gapwidth > 0.0 ? 2.0 : 1.0) + u_antialiasing;
 
-#endif
     // Scale the extrusion vector down to a normal and then up by the line width
     // of this vertex.
-#ifndef MAPBOX_GL_JS
-    vec2 dist = u_linewidth.s * a_extrude * scale;
-#else
-    mediump vec4 dist = vec4(outset * a_extrude * scale, 0.0, 0.0);
-#endif
+    mediump vec2 dist = outset * a_extrude * scale;
 
     // Calculate the offset when drawing a line that is to the side of the actual line.
     // We do this by creating a vector that points towards the extrude, but rotate
@@ -92,15 +69,8 @@ void main() {
     mediump vec2 offset = u_offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
     // Remove the texture normal bit of the position before scaling it with the
-#ifndef MAPBOX_GL_JS
-    // model/view matrix. Add the extrusion vector *after* the model/view matrix
-    // because we're extruding the line in pixel space, regardless of the current
-    // tile's zoom level.
-    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset + dist) / u_ratio, 0.0, 1.0);
-#else
     // model/view matrix.
-    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset + dist.xy) / u_ratio, 0.0, 1.0);
-#endif
+    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset + dist) / u_ratio, 0.0, 1.0);
 
     v_tex_a = vec2(a_linesofar * u_patternscale_a.x, normal.y * u_patternscale_a.y + u_tex_y_a);
     v_tex_b = vec2(a_linesofar * u_patternscale_b.x, normal.y * u_patternscale_b.y + u_tex_y_b);
@@ -114,8 +84,6 @@ void main() {
     // how much features are squished in all directions by the perspectiveness
     float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
 
-#ifdef MAPBOX_GL_JS
     v_linewidth = vec2(outset, inset);
-#endif
     v_gamma_scale = perspective_scale * squish_scale;
 }
