@@ -28,25 +28,29 @@ function benchmark_earcut(opts, callback) {
         for (var i = 0; i < targetLayer.length; i++) {
             var feature = targetLayer.feature(i);
             var flattened = earcut.flatten(classifyRings(feature.loadGeometry()));
+            var styleLayers = new Array(RUN_COUNT),
+                buckets = new Array(RUN_COUNT);
 
-            var styleLayer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
-            var bucket = new FillBucket({
-                buffers: {},
-                layer: styleLayer,
-                childLayers: [styleLayer]
-            });
-            bucket.createArrays();
-
-            var start = Date.now();
+            var totalDiff = 0;
             for (var j = 0; j < RUN_COUNT; j++) {
-                bucket.addFeature(feature);
+                styleLayers[j] = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
+                buckets[j] = new FillBucket({
+                    buffers: {},
+                    layer: styleLayers[j],
+                    childLayers: [styleLayers[j]]
+                });
+                buckets[j].createArrays();
+
+                var start = Date.now();
+                buckets[j].addFeature(feature);
+                var diff = Date.now() - start;
+                totalDiff += diff;
             }
-            var diff = Date.now() - start;
 
             diffs.push({
                 vertices: flattened.vertices.length,
                 holes: flattened.holes.length,
-                avg_ms_bucket_addFeature: diff/RUN_COUNT
+                avg_ms_bucket_addFeature: totalDiff/RUN_COUNT
             });
         }
         return callback(null, diffs);
