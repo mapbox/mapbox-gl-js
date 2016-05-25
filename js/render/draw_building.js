@@ -48,6 +48,8 @@ function drawBuilding(painter, source, layer, coord) {
     ));
 
     var color = util.premultiply(layer.paint['building-color']);
+    var shadowColor = util.premultiply(layer.paint['building-shadow-color'] || [0,0,1,1]);
+    shadowColor[3] = 1;
     var image = layer.paint['building-pattern'];
     var opacity = layer.paint['building-opacity'] || 1;
 
@@ -65,6 +67,7 @@ function drawBuilding(painter, source, layer, coord) {
         );
 
         gl.uniform4fv(program.u_color, color);
+        gl.uniform4fv(program.u_shadow, shadowColor);
 
         var lightdir = [-0.5, -0.6, 0.9];
         var lightMat = mat3.create();
