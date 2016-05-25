@@ -19,7 +19,7 @@
     "grid-index": "^0.1.0",
     "mapbox-gl-function": "^1.2.1",
     "mapbox-gl-js-supported": "^1.1.0",
-    "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#57576d602b2239fa4854f69f2edc72b1267c3e1a",
+    "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#0eda4509d2893adb3aaf92ac68301cdc7722e7b1",
     "mapbox-gl-style-spec": "^8.7.0",
     "minifyify": "^7.0.1",
     "pbf": "^1.3.2",
