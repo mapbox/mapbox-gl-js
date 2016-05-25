@@ -42,42 +42,6 @@ Buffer.prototype.bind = function(gl) {
 };
 
 /**
- * @enum {string} AttributeType
- * @private
- * @readonly
- */
-var AttributeType = {
-    Int8:   'BYTE',
-    Uint8:  'UNSIGNED_BYTE',
-    Int16:  'SHORT',
-    Uint16: 'UNSIGNED_SHORT'
-};
-
-/**
- * Set the attribute pointers in a WebGL context
- * @private
- * @param gl The WebGL context
- * @param program The active WebGL program
- */
-Buffer.prototype.setVertexAttribPointers = function(gl, program) {
-    for (var j = 0; j < this.attributes.length; j++) {
-        var member = this.attributes[j];
-        var attribIndex = program[member.name];
-
-        if (attribIndex !== undefined) {
-            gl.vertexAttribPointer(
-                attribIndex,
-                member.components,
-                gl[AttributeType[member.type]],
-                false,
-                this.arrayType.bytesPerElement,
-                member.offset
-            );
-        }
-    }
-};
-
-/**
  * Destroy the GL buffer bound to the given WebGL context
  * @private
  * @param gl The WebGL context

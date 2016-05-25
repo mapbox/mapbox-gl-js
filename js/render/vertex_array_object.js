@@ -4,6 +4,18 @@ var assert = require('assert');
 
 module.exports = VertexArrayObject;
 
+/**
+ * @enum {string} AttributeType
+ * @private
+ * @readonly
+ */
+var AttributeType = {
+    Int8:   'BYTE',
+    Uint8:  'UNSIGNED_BYTE',
+    Int16:  'SHORT',
+    Uint16: 'UNSIGNED_SHORT'
+};
+
 function VertexArrayObject() {
     this.boundProgram = null;
     this.boundVertexBuffer = null;
@@ -64,14 +76,45 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
 
     // Enable all attributes for the new program.
     for (var j = numPrevAttributes; j < numNextAttributes; j++) {
-        gl.enableVertexAttribArray(j);
+        // TODO resolve???? vertexBuffer -> layoutVertexBuffer
+        if (program[layoutVertexBuffer.attributes[j].name] !== undefined) {
+            gl.enableVertexAttribArray(j);
+        }
+    }
+
+    /**
+     * Set the attribute pointers in a WebGL context
+     * @private
+     * @param buffer The vertex buffer
+     */
+    function setVertexAttribPointers(buffer) {
+        for (var j = 0; j < buffer.attributes.length; j++) {
+            var member = buffer.attributes[j];
+            var attribIndex = program[member.name];
+
+            if (!gl.getVertexAttrib(j, gl.VERTEX_ATTRIB_ARRAY_ENABLED)) continue;
+            // TODO the above addition (disabling attribs undefined in the program) means
+            // the below assert will never trip -- is this okay? Do we remove it? Or are there
+            // cases that now will slip through? Should we be more explicit about allowed programs?
+            assert(attribIndex !== undefined, 'array member "' + member.name + '" name does not match shader attribute name');
+
+            gl.vertexAttribPointer(
+                attribIndex,
+                member.components,
+                gl[AttributeType[member.type]],
+                false,
+                buffer.arrayType.bytesPerElement,
+                member.offset
+            );
+        }
     }
 
     layoutVertexBuffer.bind(gl);
-    layoutVertexBuffer.setVertexAttribPointers(gl, program);
+    setVertexAttribPointers(layoutVertexBuffer);
+
     if (vertexBuffer2) {
         vertexBuffer2.bind(gl);
-        vertexBuffer2.setVertexAttribPointers(gl, program);
+        setVertexAttribPointers(vertexBuffer2);
     }
     if (elementBuffer) {
         elementBuffer.bind(gl);
