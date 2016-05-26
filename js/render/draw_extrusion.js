@@ -68,6 +68,7 @@ function drawBuilding(painter, source, layer, coord) {
 
         gl.uniform4fv(program.u_color, color);
         gl.uniform4fv(program.u_shadow, shadowColor);
+        gl.uniform1f(program.u_opacity, opacity);
 
         var lightdir = [-0.5, -0.6, 0.9];
         var lightMat = mat3.create();
