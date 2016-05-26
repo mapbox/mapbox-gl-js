@@ -4,6 +4,7 @@ var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
 var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+var createUniformPragmas = require('./create_uniform_pragmas');
 
 module.exports = drawBackground;
 
@@ -47,7 +48,8 @@ function drawBackground(painter, source, layer) {
         // Draw filling rectangle.
         if (painter.isOpaquePass !== (color[3] === 1)) return;
 
-        program = painter.useProgram('fill');
+        var pragmas = createUniformPragmas([{name: 'u_color', components: 4}]);
+        program = painter.useProgram('fill', [], pragmas, pragmas);
         gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_opacity, opacity);
         painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
