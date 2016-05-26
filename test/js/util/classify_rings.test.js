@@ -77,59 +77,75 @@ test('classifyRings', function(assert) {
     assert.end();
 });
 
-test('classifyRings + maxRings', function(assert) {
-    var geometry;
-    var classified;
+test('classifyRings + maxRings', function(t) {
 
-    geometry = [
-        [
-            {x:0, y:0},
-            {x:0, y:40},
-            {x:40, y:40},
-            {x:40, y:0},
-            {x:0, y:0}
-        ],
-        [
-            {x:30, y:30},
-            {x:32, y:30},
-            {x:32, y:32},
-            {x:30, y:30}
-        ],
-        [
-            {x:10, y:10},
-            {x:20, y:10},
-            {x:20, y:20},
-            {x:10, y:10}
-        ]
-    ];
-    classified = classifyRings(geometry);
-    assert.equal(classified.length, 1, '1 polygon');
-    assert.equal(classified[0].length, 3, 'polygon 1 has 1 exterior, 2 interior');
-    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
-    assert.equal(classified[0][1].area, 4, 'polygon 1 interior ring1 has area=4');
-    assert.equal(classified[0][2].area, 100, 'polygon 1 interior ring2 has area=100');
+    function createGeometry(options) {
+        var geometry = [
+            // Outer ring, area = 3200
+            [ {x:0, y:0}, {x:0, y:40}, {x:40, y:40}, {x:40, y:0}, {x:0, y:0} ],
+            // Inner ring, area = 100
+            [ {x:30, y:30}, {x:32, y:30}, {x:32, y:32}, {x:30, y:30} ],
+            // Inner ring, area = 4
+            [ {x:10, y:10}, {x:20, y:10}, {x:20, y:20}, {x:10, y:10} ]
+        ];
+        if (options && options.reverse) {
+            geometry[0].reverse();
+            geometry[1].reverse();
+            geometry[2].reverse();
+        }
+        return geometry;
+    }
 
-    classified = classifyRings(geometry, 2);
-    assert.equal(classified.length, 1, '1 polygon');
-    assert.equal(classified[0].length, 2, 'polygon 1 has 1 exterior, 1 interior');
-    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
-    assert.equal(classified[0][1].area, 100, 'polygon 1 interior ring has area=100');
 
-    geometry[0].reverse();
-    geometry[1].reverse();
-    geometry[2].reverse();
-    classified = classifyRings(geometry, 2);
-    assert.equal(classified.length, 1, '1 polygon');
-    assert.equal(classified[0].length, 2, 'polygon 1 has 1 exterior, 1 interior');
-    assert.equal(classified[0][0].area, 3200, 'polygon 1 exterior ring has area=3200');
-    assert.equal(classified[0][1].area, 100, 'polygon 1 interior ring has area=100');
+    t.test('maxRings=undefined', function(t) {
+        var geometry = sortRings(classifyRings(createGeometry()));
+        t.equal(geometry.length, 1);
+        t.equal(geometry[0].length, 3);
+        t.equal(geometry[0][0].area, 3200);
+        t.equal(geometry[0][1].area, 100);
+        t.equal(geometry[0][2].area, 4);
+        t.end();
+    });
 
-    geometry = feature.loadGeometry();
-    classified = classifyRings(geometry, 5);
-    assert.equal(classified.length, 2, '2 polygons');
-    assert.equal(classified[0].length, 1, 'polygon 1 has 1 exterior');
-    assert.equal(classified[1].length, 5, 'polygon 2 has 1 exterior, 4 interior');
+    t.test('maxRings=2', function(t) {
+        var geometry = sortRings(classifyRings(createGeometry(), 2));
+        t.equal(geometry.length, 1);
+        t.equal(geometry[0].length, 2);
+        t.equal(geometry[0][0].area, 3200);
+        t.equal(geometry[0][1].area, 100);
+        t.end();
+    });
 
-    assert.end();
+    t.test('maxRings=2, reversed geometry', function(t) {
+        var geometry = sortRings(classifyRings(createGeometry({reverse: true}), 2));
+        t.equal(geometry.length, 1);
+        t.equal(geometry[0].length, 2);
+        t.equal(geometry[0][0].area, 3200);
+        t.equal(geometry[0][1].area, 100);
+        t.end();
+    });
+
+    t.test('maxRings=5, geometry from fixture', function(t) {
+        var geometry = sortRings(classifyRings(feature.loadGeometry(), 5));
+        t.equal(geometry.length, 2);
+        t.equal(geometry[0].length, 1);
+        t.equal(geometry[1].length, 5);
+
+        var areas = geometry[1].map(function(ring) { return ring.area; });
+        t.deepEqual(areas, [2763951, 21600, 8298, 4758, 3411]);
+        t.end();
+    });
+
+    t.end();
 });
 
+function sortRings(geometry) {
+    for (var i = 0; i < geometry.length; i++) {
+        geometry[i] = geometry[i].sort(compareAreas);
+    }
+    return geometry;
+}
+
+function compareAreas(a, b) {
+    return b.area - a.area;
+}
