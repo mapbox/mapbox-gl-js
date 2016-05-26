@@ -20,7 +20,7 @@ Bucket.create = function(options) {
         line: require('./bucket/line_bucket'),
         circle: require('./bucket/circle_bucket'),
         symbol: require('./bucket/symbol_bucket'),
-        building: require('./bucket/building_bucket')
+        extrusion: require('./bucket/extrusion_bucket')
     };
     return new Classes[options.layer.type](options);
 };

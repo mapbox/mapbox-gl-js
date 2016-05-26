@@ -186,7 +186,7 @@ var draw = {
     circle: require('./draw_circle'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
-    building: require('./draw_building'),
+    extrusion: require('./draw_extrusion'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug')

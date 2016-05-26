@@ -17,7 +17,7 @@ function draw(painter, source, layer, coords) {
         drawBuilding(painter, source, layer, coord);
     }
 
-    if (!painter.isOpaquePass && layer.paint['building-antialias'] === true && !(layer.paint['building-image'] && !strokeColor)) {
+    if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !strokeColor)) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
             drawBuildingStroke(painter, source, layer, coord);
@@ -31,34 +31,34 @@ function drawBuilding(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.building;
+    var bufferGroups = bucket.bufferGroups.extrusion;
     if (!bufferGroups) return;
 
     if (painter.isOpaquePass) return;
     painter.setDepthSublayer(2);
 
     var gl = painter.gl;
-    var program = painter.useProgram('building');
+    var program = painter.useProgram('extrusion');
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
-        layer.paint['building-translate'] || [0,0],
-        layer.paint['building-translate-anchor'] || 'viewport'
+        layer.paint['extrusion-translate'] || [0,0],
+        layer.paint['extrusion-translate-anchor'] || 'viewport'
     ));
 
-    var color = util.premultiply(layer.paint['building-color']);
-    var shadowColor = util.premultiply(layer.paint['building-shadow-color'] || [0,0,1,1]);
+    var color = util.premultiply(layer.paint['extrusion-color']);
+    var shadowColor = util.premultiply(layer.paint['extrusion-shadow-color'] || [0,0,1,1]);
     shadowColor[3] = 1;
-    var image = layer.paint['building-pattern'];
-    var opacity = layer.paint['building-opacity'] || 1;
+    var image = layer.paint['extrusion-pattern'];
+    var opacity = layer.paint['extrusion-opacity'] || 1;
 
     if (false && image) {
 
         // TODO
 
     } else {
-        // Draw building rectangle.
+        // Draw extrusion rectangle.
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
         gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
             mat4.create(),
@@ -89,22 +89,22 @@ function drawBuildingStroke(painter, source, layer, coord) {
     if (!bucket) return;
 
     var gl = painter.gl;
-    var bufferGroups = bucket.bufferGroups.building;
+    var bufferGroups = bucket.bufferGroups.extrusion;
 
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var strokeColor = layer.paint['building-outline-color'];
+    var strokeColor = layer.paint['extrusion-outline-color'];
 
-    var image = layer.paint['building-pattern'];
-    var opacity = layer.paint['building-opacity'];
+    var image = layer.paint['extrusion-pattern'];
+    var opacity = layer.paint['extrusion-opacity'];
     var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
-        layer.paint['building-translate'],
-        layer.paint['building-translate-anchor']
+        layer.paint['extrusion-translate'],
+        layer.paint['extrusion-translate-anchor']
     ));
 
     if (false && image) {

@@ -240,12 +240,13 @@
           "layout": {
             "visibility": "visible"
           },
-          "type": "building",
+          "type": "extrusion",
           "source": "composite",
           "id": "buildingtada",
           "paint": {
-            "building-color": "#e8e0cc",
-            "building-opacity": 1
+            "extrusion-color": "#e8e0cc",
+            "extrusion-opacity": 1,
+            "extrusion-shadow-color": "#f00"
           },
           "source-layer": "building",
           "interactive": true

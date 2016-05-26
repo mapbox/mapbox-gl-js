@@ -32,7 +32,7 @@ BuildingBucket.prototype.addBuildingVertex = function(vertexBuffer, x, y, z, nx,
 };
 
 BuildingBucket.prototype.programInterfaces = {
-    building: {
+    extrusion: {
         vertexBuffer: true,
         elementBuffer: true,
         elementBufferComponents: 3,
@@ -68,7 +68,7 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
         numVertices += polygon[k].length;
     }
 
-    var group = this.makeRoomFor('building', numVertices);
+    var group = this.makeRoomFor('extrusion', numVertices);
     var flattened = [];
     var holeIndices = [];
     var startIndex = group.layout.vertex.length;
