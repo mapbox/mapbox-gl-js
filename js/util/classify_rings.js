@@ -1,5 +1,7 @@
 'use strict';
 
+var quickselect = require('quickselect');
+
 module.exports = classifyRings;
 
 // classifies an array of rings into polygons with outer rings and holes
@@ -11,7 +13,6 @@ function classifyRings(rings, maxRings) {
 
     var polygons = [],
         polygon,
-        truncated,
         ccw;
 
     for (var i = 0; i < len; i++) {
@@ -35,10 +36,9 @@ function classifyRings(rings, maxRings) {
     if (maxRings > 1) {
         len = polygons.length;
         for (var j = 0; j < len; j++) {
-            polygon = polygons[j];
-            truncated = [polygon.shift()];
-            polygon.sort(sortByArea);
-            polygons[j] = truncated.concat(polygon.slice(0, maxRings - 1));
+            if (polygons[j].length <= maxRings) continue;
+            quickselect(polygons[j], maxRings - 1, 1, polygon.length - 1, sortByArea);
+            polygons[j] = polygon.slice(0, maxRings);
         }
     }
 
