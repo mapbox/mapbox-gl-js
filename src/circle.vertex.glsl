@@ -33,8 +33,8 @@ varying lowp float v_antialiasblur;
 void main(void) {
 #ifdef MAPBOX_GL_JS
 
-    #pragma mapbox: initialize color
-    #pragma mapbox: initialize radius
+    #pragma mapbox: initialize color lowp
+    #pragma mapbox: initialize radius mediump
 
 #endif
     // unencode the extrusion vector that we snuck into the a_pos vector

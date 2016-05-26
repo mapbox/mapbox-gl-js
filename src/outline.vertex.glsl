@@ -13,7 +13,11 @@ uniform vec2 u_world;
 
 varying vec2 v_pos;
 
+#pragma mapbox: define outline_color lowp
+
 void main() {
+    #pragma mapbox: initialize outline_color lowp
+
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
 }

@@ -6,11 +6,13 @@ precision mediump float;
 #define highp
 #endif
 
-uniform lowp vec4 u_color;
 uniform lowp float u_opacity;
+#pragma mapbox: define color lowp
 
 void main() {
-    gl_FragColor = u_color * u_opacity;
+    #pragma mapbox: initialize color lowp
+
+    gl_FragColor = color * u_opacity;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
