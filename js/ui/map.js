@@ -554,7 +554,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Object} style
      */
     getStyle: function() {
-        return this.style.serialize();
+        if (this.style) {
+            return this.style.serialize();
+        }
     },
 
     /**

@@ -32,6 +32,7 @@ test('Map', function(t) {
     t.test('constructor', function(t) {
         var map = createMap({interactive: true});
         t.ok(map.getContainer());
+        t.equal(map.getStyle(), undefined);
         t.ok(map.boxZoom.isEnabled());
         t.ok(map.doubleClickZoom.isEnabled());
         t.ok(map.dragPan.isEnabled());
