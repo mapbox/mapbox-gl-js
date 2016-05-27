@@ -27,6 +27,25 @@ FillBucket.prototype.programInterfaces = {
             name: 'a_pos',
             components: 2,
             type: 'Int16'
+        }],
+        paintAttributes: [{
+            name: 'a_color',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return util.premultiply(layer.getPaintValue("fill-color", globalProperties, featureProperties));
+            },
+            multiplier: 255,
+            paintProperty: 'fill-color'
+        }, {
+            name: 'a_outline_color',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return util.premultiply(layer.getPaintValue("fill-outline-color", globalProperties, featureProperties));
+            },
+            multiplier: 255,
+            paintProperty: 'fill-outline-color'
         }]
     }
 };
@@ -34,9 +53,15 @@ FillBucket.prototype.programInterfaces = {
 FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
+
+    var startGroup = this.makeRoomFor('fill', 0);
+    var startIndex = startGroup.layout.vertex.length;
+
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
+
+    this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
 };
 
 FillBucket.prototype.addPolygon = function(polygon) {

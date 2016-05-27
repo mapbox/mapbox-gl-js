@@ -11,8 +11,8 @@ function draw(painter, source, layer, coords) {
 
     var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
-    var strokeColor = util.premultiply(layer.paint['fill-outline-color']);
     var opacity = layer.paint['fill-opacity'];
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
@@ -24,14 +24,12 @@ function draw(painter, source, layer, coords) {
         }
     }
 
-    // Draw stroke
     if (!painter.isOpaquePass && layer.paint['fill-antialias']) {
-        if (strokeColor || !layer.paint['fill-pattern']) {
-            var outlineProgram = painter.useProgram('outline');
+        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
             painter.lineWidth(2);
             painter.depthMask(false);
 
-            if (strokeColor) {
+            if (isOutlineColorDefined) {
                 // If we defined a different color for the fill outline, we are
                 // going to ignore the bits in 0x07 and just care about the global
                 // clipping mask.
@@ -44,15 +42,11 @@ function draw(painter, source, layer, coords) {
                 // the (non-antialiased) fill.
                 painter.setDepthSublayer(0);
             }
-            gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.uniform4fv(outlineProgram.u_color, strokeColor ? strokeColor : color);
-            gl.uniform1f(outlineProgram.u_opacity, opacity);
 
             for (var j = 0; j < coords.length; j++) {
                 drawStroke(painter, source, layer, coords[j]);
             }
         } else {
-            var outlinePatternProgram = painter.useProgram('outlinepattern');
             painter.lineWidth(2);
             painter.depthMask(false);
             // Otherwise, we only want to drawFill the antialiased parts that are
@@ -61,7 +55,6 @@ function draw(painter, source, layer, coords) {
             // the current shape, some pixels from the outline stroke overlapped
             // the (non-antialiased) fill.
             painter.setDepthSublayer(0);
-            gl.uniform2f(outlinePatternProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
             for (var k = 0; k < coords.length; k++) {
                 drawStroke(painter, source, layer, coords[k]);
@@ -80,23 +73,29 @@ function drawFill(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
     var program;
 
-    if (image) {
+    if (!image) {
+
+        var programOptions = bucket.paintAttributes.fill[layer.id];
+        program = painter.useProgram(
+            'fill',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
+        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
+        gl.uniform1f(program.u_opacity, opacity);
+
+    } else {
         // Draw texture fill
         program = painter.useProgram('pattern');
         setPattern(image, opacity, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
-
-    } else {
-        program = painter.useProgram('fill');
-        gl.uniform4fv(program.u_color, color);
-        gl.uniform1f(program.u_opacity, opacity);
     }
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
@@ -110,7 +109,7 @@ function drawFill(painter, source, layer, coord) {
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
+        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.layout.element.length, gl.UNSIGNED_SHORT, 0);
     }
 }
@@ -125,7 +124,25 @@ function drawStroke(painter, source, layer, coord) {
 
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
-    var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
+
+    var program;
+    if (image && !isOutlineColorDefined) {
+        program = painter.useProgram('outlinepattern');
+        gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+    } else {
+        var programOptions = bucket.paintAttributes.fill[layer.id];
+        program = painter.useProgram(
+            'outline',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
+        gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform1f(program.u_opacity, opacity);
+        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
+    }
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
@@ -140,7 +157,7 @@ function drawStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2);
+        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2, group.paint[layer.id]);
         gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }

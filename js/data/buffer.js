@@ -1,7 +1,5 @@
 'use strict';
 
-var assert = require('assert');
-
 module.exports = Buffer;
 
 /**
@@ -65,16 +63,17 @@ Buffer.prototype.setVertexAttribPointers = function(gl, program) {
     for (var j = 0; j < this.attributes.length; j++) {
         var member = this.attributes[j];
         var attribIndex = program[member.name];
-        assert(attribIndex !== undefined, 'array member "' + member.name + '" name does not match shader attribute name');
 
-        gl.vertexAttribPointer(
-            attribIndex,
-            member.components,
-            gl[AttributeType[member.type]],
-            false,
-            this.arrayType.bytesPerElement,
-            member.offset
-        );
+        if (attribIndex !== undefined) {
+            gl.vertexAttribPointer(
+                attribIndex,
+                member.components,
+                gl[AttributeType[member.type]],
+                false,
+                this.arrayType.bytesPerElement,
+                member.offset
+            );
+        }
     }
 };
 
