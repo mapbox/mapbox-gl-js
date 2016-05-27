@@ -4,7 +4,6 @@ var Source = require('./source');
 var Tile = require('./tile');
 var Evented = require('../util/evented');
 var TileCoord = require('./tile_coord');
-var Point = require('point-geometry');
 var Cache = require('../util/lru_cache');
 var Coordinate = require('../geo/coordinate');
 var util = require('../util/util');
@@ -72,14 +71,7 @@ function TilePyramid(id, options, dispatcher) {
         this.fire('load');
     }.bind(this);
 
-    // TODO: this is a very temp hack so that draw_background can instantiate a
-    // pyramid.  The coveringTiles() method it needs on the pyramid really
-    // should probably go somewhere else -- maybe on Transform?
-    if (Source.getType(options.type)) {
-        Source.create(id, options, dispatcher, onChange, sourceLoaded);
-    } else {
-        sourceLoaded(null, options);
-    }
+    Source.create(id, options, dispatcher, onChange, sourceLoaded);
 
     this._tiles = {};
     this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
@@ -176,45 +168,7 @@ TilePyramid.prototype = util.inherit(Evented, {
      * @private
      */
     getZoom: function(transform) {
-        return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
-    },
-
-    /**
-     * Return a zoom level that will cover all tiles in a given transform
-     * @param {Object} transform
-     * @returns {number} zoom level
-     * @private
-     */
-    coveringZoomLevel: function(transform) {
-        return (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-    },
-
-    /**
-     * Given a transform, return all coordinates that could cover that
-     * transform for a covering zoom level.
-     * @param {Object} transform
-     * @returns {Array<Tile>} tiles
-     * @private
-     */
-    coveringTiles: function(transform) {
-        var z = this.coveringZoomLevel(transform);
-        var actualZ = z;
-
-        if (z < this.minzoom) return [];
-        if (z > this.maxzoom) z = this.maxzoom;
-
-        var tr = transform,
-            tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
-            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
-
-        return TileCoord.cover(z, [
-            tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
-            tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
-        ], this.reparseOverscaled ? actualZ : z).sort(function(a, b) {
-            return centerPoint.dist(a) - centerPoint.dist(b);
-        });
+        return transform.zoom + transform.scaleZoom(transform.tileSize / this.tileSize);
     },
 
     /**
@@ -330,7 +284,7 @@ TilePyramid.prototype = util.inherit(Evented, {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = this.used ? this.coveringTiles(transform) : [];
+        var required = this.used ? transform.coveringTiles(this) : [];
         for (i = 0; i < required.length; i++) {
             coord = required[i];
             tile = this.addTile(coord);
