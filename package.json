@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
+  "engines": { "node" : ">=4.0.0" },
   "dependencies": {
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
