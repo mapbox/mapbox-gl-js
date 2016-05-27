@@ -127,6 +127,53 @@ Transform.prototype = {
         this._constrain();
     },
 
+    /**
+     * Return a zoom level that will cover all tiles the transform
+     * @param {Object} pyramidProperties
+     * @param {number} pyramidProperties.tileSize
+     * @param {boolean} pyramidProperties.roundZoom
+     * @returns {number} zoom level
+     * @private
+     */
+    coveringZoomLevel: function(pyramidProperties) {
+        return (pyramidProperties.roundZoom ? Math.round : Math.floor)(
+            this.zoom + this.scaleZoom(this.tileSize / pyramidProperties.tileSize)
+        );
+    },
+
+    /**
+     * Return all coordinates that could cover this transform for a covering
+     * zoom level.
+     * @param {Object} pyramidProperties
+     * @param {number} pyramidProperties.tileSize
+     * @param {number} pyramidProperties.minzoom
+     * @param {number} pyramidProperties.maxzoom
+     * @param {boolean} pyramidProperties.roundZoom
+     * @param {boolean} pyramidProperties.reparseOverscaled
+     * @returns {Array<Tile>} tiles
+     * @private
+     */
+    coveringTiles: function(pyramidProperties) {
+        var z = this.coveringZoomLevel(pyramidProperties);
+        var actualZ = z;
+
+        if (z < pyramidProperties.minzoom) return [];
+        if (z > pyramidProperties.maxzoom) z = pyramidProperties.maxzoom;
+
+        var tr = this,
+            tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
+            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
+
+        return TileCoord.cover(z, [
+            tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
+            tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
+            tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
+            tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
+        ], pyramidProperties.reparseOverscaled ? actualZ : z).sort(function(a, b) {
+            return centerPoint.dist(a) - centerPoint.dist(b);
+        });
+    },
+
     resize: function(width, height) {
         this.width = width;
         this.height = height;
