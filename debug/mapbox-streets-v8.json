@@ -222,20 +222,16 @@
             "layout": {
                 "visibility": "visible"
             },
-            "filter": [
-                "==",
-                "underground",
-                "false"
-            ],
             "type": "fill",
             "source": "composite",
             "id": "building-fill",
             "paint": {
-                "fill-color": "#e8e0cc",
+                "fill-color": "#f00",
                 "fill-opacity": 0.3
             },
             "source-layer": "building"
         },
+
         {
           "layout": {
             "visibility": "visible"

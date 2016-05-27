@@ -20,7 +20,7 @@ function draw(painter, source, layer, coords) {
     if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !strokeColor)) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
-            drawBuildingStroke(painter, source, layer, coord);
+            // drawBuildingStroke(painter, source, layer, coord);
         }
     }
 
@@ -52,6 +52,7 @@ function drawBuilding(painter, source, layer, coord) {
     shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'] || 1;
+    var rotateLight = layer.paint['extrusion-anchor'] === 'viewport';
 
     if (false && image) {
 
@@ -70,9 +71,10 @@ function drawBuilding(painter, source, layer, coord) {
         gl.uniform4fv(program.u_shadow, shadowColor);
         gl.uniform1f(program.u_opacity, opacity);
 
-        var lightdir = [-0.5, -0.6, 0.9];
+        var lightdir = [-0.5, -0.1, 0.9];
+
         var lightMat = mat3.create();
-        mat3.rotate(lightMat, lightMat, -painter.transform.angle);
+        if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
         vec3.transformMat3(lightdir, lightdir, lightMat);
         gl.uniform3fv(program.u_lightdir, lightdir);
     }

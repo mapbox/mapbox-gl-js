@@ -56,7 +56,7 @@ BuildingBucket.prototype.addFeature = function(feature) {
     var levels = feature.properties && feature.properties.levels || 3;
 
     var lines = loadGeometry(feature);
-    var polygons = classifyRings(convertCoords(lines));
+    var polygons = convertCoords(classifyRings(lines));
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i], levels);
     }
@@ -78,8 +78,6 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
     for (var r = 0; r < polygon.length; r++) {
         var ring = polygon[r];
 
-        // TODO copied -- what is this for?
-        if (r > 0) continue;
         if (r > 0) holeIndices.push(flattened.length / 2);
 
         // add vertices from the roof
@@ -96,7 +94,18 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             flattened.push(vertex[0]);
             flattened.push(vertex[1]);
         }
+    }
 
+    var triangleIndices = earcut(flattened, holeIndices);
+
+    for (var i = 0; i < triangleIndices.length - 2; i += 3) {
+        group.layout.element.emplaceBack(triangleIndices[i] + startIndex,
+                triangleIndices[i+1] + startIndex,
+                triangleIndices[i+2] + startIndex);
+    }
+
+    for (var r = 0; r < polygon.length; r++) {
+        var ring = polygon[r];
         // add vertices for the walls
         for (var s = 0; s < ring.length - 1; s++) {
             var v1 = ring[s];
@@ -113,25 +122,9 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);
         }
     }
-
-    var triangleIndices = earcut(flattened, holeIndices);
-
-    for (var i = 0; i < triangleIndices.length - 2; i++) {
-        group.layout.element.emplaceBack(triangleIndices[i] + startIndex,
-                triangleIndices[i + 1] + startIndex,
-                triangleIndices[i + 2] + startIndex);
-    }
 };
 
 function convertCoords(rings) {
-    var result = [];
-    for (var i = 0; i < rings.length; i++) {
-        var ring = [];
-        for (var j = 0; j < rings[i].length; j++) {
-            var p = rings[i][j];
-            ring.push([p.x, p.y]);
-        }
-        result.push(ring);
-    }
-    return result;
+    if (rings instanceof Point) return [rings.x, rings.y];
+    return rings.map(convertCoords);
 }
