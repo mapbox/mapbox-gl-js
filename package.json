@@ -47,7 +47,7 @@
     "express": "^4.13.4",
     "gl": "^2.1.5",
     "istanbul": "^0.4.2",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#cc6f5f0ee3bcc9760c122d70b91de7d9c1307e2e",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#5c38f278f92688c68db115601663d5ac125a1961",
     "nyc": "^6.1.1",
     "sinon": "^1.15.4",
     "st": "^1.0.0",

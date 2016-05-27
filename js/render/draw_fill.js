@@ -12,6 +12,7 @@ function draw(painter, source, layer, coords) {
     var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
@@ -24,11 +25,11 @@ function draw(painter, source, layer, coords) {
     }
 
     if (!painter.isOpaquePass && layer.paint['fill-antialias']) {
-        if (layer.paint['fill-outline-color'] || !layer.paint['fill-pattern']) {
+        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
             painter.lineWidth(2);
             painter.depthMask(false);
 
-            if (layer.paint['fill-outline-color']) {
+            if (isOutlineColorDefined) {
                 // If we defined a different color for the fill outline, we are
                 // going to ignore the bits in 0x07 and just care about the global
                 // clipping mask.
@@ -76,7 +77,7 @@ function drawFill(painter, source, layer, coord) {
     var opacity = layer.paint['fill-opacity'];
     var program;
 
-    if (layer.paint['fill-outline-color'] || !layer.paint['fill-pattern']) {
+    if (!image) {
 
         program = painter.useProgram(
             'fill',
@@ -122,9 +123,10 @@ function drawStroke(painter, source, layer, coord) {
 
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
 
     var program;
-    if (image) {
+    if (image && !isOutlineColorDefined) {
         program = painter.useProgram('outlinepattern');
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
