@@ -23,7 +23,7 @@ void main() {
     float t = smoothstep(1.0 - u_blur, 1.0, length(v_extrude));
     gl_FragColor = u_color * (1.0 - t) * u_opacity;
 #else
-    #pragma mapbox: initialize color
+    #pragma mapbox: initialize color lowp
 
     float t = smoothstep(1.0 - max(u_blur, v_antialiasblur), 1.0, length(v_extrude));
     gl_FragColor = color * (1.0 - t) * u_opacity;
