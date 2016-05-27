@@ -9,7 +9,8 @@ module.exports.create = function (id, options, dispatcher, onChange, callback) {
         if (err) {
             return callback(err);
         }
-        var vts = new VectorTileSource(id, util.extend(options, tileJSON), dispatcher);
+        var vts = new VectorTileSource(id, options, dispatcher);
+        // TODO: not crazy about this
         util.extend(vts, tileJSON);
         callback(null, vts);
     });
