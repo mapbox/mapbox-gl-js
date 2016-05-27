@@ -79,11 +79,12 @@ function drawFill(painter, source, layer, coord) {
 
     if (!image) {
 
+        var programOptions = bucket.paintAttributes.fill[layer.id];
         program = painter.useProgram(
             'fill',
-            bucket.paintAttributes.fill[layer.id].defines,
-            bucket.paintAttributes.fill[layer.id].vertexPragmas,
-            bucket.paintAttributes.fill[layer.id].fragmentPragmas
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
         );
         bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
         gl.uniform1f(program.u_opacity, opacity);
