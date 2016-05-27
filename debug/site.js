@@ -13,25 +13,10 @@ map.addControl(new mapboxgl.Navigation());
 map.addControl(new mapboxgl.Geolocate());
 
 map.on('load', function() {
-    map.addSource('raster-tiles', {
-        type: 'raster',
-        url: 'mapbox://mapbox.satellite',
-        tileSize: 256
-    })
-
     map.addSource('geojson', {
         "type": "geojson",
         "data": "route.json"
     });
-
-    map.addLayer({
-        id: 'sat',
-        type: 'raster',
-        source: 'raster-tiles',
-        minzoom: 0,
-        maxzoom: 22,
-        paint: { 'raster-opacity': 0.20 }
-    }, 'country-label-lg')
 
     map.addLayer({
         "id": "route",
