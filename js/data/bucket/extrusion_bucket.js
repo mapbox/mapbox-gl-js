@@ -7,16 +7,16 @@ var earcut = require('earcut');
 var classifyRings = require('../../util/classify_rings');
 var Point = require('point-geometry');
 
-module.exports = BuildingBucket;
+module.exports = ExtrusionBucket;
 
-function BuildingBucket() {
+function ExtrusionBucket() {
     Bucket.apply(this, arguments);
 }
 
-BuildingBucket.prototype = util.inherit(Bucket, {});
+ExtrusionBucket.prototype = util.inherit(Bucket, {});
 
 
-BuildingBucket.prototype.addBuildingVertex = function(vertexBuffer, x, y, z, nx, ny, nz, t) {
+ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, z, nx, ny, nz, t) {
     const factor = Math.pow(2, 13);
 
     return vertexBuffer.emplaceBack(
@@ -31,7 +31,7 @@ BuildingBucket.prototype.addBuildingVertex = function(vertexBuffer, x, y, z, nx,
             nz * factor * 2);
 };
 
-BuildingBucket.prototype.programInterfaces = {
+ExtrusionBucket.prototype.programInterfaces = {
     extrusion: {
         vertexBuffer: true,
         elementBuffer: true,
@@ -52,7 +52,7 @@ BuildingBucket.prototype.programInterfaces = {
     }
 };
 
-BuildingBucket.prototype.addFeature = function(feature) {
+ExtrusionBucket.prototype.addFeature = function(feature) {
     var levels = feature.properties && feature.properties.levels || 3;
 
     var lines = loadGeometry(feature);
@@ -62,7 +62,7 @@ BuildingBucket.prototype.addFeature = function(feature) {
     }
 };
 
-BuildingBucket.prototype.addPolygon = function(polygon, levels) {
+ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
     var numVertices = 0;
     for (var k = 0; k < polygon.length; k++) {
         numVertices += polygon[k].length;
@@ -86,7 +86,7 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
         for (var v = 0; v < ring.length; v++) {
             var vertex = ring[v];
 
-            var fIndex = this.addBuildingVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1);
+            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1);
             indices.push(fIndex);
 
             if (v >= 1) {
@@ -104,10 +104,10 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             var perp = Point.convert(v2)._sub(Point.convert(v1))._perp()._unit();
 
             var vertexArray = group.layout.vertex;
-            var wIndex = this.addBuildingVertex(vertexArray, v1[0], v1[1], 0, perp.x, perp.y, 0, 0);
-            this.addBuildingVertex(vertexArray, v1[0], v1[1], h, perp.x, perp.y, 0, 1);
-            this.addBuildingVertex(vertexArray, v2[0], v2[1], 0, perp.x, perp.y, 0, 0);
-            this.addBuildingVertex(vertexArray, v2[0], v2[1], h, perp.x, perp.y, 0, 1);
+            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], 0, perp.x, perp.y, 0, 0);
+            this.addExtrusionVertex(vertexArray, v1[0], v1[1], h, perp.x, perp.y, 0, 1);
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], 0, perp.x, perp.y, 0, 0);
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], h, perp.x, perp.y, 0, 1);
 
             group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);

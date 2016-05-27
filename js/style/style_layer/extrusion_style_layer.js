@@ -3,10 +3,10 @@
 var util = require('../../util/util');
 var StyleLayer = require('../style_layer');
 
-function BuildingStyleLayer() {
+function ExtrusionStyleLayer() {
     StyleLayer.apply(this, arguments);
 }
 
-module.exports = BuildingStyleLayer;
+module.exports = ExtrusionStyleLayer;
 
-BuildingStyleLayer.prototype = util.inherit(StyleLayer, {});
+ExtrusionStyleLayer.prototype = util.inherit(StyleLayer, {});

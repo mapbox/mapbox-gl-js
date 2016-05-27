@@ -14,20 +14,20 @@ function draw(painter, source, layer, coords) {
 
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
-        drawBuilding(painter, source, layer, coord);
+        drawExtrusion(painter, source, layer, coord);
     }
 
     if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !strokeColor)) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
-            // drawBuildingStroke(painter, source, layer, coord);
+            drawExtrusionStroke(painter, source, layer, coord);
         }
     }
 
     gl.enable(gl.STENCIL_TEST);
 }
 
-function drawBuilding(painter, source, layer, coord) {
+function drawExtrusion(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
@@ -71,7 +71,14 @@ function drawBuilding(painter, source, layer, coord) {
         gl.uniform4fv(program.u_shadow, shadowColor);
         gl.uniform1f(program.u_opacity, opacity);
 
-        var lightdir = [-0.5, -0.1, 0.9];
+        var lightdir = [-0.5, -0.6, 0.9];
+        // NOTES FOR MYSELF
+        // z: 0 is the minimum z; it clamps here. But
+        //    0.5 is the first one that makes sense after 0.0 --
+        //    in between are kind of ambient, but the first time
+        //    the roof becomes as light as the top of the wall is 0.5
+        //    The upper clamp is between 1.7 and 1.8
+        // x:
 
         var lightMat = mat3.create();
         if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
@@ -86,7 +93,7 @@ function drawBuilding(painter, source, layer, coord) {
     }
 }
 
-function drawBuildingStroke(painter, source, layer, coord) {
+function drawExtrusionStroke(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
