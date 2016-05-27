@@ -1,16 +1,27 @@
 'use strict';
 
 var util = require('../util/util');
-var Evented = require('../util/evented');
-var TilePyramid = require('./tile_pyramid');
-var Source = require('./source');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
 var webworkify = require('webworkify');
 
-module.exports = GeoJSONSource;
-module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_worker_simple'), {bare: true}));
+module.exports.create = function (id, options, dispatcher, onChange, callback) {
+    var source = new GeoJSONSource(id, options, dispatcher, onChange);
+
+    //TODO: is it to aggressive to do this on source creation, as opposed to
+    //lazily at the first tile request?
+    source._updateData(function done(err) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, source);
+    });
+};
+
+module.exports.workerSourceURL = URL.createObjectURL(
+    webworkify(require('./geojson_worker_source'), {bare: true})
+);
 
 /**
  * Create a GeoJSON data source instance given an options object
@@ -43,35 +54,27 @@ module.exports.worker = URL.createObjectURL(webworkify(require('./geojson_worker
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function GeoJSONSource(options) {
-    this.options = options = options || {};
+function GeoJSONSource(id, options, dispatcher, onChange) {
+    this.id = id;
+    this.dispatcher = dispatcher;
+    this._onChange = onChange;
+
+    options = options || {};
 
     this._data = options.data;
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.options = options;
+    this.type = options.type;
 
-    this._pyramid = new TilePyramid({
-        tileSize: this.tileSize,
-        minzoom: this.minzoom,
-        maxzoom: this.maxzoom,
-        reparseOverscaled: true,
-        load: this._loadTile.bind(this),
-        abort: this._abortTile.bind(this),
-        unload: this._unloadTile.bind(this),
-        add: this._addTile.bind(this),
-        remove: this._removeTile.bind(this),
-        redoPlacement: this._redoTilePlacement.bind(this)
-    });
 }
 
-GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */{
+GeoJSONSource.prototype = /** @lends GeoJSONSource.prototype */{
     minzoom: 0,
     maxzoom: 18,
     tileSize: 512,
-    _dirty: true,
     isTileClipped: true,
+    _dirty: true,
 
     /**
      * Update source geojson data and rerender map
@@ -83,52 +86,12 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         this._data = data;
         this._dirty = true;
 
-        this.fire('change');
-
-        if (this.map)
-            this.update(this.map.transform);
+        this._onChange();
 
         return this;
     },
 
-    onAdd: function(map) {
-        this.map = map;
-    },
-
-    loaded: function() {
-        return this._loaded && this._pyramid.loaded();
-    },
-
-    update: function(transform) {
-        if (this._dirty) {
-            this._updateData();
-        }
-
-        if (this._loaded) {
-            this._pyramid.update(this.used, transform);
-        }
-    },
-
-    reload: function() {
-        if (this._loaded) {
-            this._pyramid.reload();
-        }
-    },
-
-    serialize: function() {
-        return {
-            type: this.options.type,
-            data: this._data
-        };
-    },
-
-    getVisibleCoordinates: Source._getVisibleCoordinates,
-    getTile: Source._getTile,
-
-    queryRenderedFeatures: Source._queryRenderedVectorFeatures,
-    querySourceFeatures: Source._querySourceFeatures,
-
-    _updateData: function() {
+    _updateData: function(cb) {
         this._dirty = false;
         var options = util.extend({
             source: this.id,
@@ -144,22 +107,31 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send(this.options.type + '.parse', options, function(err) {
+        this.workerID = this.dispatcher.send(this.type + '.parse', options, function(err) {
+            // TODO: not quite sure if we need this anymore
             this._loaded = true;
-            if (err) {
-                this.fire('error', {error: err});
-            } else {
-                this._pyramid.reload();
-                this.fire('change');
-            }
+            cb(err);
 
         }.bind(this));
     },
 
-    _loadTile: function(tile) {
+    load: function (tile, callback) {
+        if (!this._dirty) {
+            return this._load(tile, callback);
+        }
+
+        this._updateData(function (err) {
+            if (err) {
+                return callback(err);
+            }
+            this._load(tile, callback);
+        }.bind(this));
+    },
+
+    _load: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
-            plugin: this.options.type,
+            type: this.type,
             uid: tile.uid,
             coord: tile.coord,
             zoom: tile.coord.z,
@@ -180,8 +152,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
                 return;
 
             if (err) {
-                this.fire('tile.error', {tile: tile});
-                return;
+                return callback(err);
             }
 
             tile.loadVectorData(data, this.map.style);
@@ -191,31 +162,24 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
                 tile.redoPlacement(this);
             }
 
-            this.fire('tile.load', {tile: tile});
+            return callback(null, data);
 
         }.bind(this), this.workerID);
     },
 
-    _abortTile: function(tile) {
+    abort: function(tile) {
         tile.aborted = true;
     },
 
-    _addTile: function(tile) {
-        this.fire('tile.add', {tile: tile});
-    },
-
-    _removeTile: function(tile) {
-        this.fire('tile.remove', {tile: tile});
-    },
-
-    _unloadTile: function(tile) {
+    unload: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
-    redoPlacement: Source.redoPlacement,
-
-    _redoTilePlacement: function(tile) {
-        tile.redoPlacement(this);
+    serialize: function() {
+        return {
+            type: this.type,
+            data: this._data
+        };
     }
-});
+};

@@ -14,21 +14,22 @@ var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
+var TilePyramid = require('../source/tile_pyramid');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
 
 var VectorSource = require('../source/vector_tile_source');
 var RasterSource = require('../source/raster_tile_source');
-var GeojsonSource = require('../source/geojson_source');
+var GeoJSONSource = require('../source/geojson_source');
 var VideoSource = require('../source/video_source');
 var ImageSource = require('../source/image_source');
-var ClusterSource = require('../source/cluster_source');
+var ClusteredGeoJSONSource = require('../source/clustered_geojson_source');
 
 module.exports = Style;
 
 function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(Math.max(browser.hardwareConcurrency - 1, 1), this);
+    this.dispatcher = new Dispatcher(1, this);
     this.spriteAtlas = new SpriteAtlas(512, 512);
     this.lineAtlas = new LineAtlas(256, 512);
 
@@ -94,12 +95,12 @@ function Style(stylesheet, animationLoop) {
         util.asyncAll([
           ['vector', VectorSource],
           ['raster', RasterSource],
-          ['geojson', GeojsonSource],
+          ['geojson', GeoJSONSource],
           ['video', VideoSource],
           ['image', ImageSource],
-          ['cluster', ClusterSource]
+          ['geojson-clustered', ClusteredGeoJSONSource]
         ], function (type, done) {
-            this.addSourceType(type[0], type[1], done);
+            this.addSourceType(type[0], type[1].create, type[1].workerSourceURL, done);
         }.bind(this), sourceTypesLoaded);
     }
 
@@ -351,11 +352,10 @@ Style.prototype = util.inherit(Evented, {
         var shouldValidate = !Source.is(source) && builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
-        source = Source.create(source);
+        source = new TilePyramid(id, source, this.dispatcher);
         this.sources[id] = source;
-        source.id = id;
+        // TODO: make sure to set `map`, `id`, and `dispatcher` on TilePyramids
         source.style = this;
-        source.dispatcher = this.dispatcher;
         source
             .on('load', this._forwardSourceEvent)
             .on('error', this._forwardSourceEvent)
@@ -676,19 +676,23 @@ Style.prototype = util.inherit(Evented, {
         return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
     },
 
-    addSourceType: function (name, type, callback) {
+    addSourceType: function (name, sourceFactoryFn, workerSourceURL, callback) {
+        if (!callback) {
+            callback = workerSourceURL;
+        }
         if (Source.getType(name)) {
             return callback(new Error('A source type called "' + name + '" already exists.'));
         }
-        Source.setType(name, type);
 
-        if (!type.worker) {
+        Source.setType(name, sourceFactoryFn);
+
+        if (!workerSourceURL) {
             return callback(null, null);
         }
 
-        this.dispatcher.broadcast('load plugin', {
+        this.dispatcher.broadcast('load worker source', {
             name: name,
-            url: type.worker
+            url: workerSourceURL
         }, callback);
     },
 

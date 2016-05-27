@@ -43,7 +43,7 @@ map.on('load', function() {
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true.
     map.addSource("earthquakes", {
-        type: "cluster",
+        type: "geojson-clustered",
         // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
         // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
         data: "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson",

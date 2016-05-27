@@ -1,6 +1,8 @@
 'use strict';
 
+var Source = require('./source');
 var Tile = require('./tile');
+var Evented = require('../util/evented');
 var TileCoord = require('./tile_coord');
 var Point = require('point-geometry');
 var Cache = require('../util/lru_cache');
@@ -16,24 +18,68 @@ module.exports = TilePyramid;
  * data.
  *
  * @param {Object} options
- * @param {number} options.tileSize
- * @param {number} options.minzoom
- * @param {number} options.maxzoom
  * @private
  */
-function TilePyramid(options) {
-    this.tileSize = options.tileSize;
-    this.minzoom = options.minzoom;
-    this.maxzoom = options.maxzoom;
-    this.roundZoom = options.roundZoom;
-    this.reparseOverscaled = options.reparseOverscaled;
+function TilePyramid(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
 
-    this._load = options.load;
-    this._abort = options.abort;
-    this._unload = options.unload;
-    this._add = options.add;
-    this._remove = options.remove;
-    this._redoPlacement = options.redoPlacement;
+    var onChange = function () {
+        this.sourceChangedSoWeShouldUpdatePyramidNow();
+    }.bind(this);
+
+    // TODO: this is an ugly consequence of inverting tilepyramid / source
+    // dependency and making source creation async: we use a dumb, generic
+    // version of serialize() until the source is loaded at which point we
+    // switch to deferring to the source's method.
+    // Options:
+    // 1. Make Source.create synchronous.  Drawback: would require adding `loaded()` or `onLoad`  to the Source interface.
+    // 2. Remove Source:serialize() entirely, and instead let TilePyramid:serialize() always jut return the options object it was created with.
+    // 3. Leave the below wart as-is.
+    // I prefer option 2 if it's workable.
+    this.serialize = function () { return options; };
+
+    var sourceLoaded = function (err, source) {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
+        // TODO: remove this once we eliminate need for sources to have a
+        // reference to the Map instance.
+        this._source = source;
+        if (this.map) { source.map = this.map; }
+
+        this._sourceLoaded = true;
+
+        this.tileSize = source.tileSize;
+        this.minzoom = source.minzoom;
+        this.maxzoom = source.maxzoom;
+        // TODO: not exactly sure on these three properties and whether they
+        // make sense as part of the Source interface.
+        this.roundZoom = source.roundZoom;
+        this.reparseOverscaled = source.reparseOverscaled;
+        this.isTileClipped = source.isTileClipped;
+
+        // TODO: what's cleaner? 1) grab references to the Source methods we
+        // want, or 2) just keep a reference to the Source itself and delegate?
+        var noop = function () {};
+        this._load = (source.load || noop).bind(source);
+        this._abort = (source.abort || noop).bind(source);
+        this._unload = (source.unload || noop).bind(source);
+        this.serialize = (source.serialize || noop).bind(source);
+
+        this.fire('load');
+    }.bind(this);
+
+    // TODO: this is a very temp hack so that draw_background can instantiate a
+    // pyramid.  The coveringTiles() method it needs on the pyramid really
+    // should probably go somewhere else -- maybe on Transform?
+    if (Source.getType(options.type)) {
+        Source.create(id, options, dispatcher, onChange, sourceLoaded);
+    } else {
+        sourceLoaded(null, options);
+    }
 
     this._tiles = {};
     this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
@@ -45,13 +91,20 @@ function TilePyramid(options) {
 TilePyramid.maxOverzooming = 10;
 TilePyramid.maxUnderzooming = 3;
 
-TilePyramid.prototype = {
+TilePyramid.prototype = util.inherit(Evented, {
+    // TODO: hopefully remove the need for this
+    onAdd: function (map) {
+        this.map = map;
+        if (this._source) { this._source.map = map; }
+    },
+
     /**
      * Confirm that every tracked tile is loaded.
      * @returns {boolean} whether all tiles are loaded.
      * @private
      */
     loaded: function() {
+        if (!this._sourceLoaded) { return false; }
         for (var t in this._tiles) {
             if (!this._tiles[t].loaded && !this._tiles[t].errored)
                 return false;
@@ -79,17 +132,40 @@ TilePyramid.prototype = {
     reload: function() {
         this._cache.reset();
         for (var i in this._tiles) {
-            this._load(this._tiles[i]);
+            this._load(this._tiles[i], this._tileLoaded.bind(this, this._tiles[i]));
+        }
+    },
+
+    _tileLoaded: function (tile, err, data) {
+        if (err) {
+            tile.errored = true;
+            this.fire('tile.error', {tile: tile, error: err});
+            return;
+        }
+
+        this.fire('tile.load', {tile: tile});
+        if (data && data.bucketStats) {
+            this.fire('tile.stats', data.bucketStats);
         }
     },
 
     /**
-     * Get a specific tile by id
-     * @param {string|number} id tile id
+     * Get a specific tile by TileCoordinate
+     * @param {TileCoordinate} coord
      * @returns {Object} tile
      * @private
      */
-    getTile: function(id) {
+    getTile: function(coord) {
+        return this.getTileByID(coord.id);
+    },
+
+    /**
+     * Get a specific tile by id
+     * @param {number|string} id
+     * @returns {Object} tile
+     * @private
+     */
+    getTileByID: function(id) {
         return this._tiles[id];
     },
 
@@ -232,7 +308,7 @@ TilePyramid.prototype = {
      * are inside the viewport.
      * @private
      */
-    update: function(used, transform, fadeDuration) {
+    update: function(transform, fadeDuration) {
         var i;
         var coord;
         var tile;
@@ -254,7 +330,7 @@ TilePyramid.prototype = {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = used ? this.coveringTiles(transform) : [];
+        var required = this.used ? this.coveringTiles(transform) : [];
         for (i = 0; i < required.length; i++) {
             coord = required[i];
             tile = this.addTile(coord);
@@ -332,12 +408,12 @@ TilePyramid.prototype = {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
             tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
-            this._load(tile);
+            this._load(tile, this._tileLoaded.bind(this, tile));
         }
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._add(tile, coord);
+        this.fire('tile.add', {tile: tile});
 
         return tile;
     },
@@ -355,7 +431,7 @@ TilePyramid.prototype = {
 
         tile.uses--;
         delete this._tiles[id];
-        this._remove(tile);
+        this.fire('tile.remove', {tile: tile});
 
         if (tile.uses > 0)
             return;
@@ -363,6 +439,7 @@ TilePyramid.prototype = {
         if (tile.loaded) {
             this._cache.add(tile.coord.wrapped().id, tile);
         } else {
+            tile.aborted = true;
             this._abort(tile);
             this._unload(tile);
         }
@@ -440,8 +517,20 @@ TilePyramid.prototype = {
             results.push(tileResults[t]);
         }
         return results;
+    },
+
+    redoPlacement: function () {
+        var ids = this.orderedIDs();
+        for (var i = 0; i < ids.length; i++) {
+            var tile = this.getTileByID(ids[i]);
+            tile.redoPlacement(this);
+        }
+    },
+
+    getVisibleCoordinates: function () {
+        return this.renderedIDs().map(TileCoord.fromID);
     }
-};
+});
 
 /**
  * Convert a coordinate to a point in a tile's coordinate space.
@@ -462,3 +551,4 @@ function coordinateToTilePoint(tileCoord, sourceMaxZoom, coord) {
 function compareKeyZoom(a, b) {
     return (a % 32) - (b % 32);
 }
+

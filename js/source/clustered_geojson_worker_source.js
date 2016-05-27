@@ -1,10 +1,10 @@
 'use strict';
 
 var supercluster = require('supercluster');
-var GeojsonWorker = require('./geojson_source_worker');
+var GeoJSONWorkerSource = require('./geojson_worker_base');
 
-var plugin = Object.create(GeojsonWorker);
-plugin.indexData = function (data, params, callback) {
+var workerSource = Object.create(GeoJSONWorkerSource);
+workerSource.indexData = function (data, params, callback) {
     var superclusterOptions = {
         maxZoom: params.maxZoom,
         extent: params.extent,
@@ -19,5 +19,5 @@ plugin.indexData = function (data, params, callback) {
 };
 
 module.exports = function (self) {
-    self.registerPlugin('cluster', plugin);
+    self.registerWorkerSource('geojson-clustered', workerSource);
 };

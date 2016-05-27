@@ -33,10 +33,10 @@ Actor.prototype.receive = function(message) {
     } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
         // data.type == 'load tile', 'remove tile', etc.
         this.parent[data.type](data.data, done.bind(this));
-    } else if (typeof data.id !== 'undefined' && this.parent.plugins) {
-        // data.type == pluginname.method
+    } else if (typeof data.id !== 'undefined' && this.parent.workerSources) {
+        // data.type == sourcetype.method
         var keys = data.type.split('.');
-        this.parent.plugins[keys[0]][keys[1]](data.data, done.bind(this));
+        this.parent.workerSources[keys[0]][keys[1]](data.data, done.bind(this));
     } else {
         this.parent[data.type](data.data);
     }

@@ -19,12 +19,12 @@ function Worker(self) {
     this.loading = {};
     this.loaded = {};
 
-    this.plugins = {};
-    self.registerPlugin = function (name, plugin) {
-        if (this.plugins[name]) {
-            throw new Error('Plugin with name "' + name + '" already registered.');
+    this.workerSources = {};
+    self.registerWorkerSource = function (name, workerSource) {
+        if (this.workerSources[name]) {
+            throw new Error('Worker source with name "' + name + '" already registered.');
         }
-        this.plugins[name] = plugin;
+        this.workerSources[name] = workerSource;
     }.bind(this);
 }
 
@@ -105,11 +105,11 @@ util.extend(Worker.prototype, {
     },
 
     /*
-     * Load a worker-side plugin script at params.url.  The script is run
-     * (using importScripts) with `registerPlugin` in scope, which is a
-     * taking `(name, pluginObject)`.  `pluginObject` can have:
-     *  - a `loadTile` member, which provides an alternative implementation to `Worker.prototype.loadVectorTile`, yielding a VectorTile object.  If this is provided, then a Source can call `'load tile'` with `plugin: name` in the params to have the worker use this implementation.
-     *  - any other `key: method` pairs, which can be invoked from a source with `dispatcher.send('pluginname.method', params, callback)`.
+     * Load a WorkerSource script at params.url.  The script is run
+     * (using importScripts) with `registerWorkerSource` in scope, which is a
+     * taking `(name, workerSourceObject)`.  `workerSourceObject` can have:
+     *  - a `loadTile` member, which provides an alternative implementation to `Worker.prototype.loadVectorTile`, yielding a VectorTile object.  If this is provided, then a Source can call `'load tile'` with `type: name` in the params to have the worker use this implementation.
+     *  - any other `key: method` pairs, which can be invoked from a source with `dispatcher.send('sourcetype.method', params, callback)`.
      */
     'load tile': function(params, callback) {
         var source = params.source,
@@ -119,10 +119,10 @@ util.extend(Worker.prototype, {
             this.loading[source] = {};
 
         var tile = this.loading[source][uid] = new WorkerTile(params);
-        if (!params.plugin) {
+        if (!params.type) {
             tile.abort = this.loadVectorTile(params, done.bind(this));
         } else {
-            tile.abort = this.plugins[params.plugin].loadTile(params, done.bind(this));
+            tile.abort = this.workerSources[params.type].loadTile(params, done.bind(this));
         }
 
         function done(err, data) {
@@ -183,7 +183,7 @@ util.extend(Worker.prototype, {
         }
     },
 
-    'load plugin': function(params, callback) {
+    'load worker source': function(params, callback) {
         try {
             self.importScripts(params.url);
             callback();

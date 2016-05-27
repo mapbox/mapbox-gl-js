@@ -3,68 +3,30 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
-var TilePyramid = require('./tile_pyramid');
 var normalizeURL = require('../util/mapbox').normalizeSourceURL;
 var TileCoord = require('./tile_coord');
 
-exports._loadTileJSON = function(options) {
+exports._loadTileJSON = function(options, callback) {
     var loaded = function(err, tileJSON) {
         if (err) {
-            this.fire('error', {error: err});
-            return;
+            return callback(err);
         }
 
-        util.extend(this, util.pick(tileJSON,
-            ['tiles', 'minzoom', 'maxzoom', 'attribution']));
+        var result = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution']);
 
         if (tileJSON.vector_layers) {
-            this.vectorLayers = tileJSON.vector_layers;
-            this.vectorLayerIds = this.vectorLayers.map(function(layer) { return layer.id; });
+            result.vectorLayers = tileJSON.vector_layers;
+            result.vectorLayerIds = result.vectorLayers.map(function(layer) { return layer.id; });
         }
 
-        this._pyramid = new TilePyramid({
-            tileSize: this.tileSize,
-            minzoom: this.minzoom,
-            maxzoom: this.maxzoom,
-            roundZoom: this.roundZoom,
-            reparseOverscaled: this.reparseOverscaled,
-            load: this._loadTile.bind(this),
-            abort: this._abortTile.bind(this),
-            unload: this._unloadTile.bind(this),
-            add: this._addTile.bind(this),
-            remove: this._removeTile.bind(this),
-            redoPlacement: this._redoTilePlacement ? this._redoTilePlacement.bind(this) : undefined
-        });
-
-        this.fire('load');
-    }.bind(this);
+        callback(null, result);
+    };
 
     if (options.url) {
         ajax.getJSON(normalizeURL(options.url), loaded);
     } else {
-        browser.frame(loaded.bind(this, null, options));
+        browser.frame(loaded.bind(null, null, options));
     }
-};
-
-exports.redoPlacement = function() {
-    if (!this._pyramid) {
-        return;
-    }
-
-    var ids = this._pyramid.orderedIDs();
-    for (var i = 0; i < ids.length; i++) {
-        var tile = this._pyramid.getTile(ids[i]);
-        this._redoTilePlacement(tile);
-    }
-};
-
-exports._getTile = function(coord) {
-    return this._pyramid.getTile(coord.id);
-};
-
-exports._getVisibleCoordinates = function() {
-    if (!this._pyramid) return [];
-    else return this._pyramid.renderedIDs().map(TileCoord.fromID);
 };
 
 function sortTilesIn(a, b) {
@@ -162,18 +124,22 @@ var sourceTypes = {};
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-exports.create = function(source) {
-    return exports.is(source) ? source : new sourceTypes[source.type](source);
+exports.create = function(id, source, dispatcher, onChange, callback) {
+    return exports.is(source) ? source :
+        sourceTypes[source.type](id, source, dispatcher, onChange, callback);
 };
 
 exports.is = function(source) {
-    for (var type in sourceTypes) {
-        if (source instanceof sourceTypes[type]) {
-            return true;
-        }
-    }
+    // TODO: with the Source interface being factory-based, instanceof doesn't
+    // work as naturally for this.  Is Source.is() still needed?
 
-    return false;
+    return source && source.id;
+    // for (var type in sourceTypes) {
+    //     if (source instanceof sourceTypes[type]) {
+    //         return true;
+    //     }
+    // }
+    // return false;
 };
 
 exports.getType = function (name) {
