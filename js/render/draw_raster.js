@@ -122,7 +122,7 @@ function getOpacities(tile, parentTile, layer, transform) {
         var sinceTile = (now - tile.timeAdded) / fadeDuration;
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-        var idealZ = tile.source._pyramid.coveringZoomLevel(transform);
+        var idealZ = transform.coveringZoomLevel(tile.source);
         var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
         if (!parentTile || parentFurther) {
