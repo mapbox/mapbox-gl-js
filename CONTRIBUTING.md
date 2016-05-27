@@ -29,7 +29,7 @@ Install the Xcode Command Line Tools Package
 xcode-select --install
 ```
 
-Install [node.js](https://nodejs.org/)
+Install [node.js](https://nodejs.org/) version 4 or greater
 ```bash
 brew install node
 ```
@@ -47,7 +47,7 @@ npm install
 
 ### Linux
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
 ```bash
 sudo apt-get update &&
 sudo apt-get install build-essential git nodejs libglew-dev
