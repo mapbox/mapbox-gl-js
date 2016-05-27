@@ -6,12 +6,21 @@ var Evented = require('../util/evented');
 var Source = require('./source');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports = RasterTileSource;
+module.exports.create = function (id, options, dispatcher, onChange, callback) {
+    Source._loadTileJSON(options, function (err, tileJSON) {
+        if (err) {
+            return callback(err);
+        }
+        var rts = new RasterTileSource(id, options, dispatcher);
+        util.extend(rts, tileJSON);
+        callback(null, rts);
+    });
+};
 
-function RasterTileSource(options) {
+function RasterTileSource(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-
-    Source._loadTileJSON.call(this, options);
 }
 
 RasterTileSource.prototype = util.inherit(Evented, {
@@ -22,24 +31,6 @@ RasterTileSource.prototype = util.inherit(Evented, {
     tileSize: 512,
     _loaded: false,
 
-    onAdd: function(map) {
-        this.map = map;
-    },
-
-    loaded: function() {
-        return this._pyramid && this._pyramid.loaded();
-    },
-
-    update: function(transform) {
-        if (this._pyramid) {
-            this._pyramid.update(this.used, transform, this.map.style.rasterFadeDuration);
-        }
-    },
-
-    reload: function() {
-        // noop
-    },
-
     serialize: function() {
         return {
             type: 'raster',
@@ -48,11 +39,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
         };
     },
 
-    getVisibleCoordinates: Source._getVisibleCoordinates,
-    getTile: Source._getTile,
-
-    _loadTile: function(tile) {
+    load: function(tile, cb) {
         var url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
+        var url = normalizeURL(tile.coord.url(this.tiles), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
 
@@ -63,9 +52,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 return;
 
             if (err) {
-                tile.errored = true;
-                this.fire('tile.error', {tile: tile, error: err});
-                return;
+                return cb(err);
             }
 
             var gl = this.map.painter.gl;
@@ -87,33 +74,22 @@ RasterTileSource.prototype = util.inherit(Evented, {
             gl.generateMipmap(gl.TEXTURE_2D);
 
             tile.timeAdded = new Date().getTime();
-            this.map.animationLoop.set(this.style.rasterFadeDuration);
+            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
 
-            tile.source = this;
             tile.loaded = true;
 
-            this.fire('tile.load', {tile: tile});
+            cb(null);
         }
     },
 
-    _abortTile: function(tile) {
-        tile.aborted = true;
-
+    abort: function(tile) {
         if (tile.request) {
             tile.request.abort();
             delete tile.request;
         }
     },
 
-    _addTile: function(tile) {
-        this.fire('tile.add', {tile: tile});
-    },
-
-    _removeTile: function(tile) {
-        this.fire('tile.remove', {tile: tile});
-    },
-
-    _unloadTile: function(tile) {
+    unload: function(tile) {
         if (tile.texture) this.map.painter.saveTexture(tile.texture);
     }
 });

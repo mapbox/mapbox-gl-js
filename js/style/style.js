@@ -354,7 +354,6 @@ Style.prototype = util.inherit(Evented, {
 
         source = new TilePyramid(id, source, this.dispatcher);
         this.sources[id] = source;
-        // TODO: make sure to set `map`, `id`, and `dispatcher` on TilePyramids
         source.style = this;
         source
             .on('load', this._forwardSourceEvent)

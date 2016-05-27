@@ -24,7 +24,7 @@ function TilePyramid(id, options, dispatcher) {
     this.dispatcher = dispatcher;
 
     var onChange = function () {
-        this.sourceChangedSoWeShouldUpdatePyramidNow();
+        this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
     }.bind(this);
 
     // TODO: this is an ugly consequence of inverting tilepyramid / source
@@ -135,6 +135,7 @@ TilePyramid.prototype = util.inherit(Evented, {
             return;
         }
 
+        tile.source = this;
         this.fire('tile.load', {tile: tile});
         if (data && data.bucketStats) {
             this.fire('tile.stats', data.bucketStats);
