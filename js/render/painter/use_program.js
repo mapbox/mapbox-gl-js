@@ -11,7 +11,7 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
     var program = gl.createProgram();
     var definition = shaders[name];
 
-    var definesSource = '';
+    var definesSource = '#define MAPBOX_GL_JS;\n';
     for (var j = 0; j < defines.length; j++) {
         definesSource += '#define ' + defines[j] + ';\n';
     }
@@ -73,9 +73,8 @@ module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, f
     var gl = this.gl;
 
     defines = defines || [];
-    defines = pushUniq(defines, 'MAPBOX_GL_JS');
     if (this._showOverdrawInspector) {
-        defines = pushUniq(defines, 'OVERDRAW_INSPECTOR');
+        defines = defines.concat('OVERDRAW_INSPECTOR');
     }
 
     var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
@@ -94,12 +93,4 @@ function applyPragmas(source, pragmas) {
         source = source.replace(new RegExp('#pragma mapbox: ' + key + '( [a-z0-9]*)*'), pragmas[key]);
     }
     return source;
-}
-
-function pushUniq(array, value) {
-    if (array.indexOf(value) === -1) {
-        return array.concat(value);
-    } else {
-        return array;
-    }
 }
