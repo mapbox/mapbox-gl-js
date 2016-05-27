@@ -75,6 +75,8 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
 
     var h = levels * 3;
 
+    var indices = [];
+
     for (var r = 0; r < polygon.length; r++) {
         var ring = polygon[r];
 
@@ -85,6 +87,7 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             var vertex = ring[v];
 
             var fIndex = this.addBuildingVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1);
+            indices.push(fIndex);
 
             if (v >= 1) {
                 group.layout.element2.emplaceBack(fIndex - 1, fIndex);
@@ -94,19 +97,7 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             flattened.push(vertex[0]);
             flattened.push(vertex[1]);
         }
-    }
 
-    var triangleIndices = earcut(flattened, holeIndices);
-
-    for (var i = 0; i < triangleIndices.length - 2; i += 3) {
-        group.layout.element.emplaceBack(triangleIndices[i] + startIndex,
-                triangleIndices[i+1] + startIndex,
-                triangleIndices[i+2] + startIndex);
-    }
-
-    for (var r = 0; r < polygon.length; r++) {
-        var ring = polygon[r];
-        // add vertices for the walls
         for (var s = 0; s < ring.length - 1; s++) {
             var v1 = ring[s];
             var v2 = ring[s + 1];
@@ -121,6 +112,14 @@ BuildingBucket.prototype.addPolygon = function(polygon, levels) {
             group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);
         }
+    }
+
+    var triangleIndices = earcut(flattened, holeIndices);
+
+    for (var i = 0; i < triangleIndices.length - 2; i += 3) {
+        group.layout.element.emplaceBack(indices[triangleIndices[i]],
+                indices[triangleIndices[i+1]],
+                indices[triangleIndices[i+2]]);
     }
 };
 
