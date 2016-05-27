@@ -73,9 +73,9 @@ module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, f
     var gl = this.gl;
 
     defines = defines || [];
-    defines.push('MAPBOX_GL_JS');
+    defines = pushUniq(defines, 'MAPBOX_GL_JS');
     if (this._showOverdrawInspector) {
-        defines.push('OVERDRAW_INSPECTOR');
+        defines = pushUniq(defines, 'OVERDRAW_INSPECTOR');
     }
 
     var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
@@ -94,4 +94,12 @@ function applyPragmas(source, pragmas) {
         source = source.replace(new RegExp('#pragma mapbox: ' + key + '( [a-z0-9]*)*'), pragmas[key]);
     }
     return source;
+}
+
+function pushUniq(array, value) {
+    if (array.indexOf(value) === -1) {
+        return array.concat(value);
+    } else {
+        return array;
+    }
 }
