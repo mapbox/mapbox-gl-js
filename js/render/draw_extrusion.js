@@ -17,7 +17,7 @@ function draw(painter, source, layer, coords) {
         drawExtrusion(painter, source, layer, coord);
     }
 
-    if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !strokeColor)) {
+    if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !layer.paint['extrusion-outline-color'])) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
             drawExtrusionStroke(painter, source, layer, coord);
@@ -52,7 +52,7 @@ function drawExtrusion(painter, source, layer, coord) {
     shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'] || 1;
-    var rotateLight = layer.paint['extrusion-anchor'] === 'viewport';
+    var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
 
     if (false && image) {
 
