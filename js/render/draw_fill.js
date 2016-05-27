@@ -129,11 +129,12 @@ function drawStroke(painter, source, layer, coord) {
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     } else {
+        var programOptions = bucket.paintAttributes.fill[layer.id];
         program = painter.useProgram(
             'outline',
-            bucket.paintAttributes.fill[layer.id].defines,
-            bucket.paintAttributes.fill[layer.id].vertexPragmas,
-            bucket.paintAttributes.fill[layer.id].fragmentPragmas
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
         );
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.uniform1f(program.u_opacity, opacity);
