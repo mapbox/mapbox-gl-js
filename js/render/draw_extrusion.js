@@ -50,11 +50,28 @@ function drawExtrusion(painter, source, layer, coord) {
 
     if (image) {
         program = painter.useProgram('pattern', ['EXTRUSION']);
+
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint['extrusion-translate'] || [0,0],
+            layer.paint['extrusion-translate-anchor'] || 'viewport'
+        ));
+
         setPattern(image, opacity, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
     } else {
+        // TODO I'm essentially copying all of this piecemeal for pattern; refactor later
+
+        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint['extrusion-translate'] || [0,0],
+            layer.paint['extrusion-translate-anchor'] || 'viewport'
+        ));
+
         // Draw extrusion rectangle.
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
         gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
@@ -81,13 +98,6 @@ function drawExtrusion(painter, source, layer, coord) {
         vec3.transformMat3(lightdir, lightdir, lightMat);
         gl.uniform3fv(program.u_lightdir, lightdir);
     }
-
-    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
-        coord.posMatrix,
-        tile,
-        layer.paint['extrusion-translate'] || [0,0],
-        layer.paint['extrusion-translate-anchor'] || 'viewport'
-    ));
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
@@ -182,6 +192,15 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
+
+    // Draw extrusion rectangle.
+    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+    gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
+        mat4.create(),
+        coord.posMatrix,
+        [1, 1, zScale, 1])
+    );
+
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);
