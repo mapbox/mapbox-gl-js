@@ -5,6 +5,7 @@ var browser = require('../util/browser');
 var mat3 = require('gl-matrix').mat3;
 var mat4 = require('gl-matrix').mat4;
 var vec3 = require('gl-matrix').vec3;
+var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = draw;
 
@@ -40,13 +41,6 @@ function drawExtrusion(painter, source, layer, coord) {
     var gl = painter.gl;
     var program = painter.useProgram('extrusion');
 
-    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
-        coord.posMatrix,
-        tile,
-        layer.paint['extrusion-translate'] || [0,0],
-        layer.paint['extrusion-translate-anchor'] || 'viewport'
-    ));
-
     var color = util.premultiply(layer.paint['extrusion-color']);
     var shadowColor = util.premultiply(layer.paint['extrusion-shadow-color'] || [0,0,1,1]);
     shadowColor[3] = 1;
@@ -54,10 +48,12 @@ function drawExtrusion(painter, source, layer, coord) {
     var opacity = layer.paint['extrusion-opacity'] || 1;
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
 
-    if (false && image) {
+    if (image) {
+        program = painter.useProgram('pattern');
+        setPattern(image, opacity, tile, coord, painter, program);
 
-        // TODO
-
+        gl.activeTexture(gl.TEXTURE0);
+        painter.spriteAtlas.bind(gl, true);
     } else {
         // Draw extrusion rectangle.
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
@@ -85,6 +81,13 @@ function drawExtrusion(painter, source, layer, coord) {
         vec3.transformMat3(lightdir, lightdir, lightMat);
         gl.uniform3fv(program.u_lightdir, lightdir);
     }
+
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+        coord.posMatrix,
+        tile,
+        layer.paint['extrusion-translate'] || [0,0],
+        layer.paint['extrusion-translate-anchor'] || 'viewport'
+    ));
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];

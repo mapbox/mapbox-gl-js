@@ -6,6 +6,7 @@ var loadGeometry = require('../load_geometry');
 var earcut = require('earcut');
 var classifyRings = require('../../util/classify_rings');
 var Point = require('point-geometry');
+var EARCUT_MAX_RINGS = 500;
 
 module.exports = ExtrusionBucket;
 
@@ -56,7 +57,7 @@ ExtrusionBucket.prototype.addFeature = function(feature) {
     var levels = feature.properties && feature.properties.levels || 3;
 
     var lines = loadGeometry(feature);
-    var polygons = convertCoords(classifyRings(lines));
+    var polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i], levels);
     }
