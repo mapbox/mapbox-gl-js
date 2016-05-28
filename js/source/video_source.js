@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
@@ -12,7 +11,12 @@ var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
 var Buffer = require('../data/buffer');
 var VertexArrayObject = require('../render/vertex_array_object');
 
-module.exports = VideoSource;
+module.exports.create = function (id, options, dispatcher, onChange, callback) {
+    ajax.getVideo(options.urls, function(err, video) {
+        if (err) return callback(err);
+        callback(null, new VideoSource(id, options, video, onChange));
+    });
+};
 
 /**
  * Create a Video data source instance given an options object
@@ -36,40 +40,38 @@ module.exports = VideoSource;
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function VideoSource(options) {
+function VideoSource(id, options, video, onChange) {
+    this.id = id;
+    this._onChange = onChange;
     this.urls = options.urls;
     this.coordinates = options.coordinates;
 
-    ajax.getVideo(options.urls, function(err, video) {
-        // @TODO handle errors via event.
-        if (err) return;
+    this.video = video;
+    this.video.loop = true;
 
-        this.video = video;
-        this.video.loop = true;
+    var loopID;
 
-        var loopID;
-
-        // start repainting when video starts playing
-        this.video.addEventListener('playing', function() {
-            loopID = this.map.style.animationLoop.set(Infinity);
-            this.map._rerender();
-        }.bind(this));
-
-        // stop repainting when video stops
-        this.video.addEventListener('pause', function() {
-            this.map.style.animationLoop.cancel(loopID);
-        }.bind(this));
-
-        this._loaded = true;
-
-        if (this.map) {
-            this.video.play();
-            this.setCoordinates(options.coordinates);
-        }
+    // start repainting when video starts playing
+    this.video.addEventListener('playing', function() {
+        loopID = this.map.style.animationLoop.set(Infinity);
+        this.map._rerender();
     }.bind(this));
+
+    // stop repainting when video stops
+    this.video.addEventListener('pause', function() {
+        this.map.style.animationLoop.cancel(loopID);
+    }.bind(this));
+
+    if (this.map) {
+        this.video.play();
+        this.setCoordinates(options.coordinates);
+    }
 }
 
 VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
+    minzoom: 0,
+    maxzoom: 22,
+    tileSize: 512,
     roundZoom: true,
 
     /**
@@ -83,6 +85,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
     onAdd: function(map) {
         this.map = map;
+        console.log(this.video);
         if (this.video) {
             this.video.play();
             this.setCoordinates(this.coordinates);
@@ -111,50 +114,43 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         centerCoord.column = Math.round(centerCoord.column);
         centerCoord.row = Math.round(centerCoord.row);
 
-
-        var tileCoords = cornerZ0Coords.map(function(coord) {
+        this.minzoom = this.maxzoom = centerCoord.zoom;
+        this._coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this._tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
+        this._onChange();
+        return this;
+    },
+
+    _setTile: function (tile) {
+        this._prepared = false;
+        this.tile = tile;
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
-        array.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
-        array.emplaceBack(tileCoords[1].x, tileCoords[1].y, maxInt16, 0);
-        array.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, maxInt16);
-        array.emplaceBack(tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16);
+        array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
+        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
+        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);
+        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, maxInt16, maxInt16);
 
-        this.tile = new Tile(new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row));
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-
-        this.fire('change');
-
-        return this;
-    },
-
-    loaded: function() {
-        return this.video && this.video.readyState >= 2;
-    },
-
-    update: function() {
-        // noop
-    },
-
-    reload: function() {
-        // noop
+        this.tile.loaded = true;
     },
 
     prepare: function() {
-        if (!this._loaded) return;
         if (this.video.readyState < 2) return; // not enough data for current position
+        if (!this.tile) return;
 
         var gl = this.map.painter.gl;
-        if (!this.tile.texture) {
+        if (!this._prepared) {
+            this._prepared = true;
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -170,13 +166,11 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         this._currentTime = this.video.currentTime;
     },
 
-    getVisibleCoordinates: function() {
-        if (this.tile) return [this.tile.coord];
-        else return [];
-    },
-
-    getTile: function() {
-        return this.tile;
+    load: function(tile, cb) {
+        if (this._coord && this._coord.toString() === tile.coord.toString()) {
+            this._setTile(tile);
+            cb(null);
+        }
     },
 
     serialize: function() {
