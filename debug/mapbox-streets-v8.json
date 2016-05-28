@@ -151,7 +151,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "background-color": "#ede9d9"
+                "background-color": "#ace"
             },
             "interactive": true
         },
@@ -227,7 +227,9 @@
             "id": "building-fill",
             "paint": {
                 "fill-color": "#f00",
-                "fill-opacity": 0.3
+                "fill-pattern": "airport-15",
+                "fill-opacity": 1,
+                "fill-outline-color": "#0f0"
             },
             "source-layer": "building"
         },
@@ -241,8 +243,12 @@
           "id": "buildingtada",
           "paint": {
             "extrusion-color": "#e8e0cc",
+            "extrusion-antialias": true,
+            "extrusion-lighting-anchor": "viewport",
+            "extrusion-outline-color": "#909",
             "extrusion-opacity": 1,
-            "extrusion-shadow-color": "#f00"
+            "extrusion-pattern": "marker-15",
+            "extrusion-shadow-color": "#00f"
           },
           "source-layer": "building",
           "interactive": true

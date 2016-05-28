@@ -49,7 +49,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
 
     if (image) {
-        program = painter.useProgram('pattern');
+        program = painter.useProgram('pattern', ['EXTRUSION']);
         setPattern(image, opacity, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
@@ -137,6 +137,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
 }
 
 function setPattern(image, opacity, tile, coord, painter, program) {
+    // console.log(image, tile);
     var gl = painter.gl;
 
     var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
@@ -150,6 +151,23 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
     gl.uniform1f(program.u_opacity, opacity);
     gl.uniform1f(program.u_mix, image.t);
+
+    var factor = 8 / Math.pow(2, painter.transform.tileZoom - /*tile.zoom*/0);
+
+    var matrixA = mat3.create();
+    mat3.scale(matrixA, matrixA, [
+        1 / (imagePosA.size[0] * factor * image.fromScale),
+        1 / (imagePosA.size[1] * factor * image.fromScale)
+    ]);
+
+    var matrixB = mat3.create();
+    mat3.scale(matrixB, matrixB, [
+        1 / (imagePosB.size[0] * factor * image.toScale),
+        1 / (imagePosB.size[1] * factor * image.toScale)
+    ]);
+
+    gl.uniformMatrix3fv(program.u_patternmatrix_a, false, matrixA);
+    gl.uniformMatrix3fv(program.u_patternmatrix_b, false, matrixB);
 
     gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
     gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
