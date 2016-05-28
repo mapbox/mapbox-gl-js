@@ -679,9 +679,8 @@ Style.prototype = util.inherit(Evented, {
         for (var id in this.sources) {
             if (params.layers && !includedSources[id]) continue;
             var source = this.sources[id];
-            if (source.queryRenderedFeatures) {
-                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
-            }
+            var results = Source._queryRenderedVectorFeatures(source, this._layers, queryGeometry, params, zoom, bearing);
+            sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
     },
@@ -691,7 +690,7 @@ Style.prototype = util.inherit(Evented, {
             this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
         }
         var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+        return source ? Source._querySourceFeatures(source, params) : [];
     },
 
     addSourceType: function (name, sourceFactoryFn, workerSourceURL, callback) {

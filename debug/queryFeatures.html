@@ -21,22 +21,17 @@
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [38.888, -77.01866],
+    center: [-77.01866, 38.888],
     hash: true,
     style: 'mapbox://styles/mapbox/streets-v9'
 });
 
 map.addControl(new mapboxgl.Navigation());
 
-var querySource = new mapboxgl.GeoJSONSource({
-  data: { type: 'FeatureCollection', features: [] }
-});
-var boxSource = new mapboxgl.GeoJSONSource({
-  data: { type: 'FeatureCollection', features: [] }
-});
+var emptyFc = { type: 'FeatureCollection', features: [] }
 
 map.on('style.load', function() {
-    map.addSource('queried', querySource);
+    map.addSource('queried', { type: 'geojson', data: emptyFc });
     map.addLayer({
         "id": "query",
         "type": "line",
@@ -47,7 +42,7 @@ map.on('style.load', function() {
         }
     }, 'country-label-sm');
 
-    map.addSource('boxsource', boxSource);
+    map.addSource('boxsource', { type: 'geojson', data: emptyFc });
     map.addLayer({
         "id": "box",
         "type": "fill",
@@ -81,28 +76,22 @@ map.on('click', function(e) {
           [boxcoords[1][0], boxcoords[0][1]],
           boxcoords[0]
         ];
+        var results = map.queryRenderedFeatures(box, {})
+        map.getSource('queried').setData({
+          type: 'FeatureCollection',
+          features: results
+        });
 
-        console.log('box', boxcoords);
-        map.queryRenderedFeatures(box, {
-          includeGeometry: true
-        }, function (err, results) {
-            console.log('queryRenderedFeatures', box, err, results);
-            querySource.setData({
-              type: 'FeatureCollection',
-              features: results
-            });
-
-            boxSource.setData({
-              type: 'FeatureCollection',
-              features: [{
-                type: 'Feature',
-                properties: {},
-                geometry: {
-                  type: 'LineString',
-                  coordinates: boxcoords
-                }
-              }]
-            });
+        map.getSource('boxsource').setData({
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: boxcoords
+            }
+          }]
         });
     }
 });

@@ -25,7 +25,6 @@ exports._loadTileJSON = function(options, callback) {
     if (options.url) {
         ajax.getJSON(normalizeURL(options.url), loaded);
     } else {
-<<<<<<< HEAD
         browser.frame(loaded.bind(this, null, options));
     }
 };
@@ -55,15 +54,10 @@ function mergeRenderedFeatureLayers(tiles) {
     return result;
 }
 
-exports._queryRenderedVectorFeatures = function(queryGeometry, params, zoom, bearing) {
-    if (!this._pyramid || !this.map)
-        return [];
-
-    var tilesIn = this._pyramid.tilesIn(queryGeometry);
+exports._queryRenderedVectorFeatures = function(pyramid, styleLayers, queryGeometry, params, zoom, bearing) {
+    var tilesIn = pyramid.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
-
-    var styleLayers = this.map.style._layers;
 
     var renderedFeatureLayers = [];
     for (var r = 0; r < tilesIn.length; r++) {
@@ -81,14 +75,9 @@ exports._queryRenderedVectorFeatures = function(queryGeometry, params, zoom, bea
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
-exports._querySourceFeatures = function(params) {
-    if (!this._pyramid) {
-        return [];
-    }
-
-    var pyramid = this._pyramid;
+exports._querySourceFeatures = function(pyramid, params) {
     var tiles = pyramid.getRenderableIds().map(function(id) {
-        return pyramid.getTile(id);
+        return pyramid.getTileByID(id);
     });
 
     var result = [];

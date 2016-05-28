@@ -700,7 +700,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *   if the ID corresponds to no existing sources.
      */
     getSource: function(id) {
-        return this.style.getSource(id);
+        return this.style.getSource(id)._source;
     },
 
     /**
