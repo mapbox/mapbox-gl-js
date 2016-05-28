@@ -85,6 +85,10 @@ GeoJSONSource.prototype = /** @lends GeoJSONSource.prototype */{
     isTileClipped: true,
     _dirty: true,
 
+    onAdd: function (map) {
+        this.map = map;
+    },
+
     /**
      * Sets the GeoJSON data and re-renders the map.
      *

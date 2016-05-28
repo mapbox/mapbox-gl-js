@@ -24,7 +24,9 @@ function TilePyramid(id, options, dispatcher) {
     this.dispatcher = dispatcher;
 
     var onChange = function () {
-        this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+        if (this.transform) {
+            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+        }
     }.bind(this);
 
     // TODO: this is an ugly consequence of inverting tilepyramid / source
@@ -47,7 +49,7 @@ function TilePyramid(id, options, dispatcher) {
         // TODO: remove this once we eliminate need for sources to have a
         // reference to the Map instance.
         this._source = source;
-        if (this.map) { source.map = this.map; }
+        if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
 
         this._sourceLoaded = true;
 
@@ -67,6 +69,7 @@ function TilePyramid(id, options, dispatcher) {
         this._abort = (source.abort || noop).bind(source);
         this._unload = (source.unload || noop).bind(source);
         this.serialize = (source.serialize || noop).bind(source);
+        this.prepare = source.prepare && source.prepare.bind(source);
 
         this.fire('load');
     }.bind(this);
@@ -87,7 +90,9 @@ TilePyramid.prototype = util.inherit(Evented, {
     // TODO: hopefully remove the need for this
     onAdd: function (map) {
         this.map = map;
-        if (this._source) { this._source.map = map; }
+        if (this._source && this._source.onAdd) {
+            this._source.onAdd(map);
+        }
     },
 
     /**

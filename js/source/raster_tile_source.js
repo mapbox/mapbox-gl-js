@@ -31,6 +31,10 @@ RasterTileSource.prototype = util.inherit(Evented, {
     tileSize: 512,
     _loaded: false,
 
+    onAdd: function (map) {
+        this.map = map;
+    },
+
     serialize: function() {
         return {
             type: 'raster',
