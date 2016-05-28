@@ -49,7 +49,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
 
     if (image) {
-        program = painter.useProgram('pattern', ['EXTRUSION']);
+        program = painter.useProgram('extrusionpattern');
 
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
             coord.posMatrix,
