@@ -24,6 +24,7 @@ function TilePyramid(id, options, dispatcher) {
     this.dispatcher = dispatcher;
 
     var onChange = function () {
+        this.reload();
         if (this.transform) {
             this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
         }
