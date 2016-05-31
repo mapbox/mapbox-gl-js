@@ -596,9 +596,9 @@ navigation:
                 <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.</div>
               </li>
               <li class='pad0y'>
-                <div><span class='code'>type</span><em class='pad1x quiet'>Optional <a href='#types-string'>enum</a>. One of <var>continuous</var>, <var>interval</var>, <var>categorical</var>.</em></div>
+                <div><span class='code'>type</span><em class='pad1x quiet'>Optional <a href='#types-string'>enum</a>. One of <var>exponential</var>, <var>interval</var>, <var>categorical</var>.</em></div>
                 <div class='pad1x'>
-                    <div class=''><var>continuous</var> functions generate an output by interpolating between stops just less than and just greater than the function input. This is the default for <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span> properties.</div>
+                    <div class=''><var>exponential</var> functions generate an output by interpolating between stops just less than and just greater than the function input. This is the default for <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span> properties.</div>
                     <div class=''></span><var>interval</var> functions return the output value of the stop just less than the function input. This is the default for <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span> properties.</div>
                     <div class=''></span><var>categorical</var> functions return the output value of the stop equal to the function input.</div>
                 </ul>
