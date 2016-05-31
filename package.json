@@ -8,7 +8,9 @@
     "type": "git",
     "url": "git://github.com/mapbox/mapbox-gl-js.git"
   },
-  "engines": { "node" : ">=4.0.0" },
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "dependencies": {
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
@@ -53,6 +55,7 @@
     "handlebars": "4.0.5",
     "highlight.js": "9.3.0",
     "istanbul": "^0.4.2",
+    "lodash": "^4.13.1",
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#5c38f278f92688c68db115601663d5ac125a1961",
     "nyc": "^6.1.1",
     "remark": "4.2.2",
