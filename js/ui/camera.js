@@ -271,8 +271,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {LngLatBounds|Array<Array<number>>} bounds [[minLng, minLat], [maxLng, maxLat]]
      * @param {Object} options
      * @param {boolean} [options.linear] When true, the map transitions to the new camera using
-     *     {@link #Map.easeTo}. When false, the map transitions using {@link #Map.flyTo}. See
-     *     {@link #Map.flyTo} for information on options specific to that animation transition.
+     *     {@link Map#easeTo}. When false, the map transitions using {@link Map#flyTo}. See
+     *     {@link Map#flyTo} for information on options specific to that animation transition.
      * @param {Function} options.easing
      * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
      * @param {number} options.maxZoom The resulting zoom level will be at most
@@ -495,7 +495,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {CameraOptions|AnimationOptions} options map view and animation options
      * @param {number} [options.curve=1.42] Relative amount of zooming that takes place along the
      *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
-     *     value minimizes zooming for something closer to {@link #Map.easeTo}. 1.42 is the average
+     *     value minimizes zooming for something closer to {@link Map#easeTo}. 1.42 is the average
      *     value selected by participants in the user study in
      *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
      *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A

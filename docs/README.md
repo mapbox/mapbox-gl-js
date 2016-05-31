@@ -1,18 +1,17 @@
 Mapbox GL JS has [API documentation](#api-documentation) and [examples](#examples).
 
-## API Documentation
+## Writing API Documentation
 
-API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with [documentationjs](http://documentation.js.org/). We aim to document all classes and methods, public and private. Mark private classes and methods with `@private`.
+API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with [documentationjs](http://documentation.js.org/).
 
-Any interface not explicitly marked as `@private` will be displayed on the official [Mapbox GL JS documentation page](https://www.mapbox.com/mapbox-gl-js/api/). Internal interfaces can and should be documented with JSDoc comments but must be marked as `@private`.
+ - Classes, methods, events and anything else in the public interface must be documented with a JSDoc comment. Everything outside of the public interface may be documented and must be tagged as `@private`.
+ - Text within JSDoc comments may use markdown formatting. Code identifiers must be surrounded by \`backticks\`.
+ - Documentation must be written in complete gramatically-correct sentances.
+ - Documentation must specify measurement units when applicable.
+ - Documentation descriptions must contain more information than what is obvious from the identifier and JSDoc metadata.
+ - `@param` and `@property` descriptions should be capitalized and written as if completing a sentance beginning with "This is..." or "This...".
 
-References:
-
-* [Documentation.js Homepage](http://documentation.js.org)
-* [Documentation.js Getting Started Guide](https://github.com/documentationjs/documentation/blob/master/docs/GETTTING_STARTED.md)
-* [JSDoc Specification](http://usejsdoc.org/index.html)
-
-## Examples
+## Writing Examples
 
 Examples are written as Jekyll posts in `docs/_posts/examples`. The Jekyll front matter should include the following items:
 
@@ -28,7 +27,7 @@ In the post body, write the HTML and JavaScript constituting the example.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
 * When embedding literal JSON (GeoJSON or GL style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
-## Running Documentation Server Locally
+## Running the Documentation Server Locally
 
 To start a documentation server locally run
 ```bash
@@ -41,7 +40,7 @@ You can view the documentation at
 open http://127.0.0.1:4000/mapbox-gl-js
 ```
 
-## Troubleshooting
+### Troubleshooting
 
 Ensure you have the right version of all dependencies
 
@@ -56,7 +55,7 @@ jekyll -v
  > jekyll 2.5.3
 ```
 
-## Branch Usage
+## Committing and Publishing Documentation
 
 The mapbox-gl-js repository has both `master` and `mb-pages` as active branches. The **`master` branch** is used for mainline code development: the next version of mapbox-gl-js will come from the code in this branch, and it may contain documentation and examples for APIs that are not yet part of a public release. The **`mb-pages` branch** is published to https://www.mapbox.com/mapbox-gl-js/ on any push to the branch. For the purposes of documentation changes, use these two branches as follows:
 

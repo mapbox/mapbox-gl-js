@@ -66,12 +66,17 @@ var defaultOptions = {
  * @param {string|Element} options.container HTML element to initialize the map in (or element id as string)
  * @param {number} [options.minZoom=0] Minimum zoom of the map
  * @param {number} [options.maxZoom=20] Maximum zoom of the map
- * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the predefined Mapbox styles:
- *   * `mapbox://styles/mapbox/basic-v8` - Simple and flexible starting template.
- *   * `mapbox://styles/mapbox/bright-v8` - Template for complex custom basemaps.
- *   * `mapbox://styles/mapbox/streets-v8` - A ready-to-use basemap, perfect for minor customization or incorporating your own data.
- *   * `mapbox://styles/mapbox/light-v8` - Subtle light backdrop for data vizualizations.
- *   * `mapbox://styles/mapbox/dark-v8` - Subtle dark backdrop for data vizualizations.
+ * @param {Object|string} [options.style] Map style. This must be an an object conforming to the schema described in
+ * the [style reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to a JSON style. To load a style from the
+ * Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`, where `:owner` is your Mapbox account
+ * name and `:style` is the style ID. Or you can use one of [the predefined Mapbox styles](https://www.mapbox.com/maps/).
+ * The Style URLs of the predefined Mapbox styles are:
+ *  * `mapbox://styles/mapbox/streets-v9`
+ *  * `mapbox://styles/mapbox/outdoors-v9`
+ *  * `mapbox://styles/mapbox/light-v9`
+ *  * `mapbox://styles/mapbox/dark-v9`
+ *  * `mapbox://styles/mapbox/satellite-v9`
+ *  * `mapbox://styles/mapbox/satellite-streets-v9`
  * @param {boolean} [options.hash=false] If `true`, the map will track and update the page URL according to map position
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners are attached to the map, so it will not respond to input
  * @param {number} [options.bearingSnap=7] Snap to north threshold in degrees.
@@ -406,25 +411,63 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Query rendered features within a point or rectangle.
+     * Query rendered features at a point or within a rectangle.
      *
-     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] Either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of bounding rectangle. Optional: use entire viewport if omitted.
-     * @param {Object} params
+     * @param {Point|Array<number>|Array<Point>|Array<Array<number>>} [pointOrBox] - The geometry of a query region:
+     * either [x, y] pixel coordinates of a point, or [[x1, y1], [x2, y2]] pixel coordinates of opposite corners of
+     * a bounding rectangle. Omitting this parameter (i.e. calling `queryRenderedFeatures` with zero arguments,
+     * or with a single `params` argument), is equivalent to passing a bounding rectangle encompassing the entire
+     * viewport.
+     * @param {Object} [params]
      * @param {Array<string>} [params.layers] Only query features from layers with these layer IDs.
-     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
+     * @param {Array} [params.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      *
-     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features
-     * matching the query parameters. The GeoJSON properties of each feature are taken from
-     * the original source. Each feature object also contains a top-level `layer`
-     * property whose value is an object representing the style layer to which the
-     * feature belongs. Layout and paint properties in this object contain values
-     * which are fully evaluated for the given zoom level and feature.
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
+     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects) satisfying the query parameters.
+     *
+     * The `properties` value of each feature contains the properties of the source feature. For GeoJSON sources, only
+     * string and numeric values are supported; null, Array, and Object values are not supported.
+     *
+     * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
+     * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
+     * for the given zoom level and feature.
+     *
+     * Only visible features are returned. The topmost rendered feature appears first in the returned array, and
+     * subsequent features are sorted by descending z-order. Features which are rendered multiple times due to wrapping
+     * across the antimeridian at low zoom levels are returned only once, subject to the caveat that follows.
+     *
+     * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
+     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
+     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
+     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
      *
      * @example
-     * var features = map.queryRenderedFeatures([20, 35], { layers: ['my-layer-name'] });
+     * // Find all features at a point
+     * var features = map.queryRenderedFeatures(
+     *   [20, 35],
+     *   { layers: ['my-layer-name'] }
+     * );
      *
      * @example
-     * var features = map.queryRenderedFeatures([[10, 20], [30, 50]], { layers: ['my-layer-name'] });
+     * // Find all features within a static bounding box
+     * var features = map.queryRenderedFeatures(
+     *   [[10, 20], [30, 50]],
+     *   { layers: ['my-layer-name'] }
+     * );
+     *
+     * @example
+     * // Find all features within a bounding box around a point
+     * var width = 10;
+     * var height = 20;
+     * var features = map.queryRenderedFeatures([
+     *   [point.x - width / 2, point.y - height / 2],
+     *   [point.x + width / 2, point.y + height / 2]
+     * ], { layers: ['my-layer-name'] });
+     *
+     * @example
+     * // Query all rendered features from a single layer
+     * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
@@ -469,14 +512,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get data from vector tiles as an array of GeoJSON Features.
+     * Query data from vector tile or GeoJSON sources.
      *
      * @param {string} sourceID source ID
      * @param {Object} params
-     * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from.
-     * @param {Array} [params.filter] A mapbox-gl-style-spec filter.
+     * @param {string} [params.sourceLayer] The name of the vector tile layer to get features from. For vector tile
+     * sources, this parameter is required. For GeoJSON sources, it is ignored.
+     * @param {Array} [params.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      *
-     * @returns {Array<Object>} features - An array of [GeoJSON](http://geojson.org/) features matching the query parameters. The GeoJSON properties of each feature are taken from the original source. Each feature object also contains a top-level `layer` property whose value is an object representing the style layer to which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated for the given zoom level and feature.
+     * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
+     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects) satisfying the query parameters.
+     *
+     * In contrast to `queryRenderedFeatures`, `querySourceFeatures` returns all features matching the query parameters,
+     * whether they are rendered by the current style or not. The domain of the query consists of all currently-loaded
+     * vector tile or GeoJSON source tiles; `querySourceFeatures` does not load additional tiles beyond the currently
+     * visible viewport.
+     *
+     * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
+     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
+     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
+     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
      */
     querySourceFeatures: function(sourceID, params) {
         return this.style.querySourceFeatures(sourceID, params);
@@ -598,8 +654,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Add a layer to the map style. The layer will be inserted before the layer with
-     * ID `before`, or appended if `before` is omitted.
+     * Add a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
+     * to the map. A layer references a source from which it pulls data and specifies
+     * styling for that data.
+     *
+     * If a value for `before` is provided, the layer will be inserted before the layer
+     * with the specified ID. If `before` is omitted, the layer will be inserted above
+     * every existing layer.
+     *
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
      * @fires layer.add
@@ -1020,6 +1082,8 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showTileBoundaries
      * @type {boolean}
+     * @instance
+     * @memberof Map
      */
     _showTileBoundaries: false,
     get showTileBoundaries() { return this._showTileBoundaries; },
@@ -1036,6 +1100,8 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showCollisionBoxes
      * @type {boolean}
+     * @instance
+     * @memberof Map
      */
     _showCollisionBoxes: false,
     get showCollisionBoxes() { return this._showCollisionBoxes; },
@@ -1051,6 +1117,8 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name showOverdraw
      * @type {boolean}
+     * @instance
+     * @memberof Map
      */
     _showOverdrawInspector: false,
     get showOverdrawInspector() { return this._showOverdrawInspector; },
@@ -1065,6 +1133,8 @@ util.extendAll(Map.prototype, /** @lends Map.prototype */{
      *
      * @name repaint
      * @type {boolean}
+     * @instance
+     * @memberof Map
      */
     _repaint: false,
     get repaint() { return this._repaint; },
@@ -1106,7 +1176,7 @@ function removeNode(node) {
 
 
   /**
-   * When an event {@link Evented.fire fires} as a result of a
+   * When an event fires as a result of a
    * user interaction, the event will be called with an EventData
    * object containing the original DOM event along with coordinates of
    * the event target.
