@@ -17,7 +17,7 @@ function ExtrusionBucket() {
 ExtrusionBucket.prototype = util.inherit(Bucket, {});
 
 
-ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, z, nx, ny, nz, t) {
+ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, z, nx, ny, nz, t, e) {
     const factor = Math.pow(2, 13);
 
     return vertexBuffer.emplaceBack(
@@ -29,7 +29,10 @@ ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, z, n
             // a_normal
             Math.floor(nx * factor) * 2 + t,
             ny * factor * 2,
-            nz * factor * 2);
+            nz * factor * 2,
+
+            // a_edgedistance
+            e);
 };
 
 ExtrusionBucket.prototype.programInterfaces = {
@@ -48,6 +51,10 @@ ExtrusionBucket.prototype.programInterfaces = {
         }, {
             name: 'a_normal',
             components: 3,
+            type: 'Int16'
+        }, {
+            name: 'a_edgedistance',
+            components: 1,
             type: 'Int16'
         }]
     }
@@ -87,7 +94,7 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
         for (var v = 0; v < ring.length; v++) {
             var vertex = ring[v];
 
-            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1);
+            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1, 0);
             indices.push(fIndex);
 
             if (v >= 1) {
@@ -99,16 +106,21 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
             flattened.push(vertex[1]);
         }
 
+        var edgeDistance = 0;
+
         for (var s = 0; s < ring.length - 1; s++) {
             var v1 = ring[s];
             var v2 = ring[s + 1];
             var perp = Point.convert(v2)._sub(Point.convert(v1))._perp()._unit();
 
             var vertexArray = group.layout.vertex;
-            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], 0, perp.x, perp.y, 0, 0);
-            this.addExtrusionVertex(vertexArray, v1[0], v1[1], h, perp.x, perp.y, 0, 1);
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], 0, perp.x, perp.y, 0, 0);
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], h, perp.x, perp.y, 0, 1);
+            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], 0, perp.x, perp.y, 0, 0, edgeDistance);
+            this.addExtrusionVertex(vertexArray, v1[0], v1[1], h, perp.x, perp.y, 0, 1, edgeDistance);
+
+            edgeDistance += Point.convert(v2).dist(Point.convert(v1));
+
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], 0, perp.x, perp.y, 0, 0, edgeDistance);
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], h, perp.x, perp.y, 0, 1, edgeDistance);
 
             group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);

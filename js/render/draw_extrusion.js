@@ -47,6 +47,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'] || 1;
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
+    // TODO this should be changed to a map property probably so as not to get trippy situations where layers are lit differently...? gl-paternalism
 
     if (image) {
         program = painter.useProgram('extrusionpattern');
@@ -81,23 +82,24 @@ function drawExtrusion(painter, source, layer, coord) {
         );
 
         gl.uniform4fv(program.u_color, color);
-        gl.uniform4fv(program.u_shadow, shadowColor);
         gl.uniform1f(program.u_opacity, opacity);
-
-        var lightdir = [-0.5, -0.6, 0.9];
-        // NOTES FOR MYSELF
-        // z: 0 is the minimum z; it clamps here. But
-        //    0.5 is the first one that makes sense after 0.0 --
-        //    in between are kind of ambient, but the first time
-        //    the roof becomes as light as the top of the wall is 0.5
-        //    The upper clamp is between 1.7 and 1.8
-        // x:
-
-        var lightMat = mat3.create();
-        if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
-        vec3.transformMat3(lightdir, lightdir, lightMat);
-        gl.uniform3fv(program.u_lightdir, lightdir);
     }
+
+    gl.uniform4fv(program.u_shadow, shadowColor);
+
+    var lightdir = [-0.5, -0.6, 0.9];
+    // NOTES FOR MYSELF
+    // z: 0 is the minimum z; it clamps here. But
+    //    0.5 is the first one that makes sense after 0.0 --
+    //    in between are kind of ambient, but the first time
+    //    the roof becomes as light as the top of the wall is 0.5
+    //    The upper clamp is between 1.7 and 1.8
+    // x:
+
+    var lightMat = mat3.create();
+    if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
+    vec3.transformMat3(lightdir, lightdir, lightMat);
+    gl.uniform3fv(program.u_lightdir, lightdir);
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
@@ -162,23 +164,6 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     gl.uniform1f(program.u_opacity, opacity);
     gl.uniform1f(program.u_mix, image.t);
 
-    var factor = 8 / Math.pow(2, painter.transform.tileZoom - /*tile.zoom*/0);
-
-    var matrixA = mat3.create();
-    mat3.scale(matrixA, matrixA, [
-        1 / (imagePosA.size[0] * factor * image.fromScale),
-        1 / (imagePosA.size[1] * factor * image.fromScale)
-    ]);
-
-    var matrixB = mat3.create();
-    mat3.scale(matrixB, matrixB, [
-        1 / (imagePosB.size[0] * factor * image.toScale),
-        1 / (imagePosB.size[1] * factor * image.toScale)
-    ]);
-
-    gl.uniformMatrix3fv(program.u_patternmatrix_a, false, matrixA);
-    gl.uniformMatrix3fv(program.u_patternmatrix_b, false, matrixB);
-
     gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
     gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
     gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
@@ -200,7 +185,6 @@ function setPattern(image, opacity, tile, coord, painter, program) {
         coord.posMatrix,
         [1, 1, zScale, 1])
     );
-
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);

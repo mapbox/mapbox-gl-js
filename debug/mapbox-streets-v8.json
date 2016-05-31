@@ -247,7 +247,7 @@
             "extrusion-lighting-anchor": "viewport",
             "extrusion-outline-color": "#909",
             "extrusion-opacity": 1,
-            "extrusion-pattern": "marker-15",
+            "extrusion-pattern": "gb-national-rail",
             "extrusion-shadow-color": "#00f"
           },
           "source-layer": "building",
