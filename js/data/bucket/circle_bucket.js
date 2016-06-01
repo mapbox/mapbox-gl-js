@@ -97,5 +97,5 @@ CircleBucket.prototype.addFeature = function(feature) {
         }
     }
 
-    this.addPaintAttributes('circle', globalProperties, feature.properties, startGroup, startIndex);
+    this.populatePaintArrays('circle', globalProperties, feature.properties, startGroup, startIndex);
 };

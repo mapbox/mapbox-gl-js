@@ -8,8 +8,10 @@ var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 
 /**
- * Options common to `Map#jumpTo`, `Map#easeTo`, and `Map#flyTo`, controlling the destination
- * location, zoom level, bearing and pitch.
+ * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo},
+ * controlling the destination location, zoom level, bearing and pitch.
+ * All properties are options; unspecified
+ * options will default to the current value for that property.
  *
  * @typedef {Object} CameraOptions
  * @property {LngLat} center Map center
@@ -20,8 +22,8 @@ var Point = require('point-geometry');
  */
 
 /**
- * Options common to map movement methods that involve animation, such as Map#panBy and
- * Map#easeTo, controlling the duration of the animation and easing function. All properties
+ * Options common to map movement methods that involve animation, such as {@link Map#panBy} and
+ * {@link Map#easeTo}, controlling the duration of the animation and easing function. All properties
  * are optional.
  *
  * @typedef {Object} AnimationOptions

@@ -11,26 +11,25 @@ function draw(painter, source, layer, coords) {
 
     var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
-    var strokeColor = util.premultiply(layer.paint['fill-outline-color']);
     var opacity = layer.paint['fill-opacity'];
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
 
     // Draw fill
     if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
+        painter.setDepthSublayer(1);
         for (var i = 0; i < coords.length; i++) {
             drawFill(painter, source, layer, coords[i]);
         }
     }
 
-    // Draw stroke
     if (!painter.isOpaquePass && layer.paint['fill-antialias']) {
-        if (strokeColor || !layer.paint['fill-pattern']) {
-            var outlineProgram = painter.useProgram('outline');
+        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
             painter.lineWidth(2);
             painter.depthMask(false);
 
-            if (strokeColor) {
+            if (isOutlineColorDefined) {
                 // If we defined a different color for the fill outline, we are
                 // going to ignore the bits in 0x07 and just care about the global
                 // clipping mask.
@@ -43,15 +42,11 @@ function draw(painter, source, layer, coords) {
                 // the (non-antialiased) fill.
                 painter.setDepthSublayer(0);
             }
-            gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-            gl.uniform4fv(outlineProgram.u_color, strokeColor ? strokeColor : color);
-            gl.uniform1f(outlineProgram.u_opacity, opacity);
 
             for (var j = 0; j < coords.length; j++) {
                 drawStroke(painter, source, layer, coords[j]);
             }
         } else {
-            var outlinePatternProgram = painter.useProgram('outlinepattern');
             painter.lineWidth(2);
             painter.depthMask(false);
             // Otherwise, we only want to drawFill the antialiased parts that are
@@ -60,7 +55,6 @@ function draw(painter, source, layer, coords) {
             // the current shape, some pixels from the outline stroke overlapped
             // the (non-antialiased) fill.
             painter.setDepthSublayer(0);
-            gl.uniform2f(outlinePatternProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
             for (var k = 0; k < coords.length; k++) {
                 drawStroke(painter, source, layer, coords[k]);
@@ -79,84 +73,45 @@ function drawFill(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var color = util.premultiply(layer.paint['fill-color']);
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
-
-    var posMatrix = coord.posMatrix;
-    var translatedPosMatrix = painter.translatePosMatrix(posMatrix, tile, layer.paint['fill-translate'], layer.paint['fill-translate-anchor']);
-
-    // Draw the stencil mask.
-    painter.setDepthSublayer(1);
-
-    // We're only drawFilling to the first seven bits (== support a maximum of
-    // 8 overlapping polygons in one place before we get rendering errors).
-    gl.stencilMask(0x07);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
-
-    // Draw front facing triangles. Wherever the 0x80 bit is 1, we are
-    // increasing the lower 7 bits by one if the triangle is a front-facing
-    // triangle. This means that all visible polygons should be in CCW
-    // orientation, while all holes (see below) are in CW orientation.
-    painter.enableTileClippingMask(coord);
-
-    // When we do a nonzero fill, we count the number of times a pixel is
-    // covered by a counterclockwise polygon, and subtract the number of
-    // times it is "uncovered" by a clockwise polygon.
-    gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
-    gl.stencilOpSeparate(gl.BACK, gl.KEEP, gl.KEEP, gl.DECR_WRAP);
-
-    // When drawFilling a shape, we first drawFill all shapes to the stencil buffer
-    // and incrementing all areas where polygons are
-    gl.colorMask(false, false, false, false);
-    painter.depthMask(false);
-
-    // Draw the actual triangle fan into the stencil buffer.
-    var fillProgram = painter.useProgram('fill');
-    gl.uniformMatrix4fv(fillProgram.u_matrix, false, translatedPosMatrix);
-
-    for (var i = 0; i < bufferGroups.length; i++) {
-        var group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, fillProgram, group.layout.vertex, group.layout.element);
-        gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
-    }
-
-    // Now that we have the stencil mask in the stencil buffer, we can start
-    // writing to the color buffer.
-    gl.colorMask(true, true, true, true);
-    painter.depthMask(true);
-
-    // From now on, we don't want to update the stencil buffer anymore.
-    gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-    gl.stencilMask(0x0);
     var program;
 
-    if (image) {
+    if (!image) {
+
+        var programOptions = bucket.paintAttributes.fill[layer.id];
+        program = painter.useProgram(
+            'fill',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
+        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
+        gl.uniform1f(program.u_opacity, opacity);
+
+    } else {
         // Draw texture fill
         program = painter.useProgram('pattern');
         setPattern(image, opacity, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
-
-        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
-
-    } else {
-        // Draw filling rectangle.
-        program = painter.useProgram('fill');
-        gl.uniform4fv(fillProgram.u_color, color);
-        gl.uniform1f(fillProgram.u_opacity, opacity);
-        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
     }
 
-    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+        coord.posMatrix,
+        tile,
+        layer.paint['fill-translate'],
+        layer.paint['fill-translate-anchor']
+    ));
 
-    // Only draw regions that we marked
-    gl.stencilFunc(gl.NOTEQUAL, 0x0, 0x07);
+    painter.enableTileClippingMask(coord);
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
-
-    gl.stencilMask(0x00);
+    for (var i = 0; i < bufferGroups.length; i++) {
+        var group = bufferGroups[i];
+        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
+        gl.drawElements(gl.TRIANGLES, group.layout.element.length, gl.UNSIGNED_SHORT, 0);
+    }
 }
 
 function drawStroke(painter, source, layer, coord) {
@@ -169,7 +124,25 @@ function drawStroke(painter, source, layer, coord) {
 
     var image = layer.paint['fill-pattern'];
     var opacity = layer.paint['fill-opacity'];
-    var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
+    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
+
+    var program;
+    if (image && !isOutlineColorDefined) {
+        program = painter.useProgram('outlinepattern');
+        gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+    } else {
+        var programOptions = bucket.paintAttributes.fill[layer.id];
+        program = painter.useProgram(
+            'outline',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
+        gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        gl.uniform1f(program.u_opacity, opacity);
+        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
+    }
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
@@ -184,7 +157,7 @@ function drawStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2);
+        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2, group.paint[layer.id]);
         gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
@@ -197,7 +170,6 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
     if (!imagePosA || !imagePosB) return;
 
-
     gl.uniform1i(program.u_image, 0);
     gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
     gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
@@ -206,36 +178,19 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     gl.uniform1f(program.u_opacity, opacity);
     gl.uniform1f(program.u_mix, image.t);
 
-    var imageSizeScaledA = [
-        (imagePosA.size[0] * image.fromScale),
-        (imagePosA.size[1] * image.fromScale)
-    ];
-    var imageSizeScaledB = [
-        (imagePosB.size[0] * image.toScale),
-        (imagePosB.size[1] * image.toScale)
-    ];
-
-    gl.uniform2fv(program.u_patternscale_a, [
-        1 / pixelsToTileUnits(tile, imageSizeScaledA[0], painter.transform.tileZoom),
-        1 / pixelsToTileUnits(tile, imageSizeScaledA[1], painter.transform.tileZoom)
-    ]);
-
-    gl.uniform2fv(program.u_patternscale_b, [
-        1 / pixelsToTileUnits(tile, imageSizeScaledB[0], painter.transform.tileZoom),
-        1 / pixelsToTileUnits(tile, imageSizeScaledB[1], painter.transform.tileZoom)
-    ]);
+    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
+    gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
+    gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
+    gl.uniform1f(program.u_scale_a, image.fromScale);
+    gl.uniform1f(program.u_scale_b, image.toScale);
 
     var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-    // shift images to match at tile boundaries
-    var offsetAx = ((tileSizeAtNearestZoom / imageSizeScaledA[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var offsetAy = ((tileSizeAtNearestZoom / imageSizeScaledA[1]) % 1) * tile.coord.y;
-
-    var offsetBx = ((tileSizeAtNearestZoom / imageSizeScaledB[0]) % 1) * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var offsetBy = ((tileSizeAtNearestZoom / imageSizeScaledB[1]) % 1) * tile.coord.y;
-
-    gl.uniform2fv(program.u_offset_a, [offsetAx, offsetAy]);
-    gl.uniform2fv(program.u_offset_b, [offsetBx, offsetBy]);
+    var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+    var pixelY = tileSizeAtNearestZoom * tile.coord.y;
+    // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
+    gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
+    gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);

@@ -197,13 +197,7 @@ util.extend(Worker.prototype, {
 
         if (!this.geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
 
-        // console.time('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
-
         var geoJSONTile = this.geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
-
-        // console.timeEnd('tile ' + coord.z + ' ' + coord.x + ' ' + coord.y);
-
-        // if (!geoJSONTile) console.log('not found', this.geoJSONIndexes[source], coord);
 
         var tile = geoJSONTile ? new WorkerTile(params) : undefined;
 
@@ -213,8 +207,12 @@ util.extend(Worker.prototype, {
         if (geoJSONTile) {
             var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
             geojsonWrapper.name = '_geojsonTileLayer';
-            var rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }}).buffer;
-            tile.parse(geojsonWrapper, this.layerFamilies, this.actor, rawTileData, callback);
+            var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+            if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
+                // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
+                pbf = new Uint8Array(pbf);
+            }
+            tile.parse(geojsonWrapper, this.layerFamilies, this.actor, pbf.buffer, callback);
         } else {
             return callback(null, null); // nothing in the given tile
         }

@@ -10,7 +10,7 @@ function StyleDeclaration(reference, value) {
     this.type = reference.type;
     this.transitionable = reference.transition;
     this.value = util.clone(value);
-    this.isFunction = !!value.stops;
+    this.isFunction = MapboxGLFunction.isFunctionDefinition(value);
 
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
@@ -43,6 +43,8 @@ function StyleDeclaration(reference, value) {
     }
 }
 
+// This function is used to smoothly transition between discrete values, such
+// as images and dasharrays.
 function transitioned(calculate) {
     return function(globalProperties, featureProperties) {
         var z = globalProperties.zoom;
@@ -67,12 +69,16 @@ function transitioned(calculate) {
             fromScale /= 2;
         }
 
-        return {
-            from: from,
-            fromScale: fromScale,
-            to: to,
-            toScale: toScale,
-            t: mix
-        };
+        if (from === undefined || to === undefined) {
+            return undefined;
+        } else {
+            return {
+                from: from,
+                fromScale: fromScale,
+                to: to,
+                toScale: toScale,
+                t: mix
+            };
+        }
     };
 }

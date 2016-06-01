@@ -1,3 +1,26 @@
+## 0.19.0 (May 31 2016)
+
+#### New Features & Improvements
+* Allow use of special characters in property field names #2547
+* Improve rendering speeds on fill layers #1606
+* Add data driven styling support for `fill-color` and `fill-outline-color` #2629
+* Add `has` and `!has` filter operators mapbox/feature-filter#15
+* Improve keyboard handlers with held-down keys #2530
+* Support 'tms' tile scheme #2565 
+* Add `trackResize` option to `Map` #2591
+
+
+#### Bugfixes
+* Scale circles when map is displayed at a pitch #2541
+* Fix background pattern rendering bug #2557
+* Fix bug that prevented removal of a `fill-pattern` from a fill layer #2534
+* Fix `line-pattern` and `fill-pattern`rendering #2596
+* Fix some platform specific rendering bugs #2553
+* Return empty object from `queryRenderedFeatures` before the map is loaded #2621
+* Fix "there is no texture bound to the unit 1" warnings #2509
+* Allow transitioned values to be unset #2561
+
+
 ## 0.18.0 (April 13 2016)
 
 #### New Features & Improvements

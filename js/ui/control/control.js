@@ -1,5 +1,7 @@
 'use strict';
 
+var util = require('../../util/util');
+var Evented = require('../../util/evented');
 module.exports = Control;
 
 /**
@@ -47,3 +49,5 @@ Control.prototype = {
         return this;
     }
 };
+
+util.extend(Control.prototype, Evented);

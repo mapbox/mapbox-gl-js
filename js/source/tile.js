@@ -163,6 +163,10 @@ Tile.prototype = {
 };
 
 function unserializeBuckets(input, style) {
+    // Guard against the case where the map's style has been set to null while
+    // this bucket has been parsing.
+    if (!style) return;
+
     var output = {};
     for (var i = 0; i < input.length; i++) {
         var layer = style.getLayer(input[i].layerId);

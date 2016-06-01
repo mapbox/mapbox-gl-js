@@ -2,9 +2,11 @@
 
 var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
+var window = require('../../../js/util/browser').window;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
+var sinon = require('sinon');
 
 var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
@@ -22,13 +24,61 @@ test('Map', function(t) {
                 }
             },
             interactive: false,
-            attributionControl: false
+            attributionControl: false,
+            trackResize: true
         }, options));
     }
 
     t.test('constructor', function(t) {
-        var map = createMap();
+        var map = createMap({interactive: true});
         t.ok(map.getContainer());
+        t.equal(map.getStyle(), undefined);
+        t.ok(map.boxZoom.isEnabled());
+        t.ok(map.doubleClickZoom.isEnabled());
+        t.ok(map.dragPan.isEnabled());
+        t.ok(map.dragRotate.isEnabled());
+        t.ok(map.keyboard.isEnabled());
+        t.ok(map.scrollZoom.isEnabled());
+        t.ok(map.touchZoomRotate.isEnabled());
+        t.end();
+    });
+
+    t.test('disables handlers', function(t) {
+        t.test('disables all handlers', function(t) {
+            var map = createMap({interactive: false});
+
+            t.notOk(map.boxZoom.isEnabled());
+            t.notOk(map.doubleClickZoom.isEnabled());
+            t.notOk(map.dragPan.isEnabled());
+            t.notOk(map.dragRotate.isEnabled());
+            t.notOk(map.keyboard.isEnabled());
+            t.notOk(map.scrollZoom.isEnabled());
+            t.notOk(map.touchZoomRotate.isEnabled());
+
+            t.end();
+        });
+
+        var handlerNames = [
+            'scrollZoom',
+            'boxZoom',
+            'dragRotate',
+            'dragPan',
+            'keyboard',
+            'doubleClickZoom',
+            'touchZoomRotate'
+        ];
+        handlerNames.forEach(function(handlerName) {
+            t.test('disables "' + handlerName + '" handler', function(t) {
+                var options = {};
+                options[handlerName] = false;
+                var map = createMap(options);
+
+                t.notOk(map[handlerName].isEnabled());
+
+                t.end();
+            });
+        });
+
         t.end();
     });
 
@@ -256,6 +306,52 @@ test('Map', function(t) {
 
             map.resize();
             t.deepEqual(events, ['movestart', 'move', 'resize', 'moveend']);
+
+            t.end();
+        });
+
+
+        t.test('listen to window resize event', function (t) {
+            window.addEventListener = function(type) {
+                if (type === 'resize') {
+                    //restore empty function not to mess with other tests
+                    window.addEventListener = function() {};
+
+                    t.end();
+                }
+            };
+
+            createMap();
+        });
+
+        t.test('do not resize if trackResize is false', function (t) {
+            var map = createMap({trackResize: false});
+
+            sinon.spy(map, 'stop');
+            sinon.spy(map, '_update');
+            sinon.spy(map, 'resize');
+
+            map._onWindowResize();
+
+            t.notOk(map.stop.called);
+            t.notOk(map._update.called);
+            t.notOk(map.resize.called);
+
+            t.end();
+        });
+
+        t.test('do resize if trackResize is true (default)', function (t) {
+            var map = createMap();
+
+            sinon.spy(map, 'stop');
+            sinon.spy(map, '_update');
+            sinon.spy(map, 'resize');
+
+            map._onWindowResize();
+
+            t.ok(map.stop.called);
+            t.ok(map._update.called);
+            t.ok(map.resize.called);
 
             t.end();
         });
@@ -804,6 +900,31 @@ test('Map', function(t) {
                     layers: []
                 }
             });
+        });
+
+        t.test('logs errors that happen during render', function (t) {
+            var error = console.error;
+
+            console.error = function (e) {
+                console.error = error;
+                t.deepEqual(e.message, 'in render');
+                t.end();
+            };
+
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('render', function () {
+                throw new Error('in render');
+            });
+
+            map._rerender = function () {};
+            map._render();
         });
 
         t.end();

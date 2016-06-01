@@ -95,10 +95,9 @@ html, body, #map {
 <div id='console' class='hide'></div>
 
 <script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
 <script>
-
-mapboxgl.accessToken = getAccessToken();
-
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -149,21 +148,6 @@ function blurMap(val) {
     if (!node) return;
     val ? node.classList.add('blur') : node.classList.remove('blur');
 };
-
-function getAccessToken() {
-    var accessToken = (
-        getURLParameter('access_token') ||
-        localStorage.getItem('accessToken')
-    );
-    localStorage.setItem('accessToken', accessToken);
-    return accessToken;
-}
-
-function getURLParameter(name) {
-    var regexp = new RegExp('[?&]' + name + '=([^&#]*)', 'i');
-    var output = regexp.exec(window.location.href);
-    return output && output[1];
-}
 
 function checkEvent(type, checked) {
     map.off(type);

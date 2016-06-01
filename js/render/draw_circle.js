@@ -25,9 +25,17 @@ function drawCircles(painter, source, layer, coords) {
         var bufferGroups = bucket.bufferGroups.circle;
         if (!bufferGroups) continue;
 
-        var program = painter.useProgram('circle', bucket.getProgramMacros('circle', layer));
+        var programOptions = bucket.paintAttributes.circle[layer.id];
+        var program = painter.useProgram(
+            'circle',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
 
-        gl.uniform2fv(program.u_extrude_scale, painter.transform.pixelsToGLUnits);
+        gl.uniform2f(program.u_extrude_scale,
+                painter.transform.pixelsToGLUnits[0] * painter.transform.altitude,
+                painter.transform.pixelsToGLUnits[1] * painter.transform.altitude);
         gl.uniform1f(program.u_blur, layer.paint['circle-blur']);
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
         gl.uniform1f(program.u_opacity, layer.paint['circle-opacity']);

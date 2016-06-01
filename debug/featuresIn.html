@@ -15,9 +15,9 @@
 <body>
 <div id='map'></div>
 <script src='mapbox-gl.js'></script>
-<script>
-mapboxgl.accessToken = getAccessToken();
+<script src='access-token.js'></script>
 
+<script>
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -83,10 +83,10 @@ map.on('click', function(e) {
         ];
 
         console.log('box', boxcoords);
-        map.featuresIn(box, {
+        map.queryRenderedFeatures(box, {
           includeGeometry: true
         }, function (err, results) {
-            console.log('featuresIn', box, err, results);
+            console.log('queryRenderedFeatures', box, err, results);
             querySource.setData({
               type: 'FeatureCollection',
               features: results
@@ -116,18 +116,6 @@ document.onkeypress = function(e) {
     }
 };
 
-function getAccessToken() {
-    var match = location.search.match(/access_token=([^&\/]*)/);
-    var accessToken = match && match[1];
-
-    if (accessToken) {
-        localStorage.accessToken = accessToken;
-    } else {
-        accessToken = localStorage.accessToken;
-    }
-
-    return accessToken;
-}
 </script>
 </body>
 </html>

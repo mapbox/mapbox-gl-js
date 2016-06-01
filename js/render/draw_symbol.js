@@ -124,19 +124,12 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
         extrudeScale = [ tr.pixelsToGLUnits[0] * s, tr.pixelsToGLUnits[1] * s];
     }
 
-    // calculate how much longer the real world distance is at the top of the screen
-    // than at the middle of the screen.
-    var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
-    var x = tr.height / 2 * Math.tan(tr._pitch);
-    var extra = (topedgelength + x) / topedgelength - 1;
-
     if (!isText && !painter.style.sprite.loaded())
         return;
 
     var program = painter.useProgram(sdf ? 'sdf' : 'icon');
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(posMatrix, tile, translate, translateAnchor));
     gl.uniform1i(program.u_skewed, alignedWithMap);
-    gl.uniform1f(program.u_extra, extra);
     gl.uniform2fv(program.u_extrude_scale, extrudeScale);
 
     gl.activeTexture(gl.TEXTURE0);

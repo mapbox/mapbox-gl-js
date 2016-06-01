@@ -11,6 +11,7 @@ var StructArrayType = require('../util/struct_array');
 var Buffer = require('../data/buffer');
 var VertexArrayObject = require('./vertex_array_object');
 var RasterBoundsArray = require('./draw_raster').RasterBoundsArray;
+var createUniformPragmas = require('./create_uniform_pragmas');
 
 module.exports = Painter;
 
@@ -150,7 +151,8 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var program = this.useProgram('fill');
+        var pragmas = createUniformPragmas([{name: 'u_color', components: 4}]);
+        var program = this.useProgram('fill', [], pragmas, pragmas);
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         // Draw the clipping mask

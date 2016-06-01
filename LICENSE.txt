@@ -1,4 +1,4 @@
-Copyright (c) 2014, Mapbox
+Copyright (c) 2016, Mapbox
 
 All rights reserved.
 

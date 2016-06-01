@@ -67,12 +67,18 @@ StyleTransition.prototype.calculate = function(globalProperties, featureProperti
 
 };
 
+// This function is used to smoothly transition between discrete values, such
+// as images and dasharrays.
 function interpZoomTransitioned(from, to, t) {
-    return {
-        from: from.to,
-        fromScale: from.toScale,
-        to: to.to,
-        toScale: to.toScale,
-        t: t
-    };
+    if ((from && from.to) === undefined || (to && to.to) === undefined) {
+        return undefined;
+    } else {
+        return {
+            from: from.to,
+            fromScale: from.toScale,
+            to: to.to,
+            toScale: to.toScale,
+            t: t
+        };
+    }
 }
