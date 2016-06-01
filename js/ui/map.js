@@ -93,6 +93,10 @@ var defaultOptions = {
  * @param {boolean} [options.doubleClickZoom=true] If `true`, enable the "double click to zoom" interaction (see `DoubleClickZoomHandler`).
  * @param {boolean} [options.touchZoomRotate=true] If `true`, enable the "pinch to rotate and zoom" interaction (see `TouchZoomRotateHandler`).
  * @param {boolean} [options.trackResize=true]  If `true`, automatically resize the map when the browser window resizes.
+ * @param {LngLat} [options.center] The geographic coordinate on which the map's initial viewport is centered.
+ * @param {number} [options.zoom] The zoom level of the map's initial viewport.
+ * @param {number} [options.bearing] The bearing (rotation) of the map's initial viewport measured in degrees counter-clockwise from north.
+ * @param {number} [options.pitch] The pitch of the map's initial viewport measured in degrees.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -168,7 +172,12 @@ var Map = module.exports = function(options) {
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
     if (!this._hash || !this._hash._onHashChange()) {
-        this.jumpTo(options);
+        this.jumpTo({
+            center: options.center,
+            zoom: options.zoom,
+            bearing: options.bearing,
+            pitch: options.pitch
+        });
     }
 
     this.stacks = {};
