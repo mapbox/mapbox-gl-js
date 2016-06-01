@@ -61,7 +61,8 @@ ExtrusionBucket.prototype.programInterfaces = {
 };
 
 ExtrusionBucket.prototype.addFeature = function(feature) {
-    var levels = feature.properties && feature.properties.levels || 3;
+    var levels = (feature.properties && feature.properties.levels) || 3;
+    // TODO I think the flickering must have to do with sometimes double polys, some with levels and some without :\
 
     var lines = loadGeometry(feature);
     var polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
@@ -99,6 +100,7 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
 
             if (v >= 1) {
                 group.layout.element2.emplaceBack(fIndex - 1, fIndex);
+                // TODO we could just not and only do them below maybe?
             }
 
             // convert to format used by earcut
@@ -124,6 +126,11 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
 
             group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);
+
+            group.layout.element2.emplaceBack(wIndex, wIndex + 1);
+            group.layout.element2.emplaceBack(wIndex + 2, wIndex + 3);
+            group.layout.element2.emplaceBack(wIndex, wIndex + 2);
+            group.layout.element2.emplaceBack(wIndex + 1, wIndex + 3);
         }
     }
 

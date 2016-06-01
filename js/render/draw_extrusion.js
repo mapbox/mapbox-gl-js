@@ -18,7 +18,8 @@ function draw(painter, source, layer, coords) {
         drawExtrusion(painter, source, layer, coord);
     }
 
-    if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !layer.paint['extrusion-outline-color'])) {
+    if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
+    // if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !layer.paint['extrusion-outline-color'])) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
             drawExtrusionStroke(painter, source, layer, coord);
@@ -119,31 +120,48 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var strokeColor = layer.paint['extrusion-outline-color'];
+    var strokeColor = layer.paint['extrusion-outline-color'] || layer.paint['extrusion-color'].slice();
 
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'];
-    var program = image ? painter.useProgram('outlinepattern') : painter.useProgram('outline');
+    var outlineProgram = image ? painter.useProgram('outlinepattern') : painter.useProgram('extrusion', ['EXTRUSION']);
 
-    gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+    gl.uniformMatrix4fv(outlineProgram.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
         tile,
         layer.paint['extrusion-translate'],
         layer.paint['extrusion-translate-anchor']
     ));
 
-    if (false && image) {
-        // TODO
-        setPattern(image, opacity, tile, coord, painter, program);
-    } else {
-        gl.uniform4fv(program.u_color, util.premultiply(strokeColor || [0,0,0,1]));
-    }
+        // Draw extrusion rectangle.
+    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+    gl.uniformMatrix4fv(outlineProgram.u_matrix, false, mat4.scale(
+        mat4.create(),
+        coord.posMatrix,
+        [1, 1, zScale, 1])
+    );
+
+    gl.uniform4fv(outlineProgram.u_color, util.premultiply(strokeColor));
+    gl.uniform1f(outlineProgram.u_opacity, 0.1);
+
+
+    // if (false && image) {
+    //     // TODO
+    //     setPattern(image, opacity, tile, coord, painter, outlineProgram);
+    // } else {
+    //     console.log(strokeColor);
+    //     gl.uniform4fv(outlineProgram.u_color, util.premultiply(strokeColor || [0,0,0,1]));
+    //     gl.uniform1f(outlineProgram.u_opacity, 1.0 /*opacity*/);
+    //     // TODO delete ^^ -- just for debugging
+    // }
+
+    gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     painter.enableTileClippingMask(coord);
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element2);
+        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layout.vertex, group.layout.element2);
         gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
