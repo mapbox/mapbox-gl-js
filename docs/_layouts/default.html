@@ -83,10 +83,6 @@ footer:
 <html>
 <head>
   {% if page.prehead %}{{page.prehead}}{% endif %}
-  {% if site.baseurl == '/mapbox.js' %}{% assign version = page.version | replace:'.','', | replace:'v','' | plus: 0 %}{% if version < 200 and page.version != 'latest' %}
-  <meta http-equiv='content-type' content='text/html; charset=utf-8' />
-  <meta http-equiv='refresh' content='0;url={{site.baseurl}}/api/{{site.mapboxjs}}/' />
-  <meta name='robots' content='noindex'>{% endif %}{% endif %}
   <meta charset='UTF-8'/>
   <meta http-equiv='X-UA-Compatible' content='IE=edge' />
   <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
@@ -104,6 +100,7 @@ footer:
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
   <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
   {% if page.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
@@ -192,6 +189,7 @@ footer:
             <a class='block pad1y icon studio' href='/mapbox-studio'>Mapbox Studio</a>
             <a class='block pad1y icon compass' href='/directions/'>Directions</a>
             <a class='block pad1y icon marker' href='/geocoding/'>Geocoding</a>
+            <a class='block pad1y icon car' href='/drive/'>Drive</a>
           </div>
           <div class='col6'>
             <a class='block pad1y icon bolt' href='/analysis/'>Analysis</a>
