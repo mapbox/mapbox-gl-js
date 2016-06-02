@@ -52,7 +52,8 @@ var defaultOptions = {
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
 
-    trackResize: true
+    trackResize: true,
+    workerCount: Math.max(browser.hardwareConcurrency - 1, 1)
 };
 
 /**
@@ -97,6 +98,7 @@ var defaultOptions = {
  * @param {number} [options.zoom] The zoom level of the map's initial viewport.
  * @param {number} [options.bearing] The bearing (rotation) of the map's initial viewport measured in degrees counter-clockwise from north.
  * @param {number} [options.pitch] The pitch of the map's initial viewport measured in degrees.
+ * @param {number} [options.workerCount=navigator.hardwareConcurrency] The number of WebWorkers the map should use to process vector tile data.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -109,10 +111,16 @@ var defaultOptions = {
 var Map = module.exports = function(options) {
 
     options = util.extend({}, defaultOptions, options);
+
+    if (options.workerCount < 1) {
+        throw new Error('workerCount must an integer greater than or equal to 1.');
+    }
+
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
     this._trackResize = options.trackResize;
+    this._workerCount = options.workerCount;
 
     if (typeof options.container === 'string') {
         this._container = document.getElementById(options.container);
@@ -586,7 +594,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop);
+            this.style = new Style(style, this.animationLoop, this._workerCount);
         }
 
         this.style
