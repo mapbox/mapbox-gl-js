@@ -51,11 +51,11 @@ module.exports = {
             loader: 'json-loader'
         }, {
             test: /\.js$/,
-            include: path.resolve(__dirname, 'js/render/painter/use_program.js'),
+            include: path.resolve('node_modules/mapbox-gl-shaders/index.js'),
             loader: 'transform/cacheable?brfs'
         }],
         postLoaders: [{
-            include: /node_modules\/mapbox-gl/,
+            include: /node_modules\/mapbox-gl-shaders/,
             loader: 'transform',
             query: 'brfs'
         }]
