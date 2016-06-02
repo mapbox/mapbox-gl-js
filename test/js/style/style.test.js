@@ -9,7 +9,6 @@ var Style = require('../../../js/style/style');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
-var browser = require('../../../js/util/browser');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -1123,8 +1122,8 @@ test('Style#query*Features', function(t) {
 });
 
 test('Style creates correct number of workers', function(t) {
-    var style = new Style(createStyleJSON());
-    t.equal(style.dispatcher.actors.length, browser.hardwareConcurrency - 1);
+    var style = new Style(createStyleJSON(), null, 3);
+    t.equal(style.dispatcher.actors.length, 3);
     t.ok(style);
     t.end();
 });
