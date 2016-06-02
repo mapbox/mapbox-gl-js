@@ -35,8 +35,8 @@ module.exports = function classifyRings(rings, maxRings) {
     if (maxRings > 1) {
         for (var j = 0; j < polygons.length; j++) {
             if (polygons[j].length <= maxRings) continue;
-            quickselect(polygons[j], maxRings, 1, polygon.length - 1, compareAreas);
-            polygons[j] = polygon.slice(0, maxRings);
+            quickselect(polygons[j], maxRings, 1, polygons[j].length - 1, compareAreas);
+            polygons[j] = polygons[j].slice(0, maxRings);
         }
     }
 
