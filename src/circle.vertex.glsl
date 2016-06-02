@@ -12,21 +12,13 @@ uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
 
-#ifndef MAPBOX_GL_JS
-uniform float u_radius;
-#else
 #pragma mapbox: define radius mediump
-#endif
 
 varying vec2 v_extrude;
 varying lowp float v_antialiasblur;
 
 void main(void) {
-#ifndef MAPBOX_GL_JS
-    float radius = u_radius;
-#else
     #pragma mapbox: initialize radius mediump
-#endif
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
 
