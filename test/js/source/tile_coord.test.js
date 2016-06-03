@@ -43,7 +43,16 @@ test('TileCoord', function(t) {
     });
 
     t.test('.url', function(t) {
-        t.equal(new TileCoord(1, 0, 0).url(['{z}/{x}/{y}.json']), '1/0/0.json', 'gets a url');
+        t.test('replaces {z}/{x}/{y}', function(t) {
+            t.equal(new TileCoord(1, 0, 0).url(['{z}/{x}/{y}.json']), '1/0/0.json');
+            t.end();
+        });
+
+        t.test('replaces {bbox-epsg-3857}', function(t) {
+            t.equal(new TileCoord(1, 0, 0).url(['bbox={bbox-epsg-3857}']), 'bbox=-20037508.342789244,0,0,20037508.342789244');
+            t.end();
+        });
+
         t.end();
     });
 
