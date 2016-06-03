@@ -1,32 +1,38 @@
 # Mapbox GL Shaders
 
-Shared GL shaders between [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js)
-and [Mapbox GL Native](https://github.com/mapbox/mapbox-gl-native).
+This repository contains GL shaders which are shared by [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js) and [Mapbox GL Native](https://github.com/mapbox/mapbox-gl-native).
 
-## Uniform pragmas
+## Pragmas
 
-We use custom pragmas in shader code to define and initialize uniform variables.
-These conveniently abstracts away the _Data-Driven Styling_-specific code. These
-commands are parsed and generates code readable by the shader compiler.
+Some variables change type depending on their context:
 
-Syntax for uniform pragmas is:
+ - if the variable is the same for all features, we declare it as a `uniform`
+ - if the variable is different for each feature, we declare it as an `attribute`
+ - if the variable is different for each feature and a function of zoom, we declare several `attributes` and `uniforms` then calculate the value using interpolation
 
-```
-#pragma mapbox: (define|initialize) (lowp|mediump|highp) {type} {name}
-```
+We abstract over this functionality using pragmas.
 
-Where:
-- {type} is the variable type e.g. `float` or `vec2`.
-- {name} is the variable name used inside `main()`.
-
-Example usage:
-
-```
+```glsl
 #pragma mapbox: define lowp vec4 color
 
-void main(void) {
+main() {
     #pragma mapbox: initialize lowp vec4 color
     ...
     gl_FragColor = color;
 }
 ```
+
+This program defines a variable within `main` called `color`, initialize the value of `color`, then sets `gl_FragColor` to the value of `color`.
+
+In general, pragmas take the form defined below.
+
+```glsl
+#pragma mapbox: (define|initialize) (lowp|mediump|highp) (float|vec2|vec3|vec4) {name}
+```
+
+When using pragmas, the following requirements apply.
+
+ - all pragma-defined variables must have both `define` and `initialize` `#pragmas`
+ - `define` pragmas must be in file scope
+ - `initialize` pragmas must be in function scope
+ - all pragma-defined variables defined and initialized in the fragment shader must also be defined and initialized in the vertex shader because `attribute`s are not accessible from the fragment shader
