@@ -165,9 +165,9 @@ footer:
   </script>
   <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
   {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
-  {% if page.head %}{{page.head}}{% endif %}
+  {% if page.head %}{{page.head}}{% endif %}{% if layout.head %}{{layout.head}}{% endif %}
 </head>
-<body class='{{page.class}} {{page.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
+<body class='{{page.class}} {{page.options}} {{layout.class}} {{layout.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-PQR37Z" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-PQR37Z');</script>
 <!-- End Google Tag Manager -->
@@ -298,7 +298,7 @@ footer:
   </div>
 </div>
 
-<div class='masthead col12 clearfix {% unless page.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.title == 'Developers' %}developers-nav{% endif %} {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
+<div class='masthead col12 clearfix {% unless page.options contains 'bleed' or layout.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' or layout.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.title == 'Developers' %}developers-nav{% endif %} {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right navigation-padding-top contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -374,7 +374,7 @@ footer:
 </div>
 
 
-<div class='{% unless page.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
+<div class='{% unless page.options contains 'full' or layout.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
 
 {% unless page.url contains '/hello/directions' or page.url contains '/welcome'  %}
 <div class='footer footer-in-docs clearfix contain hide-mobile noprint fill-light' data-swiftype-index='false'>
@@ -382,38 +382,38 @@ footer:
     <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
       <div class='hide-in-docs col2'>
         <h3 class='space-bottom1'>Overview</h3>
-        {% for item in page.footer.mapbox %}
+        {% for item in layout.footer.mapbox %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 quiet col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
         {% endfor %}
       </div>
       <div class='col2 footer-col-in-docs'>
         <h3 class='space-bottom1'>About us</h3>
-        {% for item in page.footer.aboutus %}
+        {% for item in layout.footer.aboutus %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
         {% endfor %}
       </div>
       <div class='col2 footer-col-in-docs'>
         <h3 class='space-bottom1'>Help</h3>
-        {% for item in page.footer.support %}
+        {% for item in layout.footer.support %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
         {% endfor %}
       </div>
        <div class='col2 footer-col-in-docs'>
         <h3 class='space-bottom1'>Map design</h3>
-        {% for item in page.footer.mapdesign %}
+        {% for item in layout.footer.mapdesign %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
         {% endfor %}
       </div>
       <div class='col2 footer-col-in-docs'>
         <h3 class='space-bottom1'>Developers</h3>
-        {% for item in page.footer.developers %}
+        {% for item in layout.footer.developers %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
         {% endfor %}
         <a href='{{site.url}}/developers/' class='small rcon next quiet'>All developers</a>
       </div>
       <div class='hide-in-docs col2 footer-col-in-docs'>
         <h3 class='space-bottom1'>Industries</h3>
-        {% for item in page.footer.industries %}
+        {% for item in layout.footer.industries %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
         {% endfor %}
         <a href='{{site.url}}/industries/' class='small rcon next quiet'>All industries</a>
