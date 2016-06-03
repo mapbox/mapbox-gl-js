@@ -6,12 +6,107 @@ var mat3 = require('gl-matrix').mat3;
 var mat4 = require('gl-matrix').mat4;
 var vec3 = require('gl-matrix').vec3;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+var Buffer = require('../data/buffer');
+var VertexArrayObject = require('./vertex_array_object');
+var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
 
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
+    gl.disable(gl.DEPTH_TEST);
+
+    if (true) {
+        var texture;
+
+        // if (tile.extrusion) {
+        //     tile.extrusion = {};
+        // }
+
+        // texture = tile.extrusion[layer.id];
+        texture = null;
+
+        if (!texture) {
+            texture =
+                // tile.extrusion[layer.id] =
+                new PrerenderedExtrusionLayer(gl, painter);
+            texture.bindFramebuffer();
+
+            gl.clearStencil(0x80);
+            gl.stencilMask(0xFF);
+            gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.stencilMask(0x00);
+
+            // painter.resize();
+            // gl.viewport(0, 0, texture.size, texture.size);
+
+            var buffer = texture.buffer * 4096;
+
+            // var matrix = mat4.create();
+            // // mat4.ortho(matrix, -buffer, 4096 + buffer, -4096 - buffer, buffer, 0, 1);
+            // console.log(painter.width, painter.height);
+            // mat4.ortho(matrix, 0, painter.width, 0, painter.height, 0, 1);
+            // mat4.translate(matrix, matrix, [0, -painter.width, 0]);
+
+            // var padded = mat4.create();
+            // mat4.ortho(padded, 0, 4096, -4096, 0, 0, 1);
+            // mat4.translate(padded, padded, [0, -4096, 0]);
+
+            // DRAW
+            for (var i = 0; i < coords.length; i++) {
+                var coord = coords[i];
+                drawExtrusion(painter, source, layer, coord);
+            }
+
+            texture.unbindFramebuffer();
+            // painter.resize();
+        }
+
+        var program = painter.useProgram('extrusiontexture');
+        // var program = painter.useProgram('raster');
+        // TODO i think we can switch this to raster once it's working
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+
+        gl.uniform1f(program.u_opacity, 1.0);
+        gl.uniform1i(program.u_texture, 0);
+        var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+
+        gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
+            mat4.create(),
+            0,
+            painter.width,
+            painter.height,
+            0,
+            0,
+            1)
+        );
+        // gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
+        //     mat4.create(),
+        //     coords[0].posMatrix,
+        //     // painter.transform.projMatrix,
+        //     [1, 1, zScale, 1]
+        //     )
+        // );
+
+        // gl.uniformMatrix4fv(program.u_matrix, false, mat4.fromValues.apply(mat4.fromValues, painter.transform.projMatrix));
+
+        var maxInt16 = 32767;
+        var array = new RasterBoundsArray();
+        array.emplaceBack(0, 0, 0, 0);
+        array.emplaceBack(painter.width, 0, maxInt16, 0);
+        array.emplaceBack(0, painter.height, maxInt16, maxInt16);
+        array.emplaceBack(painter.width, painter.height, 0, maxInt16);
+        var buffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+
+        var vao = new VertexArrayObject();
+        vao.bind(gl, program, buffer);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+    else {
+
 
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
@@ -26,7 +121,68 @@ function draw(painter, source, layer, coords) {
         }
     }
 
+    }
+
+    gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.STENCIL_TEST);
+}
+
+function PrerenderedExtrusionLayer(gl, painter) {
+    this.gl = gl;
+    // this.buffer = 1/32;
+    this.size = painter.width;
+    // this.size = 512 * 17 / 16;
+    this.painter = painter;
+
+    this.texture = null;
+    this.fbo = null;
+    this.fbos = this.painter.preFbos[this.size];
+}
+
+PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
+    var gl = this.gl;
+
+    this.texture = this.painter.getTexture(this.size);
+
+    // gl.activeTexture(gl.TEXTURE1);
+    if (!this.texture) {
+        this.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.size, this.size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        this.texture.size = this.size;
+    } else {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    }
+
+    if (!this.fbos) {
+        this.fbo = gl.createFramebuffer();
+        var stencil = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencil);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    } else {
+        this.fbo = this.fbos.pop();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    }
+
+    // gl.clear(gl.COLOR_BUFFER_BIT);
+    // gl.bindTexture(gl.TEXTURE_2D, this.texture);
+}
+
+PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
+    this.painter.bindDefaultFramebuffer();
+    if (this.fbos) {
+        this.fbos.push(this.fbo);
+    } else {
+        this.painter.preFbos[this.size] = [this.fbo];
+    }
 }
 
 function drawExtrusion(painter, source, layer, coord) {
@@ -37,10 +193,13 @@ function drawExtrusion(painter, source, layer, coord) {
     if (!bufferGroups) return;
 
     if (painter.isOpaquePass) return;
+
     painter.setDepthSublayer(2);
 
     var gl = painter.gl;
     var program = painter.useProgram('extrusion');
+
+    // console.log(gl.getParameter(gl.ACTIVE_TEXTURE))
 
     var color = util.premultiply(layer.paint['extrusion-color']);
     var shadowColor = util.premultiply(layer.paint['extrusion-shadow-color'] || [0,0,1,1]);
