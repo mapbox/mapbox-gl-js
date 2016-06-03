@@ -54,6 +54,8 @@ function Style(stylesheet, animationLoop, workerCount) {
             return;
         }
 
+        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
+
         this._loaded = true;
         this.stylesheet = stylesheet;
 
@@ -72,8 +74,6 @@ function Style(stylesheet, animationLoop, workerCount) {
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
         this.fire('load');
-
-        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
     }.bind(this);
 
     var sourceTypesLoaded = function(err) {
