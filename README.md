@@ -24,7 +24,7 @@ main() {
 
 This program defines a variable within `main` called `color`, initialize the value of `color`, then sets `gl_FragColor` to the value of `color`.
 
-In general, pragmas take the form defined below.
+Pragmas take the following form.
 
 ```glsl
 #pragma mapbox: (define|initialize) (lowp|mediump|highp) (float|vec2|vec3|vec4) {name}
@@ -32,7 +32,7 @@ In general, pragmas take the form defined below.
 
 When using pragmas, the following requirements apply.
 
- - all pragma-defined variables must have both `define` and `initialize` `#pragmas`
+ - all pragma-defined variables must have both `define` and `initialize` pragmas
  - `define` pragmas must be in file scope
  - `initialize` pragmas must be in function scope
  - all pragma-defined variables defined and initialized in the fragment shader must also be defined and initialized in the vertex shader because `attribute`s are not accessible from the fragment shader
