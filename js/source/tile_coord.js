@@ -53,8 +53,7 @@ TileCoord.fromID = function(id) {
 
 // given a list of urls, choose a url template and return a tile URL
 TileCoord.prototype.url = function(urls, sourceMaxZoom, scheme) {
-    var wms = new WhooTS(),
-        bbox = wms.getTileBbox(this.x, this.y, this.z);
+    var bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
 
     return urls[(this.x + this.y) % urls.length]
         .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
