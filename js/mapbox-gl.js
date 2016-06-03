@@ -3,7 +3,7 @@
 // jshint -W079
 var mapboxgl = module.exports = {};
 
-mapboxgl.version = require('../package').version;
+mapboxgl.version = require('../package.json').version;
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Control = require('./ui/control/control');
