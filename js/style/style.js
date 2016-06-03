@@ -14,8 +14,16 @@ var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
+var TilePyramid = require('../source/tile_pyramid');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
+
+var VectorSource = require('../source/vector_tile_source');
+var RasterSource = require('../source/raster_tile_source');
+var GeoJSONSource = require('../source/geojson_source');
+var VideoSource = require('../source/video_source');
+var ImageSource = require('../source/image_source');
+var ClusteredGeoJSONSource = require('../source/clustered_geojson_source');
 
 module.exports = Style;
 
@@ -40,13 +48,11 @@ function Style(stylesheet, animationLoop) {
 
     this._resetUpdates();
 
-    var loaded = function(err, stylesheet) {
+    var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
         }
-
-        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
 
         this._loaded = true;
         this.stylesheet = stylesheet;
@@ -66,12 +72,36 @@ function Style(stylesheet, animationLoop) {
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
         this.fire('load');
+
+        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
     }.bind(this);
 
-    if (typeof stylesheet === 'string') {
-        ajax.getJSON(normalizeURL(stylesheet), loaded);
+    var sourceTypesLoaded = function(err) {
+        if (err) {
+            this.fire('error', {error: err});
+            return;
+        }
+
+        if (typeof stylesheet === 'string') {
+            ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
+        } else {
+            browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
+        }
+    }.bind(this);
+
+    if (Source.getType('vector')) {
+        sourceTypesLoaded();
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        util.asyncAll([
+          ['vector', VectorSource],
+          ['raster', RasterSource],
+          ['geojson', GeoJSONSource],
+          ['video', VideoSource],
+          ['image', ImageSource],
+          ['geojson-clustered', ClusteredGeoJSONSource]
+        ], function (type, done) {
+            this.addSourceType(type[0], type[1].create, type[1].workerSourceURL, done);
+        }.bind(this), sourceTypesLoaded);
     }
 
     this.on('source.load', function(event) {
@@ -318,13 +348,13 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
-        if (!Source.is(source) && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
+        var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
+        var shouldValidate = !Source.is(source) && builtIns.indexOf(source.type) >= 0;
+        if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
-        source = Source.create(source);
+        source = new TilePyramid(id, source, this.dispatcher);
         this.sources[id] = source;
-        source.id = id;
         source.style = this;
-        source.dispatcher = this.dispatcher;
         source
             .on('load', this._forwardSourceEvent)
             .on('error', this._forwardSourceEvent)
@@ -635,9 +665,8 @@ Style.prototype = util.inherit(Evented, {
         var sourceResults = [];
         for (var id in this.sources) {
             var source = this.sources[id];
-            if (source.queryRenderedFeatures) {
-                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
-            }
+            var results = Source._queryRenderedVectorFeatures(source, this._layers, queryGeometry, params, zoom, bearing);
+            sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
     },
@@ -647,7 +676,27 @@ Style.prototype = util.inherit(Evented, {
             this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
         }
         var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+        return source ? Source._querySourceFeatures(source, params) : [];
+    },
+
+    addSourceType: function (name, sourceFactoryFn, workerSourceURL, callback) {
+        if (!callback) {
+            callback = workerSourceURL;
+        }
+        if (Source.getType(name)) {
+            return callback(new Error('A source type called "' + name + '" already exists.'));
+        }
+
+        Source.setType(name, sourceFactoryFn);
+
+        if (!workerSourceURL) {
+            return callback(null, null);
+        }
+
+        this.dispatcher.broadcast('load worker source', {
+            name: name,
+            url: workerSourceURL
+        }, callback);
     },
 
     _handleErrors: function(validate, key, value, throws, props) {

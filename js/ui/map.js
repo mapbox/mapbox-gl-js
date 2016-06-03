@@ -659,7 +659,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Object}
      */
     getSource: function(id) {
-        return this.style.getSource(id);
+        return this.style.getSource(id)._source;
     },
 
     /**
