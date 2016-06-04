@@ -16,7 +16,7 @@ attribute vec4 a_data2;
 uniform mat4 u_matrix;
 
 uniform mediump float u_zoom;
-uniform bool u_skewed;
+uniform bool u_rotate_with_map;
 uniform vec2 u_extrude_scale;
 
 uniform vec2 u_texsize;
@@ -35,7 +35,7 @@ void main() {
     mediump float z = 2.0 - step(a_minzoom, u_zoom) - (1.0 - step(a_maxzoom, u_zoom));
 
     vec2 extrude = u_extrude_scale * (a_offset / 64.0);
-    if (u_skewed) {
+    if (u_rotate_with_map) {
         gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
         gl_Position.z += z * gl_Position.w;
     } else {
