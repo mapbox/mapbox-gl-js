@@ -18,60 +18,31 @@ function draw(painter, source, layer, coords) {
     gl.disable(gl.DEPTH_TEST);
 
     if (true) {
-        var texture;
+        var texture = new PrerenderedExtrusionLayer(gl, painter);
+        texture.bindFramebuffer();
 
-        // if (tile.extrusion) {
-        //     tile.extrusion = {};
-        // }
+        gl.clearStencil(0x80);
+        gl.stencilMask(0xFF);
+        gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+        gl.stencilMask(0x00);
 
-        // texture = tile.extrusion[layer.id];
-        texture = null;
-
-        if (!texture) {
-            texture =
-                // tile.extrusion[layer.id] =
-                new PrerenderedExtrusionLayer(gl, painter);
-            texture.bindFramebuffer();
-
-            gl.clearStencil(0x80);
-            gl.stencilMask(0xFF);
-            gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            gl.stencilMask(0x00);
-
-            // painter.resize();
-            // gl.viewport(0, 0, texture.size, texture.size);
-
-            var buffer = texture.buffer * 4096;
-
-            // var matrix = mat4.create();
-            // // mat4.ortho(matrix, -buffer, 4096 + buffer, -4096 - buffer, buffer, 0, 1);
-            // console.log(painter.width, painter.height);
-            // mat4.ortho(matrix, 0, painter.width, 0, painter.height, 0, 1);
-            // mat4.translate(matrix, matrix, [0, -painter.width, 0]);
-
-            // var padded = mat4.create();
-            // mat4.ortho(padded, 0, 4096, -4096, 0, 0, 1);
-            // mat4.translate(padded, padded, [0, -4096, 0]);
-
-            // DRAW
-            for (var i = 0; i < coords.length; i++) {
-                var coord = coords[i];
-                drawExtrusion(painter, source, layer, coord);
-            }
-
-            texture.unbindFramebuffer();
-            // painter.resize();
+        // DRAW
+        for (var i = 0; i < coords.length; i++) {
+            var coord = coords[i];
+            drawExtrusion(painter, source, layer, coord);
         }
+
+        texture.unbindFramebuffer();
 
         var program = painter.useProgram('extrusiontexture');
         // var program = painter.useProgram('raster');
-        // TODO i think we can switch this to raster once it's working
+        // TODO i think we can switch this to raster once it's working and I don't need to use shader to debug
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
         gl.uniform1f(program.u_opacity, 1.0);
-        gl.uniform1i(program.u_texture, 0);
+        gl.uniform1i(program.u_texture, 1);
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
         gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
@@ -83,15 +54,6 @@ function draw(painter, source, layer, coords) {
             0,
             1)
         );
-        // gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
-        //     mat4.create(),
-        //     coords[0].posMatrix,
-        //     // painter.transform.projMatrix,
-        //     [1, 1, zScale, 1]
-        //     )
-        // );
-
-        // gl.uniformMatrix4fv(program.u_matrix, false, mat4.fromValues.apply(mat4.fromValues, painter.transform.projMatrix));
 
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
@@ -105,21 +67,22 @@ function draw(painter, source, layer, coords) {
         vao.bind(gl, program, buffer);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
+
     else {
 
 
-    for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
-        drawExtrusion(painter, source, layer, coord);
-    }
-
-    if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
-    // if (!painter.isOpaquePass && layer.paint['extrusion-antialias'] === true && !(layer.paint['extrusion-image'] && !layer.paint['extrusion-outline-color'])) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
-            drawExtrusionStroke(painter, source, layer, coord);
+            drawExtrusion(painter, source, layer, coord);
         }
-    }
+
+        if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
+            for (var i = 0; i < coords.length; i++) {
+                var coord = coords[i];
+                drawExtrusionStroke(painter, source, layer, coord);
+            }
+        }
+
 
     }
 
@@ -141,10 +104,12 @@ function PrerenderedExtrusionLayer(gl, painter) {
 
 PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     var gl = this.gl;
+    // gl.enable(gl.STENCIL_TEST);
 
     this.texture = this.painter.getTexture(this.size);
 
-    // gl.activeTexture(gl.TEXTURE1);
+    gl.activeTexture(gl.TEXTURE1);
+
     if (!this.texture) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -171,12 +136,11 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     }
-
-    // gl.clear(gl.COLOR_BUFFER_BIT);
-    // gl.bindTexture(gl.TEXTURE_2D, this.texture);
 }
 
 PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
+    // var gl = this.gl;
+    // gl.disable(gl.STENCIL_TEST);
     this.painter.bindDefaultFramebuffer();
     if (this.fbos) {
         this.fbos.push(this.fbo);
@@ -207,7 +171,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'] || 1;
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
-    // TODO this should be changed to a map property probably so as not to get trippy situations where layers are lit differently...? gl-paternalism
+    // TODO this should be changed to a map property probably so as not to get trippy situations where layers are lit differently...?
 
     if (image) {
         program = painter.useProgram('extrusionpattern');
