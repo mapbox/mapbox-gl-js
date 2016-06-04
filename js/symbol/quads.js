@@ -10,10 +10,6 @@ module.exports = {
 
 var minScale = 0.5; // underscale by 1 zoom level
 
-// Characters along a line must be placed within 10 degree threshold to be
-// straight enough for linear placement.
-var LINEAR_THRESHOLD = 10 / 360 * (Math.PI*2);
-
 /**
  * A textured quad for rendering a single icon or glyph.
  *
@@ -25,25 +21,25 @@ var LINEAR_THRESHOLD = 10 / 360 * (Math.PI*2);
  * @param {Point} bl The offset of the bottom left corner from the anchor.
  * @param {Point} br The offset of the bottom right corner from the anchor.
  * @param {Object} tex The texture coordinates.
- * @param {number} angle The angle of the label at it's center, not the angle of this quad.
+ * @param {number} anchorAngle The angle of the label at it's center, not the angle of this quad.
+ * @param {number} glyphAngle The angle of the glyph to be positioned in the quad.
  * @param {number} minScale The minimum scale, relative to the tile's intended scale, that the glyph can be shown at.
  * @param {number} maxScale The maximum scale, relative to the tile's intended scale, that the glyph can be shown at.
- * @param {boolean} curved Whether this quad was generated for display along a curved line.
  *
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, angle, minScale, maxScale, curved) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
     this.bl = bl;
     this.br = br;
     this.tex = tex;
-    this.angle = angle;
+    this.anchorAngle = anchorAngle;
+    this.glyphAngle = glyphAngle;
     this.minScale = minScale;
     this.maxScale = maxScale;
-    this.curved = curved;
 }
 
 /**
@@ -94,7 +90,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
         br = br.matMult(matrix);
     }
 
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, minScale, Infinity)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity)];
 }
 
 /**
@@ -115,70 +111,35 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
     var keepUpright = layout['text-keep-upright'];
 
     var positionedGlyphs = shaping.positionedGlyphs;
-    var segmentedGlyphs = [];
     var quads = [];
 
-    var angleMin = Infinity;
-    var angleMax = -Infinity;
-
-    // First iteration, generate all curved and linear glyphs
     for (var k = 0; k < positionedGlyphs.length; k++) {
-        if (!positionedGlyphs[k].glyph.rect) continue;
-
         var positionedGlyph = positionedGlyphs[k];
         var glyph = positionedGlyph.glyph;
         var rect = glyph.rect;
+
+        if (!rect) continue;
 
         var centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
-        var curved = [];
-        var linear = [];
+        var glyphInstances;
         var labelMinScale = minScale;
         if (alongLine) {
-            labelMinScale = getSegmentGlyphs(curved, anchor, centerX, line, anchor.segment, true);
-            if (positionedGlyph.codePoint > 32) {
-                for (var i = 0; i < curved.length; i++) {
-                    if (curved[i].minScale < 1.0) continue;
-                    angleMin = Math.min(curved[i].angle, angleMin);
-                    angleMax = Math.max(curved[i].angle, angleMax);
-                }
-            }
+            glyphInstances = [];
+            labelMinScale = getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true);
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getSegmentGlyphs(curved, anchor, centerX, line, anchor.segment, false));
+                labelMinScale = Math.min(labelMinScale, getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
             }
+
+        } else {
+            glyphInstances = [{
+                anchorPoint: new Point(anchor.x, anchor.y),
+                offset: 0,
+                angle: 0,
+                maxScale: Infinity,
+                minScale: minScale
+            }];
         }
-
-        linear.push({
-            anchorPoint: new Point(anchor.x, anchor.y),
-            offset: 0,
-            angle: 0,
-            maxScale: Infinity,
-            minScale: minScale,
-            alongLine: false
-        });
-
-        segmentedGlyphs[k] = {
-            curved: curved,
-            linear: linear,
-            labelMinScale: labelMinScale
-        };
-    }
-
-    // Second iteration, determine which glyph placements to use
-    for (var k = 0; k < positionedGlyphs.length; k++) {
-        if (!positionedGlyphs[k].glyph.rect) continue;
-
-        var positionedGlyph = positionedGlyphs[k];
-        var glyph = positionedGlyph.glyph;
-        var rect = glyph.rect;
-
-        var labelMinScale = segmentedGlyphs[k].labelMinScale;
-
-        // Find the angle between min and max angles of positioned glyph
-        // characters as a cheap way to determine whether a label's characters
-        // are largely placed in a single linear line.
-        var curved = alongLine && ((angleMax-angleMin) >= LINEAR_THRESHOLD);
-        var glyphInstances = curved ? segmentedGlyphs[k].curved : segmentedGlyphs[k].linear;
 
         var x1 = positionedGlyph.x + glyph.left,
             y1 = positionedGlyph.y - glyph.top,
@@ -196,12 +157,11 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
                 tl = otl,
                 tr = otr,
                 bl = obl,
-                br = obr,
-                angle = instance.angle + textRotate;
+                br = obr;
 
-            if (angle) {
-                var sin = Math.sin(angle),
-                    cos = Math.cos(angle),
+            if (textRotate) {
+                var sin = Math.sin(textRotate),
+                    cos = Math.cos(textRotate),
                     matrix = [cos, -sin, sin, cos];
 
                 tl = tl.matMult(matrix);
@@ -213,8 +173,9 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
             // Prevent label from extending past the end of the line
             var glyphMinScale = Math.max(instance.minScale, labelMinScale);
 
-            var glyphAngle = (anchor.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, glyphAngle, glyphMinScale, instance.maxScale, curved));
+            var anchorAngle = (anchor.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            var glyphAngle = (instance.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale));
         }
     }
 
@@ -259,7 +220,6 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
         // Get the angle of the line segment
         var angle = Math.atan2(end.y - newAnchorPoint.y, end.x - newAnchorPoint.x);
         if (!forward) angle += Math.PI;
-        if (upsideDown) angle += Math.PI;
 
         glyphs.push({
             anchorPoint: newAnchorPoint,
