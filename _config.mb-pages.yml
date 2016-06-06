@@ -4,6 +4,3 @@ tileApi: https://api.tiles.mapbox.com
 source: docs
 permalink: /
 baseurl: /mapbox-gl-style-spec
-highlighter: true
-rdiscount:
-  extensions: [smart]
