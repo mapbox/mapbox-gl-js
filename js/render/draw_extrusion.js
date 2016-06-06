@@ -15,7 +15,6 @@ module.exports = draw;
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
-    gl.disable(gl.DEPTH_TEST);
 
     if (true) {
         var texture = new PrerenderedExtrusionLayer(gl, painter);
@@ -55,6 +54,11 @@ function draw(painter, source, layer, coords) {
             1)
         );
 
+        gl.disable(gl.DEPTH_TEST);
+
+        gl.uniform1f(program.u_xdim, painter.width);
+        gl.uniform1f(program.u_ydim, painter.height);
+
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
         array.emplaceBack(0, 0, 0, 0);
@@ -93,20 +97,21 @@ function draw(painter, source, layer, coords) {
 function PrerenderedExtrusionLayer(gl, painter) {
     this.gl = gl;
     // this.buffer = 1/32;
-    this.size = painter.width;
+    this.width = painter.width;
+    this.height = painter.height;
     // this.size = 512 * 17 / 16;
     this.painter = painter;
 
     this.texture = null;
     this.fbo = null;
-    this.fbos = this.painter.preFbos[this.size];
+    this.fbos = this.painter.preFbos[this.width];
 }
 
 PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     var gl = this.gl;
     // gl.enable(gl.STENCIL_TEST);
 
-    this.texture = this.painter.getTexture(this.size);
+    this.texture = this.painter.getTexture(this.width);
 
     gl.activeTexture(gl.TEXTURE1);
 
@@ -117,8 +122,9 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.size, this.size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        this.texture.size = this.size;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        this.texture.width = this.width;
+        this.texture.height = this.height;
     } else {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
@@ -127,7 +133,7 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
         this.fbo = gl.createFramebuffer();
         var stencil = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.size, this.size);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.width, this.height);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencil);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
@@ -145,7 +151,7 @@ PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
     if (this.fbos) {
         this.fbos.push(this.fbo);
     } else {
-        this.painter.preFbos[this.size] = [this.fbo];
+        this.painter.preFbos[this.width] = [this.fbo];
     }
 }
 
