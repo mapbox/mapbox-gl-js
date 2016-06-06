@@ -1,9 +1,12 @@
 'use strict';
 
+var isCounterClockwise = require('./util').isCounterClockwise;
+
 module.exports = {
     multiPolygonIntersectsBufferedMultiPoint: multiPolygonIntersectsBufferedMultiPoint,
     multiPolygonIntersectsMultiPolygon: multiPolygonIntersectsMultiPolygon,
-    multiPolygonIntersectsBufferedMultiLine: multiPolygonIntersectsBufferedMultiLine
+    multiPolygonIntersectsBufferedMultiLine: multiPolygonIntersectsBufferedMultiLine,
+    distToSegmentSquared: distToSegmentSquared
 };
 
 function multiPolygonIntersectsBufferedMultiPoint(multiPolygon, rings, radius) {
@@ -96,12 +99,6 @@ function lineIntersectsLine(lineA, lineB) {
         }
     }
     return false;
-}
-
-
-// http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
-function isCounterClockwise(a, b, c) {
-    return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
 }
 
 function lineSegmentIntersectsLineSegment(a0, a1, b0, b1) {
