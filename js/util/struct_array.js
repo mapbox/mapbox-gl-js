@@ -319,3 +319,20 @@ StructArray.prototype._refreshViews = function() {
         this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
     }
 };
+
+/**
+ * Output the `StructArray` between indices `startIndex` and `endIndex` as an array of `StructTypes` to enable sorting
+ * @param {number} startIndex
+ * @param {number} endIndex
+ * @private
+ */
+StructArray.prototype.toArray = function(startIndex, endIndex) {
+    var array = [];
+
+    for (var i = startIndex; i < endIndex; i++) {
+        var struct = this.get(i);
+        array.push(struct);
+    }
+
+    return array;
+};

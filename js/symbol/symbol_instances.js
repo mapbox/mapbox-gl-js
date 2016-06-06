@@ -40,33 +40,4 @@ util.extendAll(SymbolInstancesArray.prototype.StructType.prototype, {
     }
 });
 
-util.extend(SymbolInstancesArray.prototype, {
-    /**
-     * Sort the StructArray.
-     * Sort symbols by their y position on the canvas so that the lower symbols
-     * are drawn on top of higher symbols.
-     * Only called when overlap is allowed.
-     * @param {angle} angle CollisionTile angle
-     */
-
-    sort: function(angle, start, end) {
-        var array = [];
-
-        for (var i = start; i < end; i++) {
-            var struct = this.get(i);
-            array.push(struct);
-        }
-
-        var sin = Math.sin(angle),
-            cos = Math.cos(angle);
-
-        var sorted = array.sort(function(a, b) {
-            var aRotated = (sin * a.anchorPointX + cos * a.anchorPointY) | 0;
-            var bRotated = (sin * b.anchorPointX + cos * b.anchorPointY) | 0;
-            return (aRotated - bRotated) || (b.index - a.index);
-        });
-
-        return sorted;
-    }
-});
 

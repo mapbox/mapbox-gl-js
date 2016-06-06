@@ -371,8 +371,20 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
     // Don't sort symbols that won't overlap because it isn't necessary and
     // because it causes more labels to pop in and out when rotating.
     if (mayOverlap) {
+        // Only need the symbol instances from the current tile to sort, so convert those instances into an array
+        // of `StructType`s to enable sorting
+        var symbolInstancesStructTypeArray = this.symbolInstancesArray.toArray(this.symbolInstancesStartIndex, this.symbolInstancesEndIndex);
+
         var angle = collisionTile.angle;
-        this.sortedSymbolInstances = this.symbolInstancesArray.sort(angle, this.symbolInstancesStartIndex, this.symbolInstancesEndIndex);
+
+        var sin = Math.sin(angle),
+            cos = Math.cos(angle);
+
+        this.sortedSymbolInstances = symbolInstancesStructTypeArray.sort(function(a, b) {
+            var aRotated = (sin * a.anchorPointX + cos * a.anchorPointY) | 0;
+            var bRotated = (sin * b.anchorPointX + cos * b.anchorPointY) | 0;
+            return (aRotated - bRotated) || (b.index - a.index);
+        });
     }
 
     for (var p = this.symbolInstancesStartIndex; p < this.symbolInstancesEndIndex; p++) {
@@ -386,9 +398,8 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
             boxEndIndex: symbolInstance.iconBoxEndIndex
         };
 
-
-        var hasText = !(symbolInstance.glyphQuadStartIndex === symbolInstance.glyphQuadEndIndex);
-        var hasIcon = !(symbolInstance.iconQuadStartIndex === symbolInstance.iconQuadEndIndex);
+        var hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
+        var hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
 
         var iconWithoutText = layout['text-optional'] || !hasText,
             textWithoutIcon = layout['icon-optional'] || !hasIcon;
@@ -403,7 +414,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
         var iconScale = hasIcon ?
             collisionTile.placeCollisionFeature(iconCollisionFeature,
-                	layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
+                    layout['icon-allow-overlap'], layout['symbol-avoid-edges']) :
             collisionTile.minScale;
 
 
@@ -549,18 +560,18 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     iconBoxScale, iconPadding, iconAlongLine) {
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
-
     if (shapedText) {
         glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false);
-	    glyphQuadStartIndex = this.symbolQuadsArray.length;
+    }
+
+    glyphQuadStartIndex = this.symbolQuadsArray.length;
+    if (glyphQuads && glyphQuads.length) {
         for (var i = 0; i < glyphQuads.length; i++) {
             this.addSymbolQuad(glyphQuads[i]);
         }
-	    glyphQuadEndIndex = this.symbolQuadsArray.length;
     }
-
-
+    glyphQuadEndIndex = this.symbolQuadsArray.length;
 
     var textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
@@ -568,7 +579,6 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     if (shapedIcon) {
         iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
-
     }
 
     iconQuadStartIndex = this.symbolQuadsArray.length;
