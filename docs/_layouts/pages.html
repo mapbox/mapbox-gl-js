@@ -18,7 +18,7 @@ options: full
             <a class='block quiet active strong small truncate' href='{{site.baseurl}}/examples/'>Examples</a>
           </div>
           {% for eg in site.categories.example reversed %}
-            <a href='{{site.baseurl}}{{eg.url}}/' class='block small truncate {% if eg.title == page.title %} active{% endif %}'>{{eg.title}}</a>
+            <a href='{{site.baseurl}}{{eg.url}}' class='block small truncate {% if eg.title == page.title %} active{% endif %}'>{{eg.title}}</a>
           {% endfor %}
         {% endif %}
         {% if page.url contains 'api' %}
