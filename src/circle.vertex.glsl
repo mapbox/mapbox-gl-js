@@ -12,12 +12,14 @@ uniform float u_devicepixelratio;
 
 attribute vec2 a_pos;
 
+#pragma mapbox: define color lowp
 #pragma mapbox: define radius mediump
 
 varying vec2 v_extrude;
 varying lowp float v_antialiasblur;
 
 void main(void) {
+    #pragma mapbox: initialize color lowp
     #pragma mapbox: initialize radius mediump
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
