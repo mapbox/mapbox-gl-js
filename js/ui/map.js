@@ -98,7 +98,7 @@ var defaultOptions = {
  * @param {number} [options.zoom] The zoom level of the map's initial viewport.
  * @param {number} [options.bearing] The bearing (rotation) of the map's initial viewport measured in degrees counter-clockwise from north.
  * @param {number} [options.pitch] The pitch of the map's initial viewport measured in degrees.
- * @param {number} [options.workerCount=navigator.hardwareConcurrency] The number of WebWorkers the map should use to process vector tile data.
+ * @param {number} [options.workerCount=navigator.hardwareConcurrency - 1] The number of WebWorkers the map should use to process vector tile data.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',

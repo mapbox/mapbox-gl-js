@@ -932,13 +932,10 @@ test('Map', function(t) {
     });
 
     t.test('workerCount option', function(t) {
-        var map = createMap({});
-        // TODO: it's not great to check this private member here; better would
-        // be to mock Style and then just check that the correct workerCount
-        // param is being passed.
-        t.equal(map._workerCount, browser.hardwareConcurrency - 1, 'workerCount defaults to hardwareConcurrency - 1');
-        map = createMap({ workerCount: 3 });
-        t.equal(map._workerCount, 3, 'workerCount option is used');
+        var map = createMap({ style: createStyle() });
+        t.equal(map.style.dispatcher.actors.length, browser.hardwareConcurrency - 1, 'workerCount defaults to hardwareConcurrency - 1');
+        map = createMap({ style: createStyle(), workerCount: 3 });
+        t.equal(map.style.dispatcher.actors.length, 3, 'workerCount option is used');
         t.throws(function () {
             createMap({ workerCount: 0 });
         });
