@@ -3,7 +3,7 @@ machine:
     version: '4'
 dependencies:
   override:
-    - npm update && npm run prepublish
+    - npm update
 test:
   override:
     - ./ci.sh
