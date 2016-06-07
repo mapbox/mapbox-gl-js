@@ -116,6 +116,11 @@ var sourceTypes = {};
  */
 exports.create = function(id, source, dispatcher) {
     source = sourceTypes[source.type](id, source, dispatcher);
+
+    if (source.id !== id) {
+        throw new Error('Expected Source id to be ' + id + ' instead of ' + source.id);
+    }
+
     util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
     return source;
 };
