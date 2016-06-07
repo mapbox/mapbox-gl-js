@@ -4,8 +4,6 @@ This repository contains GL shaders which are shared by [Mapbox GL JS](https://g
 
 ## Pragmas
 
-_This section is written as if we have already completed [#8](https://github.com/mapbox/mapbox-gl-shaders/issues/8)_
-
 Some variables change type depending on their context:
 
  - if the variable is the same for all features, we declare it as a `uniform`
