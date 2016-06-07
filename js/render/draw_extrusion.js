@@ -34,16 +34,23 @@ function draw(painter, source, layer, coords) {
             drawExtrusion(painter, source, layer, coord);
         }
 
+        if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
+            for (var i = 0; i < coords.length; i++) {
+                var coord = coords[i];
+                // TODO this is majorly broken -- causes only 1 rendered tile at a time
+                // drawExtrusionStroke(painter, source, layer, coord);
+            }
+        }
+
+
         texture.unbindFramebuffer();
 
         var program = painter.useProgram('extrusiontexture');
-        // var program = painter.useProgram('raster');
-        // TODO i think we can switch this to raster once it's working and I don't need to use shader to debug
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
-        gl.uniform1f(program.u_opacity, 0.75);
+        gl.uniform1f(program.u_opacity, 0.85);
         gl.uniform1i(program.u_texture, 1);
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
@@ -59,8 +66,8 @@ function draw(painter, source, layer, coords) {
 
         gl.disable(gl.DEPTH_TEST);
 
-        gl.uniform1f(program.u_xdim, painter.width);
-        gl.uniform1f(program.u_ydim, painter.height);
+        gl.uniform1i(program.u_xdim, painter.width);
+        gl.uniform1i(program.u_ydim, painter.height);
 
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
