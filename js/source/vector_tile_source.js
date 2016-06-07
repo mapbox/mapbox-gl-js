@@ -1,19 +1,12 @@
 'use strict';
 
+var Evented = require('../util/evented');
 var util = require('../util/util');
 var Source = require('./source');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports.create = function (id, options, dispatcher, onChange, callback) {
-    Source._loadTileJSON(options, function (err, tileJSON) {
-        if (err) {
-            return callback(err);
-        }
-        var vts = new VectorTileSource(id, options, dispatcher);
-        // TODO: not crazy about this
-        util.extend(vts, tileJSON);
-        callback(null, vts);
-    });
+module.exports.create = function (id, options, dispatcher) {
+    return new VectorTileSource(id, options, dispatcher);
 };
 
 function VectorTileSource(id, options, dispatcher) {
@@ -25,9 +18,18 @@ function VectorTileSource(id, options, dispatcher) {
     if (this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
+
+    Source._loadTileJSON(options, function (err, tileJSON) {
+        if (err) {
+            this.fire('error', err);
+            return;
+        }
+        util.extend(this, tileJSON);
+        this.fire('load');
+    }.bind(this));
 }
 
-VectorTileSource.prototype = {
+VectorTileSource.prototype = util.extend(Evented, {
     minzoom: 0,
     maxzoom: 22,
     scheme: 'xyz',
@@ -43,7 +45,7 @@ VectorTileSource.prototype = {
         return util.extend({}, this._options);
     },
 
-    load: function(tile, cb) {
+    load: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
@@ -70,7 +72,7 @@ VectorTileSource.prototype = {
                 return;
 
             if (err) {
-                return cb(err);
+                return callback(err);
             }
 
             tile.loadVectorData(data, this.map.style);
@@ -80,7 +82,7 @@ VectorTileSource.prototype = {
                 tile.redoPlacement(this);
             }
 
-            cb(null, data);
+            callback(null, data);
         }
     },
 
@@ -92,15 +94,4 @@ VectorTileSource.prototype = {
         tile.unloadVectorData(this.map.painter);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     }
-};
-    },
-
-    abort: function(tile) {
-        this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
-    },
-
-    unload: function(tile) {
-        tile.unloadVectorData(this.map.painter);
-        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
-    }
-};
+});

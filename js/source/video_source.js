@@ -11,11 +11,8 @@ var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
 var Buffer = require('../data/buffer');
 var VertexArrayObject = require('../render/vertex_array_object');
 
-module.exports.create = function (id, options, dispatcher, onChange, callback) {
-    ajax.getVideo(options.urls, function(err, video) {
-        if (err) return callback(err);
-        callback(null, new VideoSource(id, options, video, onChange));
-    });
+module.exports.create = function (id, options, dispatcher) {
+    return new VideoSource(id, options, dispatcher);
 };
 
 /**
@@ -44,32 +41,35 @@ module.exports.create = function (id, options, dispatcher, onChange, callback) {
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function VideoSource(id, options, video, onChange) {
+function VideoSource(id, options) {
     this.id = id;
-    this._onChange = onChange;
     this.urls = options.urls;
     this.coordinates = options.coordinates;
 
-    this.video = video;
-    this.video.loop = true;
+    ajax.getVideo(options.urls, function(err, video) {
+        if (err) return this.fire('error', err);
 
-    var loopID;
+        this.video = video;
+        this.video.loop = true;
 
-    // start repainting when video starts playing
-    this.video.addEventListener('playing', function() {
-        loopID = this.map.style.animationLoop.set(Infinity);
-        this.map._rerender();
+        var loopID;
+
+        // start repainting when video starts playing
+        this.video.addEventListener('playing', function() {
+            loopID = this.map.style.animationLoop.set(Infinity);
+            this.map._rerender();
+        }.bind(this));
+
+        // stop repainting when video stops
+        this.video.addEventListener('pause', function() {
+            this.map.style.animationLoop.cancel(loopID);
+        }.bind(this));
+
+        if (this.map) {
+            this.video.play();
+            this.setCoordinates(options.coordinates);
+        }
     }.bind(this));
-
-    // stop repainting when video stops
-    this.video.addEventListener('pause', function() {
-        this.map.style.animationLoop.cancel(loopID);
-    }.bind(this));
-
-    if (this.map) {
-        this.video.play();
-        this.setCoordinates(options.coordinates);
-    }
 }
 
 VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype */{
@@ -130,7 +130,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this._onChange();
+        this.fire('change');
         return this;
     },
 

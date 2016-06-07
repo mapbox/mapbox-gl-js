@@ -1,20 +1,14 @@
 'use strict';
 
+var Evented = require('../util/Evented');
 var util = require('../util/util');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
 var webworkify = require('webworkify');
 
-module.exports.create = function (id, options, dispatcher, onChange, callback) {
-    var source = new GeoJSONSource(id, options, dispatcher, onChange);
-
-    source._updateData(function done(err) {
-        if (err) {
-            return callback(err);
-        }
-        callback(null, source);
-    });
+module.exports.create = function (id, options, dispatcher) {
+    return new GeoJSONSource(id, options, dispatcher);
 };
 
 module.exports.workerSourceURL = URL.createObjectURL(
@@ -61,22 +55,26 @@ module.exports.workerSourceURL = URL.createObjectURL(
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function GeoJSONSource(id, options, dispatcher, onChange) {
+function GeoJSONSource(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
-    this._onChange = onChange;
 
     options = options || {};
 
     this._data = options.data;
-
+    this.type = options.type;
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this.type = options.type;
-
+    this._updateData(function done(err) {
+        if (err) {
+            this.fire('error', err);
+            return;
+        }
+        this.fire('load');
+    }.bind(this));
 }
 
-GeoJSONSource.prototype = {
+GeoJSONSource.prototype = util.extend(Evented, /** @lends GeoJSONSource.prototype */ {
     minzoom: 0,
     maxzoom: 18,
     tileSize: 512,
@@ -97,7 +95,7 @@ GeoJSONSource.prototype = {
         this._data = data;
         this._dirty = true;
 
-        this._onChange();
+        this.fire('change');
 
         return this;
     },
@@ -192,4 +190,4 @@ GeoJSONSource.prototype = {
             data: this._data
         };
     }
-};
+});

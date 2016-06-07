@@ -23,33 +23,10 @@ function TilePyramid(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
 
-    var onChange = function () {
-        this.reload();
-        if (this.transform) {
-            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
-        }
-    }.bind(this);
-
-    // TODO: this is an ugly consequence of inverting tilepyramid / source
-    // dependency and making source creation async: we use a dumb, generic
-    // version of serialize() until the source is loaded at which point we
-    // switch to deferring to the source's method.
-    // Options:
-    // 1. Make Source.create synchronous.  Drawback: would require adding `loaded()` or `onLoad`  to the Source interface.
-    // 2. Remove Source:serialize() entirely, and instead let TilePyramid:serialize() always jut return the options object it was created with.
-    // 3. Leave the below wart as-is.
-    // I prefer option 2 if it's workable.
-    this.serialize = function () { return options; };
-
-    var sourceLoaded = function (err, source) {
-        if (err) {
-            this.fire('error', {error: err});
-            return;
-        }
-
+    var source = this._source = Source.create(id, options, dispatcher)
+    .on('load', function () {
         // TODO: remove this once we eliminate need for sources to have a
         // reference to the Map instance.
-        this._source = source;
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
 
         this._sourceLoaded = true;
@@ -57,28 +34,21 @@ function TilePyramid(id, options, dispatcher) {
         this.tileSize = source.tileSize;
         this.minzoom = source.minzoom;
         this.maxzoom = source.maxzoom;
-        // TODO: not exactly sure on these three properties and whether they
-        // make sense as part of the Source interface.
         this.roundZoom = source.roundZoom;
         this.reparseOverscaled = source.reparseOverscaled;
         this.isTileClipped = source.isTileClipped;
 
-        // TODO: what's cleaner? 1) grab references to the Source methods we
-        // want, or 2) just keep a reference to the Source itself and delegate?
-        var noop = function () {};
-        this._load = (source.load || noop).bind(source);
-        this._abort = (source.abort || noop).bind(source);
-        this._unload = (source.unload || noop).bind(source);
-        this.serialize = (source.serialize || noop).bind(source);
-        this.prepare = source.prepare && source.prepare.bind(source);
-
         this.fire('load');
-    }.bind(this);
-
-    Source.create(id, options, dispatcher, onChange, sourceLoaded);
+    }.bind(this))
+    .on('change', function () {
+        this.reload();
+        if (this.transform) {
+            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+        }
+    }.bind(this));
 
     this._tiles = {};
-    this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
+    this._cache = new Cache(0, this.unload.bind(this));
 
     this._isIdRenderable = this._isIdRenderable.bind(this);
 }
@@ -112,6 +82,29 @@ TilePyramid.prototype = util.inherit(Evented, {
         return true;
     },
 
+    loadTile: function (tile, callback) {
+        return this._source.load(tile, callback);
+    },
+
+    unloadTile: function (tile) {
+        if (this._source.unload)
+            return this._source.unload(tile);
+    },
+
+    abortTile: function (tile) {
+        if (this._source.abort)
+            return this._source.abort(tile);
+    },
+
+    serialize: function () {
+        return this._source.serialize();
+    },
+
+    prepare: function () {
+        if (this._source.prepare)
+            return this._source.prepare();
+    },
+
     /**
      * Return all tile ids ordered with z-order, and cast to numbers
      * @returns {Array<number>} ids
@@ -142,7 +135,7 @@ TilePyramid.prototype = util.inherit(Evented, {
                 tile.state = 'reloading';
             }
 
-            this._load(tile, this._tileLoaded.bind(this, this._tiles[i]));
+            this.loadTile(this._tiles[i], this._tileLoaded.bind(this, this._tiles[i]));
         }
     },
 
@@ -282,6 +275,7 @@ TilePyramid.prototype = util.inherit(Evented, {
      * @private
      */
     update: function(transform, fadeDuration) {
+        if (!this._sourceLoaded) { return; }
         var i;
         var coord;
         var tile;
@@ -381,7 +375,7 @@ TilePyramid.prototype = util.inherit(Evented, {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
             tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
-            this._load(tile, this._tileLoaded.bind(this, tile));
+            this.loadTile(tile, this._tileLoaded.bind(this, tile));
         }
 
         tile.uses++;
@@ -413,8 +407,8 @@ TilePyramid.prototype = util.inherit(Evented, {
             this._cache.add(tile.coord.wrapped().id, tile);
         } else {
             tile.aborted = true;
-            this._abort(tile);
-            this._unload(tile);
+            this.abortTile(tile);
+            this.unloadTile(tile);
         }
     },
 

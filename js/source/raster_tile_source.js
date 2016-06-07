@@ -6,21 +6,21 @@ var Evented = require('../util/evented');
 var Source = require('./source');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports.create = function (id, options, dispatcher, onChange, callback) {
-    Source._loadTileJSON(options, function (err, tileJSON) {
-        if (err) {
-            return callback(err);
-        }
-        var rts = new RasterTileSource(id, options, dispatcher);
-        util.extend(rts, tileJSON);
-        callback(null, rts);
-    });
+module.exports.create = function (id, options, dispatcher) {
+    return new RasterTileSource(id, options, dispatcher);
 };
 
 function RasterTileSource(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+    Source._loadTileJSON(options, function (err, tileJSON) {
+        if (err) {
+            return this.fire('error', err);
+        }
+        util.extend(this, tileJSON);
+        this.fire('load');
+    }.bind(this));
 }
 
 RasterTileSource.prototype = util.inherit(Evented, {

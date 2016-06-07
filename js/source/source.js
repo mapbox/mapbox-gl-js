@@ -114,9 +114,11 @@ var sourceTypes = {};
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-exports.create = function(id, source, dispatcher, onChange, callback) {
-    return exports.is(source) ? source :
-        sourceTypes[source.type](id, source, dispatcher, onChange, callback);
+exports.create = function(id, source, dispatcher) {
+    source = exports.is(source) ? source :
+        sourceTypes[source.type](id, source, dispatcher);
+    util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
+    return source;
 };
 
 exports.is = function(source) {
