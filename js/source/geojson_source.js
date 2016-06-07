@@ -9,8 +9,6 @@ var webworkify = require('webworkify');
 module.exports.create = function (id, options, dispatcher, onChange, callback) {
     var source = new GeoJSONSource(id, options, dispatcher, onChange);
 
-    //TODO: is it to aggressive to do this on source creation, as opposed to
-    //lazily at the first tile request?
     source._updateData(function done(err) {
         if (err) {
             return callback(err);
@@ -78,7 +76,7 @@ function GeoJSONSource(id, options, dispatcher, onChange) {
 
 }
 
-GeoJSONSource.prototype = /** @lends GeoJSONSource.prototype */{
+GeoJSONSource.prototype = {
     minzoom: 0,
     maxzoom: 18,
     tileSize: 512,
@@ -121,7 +119,6 @@ GeoJSONSource.prototype = /** @lends GeoJSONSource.prototype */{
             options.data = JSON.stringify(data);
         }
         this.workerID = this.dispatcher.send(this.type + '.parse', options, function(err) {
-            // TODO: not quite sure if we need this anymore
             this._loaded = true;
             cb(err);
 

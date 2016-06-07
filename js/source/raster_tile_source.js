@@ -43,9 +43,8 @@ RasterTileSource.prototype = util.inherit(Evented, {
         };
     },
 
-    load: function(tile, cb) {
+    load: function(tile, callback) {
         var url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
-        var url = normalizeURL(tile.coord.url(this.tiles), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
 
@@ -56,7 +55,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 return;
 
             if (err) {
-                return cb(err);
+                return callback(err);
             }
 
             var gl = this.map.painter.gl;
@@ -82,7 +81,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
             tile.state = 'loaded';
 
-            cb(null);
+            callback(null);
         }
     },
 
