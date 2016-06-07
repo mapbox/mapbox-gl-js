@@ -4,10 +4,6 @@ Benchmarks help us catch performance regressions and improve performance.
 
 ## Running a Benchmark
 
-Download the benchmark data
-
-`npm run get-benchmark-data`
-
 Start the benchmark server
 
 ```bash
