@@ -9,13 +9,13 @@ precision mediump float;
 uniform lowp float u_blur;
 uniform lowp float u_opacity;
 
-#pragma mapbox: define color lowp
+#pragma mapbox: define lowp vec4 color
 varying lowp float v_antialiasblur;
 
 varying vec2 v_extrude;
 
 void main() {
-    #pragma mapbox: initialize color lowp
+    #pragma mapbox: initialize lowp vec4 color
 
     float t = smoothstep(1.0 - max(u_blur, v_antialiasblur), 1.0, length(v_extrude));
     gl_FragColor = color * (1.0 - t) * u_opacity;

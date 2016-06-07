@@ -6,14 +6,14 @@ precision mediump float;
 #define highp
 #endif
 
-#pragma mapbox: define outline_color lowp
+#pragma mapbox: define lowp vec4 outline_color
 
 uniform lowp float u_opacity;
 
 varying vec2 v_pos;
 
 void main() {
-    #pragma mapbox: initialize outline_color lowp
+    #pragma mapbox: initialize lowp vec4 outline_color
 
     float dist = length(v_pos - gl_FragCoord.xy);
     float alpha = smoothstep(1.0, 0.0, dist);
