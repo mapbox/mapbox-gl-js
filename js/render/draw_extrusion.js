@@ -14,10 +14,10 @@ module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
-    // gl.disable(gl.STENCIL_TEST);
+    gl.disable(gl.STENCIL_TEST);
 
     if (true) {
-        // painter.depthMask(true);
+        painter.depthMask(true);
         // gl.enable(gl.DEPTH_TEST);
 
         var texture = new PrerenderedExtrusionLayer(gl, painter);
@@ -71,6 +71,7 @@ function draw(painter, source, layer, coords) {
 
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
+        // TODO I don't think i need the second attribute here (0/maxInt16)...
         array.emplaceBack(0, 0, 0, 0);
         array.emplaceBack(painter.width, 0, maxInt16, 0);
         array.emplaceBack(0, painter.height, maxInt16, maxInt16);
