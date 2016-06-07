@@ -1,46 +1,40 @@
 'use strict';
 
-var parseCSSColor = require('csscolorparser').parseCSSColor;
+var parseColorString = require('csscolorparser').parseCSSColor;
 var util = require('../util/util');
+var StyleFunction = require('./style_function');
 
-var colorCache = {};
+var cache = {};
 
-function parseColor(input) {
+module.exports = function parseColor(input) {
 
-    if (colorCache[input]) {
-        return colorCache[input];
+    if (StyleFunction.isFunctionDefinition(input)) {
 
-    // RGBA array
-    } else if (Array.isArray(input)) {
-        return input;
-
-    // GL function
-    } else if (input && input.stops) {
         return util.extend({}, input, {
-            stops: input.stops.map(parseFunctionStopColor)
+            stops: input.stops.map(function(stop) {
+                return [stop[0], parseColor(stop[1])];
+            })
         });
 
-    // Color string
     } else if (typeof input === 'string') {
-        var parsedColor = parseCSSColor(input);
-        if (!parsedColor) { throw new Error('Invalid color ' + input); }
 
-        var output = colorDowngrade(parsedColor);
-        colorCache[input] = output;
-        return output;
+        if (!cache[input]) {
+            var rgba = parseColorString(input);
+            if (!rgba) { throw new Error('Invalid color ' + input); }
+
+            // GL expects all components to be in the range [0, 1] and to be
+            // multipled by the alpha value.
+            cache[input] = [
+                rgba[0] / 255 * rgba[3],
+                rgba[1] / 255 * rgba[3],
+                rgba[2] / 255 * rgba[3],
+                rgba[3]
+            ];
+        }
+
+        return cache[input];
 
     } else {
         throw new Error('Invalid color ' + input);
     }
-
-}
-
-function parseFunctionStopColor(stop) {
-    return [stop[0], parseColor(stop[1])];
-}
-
-function colorDowngrade(color) {
-    return [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 1];
-}
-
-module.exports = parseColor;
+};
