@@ -14,15 +14,18 @@ module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
-    gl.disable(gl.STENCIL_TEST);
+    // gl.disable(gl.STENCIL_TEST);
 
     if (true) {
+        // painter.depthMask(true);
+        // gl.enable(gl.DEPTH_TEST);
+
         var texture = new PrerenderedExtrusionLayer(gl, painter);
         texture.bindFramebuffer();
 
         gl.clearStencil(0x80);
         gl.stencilMask(0xFF);
-        gl.clear(gl.STENCIL_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.stencilMask(0x00);
 
         // DRAW
@@ -40,7 +43,7 @@ function draw(painter, source, layer, coords) {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
-        gl.uniform1f(program.u_opacity, 1.0);
+        gl.uniform1f(program.u_opacity, 0.75);
         gl.uniform1i(program.u_texture, 1);
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
@@ -91,7 +94,7 @@ function draw(painter, source, layer, coords) {
     }
 
     gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.STENCIL_TEST);
+    // gl.enable(gl.STENCIL_TEST);
 }
 
 function PrerenderedExtrusionLayer(gl, painter) {
@@ -99,7 +102,6 @@ function PrerenderedExtrusionLayer(gl, painter) {
     // this.buffer = 1/32;
     this.width = painter.width;
     this.height = painter.height;
-    // this.size = 512 * 17 / 16;
     this.painter = painter;
 
     this.texture = null;
@@ -109,7 +111,6 @@ function PrerenderedExtrusionLayer(gl, painter) {
 
 PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     var gl = this.gl;
-    // gl.enable(gl.STENCIL_TEST);
 
     this.texture = this.painter.getTexture(this.width);
 
@@ -132,10 +133,14 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     if (!this.fbos) {
         this.fbo = gl.createFramebuffer();
         var stencil = gl.createRenderbuffer();
+        var depthRenderBuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.STENCIL_INDEX8, this.width, this.height);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.width, this.height);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, stencil);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, stencil);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     } else {
         this.fbo = this.fbos.pop();
@@ -145,8 +150,6 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
 }
 
 PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
-    // var gl = this.gl;
-    // gl.disable(gl.STENCIL_TEST);
     this.painter.bindDefaultFramebuffer();
     if (this.fbos) {
         this.fbos.push(this.fbo);
@@ -167,6 +170,7 @@ function drawExtrusion(painter, source, layer, coord) {
     painter.setDepthSublayer(2);
 
     var gl = painter.gl;
+    gl.enable(gl.DEPTH_TEST);
     var program = painter.useProgram('extrusion');
 
     // console.log(gl.getParameter(gl.ACTIVE_TEXTURE))
