@@ -115,23 +115,9 @@ var sourceTypes = {};
  * map.removeSource('some id');  // remove
  */
 exports.create = function(id, source, dispatcher) {
-    source = exports.is(source) ? source :
-        sourceTypes[source.type](id, source, dispatcher);
+    source = sourceTypes[source.type](id, source, dispatcher);
     util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);
     return source;
-};
-
-exports.is = function(source) {
-    // TODO: with the Source interface being factory-based, instanceof doesn't
-    // work as naturally for this.  Is Source.is() still needed?
-
-    return source && source.id;
-    // for (var type in sourceTypes) {
-    //     if (source instanceof sourceTypes[type]) {
-    //         return true;
-    //     }
-    // }
-    // return false;
 };
 
 exports.getType = function (name) {

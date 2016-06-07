@@ -352,7 +352,7 @@ Style.prototype = util.inherit(Evented, {
             throw new Error('There is already a source with this ID');
         }
         var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
-        var shouldValidate = !Source.is(source) && builtIns.indexOf(source.type) >= 0;
+        var shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
         source = new TilePyramid(id, source, this.dispatcher);
