@@ -13,6 +13,7 @@ rm -rf coverage .nyc_output
 npm run lint
 
 # run unit tests
+npm run build-min
 tap --reporter dot --coverage --no-coverage-report test/js/*/*.js
 
 # allow writing core files for render tests
