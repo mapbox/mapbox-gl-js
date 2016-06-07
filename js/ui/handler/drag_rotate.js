@@ -20,7 +20,7 @@ var inertiaLinearity = 0.25,
 function DragRotateHandler(map, options) {
     this._map = map;
     this._el = map.getCanvasContainer();
-    this._options = options;
+    this._bearingSnap = options.bearingSnap;
 
     util.bindHandlers(this);
 }
@@ -139,7 +139,7 @@ DragRotateHandler.prototype = {
             inertia = this._inertia;
 
         var finish = function() {
-            if (Math.abs(mapBearing) < this._options.bearingSnap) {
+            if (Math.abs(mapBearing) < this._bearingSnap) {
                 map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
                 this._fireEvent('moveend', e);
@@ -174,7 +174,7 @@ DragRotateHandler.prototype = {
 
         bearing += offset;
 
-        if (Math.abs(map._normalizeBearing(bearing, 0)) < this._options.bearingSnap) {
+        if (Math.abs(map._normalizeBearing(bearing, 0)) < this._bearingSnap) {
             bearing = map._normalizeBearing(0, bearing);
         }
 
