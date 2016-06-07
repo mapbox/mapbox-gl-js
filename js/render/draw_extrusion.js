@@ -18,7 +18,6 @@ function draw(painter, source, layer, coords) {
 
     if (true) {
         painter.depthMask(true);
-        // gl.enable(gl.DEPTH_TEST);
 
         var texture = new PrerenderedExtrusionLayer(gl, painter);
         texture.bindFramebuffer();
@@ -224,7 +223,7 @@ function drawExtrusion(painter, source, layer, coord) {
         );
 
         gl.uniform4fv(program.u_color, color);
-        gl.uniform1f(program.u_opacity, opacity);
+        gl.uniform1f(program.u_opacity, 1);
     }
 
     gl.uniform4fv(program.u_shadow, shadowColor);
