@@ -52,7 +52,7 @@
     "eslint": "^2.5.3",
     "eslint-config-mourner": "^2.0.0",
     "express": "^4.13.4",
-    "gl": "^2.1.5",
+    "gl": "^4.0.1",
     "handlebars": "4.0.5",
     "highlight.js": "9.3.0",
     "istanbul": "^0.4.2",
