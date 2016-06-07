@@ -880,7 +880,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [10, 0], duration: 10 });
+            camera.flyTo({ center: [10, 0], duration: 20 });
         });
 
         t.test('pans westward across the prime meridian', function(t) {
@@ -899,7 +899,7 @@ test('camera', function(t) {
                 t.end();
             });
 
-            camera.flyTo({ center: [-10, 0], duration: 10 });
+            camera.flyTo({ center: [-10, 0], duration: 20 });
         });
 
         t.test('pans eastward across the antimeridian', function(t) {
@@ -952,7 +952,8 @@ test('camera', function(t) {
             });
 
             camera.on('moveend', function() {
-                t.equal(fixedNum(minZoom, 2), 1);
+                t.ok(fixedNum(minZoom, 2) < 1.1);
+                t.ok(fixedNum(minZoom, 2) >= 1);
                 t.end();
             });
 
