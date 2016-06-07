@@ -340,8 +340,8 @@ function createPaintAttributes(bucket) {
                 attributes: [],
                 uniforms: [],
                 defines: [],
-                vertexPragmas: {},
-                fragmentPragmas: {}
+                vertexPragmas: { define: {}, initialize: {} },
+                fragmentPragmas: { define: {}, initialize: {} }
             };
         }
 
@@ -359,28 +359,26 @@ function createPaintAttributes(bucket) {
                 var attributeInputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
                 var attributeInnerName = attribute.name.slice(2);
-                var definePragma = 'define ' + attributeInnerName;
-                var initializePragma = 'initialize ' + attributeInnerName;
                 var attributeVaryingDefinition;
 
-                paintAttributes.fragmentPragmas[initializePragma] = '';
+                paintAttributes.fragmentPragmas.initialize[attributeInnerName] = '';
 
                 // This token is replaced by the first argument to the pragma,
                 // which must be the attribute's precision ("lowp", "mediump",
                 // or "highp")
-                var attributePrecision = '$1';
+                var attributePrecision = '{precision}';
 
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);
 
-                    paintAttributes.fragmentPragmas[definePragma] = paintAttributes.vertexPragmas[definePragma] = [
+                    paintAttributes.fragmentPragmas.define[attributeInnerName] = paintAttributes.vertexPragmas.define[attributeInnerName] = [
                         'uniform',
                         attributePrecision,
                         attributeType,
                         attributeInputName
                     ].join(' ') + ';';
 
-                    paintAttributes.fragmentPragmas[initializePragma] = paintAttributes.vertexPragmas[initializePragma] = [
+                    paintAttributes.fragmentPragmas.initialize[attributeInnerName] = paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
                         attributePrecision,
                         attributeType,
                         attributeInnerName,
@@ -401,18 +399,18 @@ function createPaintAttributes(bucket) {
                     ].join(' ') + ';\n';
 
                     var attributeAttributeDefinition = [
-                        paintAttributes.fragmentPragmas[definePragma],
+                        paintAttributes.fragmentPragmas.define[attributeInnerName],
                         'attribute',
                         attributePrecision,
                         attributeType,
                         attributeInputName
                     ].join(' ') + ';\n';
 
-                    paintAttributes.fragmentPragmas[definePragma] = attributeVaryingDefinition;
+                    paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
 
-                    paintAttributes.vertexPragmas[definePragma] = attributeVaryingDefinition + attributeAttributeDefinition;
+                    paintAttributes.vertexPragmas.define[attributeInnerName] = attributeVaryingDefinition + attributeAttributeDefinition;
 
-                    paintAttributes.vertexPragmas[initializePragma] = [
+                    paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
                         attributeInnerName,
                         '=',
                         attributeInputName,
@@ -443,13 +441,13 @@ function createPaintAttributes(bucket) {
                         attributeInnerName
                     ].join(' ') + ';\n';
 
-                    paintAttributes.vertexPragmas[definePragma] = attributeVaryingDefinition + [
+                    paintAttributes.vertexPragmas.define[attributeInnerName] = attributeVaryingDefinition + [
                         'uniform',
                         'lowp',
                         'float',
                         tName
                     ].join(' ') + ';\n';
-                    paintAttributes.fragmentPragmas[definePragma] = attributeVaryingDefinition;
+                    paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
 
                     paintAttributes.uniforms.push(util.extend({}, attribute, {
                         name: tName,
@@ -466,14 +464,14 @@ function createPaintAttributes(bucket) {
                             components: components * 4
                         }));
 
-                        paintAttributes.vertexPragmas[definePragma] += [
+                        paintAttributes.vertexPragmas.define[attributeInnerName] += [
                             'attribute',
                             attributePrecision,
                             'vec4',
                             attributeInputName
                         ].join(' ') + ';\n';
 
-                        paintAttributes.vertexPragmas[initializePragma] = [
+                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
                             attributeInnerName,
                             '=',
                             'evaluate_zoom_function_1(' + attributeInputName + ', ' + tName + ')',
@@ -491,14 +489,14 @@ function createPaintAttributes(bucket) {
                                 isFunction: true,
                                 name: attributeInputName + k
                             }));
-                            paintAttributes.vertexPragmas[definePragma] += [
+                            paintAttributes.vertexPragmas.define[attributeInnerName] += [
                                 'attribute',
                                 attributePrecision,
                                 attributeType,
                                 attributeInputName + k
                             ].join(' ') + ';\n';
                         }
-                        paintAttributes.vertexPragmas[initializePragma] = [
+                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
                             attributeInnerName,
                             ' = ',
                             'evaluate_zoom_function_4(' + attributeInputNames.join(', ') + ', ' + tName + ')',
