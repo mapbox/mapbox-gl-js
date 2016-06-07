@@ -33,7 +33,7 @@ FillBucket.prototype.programInterfaces = {
             components: 4,
             type: 'Uint8',
             getValue: function(layer, globalProperties, featureProperties) {
-                return util.premultiply(layer.getPaintValue("fill-color", globalProperties, featureProperties));
+                return layer.getPaintValue("fill-color", globalProperties, featureProperties);
             },
             multiplier: 255,
             paintProperty: 'fill-color'
@@ -42,7 +42,7 @@ FillBucket.prototype.programInterfaces = {
             components: 4,
             type: 'Uint8',
             getValue: function(layer, globalProperties, featureProperties) {
-                return util.premultiply(layer.getPaintValue("fill-outline-color", globalProperties, featureProperties));
+                return layer.getPaintValue("fill-outline-color", globalProperties, featureProperties);
             },
             multiplier: 255,
             paintProperty: 'fill-outline-color'

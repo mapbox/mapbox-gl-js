@@ -2,7 +2,6 @@
 
 var browser = require('../util/browser');
 var drawCollisionDebug = require('./draw_collision_debug');
-var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 
@@ -68,9 +67,6 @@ function drawLayerSymbols(painter, source, layer, coords, isText,
         haloBlur,
         opacity,
         color) {
-
-    haloColor = util.premultiply(haloColor);
-    color = util.premultiply(color);
 
     for (var j = 0; j < coords.length; j++) {
         var tile = source.getTile(coords[j]);

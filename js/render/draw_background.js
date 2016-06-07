@@ -2,7 +2,6 @@
 
 var TilePyramid = require('../source/tile_pyramid');
 var pyramid = new TilePyramid({ tileSize: 512 });
-var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var createUniformPragmas = require('./create_uniform_pragmas');
 
@@ -11,7 +10,7 @@ module.exports = drawBackground;
 function drawBackground(painter, source, layer) {
     var gl = painter.gl;
     var transform = painter.transform;
-    var color = util.premultiply(layer.paint['background-color']);
+    var color = layer.paint['background-color'];
     var image = layer.paint['background-pattern'];
     var opacity = layer.paint['background-opacity'];
     var program;

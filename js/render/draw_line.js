@@ -2,7 +2,6 @@
 
 var browser = require('../util/browser');
 var mat2 = require('gl-matrix').mat2;
-var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 /**
@@ -31,7 +30,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
     var antialiasing = 1 / browser.devicePixelRatio;
 
     var blur = layer.paint['line-blur'] + antialiasing;
-    var color = util.premultiply(layer.paint['line-color']);
+    var color = layer.paint['line-color'];
 
     var tr = painter.transform;
 

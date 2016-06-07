@@ -9,7 +9,6 @@ test('util', function(t) {
     t.equal(util.easeCubicInOut(0.2), 0.03200000000000001);
     t.equal(util.easeCubicInOut(0.5), 0.5, 'easeCubicInOut=0.5');
     t.equal(util.easeCubicInOut(1), 1, 'easeCubicInOut=1');
-    t.deepEqual(util.premultiply([0, 0.5, 1, 0.5]), [0, 0.25, 0.5, 0.5], 'premultiply');
     t.deepEqual(util.keysDifference({a:1}, {}), ['a'], 'keysDifference');
     t.deepEqual(util.keysDifference({a:1}, {a:1}), [], 'keysDifference');
     t.deepEqual(util.extend({a:1}, {b:2}), {a:1, b:2}, 'extend');
