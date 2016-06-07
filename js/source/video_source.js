@@ -173,10 +173,10 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
         this._currentTime = this.video.currentTime;
     },
 
-    load: function(tile, cb) {
+    load: function(tile, callback) {
         if (this._coord && this._coord.toString() === tile.coord.toString()) {
             this._setTile(tile);
-            cb(null);
+            callback(null);
         }
     },
 
