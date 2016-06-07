@@ -74,7 +74,7 @@ function GeoJSONSource(id, options, dispatcher) {
     }.bind(this));
 }
 
-GeoJSONSource.prototype = util.extend(Evented, /** @lends GeoJSONSource.prototype */ {
+GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */ {
     minzoom: 0,
     maxzoom: 18,
     tileSize: 512,

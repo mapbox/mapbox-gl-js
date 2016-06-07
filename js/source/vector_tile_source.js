@@ -29,7 +29,7 @@ function VectorTileSource(id, options, dispatcher) {
     }.bind(this));
 }
 
-VectorTileSource.prototype = util.extend(Evented, {
+VectorTileSource.prototype = util.inherit(Evented, {
     minzoom: 0,
     maxzoom: 22,
     scheme: 'xyz',

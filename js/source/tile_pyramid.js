@@ -48,7 +48,7 @@ function TilePyramid(id, options, dispatcher) {
     }.bind(this));
 
     this._tiles = {};
-    this._cache = new Cache(0, this.unload.bind(this));
+    this._cache = new Cache(0, this.unloadTile.bind(this));
 
     this._isIdRenderable = this._isIdRenderable.bind(this);
 }
@@ -297,7 +297,7 @@ TilePyramid.prototype = util.inherit(Evented, {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = this.used ? transform.coveringTiles(this) : [];
+        var required = this.used ? transform.coveringTiles(this._source) : [];
         for (i = 0; i < required.length; i++) {
             coord = required[i];
             tile = this.addTile(coord);

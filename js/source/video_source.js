@@ -69,6 +69,8 @@ function VideoSource(id, options) {
             this.video.play();
             this.setCoordinates(options.coordinates);
         }
+
+        this.fire('load');
     }.bind(this));
 }
 
