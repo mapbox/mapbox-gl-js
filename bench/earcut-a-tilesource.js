@@ -126,8 +126,10 @@ if (require.main) {
         console.log('  --count=[number]       Number of iterations to run the benchmark (default 1) (alias -n)');
         console.log('Example:');
         console.log('  ./bench/earcut-a-tilesource.js mapbox://mapbox.mapbox-streets-v7 water 0 0 0 -n 10');
-        throw new Error();
+        throw new Error('Missing ' + (5 - argv._.length) + ' parameters');
     }
+
+    if (!process.env.MAPBOX_ACCESS_TOKEN) throw new Error('process.env.MAPBOX_ACCESS_TOKEN is not set');
 
     var source = argv._[0],
         layer = argv._[1],
@@ -137,6 +139,7 @@ if (require.main) {
         y = argv._[4];
 
     benchmarkEarcut({
+        accessToken: process.env.MAPBOX_ACCESS_TOKEN,
         source: source,
         layer: layer,
         count: count,
