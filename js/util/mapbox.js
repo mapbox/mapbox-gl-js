@@ -51,7 +51,7 @@ module.exports.normalizeGlyphsURL = function(url, fresh, accessToken) {
         return url;
 
     var user = url.split('/')[3];
-    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf?' + fresh , '/fonts/v1/' , accessToken);
+    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf?' + fresh, '/fonts/v1/', accessToken);
 };
 
 module.exports.normalizeSpriteURL = function(url, format, ext, fresh, accessToken) {
