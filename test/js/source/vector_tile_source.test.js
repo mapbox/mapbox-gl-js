@@ -113,7 +113,7 @@ test('VectorTileSource', function(t) {
                 attribution: "Mapbox",
                 tiles: ["http://example.com/{z}/{x}/{y}.png"]
             });
-            t.deepEqual(source.queryRenderedFeatures(), {});
+            t.deepEqual(source.queryRenderedFeatures(), []);
             t.end();
         });
         t.end();

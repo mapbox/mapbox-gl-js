@@ -94,7 +94,7 @@ function mergeRenderedFeatureLayers(tiles) {
 
 exports._queryRenderedVectorFeatures = function(queryGeometry, params, zoom, bearing) {
     if (!this._pyramid || !this.map)
-        return {};
+        return [];
 
     var tilesIn = this._pyramid.tilesIn(queryGeometry);
 

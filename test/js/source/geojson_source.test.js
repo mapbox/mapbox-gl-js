@@ -224,7 +224,7 @@ test('GeoJSONSource#serialize', function(t) {
 test('GeoJSONSource#queryRenderedFeatures', function(t) {
     t.test('returns an empty object before loaded', function(t) {
         var source = new GeoJSONSource({data: {}});
-        t.deepEqual(source.queryRenderedFeatures(), {});
+        t.deepEqual(source.queryRenderedFeatures(), []);
         t.end();
     });
     t.end();
