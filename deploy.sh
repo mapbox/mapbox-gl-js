@@ -14,6 +14,9 @@ function upload {
     echo "upload: dist/$1 to s3://mapbox-gl-js/$TAG/$1"
 }
 
+npm run build-dev
+npm run build-min
+
 upload mapbox-gl.js     application/javascript
 upload mapbox-gl.js.map application/octet-stream
 upload mapbox-gl-dev.js application/javascript
