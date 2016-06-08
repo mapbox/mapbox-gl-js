@@ -46,15 +46,15 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
     return normalizeURL(url + '.json', '/v4/', accessToken) + '&secure';
 };
 
-module.exports.normalizeGlyphsURL = function(url, accessToken) {
+module.exports.normalizeGlyphsURL = function(url, fresh, accessToken) {
     if (!url.match(/^mapbox:\/\//))
         return url;
 
     var user = url.split('/')[3];
-    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf', '/fonts/v1/', accessToken);
+    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf' + '?' + fresh, '/fonts/v1/' , accessToken);
 };
 
-module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
+module.exports.normalizeSpriteURL = function(url, format, ext, fresh, accessToken) {
     if (!url.match(/^mapbox:\/\/sprites\//))
         return url + format + ext;
 
@@ -62,7 +62,7 @@ module.exports.normalizeSpriteURL = function(url, format, ext, accessToken) {
     var user = split[3];
     var style = split[4];
     var draft = split[5] ? '/draft' : '';
-    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
+    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext + '?' + fresh, '/styles/v1/', accessToken);
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl, tileSize) {
