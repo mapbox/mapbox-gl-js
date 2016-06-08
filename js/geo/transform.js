@@ -263,8 +263,8 @@ Transform.prototype = {
         var coord0 = [p.x, p.y, 0, 1];
         var coord1 = [p.x, p.y, 1, 1];
 
-        vec4.transformMat4(coord0, coord0, this.pxMatrixInverse);
-        vec4.transformMat4(coord1, coord1, this.pxMatrixInverse);
+        vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
+        vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
 
         var w0 = coord0[3];
         var w1 = coord1[3];
@@ -294,7 +294,7 @@ Transform.prototype = {
     coordinatePoint: function(coord) {
         var scale = this.worldSize / this.zoomScale(coord.zoom);
         var p = [coord.column * scale, coord.row * scale, 0, 1];
-        vec4.transformMat4(p, p, this.pxMatrix);
+        vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
@@ -412,14 +412,14 @@ Transform.prototype = {
         this.projMatrix = m;
 
         // matrix for conversion from location to screen coordinates
-        var m2 = mat4.create();
-        mat4.scale(m2, m2, [this.width / 2, -this.height / 2, 1]);
-        mat4.translate(m2, m2, [1, -1, 0]);
-        this.pxMatrix = mat4.multiply(new Float64Array(16), m2, this.projMatrix);
+        m = mat4.create();
+        mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
+        mat4.translate(m, m, [1, -1, 0]);
+        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
 
         // inverse matrix for conversion from screen coordinaes to location
-        var pxi = mat4.invert(new Float64Array(16), this.pxMatrix);
-        if (!pxi) throw new Error("failed to invert matrix");
-        this.pxMatrixInverse = pxi;
+        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
+        if (!m) throw new Error("failed to invert matrix");
+        this.pixelMatrixInverse = m;
     }
 };
