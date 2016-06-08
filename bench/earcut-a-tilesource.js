@@ -56,16 +56,15 @@ function benchmarkEarcut(opts, callback) {
             diffs.push({
                 vertices: flattened.vertices.length,
                 holes: flattened.holes.length,
-                avg_ms_bucket_addFeature: totalDiff/RUN_COUNT,
-                min_ms_bucket_addFeature: minDiff,
-                max_ms_bucket_addFeature: maxDiff
+                avgMsBucketAddFeature: totalDiff / RUN_COUNT,
+                minMsBucketAddFeature: minDiff,
+                maxMsBucketAddFeature: maxDiff
             });
         }
         return callback(null, diffs);
     });
 }
 
-'use strict';
 
 module.exports = classifyRings;
 
@@ -127,7 +126,7 @@ if (require.main) {
         console.log('  --count=[number]       Number of iterations to run the benchmark (default 1) (alias -n)');
         console.log('Example:');
         console.log('  ./bench/earcut-a-tilesource.js mapbox://mapbox.mapbox-streets-v7 water 0 0 0 -n 10');
-        process.exit(1);
+        throw new Error();
     }
 
     var source = argv._[0],
@@ -137,7 +136,7 @@ if (require.main) {
         x = argv._[3],
         y = argv._[4];
 
-    benchmark_earcut({
+    benchmarkEarcut({
         source: source,
         layer: layer,
         count: count,
