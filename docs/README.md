@@ -6,7 +6,7 @@ API documentation is written as [JSDoc comments](http://usejsdoc.org/) and proce
 
  - Classes, methods, events and anything else in the public interface must be documented with a JSDoc comment. Everything outside of the public interface may be documented and must be tagged as `@private`.
  - Text within JSDoc comments may use markdown formatting. Code identifiers must be surrounded by \`backticks\`.
- - Documentation must be written in complete gramatically-correct sentances.
+ - Documentation must be written in complete gramatically-correct sentences.
  - Documentation must specify measurement units when applicable.
  - Documentation descriptions must contain more information than what is obvious from the identifier and JSDoc metadata.
  - `@param` and `@property` descriptions should be capitalized and written as if completing a sentance beginning with "This is..." or "This...".
