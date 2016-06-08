@@ -55,6 +55,26 @@ CircleBucket.prototype.programInterfaces = {
             },
             multiplier: 10,
             paintProperty: 'circle-radius'
+        }, {
+            name: 'a_blur',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false,
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("circle-blur", globalProperties, featureProperties)];
+            },
+            multiplier: 10,
+            paintProperty: 'circle-blur'
+        }, {
+            name: 'a_opacity',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false,
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("circle-opacity", globalProperties, featureProperties)];
+            },
+            multiplier: 255,
+            paintProperty: 'circle-opacity'
         }]
     }
 };
