@@ -78,7 +78,7 @@ test("mapbox", function(t) {
     t.test('.normalizeSpriteURL', function(t) {
         t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
-                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '' , '.json', 'fresh=true'),
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json', 'fresh=true'),
                 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?fresh=true&access_token=key'
             );
 
