@@ -175,7 +175,7 @@ var Map = module.exports = function(options) {
         keyboard: options.interactive && options.keyboard,
         doubleClickZoom: options.interactive && options.doubleClickZoom,
         touchZoomRotate: options.interactive && options.touchZoomRotate
-    });
+    }, options);
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash

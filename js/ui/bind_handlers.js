@@ -13,15 +13,15 @@ var handlers = {
     touchZoomRotate: require('./handler/touch_zoom_rotate')
 };
 
-module.exports = function bindHandlers(map, options) {
+module.exports = function bindHandlers(map, bindOptions, mapOptions) {
     var el = map.getCanvasContainer();
     var contextMenuEvent = null;
     var startPos = null;
     var tapped = null;
 
     for (var name in handlers) {
-        map[name] = new handlers[name](map);
-        if (options[name]) {
+        map[name] = new handlers[name](map, mapOptions);
+        if (bindOptions[name]) {
             map[name].enable();
         }
     }
