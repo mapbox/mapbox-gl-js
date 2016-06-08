@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var earcut = require('earcut');
 var VectorTile = require('vector-tile').VectorTile;
 var Protobuf = require('pbf');
@@ -9,7 +11,7 @@ var StyleLayer = require('../js/style/style_layer');
 
 var API_URL = process.env.API_URL || 'https://api.mapbox.com/v4/';
 
-function benchmark_earcut(opts, callback) {
+function benchmarkEarcut(opts, callback) {
     var url = opts.source.replace(/^mapbox:\/\//, API_URL);
     url += '/' + opts.z + '/' + opts.x + '/' + opts.y + '.vector.pbf';
     url += '?access_token=' + process.env.MAPBOX_ACCESS_TOKEN;
@@ -107,7 +109,7 @@ function signedArea(ring) {
     return sum;
 }
 
-module.exports = benchmark_earcut;
+module.exports = benchmarkEarcut;
 
 if (require.main) {
     var argv = require('minimist')(process.argv.slice(2), {
