@@ -61,8 +61,8 @@ test("mapbox", function(t) {
     t.test('.normalizeGlyphsURL', function(t) {
         t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
-                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
-                'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
+                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf','fresh=true'),
+                'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?fresh=true&access_token=key'
             );
             t.end();
         });
@@ -78,18 +78,18 @@ test("mapbox", function(t) {
     t.test('.normalizeSpriteURL', function(t) {
         t.test('normalizes mapbox:// URLs', function(t) {
             t.equal(
-                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
-                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json','fresh=true'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?fresh=true&access_token=key'
             );
 
             t.equal(
-                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '@2x', '.png'),
-                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite@2x.png?access_token=key'
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '@2x', '.png','fresh=false'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite@2x.png?fresh=false&access_token=key'
             );
 
             t.equal(
-                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8/draft', '@2x', '.png'),
-                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?access_token=key'
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8/draft', '@2x', '.png','fresh=true'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?fresh=true&access_token=key'
             );
 
             t.end();
