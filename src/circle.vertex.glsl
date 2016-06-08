@@ -14,6 +14,8 @@ attribute vec2 a_pos;
 
 #pragma mapbox: define lowp vec4 color
 #pragma mapbox: define mediump float radius
+#pragma mapbox: define lowp vec4 blur
+#pragma mapbox: define lowp vec4 opacity
 
 varying vec2 v_extrude;
 varying lowp float v_antialiasblur;
@@ -21,6 +23,8 @@ varying lowp float v_antialiasblur;
 void main(void) {
     #pragma mapbox: initialize lowp vec4 color
     #pragma mapbox: initialize mediump float radius
+    #pragma mapbox: initialize lowp vec4 blur
+    #pragma mapbox: initialize lowp vec4 opacity
 
     // unencode the extrusion vector that we snuck into the a_pos vector
     v_extrude = vec2(mod(a_pos, 2.0) * 2.0 - 1.0);
