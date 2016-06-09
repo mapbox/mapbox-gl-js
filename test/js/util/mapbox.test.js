@@ -73,10 +73,7 @@ test("mapbox", function(t) {
         });
 
         t.test('normalizes mapbox:// URLs when query string exists', function(t) {
-            t.equal(
-                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf?fresh=true'),
-                'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?fresh=true&access_token=key'
-            );
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf?fresh=true'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?fresh=true&access_token=key');
             t.end();
         });
 
