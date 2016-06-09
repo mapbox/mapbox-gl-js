@@ -2,67 +2,107 @@
 
 var config = require('./config');
 var browser = require('./browser');
+var url = require('url');
+var querystring = require('querystring');
 
-function normalizeURL(url, pathPrefix, accessToken) {
+function normalizeURL(parsedUrl, pathPrefix, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
 
     if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
         throw new Error('An API access token is required to use Mapbox GL. ' +
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
+    // parsedURL is one big object.
+    if (parsedUrl.query == null) {
+        parsedUrl.query = {};
+    }
 
-    url = url.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
-    url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
-
+    parsedUrl.query.access_token = accessToken;
+    // then you have one big url object.
+    //reconstitute it
+    //parsedUrl is: Url {
+    // protocol: 'mapbox:',
+    // slashes: true,
+    // auth: null,
+    // host: 'styles',
+    // port: null,
+    // hostname: 'styles',
+    // hash: null,
+    // search: '?fresh=true',
+    // query: { fresh: 'true', access_token: 'key' },
+    // pathname: '/user/style',
+    // path: '/user/style?fresh=true',
+    // href: 'mapbox://styles/user/style?fresh=true' }
+    // console.dir(parsedUrl)
+    // console.log('$$$$$$$$$$')
+    // console.dir(parsedUrl.query)
+    // { fresh: 'true', access_token: 'key' }
+    // ?fresh=true&access_token=key
+    var formattedQuery= querystring.stringify(parsedUrl.query)
+    var httpsUrl = config.API_URL + pathPrefix + parsedUrl.pathname + '?' + formattedQuery
+    // url = url.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
+    // console.log('this is the url inside normalizeURL right after the replacing happens')
+    // console.log(url)
+    // console.log("^^^")
+    // url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
+    //https://api.mapbox.com/styles/v1/user/style?fresh=true&access_token=key'
     if (config.REQUIRE_ACCESS_TOKEN) {
         if (accessToken[0] === 's') {
             throw new Error('Use a public access token (pk.*) with Mapbox GL JS, not a secret access token (sk.*). ' +
                 'See https://www.mapbox.com/developers/api/#access-tokens');
         }
-
-        url += accessToken;
     }
 
-    return url;
+    return httpsUrl;
 }
 
-module.exports.normalizeStyleURL = function(url, accessToken) {
-    if (!url.match(/^mapbox:\/\/styles\//))
-        return url;
+module.exports.normalizeStyleURL = function(inputUrl, accessToken) {
+    if (!inputUrl.match(/^mapbox:\/\/styles\//))
+        return inputUrl;
 
-    var split = url.split('/');
-    var user = split[3];
-    var style = split[4];
-    var draft = split[5] ? '/draft' : '';
-    return normalizeURL('mapbox://' + user + '/' + style + draft, '/styles/v1/', accessToken);
+    var parsedUrl = url.parse(inputUrl, true);
+
+    return normalizeURL(parsedUrl, '/styles/v1', accessToken);
 };
 
-module.exports.normalizeSourceURL = function(url, accessToken) {
-    if (!url.match(/^mapbox:\/\//))
-        return url;
-
+module.exports.normalizeSourceURL = function(inputUrl, accessToken) {
+    if (!inputUrl.match(/^mapbox:\/\//))
+        return inputUrl;
+    console.log("***********");
+    var inputUrlJson = inputUrl + '.json';
+    var parsedUrl= url.parse(inputUrlJson)
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
-    return normalizeURL(url + '.json', '/v4/', accessToken) + '&secure';
+    return normalizeURL(parsedUrl, '/v4/', accessToken) + '&secure';
 };
 
-module.exports.normalizeGlyphsURL = function(url, fresh, accessToken) {
-    if (!url.match(/^mapbox:\/\//))
-        return url;
+module.exports.normalizeGlyphsURL = function(inputUrl, accessToken) {
+    if (!inputUrl.match(/^mapbox:\/\//))
+        return inputUrl;
 
-    var user = url.split('/')[3];
-    return normalizeURL('mapbox://' + user + '/{fontstack}/{range}.pbf?' + fresh, '/fonts/v1/', accessToken);
+    var parsedUrl = url.parse(inputUrl, true);
+    // console.log(parsedUrl);
+
+    return normalizeURL(parsedUrl, '/fonts/v1', accessToken);
 };
 
-module.exports.normalizeSpriteURL = function(url, format, ext, fresh, accessToken) {
-    if (!url.match(/^mapbox:\/\/sprites\//))
-        return url + format + ext;
+module.exports.normalizeSpriteURL = function(inputUrl, format, ext, accessToken) {
+    if (!inputUrl.match(/^mapbox:\/\/sprites\//))
+        return inputUrl + format + ext;
 
-    var split = url.split('/');
-    var user = split[3];
-    var style = split[4];
-    var draft = split[5] ? '/draft' : '';
-    return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext + '?' + fresh, '/styles/v1/', accessToken);
+    var parsedUrl = url.parse(inputUrl, true);
+
+    // console.log('parsedURL inside normalizeSprites')
+    // console.log(parsedUrl);
+    parsedUrl.pathname = parsedUrl.pathname + '/sprite' + format + ext;
+
+    // config.API_URL + pathPrefix + parsedUrl.pathname + '?' + formattedQuery
+  //
+  //   found: 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft?fresh=true%2Fsprite%402x.png&access_token=key'
+  // wanted: 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?fresh=true&access_token=key'
+    return normalizeURL(parsedUrl, '/styles/v1', accessToken);
+
+    // return normalizeURL('mapbox://' + user + '/' + style + draft + '/sprite' + format + ext, '/styles/v1/', accessToken);
 };
 
 module.exports.normalizeTileURL = function(url, sourceUrl, tileSize) {
