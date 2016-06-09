@@ -20,7 +20,6 @@ test("mapbox", function(t) {
         t.test('returns an API URL with access_token parameter when query string exists', function(t) {
             t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style?fresh=true&access_token=key');
             t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style/draft?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style/draft?fresh=true&access_token=key');
-            t.equal(mapbox.normalizeStyleURL('mapbox://styles/foo/bar?fresh=false'), 'https://api.mapbox.com/styles/v1/foo/bar?fresh=false&access_token=key');
             t.equal(mapbox.normalizeStyleURL('mapbox://styles/foo/bar'), 'https://api.mapbox.com/styles/v1/foo/bar?access_token=key');
             t.end();
         });
