@@ -104,73 +104,73 @@ test("mapbox", function(t) {
 
         t.end();
     });
-    //
-    // t.test('.normalizeTileURL', function(t) {
-    //     t.test('does nothing on 1x devices', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.png');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.png32');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.jpg70');
-    //         t.end();
-    //     });
-    //
-    //     t.test('inserts @2x on 2x devices', function(t) {
-    //         browser.devicePixelRatio = 2;
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile@2x.png');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile@2x.png32');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile@2x.jpg70');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile@2x.png?access_token=foo');
-    //         browser.devicePixelRatio = 1;
-    //         t.end();
-    //     });
-    //
-    //     t.test('inserts @2x when tileSize == 512', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource, 512), 'http://path.png/tile@2x.png');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource, 512), 'http://path.png/tile@2x.png32');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource, 512), 'http://path.png/tile@2x.jpg70');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource, 512), 'http://path.png/tile@2x.png?access_token=foo');
-    //         t.end();
-    //     });
-    //
-    //     t.test('replaces img extension with webp on supporting devices', function(t) {
-    //         browser.supportsWebp = true;
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.webp');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.webp');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.webp');
-    //         t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile.webp?access_token=foo');
-    //         browser.supportsWebp = false;
-    //         t.end();
-    //     });
-    //
-    //     t.test('ignores non-mapbox:// sources', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://path.png', nonMapboxSource), 'http://path.png');
-    //         t.end();
-    //     });
-    //
-    //     t.test('ignores undefined sources', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://path.png'), 'http://path.png');
-    //         t.end();
-    //     });
-    //
-    //     t.test('replace temp access tokens with the latest token', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=key');
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?foo=bar&access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?foo=bar&access_token=key');
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123&foo=bar', 'mapbox://user.map'), 'http://example.com/tile.png?access_token=key&foo=bar');
-    //         t.end();
-    //     });
-    //
-    //     t.test('does not modify the access token for non-mapbox sources', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', nonMapboxSource), 'http://example.com/tile.png?access_token=tk.abc.123');
-    //         t.end();
-    //     });
-    //
-    //     t.test('does not modify the access token for non temp tokens', function(t) {
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=pk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=pk.abc.123');
-    //         t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tkk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=tkk.abc.123');
-    //         t.end();
-    //     });
-    //
-    //     t.end();
-    // });
+
+    t.test('.normalizeTileURL', function(t) {
+        t.test('does nothing on 1x devices', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.jpg70');
+            t.end();
+        });
+
+        t.test('inserts @2x on 2x devices', function(t) {
+            browser.devicePixelRatio = 2;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile@2x.jpg70');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile@2x.png?access_token=foo');
+            browser.devicePixelRatio = 1;
+            t.end();
+        });
+
+        t.test('inserts @2x when tileSize == 512', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource, 512), 'http://path.png/tile@2x.png');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource, 512), 'http://path.png/tile@2x.png32');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource, 512), 'http://path.png/tile@2x.jpg70');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource, 512), 'http://path.png/tile@2x.png?access_token=foo');
+            t.end();
+        });
+
+        t.test('replaces img extension with webp on supporting devices', function(t) {
+            browser.supportsWebp = true;
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile.webp');
+            t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile.webp?access_token=foo');
+            browser.supportsWebp = false;
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// sources', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png', nonMapboxSource), 'http://path.png');
+            t.end();
+        });
+
+        t.test('ignores undefined sources', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://path.png'), 'http://path.png');
+            t.end();
+        });
+
+        t.test('replace temp access tokens with the latest token', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=key');
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?foo=bar&access_token=tk.abc.123', mapboxSource), 'http://example.com/tile.png?foo=bar&access_token=key');
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123&foo=bar', 'mapbox://user.map'), 'http://example.com/tile.png?access_token=key&foo=bar');
+            t.end();
+        });
+
+        t.test('does not modify the access token for non-mapbox sources', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tk.abc.123', nonMapboxSource), 'http://example.com/tile.png?access_token=tk.abc.123');
+            t.end();
+        });
+
+        t.test('does not modify the access token for non temp tokens', function(t) {
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=pk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=pk.abc.123');
+            t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tkk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=tkk.abc.123');
+            t.end();
+        });
+
+        t.end();
+    });
 
     t.end();
 });
