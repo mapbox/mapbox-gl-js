@@ -5,27 +5,28 @@ var browser = require('./browser');
 var url = require('url');
 var querystring = require('querystring');
 
-function normalizeURL(parsedUrl, pathPrefix, accessToken) {
+function normalizeURL(inputUrl, pathPrefix, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
 
     if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
         throw new Error('An API access token is required to use Mapbox GL. ' +
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
-    if (parsedUrl.query == null) {
-        parsedUrl.query = {};
-    }
-
-    parsedUrl.query['access_token'] = accessToken;
-
-    var formattedQuery = querystring.stringify(parsedUrl.query);
-    var httpsUrl = config.API_URL + pathPrefix + parsedUrl.pathname + '?' + formattedQuery;
-
+    console.log('------------')
+    console.log(inputUrl);
+    console.log('------------')
+    var httpsUrl = inputUrl.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
+    httpsUrl += httpsUrl.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
+    console.log('========')
+    console.log(httpsUrl);
+    console.log('========')
     if (config.REQUIRE_ACCESS_TOKEN) {
         if (accessToken[0] === 's') {
             throw new Error('Use a public access token (pk.*) with Mapbox GL JS, not a secret access token (sk.*). ' +
                 'See https://www.mapbox.com/developers/api/#access-tokens');
         }
+
+        httpsUrl += accessToken;
     }
 
     return httpsUrl;
@@ -36,7 +37,7 @@ module.exports.normalizeStyleURL = function(inputUrl, accessToken) {
         return inputUrl;
 
     var parsedUrl = url.parse(inputUrl, true);
-
+    //out put something like this: mapbox://styles/v1/user/style?fresh=true
     return normalizeURL(parsedUrl, '/styles/v1', accessToken);
 };
 
