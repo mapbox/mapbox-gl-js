@@ -32,40 +32,40 @@ test("mapbox", function(t) {
 
         t.end();
     });
-    //
-    // t.test('.normalizeSourceURL', function(t) {
-    //     t.test('returns a v4 URL with access_token parameter', function(t) {
-    //         t.equal(mapbox.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?access_token=key&secure');
-    //         t.end();
-    //     });
-    //
-    //     t.test('uses provided access token', function(t) {
-    //         t.equal(mapbox.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure');
-    //         t.end();
-    //     });
-    //
-    //     t.test('throws an error if no access token is provided', function(t) {
-    //         config.ACCESS_TOKEN = null;
-    //         t.throws(function() { mapbox.normalizeSourceURL(mapboxSource); }, 'An API access token is required to use Mapbox GL.');
-    //         config.ACCESS_TOKEN = 'key';
-    //         t.end();
-    //     });
-    //
-    //     t.test('throws an error if a secret access token is provided', function(t) {
-    //         config.ACCESS_TOKEN = 'sk.abc.123';
-    //         t.throws(function() { mapbox.normalizeSourceURL(mapboxSource); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
-    //         config.ACCESS_TOKEN = 'key';
-    //         t.end();
-    //     });
-    //
-    //     t.test('ignores non-mapbox:// scheme', function(t) {
-    //         t.equal(mapbox.normalizeSourceURL('http://path'), 'http://path');
-    //         t.end();
-    //     });
-    //
-    //     t.end();
-    // });
-    //
+
+    t.test('.normalizeSourceURL', function(t) {
+        t.test('returns a v4 URL with access_token parameter', function(t) {
+            t.equal(mapbox.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?access_token=key&secure');
+            t.end();
+        });
+
+        t.test('uses provided access token', function(t) {
+            t.equal(mapbox.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure');
+            t.end();
+        });
+
+        t.test('throws an error if no access token is provided', function(t) {
+            config.ACCESS_TOKEN = null;
+            t.throws(function() { mapbox.normalizeSourceURL(mapboxSource); }, 'An API access token is required to use Mapbox GL.');
+            config.ACCESS_TOKEN = 'key';
+            t.end();
+        });
+
+        t.test('throws an error if a secret access token is provided', function(t) {
+            config.ACCESS_TOKEN = 'sk.abc.123';
+            t.throws(function() { mapbox.normalizeSourceURL(mapboxSource); }, 'Use a public access token (pk.*) with Mapbox GL JS.');
+            config.ACCESS_TOKEN = 'key';
+            t.end();
+        });
+
+        t.test('ignores non-mapbox:// scheme', function(t) {
+            t.equal(mapbox.normalizeSourceURL('http://path'), 'http://path');
+            t.end();
+        });
+
+        t.end();
+    });
+
     // t.test('.normalizeGlyphsURL', function(t) {
     //
     //     t.test('normalizes mapbox:// URLs when no query string', function(t) {
