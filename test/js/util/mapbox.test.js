@@ -67,7 +67,6 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeGlyphsURL', function(t) {
-
         t.test('normalizes mapbox:// URLs when no query string', function(t) {
             t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key');
             t.end();
