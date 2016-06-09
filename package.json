@@ -17,7 +17,7 @@
     "envify": "^3.4.0",
     "feature-filter": "^2.1.0",
     "geojson-rewind": "^0.1.0",
-    "geojson-vt": "^2.1.0",
+    "geojson-vt": "v2.1.8",
     "gl-matrix": "^2.3.1",
     "grid-index": "^0.1.0",
     "mapbox-gl-function": "^1.2.1",
