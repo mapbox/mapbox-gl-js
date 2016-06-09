@@ -1,7 +1,6 @@
 'use strict';
 
 var assert = require('assert');
-var util = require('../util/util');
 
 module.exports = VertexArrayObject;
 
@@ -52,7 +51,6 @@ VertexArrayObject.prototype.freshBind = function(gl, program, vertexBuffer, elem
 
     } else {
         numPrevAttributes = gl.currentNumAttributes || 0;
-        util.warnOnce('Not using VertexArrayObject extension.');
 
         // Disable all attributes from the previous program that aren't used in
         // the new program. Note: attribute indices are *not* program specific!
