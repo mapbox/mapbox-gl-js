@@ -14,7 +14,7 @@ var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
-var TilePyramid = require('../source/tile_pyramid');
+var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
 
@@ -355,7 +355,7 @@ Style.prototype = util.inherit(Evented, {
         var shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
-        source = new TilePyramid(id, source, this.dispatcher);
+        source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
         source.style = this;
         source

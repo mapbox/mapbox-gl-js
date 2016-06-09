@@ -54,8 +54,8 @@ function mergeRenderedFeatureLayers(tiles) {
     return result;
 }
 
-exports._queryRenderedVectorFeatures = function(pyramid, styleLayers, queryGeometry, params, zoom, bearing) {
-    var tilesIn = pyramid.tilesIn(queryGeometry);
+exports._queryRenderedVectorFeatures = function(sourceCache, styleLayers, queryGeometry, params, zoom, bearing) {
+    var tilesIn = sourceCache.tilesIn(queryGeometry);
 
     tilesIn.sort(sortTilesIn);
 
@@ -75,9 +75,9 @@ exports._queryRenderedVectorFeatures = function(pyramid, styleLayers, queryGeome
     return mergeRenderedFeatureLayers(renderedFeatureLayers);
 };
 
-exports._querySourceFeatures = function(pyramid, params) {
-    var tiles = pyramid.getRenderableIds().map(function(id) {
-        return pyramid.getTileByID(id);
+exports._querySourceFeatures = function(sourceCache, params) {
+    var tiles = sourceCache.getRenderableIds().map(function(id) {
+        return sourceCache.getTileByID(id);
     });
 
     var result = [];

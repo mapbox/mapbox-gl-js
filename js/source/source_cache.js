@@ -9,7 +9,7 @@ var Coordinate = require('../geo/coordinate');
 var util = require('../util/util');
 var EXTENT = require('../data/bucket').EXTENT;
 
-module.exports = TilePyramid;
+module.exports = SourceCache;
 
 /**
  * A tile pyramid is a specialized cache and datastructure
@@ -19,7 +19,7 @@ module.exports = TilePyramid;
  * @param {Object} options
  * @private
  */
-function TilePyramid(id, options, dispatcher) {
+function SourceCache(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
 
@@ -54,10 +54,10 @@ function TilePyramid(id, options, dispatcher) {
 }
 
 
-TilePyramid.maxOverzooming = 10;
-TilePyramid.maxUnderzooming = 3;
+SourceCache.maxOverzooming = 10;
+SourceCache.maxUnderzooming = 3;
 
-TilePyramid.prototype = util.inherit(Evented, {
+SourceCache.prototype = util.inherit(Evented, {
     // TODO: hopefully remove the need for this
     onAdd: function (map) {
         this.map = map;
@@ -284,8 +284,8 @@ TilePyramid.prototype = util.inherit(Evented, {
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = Math.max(zoom - TilePyramid.maxOverzooming, this.minzoom);
-        var maxCoveringZoom = Math.max(zoom + TilePyramid.maxUnderzooming,  this.minzoom);
+        var minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this.minzoom);
+        var maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
