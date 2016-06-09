@@ -43,7 +43,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
         };
     },
 
-    load: function(tile, callback) {
+    loadTile: function(tile, callback) {
         var url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
@@ -85,14 +85,14 @@ RasterTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    abort: function(tile) {
+    abortTile: function(tile) {
         if (tile.request) {
             tile.request.abort();
             delete tile.request;
         }
     },
 
-    unload: function(tile) {
+    unloadTile: function(tile) {
         if (tile.texture) this.map.painter.saveTexture(tile.texture);
     }
 });

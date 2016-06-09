@@ -45,7 +45,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
         return util.extend({}, this._options);
     },
 
-    load: function(tile, callback) {
+    loadTile: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
@@ -86,11 +86,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
         }
     },
 
-    abort: function(tile) {
+    abortTile: function(tile) {
         this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     },
 
-    unload: function(tile) {
+    unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     }

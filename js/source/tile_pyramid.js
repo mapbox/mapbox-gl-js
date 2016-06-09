@@ -83,17 +83,17 @@ TilePyramid.prototype = util.inherit(Evented, {
     },
 
     loadTile: function (tile, callback) {
-        return this._source.load(tile, callback);
+        return this._source.loadTile(tile, callback);
     },
 
     unloadTile: function (tile) {
         if (this._source.unload)
-            return this._source.unload(tile);
+            return this._source.unloadTile(tile);
     },
 
     abortTile: function (tile) {
         if (this._source.abort)
-            return this._source.abort(tile);
+            return this._source.abortTile(tile);
     },
 
     serialize: function () {

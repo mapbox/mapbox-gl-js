@@ -65,7 +65,7 @@ function GeoJSONSource(id, options, dispatcher) {
     this.type = options.type;
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
-    this._updateData(function done(err) {
+    this._sendDataToWorker(function done(err) {
         if (err) {
             this.fire('error', err);
             return;
@@ -100,15 +100,15 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         return this;
     },
 
-    _updateData: function(callback) {
+    _sendDataToWorker: function(callback) {
         this._dirty = false;
-        var options = util.extend({
+        var options = {
             source: this.id,
             extent: EXTENT,
             scale: EXTENT / this.tileSize,
             minZoom: this.minzoom,
             maxZoom: this.maxzoom
-        }, this.options);
+        };
 
         var data = this._data;
         if (typeof data === 'string') {
@@ -123,20 +123,20 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }.bind(this));
     },
 
-    load: function (tile, callback) {
+    loadTile: function (tile, callback) {
         if (!this._dirty) {
-            return this._load(tile, callback);
+            return this._loadTileFromWorker(tile, callback);
         }
 
-        this._updateData(function (err) {
+        this._sendDataToWorker(function (err) {
             if (err) {
                 return callback(err);
             }
-            this._load(tile, callback);
+            this._loadTileFromWorker(tile, callback);
         }.bind(this));
     },
 
-    _load: function(tile, callback) {
+    _loadTileFromWorker: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             type: this.type,
@@ -175,11 +175,11 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         }.bind(this), this.workerID);
     },
 
-    abort: function(tile) {
+    abortTile: function(tile) {
         tile.aborted = true;
     },
 
-    unload: function(tile) {
+    unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, function() {}, tile.workerID);
     },
