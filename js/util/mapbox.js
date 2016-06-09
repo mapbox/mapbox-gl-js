@@ -68,9 +68,16 @@ module.exports.normalizeStyleURL = function(inputUrl, accessToken) {
 module.exports.normalizeSourceURL = function(inputUrl, accessToken) {
     if (!inputUrl.match(/^mapbox:\/\//))
         return inputUrl;
-    console.log("***********");
+
+
     var inputUrlJson = inputUrl + '.json';
     var parsedUrl= url.parse(inputUrlJson)
+    // console.log("***********");
+    // console.log(parsedUrl);
+    parsedUrl.pathname = parsedUrl.hostname;
+    // config.API_URL + pathPrefix + parsedUrl.pathname + '?' + formattedQuery
+    // found: 'https://api.mapbox.com/v4/null?access_token=token&secure'
+    // wanted: 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure'
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
     return normalizeURL(parsedUrl, '/v4/', accessToken) + '&secure';
