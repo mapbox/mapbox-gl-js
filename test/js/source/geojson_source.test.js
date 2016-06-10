@@ -152,7 +152,6 @@ test('GeoJSONSource#update', function(t) {
     t.test('clears previous tiles', function(t) {
         var source = new GeoJSONSource({data: hawkHill});
 
-        // TODO: decouple
         source.used = true;
         source.dispatcher = {
             send: function(message, args, callback) {
