@@ -221,7 +221,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
 
         callback(null, {
             buckets: nonEmptyBuckets.map(serializeBucket),
-            bucketStats: stats, // TODO put this in a separate message?
+            bucketStats: stats,
             featureIndex: featureIndex_.data,
             collisionTile: collisionTile_.data,
             collisionBoxArray: collisionBoxArray,

@@ -62,7 +62,6 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
     if (!remaining) callback(undefined, glyphs, fontstack);
 
     var onRangeLoaded = function(err, range, data) {
-        // TODO not be silent about errors
         if (!err) {
             var stack = this.stacks[fontstack][range] = data.stacks[0];
             for (var i = 0; i < missing[range].length; i++) {

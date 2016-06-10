@@ -1,15 +1,16 @@
 {
   "extends": "mourner",
   "rules": {
-    "object-curly-spacing": 0,
-    "key-spacing": 0,
-    "array-bracket-spacing": 0,
-    "space-before-function-paren": 0,
-    "quotes": 0,
-    "no-eq-null": 0,
-    "consistent-return": 0,
-    "global-require": 0,
-    "block-scoped-var": 2
+    "object-curly-spacing": "off",
+    "key-spacing": "off",
+    "array-bracket-spacing": "off",
+    "space-before-function-paren": "off",
+    "quotes": "off",
+    "no-eq-null": "off",
+    "consistent-return": "off",
+    "global-require": "off",
+    "block-scoped-var": "error",
+    "no-warning-comments": "error"
   },
   "env": {
     "es6": true
