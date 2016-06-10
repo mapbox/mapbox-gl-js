@@ -49,7 +49,7 @@ function draw(painter, source, layer, coords) {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
-        gl.uniform1f(program.u_opacity, 0.85);
+        gl.uniform1f(program.u_opacity, layer.paint['extrusion-opacity']);
         gl.uniform1i(program.u_texture, 1);
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
@@ -178,12 +178,19 @@ function drawExtrusion(painter, source, layer, coord) {
 
     var gl = painter.gl;
     gl.enable(gl.DEPTH_TEST);
-    var program = painter.useProgram('extrusion');
+
+    var programOptions = bucket.paintAttributes.extrusion[layer.id];
+    var program = painter.useProgram(
+        'extrusion',
+        programOptions.defines,
+        programOptions.vertexPragmas,
+        programOptions.fragmentPragmas
+    );
 
     // console.log(gl.getParameter(gl.ACTIVE_TEXTURE))
 
-    var color = util.premultiply(layer.paint['extrusion-color']);
-    var shadowColor = util.premultiply(layer.paint['extrusion-shadow-color'] || [0,0,1,1]);
+    var color = layer.paint['extrusion-color'];
+    var shadowColor = layer.paint['extrusion-shadow-color'] || [0,0,1,1];
     shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
     var opacity = layer.paint['extrusion-opacity'] || 1;
@@ -242,10 +249,16 @@ function drawExtrusion(painter, source, layer, coord) {
     vec3.transformMat3(lightdir, lightdir, lightMat);
     gl.uniform3fv(program.u_lightdir, lightdir);
 
+    bucket.setUniforms(gl, 'extrusion', program, layer, {zoom: painter.transform.zoom});
+
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
+        console.log(program, group);
         group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
+        try {
+        console.log(program);
         gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+        } catch(e) { console.error(e); }
     }
 }
 
@@ -281,9 +294,8 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         [1, 1, zScale, 1])
     );
 
-    gl.uniform4fv(outlineProgram.u_color, util.premultiply(strokeColor));
+    gl.uniform4fv(outlineProgram.u_color, strokeColor);
     gl.uniform1f(outlineProgram.u_opacity, 0.1);
-
 
     // if (false && image) {
     //     // TODO

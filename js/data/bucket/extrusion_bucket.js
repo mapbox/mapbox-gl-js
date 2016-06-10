@@ -17,22 +17,25 @@ function ExtrusionBucket() {
 ExtrusionBucket.prototype = util.inherit(Bucket, {});
 
 
-ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, z, nx, ny, nz, t, e) {
+ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, ny, nz, t, isUpper, e) {
     const factor = Math.pow(2, 13);
 
     return vertexBuffer.emplaceBack(
             // a_pos
             x,
             y,
-            z,
 
             // a_normal
             Math.floor(nx * factor) * 2 + t,
             ny * factor * 2,
             nz * factor * 2,
 
+            // a_isUpper
+            isUpper,
+
             // a_edgedistance
-            e);
+            e
+            );
 };
 
 ExtrusionBucket.prototype.programInterfaces = {
@@ -46,32 +49,58 @@ ExtrusionBucket.prototype.programInterfaces = {
 
         layoutAttributes: [{
             name: 'a_pos',
-            components: 3,
+            components: 2,
             type: 'Int16'
         }, {
             name: 'a_normal',
             components: 3,
             type: 'Int16'
         }, {
+            name: 'a_isUpper',
+            components: 1,
+            type: 'Uint8'
+        }, {
             name: 'a_edgedistance',
             components: 1,
             type: 'Int16'
+        }],
+        paintAttributes: [{
+            name: 'a_minH',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false, // what is this
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("extrusion-min-height", globalProperties, featureProperties)];
+            },
+            multiplier: 1, // TODO
+            paintProperty: 'extrusion-min-height'
+        }, {
+            name: 'a_maxH',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false, // what is this
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("extrusion-height", globalProperties, featureProperties)];
+            },
+            multiplier: 1, // TODO
+            paintProperty: 'extrusion-height'
         }]
     }
 };
 
 ExtrusionBucket.prototype.addFeature = function(feature) {
-    var levels = (feature.properties && feature.properties.levels) || 3;
+    // var height = (feature.properties && feature.properties.levels) || 3;
+    // var minHeight = (feature.properties && feature.properties['min_height']) || 0;
     // TODO I think the flickering must have to do with sometimes double polys, some with levels and some without :\
 
     var lines = loadGeometry(feature);
     var polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
     for (var i = 0; i < polygons.length; i++) {
-        this.addPolygon(polygons[i], levels);
+        this.addPolygon(polygons[i], feature);
     }
 };
 
-ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
+ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
     var numVertices = 0;
     for (var k = 0; k < polygon.length; k++) {
         numVertices += polygon[k].length;
@@ -81,8 +110,6 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
     var flattened = [];
     var holeIndices = [];
     var startIndex = group.layout.vertex.length;
-
-    var h = levels * 3;
 
     var indices = [];
 
@@ -95,7 +122,7 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
         for (var v = 0; v < ring.length; v++) {
             var vertex = ring[v];
 
-            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], h, 0, 0, 1, 1, 0);
+            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], 0, 0, 1, 1, 1, 0);
             indices.push(fIndex);
 
             if (v >= 1) {
@@ -116,13 +143,13 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
             var perp = Point.convert(v2)._sub(Point.convert(v1))._perp()._unit();
 
             var vertexArray = group.layout.vertex;
-            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], 0, perp.x, perp.y, 0, 0, edgeDistance);
-            this.addExtrusionVertex(vertexArray, v1[0], v1[1], h, perp.x, perp.y, 0, 1, edgeDistance);
+            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, 0, edgeDistance);
+            this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, 1, edgeDistance);
 
             edgeDistance += Point.convert(v2).dist(Point.convert(v1));
 
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], 0, perp.x, perp.y, 0, 0, edgeDistance);
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], h, perp.x, perp.y, 0, 1, edgeDistance);
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, 0, edgeDistance);
+            this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, 1, edgeDistance);
 
             group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
             group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);
@@ -141,6 +168,8 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, levels) {
                 indices[triangleIndices[i+1]],
                 indices[triangleIndices[i+2]]);
     }
+
+    this.populatePaintArrays('extrusion', {zoom: this.zoom}, feature.properties, group, startIndex);
 };
 
 function convertCoords(rings) {

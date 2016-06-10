@@ -3,141 +3,15 @@
     "version": 8,
     "name": "Mapbox Streets",
     "metadata": {
-        "mapbox:autocomposite": true,
-        "mapbox:groups": {
-            "1444934828655.3389": {
-                "name": "Aeroways",
-                "collapsed": true
-            },
-            "1444933322393.2852": {
-                "name": "POI labels  (scalerank 1)",
-                "collapsed": true
-            },
-            "1444855898284.2651": {
-                "name": "Aeroways",
-                "collapsed": true
-            },
-            "1444862578782.6787": {
-                "name": "Road labels",
-                "collapsed": true
-            },
-            "1444934749452.0452": {
-                "name": "Wetlands",
-                "collapsed": true
-            },
-            "1444862074717.8372": {
-                "name": "Waterways",
-                "collapsed": true
-            },
-            "1444855868004.2437": {
-                "name": "Landuse",
-                "collapsed": false
-            },
-            "1444855786460.0557": {
-                "name": "Roads",
-                "collapsed": true
-            },
-            "1444856968392.4368": {
-                "name": "Contour lines",
-                "collapsed": true
-            },
-            "1444856071629.7817": {
-                "name": "Place labels",
-                "collapsed": true
-            },
-            "1444933575858.6992": {
-                "name": "Highway shields",
-                "collapsed": true
-            },
-            "1444934295202.7542": {
-                "name": "Admin boundaries",
-                "collapsed": true
-            },
-            "1444856904773.373": {
-                "name": "Land barriers",
-                "collapsed": true
-            },
-            "1444856931506.5164": {
-                "name": "Barriers",
-                "collapsed": true
-            },
-            "1444856151690.9143": {
-                "name": "State labels",
-                "collapsed": true
-            },
-            "1444933721429.3076": {
-                "name": "Road labels",
-                "collapsed": true
-            },
-            "1444933358918.2366": {
-                "name": "POI labels (scalerank 2)",
-                "collapsed": true
-            },
-            "1444933808272.805": {
-                "name": "Water labels",
-                "collapsed": true
-            },
-            "1444855815295.714": {
-                "name": "Hillshading",
-                "collapsed": true
-            },
-            "1444855831248.8289": {
-                "name": "Landcover",
-                "collapsed": true
-            },
-            "1444933372896.5967": {
-                "name": "POI labels (scalerank 3)",
-                "collapsed": true
-            },
-            "1444855799204.86": {
-                "name": "Bridges",
-                "collapsed": true
-            },
-            "1444856087950.3635": {
-                "name": "Marine labels",
-                "collapsed": true
-            },
-            "1444856869758.2375": {
-                "name": "Wetlands",
-                "collapsed": true
-            },
-            "1444862510685.128": {
-                "name": "City labels",
-                "collapsed": true
-            },
-            "1444856954425.4016": {
-                "name": "Buildings",
-                "collapsed": true
-            },
-            "1444855769305.6016": {
-                "name": "Tunnels",
-                "collapsed": true
-            },
-            "1444856144497.7825": {
-                "name": "Country labels",
-                "collapsed": true
-            },
-            "1444856712129.5933": {
-                "name": "Waterways",
-                "collapsed": true
-            },
-            "1444856677484.5256": {
-                "name": "High zoom level labels",
-                "collapsed": true
-            },
-            "1444933456003.5437": {
-                "name": "POI labels (scalerank 4)",
-                "collapsed": true
-            },
-            "1444933837268.9458": {
-                "name": "Contour lines",
-                "collapsed": true
-            }
-        }
+        "mapbox:autocomposite": true
     },
     "sources": {
         "composite": {
             "url": "mapbox://lbud.bf968ap7",
+            "type": "vector"
+        },
+        "mapbox": {
+            "url": "mapbox://mapbox.mapbox-streets-v7",
             "type": "vector"
         }
     },
@@ -151,7 +25,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "background-color": "#ace"
+                "background-color": "#444"
             },
             "interactive": true
         },
@@ -220,7 +94,7 @@
         {
             "interactive": true,
             "layout": {
-                "visibility": "visible"
+                "visibility": "none"
             },
             "type": "fill",
             "source": "composite",
@@ -235,6 +109,20 @@
         },
 
         {
+          "id": "poi_label",
+          "type": "circle",
+          "layout": {
+              "visibility": "none"
+          },
+          "source": "mapbox",
+          "source-layer": "poi_label",
+          "paint": {
+            "circle-radius": 5,
+            "circle-color": "red"
+          }
+        },
+
+        {
           "layout": {
             "visibility": "visible"
           },
@@ -242,13 +130,20 @@
           "source": "composite",
           "id": "buildingtada",
           "paint": {
-            "extrusion-color": "#e8e0cc",
-            "extrusion-antialias": true,
+            "extrusion-color": "#69c",
+            "extrusion-antialias": false,
             "extrusion-lighting-anchor": "viewport",
             "extrusion-outline-color": "#909",
             "extrusion-opacity": 1,
-            "extrusion-pattern": "gb-national-rail",
-            "extrusion-shadow-color": "#00f"
+            "extrusion-shadow-color": "#00f",
+            "extrusion-height": {
+              "stops": [[0, 0], [100, 100]],
+              "property": "levels"
+            },
+            "extrusion-min-height": {
+              "stops": [[0, 0], [100, 0]],
+              "property": "levels"
+            }
           },
           "source-layer": "building",
           "interactive": true
