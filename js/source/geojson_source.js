@@ -11,8 +11,11 @@ module.exports.create = function (id, options, dispatcher) {
     return new GeoJSONSource(id, options, dispatcher);
 };
 
+// TODO: This will be removed before merging.  It is here now to demonstrate
+// how a *third-party* could provide a WorkerSource implementation using
+// webworkify
 module.exports.workerSourceURL = URL.createObjectURL(
-    webworkify(require('./geojson_worker_source'), {bare: true})
+    webworkify(require('./geojson_worker_source_wrapper'), {bare: true})
 );
 
 /**
@@ -60,9 +63,9 @@ function GeoJSONSource(id, options, dispatcher) {
     this.dispatcher = dispatcher;
 
     options = options || {};
+    this.cluster = options.cluster;
 
     this._data = options.data;
-    this.type = options.type;
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
 
     this._sendDataToWorker(function done(err) {
@@ -75,6 +78,9 @@ function GeoJSONSource(id, options, dispatcher) {
 }
 
 GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototype */ {
+    // `type` is a property rather than a constant to make it easy for 3rd
+    // parties to use GeoJSONSource to build their own source types.
+    type: 'geojson',
     minzoom: 0,
     maxzoom: 18,
     tileSize: 512,
@@ -103,6 +109,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _sendDataToWorker: function(callback) {
         this._dirty = false;
         var options = {
+            cluster: this.cluster,
             source: this.id,
             extent: EXTENT,
             scale: EXTENT / this.tileSize,
@@ -116,7 +123,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
-        this.workerID = this.dispatcher.send(this.type + '.parse', options, function(err) {
+        this.workerID = this.dispatcher.send(this.type + '.loadData', options, function(err) {
             this._loaded = true;
             callback(err);
 

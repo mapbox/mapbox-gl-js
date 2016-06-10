@@ -23,7 +23,6 @@ var RasterSource = require('../source/raster_tile_source');
 var GeoJSONSource = require('../source/geojson_source');
 var VideoSource = require('../source/video_source');
 var ImageSource = require('../source/image_source');
-var ClusteredGeoJSONSource = require('../source/clustered_geojson_source');
 
 module.exports = Style;
 
@@ -97,8 +96,7 @@ function Style(stylesheet, animationLoop, workerCount) {
           ['raster', RasterSource],
           ['geojson', GeoJSONSource],
           ['video', VideoSource],
-          ['image', ImageSource],
-          ['geojson-clustered', ClusteredGeoJSONSource]
+          ['image', ImageSource]
         ], function (type, done) {
             this.addSourceType(type[0], type[1].create, type[1].workerSourceURL, done);
         }.bind(this), sourceTypesLoaded);
