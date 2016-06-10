@@ -170,7 +170,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
                 tile.redoPlacement(this);
             }
 
-            return callback(null, data);
+            return callback(null);
 
         }.bind(this), this.workerID);
     },

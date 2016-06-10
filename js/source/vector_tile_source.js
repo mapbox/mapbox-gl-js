@@ -82,7 +82,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
                 tile.redoPlacement(this);
             }
 
-            callback(null, data);
+            callback(null);
         }
     },
 
