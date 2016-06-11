@@ -57,7 +57,7 @@
     "highlight.js": "9.3.0",
     "istanbul": "^0.4.2",
     "lodash": "^4.13.1",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#5587d796c99145991ea2a7b749a8782b7a0cb483",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#64cf15b657e12b070fede3f2fd3f5ac4fc096e5b",
     "nyc": "^6.1.1",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
