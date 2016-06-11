@@ -584,6 +584,20 @@
         "icon-image"
       ]
     },
+    "text-pitch-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": true,
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "doc": "Aligns text to the plane of the `viewport` or the `map` when the map is pitched. Matches `text-rotation-alignment` if unspecified.",
+      "requires": [
+        "text-field"
+      ]
+    },
     "text-rotation-alignment": {
       "type": "enum",
       "function": "piecewise-constant",
