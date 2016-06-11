@@ -173,8 +173,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
             // Prevent label from extending past the end of the line
             var glyphMinScale = Math.max(instance.minScale, labelMinScale);
 
-            var anchorAngle = (anchor.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            var glyphAngle = (instance.angle + textRotate + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            var anchorAngle = (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            var glyphAngle = (instance.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
             quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale));
         }
     }
