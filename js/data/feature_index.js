@@ -60,8 +60,6 @@ FeatureIndex.prototype.insert = function(feature, featureIndex, sourceLayerIndex
     for (var r = 0; r < geometry.length; r++) {
         var ring = geometry[r];
 
-        // TODO: skip holes when we start using vector tile spec 2.0
-
         var bbox = [Infinity, Infinity, -Infinity, -Infinity];
         for (var i = 0; i < ring.length; i++) {
             var p = ring[i];

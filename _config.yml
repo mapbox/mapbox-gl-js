@@ -2,11 +2,9 @@ url: https://122e4e-mapbox.global.ssl.fastly.net
 api: https://122e4e-mapbox.global.ssl.fastly.net/core
 tileApi: https://api-maps-staging.tilestream.net
 source: docs
-permalink: /:categories/:title
+permalink: /:categories/:title/
 baseurl: /mapbox-gl-js
-highlighter: pygments
 excerpt_separator: ""
-version: v0.19.1
+version: v0.20.0
 mapboxglbase: /mapbox-gl-js/dist
-rdiscount:
-  extensions: [smart]
+future: true

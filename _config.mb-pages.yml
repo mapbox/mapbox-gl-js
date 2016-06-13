@@ -2,11 +2,9 @@ url: https://www.mapbox.com
 api: https://www.mapbox.com/core
 tileApi: https://api.mapbox.com
 source: docs
-permalink: /:categories/:title
+permalink: /:categories/:title/
 baseurl: https://www.mapbox.com/mapbox-gl-js
-highlighter: pygments
 excerpt_separator: ""
-version: v0.19.1
-rdiscount:
-  extensions: [smart]
+version: v0.20.0
 exclude: [dist]
+future: true

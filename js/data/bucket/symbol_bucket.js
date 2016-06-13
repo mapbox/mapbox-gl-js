@@ -69,7 +69,7 @@ var programAttributes = [{
     type: 'Uint8'
 }];
 
-function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
     return array.emplaceBack(
             // pos
             x,
@@ -81,7 +81,7 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) 
             tx / 4,                   // tex
             ty / 4,                   // tex
             (labelminzoom || 0) * 10, // labelminzoom
-            0,
+            labelangle,               // labelangle
             // data2
             (minzoom || 0) * 10,               // minzoom
             Math.min(maxzoom || 25, 25) * 10); // minzoom
@@ -462,11 +462,10 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
 
     for (var k = quadsStart; k < quadsEnd; k++) {
 
-        var symbol = this.symbolQuadsArray.get(k).SymbolQuad,
-            angle = symbol.angle;
+        var symbol = this.symbolQuadsArray.get(k).SymbolQuad;
 
         // drop upside down versions of glyphs
-        var a = (angle + placementAngle + Math.PI) % (Math.PI * 2);
+        var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
         if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
         var tl = symbol.tl,
@@ -484,10 +483,13 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        // Encode angle of glyph
+        var glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
+
+        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
 
         elementArray.emplaceBack(index, index + 1, index + 2);
         elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -624,7 +626,8 @@ SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
         symbolQuad.tex.x,
         symbolQuad.tex.y,
         //angle
-        symbolQuad.angle,
+        symbolQuad.anchorAngle,
+        symbolQuad.glyphAngle,
         // scales
         symbolQuad.maxScale,
         symbolQuad.minScale);

@@ -41,8 +41,10 @@ var SymbolQuadsArray = module.exports = new StructArrayType({
         { type: 'Int16', name: 'texX' },
         { type: 'Int16', name: 'texY' },
 
-        //the angle of the label at it's center, not the angle of this quad.
-        { type: 'Float32', name: 'angle' },
+        // the angle of the label at it's center, not the angle of this quad.
+        { type: 'Float32', name: 'anchorAngle' },
+        // the angle of this quad.
+        { type: 'Float32', name: 'glyphAngle' },
 
         // quad is only valid for scales < maxScale && scale > minScale.
         { type: 'Float32', name: 'maxScale' },
@@ -61,7 +63,8 @@ util.extendAll(SymbolQuadsArray.prototype.StructType.prototype, {
             new Point(this.blX, this.blY),
             new Point(this.brX, this.brY),
             { x: this.texX, y: this.texY, h: this.texH, w: this.texW, height: this.texH, width: this.texW },
-            this.angle,
+            this.anchorAngle,
+            this.glyphAngle,
             this.minScale,
             this.maxScale);
     }

@@ -1,3 +1,19 @@
+## 0.20.0 (June 10 2016)
+
+#### New Features & Improvements
+
+ * Add limited WMS support #2612
+ * Add `workerCount` constructor option #2666
+ * Improve performance of `locationPoint` and `pointLocation` #2690
+ * Remove "Not using VertexArrayObject extension" warning messages #2707
+ * Add `version` property to mapboxgl #2660
+ * Support property functions in `circle-opacity` and `circle-blur` #2693
+
+#### Bugfixes
+
+* Fix exception thrown by "drag rotate" handler #2680
+* Return an empty array instead of an empty object from `queryRenderedFeatures` #2694
+
 ## 0.19.1 (June 2 2016)
 
 #### Bugfixes

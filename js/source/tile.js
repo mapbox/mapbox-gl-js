@@ -25,7 +25,7 @@ module.exports = Tile;
 function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
-    this.loaded = false; // TODO rename loaded
+    this.loaded = false;
     this.isUnloaded = false;
     this.uses = 0;
     this.tileSize = size;
