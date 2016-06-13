@@ -63,7 +63,9 @@ module.exports.normalizeSourceURL = function(sourceURL, accessToken) {
 };
 
 module.exports.normalizeGlyphsURL = function(glyphsURL, accessToken) {
-    if (!glyphsURL.match(/^mapbox:\/\//))
+    var urlObject = url.parse(glyphsURL);
+
+    if (urlObject.protocol !== 'mapbox:')
         return glyphsURL;
 
     var splitAlongQueryURL = glyphsURL.split('?');
