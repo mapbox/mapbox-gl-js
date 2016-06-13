@@ -55,7 +55,7 @@ module.exports.normalizeSourceURL = function(sourceURL, accessToken) {
 
     urlObject.pathname = urlObject.hostname;
 
-    var parsedURL = url.format(urlObject.protocol + '//' + urlObject.pathname);
+    var parsedURL = urlObject.protocol + '//' + urlObject.pathname;
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
     return normalizeURL(parsedURL, '/v4/', accessToken) + '&secure';
