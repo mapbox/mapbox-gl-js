@@ -1185,7 +1185,6 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Circle radius."
@@ -1196,7 +1195,6 @@
       "doc": "The color of the circle.",
       "function": "interpolated",
       "zoom-function": true,
-      "property-function": true,
       "property-function": true,
       "transition": true
     },
