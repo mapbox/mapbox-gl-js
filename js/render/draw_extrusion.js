@@ -36,8 +36,7 @@ function draw(painter, source, layer, coords) {
         if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
             for (var i = 0; i < coords.length; i++) {
                 var coord = coords[i];
-                // TODO this is majorly broken -- causes only 1 rendered tile at a time
-                // drawExtrusionStroke(painter, source, layer, coord);
+                drawExtrusionStroke(painter, source, layer, coord);
             }
         }
 
@@ -179,16 +178,6 @@ function drawExtrusion(painter, source, layer, coord) {
     var gl = painter.gl;
     gl.enable(gl.DEPTH_TEST);
 
-    var programOptions = bucket.paintAttributes.extrusion[layer.id];
-    var program = painter.useProgram(
-        'extrusion',
-        programOptions.defines,
-        programOptions.vertexPragmas,
-        programOptions.fragmentPragmas
-    );
-
-    // console.log(gl.getParameter(gl.ACTIVE_TEXTURE))
-
     var color = layer.paint['extrusion-color'];
     var shadowColor = layer.paint['extrusion-shadow-color'] || [0,0,1,1];
     shadowColor[3] = 1;
@@ -197,9 +186,15 @@ function drawExtrusion(painter, source, layer, coord) {
     var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
     // TODO this should be changed to a map property probably so as not to get trippy situations where layers are lit differently...?
 
-    if (image) {
-        program = painter.useProgram('extrusionpattern');
+    var programOptions = bucket.paintAttributes.extrusion[layer.id];
+    var program = painter.useProgram(
+        image ? 'extrusionpattern' : 'extrusion',
+        programOptions.defines,
+        programOptions.vertexPragmas,
+        programOptions.fragmentPragmas
+    );
 
+    if (image) {
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
             coord.posMatrix,
             tile,
