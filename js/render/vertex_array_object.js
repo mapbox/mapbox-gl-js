@@ -76,10 +76,7 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
 
     // Enable all attributes for the new program.
     for (var j = numPrevAttributes; j < numNextAttributes; j++) {
-        // TODO resolve???? vertexBuffer -> layoutVertexBuffer
-        if (program[layoutVertexBuffer.attributes[j].name] !== undefined) {
-            gl.enableVertexAttribArray(j);
-        }
+        gl.enableVertexAttribArray(j);
     }
 
     /**

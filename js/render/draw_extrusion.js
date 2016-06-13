@@ -253,12 +253,8 @@ function drawExtrusion(painter, source, layer, coord) {
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
-        console.log(program, group);
-        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
-        try {
-        console.log(program);
+        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
-        } catch(e) { console.error(e); }
     }
 }
 
