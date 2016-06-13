@@ -29,7 +29,9 @@ function normalizeURL(mapboxURL, pathPrefix, accessToken) {
 }
 
 module.exports.normalizeStyleURL = function(styleURL, accessToken) {
-    if (!styleURL.match(/^mapbox:\/\/styles\//))
+    var urlObject = url.parse(styleURL, true);
+
+    if (urlObject.protocol !== 'mapbox:')
         return styleURL;
 
     var urlObject = url.parse(styleURL, true);
@@ -39,17 +41,18 @@ module.exports.normalizeStyleURL = function(styleURL, accessToken) {
         formattedQuery = '?' + querystring.stringify(urlObject.query);
     }
 
-    var parsedURL = url.format(urlObject.protocol + '/' + urlObject.pathname + formattedQuery);
+    var parsedURL = urlObject.protocol + '/' + urlObject.pathname + formattedQuery;
 
     return normalizeURL(parsedURL, '/styles/v1/', accessToken);
 };
 
 module.exports.normalizeSourceURL = function(sourceURL, accessToken) {
-    if (!sourceURL.match(/^mapbox:\/\//))
-        return sourceURL;
-
     var sourceURLJson = sourceURL + '.json';
+
     var urlObject = url.parse(sourceURLJson);
+
+    if (urlObject.protocol !== 'mapbox:')
+        return sourceURL;
 
     urlObject.pathname = urlObject.hostname;
 
@@ -71,10 +74,10 @@ module.exports.normalizeGlyphsURL = function(glyphsURL, accessToken) {
 };
 
 module.exports.normalizeSpriteURL = function(spriteURL, format, ext, accessToken) {
-    if (!spriteURL.match(/^mapbox:\/\/sprites\//))
-        return spriteURL + format + ext;
-
     var urlObject = url.parse(spriteURL, true);
+
+    if (urlObject.protocol !== 'mapbox:')
+        return spriteURL + format + ext;
 
     var formattedQuery = '';
 
