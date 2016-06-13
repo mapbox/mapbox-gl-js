@@ -77,16 +77,18 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine, sha
             textBottom = shapedText.bottom * size,
             textWidth = textRight - textLeft,
             textHeight = textBottom - textTop,
-            padX = layout['icon-text-fit-padding'][0],
-            padY = layout['icon-text-fit-padding'][1],
+            padT = layout['icon-text-fit-padding'][0],
+            padR = layout['icon-text-fit-padding'][1],
+            padB = layout['icon-text-fit-padding'][2],
+            padL = layout['icon-text-fit-padding'][3],
             offsetY = layout['icon-text-fit'] === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
             offsetX = layout['icon-text-fit'] === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
             width = layout['icon-text-fit'] === 'width' || layout['icon-text-fit'] === 'both' ? textWidth : iconWidth,
             height = layout['icon-text-fit'] === 'height' || layout['icon-text-fit'] === 'both' ? textHeight : iconHeight;
-        tl = new Point(textLeft + offsetX - padX,         textTop + offsetY - padY);
-        tr = new Point(textLeft + offsetX + padX + width, textTop + offsetY - padY);
-        br = new Point(textLeft + offsetX + padX + width, textTop + offsetY + padY + height);
-        bl = new Point(textLeft + offsetX - padX,         textTop + offsetY + padY + height);
+        tl = new Point(textLeft + offsetX - padL,         textTop + offsetY - padT);
+        tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
+        br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
+        bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
     // Normal icon size mode
     } else {
         tl = new Point(left, top);

@@ -95,7 +95,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 24,
             'icon-text-fit': 'width',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -60, y: 0 });
         t.deepEqual(quads[0].tr, { x: 20, y: 0 });
@@ -110,7 +110,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'width',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -30, y: -5 });
         t.deepEqual(quads[0].tr, { x: 10, y: -5 });
@@ -126,7 +126,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'width',
-            'icon-text-fit-padding': [ 10, 5 ]
+            'icon-text-fit-padding': [ 5, 10, 5, 10 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -40, y: -10 });
         t.deepEqual(quads[0].tr, { x: 20, y: -10 });
@@ -141,7 +141,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 24,
             'icon-text-fit': 'height',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -30, y: -10 });
         t.deepEqual(quads[0].tr, { x: -10, y: -10 });
@@ -156,7 +156,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'height',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -20, y: -5 });
         t.deepEqual(quads[0].tr, { x: 0, y: -5 });
@@ -172,7 +172,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'height',
-            'icon-text-fit-padding': [ 10, 5 ]
+            'icon-text-fit-padding': [ 5, 10, 5, 10 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -30, y: -10 });
         t.deepEqual(quads[0].tr, { x: 10, y: -10 });
@@ -186,7 +186,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 24,
             'icon-text-fit': 'both',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -60, y: -10 });
         t.deepEqual(quads[0].tr, { x: 20, y: -10 });
@@ -200,7 +200,7 @@ test('getIconQuads text-fit', function(t) {
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'both',
-            'icon-text-fit-padding': [ 0, 0 ]
+            'icon-text-fit-padding': [ 0, 0, 0, 0 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -30, y: -5 });
         t.deepEqual(quads[0].tr, { x: 10, y: -5 });
@@ -209,18 +209,33 @@ test('getIconQuads text-fit', function(t) {
         t.end();
     });
 
-    t.test('icon-text-fit: both, x textSize', function(t) {
+    t.test('icon-text-fit: both, x textSize, + padding', function(t) {
         // - Uses text width + height (adjusted for textSize)
         // - Applies padding x, padding y
         var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
             'text-size': 12,
             'icon-text-fit': 'both',
-            'icon-text-fit-padding': [ 10, 5 ]
+            'icon-text-fit-padding': [ 5, 10, 5, 10 ]
         }, false, fakeShapedText);
         t.deepEqual(quads[0].tl, { x: -40, y: -10 });
         t.deepEqual(quads[0].tr, { x: 20, y: -10 });
         t.deepEqual(quads[0].bl, { x: -40, y: 20 });
         t.deepEqual(quads[0].br, { x: 20, y: 20 });
+        t.end();
+    });
+
+    t.test('icon-text-fit: both, padding t/r/b/l', function(t) {
+        // - Uses text width + height (adjusted for textSize)
+        // - Applies padding t/r/b/l
+        var quads = getIconQuads(anchor, fakeShapedIcon, 2, [], {
+            'text-size': 12,
+            'icon-text-fit': 'both',
+            'icon-text-fit-padding': [ 0, 5, 10, 15 ]
+        }, false, fakeShapedText);
+        t.deepEqual(quads[0].tl, { x: -45, y: -5 });
+        t.deepEqual(quads[0].tr, { x: 15, y: -5 });
+        t.deepEqual(quads[0].bl, { x: -45, y: 25 });
+        t.deepEqual(quads[0].br, { x: 15, y: 25 });
         t.end();
     });
 
