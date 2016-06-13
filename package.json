@@ -58,7 +58,7 @@
     "istanbul": "^0.4.2",
     "lodash": "^4.13.1",
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#e78f09dce98080a9a6fa436d11fdf6fc2f271d7a",
-    "nyc": "^6.1.1",
+    "nyc": "6.4.0",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
     "sinon": "^1.15.4",
