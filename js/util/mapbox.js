@@ -34,7 +34,6 @@ module.exports.normalizeStyleURL = function(styleURL, accessToken) {
     if (urlObject.protocol !== 'mapbox:')
         return styleURL;
 
-    var urlObject = url.parse(styleURL, true);
     var formattedQuery = '';
 
     if (Object.keys(urlObject.query).length !== 0) {
