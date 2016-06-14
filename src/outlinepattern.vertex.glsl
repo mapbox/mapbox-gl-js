@@ -6,12 +6,6 @@ precision highp float;
 #define highp
 #endif
 
-#ifndef MAPBOX_GL_JS
-uniform vec2 u_patternscale_a;
-uniform vec2 u_patternscale_b;
-uniform vec2 u_offset_a;
-uniform vec2 u_offset_b;
-#else
 uniform vec2 u_pattern_size_a;
 uniform vec2 u_pattern_size_b;
 uniform vec2 u_pixel_coord_upper;
@@ -19,7 +13,6 @@ uniform vec2 u_pixel_coord_lower;
 uniform float u_scale_a;
 uniform float u_scale_b;
 uniform float u_tile_units_to_pixels;
-#endif
 
 attribute vec2 a_pos;
 
@@ -30,19 +23,13 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec2 v_pos;
 
-
 void main() {
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
-#ifndef MAPBOX_GL_JS
-    v_pos_a = u_patternscale_a * a_pos + u_offset_a;
-    v_pos_b = u_patternscale_b * a_pos + u_offset_b;
-    v_pos = (gl_Position.xy/gl_Position.w + 1.0) / 2.0 * u_world;
-#else
     vec2 scaled_size_a = u_scale_a * u_pattern_size_a;
     vec2 scaled_size_b = u_scale_b * u_pattern_size_b;
 
     // the correct offset needs to be calculated.
-    // 
+    //
     // The offset depends on how many pixels are between the world origin and
     // the edge of the tile:
     // vec2 offset = mod(pixel_coord, size)
@@ -63,5 +50,4 @@ void main() {
     v_pos_b = (u_tile_units_to_pixels * a_pos + offset_b) / scaled_size_b;
 
     v_pos = (gl_Position.xy / gl_Position.w + 1.0) / 2.0 * u_world;
-#endif
 }
