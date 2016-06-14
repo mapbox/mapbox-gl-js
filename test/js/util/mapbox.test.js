@@ -11,9 +11,16 @@ test("mapbox", function(t) {
     config.ACCESS_TOKEN = 'key';
 
     t.test('.normalizeStyleURL', function(t) {
-        t.test('returns an API URL with access_token parameter', function(t) {
+        t.test('returns an API URL with access_token parameter when no query string', function(t) {
             t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style'), 'https://api.mapbox.com/styles/v1/user/style?access_token=key');
             t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style/draft'), 'https://api.mapbox.com/styles/v1/user/style/draft?access_token=key');
+            t.end();
+        });
+
+        t.test('returns an API URL with access_token parameter when query string exists', function(t) {
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style?fresh=true&access_token=key');
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/user/style/draft?fresh=true'), 'https://api.mapbox.com/styles/v1/user/style/draft?fresh=true&access_token=key');
+            t.equal(mapbox.normalizeStyleURL('mapbox://styles/foo/bar'), 'https://api.mapbox.com/styles/v1/foo/bar?access_token=key');
             t.end();
         });
 
@@ -33,6 +40,11 @@ test("mapbox", function(t) {
 
         t.test('uses provided access token', function(t) {
             t.equal(mapbox.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure');
+            t.end();
+        });
+
+        t.test('works with composite sources', function(t) {
+            t.equal(mapbox.normalizeSourceURL('mapbox://one.a,two.b,three.c'), 'https://api.mapbox.com/v4/one.a,two.b,three.c.json?access_token=key&secure');
             t.end();
         });
 
@@ -59,11 +71,13 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeGlyphsURL', function(t) {
-        t.test('normalizes mapbox:// URLs', function(t) {
-            t.equal(
-                mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'),
-                'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key'
-            );
+        t.test('normalizes mapbox:// URLs when no query string', function(t) {
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?access_token=key');
+            t.end();
+        });
+
+        t.test('normalizes mapbox:// URLs when query string exists', function(t) {
+            t.equal(mapbox.normalizeGlyphsURL('mapbox://fonts/boxmap/{fontstack}/{range}.pbf?fresh=true'), 'https://api.mapbox.com/fonts/v1/boxmap/{fontstack}/{range}.pbf?fresh=true&access_token=key');
             t.end();
         });
 
@@ -76,7 +90,7 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeSpriteURL', function(t) {
-        t.test('normalizes mapbox:// URLs', function(t) {
+        t.test('normalizes mapbox:// URLs when no query string', function(t) {
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8', '', '.json'),
                 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?access_token=key'
@@ -90,6 +104,25 @@ test("mapbox", function(t) {
             t.equal(
                 mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8/draft', '@2x', '.png'),
                 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?access_token=key'
+            );
+
+            t.end();
+        });
+
+        t.test('normalizes mapbox:// URLs when query string exists', function(t) {
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8?fresh=true', '', '.json'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite.json?fresh=true&access_token=key'
+            );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8?fresh=false', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/sprite@2x.png?fresh=false&access_token=key'
+            );
+
+            t.equal(
+                mapbox.normalizeSpriteURL('mapbox://sprites/mapbox/streets-v8/draft?fresh=true', '@2x', '.png'),
+                'https://api.mapbox.com/styles/v1/mapbox/streets-v8/draft/sprite@2x.png?fresh=true&access_token=key'
             );
 
             t.end();
