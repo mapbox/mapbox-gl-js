@@ -5,7 +5,7 @@ var util = require('../util/util');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
-var webworkify = require('webworkify');
+var browser = require('../util/browser');
 
 module.exports.create = function (id, options, dispatcher) {
     return new GeoJSONSource(id, options, dispatcher);
@@ -14,8 +14,8 @@ module.exports.create = function (id, options, dispatcher) {
 // TODO: This will be removed before merging.  It is here now to demonstrate
 // how a *third-party* could provide a WorkerSource implementation using
 // webworkify
-module.exports.workerSourceURL = URL.createObjectURL(
-    webworkify(require('./geojson_worker_source_wrapper'), {bare: true})
+module.exports.workerSourceURL = browser.createBlobURLForModule(
+    require('./geojson_worker_source_wrapper')
 );
 
 /**
@@ -59,18 +59,34 @@ module.exports.workerSourceURL = URL.createObjectURL(
  * map.removeSource('some id');  // remove
  */
 function GeoJSONSource(id, options, dispatcher) {
+    options = options || {};
     this.id = id;
     this.dispatcher = dispatcher;
 
-    options = options || {};
-    this.cluster = options.cluster;
-
     this._data = options.data;
+
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
+
+    var scale = EXTENT / this.tileSize;
+
+    this.geojsonVtOptions = {
+        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
+        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
+        extent: EXTENT,
+        maxZoom: this.maxzoom
+    };
+
+    this.cluster = options.cluster || false;
+    this.superclusterOptions = {
+        maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
+        extent: EXTENT,
+        radius: (options.clusterRadius || 50) * scale,
+        log: false
+    };
 
     this._sendDataToWorker(function done(err) {
         if (err) {
-            this.fire('error', err);
+            this.fire('error', {error: err});
             return;
         }
         this.fire('load');
@@ -109,12 +125,10 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     _sendDataToWorker: function(callback) {
         this._dirty = false;
         var options = {
-            cluster: this.cluster,
             source: this.id,
-            extent: EXTENT,
-            scale: EXTENT / this.tileSize,
-            minZoom: this.minzoom,
-            maxZoom: this.maxzoom
+            cluster: this.cluster,
+            superclusterOptions: this.superclusterOptions,
+            geojsonVtOptions: this.geojsonVtOptions
         };
 
         var data = this._data;

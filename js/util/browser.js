@@ -56,6 +56,10 @@ exports.supported = function () {
     return true;
 };
 
+exports.createBlobURLForModule = function () {
+    return 'blob:mock-blob-url';
+};
+
 exports.devicePixelRatio = 1;
 exports.hardwareConcurrency = 8;
 exports.supportsWebp = false;

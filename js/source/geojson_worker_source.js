@@ -80,30 +80,14 @@ GeoJSONWorkerSource.prototype = {
      * @param {callback} (err, indexedData)
      */
     _indexData: function (data, params, callback) {
-        if (params.cluster) {
-            var superclusterOptions = {
-                maxZoom: params.maxZoom,
-                extent: params.extent,
-                radius: (params.clusterRadius || 50) * params.scale,
-                log: false
-            };
-            try {
-                return callback(null, supercluster(superclusterOptions).load(data.features));
-            } catch (e) {
-                return callback(e);
+        try {
+            if (params.cluster) {
+                callback(null, supercluster(params.supeclusterOptions).load(data.features));
+            } else {
+                callback(null, geojsonvt(data, params.geojsonVtOptions));
             }
-        } else {
-            var geojsonVtOptions = {
-                buffer: (params.buffer !== undefined ? params.buffer : 128) * params.scale,
-                tolerance: (params.tolerance !== undefined ? params.tolerance : 0.375) * params.scale,
-                extent: params.extent,
-                maxZoom: params.maxZoom
-            };
-            try {
-                return callback(null, geojsonvt(data, geojsonVtOptions));
-            } catch (e) {
-                return callback(e);
-            }
+        } catch (err) {
+            return callback(err);
         }
     }
 };
