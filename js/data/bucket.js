@@ -347,6 +347,12 @@ function createPaintAttributes(bucket) {
 
         var interface_ = bucket.programInterfaces[interfaceName];
         if (!interface_.paintAttributes) continue;
+
+        // These tokens are replaced by arguments to the pragma
+        // https://github.com/mapbox/mapbox-gl-shaders#pragmas
+        var attributePrecision = '{precision}';
+        var attributeType = '{type}';
+
         for (var i = 0; i < interface_.paintAttributes.length; i++) {
             var attribute = interface_.paintAttributes[i];
             attribute.multiplier = attribute.multiplier || 1;
@@ -355,18 +361,12 @@ function createPaintAttributes(bucket) {
                 var layer = bucket.childLayers[j];
                 var paintAttributes = layerPaintAttributes[layer.id];
 
-                var attributeType = attribute.components === 1 ? 'float' : 'vec' + attribute.components;
                 var attributeInputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
                 var attributeInnerName = attribute.name.slice(2);
                 var attributeVaryingDefinition;
 
                 paintAttributes.fragmentPragmas.initialize[attributeInnerName] = '';
-
-                // This token is replaced by the first argument to the pragma,
-                // which must be the attribute's precision ("lowp", "mediump",
-                // or "highp")
-                var attributePrecision = '{precision}';
 
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);
