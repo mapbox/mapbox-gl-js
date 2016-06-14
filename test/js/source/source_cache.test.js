@@ -2,118 +2,47 @@
 
 var test = require('tap').test;
 var SourceCache = require('../../../js/source/source_cache');
+var Source = require('../../../js/source/source');
 var TileCoord = require('../../../js/source/tile_coord');
 var Transform = require('../../../js/geo/transform');
 var LngLat = require('../../../js/geo/lng_lat');
 var Coordinate = require('../../../js/geo/coordinate');
+var Evented = require('../../../js/util/evented');
 var util = require('../../../js/util/util');
 
-test('SourceCache#coveringTiles', function(t) {
-    var sourceCache = new SourceCache({
-        minzoom: 1,
-        maxzoom: 10,
-        tileSize: 512
-    });
-
-    var transform = new Transform();
-    transform.resize(200, 200);
-
-    transform.zoom = 0;
-    t.deepEqual(sourceCache.coveringTiles(transform), []);
-
-    transform.zoom = 1;
-    t.deepEqual(sourceCache.coveringTiles(transform), ['1', '33', '65', '97'].map(TileCoord.fromID));
-
-    transform.zoom = 2.4;
-    t.deepEqual(sourceCache.coveringTiles(transform), ['162', '194', '290', '322'].map(TileCoord.fromID));
-
-    transform.zoom = 10;
-    t.deepEqual(sourceCache.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
-
-    transform.zoom = 11;
-    t.deepEqual(sourceCache.coveringTiles(transform), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
-
-    t.end();
+Source.setType('mock-source-type', function create (id, sourceOptions) {
+    var source = util.extend({
+        id: id,
+        minzoom: 0,
+        maxzoom: 22,
+        loadTile: function (tile, callback) {
+            setTimeout(callback, 0);
+        },
+        abortTile: function () {},
+        unloadTile: function () {},
+        serialize: function () {}
+    }, sourceOptions);
+    source = util.inherit(Evented, source);
+    setTimeout(function () { source.fire('load'); }, 0);
+    return source;
 });
 
-test('SourceCache#coveringZoomLevel', function(t) {
-    var sourceCache = new SourceCache({
-        minzoom: 1,
-        maxzoom: 10,
-        tileSize: 512
-    });
-
-    var transform = new Transform();
-
-    transform.zoom = 0;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 0);
-
-    transform.zoom = 0.1;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 0);
-
-    transform.zoom = 1;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 1);
-
-    transform.zoom = 2.4;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 2);
-
-    transform.zoom = 10;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 10);
-
-    transform.zoom = 11;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 11);
-
-    transform.zoom = 11.5;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 11);
-
-    sourceCache.tileSize = 256;
-
-    transform.zoom = 0;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 1);
-
-    transform.zoom = 0.1;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 1);
-
-    transform.zoom = 1;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 2);
-
-    transform.zoom = 2.4;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 3);
-
-    transform.zoom = 10;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 11);
-
-    transform.zoom = 11;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 12);
-
-    transform.zoom = 11.5;
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 12);
-
-    sourceCache.roundZoom = true;
-
-    t.deepEqual(sourceCache.coveringZoomLevel(transform), 13);
-
-    t.end();
-});
-
-function createPyramid(options) {
-    return new SourceCache(util.extend({
+function createSourceCache(options, used) {
+    var sc = new SourceCache('id', util.extend({
         tileSize: 512,
         minzoom: 0,
         maxzoom: 14,
-        load: function() {},
-        abort: function() {},
-        unload: function() {},
-        add: function() {},
-        remove: function() {}
-    }, options));
+        type: 'mock-source-type'
+    }, options), /* dispatcher */ {});
+    sc.used = typeof used === 'boolean' ? used : true;
+    return sc;
 }
 
 test('SourceCache#addTile', function(t) {
     t.test('loads tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createPyramid({
-            load: function(tile) {
+        var sourceCache = createSourceCache({
+            loadTile: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 t.equal(tile.uses, 0);
                 t.end();
@@ -124,12 +53,11 @@ test('SourceCache#addTile', function(t) {
 
     t.test('adds tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createPyramid({
-            add: function(tile) {
-                t.deepEqual(tile.coord, coord);
-                t.equal(tile.uses, 1);
-                t.end();
-            }
+        var sourceCache = createSourceCache({})
+        .on('tile.add', function (data) {
+            t.deepEqual(data.tile.coord, coord);
+            t.equal(data.tile.uses, 1);
+            t.end();
         });
         sourceCache.addTile(coord);
     });
@@ -139,10 +67,14 @@ test('SourceCache#addTile', function(t) {
             load = 0,
             add = 0;
 
-        var sourceCache = createPyramid({
-            load: function(tile) { tile.state = 'loaded'; load++; },
-            add: function() { add++; }
-        });
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'loaded';
+                load++;
+                callback();
+            }
+        })
+        .on('tile.add', function () { add++; });
 
         var tr = new Transform();
         tr.width = 512;
@@ -163,10 +95,14 @@ test('SourceCache#addTile', function(t) {
             load = 0,
             add = 0;
 
-        var sourceCache = createPyramid({
-            load: function(tile) { tile.state = 'loaded'; load++; },
-            add: function() { add++; }
-        });
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = 'loaded';
+                load++;
+                callback();
+            }
+        })
+        .on('tile.add', function () { add++; });
 
         var t1 = sourceCache.addTile(coord);
         var t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
@@ -184,12 +120,12 @@ test('SourceCache#addTile', function(t) {
 test('SourceCache#removeTile', function(t) {
     t.test('removes tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createPyramid({
-            remove: function(tile) {
-                t.deepEqual(tile.coord, coord);
-                t.equal(tile.uses, 0);
-                t.end();
-            }
+        var sourceCache = createSourceCache({})
+        .on('tile.remove', function (data) {
+            var tile = data.tile;
+            t.deepEqual(tile.coord, coord);
+            t.equal(tile.uses, 0);
+            t.end();
         });
         sourceCache.addTile(coord);
         sourceCache.removeTile(coord.id);
@@ -197,11 +133,11 @@ test('SourceCache#removeTile', function(t) {
 
     t.test('caches (does not unload) loaded tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createPyramid({
-            load: function(tile) {
+        var sourceCache = createSourceCache({
+            loadTile: function(tile) {
                 tile.state = 'loaded';
             },
-            unload: function() {
+            unloadTile: function() {
                 t.fail();
             }
         });
@@ -222,12 +158,12 @@ test('SourceCache#removeTile', function(t) {
             abort = 0,
             unload = 0;
 
-        var sourceCache = createPyramid({
-            abort: function(tile) {
+        var sourceCache = createSourceCache({
+            abortTile: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 abort++;
             },
-            unload: function(tile) {
+            unloadTile: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 unload++;
             }
@@ -251,11 +187,13 @@ test('SourceCache#update', function(t) {
         transform.resize(512, 512);
         transform.zoom = 0;
 
-        var sourceCache = createPyramid({});
-        sourceCache.update(false, transform);
+        var sourceCache = createSourceCache({}, false);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), []);
-        t.end();
+            t.deepEqual(sourceCache.getIds(), []);
+            t.end();
+        });
     });
 
     t.test('loads covering tiles', function(t) {
@@ -263,11 +201,12 @@ test('SourceCache#update', function(t) {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        var sourceCache = createPyramid({});
-        sourceCache.update(true, transform);
-
-        t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
-        t.end();
+        var sourceCache = createSourceCache({});
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
+            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+            t.end();
+        });
     });
 
     t.test('removes unused tiles', function(t) {
@@ -275,54 +214,59 @@ test('SourceCache#update', function(t) {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        var sourceCache = createPyramid({
+        var sourceCache = createSourceCache({
             load: function(tile) {
                 tile.state = 'loaded';
             }
         });
 
-        sourceCache.update(true, transform);
-        t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
+            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
-        transform.zoom = 1;
-        sourceCache.update(true, transform);
+            transform.zoom = 1;
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id
-        ]);
-        t.end();
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(1, 0, 0).id,
+                new TileCoord(1, 1, 0).id,
+                new TileCoord(1, 0, 1).id,
+                new TileCoord(1, 1, 1).id
+            ]);
+            t.end();
+        });
     });
+
 
     t.test('retains parent tiles for pending children', function(t) {
         var transform = new Transform();
+        transform._test = 'retains';
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        var sourceCache = createPyramid({
-            load: function(tile) {
-                if (tile.coord.id === new TileCoord(0, 0, 0).id) {
-                    tile.state = 'loaded';
-                }
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = (tile.coord.id === new TileCoord(0, 0, 0).id) ? 'loaded' : 'loading';
+                callback();
             }
         });
 
-        sourceCache.update(true, transform);
-        t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
+            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
-        transform.zoom = 1;
-        sourceCache.update(true, transform);
+            transform.zoom = 1;
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(0, 0, 0).id,
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id
-        ]);
-        t.end();
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(0, 0, 0).id,
+                new TileCoord(1, 0, 0).id,
+                new TileCoord(1, 1, 0).id,
+                new TileCoord(1, 0, 1).id,
+                new TileCoord(1, 1, 1).id
+            ]);
+            t.end();
+        });
     });
 
     t.test('retains parent tiles for pending children (wrapped)', function(t) {
@@ -331,28 +275,29 @@ test('SourceCache#update', function(t) {
         transform.zoom = 0;
         transform.center = new LngLat(360, 0);
 
-        var sourceCache = createPyramid({
-            load: function(tile) {
-                if (tile.coord.id === new TileCoord(0, 0, 0).id) {
-                    tile.state = 'loaded';
-                }
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.state = (tile.coord.id === new TileCoord(0, 0, 0).id) ? 'loaded' : 'loading';
+                callback();
             }
         });
 
-        sourceCache.update(true, transform);
-        t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
+            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
 
-        transform.zoom = 1;
-        sourceCache.update(true, transform);
+            transform.zoom = 1;
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(0, 0, 0, 1).id,
-            new TileCoord(1, 0, 0, 1).id,
-            new TileCoord(1, 1, 0, 1).id,
-            new TileCoord(1, 0, 1, 1).id,
-            new TileCoord(1, 1, 1, 1).id
-        ]);
-        t.end();
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(0, 0, 0, 1).id,
+                new TileCoord(1, 0, 0, 1).id,
+                new TileCoord(1, 1, 0, 1).id,
+                new TileCoord(1, 0, 1, 1).id,
+                new TileCoord(1, 1, 1, 1).id
+            ]);
+            t.end();
+        });
     });
 
     t.test('includes partially covered tiles in rendered tiles', function(t) {
@@ -360,26 +305,29 @@ test('SourceCache#update', function(t) {
         transform.resize(511, 511);
         transform.zoom = 2;
 
-        var sourceCache = createPyramid({
-            load: function(tile) {
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
+                callback();
             }
         });
 
-        sourceCache.update(true, transform, 100);
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(2, 1, 1).id,
-            new TileCoord(2, 2, 1).id,
-            new TileCoord(2, 1, 2).id,
-            new TileCoord(2, 2, 2).id
-        ]);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform, 100);
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(2, 1, 1).id,
+                new TileCoord(2, 2, 1).id,
+                new TileCoord(2, 1, 2).id,
+                new TileCoord(2, 2, 2).id
+            ]);
 
-        transform.zoom = 0;
-        sourceCache.update(true, transform, 100);
+            transform.zoom = 0;
+            sourceCache.update(transform, 100);
 
-        t.deepEqual(sourceCache.getRenderableIds().length, 5);
-        t.end();
+            t.deepEqual(sourceCache.getRenderableIds().length, 5);
+            t.end();
+        });
     });
 
     t.test('retains a parent tile for fading even if a tile is partially covered by children', function(t) {
@@ -387,23 +335,26 @@ test('SourceCache#update', function(t) {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        var sourceCache = createPyramid({
-            load: function(tile) {
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
+                callback();
             }
         });
 
-        sourceCache.update(true, transform, 100);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform, 100);
 
-        transform.zoom = 2;
-        sourceCache.update(true, transform, 100);
+            transform.zoom = 2;
+            sourceCache.update(transform, 100);
 
-        transform.zoom = 1;
-        sourceCache.update(true, transform, 100);
+            transform.zoom = 1;
+            sourceCache.update(transform, 100);
 
-        t.equal(sourceCache._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
-        t.end();
+            t.equal(sourceCache._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+            t.end();
+        });
     });
 
 
@@ -413,36 +364,37 @@ test('SourceCache#update', function(t) {
         transform.zoom = 16;
         transform.center = new LngLat(0, 0);
 
-        var sourceCache = createPyramid({
+
+        var sourceCache = createSourceCache({
             reparseOverscaled: true,
-            load: function(tile) {
-                if (tile.coord.z === 16) {
-                    tile.state = 'loaded';
-                }
+            loadTile: function(tile, callback) {
+                tile.state = tile.coord.z === 16 ? 'loaded' : 'loading';
+                callback();
             }
         });
 
-        t.equal(sourceCache.maxzoom, 14);
+        sourceCache.on('load', function () {
+            t.equal(sourceCache.maxzoom, 14);
 
-        sourceCache.update(true, transform);
-        t.deepEqual(sourceCache.getRenderableIds(), [
-            new TileCoord(16, 8191, 8191, 0).id,
-            new TileCoord(16, 8192, 8191, 0).id,
-            new TileCoord(16, 8192, 8192, 0).id,
-            new TileCoord(16, 8191, 8192, 0).id
-        ]);
+            sourceCache.update(transform);
+            t.deepEqual(sourceCache.getRenderableIds(), [
+                new TileCoord(16, 8191, 8191, 0).id,
+                new TileCoord(16, 8192, 8191, 0).id,
+                new TileCoord(16, 8192, 8192, 0).id,
+                new TileCoord(16, 8191, 8192, 0).id
+            ]);
 
-        transform.zoom = 15;
-        sourceCache.update(true, transform);
+            transform.zoom = 15;
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getRenderableIds(), [
-            new TileCoord(16, 8191, 8191, 0).id,
-            new TileCoord(16, 8192, 8191, 0).id,
-            new TileCoord(16, 8192, 8192, 0).id,
-            new TileCoord(16, 8191, 8192, 0).id
-        ]);
-        t.end();
-
+            t.deepEqual(sourceCache.getRenderableIds(), [
+                new TileCoord(16, 8191, 8191, 0).id,
+                new TileCoord(16, 8192, 8191, 0).id,
+                new TileCoord(16, 8192, 8192, 0).id,
+                new TileCoord(16, 8191, 8192, 0).id
+            ]);
+            t.end();
+        });
     });
 
     t.end();
@@ -454,12 +406,12 @@ test('SourceCache#clearTiles', function(t) {
             abort = 0,
             unload = 0;
 
-        var sourceCache = createPyramid({
-            abort: function(tile) {
+        var sourceCache = createSourceCache({
+            abortTile: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 abort++;
             },
-            unload: function(tile) {
+            unloadTile: function(tile) {
                 t.deepEqual(tile.coord, coord);
                 unload++;
             }
@@ -483,156 +435,143 @@ test('SourceCache#tilesIn', function (t) {
         transform.resize(511, 511);
         transform.zoom = 1;
 
-        var sourceCache = createPyramid({
-            load: function(tile) {
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
                 tile.state = 'loaded';
+                callback();
             }
         });
 
-        sourceCache.update(true, transform);
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id
-        ]);
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(1, 0, 0).id,
+                new TileCoord(1, 1, 0).id,
+                new TileCoord(1, 0, 1).id,
+                new TileCoord(1, 1, 1).id
+            ]);
 
-        var tiles = sourceCache.tilesIn([
-            new Coordinate(0.5, 0.25, 1),
-            new Coordinate(1.5, 0.75, 1)
-        ]);
+            var tiles = sourceCache.tilesIn([
+                new Coordinate(0.5, 0.25, 1),
+                new Coordinate(1.5, 0.75, 1)
+            ]);
 
-        tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
-        tiles.forEach(function (result) { delete result.tile.uid; });
+            tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
+            tiles.forEach(function (result) { delete result.tile.uid; });
 
-        t.equal(tiles[0].tile.coord.id, 1);
-        t.equal(tiles[0].tile.tileSize, 512);
-        t.equal(tiles[0].scale, 1);
-        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
+            t.equal(tiles[0].tile.coord.id, 1);
+            t.equal(tiles[0].tile.tileSize, 512);
+            t.equal(tiles[0].scale, 1);
+            t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
-        t.equal(tiles[1].tile.coord.id, 33);
-        t.equal(tiles[1].tile.tileSize, 512);
-        t.equal(tiles[1].scale, 1);
-        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
+            t.equal(tiles[1].tile.coord.id, 33);
+            t.equal(tiles[1].tile.tileSize, 512);
+            t.equal(tiles[1].scale, 1);
+            t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
-        t.end();
+            t.end();
+        });
     });
 
     t.test('reparsed overscaled tiles', function(t) {
-        var sourceCache = createPyramid({
-            load: function(tile) { tile.state = 'loaded'; },
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) { tile.state = 'loaded'; callback(); },
             reparseOverscaled: true,
             minzoom: 1,
             maxzoom: 1,
             tileSize: 512
         });
 
-        var transform = new Transform();
-        transform.resize(512, 512);
-        transform.zoom = 2.0;
-        sourceCache.update(true, transform);
+        sourceCache.on('load', function () {
+            var transform = new Transform();
+            transform.resize(512, 512);
+            transform.zoom = 2.0;
+            sourceCache.update(transform);
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(2, 0, 0).id,
-            new TileCoord(2, 1, 0).id,
-            new TileCoord(2, 0, 1).id,
-            new TileCoord(2, 1, 1).id
-        ]);
+            t.deepEqual(sourceCache.getIds(), [
+                new TileCoord(2, 0, 0).id,
+                new TileCoord(2, 1, 0).id,
+                new TileCoord(2, 0, 1).id,
+                new TileCoord(2, 1, 1).id
+            ]);
 
-        var tiles = sourceCache.tilesIn([
-            new Coordinate(0.5, 0.25, 1),
-            new Coordinate(1.5, 0.75, 1)
-        ]);
+            var tiles = sourceCache.tilesIn([
+                new Coordinate(0.5, 0.25, 1),
+                new Coordinate(1.5, 0.75, 1)
+            ]);
 
-        tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
-        tiles.forEach(function (result) { delete result.tile.uid; });
+            tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
+            tiles.forEach(function (result) { delete result.tile.uid; });
 
-        t.equal(tiles[0].tile.coord.id, 2);
-        t.equal(tiles[0].tile.tileSize, 1024);
-        t.equal(tiles[0].scale, 1);
-        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
+            t.equal(tiles[0].tile.coord.id, 2);
+            t.equal(tiles[0].tile.tileSize, 1024);
+            t.equal(tiles[0].scale, 1);
+            t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
-        t.equal(tiles[1].tile.coord.id, 34);
-        t.equal(tiles[1].tile.tileSize, 1024);
-        t.equal(tiles[1].scale, 1);
-        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
+            t.equal(tiles[1].tile.coord.id, 34);
+            t.equal(tiles[1].tile.tileSize, 1024);
+            t.equal(tiles[1].scale, 1);
+            t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
-        t.end();
+            t.end();
+        });
     });
 
     t.test('overscaled tiles', function(t) {
-        var sourceCache = createPyramid({
-            load: function(tile) { tile.state = 'loaded'; },
+        var sourceCache = createSourceCache({
+            loadTile: function(tile, callback) { tile.state = 'loaded'; callback(); },
             reparseOverscaled: false,
             minzoom: 1,
             maxzoom: 1,
             tileSize: 512
         });
 
-        var transform = new Transform();
-        transform.resize(512, 512);
-        transform.zoom = 2.0;
-        sourceCache.update(true, transform);
+        sourceCache.on('load', function () {
+            var transform = new Transform();
+            transform.resize(512, 512);
+            transform.zoom = 2.0;
+            sourceCache.update(transform);
 
 
-        t.deepEqual(sourceCache.getIds(), [
-            new TileCoord(1, 0, 0).id,
-            new TileCoord(1, 1, 0).id,
-            new TileCoord(1, 0, 1).id,
-            new TileCoord(1, 1, 1).id
-        ]);
-
-        var tiles = sourceCache.tilesIn([
-            new Coordinate(0.5, 0.25, 1),
-            new Coordinate(1.5, 0.75, 1)
-        ]);
-
-        tiles.sort(function (a, b) { return a.tile.coord.x - b.tile.coord.x; });
-        tiles.forEach(function (result) { delete result.tile.uid; });
-
-        t.equal(tiles[0].tile.coord.id, 1);
-        t.equal(tiles[0].tile.tileSize, 512);
-        t.equal(tiles[0].scale, 2);
-        t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
-
-        t.equal(tiles[1].tile.coord.id, 33);
-        t.equal(tiles[1].tile.tileSize, 512);
-        t.equal(tiles[1].scale, 2);
-        t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
-
-        t.end();
+            t.end();
+        });
     });
 
     t.end();
 });
 
 test('SourceCache#loaded (no errors)', function (t) {
-    var sourceCache = createPyramid({
-        load: function(tile) {
+    var sourceCache = createSourceCache({
+        loadTile: function(tile, callback) {
             tile.state = 'loaded';
+            callback();
         }
     });
 
-    var coord = new TileCoord(0, 0, 0);
-    sourceCache.addTile(coord);
+    sourceCache.on('load', function () {
+        var coord = new TileCoord(0, 0, 0);
+        sourceCache.addTile(coord);
 
-    t.ok(sourceCache.loaded());
-    t.end();
+        t.ok(sourceCache.loaded());
+        t.end();
+    });
 });
 
 test('SourceCache#loaded (with errors)', function (t) {
-    var sourceCache = createPyramid({
-        load: function(tile) {
-            tile.state = 'errored';
+    var sourceCache = createSourceCache({
+        loadTile: function(tile) {
+            tile.errored = true;
         }
     });
 
-    var coord = new TileCoord(0, 0, 0);
-    sourceCache.addTile(coord);
+    sourceCache.on('load', function () {
+        var coord = new TileCoord(0, 0, 0);
+        sourceCache.addTile(coord);
 
-    t.ok(sourceCache.loaded());
-    t.end();
+        t.ok(sourceCache.loaded());
+        t.end();
+    });
 });
 
 test('SourceCache#getIds (ascending order by zoom level)', function(t) {
@@ -643,7 +582,7 @@ test('SourceCache#getIds (ascending order by zoom level)', function(t) {
         new TileCoord(2, 0, 0)
     ];
 
-    var sourceCache = createPyramid({});
+    var sourceCache = createSourceCache({});
     for (var i = 0; i < ids.length; i++) {
         sourceCache._tiles[ids[i].id] = {};
     }
@@ -660,7 +599,7 @@ test('SourceCache#getIds (ascending order by zoom level)', function(t) {
 test('SourceCache#findLoadedParent', function(t) {
 
     t.test('adds from previously used tiles (sourceCache._tiles)', function(t) {
-        var sourceCache = createPyramid({});
+        var sourceCache = createSourceCache({});
         var tr = new Transform();
         tr.width = 512;
         tr.height = 512;
@@ -684,7 +623,7 @@ test('SourceCache#findLoadedParent', function(t) {
     });
 
     t.test('adds from cache', function(t) {
-        var sourceCache = createPyramid({});
+        var sourceCache = createSourceCache({});
         var tr = new Transform();
         tr.width = 512;
         tr.height = 512;
@@ -712,3 +651,20 @@ test('SourceCache#findLoadedParent', function(t) {
 
     t.end();
 });
+
+// TODO: add this to SourceCache test
+// test('GeoJSONSource#reload', function(t) {
+//     t.test('before loaded', function(t) {
+//         var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+//
+//         t.doesNotThrow(function() {
+//             source.reload();
+//         }, null, 'reload ignored gracefully');
+//
+//         t.end();
+//     });
+//
+//     t.end();
+// });
+
+

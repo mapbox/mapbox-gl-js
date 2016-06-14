@@ -87,12 +87,12 @@ SourceCache.prototype = util.inherit(Evented, {
     },
 
     unloadTile: function (tile) {
-        if (this._source.unload)
+        if (this._source.unloadTile)
             return this._source.unloadTile(tile);
     },
 
     abortTile: function (tile) {
-        if (this._source.abort)
+        if (this._source.abortTile)
             return this._source.abortTile(tile);
     },
 

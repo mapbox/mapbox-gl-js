@@ -60,6 +60,7 @@
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#df624912cd514b89dc4405b233fc25db85bbb8b7",
     "minifyify": "^7.0.1",
     "nyc": "6.4.0",
+    "proxyquire": "^1.7.9",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
     "sinon": "^1.15.4",

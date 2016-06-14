@@ -63,21 +63,6 @@ test('GeoJSONSource#setData', function(t) {
     t.end();
 });
 
-// TODO: add this to SourceCache test
-// test('GeoJSONSource#reload', function(t) {
-//     t.test('before loaded', function(t) {
-//         var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
-//
-//         t.doesNotThrow(function() {
-//             source.reload();
-//         }, null, 'reload ignored gracefully');
-//
-//         t.end();
-//     });
-//
-//     t.end();
-// });
-
 test('GeoJSONSource#update', function(t) {
     var transform = new Transform();
     transform.resize(200, 200);
