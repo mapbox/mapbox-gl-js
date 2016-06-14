@@ -51,7 +51,7 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
         return normalizeURL(
-            'mapbox://' + urlObject.hostname + '.json',
+            url + '.json',
             '/v4/',
             accessToken
         ) + '&secure';
@@ -100,12 +100,12 @@ module.exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
     // device.
 
     var extension = browser.supportsWebp ? '.webp' : '$1';
-    if (browser.devicePixelRatio >= 2 || tileSize === 512) extension = '@2x' + extension;
+    var resolution = (browser.devicePixelRatio >= 2 || tileSize === 512) ? '@2x' : '';
 
     return URL.format({
         protocol: tileURLObject.protocol,
         hostname: tileURLObject.hostname,
-        pathname: tileURLObject.pathname.replace(/(\.(?:png|jpg)\d*)/, extension),
+        pathname: tileURLObject.pathname.replace(/(\.(?:png|jpg)\d*)/, resolution + extension),
         query: replaceTempAccessToken(tileURLObject.query)
     });
 };
