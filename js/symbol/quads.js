@@ -55,7 +55,7 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText) {
+function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText, globalProperties, featureProperties) {
     var rect = shapedIcon.image.rect;
     var layout = layer.layout;
 
@@ -97,7 +97,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         bl = new Point(left, bottom);
     }
 
-    var angle = layer.layout['icon-rotate'] * Math.PI / 180;
+    var angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
     if (alongLine) {
         var prev = line[anchor.segment];
         if (anchor.y === prev.y && anchor.x === prev.x && anchor.segment + 1 < line.length) {
