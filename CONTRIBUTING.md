@@ -64,6 +64,32 @@ cd mapbox-gl-js &&
 npm install
 ```
 
+### Windows
+
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater)
+Setup NPM and node-gyp according to Microsofts instructions here: https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules
+
+Clone the repository
+```bash
+git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install node module dependencies
+```bash
+cd mapbox-gl-js
+npm install
+```
+
+Install headless-gl dependencies https://github.com/stackgl/headless-gl#windows
+```
+copy node_modules/headless-gl/deps/windows/dll/x64/*.dll c:\windows\system32
+```
+
+Install the benchmark data manually
+```
+Download https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson to bench/data/naturalearth-land.json
+```
+
 ## Serving the Debug Page
 
 Start the debug server
