@@ -49,15 +49,15 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @param {PositionedIcon} shapedIcon
  * @param {number} boxScale A magic number for converting glyph metric units to geometry units.
  * @param {Array<Array<Point>>} line
- * @param {LayoutProperties} layout
+ * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the icon should be placed along the line.
  * @param {Shaping} shapedText Shaping for corresponding text
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine, shapedText) {
-
+function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText) {
     var rect = shapedIcon.image.rect;
+    var layout = layer.layout;
 
     var border = 1;
     var left = shapedIcon.left - border;
@@ -97,7 +97,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine, sha
         bl = new Point(left, bottom);
     }
 
-    var angle = layout['icon-rotate'] * Math.PI / 180;
+    var angle = layer.layout['icon-rotate'] * Math.PI / 180;
     if (alongLine) {
         var prev = line[anchor.segment];
         if (anchor.y === prev.y && anchor.x === prev.x && anchor.segment + 1 < line.length) {
@@ -129,15 +129,15 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine, sha
  * @param {Shaping} shaping
  * @param {number} boxScale A magic number for converting from glyph metric units to geometry units.
  * @param {Array<Array<Point>>} line
- * @param {LayoutProperties} layout
+ * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the label should be placed along the line.
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layout, alongLine) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
-    var textRotate = layout['text-rotate'] * Math.PI / 180;
-    var keepUpright = layout['text-keep-upright'];
+    var textRotate = layer.layout['text-rotate'] * Math.PI / 180;
+    var keepUpright = layer.layout['text-keep-upright'];
 
     var positionedGlyphs = shaping.positionedGlyphs;
     var quads = [];

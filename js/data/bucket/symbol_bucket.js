@@ -322,7 +322,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
             // be drawn across tile boundaries. Instead they need to be included in
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
-            this.addSymbolInstance(anchor, line, shapedText, shapedIcon, layout,
+            this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layer,
                 addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, featureIndex, this.sourceLayerIndex, this.index,
                 textBoxScale, textPadding, textAlongLine,
                 iconBoxScale, iconPadding, iconAlongLine);
@@ -557,13 +557,13 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     }
 };
 
-SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
+SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
     textBoxScale, textPadding, textAlongLine,
     iconBoxScale, iconPadding, iconAlongLine) {
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
     if (shapedText) {
-        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
+        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine) : [];
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false);
     }
 
@@ -579,7 +579,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
     if (shapedIcon) {
-        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine, shapedText) : [];
+        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText) : [];
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 
@@ -632,4 +632,3 @@ SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
         symbolQuad.maxScale,
         symbolQuad.minScale);
 };
-
