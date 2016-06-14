@@ -66,7 +66,6 @@ function drawFill(painter, source, layer, coord) {
     var gl = painter.gl;
 
     var image = layer.paint['fill-pattern'];
-    var opacity = layer.paint['fill-opacity'];
     var program;
 
     if (!image) {
@@ -79,12 +78,11 @@ function drawFill(painter, source, layer, coord) {
             programOptions.fragmentPragmas
         );
         bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
-        gl.uniform1f(program.u_opacity, opacity);
 
     } else {
         // Draw texture fill
         program = painter.useProgram('pattern');
-        setPattern(image, opacity, tile, coord, painter, program);
+        setPattern(image, layer.paint['fill-opacity'], tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
