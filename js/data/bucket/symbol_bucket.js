@@ -235,6 +235,8 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
                 }
                 if (image.pixelRatio !== 1) {
                     this.iconsNeedLinear = true;
+                } else if (layout['icon-rotate'] !== 0 || !this.layer.isLayoutValueFeatureConstant('icon-rotate')) {
+                    this.iconsNeedLinear = true;
                 }
             }
         } else {
