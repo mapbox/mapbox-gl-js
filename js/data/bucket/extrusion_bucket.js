@@ -72,7 +72,7 @@ ExtrusionBucket.prototype.programInterfaces = {
             getValue: function(layer, globalProperties, featureProperties) {
                 return [layer.getPaintValue("extrusion-min-height", globalProperties, featureProperties)];
             },
-            multiplier: 1, // TODO
+            multiplier: 1,
             paintProperty: 'extrusion-min-height'
         }, {
             name: 'a_maxH',
@@ -82,8 +82,27 @@ ExtrusionBucket.prototype.programInterfaces = {
             getValue: function(layer, globalProperties, featureProperties) {
                 return [layer.getPaintValue("extrusion-height", globalProperties, featureProperties)];
             },
-            multiplier: 1, // TODO
+            multiplier: 1,
             paintProperty: 'extrusion-height'
+        }, {
+            name: 'a_color',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return layer.getPaintValue("extrusion-color", globalProperties, featureProperties);
+            },
+            multiplier: 255,
+            paintProperty: 'extrusion-color'
+        }, {
+            name: 'a_opacity',
+            components: 1,
+            type: 'Uint16',
+            isLayerConstant: false, // what is this
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("extrusion-opacity", globalProperties, featureProperties)];
+            },
+            multiplier: 255,
+            paintProperty: 'extrusion-opacity'
         }]
     }
 };

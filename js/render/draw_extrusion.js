@@ -40,7 +40,6 @@ function draw(painter, source, layer, coords) {
             }
         }
 
-
         texture.unbindFramebuffer();
 
         var program = painter.useProgram('extrusiontexture');
@@ -48,7 +47,7 @@ function draw(painter, source, layer, coords) {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
-        gl.uniform1f(program.u_opacity, layer.paint['extrusion-opacity']);
+        gl.uniform1f(program.u_opacity, layer.paint['extrusion-layer-opacity'] || 1);
         gl.uniform1i(program.u_texture, 1);
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
@@ -182,9 +181,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var shadowColor = layer.paint['extrusion-shadow-color'] || [0,0,1,1];
     shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
-    var opacity = layer.paint['extrusion-opacity'] || 1;
-    var rotateLight = layer.paint['extrusion-lighting-anchor'] === 'viewport';
-    // TODO this should be changed to a map property probably so as not to get trippy situations where layers are lit differently...?
+    var rotateLight = map._lightingAnchor === 'viewport';
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var program = painter.useProgram(
@@ -202,7 +199,7 @@ function drawExtrusion(painter, source, layer, coord) {
             layer.paint['extrusion-translate-anchor'] || 'viewport'
         ));
 
-        setPattern(image, opacity, tile, coord, painter, program);
+        setPattern(image, tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
@@ -224,8 +221,8 @@ function drawExtrusion(painter, source, layer, coord) {
             [1, 1, zScale, 1])
         );
 
-        gl.uniform4fv(program.u_color, color);
-        gl.uniform1f(program.u_opacity, 1);
+        // gl.uniform4fv(program.u_color, color);
+        // gl.uniform1f(program.u_opacity, 1);
     }
 
     gl.uniform4fv(program.u_shadow, shadowColor);
@@ -267,8 +264,13 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     var strokeColor = layer.paint['extrusion-outline-color'] || layer.paint['extrusion-color'].slice();
 
     var image = layer.paint['extrusion-pattern'];
-    var opacity = layer.paint['extrusion-opacity'];
-    var outlineProgram = image ? painter.useProgram('outlinepattern') : painter.useProgram('extrusion', ['EXTRUSION']);
+    var programOptions = bucket.paintAttributes.extrusion[layer.id];
+    var outlineProgram = painter.useProgram(
+        image ? 'extrusionpattern' : 'extrusion',
+        programOptions.defines,
+        programOptions.vertexPragmas,
+        programOptions.fragmentPragmas
+    );
 
     gl.uniformMatrix4fv(outlineProgram.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
@@ -277,7 +279,13 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         layer.paint['extrusion-translate-anchor']
     ));
 
-        // Draw extrusion rectangle.
+    var lightdir = [-0.5, -0.6, 0.9];
+    var lightMat = mat3.create();
+    if (true) mat3.fromRotation(lightMat, -painter.transform.angle);
+    vec3.transformMat3(lightdir, lightdir, lightMat);
+    gl.uniform3fv(outlineProgram.u_lightdir, lightdir);
+
+    // Draw extrusion rectangle.
     var zScale = Math.pow(2, painter.transform.zoom) / 50000;
     gl.uniformMatrix4fv(outlineProgram.u_matrix, false, mat4.scale(
         mat4.create(),
@@ -285,18 +293,9 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         [1, 1, zScale, 1])
     );
 
-    gl.uniform4fv(outlineProgram.u_color, strokeColor);
-    gl.uniform1f(outlineProgram.u_opacity, 0.1);
+    // gl.uniform4fv(outlineProgram.u_color, strokeColor);
 
-    // if (false && image) {
-    //     // TODO
-    //     setPattern(image, opacity, tile, coord, painter, outlineProgram);
-    // } else {
-    //     console.log(strokeColor);
-    //     gl.uniform4fv(outlineProgram.u_color, util.premultiply(strokeColor || [0,0,0,1]));
-    //     gl.uniform1f(outlineProgram.u_opacity, 1.0 /*opacity*/);
-    //     // TODO delete ^^ -- just for debugging
-    // }
+    bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
 
     gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
@@ -304,13 +303,12 @@ function drawExtrusionStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layout.vertex, group.layout.element2);
+        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layout.vertex, group.layout.element2, group.paint[layer.id]);
         gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
 
-function setPattern(image, opacity, tile, coord, painter, program) {
-    // console.log(image, tile);
+function setPattern(image, tile, coord, painter, program) {
     var gl = painter.gl;
 
     var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
@@ -322,7 +320,6 @@ function setPattern(image, opacity, tile, coord, painter, program) {
     gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
     gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
     gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
-    gl.uniform1f(program.u_opacity, opacity);
     gl.uniform1f(program.u_mix, image.t);
 
     gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
