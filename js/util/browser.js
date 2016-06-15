@@ -56,8 +56,8 @@ exports.supported = function () {
     return true;
 };
 
-exports.createBlobURLForModule = function () {
-    return 'blob:mock-blob-url';
+exports.createBlobURLForModule = function (module) {
+    return module;
 };
 
 exports.devicePixelRatio = 1;

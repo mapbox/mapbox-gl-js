@@ -2,7 +2,7 @@
 
 var Evented = require('../util/evented');
 var util = require('../util/util');
-var Source = require('./source');
+var loadTileJSON = require('./load-tilejson');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports.create = function (id, options, dispatcher) {
@@ -19,7 +19,7 @@ function VectorTileSource(id, options, dispatcher) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
 
-    Source._loadTileJSON(options, function (err, tileJSON) {
+    loadTileJSON(options, function (err, tileJSON) {
         if (err) {
             this.fire('error', err);
             return;

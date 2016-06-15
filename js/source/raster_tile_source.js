@@ -3,7 +3,7 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
-var Source = require('./source');
+var loadTileJSON = require('./load-tilejson');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports.create = function (id, options, dispatcher) {
@@ -14,7 +14,7 @@ function RasterTileSource(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-    Source._loadTileJSON(options, function (err, tileJSON) {
+    loadTileJSON(options, function (err, tileJSON) {
         if (err) {
             return this.fire('error', err);
         }

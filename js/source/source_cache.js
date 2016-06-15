@@ -38,6 +38,8 @@ function SourceCache(id, options, dispatcher) {
         this.reparseOverscaled = source.reparseOverscaled;
         this.isTileClipped = source.isTileClipped;
 
+        this.vectorLayerIds = source.vectorLayerIds;
+
         this.fire('load');
     }.bind(this))
     .on('change', function () {
