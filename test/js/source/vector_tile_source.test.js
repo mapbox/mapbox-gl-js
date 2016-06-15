@@ -4,19 +4,17 @@ var test = require('tap').test;
 var st = require('st');
 var http = require('http');
 var path = require('path');
-var VectorTileSource = require('../../../js/source/vector_tile_source');
+var createVectorTileSource = require('../../../js/source/vector_tile_source').create;
 var TileCoord = require('../../../js/source/tile_coord');
 
 var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
 
 function createSource(options) {
-    var source = new VectorTileSource(options);
+    var source = createVectorTileSource('id', options, { send: function() {} });
 
     source.on('error', function(e) {
         throw e.error;
     });
-
-    source.dispatcher = { send: function() {} };
 
     source.map = {
         transform: { angle: 0, pitch: 0, showCollisionBoxes: false }
@@ -39,7 +37,6 @@ test('VectorTileSource', function(t) {
         });
 
         source.on('load', function() {
-            t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
@@ -54,25 +51,10 @@ test('VectorTileSource', function(t) {
         });
 
         source.on('load', function() {
-            t.ok(source.loaded());
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
             t.deepEqual(source.attribution, "Mapbox");
-            t.end();
-        });
-    });
-
-    t.test('ignores reload before loaded', function(t) {
-        var source = createSource({
-            url: "http://localhost:2900/source.json"
-        });
-
-        t.doesNotThrow(function() {
-            source.reload();
-        }, null, 'reload ignored gracefully');
-
-        source.on('load', function() {
             t.end();
         });
     });
@@ -105,20 +87,6 @@ test('VectorTileSource', function(t) {
         t.end();
     });
 
-    t.test('queryRenderedFeatures', function(t) {
-        t.test('returns an empty object before loaded', function(t) {
-            var source = createSource({
-                minzoom: 1,
-                maxzoom: 10,
-                attribution: "Mapbox",
-                tiles: ["http://example.com/{z}/{x}/{y}.png"]
-            });
-            t.deepEqual(source.queryRenderedFeatures(), []);
-            t.end();
-        });
-        t.end();
-    });
-
     function testScheme(scheme, expectedURL) {
         t.test('scheme "' + scheme + '"', function(t) {
             var source = createSource({
@@ -136,7 +104,7 @@ test('VectorTileSource', function(t) {
             };
 
             source.on('load', function() {
-                source._loadTile({coord: new TileCoord(10, 5, 5, 0)});
+                source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, function () {});
             });
         });
     }
