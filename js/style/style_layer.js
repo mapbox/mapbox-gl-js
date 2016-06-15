@@ -193,6 +193,16 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
+    isLayoutValueFeatureConstant: function(name) {
+        var declaration = this._layoutDeclarations[name];
+
+        if (declaration) {
+            return declaration.isFeatureConstant;
+        } else {
+            return true;
+        }
+    },
+
     isPaintValueZoomConstant: function(name) {
         var transition = this._paintTransitions[name];
 
