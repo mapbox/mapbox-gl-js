@@ -33,7 +33,7 @@ description: Switch to another map style.
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/basic-v8',
+    style: 'mapbox://styles/mapbox/basic-v9',
     zoom: 13,
     center: [4.899, 52.372]
 });
@@ -43,7 +43,7 @@ var inputs = layerList.getElementsByTagName('input');
 
 function switchLayer(layer) {
     var layerId = layer.target.id;
-    map.setStyle('mapbox://styles/mapbox/' + layerId + '-v8');
+    map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
 }
 
 for (var i = 0; i < inputs.length; i++) {
