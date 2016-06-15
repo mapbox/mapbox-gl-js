@@ -24,10 +24,10 @@ function draw(painter, source, layer, coords) {
     }
 
     if (!painter.isOpaquePass && layer.paint['fill-antialias']) {
-        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
-            painter.lineWidth(2);
-            painter.depthMask(false);
+        painter.lineWidth(2);
+        painter.depthMask(false);
 
+        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
             if (isOutlineColorDefined) {
                 // If we defined a different color for the fill outline, we are
                 // going to ignore the bits in 0x07 and just care about the global
@@ -41,25 +41,18 @@ function draw(painter, source, layer, coords) {
                 // the (non-antialiased) fill.
                 painter.setDepthSublayer(0);
             }
-
-            for (var j = 0; j < coords.length; j++) {
-                drawStroke(painter, source, layer, coords[j]);
-            }
         } else {
-            painter.lineWidth(2);
-            painter.depthMask(false);
             // Otherwise, we only want to drawFill the antialiased parts that are
             // *outside* the current shape. This is important in case the fill
             // or stroke color is translucent. If we wouldn't clip to outside
             // the current shape, some pixels from the outline stroke overlapped
             // the (non-antialiased) fill.
             painter.setDepthSublayer(0);
-
-            for (var k = 0; k < coords.length; k++) {
-                drawStroke(painter, source, layer, coords[k]);
-            }
         }
 
+        for (var j = 0; j < coords.length; j++) {
+            drawStroke(painter, source, layer, coords[j]);
+        }
     }
 }
 
