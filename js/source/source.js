@@ -155,7 +155,7 @@ exports._querySourceFeatures = function(params) {
  * @example
  * var sourceObj = new mapboxgl.Source.create({
  *    type: 'vector',
- *    url: 'mapbox://mapbox.mapbox-streets-v5'
+ *    url: 'mapbox://mapbox.mapbox-streets-v6'
  * });
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove

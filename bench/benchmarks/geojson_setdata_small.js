@@ -26,7 +26,7 @@ module.exports = function(options) {
         height: 768,
         zoom: 5,
         center: [-77.032194, 38.912753],
-        style: 'mapbox://styles/mapbox/bright-v8'
+        style: 'mapbox://styles/mapbox/bright-v9'
     });
 
     map.on('load', function() {
