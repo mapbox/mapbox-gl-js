@@ -26,7 +26,7 @@ module.exports = function(options) {
             height: height,
             zoom: zoomLevel,
             center: [-77.032194, 38.912753],
-            style: 'mapbox://styles/mapbox/streets-v8'
+            style: 'mapbox://styles/mapbox/streets-v9'
         });
         document.getElementById('map').style.display = 'none';
 

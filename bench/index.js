@@ -92,7 +92,7 @@ function createMap(options) {
     mapboxgl.accessToken = getAccessToken();
     return new mapboxgl.Map(util.extend({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v8',
+        style: 'mapbox://styles/mapbox/streets-v9',
         interactive: false
     }, options));
 }

@@ -33,7 +33,7 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on htt
         mapboxgl.accessToken = '<your access token here>';
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v8'
+            style: 'mapbox://styles/mapbox/streets-v9'
         });
     </script>
 </body>
@@ -57,7 +57,7 @@ var mapboxgl = require('mapbox-gl');
 mapboxgl.accessToken = '<your access token here>';
 var map = new mapboxgl.Map({
     container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v8'
+    style: 'mapbox://styles/mapbox/streets-v9'
 });
 ```
 
@@ -85,7 +85,7 @@ var mapboxgl = require('mapbox-gl');
 mapboxgl.accessToken = '<your access token here>';
 var map = new mapboxgl.Map({
     container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v8'
+    style: 'mapbox://styles/mapbox/streets-v9'
 });
 ```
 
