@@ -10,6 +10,7 @@ var Coordinate = require('../../../js/geo/coordinate');
 var Evented = require('../../../js/util/evented');
 var util = require('../../../js/util/util');
 
+// Add a mocked source type for use in these tests
 Source.setType('mock-source-type', function create (id, sourceOptions) {
     var source = util.extend({
         id: id,
@@ -23,7 +24,7 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
         serialize: function () {}
     }, sourceOptions);
     source = util.inherit(Evented, source);
-    setTimeout(function () { source.fire('load'); }, 0);
+    if (!sourceOptions.noLoad) { setTimeout(function () { source.fire('load'); }, 0); }
     return source;
 });
 
@@ -652,19 +653,17 @@ test('SourceCache#findLoadedParent', function(t) {
     t.end();
 });
 
-// TODO: add this to SourceCache test
-// test('GeoJSONSource#reload', function(t) {
-//     t.test('before loaded', function(t) {
-//         var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
-//
-//         t.doesNotThrow(function() {
-//             source.reload();
-//         }, null, 'reload ignored gracefully');
-//
-//         t.end();
-//     });
-//
-//     t.end();
-// });
+test('SourceCache#reload', function(t) {
+    t.test('before loaded', function(t) {
+        var sourceCache = createSourceCache({ noLoad: true });
 
+        t.doesNotThrow(function() {
+            sourceCache.reload();
+        }, null, 'reload ignored gracefully');
+
+        t.end();
+    });
+
+    t.end();
+});
 
