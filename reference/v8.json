@@ -517,6 +517,45 @@
         "icon-image"
       ]
     },
+    "icon-text-fit": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": false,
+      "values": [
+        "none",
+        "both",
+        "width",
+        "height"
+      ],
+      "default": "none",
+      "doc": "Position and scale an icon by the its corresponding text.",
+      "requires": [
+        "icon-image",
+        "text-field"
+      ]
+    },
+    "icon-text-fit-padding": {
+      "type": "array",
+      "value": "number",
+      "length": 4,
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "units": "pixels",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "doc": "Size of padding area around the text-fit size in clockwise order: top, right, bottom, left.",
+      "requires": [
+        "icon-image",
+        "icon-text-fit",
+        "text-field"
+      ]
+    },
     "icon-image": {
       "type": "string",
       "function": "piecewise-constant",
