@@ -37,6 +37,7 @@
     "unitbezier": "^0.0.0",
     "vector-tile": "^1.2.1",
     "vt-pbf": "^2.0.2",
+    "webgl-mock": "0.1.6",
     "webworkify": "1.2.0",
     "whoots-js": "^2.0.0"
   },
