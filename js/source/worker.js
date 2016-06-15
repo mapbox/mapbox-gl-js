@@ -185,7 +185,7 @@ util.extend(Worker.prototype, {
 
     'load worker source': function(params, callback) {
         try {
-            self.importScripts(params.url);
+            this.self.importScripts(params.url);
             callback();
         } catch (e) {
             callback(e);

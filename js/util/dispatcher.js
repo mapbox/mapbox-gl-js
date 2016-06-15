@@ -33,6 +33,9 @@ function Dispatcher(length, parent) {
 
     parentBus.target = workerBus;
     workerBus.target = parentBus;
+    // workerBus substitutes the WebWorker global `self`, and Worker uses
+    // self.importScripts for the 'load worker source' target.
+    workerBus.importScripts = function () {};
 
     this.worker = new Worker(workerBus);
 

@@ -39,7 +39,9 @@ module.exports.create = function (id, options, dispatcher) {
  * map.addSource('some id', sourceObj); // add
  * map.removeSource('some id');  // remove
  */
-function ImageSource(options) {
+function ImageSource(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
     this.url = options.url;
     this.coordinates = options.coordinates;
 
