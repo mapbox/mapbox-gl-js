@@ -2,5 +2,6 @@
 
 module.exports = {
     API_URL: 'https://api.mapbox.com',
-    REQUIRE_ACCESS_TOKEN: true
+    REQUIRE_ACCESS_TOKEN: true,
+    MOCK_GL: false
 };

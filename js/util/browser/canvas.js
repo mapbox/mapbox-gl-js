@@ -2,6 +2,8 @@
 
 var util = require('../util');
 var isSupported = require('mapbox-gl-js-supported');
+var config = require('../config');
+var MockWebGLRenderingContext = require('webgl-mock/src/WebGLRenderingContext');
 
 module.exports = Canvas;
 
@@ -15,6 +17,20 @@ function Canvas(parent, container) {
         this.canvas.addEventListener('webglcontextrestored', parent._contextRestored.bind(parent), false);
         this.canvas.setAttribute('tabindex', 0);
         container.appendChild(this.canvas);
+    }
+
+    if (config.MOCK_GL) {
+        var gl = new MockWebGLRenderingContext(this.canvas);
+        gl.getExtension = function (extention) {
+            // disable VAO
+            if (extention === 'OES_vertex_array_object') {
+                return undefined;
+            }
+            return MockWebGLRenderingContext.prototype.getExtension.apply(this, arguments);
+        };
+        this.getWebGLContext = function () {
+            return gl;
+        };
     }
 }
 
