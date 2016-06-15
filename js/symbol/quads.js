@@ -51,10 +51,11 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @param {Array<Array<Point>>} line
  * @param {LayoutProperties} layout
  * @param {boolean} alongLine Whether the icon should be placed along the line.
+ * @param {Shaping} shapedText Shaping for corresponding text
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
+function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine, shapedText) {
 
     var rect = shapedIcon.image.rect;
 
@@ -63,10 +64,38 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layout, alongLine) {
     var right = left + rect.w / shapedIcon.image.pixelRatio;
     var top = shapedIcon.top - border;
     var bottom = top + rect.h / shapedIcon.image.pixelRatio;
-    var tl = new Point(left, top);
-    var tr = new Point(right, top);
-    var br = new Point(right, bottom);
-    var bl = new Point(left, bottom);
+    var tl, tr, br, bl;
+
+    // text-fit mode
+    if (layout['icon-text-fit'] !== 'none' && shapedText) {
+        var iconWidth = (right - left),
+            iconHeight = (bottom - top),
+            size = layout['text-size'] / 24,
+            textLeft = shapedText.left * size,
+            textRight = shapedText.right * size,
+            textTop = shapedText.top * size,
+            textBottom = shapedText.bottom * size,
+            textWidth = textRight - textLeft,
+            textHeight = textBottom - textTop,
+            padT = layout['icon-text-fit-padding'][0],
+            padR = layout['icon-text-fit-padding'][1],
+            padB = layout['icon-text-fit-padding'][2],
+            padL = layout['icon-text-fit-padding'][3],
+            offsetY = layout['icon-text-fit'] === 'width' ? (textHeight - iconHeight) * 0.5 : 0,
+            offsetX = layout['icon-text-fit'] === 'height' ? (textWidth - iconWidth) * 0.5 : 0,
+            width = layout['icon-text-fit'] === 'width' || layout['icon-text-fit'] === 'both' ? textWidth : iconWidth,
+            height = layout['icon-text-fit'] === 'height' || layout['icon-text-fit'] === 'both' ? textHeight : iconHeight;
+        tl = new Point(textLeft + offsetX - padL,         textTop + offsetY - padT);
+        tr = new Point(textLeft + offsetX + padR + width, textTop + offsetY - padT);
+        br = new Point(textLeft + offsetX + padR + width, textTop + offsetY + padB + height);
+        bl = new Point(textLeft + offsetX - padL,         textTop + offsetY + padB + height);
+    // Normal icon size mode
+    } else {
+        tl = new Point(left, top);
+        tr = new Point(right, top);
+        br = new Point(right, bottom);
+        bl = new Point(left, bottom);
+    }
 
     var angle = layout['icon-rotate'] * Math.PI / 180;
     if (alongLine) {
