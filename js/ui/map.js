@@ -167,16 +167,7 @@ var Map = module.exports = function(options) {
         window.addEventListener('resize', this._onWindowResize, false);
     }
 
-    bindHandlers(this, {
-        scrollZoom: options.interactive && options.scrollZoom,
-        boxZoom: options.interactive && options.boxZoom,
-        dragRotate: options.interactive && options.dragRotate,
-        dragPan: options.interactive && options.dragPan,
-        keyboard: options.interactive && options.keyboard,
-        doubleClickZoom: options.interactive && options.doubleClickZoom,
-        touchZoomRotate: options.interactive && options.touchZoomRotate,
-        bearingSnap: options.abearingSnap
-    });
+    bindHandlers(this, options);
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash
