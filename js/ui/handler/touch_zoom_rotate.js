@@ -14,9 +14,11 @@ var inertiaLinearity = 0.15,
 
 
 /**
- * The `TouchZoomRotateHandler` allows a user to zoom and rotate the map by
+ * The `TouchZoomRotateHandler` allows the user to zoom and rotate the map by
  * pinching on a touchscreen.
+ *
  * @class TouchZoomRotateHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function TouchZoomRotateHandler(map) {
     this._map = map;
@@ -30,15 +32,17 @@ TouchZoomRotateHandler.prototype = {
     _enabled: false,
 
     /**
-     * Returns the current enabled/disabled state of the "pinch to rotate and zoom" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "pinch to rotate and zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "pinch to rotate and zoom" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Enable the "pinch to rotate and zoom" interaction.
+     * Enables the "pinch to rotate and zoom" interaction.
+     *
      * @example
      *   map.touchZoomRotate.enable();
      */
@@ -49,7 +53,8 @@ TouchZoomRotateHandler.prototype = {
     },
 
     /**
-     * Disable the "pinch to rotate and zoom" interaction.
+     * Disables the "pinch to rotate and zoom" interaction.
+     *
      * @example
      *   map.touchZoomRotate.disable();
      */
@@ -60,8 +65,9 @@ TouchZoomRotateHandler.prototype = {
     },
 
     /**
-     * Disable the "pinch to rotate" interaction, leaving the "pinch to zoom"
+     * Disables the "pinch to rotate" interaction, leaving the "pinch to zoom"
      * interaction enabled.
+     *
      * @example
      *   map.touchZoomRotate.disableRotation();
      */
@@ -70,8 +76,8 @@ TouchZoomRotateHandler.prototype = {
     },
 
     /**
-     * Enable the "pinch to rotate" interaction, undoing a call to
-     * `disableRotation`.
+     * Enables the "pinch to rotate" interaction.
+     *
      * @example
      *   map.touchZoomRotate.enable();
      *   map.touchZoomRotate.enableRotation();

@@ -10,16 +10,19 @@ var EXTENT = require('../data/bucket').EXTENT;
 module.exports = GeoJSONSource;
 
 /**
- * Create a GeoJSON data source instance given an options object
+ * A datasource containing GeoJSON.
+ *
  * @class GeoJSONSource
  * @param {Object} [options]
- * @param {Object|string} options.data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
- * @param {number} [options.maxzoom=18] Maximum zoom to preserve detail at.
- * @param {number} [options.buffer] Tile buffer on each side in pixels.
- * @param {number} [options.tolerance] Simplification tolerance (higher means simpler) in pixels.
- * @param {number} [options.cluster] If the data is a collection of point features, setting this to true clusters the points by radius into groups.
- * @param {number} [options.clusterRadius=50] Radius of each cluster when clustering points, in pixels.
- * @param {number} [options.clusterMaxZoom] Max zoom to cluster points on. Defaults to one zoom less than `maxzoom` (so that last zoom features are not clustered).
+ * @param {Object|string} options.data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
+ * @param {number} [options.maxzoom=18] The maximum zoom level at which to preserve detail (1-20).
+ * @param {number} [options.buffer] The tile buffer, measured in pixels.
+ * @param {number} [options.tolerance] The simplification tolerance, measured in pixels (higher means simpler).
+ * @param {boolean} [options.cluster] If `true`, a collection of point features will be clustered into groups,
+ *   according to `options.clusterRadius`.
+ * @param {number} [options.clusterRadius=50] The radius of each cluster when clustering points, measured in pixels.
+ * @param {number} [options.clusterMaxZoom] The maximum zoom level to cluster points in. By default, this value is
+ *   one zoom level less than the map's `maxzoom`, so that at the highest zoom level features are not clustered.
 
  * @example
  * var sourceObj = new mapboxgl.GeoJSONSource({
@@ -86,9 +89,9 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     isTileClipped: true,
 
     /**
-     * Update source geojson data and rerender map
+     * Sets the GeoJSON data and re-render the map.
      *
-     * @param {Object|string} data A GeoJSON data object or URL to it. The latter is preferable in case of large GeoJSON files.
+     * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} this
      */
     setData: function(data) {

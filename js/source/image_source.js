@@ -15,11 +15,15 @@ var VertexArrayObject = require('../render/vertex_array_object');
 module.exports = ImageSource;
 
 /**
- * Create an Image source instance given an options object
+ * A data source containing an image.
+ *
  * @class ImageSource
  * @param {Object} options
- * @param {string} options.url A string URL of an image file
- * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
+ * @param {string} options.url The URL of an image file.
+ * @param {Array} options.coordinates Four geographical coordinates,
+ *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
+ *   The coordinates start at the top left corner of the image and proceed in clockwise order.
+ *   They do not have to represent a rectangle.
  * @example
  * var sourceObj = new mapboxgl.ImageSource({
  *    url: 'https://www.mapbox.com/images/foo.png',
@@ -64,9 +68,12 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     },
 
     /**
-     * Update image coordinates and rerender map
+     * Sets the image's coordinates and re-renders the map.
      *
-     * @param {Array} coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
+     * @param {Array} coordinates Four geographical coordinates,
+     *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
+     *   The coordinates start at the top left corner of the image and proceed in clockwise order.
+     *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
     setCoordinates: function(coordinates) {

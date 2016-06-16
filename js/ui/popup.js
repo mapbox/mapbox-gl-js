@@ -8,16 +8,18 @@ var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
 
 /**
- * Creates a popup component
+ * A popup component.
+ *
  * @class Popup
- * @param {Object} options
- * @param {boolean} options.closeButton whether to show a close button in the
- * top right corner of the popup.
- * @param {boolean} options.closeOnClick whether to close the popup when the
- * map is clicked.
- * @param {string} options.anchor - One of "top", "bottom", "left", "right", "top-left",
- * "top-right", "bottom-left", or "bottom-right", describing where the popup's anchor
- * relative to the coordinate set via `setLngLat`.
+ * @param {Object} [options]
+ * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
+ *   top right corner of the popup.
+ * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
+ *   map is clicked.
+ * @param {string} options.anchor - A string indicating the popup's location relative to
+ *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
+ *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
+ * `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  * @example
  * var tooltip = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
@@ -39,8 +41,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Attaches the popup to a map
-     * @param {Map} map
+     * Adds the popup to a map.
+     *
+     * @param {Map} map The Mapbox GL JS map to add the popup to.
      * @returns {Popup} `this`
      */
     addTo: function(map) {
@@ -54,7 +57,8 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Removes the popup from a map
+     * Removes the popup from the map it has been added to.
+     *
      * @example
      * var popup = new mapboxgl.Popup().addTo(map);
      * popup.remove();
@@ -80,16 +84,18 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Get the popup's geographical location
-     * @returns {LngLat}
+     * Returns the geographical location of the popup's anchor.
+     *
+     * @returns {LngLat} The geographical location of the popup's anchor.
      */
     getLngLat: function() {
         return this._lngLat;
     },
 
     /**
-     * Set the popup's geographical position and move it.
-     * @param {LngLat} lnglat
+     * Sets the geographical location of the popup's anchor, and moves the popup to it.
+     *
+     * @param {LngLatLike} lnglat The geographical location to set as the popup's anchor.
      * @returns {Popup} `this`
      */
     setLngLat: function(lnglat) {
@@ -99,11 +105,13 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Fill a popup element with text only content. This creates a text node
-     * in the DOM, so it cannot end up appending raw HTML. Use this method
-     * if you want an added level of security against XSS if the popup
-     * content is user-provided.
-     * @param {string} text
+     * Sets the popup's content to a string of text.
+     *
+     * This function creates a [Text](https://developer.mozilla.org/en-US/docs/Web/API/Text) node in the DOM,
+     * so it cannot insert raw HTML. Use this method for security against XSS
+     * if the popup content is user-provided.
+     *
+     * @param {string} text Textual content for the popup.
      * @returns {Popup} `this`
      * @example
      * var tooltip = new mapboxgl.Popup()
@@ -116,8 +124,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Fill a popup element with HTML content, provided as a string.
-     * @param {string} html
+     * Sets the popup's content to the HTML provided as a string.
+     *
+     * @param {string} html A string representing HTML content for the popup.
      * @returns {Popup} `this`
      */
     setHTML: function(html) {
@@ -134,8 +143,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
-     * Fill a popup element with DOM content
-     * @param {Node} htmlNode Popup content as a DOM node
+     * Sets the popup's content to the element provided as a DOM node.
+     *
+     * @param {Node} htmlNode A DOM node to be used as content for the popup.
      * @returns {Popup} `this`
      * @example
      * // create an element with the popup content

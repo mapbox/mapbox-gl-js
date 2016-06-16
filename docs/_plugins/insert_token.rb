@@ -1,6 +1,6 @@
 module InsertToken
     def insert_token(input)
-        input.sub("<script>", "<script>\nmapboxgl.accessToken = '<your access token here>';")
+        input.sub("<script>", "<script>\n  mapboxgl.accessToken = '<your access token here>';")
     end
 end
 
