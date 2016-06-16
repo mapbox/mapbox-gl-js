@@ -182,6 +182,48 @@ test('SourceCache#removeTile', function(t) {
     t.end();
 });
 
+test('SourceCache / Source lifecycle', function (t) {
+    t.test('does not fire load or change before source load event', function (t) {
+        createSourceCache({noLoad: true})
+            .on('load', t.fail)
+            .on('change', t.fail);
+        setTimeout(t.end, 1);
+    });
+
+    t.test('fires load after source load event', function (t) {
+        createSourceCache({}).on('load', t.end);
+    });
+
+    t.test('fires change after source change event', function (t) {
+        var sourceCache = createSourceCache().on('change', t.end);
+        sourceCache._source.fire('change');
+    });
+
+    t.test('reloads tiles after source change event', function (t) {
+        var transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+
+        var expected = [ new TileCoord(0, 0, 0).id, new TileCoord(0, 0, 0).id ];
+        t.plan(expected.length);
+
+        var sourceCache = createSourceCache({
+            loadTile: function (tile, callback) {
+                t.equal(tile.coord.id, expected.shift());
+                tile.loaded = true;
+                callback();
+            }
+        });
+
+        sourceCache.on('load', function () {
+            sourceCache.update(transform);
+            sourceCache._source.fire('change');
+        });
+    });
+
+    t.end();
+});
+
 test('SourceCache#update', function(t) {
     t.test('loads no tiles if used is false', function(t) {
         var transform = new Transform();
@@ -676,4 +718,3 @@ test('SourceCache#reload', function(t) {
 
     t.end();
 });
-

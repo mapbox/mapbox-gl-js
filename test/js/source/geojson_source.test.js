@@ -175,45 +175,6 @@ test('GeoJSONSource#update', function(t) {
         });
     });
 
-    // TODO: I think the right thing to do here is to replace this test with
-    // a test in SourceCache that checks for clearing previous tiles on `change`.
-    // @lucaswoj that sound right to you?
-    // t.test('clears previous tiles', function(t) {
-    //     var source = GeoJSONSource.create('id', {data: hawkHill}, mockDispatcher);
-
-    //     // TODO: decouple
-    //     source.used = true;
-    //     source.dispatcher = {
-    //         send: function(message, args, callback) {
-    //             setTimeout(callback, 0);
-    //         }
-    //     };
-    //     source.map = {
-    //         options: {
-    //             maxZoom: 20
-    //         },
-    //         transform: new Transform()
-    //     };
-
-    //     source.map.transform.resize(512, 512);
-
-    //     source.style = {};
-
-    //     source.update(transform);
-
-    //     source.once('change', function() {
-    //         source.update(transform); // Load tiles
-
-    //         source.setData({});
-    //         source.update(transform);
-
-    //         source.once('change', function() {
-    //             t.deepEqual(source._pyramid.renderedIDs(), []);
-    //             t.end();
-    //         });
-    //     });
-    // });
-
     t.end();
 });
 

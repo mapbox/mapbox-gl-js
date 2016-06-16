@@ -47,6 +47,7 @@ function SourceCache(id, options, dispatcher) {
         if (this.transform) {
             this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
         }
+        this.fire('change');
     }.bind(this));
 
     this._tiles = {};
