@@ -74,7 +74,7 @@ exports.timed = function (fn, dur, ctx) {
  *   expected (i.e. a software renderer would be used)
  * @return {boolean}
  */
-exports.supported = require('mapbox-gl-js-supported');
+exports.supported = require('mapbox-gl-supported');
 
 exports.hardwareConcurrency = navigator.hardwareConcurrency || 4;
 

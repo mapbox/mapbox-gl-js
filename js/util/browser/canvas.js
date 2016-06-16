@@ -1,7 +1,7 @@
 'use strict';
 
 var util = require('../util');
-var isSupported = require('mapbox-gl-js-supported');
+var isSupported = require('mapbox-gl-supported');
 
 module.exports = Canvas;
 
