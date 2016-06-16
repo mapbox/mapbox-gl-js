@@ -5,7 +5,9 @@ var Evented = require('../../util/evented');
 module.exports = Control;
 
 /**
- * A base class for map-related interface elements.
+ * The base class for map-related interface elements.
+ *
+ * The `Control` class mixes in [`Evented`](#Evented) methods.
  *
  * @class Control
  */
@@ -13,11 +15,9 @@ function Control() {}
 
 Control.prototype = {
     /**
-     * Add this control to the map, returning the control itself
-     * for chaining. This will insert the control's DOM element into
-     * the map's DOM element if the control has a `position` specified.
+     * Adds the control to a map.
      *
-     * @param {Map} map
+     * @param {Map} map The Mapbox GL JS map to add the control to.
      * @returns {Control} `this`
      */
     addTo: function(map) {
@@ -38,7 +38,7 @@ Control.prototype = {
     },
 
     /**
-     * Remove this control from the map it has been added to.
+     * Removes the control from the map it has been added to.
      *
      * @returns {Control} `this`
      */
