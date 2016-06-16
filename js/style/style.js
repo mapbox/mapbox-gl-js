@@ -19,12 +19,6 @@ var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
 
-var VectorSource = require('../source/vector_tile_source');
-var RasterSource = require('../source/raster_tile_source');
-var GeoJSONSource = require('../source/geojson_source');
-var VideoSource = require('../source/video_source');
-var ImageSource = require('../source/image_source');
-
 module.exports = Style;
 
 function Style(stylesheet, animationLoop, workerCount) {
@@ -76,31 +70,10 @@ function Style(stylesheet, animationLoop, workerCount) {
         this.fire('load');
     }.bind(this);
 
-    var sourceTypesLoaded = function(err) {
-        if (err) {
-            this.fire('error', {error: err});
-            return;
-        }
-
-        if (typeof stylesheet === 'string') {
-            ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
-        } else {
-            browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
-        }
-    }.bind(this);
-
-    if (Source.getType('vector')) {
-        sourceTypesLoaded();
+    if (typeof stylesheet === 'string') {
+        ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
     } else {
-        util.asyncAll([
-          ['vector', VectorSource],
-          ['raster', RasterSource],
-          ['geojson', GeoJSONSource],
-          ['video', VideoSource],
-          ['image', ImageSource]
-        ], function (type, done) {
-            this.addSourceType(type[0], type[1].create, type[1].workerSourceURL, done);
-        }.bind(this), sourceTypesLoaded);
+        browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
     this.on('source.load', function(event) {

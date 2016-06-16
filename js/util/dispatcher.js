@@ -38,13 +38,6 @@ function Dispatcher(length, parent) {
     workerBus.importScripts = function () {};
 
     this.worker = new Worker(workerBus);
-
-    // TODO: this is here temporarily to allow tests to work until the geojson
-    // worker source has been hard-coded into the Worker instead of loaded
-    // asynchronously
-    var GeoJSONWorkerSource = require('../source/geojson_worker_source.js');
-    this.worker.workerSources.geojson = new GeoJSONWorkerSource();
-
     this.actor = new Actor(parentBus, parent);
 
     this.remove = function() {

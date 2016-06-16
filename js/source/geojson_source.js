@@ -1,22 +1,13 @@
 'use strict';
 
-var Evented = require('../util/Evented');
+var Evented = require('../util/evented');
 var util = require('../util/util');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
-var browser = require('../util/browser');
-
 module.exports.create = function (id, options, dispatcher) {
     return new GeoJSONSource(id, options, dispatcher);
 };
-
-// TODO: This will be removed before merging.  It is here now to demonstrate
-// how a *third-party* could provide a WorkerSource implementation using
-// webworkify
-module.exports.workerSourceURL = browser.createBlobURLForModule(
-    require('./geojson_worker_source_wrapper')
-);
 
 /**
  * A datasource containing GeoJSON.

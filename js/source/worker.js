@@ -8,6 +8,8 @@ var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 
+var GeoJSONWorkerSource = require('./geojson_worker_source');
+
 module.exports = function(self) {
     return new Worker(self);
 };
@@ -19,7 +21,10 @@ function Worker(self) {
     this.loading = {};
     this.loaded = {};
 
-    this.workerSources = {};
+    this.workerSources = {
+        geojson: new GeoJSONWorkerSource()
+    };
+
     self.registerWorkerSource = function (name, workerSource) {
         if (this.workerSources[name]) {
             throw new Error('Worker source with name "' + name + '" already registered.');

@@ -1,7 +1,5 @@
 'use strict';
 
-var webworkify = require('webworkify');
-
 /**
  * Unlike js/util/browser.js, this code is written with the expectation
  * of a browser environment with a global 'window' object
@@ -79,10 +77,6 @@ exports.timed = function (fn, dur, ctx) {
 exports.supported = require('mapbox-gl-supported');
 
 exports.hardwareConcurrency = navigator.hardwareConcurrency || 4;
-
-exports.createBlobURLForModule = function (targetModule) {
-    return URL.createObjectURL(webworkify(targetModule, {bare: true}));
-};
 
 Object.defineProperty(exports, 'devicePixelRatio', {
     get: function() { return window.devicePixelRatio; }

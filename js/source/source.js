@@ -2,7 +2,13 @@
 
 var util = require('../util/util');
 
-var sourceTypes = {};
+var sourceTypes = {
+    'vector': require('../source/vector_tile_source').create,
+    'raster': require('../source/raster_tile_source').create,
+    'geojson': require('../source/geojson_source').create,
+    'video': require('../source/video_source').create,
+    'image': require('../source/image_source').create
+};
 
 /**
  * @interface Source
