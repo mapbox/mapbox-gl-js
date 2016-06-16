@@ -38,6 +38,15 @@ GeoJSONWorkerSource.prototype = {
         }
     },
 
+    /**
+     * Fetches (if appropriate), parses, and index geojson data into tiles.
+     * `callback` is called with a "tile index" equivalent to the output of
+     * geojson-vt.
+     *
+     * Defers to `this.loadGeoJSON(params, callback)` for the fetching/parsing,
+     * expecting `callback` to be called with `(error, data: GeoJSON)`.
+     * @private
+     */
     loadData: function (params, callback) {
         var handleData = function(err, data) {
             if (err) return callback(err);
@@ -55,6 +64,11 @@ GeoJSONWorkerSource.prototype = {
         this.loadGeoJSON(params, handleData);
     },
 
+    /**
+     * Fetch and parse GeoJSON according to the given params.  Calls `callback`
+     * with `(err, data)`, where `data` is a parsed GeoJSON object.
+     * @private
+     */
     loadGeoJSON: function (params, callback) {
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
@@ -73,11 +87,12 @@ GeoJSONWorkerSource.prototype = {
         }
     },
 
-    /*
+    /**
      * Index the data using either geojson-vt or supercluster
      * @param {GeoJSON} data
      * @param {object} params forwarded from loadTile.
      * @param {callback} (err, indexedData)
+     * @private
      */
     _indexData: function (data, params, callback) {
         try {
