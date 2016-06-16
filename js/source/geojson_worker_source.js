@@ -97,7 +97,7 @@ GeoJSONWorkerSource.prototype = {
     _indexData: function (data, params, callback) {
         try {
             if (params.cluster) {
-                callback(null, supercluster(params.supeclusterOptions).load(data.features));
+                callback(null, supercluster(params.superclusterOptions).load(data.features));
             } else {
                 callback(null, geojsonvt(data, params.geojsonVtOptions));
             }
