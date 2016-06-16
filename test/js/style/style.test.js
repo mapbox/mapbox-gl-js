@@ -69,7 +69,7 @@ test('Style', function(t) {
             }
         }));
         style.on('load', function() {
-            t.ok(style.getSource('mapbox') instanceof SourceCache);
+            t.ok(style.sources['mapbox'] instanceof SourceCache);
             t.end();
         });
     });
@@ -303,7 +303,7 @@ test('Style#addSource', function(t) {
         var style = new Style(createStyleJSON());
         style.on('load', function() {
             style.on('error', function() {
-                t.notOk(style.getSource('source-id'));
+                t.notOk(style.sources['source-id']);
                 t.end();
             });
             style.addSource('source-id', {
@@ -344,12 +344,12 @@ test('Style#addSource', function(t) {
         style.on('load', function () {
             t.plan(7);
             style.addSource('source-id', source); // Fires load
-            style.getSource('source-id').fire('error');
-            style.getSource('source-id').fire('change');
-            style.getSource('source-id').fire('tile.add');
-            style.getSource('source-id').fire('tile.load');
-            style.getSource('source-id').fire('tile.error');
-            style.getSource('source-id').fire('tile.remove');
+            style.sources['source-id'].fire('error');
+            style.sources['source-id'].fire('change');
+            style.sources['source-id'].fire('tile.add');
+            style.sources['source-id'].fire('tile.load');
+            style.sources['source-id'].fire('tile.error');
+            style.sources['source-id'].fire('tile.remove');
         });
     });
 
@@ -432,7 +432,7 @@ test('Style#removeSource', function(t) {
 
         style.on('load', function () {
             style.addSource('source-id', source);
-            source = style.getSource('source-id');
+            source = style.sources['source-id'];
 
             style.removeSource('source-id');
 
@@ -557,7 +557,7 @@ test('Style#addLayer', function(t) {
         };
 
         style.on('load', function() {
-            style.getSource('mapbox').reload = t.end;
+            style.sources['mapbox'].reload = t.end;
 
             style.addLayer(layer);
             style.update();

@@ -196,7 +196,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
     t.test('fires change after source change event', function (t) {
         var sourceCache = createSourceCache().on('change', t.end);
-        sourceCache._source.fire('change');
+        sourceCache.getSource().fire('change');
     });
 
     t.test('reloads tiles after source change event', function (t) {
@@ -217,7 +217,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
         sourceCache.on('load', function () {
             sourceCache.update(transform);
-            sourceCache._source.fire('change');
+            sourceCache.getSource().fire('change');
         });
     });
 
