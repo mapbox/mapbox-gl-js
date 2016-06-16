@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+        #buffer {
+            position: absolute;
+            top:100px;
+            left:0;
+            pointer-events: none;
+        }
+        #buffer div {
+            background-color: #fff;
+            padding: 5px 0;
+            text-indent: 10px;
+            white-space: nowrap;
+            text-shadow:
+               -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                 1px 1px 0 #fff;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='checkboxes'>
+  <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'> <label for='show-tile-boundaries'>tile debug</label><br />
+  <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'> <label for='show-symbol-collision-boxes'>collision debug</label><br />
+  <input id='show-overdraw-checkbox' name='show-overdraw' type='checkbox'> <label for='show-overdraw'>overdraw debug</label><br />
+  <input id='buffer-checkbox' name='buffer' type='checkbox'> <label for='buffer'>buffer stats</label>
+</div>
+
+<div id='buffer' style="display:none">
+    <em>Waiting for data...</em>
+</div>
+
+<script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
+<script>
+var style = {
+  "version": 8,
+  "metadata": {
+    "test": {
+      "native": false,
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "places.geojson",
+      "cluster": true,
+      "clusterRadius": 25
+    }
+  },
+  "glyphs": "{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "cluster",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": "rgba(0, 200, 0, 1)",
+        "circle-radius": 20
+      }
+    },
+    {
+      "id": "cluster_label",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "layout": {
+        "text-field": "{point_count}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      }
+    },
+    {
+      "id": "unclustered_point",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "!=",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": "rgba(0, 0, 200, 1)",
+        "circle-radius": 10
+      }
+    }
+  ]
+}
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    style: style,
+    hash: true
+});
+
+map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.Geolocate());
+
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+
+document.getElementById('show-overdraw-checkbox').onclick = function() {
+    map.showOverdrawInspector = !!this.checked;
+};
+
+document.getElementById('buffer-checkbox').onclick = function() {
+    document.getElementById('buffer').style.display = this.checked ? 'block' : 'none';
+};
+
+// keyboard shortcut for comparing rendering with Mapbox GL native
+document.onkeypress = function(e) {
+    if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {
+        var center = map.getCenter();
+        location.href = "mapboxgl://?center=" + center.lat + "," + center.lng + "&zoom=" + map.getZoom() + "&bearing=" + map.getBearing();
+        return false;
+    }
+};
+</script>
+
+</body>
+</html>
