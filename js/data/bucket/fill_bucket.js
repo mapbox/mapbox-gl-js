@@ -46,6 +46,15 @@ FillBucket.prototype.programInterfaces = {
             },
             multiplier: 255,
             paintProperty: 'fill-outline-color'
+        }, {
+            name: 'a_opacity',
+            components: 1,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("fill-opacity", globalProperties, featureProperties)];
+            },
+            multiplier: 255,
+            paintProperty: 'fill-opacity'
         }]
     }
 };
