@@ -92,6 +92,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     maxzoom: 18,
     tileSize: 512,
     isTileClipped: true,
+    reparseOverscaled: true,
     _dirty: true,
 
     onAdd: function (map) {
