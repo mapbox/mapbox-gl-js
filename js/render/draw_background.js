@@ -1,6 +1,5 @@
 'use strict';
 
-var util = require('../util/util');
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var createUniformPragmas = require('./create_uniform_pragmas');
 

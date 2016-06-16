@@ -25,8 +25,6 @@ function SourceCache(id, options, dispatcher) {
 
     var source = this._source = Source.create(id, options, dispatcher)
     .on('load', function () {
-        // TODO: remove this once we eliminate need for sources to have a
-        // reference to the Map instance.
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
 
         this._sourceLoaded = true;
@@ -64,7 +62,6 @@ SourceCache.maxOverzooming = 10;
 SourceCache.maxUnderzooming = 3;
 
 SourceCache.prototype = util.inherit(Evented, {
-    // TODO: hopefully remove the need for this
     onAdd: function (map) {
         this.map = map;
         if (this._source && this._source.onAdd) {
