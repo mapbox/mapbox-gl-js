@@ -250,12 +250,3 @@ test('GeoJSONSource#serialize', function(t) {
     t.end();
 });
 
-// TODO: move this to the general queryRenderedVectorFeatures test
-// test('GeoJSONSource#queryRenderedFeatures', function(t) {
-//     t.test('returns an empty object before loaded', function(t) {
-//         var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
-//         t.deepEqual(source.queryRenderedFeatures(), {});
-//         t.end();
-//     });
-//     t.end();
-// });

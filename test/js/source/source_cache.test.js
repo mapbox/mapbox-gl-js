@@ -431,6 +431,16 @@ test('SourceCache#clearTiles', function(t) {
 });
 
 test('SourceCache#tilesIn', function (t) {
+    t.test('graceful response before source loaded', function (t) {
+        var sourceCache = createSourceCache({ noLoad: true });
+        t.same(sourceCache.tilesIn([
+            new Coordinate(0.5, 0.25, 1),
+            new Coordinate(1.5, 0.75, 1)
+        ]), []);
+
+        t.end();
+    });
+
     t.test('regular tiles', function(t) {
         var transform = new Transform();
         transform.resize(511, 511);
