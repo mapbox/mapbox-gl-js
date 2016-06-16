@@ -905,7 +905,7 @@ test('Style#setLayerZoomRange', function(t) {
 test('Style#queryRenderedFeatures', function(t) {
     var style;
     var Style = proxyquire('../../../js/style/style', {
-        '../source/query-features': {
+        '../source/query_features': {
             rendered: function(source, layers, queryGeom, params) {
                 if (source.id !== 'mapbox') {
                     return [];
