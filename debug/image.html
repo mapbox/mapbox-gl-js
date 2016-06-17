@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<div id='map'></div>
+
+<script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
+<script>
+var imageStyle = {
+    "version": 8,
+    "sources": {
+        "image": {
+            "type": "image",
+            "url": "0.png",
+            "coordinates": [
+                [-122.51596391201019, 37.56238816766053],
+                [-122.51467645168304, 37.56410183312965],
+                [-122.51309394836426, 37.563391708549425],
+                [-122.51423120498657, 37.56161849366671]
+            ]
+        }
+    },
+    "layers": [{
+        "id": "background",
+        "type": "background",
+        "paint": {
+            "background-color": "rgb(4,7,14)"
+        }
+    }, {
+        "id": "image",
+        "type": "raster",
+        "source": "image"
+    }]
+};
+
+var map = new mapboxgl.Map({
+  container: 'map',
+  minZoom: 14,
+  zoom: 17,
+  center: [-122.514426, 37.562984],
+  bearing: -96,
+  style: imageStyle,
+  hash: false
+});
+</script>
+
+</body>
+</html>
