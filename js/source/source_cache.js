@@ -114,7 +114,7 @@ SourceCache.prototype = util.inherit(Evented, {
     },
 
     prepare: function () {
-        if (this._source.prepare)
+        if (this._sourceLoaded && this._source.prepare)
             return this._source.prepare();
     },
 
