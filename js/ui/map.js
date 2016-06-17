@@ -680,6 +680,20 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Adds a third-party source type, making it available for use with
+     * {@link Map#addSource}.
+     * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
+     * @param {CreateSourceFuntion} sourceFactoryFn A function that creates an object implementing the {@link Source}.
+     * @param {URL} [workerSourceURL] An optional URL to a script which, when run by a Worker, registers a {@link WorkerSource} implementation for this source type by calling `self.registerWorkerSource(workerSource: WorkerSource)`.
+     * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
+     */
+    addSourceType: function (name, createSourceFn, workerSourceURL, callback) {
+        if (this.style) {
+            return this.style.addSourceType(name, createSourceFn, workerSourceURL, callback);
+        }
+    },
+
+    /**
      * Removes a source from the map's style.
      *
      * @param {string} id The ID of the source to remove.

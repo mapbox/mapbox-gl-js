@@ -109,13 +109,6 @@ util.extend(Worker.prototype, {
         this.layerFamilies = createLayerFamilies(this.layers);
     },
 
-    /*
-     * Load a WorkerSource script at params.url.  The script is run
-     * (using importScripts) with `registerWorkerSource` in scope, which is a
-     * taking `(name, workerSourceObject)`.  `workerSourceObject` can have:
-     *  - a `loadTile` member, which provides an alternative implementation to `Worker.prototype.loadVectorTile`, yielding a VectorTile object.  If this is provided, then a Source can call `'load tile'` with `type: name` in the params to have the worker use this implementation.
-     *  - any other `key: method` pairs, which can be invoked from a source with `dispatcher.send('sourcetype.method', params, callback)`.
-     */
     'load tile': function(params, callback) {
         var source = params.source,
             uid = params.uid;
@@ -124,7 +117,7 @@ util.extend(Worker.prototype, {
             this.loading[source] = {};
 
         var tile = this.loading[source][uid] = new WorkerTile(params);
-        if (!params.type) {
+        if (!params.type || !this.workerSources[params.type].loadTile) {
             tile.abort = this.loadVectorTile(params, done.bind(this));
         } else {
             tile.abort = this.workerSources[params.type].loadTile(params, done.bind(this));
@@ -188,6 +181,12 @@ util.extend(Worker.prototype, {
         }
     },
 
+    /**
+     * Load a {@link WorkerSource} script at params.url.  The script is run
+     * (using importScripts) with `registerWorkerSource` in scope, which is a
+     * function taking `(name, workerSourceObject)`.
+     *  @private
+     */
     'load worker source': function(params, callback) {
         try {
             this.self.importScripts(params.url);
