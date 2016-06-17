@@ -78,7 +78,8 @@ module.exports.normalizeSpriteURL = function(url, format, extension, accessToken
     var urlObject = URL.parse(url);
 
     if (urlObject.protocol !== 'mapbox:') {
-        return url + format + extension;
+        urlObject.pathname += format + extension;
+        return URL.format(urlObject);
     } else {
         return normalizeURL(
             'mapbox:/' + urlObject.pathname + '/sprite' + format + extension + formatQuery(urlObject.query),
