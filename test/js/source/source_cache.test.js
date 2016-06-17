@@ -12,6 +12,8 @@ var util = require('../../../js/util/util');
 
 // Add a mocked source type for use in these tests
 Source.setType('mock-source-type', function create (id, sourceOptions) {
+    // allow tests to override mocked methods/properties by providing
+    // them in the source definition object that's given to Source.create()
     var source = util.extend({
         id: id,
         minzoom: 0,
@@ -24,7 +26,15 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
         serialize: function () {}
     }, sourceOptions);
     source = util.inherit(Evented, source);
-    if (!sourceOptions.noLoad) { setTimeout(function () { source.fire('load'); }, 0); }
+
+    if (sourceOptions.noLoad) { return source; }
+    setTimeout(function () {
+        if (sourceOptions.error) {
+            source.fire('error', { error: sourceOptions.error });
+        } else {
+            source.fire('load');
+        }
+    }, 0);
     return source;
 });
 
@@ -190,13 +200,29 @@ test('SourceCache / Source lifecycle', function (t) {
         setTimeout(t.end, 1);
     });
 
-    t.test('fires load after source load event', function (t) {
+    t.test('forward load event', function (t) {
         createSourceCache({}).on('load', t.end);
     });
 
-    t.test('fires change after source change event', function (t) {
+    t.test('forward change event', function (t) {
         var sourceCache = createSourceCache().on('change', t.end);
         sourceCache.getSource().fire('change');
+    });
+
+    t.test('forward error event', function (t) {
+        createSourceCache({ error: 'Error loading source' })
+        .on('error', function (err) {
+            t.equal(err.error, 'Error loading source');
+            t.end();
+        });
+    });
+
+    t.test('loaded() true after error', function (t) {
+        var sourceCache = createSourceCache({ error: 'Error loading source' })
+        .on('error', function () {
+            t.ok(sourceCache.loaded());
+            t.end();
+        });
     });
 
     t.test('reloads tiles after source change event', function (t) {

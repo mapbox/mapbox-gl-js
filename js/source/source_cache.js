@@ -40,8 +40,9 @@ function SourceCache(id, options, dispatcher) {
 
         this.fire('load');
     }.bind(this))
-    .on('error', function () {
+    .on('error', function (e) {
         this._sourceErrored = true;
+        this.fire('error', e);
     }.bind(this))
     .on('change', function () {
         this.reload();
