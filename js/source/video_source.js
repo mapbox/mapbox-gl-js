@@ -47,7 +47,7 @@ function VideoSource(id, options) {
     this.coordinates = options.coordinates;
 
     ajax.getVideo(options.urls, function(err, video) {
-        if (err) return this.fire('error', err);
+        if (err) return this.fire('error', {error: err});
 
         this.video = video;
         this.video.loop = true;
@@ -91,7 +91,6 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
     onAdd: function(map) {
         this.map = map;
-        console.log(this.video);
         if (this.video) {
             this.video.play();
             this.setCoordinates(this.coordinates);

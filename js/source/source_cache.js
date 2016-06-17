@@ -160,6 +160,7 @@ SourceCache.prototype = util.inherit(Evented, {
         }
 
         tile.source = this;
+        tile.timeAdded = new Date().getTime();
         this.fire('tile.load', {tile: tile});
     },
 

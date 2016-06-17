@@ -76,7 +76,6 @@ RasterTileSource.prototype = util.inherit(Evented, {
             }
             gl.generateMipmap(gl.TEXTURE_2D);
 
-            tile.timeAdded = new Date().getTime();
             this.map.animationLoop.set(this.map.style.rasterFadeDuration);
 
             tile.state = 'loaded';
