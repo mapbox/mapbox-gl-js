@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
@@ -46,8 +45,7 @@ function ImageSource(id, options, dispatcher) {
     this.coordinates = options.coordinates;
 
     ajax.getImage(options.url, function(err, image) {
-        // @TODO handle errors via event.
-        if (err) return;
+        if (err) return this.fire('error', {error: err});
 
         this.image = image;
 
@@ -65,6 +63,9 @@ function ImageSource(id, options, dispatcher) {
 }
 
 ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype */ {
+    minzoom: 0,
+    maxzoom: 22,
+    tileSize: 512,
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
@@ -84,7 +85,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     setCoordinates: function(coordinates) {
         this.coordinates = coordinates;
 
-        // Calculate which mercator tile is suitable for rendering the image in
+        // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
@@ -97,50 +98,44 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         centerCoord.column = Math.round(centerCoord.column);
         centerCoord.row = Math.round(centerCoord.row);
 
-        var tileCoords = cornerZ0Coords.map(function(coord) {
+        this.minzoom = this.maxzoom = centerCoord.zoom;
+        this._coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this._tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
+        this.fire('change');
+        return this;
+    },
+
+    _setTile: function (tile) {
+        this._prepared = false;
+        this.tile = tile;
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
-        array.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
-        array.emplaceBack(tileCoords[1].x, tileCoords[1].y, maxInt16, 0);
-        array.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, maxInt16);
-        array.emplaceBack(tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16);
+        array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
+        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
+        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);
+        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, maxInt16, maxInt16);
 
-        this.tile = new Tile(new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row));
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-
-        this.fire('change');
-
-        return this;
-    },
-
-    loaded: function() {
-        return this.image && this.image.complete;
-    },
-
-    update: function() {
-        // noop
-    },
-
-    reload: function() {
-        // noop
+        this.tile.loaded = true;
     },
 
     prepare: function() {
-        if (!this._loaded || !this.loaded()) return;
+        if (!this._loaded || !this.image || !this.image.complete) return;
+        if (!this.tile) return;
 
         var painter = this.map.painter;
         var gl = painter.gl;
 
-        if (!this.tile.texture) {
+        if (!this._prepared) {
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -154,13 +149,11 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         }
     },
 
-    getVisibleCoordinates: function() {
-        if (this.tile) return [this.tile.coord];
-        else return [];
-    },
-
-    getTile: function() {
-        return this.tile;
+    loadTile: function(tile, callback) {
+        if (this._coord && this._coord.toString() === tile.coord.toString()) {
+            this._setTile(tile);
+            callback(null);
+        }
     },
 
     serialize: function() {
