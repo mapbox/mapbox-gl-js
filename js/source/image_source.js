@@ -150,8 +150,15 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     },
 
     loadTile: function(tile, callback) {
+        // We have a single tile -- whoose coordinates are this._coord -- that
+        // covers the image we want to render.  If that's the one being
+        // requested, set it up with the image; otherwise, mark the tile as
+        // `errored` to indicate that we have no data for it.
         if (this._coord && this._coord.toString() === tile.coord.toString()) {
             this._setTile(tile);
+            callback(null);
+        } else {
+            tile.errored = true;
             callback(null);
         }
     },

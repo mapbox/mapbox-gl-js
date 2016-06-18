@@ -90,6 +90,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     onAdd: function(map) {
+        if (this.map) return;
         this.map = map;
         if (this.video) {
             this.video.play();
@@ -175,8 +176,15 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     loadTile: function(tile, callback) {
+        // We have a single tile -- whoose coordinates are this._coord -- that
+        // covers the video frame we want to render.  If that's the one being
+        // requested, set it up with the image; otherwise, mark the tile as
+        // `errored` to indicate that we have no data for it.
         if (this._coord && this._coord.toString() === tile.coord.toString()) {
             this._setTile(tile);
+            callback(null);
+        } else {
+            tile.errored = true;
             callback(null);
         }
     },
