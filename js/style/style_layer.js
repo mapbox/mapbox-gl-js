@@ -281,9 +281,9 @@ StyleLayer.prototype = util.inherit(Evented, {
     // set paint transition based on a given paint declaration
     _applyPaintDeclaration: function (name, declaration, options, globalOptions, animationLoop) {
         var oldTransition = options.transition ? this._paintTransitions[name] : undefined;
+        var spec = this._paintSpecifications[name];
 
         if (declaration === null || declaration === undefined) {
-            var spec = this._paintSpecifications[name];
             declaration = new StyleDeclaration(spec, spec.default);
         }
 
@@ -295,7 +295,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         }, globalOptions, this.getPaintProperty(name + TRANSITION_SUFFIX));
 
         var newTransition = this._paintTransitions[name] =
-                new StyleTransition(declaration, oldTransition, transitionOptions);
+            new StyleTransition(spec, declaration, oldTransition, transitionOptions);
 
         if (!newTransition.instant()) {
             newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
