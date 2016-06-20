@@ -57,23 +57,30 @@ function GeoJSONSource(id, options, dispatcher) {
     this._data = options.data;
 
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
+    if (options.type) this.type = options.type;
 
     var scale = EXTENT / this.tileSize;
 
-    this.geojsonVtOptions = {
-        buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
-        tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
-        extent: EXTENT,
-        maxZoom: this.maxzoom
-    };
-
-    this.cluster = options.cluster || false;
-    this.superclusterOptions = {
-        maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
-        extent: EXTENT,
-        radius: (options.clusterRadius || 50) * scale,
-        log: false
-    };
+    // sent to the worker, along with `url: ...` or `data: literal geojson`,
+    // so that it can load/parse/index the geojson data
+    // extending with `options.workerOptions` helps to make it easy for
+    // third-party sources to hack/reuse GeoJSONSource.
+    this.workerOptions = util.extend({
+        source: this.id,
+        cluster: options.cluster || false,
+        geojsonVtOptions: {
+            buffer: (options.buffer !== undefined ? options.buffer : 128) * scale,
+            tolerance: (options.tolerance !== undefined ? options.tolerance : 0.375) * scale,
+            extent: EXTENT,
+            maxZoom: this.maxzoom
+        },
+        superclusterOptions: {
+            maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom - 1) || (this.maxzoom - 1),
+            extent: EXTENT,
+            radius: (options.clusterRadius || 50) * scale,
+            log: false
+        }
+    }, options.workerOptions);
 
     this._sendDataToWorker(function done(err) {
         if (err) {
@@ -116,13 +123,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     _sendDataToWorker: function(callback) {
         this._dirty = false;
-        var options = {
-            source: this.id,
-            cluster: this.cluster,
-            superclusterOptions: this.superclusterOptions,
-            geojsonVtOptions: this.geojsonVtOptions
-        };
-
+        var options = util.extend({}, this.workerOptions);
         var data = this._data;
         if (typeof data === 'string') {
             options.url = typeof window != 'undefined' ? urlResolve(window.location.href, data) : data;

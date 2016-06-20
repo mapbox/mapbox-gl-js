@@ -9,7 +9,12 @@ var geojsonvt = require('geojson-vt');
 
 module.exports = GeoJSONWorkerSource;
 
-function GeoJSONWorkerSource () {
+/**
+ * Create a {@link WorkerSource} that supports a GeoJSONSource.
+ * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  By default, GeoJSON is loaded and parsed from `params.url` if it exists, or else expected as a literal (string or object) `params.data`.
+ */
+function GeoJSONWorkerSource (loadGeoJSON) {
+    if (loadGeoJSON) { this.loadGeoJSON = loadGeoJSON; }
 }
 
 GeoJSONWorkerSource.prototype = {

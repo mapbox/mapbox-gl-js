@@ -25,7 +25,7 @@ function Worker(self) {
         geojson: new GeoJSONWorkerSource()
     };
 
-    self.registerWorkerSource = function (name, workerSource) {
+    this.self.registerWorkerSource = function (name, workerSource) {
         if (this.workerSources[name]) {
             throw new Error('Worker source with name "' + name + '" already registered.');
         }
