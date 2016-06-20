@@ -1157,6 +1157,62 @@ test('Style#query*Features', function(t) {
     t.end();
 });
 
+test('Style#addSourceType', function (t) {
+    var _types = { 'existing': function () {} };
+    var Style = proxyquire('../../../js/style/style', {
+        '../source/source': {
+            getType: function (name) { return _types[name]; },
+            setType: function (name, create) { _types[name] = create; }
+        }
+    });
+
+    t.test('adds factory function', function (t) {
+        var style = new Style(createStyleJSON());
+        var create = function () {};
+
+        // expect no call to load worker source
+        style.dispatcher.broadcast = function (type) {
+            if (type === 'load worker source') {
+                t.fail();
+            }
+        };
+
+        style.addSourceType('foo', { create: create }, function () {
+            t.equal(_types['foo'], create);
+            t.end();
+        });
+    });
+
+    t.test('triggers workers to load worker source code', function (t) {
+        var style = new Style(createStyleJSON());
+        var create = function () {};
+
+        style.dispatcher.broadcast = function (type, params) {
+            if (type === 'load worker source') {
+                t.equal(_types['bar'], create);
+                t.equal(params.name, 'bar');
+                t.equal(params.url, 'worker-source.js');
+                t.end();
+            }
+        };
+
+        style.addSourceType('bar', {
+            create: create,
+            workerSourceURL: 'worker-source.js'
+        }, function (err) { t.error(err); });
+    });
+
+    t.test('refuses to add new type over existing name', function (t) {
+        var style = new Style(createStyleJSON());
+        style.addSourceType('existing', { create: function () {} }, function (err) {
+            t.ok(err);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
 test('Style creates correct number of workers', function(t) {
     var style = new Style(createStyleJSON(), null, 3);
     t.equal(style.dispatcher.actors.length, 3);
