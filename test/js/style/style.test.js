@@ -274,6 +274,20 @@ test('Style#addSource', function(t) {
         });
     });
 
+    t.test('throw if missing source type', function(t) {
+        var style = new Style(createStyleJSON()),
+            source = createSource();
+
+        delete source.type;
+
+        style.on('load', function() {
+            t.throws(function () {
+                style.addSource('source-id', source);
+            }, Error, /type/i);
+            t.end();
+        });
+    });
+
     t.test('fires source.add', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();

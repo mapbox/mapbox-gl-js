@@ -323,6 +323,9 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+        if (!source.type) {
+            throw new Error('The type property must be defined, but the only the following properties were given: ' + Object.keys(source) + '.');
+        }
         var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
         var shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
