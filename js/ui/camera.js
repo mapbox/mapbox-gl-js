@@ -275,6 +275,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *     {@link Map#flyTo} for information on options specific to that animation transition.
      * @param {Function} options.easing
      * @param {number} options.padding how much padding there is around the given bounds on each side in pixels
+     * @param {Array<number>} options.offset Center of the given bounds relative to map center, in pixels
      * @param {number} options.maxZoom The resulting zoom level will be at most
      *     this value.
      * @param {EventData} [eventData] Data to propagate to any event receivers
