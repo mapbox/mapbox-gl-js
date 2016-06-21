@@ -1,5 +1,14 @@
 ## master
 
+## 8.8.0
+
+v8.0.0 styles are fully compatible with v8.8.0.
+
+* Clarified documentation around fill-opacity.
+* Update function documentation and validation for property functions.
+* Add text-pitch-alignment property.
+* Add icon-text-fit, icon-text-fit-padding properties.
+
 ## 8.7.0
 
 v8.0.0 styles are fully compatible with v8.7.0.
