@@ -17,25 +17,31 @@ module.exports.create = function (id, options, dispatcher) {
 
 /**
  * A data source containing an image.
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
  *
- * @class ImageSource
- * @param {Object} options
- * @param {string} options.url The URL of an image file.
- * @param {Array<Array<number>>} options.coordinates Four geographical coordinates,
- *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
- *   The coordinates start at the top left corner of the image and proceed in clockwise order.
- *   They do not have to represent a rectangle.
+ * @interface ImageSource
  * @example
- * var sourceObj = new mapboxgl.ImageSource({
+ * // add to map
+ * map.addSource('some id', {
+ *    type: 'image',
  *    url: 'https://www.mapbox.com/images/foo.png',
  *    coordinates: [
- *        [-76.54335737228394, 39.18579907229748],
- *        [-76.52803659439087, 39.1838364847587],
- *        [-76.5295386314392, 39.17683392507606],
- *        [-76.54520273208618, 39.17876344106642]
+ *        [-76.54, 39.18],
+ *        [-76.52, 39.18],
+ *        [-76.52, 39.17],
+ *        [-76.54, 39.17]
  *    ]
  * });
- * map.addSource('some id', sourceObj); // add
+ *
+ * // update
+ * var mySource = map.getSource('some id');
+ * mySource.setCoordinates([
+ *     [-76.54335737228394, 39.18579907229748],
+ *     [-76.52803659439087, 39.1838364847587],
+ *     [-76.5295386314392, 39.17683392507606],
+ *     [-76.54520273208618, 39.17876344106642]
+ * ]);
+ *
  * map.removeSource('some id');  // remove
  */
 function ImageSource(id, options, dispatcher) {

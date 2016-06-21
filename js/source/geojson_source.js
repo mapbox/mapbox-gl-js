@@ -11,27 +11,13 @@ module.exports.create = function (id, options, dispatcher) {
 
 /**
  * A datasource containing GeoJSON.
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
  *
- * @class GeoJSONSource
- * @param {Object} [options]
- * @param {Object|string} [options.data] A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
- * @param {number} [options.maxzoom=18] The maximum zoom level at which to preserve detail (1-20).
- * @param {number} [options.buffer=128] The tile buffer, measured in pixels. The buffer extends each
- *   tile's data just past its visible edges, helping to ensure seamless rendering across tile boundaries.
- *   The default value, 128, is a safe value for label layers, preventing text clipping at boundaries.
- *   You can read more about buffers and clipping in the
- *   [Mapbox Vector Tile Specification](https://www.mapbox.com/vector-tiles/specification/#clipping).
- * @param {number} [options.tolerance=0.375] The simplification tolerance, measured in pixels.
- *   This value is passed into a modified [Ramer–Douglas–Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
- *   to simplify (i.e. reduce the number of points) in curves. Higher values result in greater simplification.
- * @param {boolean} [options.cluster] If `true`, a collection of point features will be clustered into groups,
- *   according to `options.clusterRadius`.
- * @param {number} [options.clusterRadius=50] The radius of each cluster when clustering points, measured in pixels.
- * @param {number} [options.clusterMaxZoom] The maximum zoom level to cluster points in. By default, this value is
- *   one zoom level less than the map's `maxzoom`, so that at the highest zoom level features are not clustered.
-
+ * @interface GeoJSONSource
  * @example
- * var sourceObj = new mapboxgl.GeoJSONSource({
+ * // add
+ * map.addSource('some id', {
+ *    type: 'geojson',
  *    data: {
  *        "type": "FeatureCollection",
  *        "features": [{
@@ -46,7 +32,23 @@ module.exports.create = function (id, options, dispatcher) {
  *        }]
  *    }
  * });
- * map.addSource('some id', sourceObj); // add
+ *
+ * // update
+ * var mySource = map.getSource('some id');
+ * mySource.setData({
+ *     data: {
+ *        "type": "FeatureCollection",
+ *        "features": [{
+ *            "type": "Feature",
+ *            "properties": { "name": "Null Island" },
+ *            "geometry": {
+ *                "type": "Point",
+ *                "coordinates": [ 0, 0 ]
+ *            }
+ *        }]
+ *     }
+ * })
+ *
  * map.removeSource('some id');  // remove
  */
 function GeoJSONSource(id, options, dispatcher) {
