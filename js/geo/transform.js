@@ -143,48 +143,50 @@ Transform.prototype = {
 
     project: function(lnglat, worldSize) {
         return new Point(
-            this.lngX(lnglat.lng, worldSize),
-            this.latY(lnglat.lat, worldSize));
+            this.lngX(lnglat.lng, worldSize || this.worldSize),
+            this.latY(lnglat.lat, worldSize || this.worldSize));
     },
 
     unproject: function(point, worldSize) {
         return new LngLat(
-            this.xLng(point.x, worldSize),
-            this.yLat(point.y, worldSize));
+            this.xLng(point.x, worldSize || this.worldSize),
+            this.yLat(point.y, worldSize || this.worldSize));
     },
 
-    get x() { return this.lngX(this.center.lng); },
-    get y() { return this.latY(this.center.lat); },
+    get x() { return this.lngX(this.center.lng, this.worldSize); },
+    get y() { return this.latY(this.center.lat, this.worldSize); },
 
     get point() { return new Point(this.x, this.y); },
 
     /**
      * latitude to absolute x coord
      * @param {number} lon
-     * @param {number} [worldSize=this.worldSize]
+     * @param {number} worldSize
      * @returns {number} pixel coordinate
      * @private
      */
     lngX: function(lng, worldSize) {
-        return (180 + lng) * (worldSize || this.worldSize) / 360;
+        return (180 + lng) * worldSize / 360;
     },
+
     /**
      * latitude to absolute y coord
      * @param {number} lat
-     * @param {number} [worldSize=this.worldSize]
+     * @param {number} worldSize
      * @returns {number} pixel coordinate
      * @private
      */
     latY: function(lat, worldSize) {
         var y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * (worldSize || this.worldSize) / 360;
+        return (180 - y) * worldSize / 360;
     },
 
     xLng: function(x, worldSize) {
-        return x * 360 / (worldSize || this.worldSize) - 180;
+        return x * 360 / worldSize - 180;
     },
+
     yLat: function(y, worldSize) {
-        var y2 = 180 - y * 360 / (worldSize || this.worldSize);
+        var y2 = 180 - y * 360 / worldSize;
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     },
 
@@ -235,8 +237,8 @@ Transform.prototype = {
             ll = LngLat.convert(lnglat);
 
         return new Coordinate(
-            this.lngX(ll.lng) * k,
-            this.latY(ll.lat) * k,
+            this.lngX(ll.lng, this.worldSize) * k,
+            this.latY(ll.lat, this.worldSize) * k,
             this.tileZoom);
     },
 
@@ -247,7 +249,7 @@ Transform.prototype = {
      * @private
      */
     coordinateLocation: function(coord) {
-        var worldSize = this.zoomScale(coord.zoom);
+        var worldSize = this.zoomScale(coord.zoom) || this.worldSize;
         return new LngLat(
             this.xLng(coord.column, worldSize),
             this.yLat(coord.row, worldSize));
@@ -335,14 +337,14 @@ Transform.prototype = {
             unmodified = this._unmodified;
 
         if (this.latRange) {
-            minY = this.latY(this.latRange[1]);
-            maxY = this.latY(this.latRange[0]);
+            minY = this.latY(this.latRange[1], this.worldSize);
+            maxY = this.latY(this.latRange[0], this.worldSize);
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
-            minX = this.lngX(this.lngRange[0]);
-            maxX = this.lngX(this.lngRange[1]);
+            minX = this.lngX(this.lngRange[0], this.worldSize);
+            maxX = this.lngX(this.lngRange[1], this.worldSize);
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
