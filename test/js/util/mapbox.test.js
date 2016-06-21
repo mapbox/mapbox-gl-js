@@ -133,6 +133,11 @@ test("mapbox", function(t) {
             t.end();
         });
 
+        t.test('normalizes non-mapbox:// scheme when query string exists', function(t) {
+            t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar?fresh=true', '', '.png'), 'http://www.foo.com/bar@2x.png?fresh=true');
+            t.end();
+        });
+
         t.end();
     });
 
