@@ -1,5 +1,11 @@
 ## master
 
+## 8.7.0
+
+v8.0.0 styles are fully compatible with v8.7.0.
+
+* Add support for has / !has operators.
+
 ## 8.6.0
 
 v8.0.0 styles are fully compatible with v8.6.0.
