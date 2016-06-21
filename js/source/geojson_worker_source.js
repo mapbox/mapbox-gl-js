@@ -10,8 +10,14 @@ var geojsonvt = require('geojson-vt');
 module.exports = GeoJSONWorkerSource;
 
 /**
- * Create a {@link WorkerSource} that supports a GeoJSONSource.
- * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  By default, GeoJSON is loaded and parsed from `params.url` if it exists, or else expected as a literal (string or object) `params.data`.
+ * The {@link WorkerSource} implementation that supports {@link GeoJSONSource}.
+ * This class is designed to be easily reused to support custom source types
+ * for data formats that can be parsed/converted into an in-memory GeoJSON
+ * representation.  To do so, create it with
+ * `new GeoJSONWorker(customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
+ *
+ * @class GeoJSONWorkerSource
+ * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  See {@link GeoJSONWorkerSource#loadGeoJSON}.
  */
 function GeoJSONWorkerSource (loadGeoJSON) {
     if (loadGeoJSON) { this.loadGeoJSON = loadGeoJSON; }
@@ -21,6 +27,9 @@ GeoJSONWorkerSource.prototype = {
     // object mapping source ids to geojson-vt-like tile indexes
     _geoJSONIndexes: {},
 
+    /**
+     * See {@link WorkerSource#loadTile}.
+     */
     loadTile: function (params, callback) {
         var source = params.source,
             coord = params.coord;
@@ -44,13 +53,16 @@ GeoJSONWorkerSource.prototype = {
     },
 
     /**
-     * Fetches (if appropriate), parses, and index geojson data into tiles.
-     * `callback` is called with a "tile index" equivalent to the output of
-     * geojson-vt.
+     * Fetches (if appropriate), parses, and index geojson data into tiles. This
+     * preparatory method must be called before {@link GeoJSONWorkerSource#loadTile}
+     * can correctly serve up tiles.
      *
-     * Defers to `this.loadGeoJSON(params, callback)` for the fetching/parsing,
-     * expecting `callback` to be called with `(error, data: GeoJSON)`.
-     * @private
+     * Defers to {@link GeoJSONWorkerSource#loadGeoJSON} for the fetching/parsing,
+     * expecting `callback(error, data)` to be called with either an error or a
+     * parsed GeoJSON object.
+     * @param {object} params
+     * @param {string} params.source The id of the source.
+     * @param {Function} callback
      */
     loadData: function (params, callback) {
         var handleData = function(err, data) {
@@ -72,7 +84,13 @@ GeoJSONWorkerSource.prototype = {
     /**
      * Fetch and parse GeoJSON according to the given params.  Calls `callback`
      * with `(err, data)`, where `data` is a parsed GeoJSON object.
-     * @private
+     *
+     * GeoJSON is loaded and parsed from `params.url` if it exists, or else
+     * expected as a literal (string or object) `params.data`.
+     *
+     * @param {object} params
+     * @param {string} [params.url] A URL to the remote GeoJSON data.
+     * @param {object} [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      */
     loadGeoJSON: function (params, callback) {
         // Because of same origin issues, urls must either include an explicit

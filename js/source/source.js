@@ -101,11 +101,15 @@ exports.setType = function (name, type) {
 
 
 /**
+ * Creates a {@link Source} object. An instance of this 'factory function' is
+ * provided by each source type (`vector`, `raster`, etc., custom types), and
+ * is used internally by {@link Map#addSource}.
+ *
  * @callback CreateSourceFuntion
- * @param {string} id
- * @param {Object} options
+ * @param {string} id The id for the source. Must not be used by any existing source.
+ * @param {Object} options Source options, specific to the source type (except for `type`).
  * @param {string} options.type The source type, matching the value of `name` used in {@link Style#addSourceType}.
- * @param {Dispatcher} dispatcher
+ * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  * @returns {Source}
  */
 
@@ -133,4 +137,5 @@ exports.setType = function (name, type) {
  * @memberof WorkerSource
  * @instance
  */
+
 

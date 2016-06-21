@@ -680,7 +680,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Adds a third-party source type, making it available for use with
+     * Adds a [custom source type](#Custom Sources), making it available for use with
      * {@link Map#addSource}.
      * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
      * @param {object} options
