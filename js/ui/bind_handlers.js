@@ -26,6 +26,7 @@ module.exports = function bindHandlers(map, options) {
         }
     }
 
+    el.addEventListener('mouseout', onMouseOut, false);
     el.addEventListener('mousedown', onMouseDown, false);
     el.addEventListener('mouseup', onMouseUp, false);
     el.addEventListener('mousemove', onMouseMove, false);
@@ -36,6 +37,11 @@ module.exports = function bindHandlers(map, options) {
     el.addEventListener('click', onClick, false);
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
+
+    function onMouseOut(e) {
+        map.stop();
+        fireMouseEvent('mouseout', e);
+    }
 
     function onMouseDown(e) {
         map.stop();

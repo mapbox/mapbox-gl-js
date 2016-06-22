@@ -1202,6 +1202,15 @@ function removeNode(node) {
    */
 
   /**
+   * Mouse out event.
+   *
+   * @event mouseout
+   * @memberof Map
+   * @instance
+   * @property {EventData} data Original event data: a [mouseup event](https://developer.mozilla.org/en-US/docs/Web/Events/mouseout)
+   */
+
+  /**
    * Mouse down event.
    *
    * @event mousedown
