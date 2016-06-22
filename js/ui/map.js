@@ -129,7 +129,7 @@ var Map = module.exports = function(options) {
     }
 
     this.animationLoop = new AnimationLoop();
-    this.transform = new Transform(options.minZoom, options.maxZoom);
+    this.transform = new Transform(options.minZoom, options.maxZoom, options.projection);
 
     if (options.maxBounds) {
         this.setMaxBounds(options.maxBounds);
