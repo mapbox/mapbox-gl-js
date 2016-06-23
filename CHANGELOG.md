@@ -19,6 +19,7 @@
 
 * Fix exception thrown by "drag rotate" handler #2680
 * Return an empty array instead of an empty object from `queryRenderedFeatures` #2694
+* Fix bug causing map to not render in IE
 
 ## 0.19.1 (June 2 2016)
 
