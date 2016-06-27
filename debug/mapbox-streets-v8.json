@@ -25,7 +25,7 @@
                 "visibility": "visible"
             },
             "paint": {
-                "background-color": "#444"
+                "background-color": "#111"
             },
             "interactive": true
         },
@@ -59,32 +59,8 @@
                         ]
                     ]
                 },
-                "line-color": {
-                    "base": 1,
-                    "stops": [
-                        [
-                            5.9,
-                            "#fff"
-                        ],
-                        [
-                            6,
-                            "#fff"
-                        ]
-                    ]
-                },
-                "line-opacity": {
-                    "base": 1.2,
-                    "stops": [
-                        [
-                            5,
-                            0
-                        ],
-                        [
-                            5.5,
-                            1
-                        ]
-                    ]
-                }
+                "line-color": "#333",
+                "line-opacity": 1
             },
             "source-layer": "road"
         },
@@ -130,20 +106,31 @@
           "source": "composite",
           "id": "buildingtada",
           "paint": {
-            "extrusion-color": "#69c",
-            "extrusion-antialias": false,
-            "extrusion-lighting-anchor": "viewport",
-            "extrusion-outline-color": "#909",
-            "extrusion-opacity": 1,
-            "extrusion-shadow-color": "#00f",
-            "extrusion-height": {
-              "stops": [[0, 0], [100, 100]],
-              "property": "levels"
+            "extrusion-color": {
+                "stops": [[15, "#15534C"], [20, "#297159"], [35, "#498F60"], [50, "#73AC61"], [70, "#A6C760"], [100, "#E2E062"]],
+                "property": "levels"
             },
-            "extrusion-min-height": {
-              "stops": [[0, 0], [100, 0]],
-              "property": "levels"
-            }
+            "extrusion-antialias": true,
+            "extrusion-outline-color": {
+                "stops": [[15, "#fff"], [20, "#000"]],
+                "property": "levels"
+            },
+            "extrusion-opacity": {
+                "stops": [[0,0.5], [20,1]],
+                "property": "levels",
+                "type": "exponential"
+            },
+            "extrusion-layer-opacity": 1,
+            "extrusion-height": {
+              "stops": [[0, 0], [1000, 3000]],
+              "property": "levels",
+              "type": "exponential",
+              "base": 1
+            },
+            "extrusion-shadow-color": {
+              "stops": [[15, "#f00"], [17, "#00f"]]
+            },
+            "extrusion-min-height": 0
           },
           "source-layer": "building",
           "interactive": true
