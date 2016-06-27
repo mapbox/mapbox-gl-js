@@ -39,7 +39,6 @@ module.exports = function bindHandlers(map, options) {
     el.addEventListener('contextmenu', onContextMenu, false);
 
     function onMouseOut(e) {
-        map.stop();
         fireMouseEvent('mouseout', e);
     }
 
