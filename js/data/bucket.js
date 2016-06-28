@@ -141,7 +141,7 @@ Bucket.prototype.populateBuffers = function() {
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
  * @returns The current array group
  */
-Bucket.prototype.makeRoomFor = function(programName, numVertices) {
+Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
@@ -192,7 +192,7 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
  * }
  *
  * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
- * with array group structure over in `makeRoomFor`.
+ * with array group structure over in `prepareArrayGroup`.
  *
  * @private
  */
