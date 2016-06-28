@@ -454,7 +454,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
 SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
 
-    var group = this.makeRoomFor(programName, 4 * (quadsEnd - quadsStart));
+    var group = this.prepareArrayGroup(programName, 4 * (quadsEnd - quadsStart));
 
     var elementArray = group.layout.element;
     var vertexArray = group.layout.vertex;
@@ -520,7 +520,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
-    var group = this.makeRoomFor('collisionBox', 0);
+    var group = this.prepareArrayGroup('collisionBox', 0);
     var vertexArray = group.layout.vertex;
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;

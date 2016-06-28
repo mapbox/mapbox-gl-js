@@ -38,7 +38,7 @@ test('Bucket', function(t) {
         };
 
         Class.prototype.addFeature = function(feature) {
-            var group = this.makeRoomFor('test', 1);
+            var group = this.prepareArrayGroup('test', 1);
             var point = feature.loadGeometry()[0][0];
             var startIndex = group.layout.vertex.length;
             group.layout.vertex.emplaceBack(point.x * 2, point.y * 2);

@@ -63,7 +63,7 @@ FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
-    var startGroup = this.makeRoomFor('fill', 0);
+    var startGroup = this.prepareArrayGroup('fill', 0);
     var startIndex = startGroup.layout.vertex.length;
 
     for (var i = 0; i < polygons.length; i++) {
@@ -79,7 +79,7 @@ FillBucket.prototype.addPolygon = function(polygon) {
         numVertices += polygon[k].length;
     }
 
-    var group = this.makeRoomFor('fill', numVertices);
+    var group = this.prepareArrayGroup('fill', numVertices);
     var flattened = [];
     var holeIndices = [];
     var startIndex = group.layout.vertex.length;

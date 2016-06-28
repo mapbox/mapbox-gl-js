@@ -119,15 +119,29 @@ Bucket.prototype.populateBuffers = function() {
 };
 
 /**
- * Check if there is enough space available in the current element group for
+ * Check if there is enough space available in the current array group for
  * `vertexLength` vertices. If not, append a new elementGroup. Should be called
  * by `populateBuffers` and its callees.
+ *
+ * Array groups are added to this.arrayGroups[programName].
+ * An individual array group looks like:
+ * {
+ *     index: number,
+ *     layout: {
+ *         layout: VertexArrayType,
+ *         ?element: ElementArrayType,
+ *         ?element2: ElementArrayType
+ *     },
+ *     paint: { [layerName]: PaintVertexArrayType, ...  }
+ * }
+ *
+ *
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
- * @returns The current element group
+ * @returns The current array group
  */
-Bucket.prototype.makeRoomFor = function(programName, numVertices) {
+Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
@@ -163,6 +177,23 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
 /**
  * Start using a new shared `buffers` object and recreate instances of `Buffer`
  * as necessary.
+ *
+ * Sets up `this.arrayTypes` as:
+ * {
+ *     [programName]: {
+ *         layout: {
+ *             vertex: ArrayTypeType,
+ *             ?element: ArrayTypeType,
+ *             ?element2: ArrayTypeType
+ *         },
+ *         paint: { [layerName]: ArrayTypeType, ... }
+ *     },
+ *     ...
+ * }
+ *
+ * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
+ * with array group structure over in `prepareArrayGroup`.
+ *
  * @private
  */
 Bucket.prototype.createArrays = function() {
