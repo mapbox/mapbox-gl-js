@@ -75,17 +75,10 @@ test('FillBucket - feature split across array groups', function (t) {
     });
     bucket.createArrays();
 
-    // add an initial, small feature
-    bucket.addFeature(createFeature([new Point(0, 0), new Point(1, 0)]));
-
+    // add an initial feature
+    bucket.addFeature(createBigFeature(32768));
     // now add a feature that will break across the group boundary
-    var numPoints = 65536;
-    var points = [];
-    var i;
-    for (i = 0; i < numPoints; i++) {
-        points.push(new Point(10 * Math.sin(i / numPoints), 10 * Math.cos(i / numPoints)));
-    }
-    bucket.addFeature(createFeature(points));
+    bucket.addFeature(createBigFeature(32768 + 1));
 
     // check that every vertex's color values match the first vertex
     var groups = bucket.arrayGroups.fill;
@@ -99,7 +92,7 @@ test('FillBucket - feature split across array groups', function (t) {
 
     for (var g = 0; g < groups.length; g++) {
         var group = groups[g];
-        for (i = 0; i < group.paint.test.length; i++) {
+        for (var i = 0; i < group.paint.test.length; i++) {
             var vertex = group.paint.test.get(i);
             var color = [
                 vertex['a_color0'],
@@ -112,10 +105,21 @@ test('FillBucket - feature split across array groups', function (t) {
             // with > 65536 assertions
             if (expected.join(',') !== color.join(',')) {
                 t.fail('Vertex ' + i + ' does not match first vertex; found ' + color + ', but expected ' + expected);
+                t.end();
+                return;
             }
         }
     }
 
     t.end();
+
+
 });
 
+function createBigFeature (numPoints) {
+    var points = [];
+    for (var i = 0; i < numPoints; i++) {
+        points.push(new Point(10 * Math.sin(i / numPoints), 10 * Math.cos(i / numPoints)));
+    }
+    return createFeature(points);
+}
