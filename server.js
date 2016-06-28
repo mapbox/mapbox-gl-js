@@ -8,6 +8,7 @@ var http = require('http');
 var path = require('path');
 
 app.get('/mapbox-gl.js', browserify('./js/mapbox-gl.js', {
+    ignoreTransform: ['unassertify'],
     standalone: 'mapboxgl',
     debug: true,
     cache: 'dynamic',
