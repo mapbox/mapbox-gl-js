@@ -119,12 +119,12 @@ Bucket.prototype.populateBuffers = function() {
 };
 
 /**
- * Check if there is enough space available in the current element group for
+ * Check if there is enough space available in the current array group for
  * `vertexLength` vertices. If not, append a new elementGroup. Should be called
  * by `populateBuffers` and its callees.
  *
- * Element groups are added to this.arrayGroups[programName].
- * An individual element group looks like:
+ * Array groups are added to this.arrayGroups[programName].
+ * An individual array group looks like:
  * {
  *     index: number,
  *     layout: {
@@ -139,7 +139,7 @@ Bucket.prototype.populateBuffers = function() {
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
- * @returns The current element group
+ * @returns The current array group
  */
 Bucket.prototype.makeRoomFor = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
