@@ -337,7 +337,8 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
                 var multiplier = attribute.multiplier || 1;
                 var components = attribute.components || 1;
 
-                for (var i = startIndex; i < length; i++) {
+                var start = g === startGroup.index  ? startIndex : 0;
+                for (var i = start; i < length; i++) {
                     var vertex = vertexArray.get(i);
                     for (var c = 0; c < components; c++) {
                         var memberName = components > 1 ? (attribute.name + c) : attribute.name;
