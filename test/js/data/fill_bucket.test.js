@@ -52,3 +52,70 @@ test('FillBucket', function(t) {
 
     t.end();
 });
+
+test('FillBucket - feature split across array groups', function (t) {
+    var layer = new StyleLayer({
+        id: 'test',
+        type: 'fill',
+        layout: {},
+        paint: { 'fill-color': {
+            stops: [[0, 'red'], [1, 'blue']],
+            property: 'foo'
+        } }
+    });
+
+    // this, plus the style function, sets things up so that
+    // populatePaintArrays iterates through each vertex
+    layer.updatePaintTransition('fill-color', [], {});
+
+    var bucket = new FillBucket({
+        buffers: {},
+        layer: layer,
+        childLayers: [layer]
+    });
+    bucket.createArrays();
+
+    // add an initial, small feature
+    bucket.addFeature(createFeature([new Point(0, 0), new Point(1, 0)]));
+
+    // now add a feature that will break across the group boundary
+    var numPoints = 65536;
+    var points = [];
+    var i;
+    for (i = 0; i < numPoints; i++) {
+        points.push(new Point(10 * Math.sin(i / numPoints), 10 * Math.cos(i / numPoints)));
+    }
+    bucket.addFeature(createFeature(points));
+
+    // check that every vertex's color values match the first vertex
+    var groups = bucket.arrayGroups.fill;
+    var expected = groups[0].paint.test.get(0);
+    expected = [
+        expected['a_color0'],
+        expected['a_color1'],
+        expected['a_color2'],
+        expected['a_color3']
+    ];
+
+    for (var g = 0; g < groups.length; g++) {
+        var group = groups[g];
+        for (i = 0; i < group.paint.test.length; i++) {
+            var vertex = group.paint.test.get(i);
+            var color = [
+                vertex['a_color0'],
+                vertex['a_color1'],
+                vertex['a_color2'],
+                vertex['a_color3']
+            ];
+
+            // do this instead of t.deepEqual so as not to pollute test output
+            // with > 65536 assertions
+            if (expected.join(',') !== color.join(',')) {
+                t.fail('Vertex ' + i + ' does not match first vertex; found ' + color + ', but expected ' + expected);
+            }
+        }
+    }
+
+    t.end();
+});
+
