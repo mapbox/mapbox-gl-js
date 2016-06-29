@@ -3,7 +3,7 @@
 var util = require('../util/util');
 var ajax = require('../util/ajax');
 var Evented = require('../util/evented');
-var loadTileJSON = require('./load-tilejson');
+var loadTileJSON = require('./load_tilejson');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports.create = function (id, options, dispatcher) {
