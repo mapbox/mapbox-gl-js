@@ -17,7 +17,7 @@ var feature = vt.layers.water.feature(0);
 function createFeature(points) {
     return {
         loadGeometry: function() {
-            return points[0] instanceof Point ? [points] : points;
+            return points;
         }
     };
 }
@@ -35,16 +35,16 @@ test('FillBucket', function(t) {
     });
     bucket.createArrays();
 
-    t.equal(bucket.addFeature(createFeature([
+    t.equal(bucket.addFeature(createFeature([[
         new Point(0, 0),
         new Point(10, 10)
-    ])), undefined);
+    ]])), undefined);
 
-    t.equal(bucket.addFeature(createFeature([
+    t.equal(bucket.addFeature(createFeature([[
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20)
-    ])), undefined);
+    ]])), undefined);
 
     t.equal(bucket.addFeature(feature), undefined);
 
@@ -57,8 +57,8 @@ test('FillBucket', function(t) {
 test('FillBucket - feature split across array groups', function (t) {
     // temporarily reduce the max array length so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    var prevMaxArrayLength = Bucket.MAX_ARRAY_LENGTH;
-    Bucket.MAX_ARRAY_LENGTH = 1023;
+    var prevMaxArrayLength = Bucket.MAX_VERTEX_ARRAY_LENGTH;
+    Bucket.MAX_VERTEX_ARRAY_LENGTH = 1023;
 
     var layer = new StyleLayer({
         id: 'test',
@@ -84,11 +84,11 @@ test('FillBucket - feature split across array groups', function (t) {
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
-    bucket.addFeature(createFeature(createPolygon(10)));
+    bucket.addFeature(createFeature([createPolygon(10)]));
 
     // add a feature that will break across the group boundary (65536)
     bucket.addFeature(createFeature([
-        Bucket.MAX_ARRAY_LENGTH - 20, // the first polygon fits within the bucket
+        Bucket.MAX_VERTEX_ARRAY_LENGTH - 20, // the first polygon fits within the bucket
         20 // but the second one breaks across the boundary.
     ].map(createPolygon)));
 
@@ -100,7 +100,7 @@ test('FillBucket - feature split across array groups', function (t) {
     // feature and the first polygon of the second feature, and the second
     // group to include the _entire_ second polygon of the second feature.
     var expectedLengths = [
-        10 + (Bucket.MAX_ARRAY_LENGTH - 20),
+        10 + (Bucket.MAX_VERTEX_ARRAY_LENGTH - 20),
         20
     ];
     t.equal(groups[0].paint.test.length, expectedLengths[0], 'group 0 length, paint');
@@ -126,7 +126,7 @@ test('FillBucket - feature split across array groups', function (t) {
     }
 
     // restore
-    Bucket.MAX_ARRAY_LENGTH = prevMaxArrayLength;
+    Bucket.MAX_VERTEX_ARRAY_LENGTH = prevMaxArrayLength;
 
     t.end();
 });

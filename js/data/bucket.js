@@ -42,11 +42,12 @@ Bucket.create = function(options) {
 Bucket.EXTENT = 8192;
 
 /**
- * The maximum size of the arrays in an "array group."
+ * The maximum size of a vertex array. This limit is imposed by WebGL's 16 bit
+ * addressing of vertex buffers.
  * @private
  * @readonly
  */
-Bucket.MAX_ARRAY_LENGTH = 65535;
+Bucket.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
 
 /**
  * The `Bucket` class is the single point of knowledge about turning vector
@@ -152,7 +153,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_ARRAY_LENGTH) {
+    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_VERTEX_ARRAY_LENGTH) {
 
         var arrayTypes = this.arrayTypes[programName];
         var VertexArrayType = arrayTypes.layout.vertex;
