@@ -152,7 +152,7 @@ ScrollZoomHandler.prototype = {
 
 /**
  * Fired just before the map begins a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [`Map#flyTo`](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoomstart
  * @memberof Map
@@ -162,7 +162,7 @@ ScrollZoomHandler.prototype = {
 
 /**
  * Fired repeatedly during an animated transition from one zoom level to another,
- * as the result of either user interaction or methods such as [`Map#flyTo`](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoom
  * @memberof Map
@@ -172,7 +172,7 @@ ScrollZoomHandler.prototype = {
 
 /**
  * Fired just after the map completes a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [`Map#flyTo`](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoomend
  * @memberof Map

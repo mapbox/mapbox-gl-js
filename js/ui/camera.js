@@ -232,7 +232,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (within the `bearingSnap` threshold).
+     * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
      *
      * @param {AnimationOptions} [options]
      * @param {EventData} [eventData] Data to propagate to any event listeners.

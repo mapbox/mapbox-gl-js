@@ -91,17 +91,17 @@ var defaultOptions = {
  *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1`.
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
- *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user has rotated
- *   the map within 7 degrees of north, the map will automatically snap to north exactly.
+ *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
+ *   the map within 7 degrees of north, the map will automatically snap to exact north.
  * @param {Array<string>} [options.classes] Mapbox GL style class names with which to initialize the map.
- *   Keep in mind that these are used for controlling a style layer's paint properties, so are *not* reflected
+ *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if it is determined
  *   that the performance of the created WebGL context would be too low.
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
- * @param {LngLatBoundsLike} [options.maxBounds] If set, the map is constrained to the given bounds.
+ * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
  * @param {boolean} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled (see [`ScrollZoomHandler`](#ScrollZoomHandler)).
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see [`BoxZoomHandler`](#BoxZoomHandler)).
  * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see [`DragRotateHandler`](#DragRotateHandler)).
@@ -230,7 +230,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Adds a Mapbox GL style class to the map.
      *
-     * Keep in mind that these are used for controlling a style layer's paint properties, so are *not* reflected
+     * Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
      * in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
      * [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
      *
@@ -362,7 +362,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * as close as possible to the operation's request while still
      * remaining within the bounds.
      *
-     * @param {LngLatBoundsLike | null | undefined} lnglatbounds Max bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
+     * @param {LngLatBoundsLike | null | undefined} lnglatbounds The maximum bounds to set. If `null` or `undefined` is provided, the function removes the map's maximum bounds.
      * @returns {Map} `this`
      */
     setMaxBounds: function (lnglatbounds) {
@@ -383,10 +383,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Sets or clears the map's minimum zoom level.
      * If the map's current zoom level is lower than the new minimum,
-     * it will be adjusted accordingly.
+     * the map will zoom to the new minimum.
      *
      * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
-     *   If`null` or `undefined` is provided, the function removes the current minimum zoom (sets it to 0).
+     *   If`null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
     setMinZoom: function(minZoom) {
@@ -407,7 +407,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Sets or clears the map's maximum zoom level.
      * If the map's current zoom level is higher than the new maximum,
-     * it will be adjusted accordingly.
+     * the map will zoom to the new maximum.
      *
      * @param {number} maxZoom The maximum zoom level to set (0-20).
      *   If`null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
@@ -429,7 +429,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
     /**
      * Returns a [`Point`](#Point) representing pixel coordinates, relative to the map's `container`,
-     * corresponding to the specified geographical location.
+     * that correspond to the specified geographical location.
      *
      * @param {LngLatLike} lnglat The geographical location to project.
      * @returns {Point} The [`Point`](#Point) corresponding to `lnglat`, relative to the map's `container`.
@@ -439,7 +439,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns a [`LngLat`](#LngLat) representing geographical coordinates corresponding
+     * Returns a [`LngLat`](#LngLat) representing geographical coordinates that correspond
      * to the specified pixel coordinates.
      *
      * @param {PointLike} point The pixel coordinates to unproject.
@@ -466,9 +466,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
-     * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects).
+     * [feature objects](http://geojson.org/geojson-spec.html#feature-objects).
      *
-     * The `properties` value of each returned Feature object contains the properties of its source feature. For GeoJSON sources, only
+     * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
      *
      * Each feature includes a top-level `layer` property whose value is an object representing the style layer to
@@ -476,11 +476,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * for the given zoom level and feature.
      *
      * Only visible features are returned. The topmost rendered feature appears first in the returned array, and
-     * subsequent features are sorted by descending z-order. Features which are rendered multiple times (due to wrapping
+     * subsequent features are sorted by descending z-order. Features that are rendered multiple times (due to wrapping
      * across the antimeridian at low zoom levels) are returned only once (though subject to the following caveat).
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
+     * results when they span multiple tiles. For example, suppose
      * there is a highway running through the bounding rectangle of a query. The results of the query will be those
      * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
      * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
@@ -569,13 +570,15 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects).
      *
-     * In contrast to [`Map#queryRenderedFeatures`](#Map#queryRenderedFeatures), [`Map#querySourceFeatures`](#Map#querySourceFeatures) returns all features matching the query parameters,
+     * In contrast to [`Map#queryRenderedFeatures`](#Map#queryRenderedFeatures), this function
+     * returns all features matching the query parameters,
      * whether or not they are rendered by the current style (i.e. visible). The domain of the query includes all currently-loaded
-     * vector tiles and GeoJSON source tiles: [`Map#querySourceFeatures`](#Map#querySourceFeatures) does not check tiles outside the currently
+     * vector tiles and GeoJSON source tiles: this function does not check tiles outside the currently
      * visible viewport.
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and features may appear duplicated across tiles. For example, suppose
+     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
+     * results when they span multiple tiles. For example, suppose
      * there is a highway running through the bounding rectangle of a query. The results of the query will be those
      * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
      * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
@@ -703,15 +706,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Adds a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map's style.
      *
-     * A layer specifies styling for data from a specified source.
-     *
-     * If a `before` value is provided, the new layer will be inserted before the layer
-     * with the specified ID. If `before` is omitted, the layer will be inserted before
-     * every existing layer.
+     * A layer defines styling for data from a specified source.
      *
      * @param {Object} layer The style layer to add, satisfying the Mapbox GL Style Reference's
      *   [layer specification](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
+     *   If this argument is omitted, the layer will be inserted before every existing layer.
      * @fires layer.add
      * @returns {Map} `this`
      */
@@ -727,8 +727,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Also removes any layers which refer to the specified layer via a
      * [`ref` property](https://www.mapbox.com/mapbox-gl-style-spec/#layer-ref).
      *
-     * @param {string} id ID of the layer to remove.
-     * @throws {Error} if no layer with the given `id` exists
+     * @param {string} id The ID of the layer to remove.
+     * @throws {Error} if no layer with the specified `id` exists.
      * @fires layer.remove
      * @returns {Map} `this`
      */
@@ -741,7 +741,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Returns the layer with the specified ID in the map's style.
      *
-     * @param {string} id ID of the layer to get.
+     * @param {string} id The ID of the layer to get.
      * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
      */
@@ -752,7 +752,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Sets the filter for the specified style layer.
      *
-     * @param {string} layer ID of the layer to which the filter will be applied.
+     * @param {string} layer The ID of the layer to which the filter will be applied.
      * @param {Array<string>} filter The filter, satisfying the Mapbox GL Style Reference's
      *   [filter specification](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      * @returns {Map} `this`
@@ -769,8 +769,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Sets the zoom extent for the specified style layer.
      *
      * @param {string} layerId The ID of the layer to which the zoom extent will be applied.
-     * @param {number} minzoom The minimum zoom extent to set (0-20).
-     * @param {number} maxzoom The maximum zoom extent to set (0-20).
+     * @param {number} minzoom The minimum zoom to set (0-20).
+     * @param {number} maxzoom The maximum zoom to set (0-20).
      * @returns {Map} `this`
      * @example
      * map.setLayerZoomRange('my-layer', 2, 5);
@@ -858,24 +858,24 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns the HTML element containing the map's `canvas` element.
+     * Returns the HTML element containing the map's `<canvas>` element.
      *
      * If you want to add non-GL overlays to the map, you should append them to this element.
      *
      * This is the element to which event bindings for map interactivity (such as panning and zooming) are
-     * attached. It will receive bubbled events from child elements such as the `canvas`, but not from
+     * attached. It will receive bubbled events from child elements such as the `<canvas>`, but not from
      * map controls.
      *
-     * @returns {HTMLElement} The container of the map's `canvas`.
+     * @returns {HTMLElement} The container of the map's `<canvas>`.
      */
     getCanvasContainer: function() {
         return this._canvasContainer;
     },
 
     /**
-     * Returns the map's `canvas` element.
+     * Returns the map's `<canvas>` element.
      *
-     * @returns {HTMLElement} The map's `canvas` element.
+     * @returns {HTMLCanvasElement} The map's `<canvas>` element.
      */
     getCanvas: function() {
         return this._canvas.getElement();
@@ -1255,7 +1255,7 @@ function removeNode(node) {
  */
 
 /**
- * A [`Point` geometry](https://github.com/mapbox/point-geometry), which has
+ * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
  * `x` and `y` properties representing coordinates.
  *
  * @typedef {Object} Point
@@ -1273,7 +1273,7 @@ function removeNode(node) {
  * whether or not to smoothly transition property changes triggered by a class change.
  *
  * @typedef {Object} StyleOptions
- * @property {boolean} transition If `true`, property changes will be smootly transitioned.
+ * @property {boolean} transition If `true`, property changes will smootly transition.
  */
 
 /**
@@ -1418,7 +1418,7 @@ function removeNode(node) {
 
 /**
  * Fired just before the map begins a transition from one
- * view to another, as the result of either user interaction or methods such as [`Map#jumpTo`](#Map#jumpTo).
+ * view to another, as the result of either user interaction or methods such as [Map#jumpTo](#Map#jumpTo).
  *
  * @event movestart
  * @memberof Map
@@ -1428,7 +1428,7 @@ function removeNode(node) {
 
 /**
  * Fired repeatedly during an animated transition from one view to
- * another, as the result of either user interaction or methods such as [`Map#flyTo`](#Map#flyTo).
+ * another, as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event move
  * @memberof Map
@@ -1438,7 +1438,7 @@ function removeNode(node) {
 
 /**
  * Fired just after the map completes a transition from one
- * view to another, as the result of either user interaction or methods such as [`Map#jumpTo`](#Map#jumpTo).
+ * view to another, as the result of either user interaction or methods such as [Map#jumpTo](#Map#jumpTo).
  *
  * @event moveend
  * @memberof Map
