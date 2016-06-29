@@ -22,7 +22,7 @@ module.exports = Style;
 function Style(stylesheet, animationLoop, workerCount) {
     this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(workerCount || 1, this);
-    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
