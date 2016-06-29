@@ -42,6 +42,13 @@ Bucket.create = function(options) {
 Bucket.EXTENT = 8192;
 
 /**
+ * The maximum size of the arrays in an "array group."
+ * @private
+ * @readonly
+ */
+Bucket.MAX_ARRAY_LENGTH = 65535;
+
+/**
  * The `Bucket` class is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
  *
@@ -145,7 +152,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > 65535) {
+    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_ARRAY_LENGTH) {
 
         var arrayTypes = this.arrayTypes[programName];
         var VertexArrayType = arrayTypes.layout.vertex;
