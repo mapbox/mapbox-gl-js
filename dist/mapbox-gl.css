@@ -229,7 +229,7 @@
     border-bottom-right-radius: 0;
 }
 
-.mapboxgl-overlay {
+.mapboxgl-marker {
     position: absolute;
     top: 0;
     left: 0;
