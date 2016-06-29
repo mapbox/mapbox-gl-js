@@ -42,6 +42,14 @@ Bucket.create = function(options) {
 Bucket.EXTENT = 8192;
 
 /**
+ * The maximum size of a vertex array. This limit is imposed by WebGL's 16 bit
+ * addressing of vertex buffers.
+ * @private
+ * @readonly
+ */
+Bucket.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
+
+/**
  * The `Bucket` class is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
  *
@@ -145,7 +153,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > 65535) {
+    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_VERTEX_ARRAY_LENGTH) {
 
         var arrayTypes = this.arrayTypes[programName];
         var VertexArrayType = arrayTypes.layout.vertex;
@@ -337,7 +345,8 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
                 var multiplier = attribute.multiplier || 1;
                 var components = attribute.components || 1;
 
-                for (var i = startIndex; i < length; i++) {
+                var start = g === startGroup.index  ? startIndex : 0;
+                for (var i = start; i < length; i++) {
                     var vertex = vertexArray.get(i);
                     for (var c = 0; c < components; c++) {
                         var memberName = components > 1 ? (attribute.name + c) : attribute.name;
