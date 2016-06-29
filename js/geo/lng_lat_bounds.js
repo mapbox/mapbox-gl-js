@@ -12,7 +12,7 @@ var LngLat = require('./lng_lat');
  *
  * Note that any Mapbox GL method that accepts a `LngLatBounds` object as an argument or option
  * can also accept an `Array` of two [`LngLatLike`](#LngLatLike) constructs and will perform an implicit conversion.
- * This flexible type is documented as [`LngLatLikeBounds`](#LngLatLikeBounds).
+ * This flexible type is documented as [`LngLatBoundsLike`](#LngLatBoundsLike).
  *
  * @class LngLatBounds
  * @param {LngLatLike} sw The southwest corner of the bounding box.

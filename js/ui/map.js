@@ -94,7 +94,7 @@ var defaultOptions = {
  *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user has rotated
  *   the map within 7 degrees of north, the map will automatically snap to north exactly.
  * @param {Array<string>} [options.classes] Mapbox GL style class names with which to initialize the map.
- *   Keep in mind that these are used for filtering a style layer's pain properties, so are *not* reflected
+ *   Keep in mind that these are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
@@ -230,7 +230,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Adds a Mapbox GL style class to the map.
      *
-     * Keep in mind that these are used for filtering a style layer's pain properties, so are *not* reflected
+     * Keep in mind that these are used for controlling a style layer's paint properties, so are *not* reflected
      * in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
      * [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
      *
@@ -310,7 +310,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Resizes the map according to the dimensions of its
      * `container` element.
      *
-     * This method is often called after the map's `container` is resized by another script,
+     * This method must be called after the map's `container` is resized by another script,
      * or when the map is shown after being initially hidden with CSS.
      *
      * @returns {Map} `this`
@@ -462,7 +462,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} [parameters]
      * @param {Array<string>} [parameters.layers] An array of style layer IDs for the query to inspect.
      *   Only features within these layers will be returned. If this parameter is undefined, all layers will be checked.
-     * @param {Array<string>} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -560,10 +560,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
      * @param {string} sourceID The ID of the vector tile or GeoJSON source to query.
-     * @param {Object} params
-     * @param {string} [params.sourceLayer] The name of the vector tile layer to query. *For vector tile
+     * @param {Object} parameters
+     * @param {string} [parameters.sourceLayer] The name of the vector tile layer to query. *For vector tile
      *   sources, this parameter is required.* For GeoJSON sources, it is ignored.
-     * @param {Array<string>} [params.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
+     * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
      *   to limit query results.
      *
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
@@ -587,9 +587,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     /**
      * Replaces the map's Mapbox GL style object with a new value.
      *
-     * Unlike the `style` option in the `Map` constructor, this method only accepts an object, not a URL string.
-     *
-     * @param {Object} style A Mapbox GL style object.
+     * @param {Object|string} style A JSON object conforming to the schema described in the
+     *   [Mapbox GL Style Reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @returns {Map} `this`
      */
     setStyle: function(style) {

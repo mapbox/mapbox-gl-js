@@ -79,7 +79,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     /**
      * Returns the HTML `video` element.
      *
-     * @returns {Node} The HTML `video` element.
+     * @returns {HTMLVideoElement} The HTML `video` element.
      */
     getVideo: function() {
         return this.video;

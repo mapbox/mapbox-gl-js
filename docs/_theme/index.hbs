@@ -142,10 +142,10 @@ options: full
           {% capture getting_started_html %}
 <div id='map' style='width: 400px; height: 300px;'></div>
 <script>
-  var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v9'
-  });
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
 </script>
           {% endcapture %}
           <a class='quiet pin-bottom space-right1 text-right icon clipboard js-clipboard space-bottom1' href='#' data-clipboard-target='body-code'></a>

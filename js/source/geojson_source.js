@@ -16,8 +16,14 @@ module.exports = GeoJSONSource;
  * @param {Object} [options]
  * @param {Object|string} options.data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
  * @param {number} [options.maxzoom=18] The maximum zoom level at which to preserve detail (1-20).
- * @param {number} [options.buffer] The tile buffer, measured in pixels.
- * @param {number} [options.tolerance] The simplification tolerance, measured in pixels (higher means simpler).
+ * @param {number} [options.buffer=128] The tile buffer, measured in pixels. The buffer extends each
+ *   tile's data just past its visible edges, helping to ensure seamless rendering across tile boundaries.
+ *   The default value, 128, is a safe value for label layers, preventing text clipping at boundaries.
+ *   You can read more about buffers and clipping in the
+ *   [Mapbox Vector Tile Specification](https://www.mapbox.com/vector-tiles/specification/#clipping).
+ * @param {number} [options.tolerance=0.375] The simplification tolerance, measured in pixels.
+ *   This value is pass into a modified [Ramer–Douglas–Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
+ *   to simplify (i.e. reduce the number of points) in curves. Higher values result in greater simplification.
  * @param {boolean} [options.cluster] If `true`, a collection of point features will be clustered into groups,
  *   according to `options.clusterRadius`.
  * @param {number} [options.clusterRadius=50] The radius of each cluster when clustering points, measured in pixels.
@@ -89,7 +95,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     isTileClipped: true,
 
     /**
-     * Sets the GeoJSON data and re-render the map.
+     * Sets the GeoJSON data and re-renders the map.
      *
      * @param {Object|string} data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON files.
      * @returns {GeoJSONSource} this

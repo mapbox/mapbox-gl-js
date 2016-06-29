@@ -20,7 +20,7 @@ module.exports = ImageSource;
  * @class ImageSource
  * @param {Object} options
  * @param {string} options.url The URL of an image file.
- * @param {Array} options.coordinates Four geographical coordinates,
+ * @param {Array<Array<number>>} options.coordinates Four geographical coordinates,
  *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
  *   The coordinates start at the top left corner of the image and proceed in clockwise order.
  *   They do not have to represent a rectangle.
@@ -70,7 +70,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     /**
      * Sets the image's coordinates and re-renders the map.
      *
-     * @param {Array} coordinates Four geographical coordinates,
+     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
      *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
      *   The coordinates start at the top left corner of the image and proceed in clockwise order.
      *   They do not have to represent a rectangle.
