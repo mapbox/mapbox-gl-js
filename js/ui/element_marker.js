@@ -24,7 +24,7 @@ function ElementMarker(element) {
     this._update = this._update.bind(this);
 }
 
-ElementMarker.prototype = /** @lends ElementMarker.prototype */{
+ElementMarker.prototype = {
     /**
      * Attaches the marker to a map
      * @param {Map} map
