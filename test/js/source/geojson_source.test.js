@@ -53,6 +53,11 @@ test('GeoJSONSource#setData', function(t) {
     });
 
     t.test('fires change', function(t) {
+        var mockDispatcher = {
+            send: function (type, data, callback) {
+                return callback();
+            }
+        };
         var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
         source.on('change', function() {
             t.end();

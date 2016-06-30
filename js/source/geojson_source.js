@@ -102,7 +102,6 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     tileSize: 512,
     isTileClipped: true,
     reparseOverscaled: true,
-    _dirty: true,
 
     onAdd: function (map) {
         this.map = map;
@@ -116,15 +115,23 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
      */
     setData: function(data) {
         this._data = data;
-        this._dirty = true;
 
-        this.fire('change');
+        this._sendDataToWorker(function (err) {
+            if (err) {
+                return this.fire('error', { error: err });
+            }
+            this.fire('change');
+        }.bind(this));
 
         return this;
     },
 
+    /*
+     * Responsible for invoking WorkerSource's geojson.loadData target, which
+     * handles loading the geojson data and preparing to serve it up as tiles,
+     * using geojson-vt or supercluster as appropriate.
+     */
     _sendDataToWorker: function(callback) {
-        this._dirty = false;
         var options = util.extend({}, this.workerOptions);
         var data = this._data;
         if (typeof data === 'string') {
@@ -132,6 +139,10 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         } else {
             options.data = JSON.stringify(data);
         }
+
+        // target {this.type}.loadData rather than literally geojson.loadData,
+        // so that other geojson-like source types can easily reuse this
+        // implementation
         this.workerID = this.dispatcher.send(this.type + '.loadData', options, function(err) {
             this._loaded = true;
             callback(err);
@@ -140,16 +151,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     loadTile: function (tile, callback) {
-        if (!this._dirty) {
-            return this._loadTileFromWorker(tile, callback);
-        }
-
-        this._sendDataToWorker(function (err) {
-            if (err) {
-                return callback(err);
-            }
-            this._loadTileFromWorker(tile, callback);
-        }.bind(this));
+        return this._loadTileFromWorker(tile, callback);
     },
 
     _loadTileFromWorker: function(tile, callback) {
