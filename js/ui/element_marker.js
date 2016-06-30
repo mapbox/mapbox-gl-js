@@ -1,21 +1,21 @@
 /* eslint-disable */
 'use strict';
 
-module.exports = DOMMarker;
+module.exports = ElementMarker;
 
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
 
 /**
  * Creates a marker component
- * @class DOMMarker
+ * @class ElementMarker
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @example
- * var marker = new mapboxgl.DOMMarker()
+ * var marker = new mapboxgl.ElementMarker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
  */
-function DOMMarker(element) {
+function ElementMarker(element) {
     if (!element) {
         element = DOM.create('div');
     }
@@ -24,11 +24,11 @@ function DOMMarker(element) {
     this._update = this._update.bind(this);
 }
 
-DOMMarker.prototype = /** @lends DOMMarker.prototype */{
+ElementMarker.prototype = /** @lends ElementMarker.prototype */{
     /**
      * Attaches the marker to a map
      * @param {Map} map
-     * @returns {DOMMarker} `this`
+     * @returns {ElementMarker} `this`
      */
     addTo: function(map) {
         this.remove();
@@ -42,9 +42,9 @@ DOMMarker.prototype = /** @lends DOMMarker.prototype */{
     /**
      * Removes the marker from a map
      * @example
-     * var marker = new mapboxgl.DOMMarker().addTo(map);
+     * var marker = new mapboxgl.ElementMarker().addTo(map);
      * marker.remove();
-     * @returns {DOMMarker} `this`
+     * @returns {ElementMarker} `this`
      */
     remove: function() {
         if (this._map) {

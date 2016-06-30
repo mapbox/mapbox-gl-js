@@ -11,7 +11,7 @@ mapboxgl.Navigation = require('./ui/control/navigation');
 mapboxgl.Geolocate = require('./ui/control/geolocate');
 mapboxgl.Attribution = require('./ui/control/attribution');
 mapboxgl.Popup = require('./ui/popup');
-mapboxgl.DOMMarker = require('./ui/dom_marker');
+mapboxgl.ElementMarker = require('./ui/element_marker');
 
 mapboxgl.GeoJSONSource = require('./source/geojson_source');
 mapboxgl.VideoSource = require('./source/video_source');

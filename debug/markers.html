@@ -47,7 +47,7 @@ function addRandomMarker() {
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
 
-    var marker = new mapboxgl.DOMMarker()
+    var marker = new mapboxgl.ElementMarker()
         .setLngLat([lng, lat])
         .addTo(map);
 
