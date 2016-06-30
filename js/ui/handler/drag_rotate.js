@@ -230,7 +230,7 @@ DragRotateHandler.prototype = {
  * @event rotatestart
  * @memberof Map
  * @instance
- * @property {MouseEvent} data The original event data.
+ * @property {MapEventData} data
  */
 
 /**
@@ -239,7 +239,7 @@ DragRotateHandler.prototype = {
  * @event rotate
  * @memberof Map
  * @instance
- * @property {MouseEvent} data The original event data.
+ * @property {MapEventData} data
  */
 
 /**
@@ -248,5 +248,5 @@ DragRotateHandler.prototype = {
  * @event rotateend
  * @memberof Map
  * @instance
- * @property {MouseEvent} data The original event data.
+ * @property {MapEventData} data
  */

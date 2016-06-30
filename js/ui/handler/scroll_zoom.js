@@ -157,7 +157,7 @@ ScrollZoomHandler.prototype = {
  * @event zoomstart
  * @memberof Map
  * @instance
- * @property {EventData} data The original event data, if the event was the result of user interaction.
+ * @property {MapEventData} data
  */
 
 /**
@@ -167,7 +167,7 @@ ScrollZoomHandler.prototype = {
  * @event zoom
  * @memberof Map
  * @instance
- * @property {EventData} data The original event data, if the event was the result of user interaction.
+ * @property {MapEventData} data
  */
 
 /**
@@ -177,5 +177,5 @@ ScrollZoomHandler.prototype = {
  * @event zoomend
  * @memberof Map
  * @instance
- * @property {EventData} data The original event data, if the event was the result of user interaction.
+ * @property {MapEventData} data
  */

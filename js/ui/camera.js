@@ -776,5 +776,5 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
  * @event pitch
  * @memberof Map
  * @instance
- * @property {EventData} data The original event data, if the event was the result of user interaction.
+ * @property {MapEventData} data
  */

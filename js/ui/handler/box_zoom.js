@@ -155,7 +155,7 @@ BoxZoomHandler.prototype = {
  * @event boxzoomstart
  * @memberof Map
  * @instance
- * @property {MouseEvent} data The original event data.
+ * @property {MapEventData} data
  */
 
 /**
@@ -165,8 +165,7 @@ BoxZoomHandler.prototype = {
  * @memberof Map
  * @instance
  * @type {Object}
- * @property {MouseEvent} data The original event data.
- * @property {LngLatBounds} boxZoomBounds The bounds of the box zoom target.
+ * @property {MapEventData} data
  */
 
 /**
@@ -176,5 +175,5 @@ BoxZoomHandler.prototype = {
  * @event boxzoomcancel
  * @memberof Map
  * @instance
- * @property {UIEvent} data The original event data.
+ * @property {MapEventData} data
  */
