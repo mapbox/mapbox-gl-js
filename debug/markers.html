@@ -10,7 +10,7 @@
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
 
-        .mapboxgl-overlay {
+        .mapboxgl-marker {
             width: 10px;
             height: 10px;
             background: red;
@@ -37,7 +37,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-function addRandomOverlay() {
+function addRandomMarker() {
     var bounds = map.getBounds();
     var s = bounds.getSouth();
     var n = bounds.getNorth();
@@ -47,17 +47,17 @@ function addRandomOverlay() {
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
 
-    var overlay = new mapboxgl.Overlay()
+    var marker = new mapboxgl.ElementMarker()
         .setLngLat([lng, lat])
         .addTo(map);
 
-    overlay.getElement().onclick = function(e) {
+    marker.getElement().onclick = function(e) {
         alert('Hello world');
         e.stopPropagation();
     };
 }
 
-for (var i = 0; i < 100; i++) addRandomOverlay();
+for (var i = 0; i < 100; i++) addRandomMarker();
 
 map.addControl(new mapboxgl.Navigation());
 </script>

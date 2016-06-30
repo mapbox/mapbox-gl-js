@@ -1,34 +1,34 @@
 /* eslint-disable */
 'use strict';
 
-module.exports = Overlay;
+module.exports = ElementMarker;
 
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
 
 /**
- * Creates an overlay component
- * @class Overlay
- * @param {HTMLElement=} element DOM element to use as an overlay (creates a div element by default)
+ * Creates a marker component
+ * @class ElementMarker
+ * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @example
- * var overlay = new mapboxgl.Overlay()
+ * var marker = new mapboxgl.ElementMarker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
  */
-function Overlay(element) {
+function ElementMarker(element) {
     if (!element) {
         element = DOM.create('div');
     }
-    element.classList.add('mapboxgl-overlay');
+    element.classList.add('mapboxgl-marker');
     this._el = element;
     this._update = this._update.bind(this);
 }
 
-Overlay.prototype = /** @lends Overlay.prototype */{
+ElementMarker.prototype = {
     /**
-     * Attaches the overlay to a map
+     * Attaches the marker to a map
      * @param {Map} map
-     * @returns {Overlay} `this`
+     * @returns {ElementMarker} `this`
      */
     addTo: function(map) {
         this.remove();
@@ -40,11 +40,11 @@ Overlay.prototype = /** @lends Overlay.prototype */{
     },
 
     /**
-     * Removes the overlay from a map
+     * Removes the marker from a map
      * @example
-     * var overlay = new mapboxgl.Overlay().addTo(map);
-     * overlay.remove();
-     * @returns {Overlay} `this`
+     * var marker = new mapboxgl.ElementMarker().addTo(map);
+     * marker.remove();
+     * @returns {ElementMarker} `this`
      */
     remove: function() {
         if (this._map) {
@@ -57,7 +57,7 @@ Overlay.prototype = /** @lends Overlay.prototype */{
     },
 
     /**
-     * Get the overlay's geographical location
+     * Get the marker's geographical location
      * @returns {LngLat}
      */
     getLngLat: function() {
@@ -65,7 +65,7 @@ Overlay.prototype = /** @lends Overlay.prototype */{
     },
 
     /**
-     * Set the overlay's geographical position and move it.
+     * Set the marker's geographical position and move it.
      * @param {LngLat} lnglat
      * @returns {Popup} `this`
      */
