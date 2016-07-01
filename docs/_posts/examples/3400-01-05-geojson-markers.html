@@ -1,20 +1,20 @@
 ---
 layout: example
 category: example
-title: Add GeoJSON markers
-description: Add markers from a GeoJSON collection to a map.
+title: Draw GeoJSON points
+description: Draw points from a GeoJSON collection to a map.
 ---
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [-96, 37.8],
     zoom: 3
 });
 
 map.on('load', function () {
-    map.addSource("markers", {
+    map.addSource("points", {
         "type": "geojson",
         "data": {
             "type": "FeatureCollection",
@@ -26,7 +26,7 @@ map.on('load', function () {
                 },
                 "properties": {
                     "title": "Mapbox DC",
-                    "marker-symbol": "monument"
+                    "icon": "monument"
                 }
             }, {
                 "type": "Feature",
@@ -36,18 +36,18 @@ map.on('load', function () {
                 },
                 "properties": {
                     "title": "Mapbox SF",
-                    "marker-symbol": "harbor"
+                    "icon": "harbor"
                 }
             }]
         }
     });
 
     map.addLayer({
-        "id": "markers",
+        "id": "points",
         "type": "symbol",
-        "source": "markers",
+        "source": "points",
         "layout": {
-            "icon-image": "{marker-symbol}-15",
+            "icon-image": "{icon}-15",
             "text-field": "{title}",
             "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
             "text-offset": [0, 0.6],

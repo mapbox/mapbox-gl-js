@@ -30,7 +30,7 @@ map.on('load', function() {
     });
 
     // Use the earthquakes source to create four layers:
-    // three for each cluster category, and one for non-clustered markers
+    // three for each cluster category, and one for unclustered points
 
     // Each point range gets a different fill color.
     var layers = [
@@ -58,7 +58,7 @@ map.on('load', function() {
     });
 
     map.addLayer({
-        "id": "non-cluster-markers",
+        "id": "unclustered-points",
         "type": "circle",
         "source": "earthquakes",
         "paint": {
