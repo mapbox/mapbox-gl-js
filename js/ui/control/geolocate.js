@@ -11,10 +11,12 @@ var geoOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 
 
 /**
- * Creates a geolocation control
+ * A `Geolocate` control provides a button that uses the browser's geolocation
+ * API to locate the user on the map. Extends [`Control`](#Control).
+ *
  * @class Geolocate
  * @param {Object} [options]
- * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
+ * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
  * map.addControl(new mapboxgl.Geolocate({position: 'top-left'})); // position is optional
  */
@@ -77,21 +79,24 @@ Geolocate.prototype = util.inherit(Control, {
 });
 
  /**
-  * geolocate event.
+  * Fired when the map has successfully jumped to the user's location,
+  * as the result of a click on a [Geolocate](#Geolocate) control.
   *
   * @event geolocate
   * @memberof Control
   * @instance
-  * @property {EventData} data The returned Position object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
-  *
+  * @property {Position} data
+  *   The [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object returned from the callback in
+  *   [`Geolocation.getCurrentPosition()`](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
   */
 
  /**
-  * error event.
+  * Fired when the browser has failed to geolocate the user.
   *
   * @event error
   * @memberof Control
   * @instance
-  * @property {EventData} data The returned PositionError object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
-  *
+  * @property {PositionError} data
+  *   The [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object returned from the callback in
+  *   [`Geolocation.getCurrentPosition()`](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
   */

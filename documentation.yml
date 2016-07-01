@@ -1,5 +1,7 @@
 toc:
   - Map
+  - accessToken
+  - supported
   - name: Geography
     description: |
       These are Mapbox GL JS's ways of representing locations
@@ -28,19 +30,17 @@ toc:
   - TouchZoomRotateHandler
   - name: Sources
     description: |
-      Adding sources to a map with these JavaScript
-      methods lets you add content dynamically to your map after
-      it has been loaded, or add GeoJSON content that's generated
+      Use these methods to dynamically add content to your map after
+      it has been loaded, or to add GeoJSON content generated
       by other JavaScript. You can also add sources to your map
-      by including them in the Mapbox GL Style that it loads.
+      by including them in the map's Mapbox GL style.
   - GeoJSONSource
   - VideoSource
   - ImageSource
   - name: Options
     description: |
-      These are shared option types - predictable objects that
-      can be supplied to multiple methods on the mapbox.Map object
-      and others as function arguments.
+      These shared option can be supplied as arguments to various methods
+      on a Map object and other functions.
   - CameraOptions
   - AnimationOptions
   - StyleOptions
@@ -50,6 +50,14 @@ toc:
     description: |
       This event functionality is used by Mapbox GL JS itself
       and can be useful to other developers who want to create
-      controls or other extensions.
-  - EventData
+      [Controls](#Control) or other extensions.
+  - MapEventData
   - Evented
+  - name: Types
+    description: |
+      These are types used in the documentation above to describe arguments,
+      properties, and return values.
+  - LngLatLike
+  - LngLatBoundsLike
+  - Point
+  - PointLike
