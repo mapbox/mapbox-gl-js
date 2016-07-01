@@ -5,7 +5,7 @@
       "required": true,
       "type": "enum",
       "values": [8],
-      "doc": "Stylesheet version number. Must be 8.",
+      "doc": "Style specification version number. Must be 8.",
       "example": 8
     },
     "name": {
