@@ -67,7 +67,7 @@ map.addControl(new mapboxgl.Geolocate());
 map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
-        "data": "route.json"
+        "data": "data/linestring.geojson"
     });
 
     map.addLayer({

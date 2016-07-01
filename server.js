@@ -41,6 +41,10 @@ app.get('/debug', function(req, res) {
 app.use(express.static(path.join(__dirname, 'debug')));
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
+// include the mapbox-gl-test-suite module as an additional root, so that
+// debug files can reference its data/image/video/etc. assets directly
+app.use(express.static(path.join(__dirname, 'node_modules/mapbox-gl-test-suite')));
+
 downloadBenchData(function() {
     app.listen(9966, function () {
         console.log('mapbox-gl-js debug server running at http://localhost:9966');

@@ -55,7 +55,7 @@
 <script>
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
+    zoom: 3,
     center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
@@ -68,7 +68,7 @@ map.on('load', function() {
 
     map.addSource('circles', {
         "type": "geojson",
-        "data": "random.geojson"
+        "data": "data/places.geojson"
     });
 
     map.addLayer({
