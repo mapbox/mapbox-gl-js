@@ -7,10 +7,12 @@ var util = require('../../util/util');
 module.exports = Attribution;
 
 /**
- * Creates an attribution control
+ * An `Attribution` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
+ * Extends [`Control`](#Control).
+ *
  * @class Attribution
  * @param {Object} [options]
- * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
+ * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.Attribution({position: 'top-left'}));

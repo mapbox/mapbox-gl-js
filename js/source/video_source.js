@@ -15,11 +15,15 @@ var VertexArrayObject = require('../render/vertex_array_object');
 module.exports = VideoSource;
 
 /**
- * Create a Video data source instance given an options object
+ * A data source containing video.
+ *
  * @class VideoSource
  * @param {Object} options
- * @param {Array<string>} options.urls An array of URLs to video files
- * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the video. Does not have to be a rectangle.
+ * @param {Array<string>} options.urls An array of URLs to video files.
+ * @param {Array<Array<number>>} options.coordinates Four geographical coordinates,
+ *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
+ *   The coordinates start at the top left corner of the video and proceed in clockwise order.
+ *   They do not have to represent a rectangle.
  * @example
  * var sourceObj = new mapboxgl.VideoSource({
  *    url: [
@@ -73,9 +77,9 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     roundZoom: true,
 
     /**
-     * Return the HTML video element.
+     * Returns the HTML `video` element.
      *
-     * @returns {Object}
+     * @returns {HTMLVideoElement} The HTML `video` element.
      */
     getVideo: function() {
         return this.video;
@@ -90,9 +94,12 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
     },
 
     /**
-     * Update video coordinates and rerender map
+     * Sets the video's coordinates and re-renders the map.
      *
-     * @param {Array} coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the video. Does not have to be a rectangle.
+     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
+     *   represented as arrays of longitude and latitude numbers, which define the corners of the video.
+     *   The coordinates start at the top left corner of the video and proceed in clockwise order.
+     *   They do not have to represent a rectangle.
      * @returns {VideoSource} this
      */
     setCoordinates: function(coordinates) {
