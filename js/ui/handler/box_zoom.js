@@ -148,6 +148,12 @@ BoxZoomHandler.prototype = {
     }
 };
 
+/**
+ * @typedef {Object} MapBoxZoomEvent
+ * @property {MouseUpEvent} originalEvent
+ * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
+ *   This property is only provided for `boxzoomend` events.
+ */
 
 /**
  * Fired when a "box zoom" interaction starts. See [`BoxZoomHandler`](#BoxZoomHandler).
@@ -155,7 +161,7 @@ BoxZoomHandler.prototype = {
  * @event boxzoomstart
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapBoxZoomEvent} data
  */
 
 /**
@@ -165,7 +171,7 @@ BoxZoomHandler.prototype = {
  * @memberof Map
  * @instance
  * @type {Object}
- * @property {MapEventData} data
+ * @property {MapBoxZoomEvent} data
  */
 
 /**
@@ -175,5 +181,5 @@ BoxZoomHandler.prototype = {
  * @event boxzoomcancel
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapBoxZoomEvent} data
  */

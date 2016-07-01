@@ -1277,39 +1277,6 @@ function removeNode(node) {
  */
 
 /**
- * When the `Map` object fires an event, listeners will be called with an
- * object with the following properties.
- *
- * @typedef {Object} MapEventData
- * @property {string} type The event type.
- * @property {Map} target The `Map` object that fired the event.
- * @property {Event} originalEvent The original DOM event, *if the `Map` event was fired
- *   as the result of a user interaction*. For example, the listener in `map.on('mousedown', listener)`
- *   receives an object whose `originalEvent` value is the
- *   [`MouseEvent`](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent)
- *   from the interaction. And if a `move` event is fired because of a mouse interaction,
- *   the listener in `map.on('move', listener)` will also receive a `MouseEvent`.
- * @property {Point} point The pixel coordinates of the event target, relative to the map
- *   and measured from the top left corner.
- *   This property is included for all events originating in a native DOM event.
- * @property {Array<Point>} points The array of pixel coordinates corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property. This property is provided for all touch events.
- * @property {LngLat} lngLat The geographic location on the map of the event target.
- *   This property is included for all events originating in a native DOM event.
- * @property {Array<LngLat>} points The geographical locations on the map corresponding to
- *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
- *   property. This property is provided for all touch events.
- * @property {LngLatBounds} boxZoomBounds The bounding box of a "box zoom" interaction.
- *   This property is only provided for `boxzoomend` events.
- * @example
- * map.on('click', function(data) {
- *   var e = data && data.originalEvent;
- *   console.log('got click ' + (e ? 'button = ' + e.button : ''));
- * });
- */
-
-/**
  * Fired whenever the map is drawn to the screen, as the result of
  *
  * - a change to the map's position, zoom, pitch, or bearing
@@ -1328,7 +1295,7 @@ function removeNode(node) {
  * @event mouseout
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1337,7 +1304,7 @@ function removeNode(node) {
  * @event mousedown
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1346,7 +1313,7 @@ function removeNode(node) {
  * @event mouseup
  * @memberof Map
  * @instance
- * @property {MouseEvent} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1355,7 +1322,7 @@ function removeNode(node) {
  * @event mousemove
  * @memberof Map
  * @instance
- * @property {MouseEvent} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1364,7 +1331,7 @@ function removeNode(node) {
  * @event touchstart
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapTouchEvent} data
  */
 
 /**
@@ -1373,7 +1340,7 @@ function removeNode(node) {
  * @event touchend
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapTouchEvent} data
  */
 
 /**
@@ -1382,7 +1349,7 @@ function removeNode(node) {
  * @event touchmove
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapTouchEvent} data
  */
 
 /**
@@ -1391,7 +1358,7 @@ function removeNode(node) {
  * @event touchcancel
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapTouchEvent} data
  */
 
 /**
@@ -1400,7 +1367,7 @@ function removeNode(node) {
  * @event click
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1409,7 +1376,7 @@ function removeNode(node) {
  * @event dblclick
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1418,7 +1385,7 @@ function removeNode(node) {
  * @event contextmenu
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent} data
  */
 
 /**
@@ -1438,7 +1405,7 @@ function removeNode(node) {
  * @event movestart
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -1448,7 +1415,7 @@ function removeNode(node) {
  * @event move
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -1458,5 +1425,5 @@ function removeNode(node) {
  * @event moveend
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */

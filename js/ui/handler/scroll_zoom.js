@@ -157,7 +157,7 @@ ScrollZoomHandler.prototype = {
  * @event zoomstart
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -167,7 +167,7 @@ ScrollZoomHandler.prototype = {
  * @event zoom
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -177,5 +177,5 @@ ScrollZoomHandler.prototype = {
  * @event zoomend
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */

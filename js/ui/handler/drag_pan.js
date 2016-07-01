@@ -212,7 +212,7 @@ DragPanHandler.prototype = {
  * @event dragstart
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -221,7 +221,7 @@ DragPanHandler.prototype = {
  * @event drag
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
@@ -230,5 +230,5 @@ DragPanHandler.prototype = {
  * @event dragend
  * @memberof Map
  * @instance
- * @property {MapEventData} data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
