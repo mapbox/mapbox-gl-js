@@ -3,7 +3,7 @@
 'use strict';
 
 function replacer(k,v) {
-    return (k === 'doc' || k === 'example') ? undefined : v;
+    return (k === 'doc' || k === 'example' || k === 'sdk-support') ? undefined : v;
 }
 
 var glob = require('glob'),

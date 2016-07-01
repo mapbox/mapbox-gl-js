@@ -326,7 +326,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "layout_fill": {
@@ -339,7 +346,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "layout_circle": {
@@ -352,7 +366,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "layout_line": {
@@ -367,7 +388,14 @@
         "square"
       ],
       "default": "butt",
-      "doc": "The display of line endings."
+      "doc": "The display of line endings.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-join": {
       "type": "enum",
@@ -380,7 +408,14 @@
         "miter"
       ],
       "default": "miter",
-      "doc": "The display of lines when joining."
+      "doc": "The display of lines when joining.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-miter-limit": {
       "type": "number",
@@ -393,7 +428,14 @@
         {
           "line-join": "miter"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-round-limit": {
       "type": "number",
@@ -406,7 +448,14 @@
         {
           "line-join": "round"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "visibility": {
       "type": "enum",
@@ -417,7 +466,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "layout_symbol": {
@@ -431,7 +487,14 @@
           "line"
       ],
       "default": "point",
-      "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons."
+      "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "symbol-spacing": {
       "type": "number",
@@ -446,7 +509,14 @@
         {
           "symbol-placement": "line"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "symbol-avoid-edges": {
       "type": "boolean",
@@ -454,7 +524,14 @@
       "zoom-function": true,
       "property-function": true,
       "default": false,
-      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer."
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-allow-overlap": {
       "type": "boolean",
@@ -465,7 +542,14 @@
       "doc": "If true, the icon will be visible even if it collides with other previously drawn symbols.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-ignore-placement": {
       "type": "boolean",
@@ -476,7 +560,14 @@
       "doc": "If true, other symbols can be visible even if they collide with the icon.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-optional": {
       "type": "boolean",
@@ -488,7 +579,14 @@
       "requires": [
         "icon-image",
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-rotation-alignment": {
       "type": "enum",
@@ -503,7 +601,14 @@
       "doc": "Orientation of icon when map is rotated.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-size": {
       "type": "number",
@@ -515,7 +620,14 @@
       "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-text-fit": {
       "type": "enum",
@@ -533,7 +645,11 @@
       "requires": [
         "icon-image",
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+        }
+      }
     },
     "icon-text-fit-padding": {
       "type": "array",
@@ -554,7 +670,11 @@
         "icon-image",
         "icon-text-fit",
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+        }
+      }
     },
     "icon-image": {
       "type": "string",
@@ -562,7 +682,14 @@
       "zoom-function": true,
       "property-function": true,
       "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
-      "tokens": true
+      "tokens": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-rotate": {
       "type": "number",
@@ -575,7 +702,14 @@
       "doc": "Rotates the icon clockwise.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-padding": {
       "type": "number",
@@ -588,7 +722,14 @@
       "doc": "Size of the additional area around the icon bounding box used for detecting symbol collisions.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-keep-upright": {
       "type": "boolean",
@@ -605,7 +746,14 @@
         {
           "symbol-placement": "line"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-offset": {
       "type": "array",
@@ -621,7 +769,14 @@
       "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-pitch-alignment": {
       "type": "enum",
@@ -635,7 +790,11 @@
       "doc": "Aligns text to the plane of the `viewport` or the `map` when the map is pitched. Matches `text-rotation-alignment` if unspecified.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+        }
+      }
     },
     "text-rotation-alignment": {
       "type": "enum",
@@ -650,7 +809,14 @@
       "doc": "Orientation of text when map is rotated.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-field": {
       "type": "string",
@@ -659,7 +825,14 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}."
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-font": {
       "type": "array",
@@ -671,7 +844,14 @@
       "doc": "Font stack to use for displaying text.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-size": {
       "type": "number",
@@ -684,7 +864,14 @@
       "doc": "Font size.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-max-width": {
       "type": "number",
@@ -697,7 +884,14 @@
       "doc": "The maximum line width for text wrapping.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-line-height": {
       "type": "number",
@@ -709,7 +903,14 @@
       "doc": "Text leading value for multi-line text.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-letter-spacing": {
       "type": "number",
@@ -721,7 +922,14 @@
       "doc": "Text tracking amount.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-justify": {
       "type": "enum",
@@ -737,7 +945,14 @@
       "doc": "Text justification options.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-anchor": {
       "type": "enum",
@@ -759,7 +974,14 @@
       "doc": "Part of the text placed closest to the anchor.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-max-angle": {
       "type": "number",
@@ -774,7 +996,14 @@
         {
           "symbol-placement": "line"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-rotate": {
       "type": "number",
@@ -787,7 +1016,14 @@
       "doc": "Rotates the text clockwise.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-padding": {
       "type": "number",
@@ -800,7 +1036,14 @@
       "doc": "Size of the additional area around the text bounding box used for detecting symbol collisions.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-keep-upright": {
       "type": "boolean",
@@ -817,7 +1060,14 @@
         {
           "symbol-placement": "line"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-transform": {
       "type": "enum",
@@ -833,7 +1083,14 @@
       "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-offset": {
       "type": "array",
@@ -850,7 +1107,14 @@
       ],
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-allow-overlap": {
       "type": "boolean",
@@ -861,7 +1125,14 @@
       "doc": "If true, the text will be visible even if it collides with other previously drawn symbols.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-ignore-placement": {
       "type": "boolean",
@@ -872,7 +1143,14 @@
       "doc": "If true, other symbols can be visible even if they collide with the text.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-optional": {
       "type": "boolean",
@@ -884,7 +1162,14 @@
       "requires": [
         "text-field",
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "visibility": {
       "type": "enum",
@@ -895,7 +1180,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "layout_raster": {
@@ -908,7 +1200,14 @@
         "none"
       ],
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer."
+      "doc": "The display of this layer. `none` hides this layer.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "filter": {
@@ -1010,7 +1309,14 @@
       "zoom-function": true,
       "property-function": true,
       "default": true,
-      "doc": "Whether or not the fill should be antialiased."
+      "doc": "Whether or not the fill should be antialiased.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "fill-opacity": {
       "type": "number",
@@ -1021,7 +1327,14 @@
       "minimum": 0,
       "maximum": 1,
       "doc": "The opacity of the entire fill layer. In contrast to the fill-color, this value will also affect the 1px stroke around the fill, if the stroke is used.",
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "fill-color": {
       "type": "color",
@@ -1035,7 +1348,17 @@
         {
           "!": "fill-pattern"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.19.0"
+        }
+      }
     },
     "fill-outline-color": {
       "type": "color",
@@ -1051,7 +1374,17 @@
         {
           "fill-antialias": true
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.19.0"
+        }
+      }
     },
     "fill-translate": {
       "type": "array",
@@ -1066,7 +1399,14 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "fill-translate-anchor": {
       "type": "enum",
@@ -1081,7 +1421,14 @@
       "default": "map",
       "requires": [
         "fill-translate"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "fill-pattern": {
       "type": "string",
@@ -1089,7 +1436,14 @@
       "zoom-function": true,
       "property-function": true,
       "transition": true,
-      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512)."
+      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "paint_line": {
@@ -1102,7 +1456,14 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-color": {
       "type": "color",
@@ -1116,7 +1477,14 @@
         {
           "!": "line-pattern"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-translate": {
       "type": "array",
@@ -1131,7 +1499,14 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-translate-anchor": {
       "type": "enum",
@@ -1146,7 +1521,14 @@
       "default": "map",
       "requires": [
         "line-translate"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-width": {
       "type": "number",
@@ -1157,7 +1539,14 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Stroke thickness."
+      "doc": "Stroke thickness.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-gap-width": {
       "type": "number",
@@ -1168,7 +1557,14 @@
       "zoom-function": true,
       "property-function": true,
       "transition": true,
-      "units": "pixels"
+      "units": "pixels",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-offset": {
       "type": "number",
@@ -1178,7 +1574,14 @@
       "zoom-function": true,
       "property-function": true,
       "transition": true,
-      "units": "pixels"
+      "units": "pixels",
+      "sdk-support": {
+        "basic": {
+          "js": "0.12.1",
+          "ios": "3.1.0",
+          "android": "3.0.0"
+        }
+      }
     },
     "line-blur": {
       "type": "number",
@@ -1189,7 +1592,14 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Blur applied to the line, in pixels."
+      "doc": "Blur applied to the line, in pixels.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-dasharray": {
       "type": "array",
@@ -1205,7 +1615,14 @@
         {
           "!": "line-pattern"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "line-pattern": {
       "type": "string",
@@ -1213,7 +1630,14 @@
       "zoom-function": true,
       "property-function": true,
       "transition": true,
-      "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512)."
+      "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "paint_circle": {
@@ -1226,7 +1650,17 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "Circle radius."
+      "doc": "Circle radius.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.18.0"
+        }
+      }
     },
     "circle-color": {
       "type": "color",
@@ -1235,7 +1669,17 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.18.0"
+        }
+      }
     },
     "circle-blur": {
       "type": "number",
@@ -1244,7 +1688,17 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.20.0"
+        }
+      }
     },
     "circle-opacity": {
       "type": "number",
@@ -1255,7 +1709,17 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.20.0"
+        }
+      }
     },
     "circle-translate": {
       "type": "array",
@@ -1267,7 +1731,14 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively."
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "circle-translate-anchor": {
       "type": "enum",
@@ -1282,7 +1753,14 @@
       "default": "map",
       "requires": [
         "circle-translate"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "paint_symbol": {
@@ -1298,7 +1776,14 @@
       "transition": true,
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-color": {
       "type": "color",
@@ -1310,7 +1795,14 @@
       "doc": "The color of the icon. This can only be used with sdf icons.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-halo-color": {
       "type": "color",
@@ -1322,7 +1814,14 @@
       "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-halo-width": {
       "type": "number",
@@ -1336,7 +1835,14 @@
       "doc": "Distance of halo to the icon outline.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-halo-blur": {
       "type": "number",
@@ -1350,7 +1856,14 @@
       "doc": "Fade out the halo towards the outside.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-translate": {
       "type": "array",
@@ -1368,7 +1881,14 @@
       "doc": "Distance that the icon's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "icon-image"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "icon-translate-anchor": {
       "type": "enum",
@@ -1384,7 +1904,14 @@
       "requires": [
         "icon-image",
         "icon-translate"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-opacity": {
       "type": "number",
@@ -1398,7 +1925,14 @@
       "transition": true,
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-color": {
       "type": "color",
@@ -1410,7 +1944,14 @@
       "transition": true,
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-halo-color": {
       "type": "color",
@@ -1422,7 +1963,14 @@
       "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-halo-width": {
       "type": "number",
@@ -1436,7 +1984,14 @@
       "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-halo-blur": {
       "type": "number",
@@ -1450,7 +2005,14 @@
       "doc": "The halo's fadeout distance towards the outside.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-translate": {
       "type": "array",
@@ -1468,7 +2030,14 @@
       "doc": "Distance that the text's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
       "requires": [
         "text-field"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "text-translate-anchor": {
       "type": "enum",
@@ -1484,7 +2053,14 @@
       "requires": [
         "text-field",
         "text-translate"
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "paint_raster": {
@@ -1496,7 +2072,14 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-hue-rotate": {
       "type": "number",
@@ -1506,7 +2089,14 @@
       "zoom-function": true,
       "transition": true,
       "units": "degrees",
-      "doc": "Rotates hues around the color wheel."
+      "doc": "Rotates hues around the color wheel.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-brightness-min": {
       "type": "number",
@@ -1516,7 +2106,14 @@
       "default": 0,
       "minimum": 0,
       "maximum": 1,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-brightness-max": {
       "type": "number",
@@ -1526,7 +2123,14 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-saturation": {
       "type": "number",
@@ -1536,7 +2140,14 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-contrast": {
       "type": "number",
@@ -1546,7 +2157,14 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "raster-fade-duration": {
       "type": "number",
@@ -1556,7 +2174,14 @@
       "zoom-function": true,
       "transition": true,
       "units": "milliseconds",
-      "doc": "Fade duration when a new tile is added."
+      "doc": "Fade duration when a new tile is added.",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "paint_background": {
@@ -1571,14 +2196,28 @@
         {
           "!": "background-pattern"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "background-pattern": {
       "type": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
       "transition": true,
-      "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512)."
+      "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     },
     "background-opacity": {
       "type": "number",
@@ -1588,7 +2227,14 @@
       "doc": "The opacity at which the background will be drawn.",
       "function": "interpolated",
       "zoom-function": true,
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic": {
+          "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        }
+      }
     }
   },
   "transition": {

@@ -1,11 +1,11 @@
-<div class='col12 clearfix pad0y'>
+<div class='col12 clearfix pad0y pad2x'>
   <div>
     <span class='code space-right'><a id='<%= id %>' href='#<%= id %>'><%= name %></a></span>
     <% if (prop.function == "interpolated" ) { %><span class='icon smooth-ramp inline quiet'></span><% } %>
     <% if (prop.function == "piecewise-constant" ) { %><span class='icon step-ramp inline quiet'></span><% } %>
     <% if (prop.transition) { %><span class='icon opacity inline quiet'></span><% } %>
   </div>
-  <div class='small pad2x'>
+  <div>
     <em class='inline quiet'>
       <%= prop.required ? 'Required' : 'Optional' %>
       <% if (prop.type && prop.type !== '*') { %><a href='#<%= prop.type %>'><%= prop.type %></a>.<% } %>
@@ -40,13 +40,51 @@
   </div>
   <% if (prop.doc) { %>
   {% capture prop_doc %}<%= prop.doc %>{% endcapture %}
-  <div class='space-bottom1 small pad2x'>{{prop_doc | markdownify}}</div>
+  <div class='space-bottom1'>{{prop_doc | markdownify}}</div>
   <% } %>
   <% if (prop.example) { %>
-  <div class='space-bottom1 pad2x clearfix'>
+  <div class='space-bottom1 clearfix'>
 {% highlight json %}
 <%= '"' + name + '": ' + JSON.stringify(prop.example, null, 2) %>
 {% endhighlight %}
+  </div>
+  <% } %>
+  <% if (prop['sdk-support']) {
+    var support = function(type, sdk) {
+      var support = prop['sdk-support'][type];
+      if (!support) return 'Not yet supported';
+      support = support[sdk];
+      if (support === undefined) return 'Not yet supported';
+      return '>= ' + support;
+    }
+  %>
+  <div class='space-bottom2'>
+    <table class='fixed'>
+      <thead>
+      <tr class='fill-light'>
+        <th>SDK Support</th>
+        <td class='center'>Mapbox GL JS</td>
+        <td class='center'>iOS SDK</td>
+        <td class='center'>Android SDK</td>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Base support</td>
+        <td class='center'><%- support('basic', 'js') %></td>
+        <td class='center'><%- support('basic', 'ios') %></td>
+        <td class='center'><%- support('basic', 'android') %></td>
+      </tr>
+      <% if (prop['property-function']) { %>
+      <tr>
+        <td>Data-driven styling</td>
+        <td class='center'><%- support('property-function', 'js') %></td>
+        <td class='center'><%- support('property-function', 'ios') %></td>
+        <td class='center'><%- support('property-function', 'android') %></td>
+      </tr>
+      <% } %>
+      </tbody>
+    </table>
   </div>
   <% } %>
 </div>

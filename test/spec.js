@@ -57,7 +57,8 @@ function validSchema(k, t, obj, ref) {
     'maximum',
     'minimum',
     'period',
-    'requires'
+    'requires',
+    'sdk-support'
   ];
 
   // Schema object.
