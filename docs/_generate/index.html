@@ -617,7 +617,7 @@ navigation:
         <div class='pad2 keyline-bottom'>
           <a id='types-enum' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-enum' title='link to enum'>Enum</a></h3>
-          <p class='small'>One of a fixed list of string values. Use quotes around values.</p>
+          <p>One of a fixed list of string values. Use quotes around values.</p>
 {% highlight json %}
 {
   "text-transform": "uppercase"
@@ -674,10 +674,10 @@ navigation:
           <a id='types-function' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-function' title='link to function'>Function</a></h3>
 
-          <p class='small'>The value for any layout or paint property may be specified as a <em>function</em>. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.</p>
+          <p>The value for any layout or paint property may be specified as a <em>function</em>. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.</p>
 
           <div class='col12 pad1x space-bottom2'>
-            <ul class='small'>
+            <ul>
               <li class='pad0y'>
                 <div><span class='code'>stops</span><em class='pad1x quiet'>Required <a href='#types-array'>array</a>.</em></div>
                 <div class='pad1x'>Functions are defined in terms of input and output values. A set of one input value and one output value is known as a "stop."</div>
@@ -704,7 +704,7 @@ navigation:
           <a id='types-function-zoom-property' class='anchor'></a>
           <h4 class='space-bottom1'><a class='quiet' href='#types-function-zoom-property' title='link to zoom function'>Zoom Functions and Property Functions</a></h4>
 
-          <p class='small'><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements, the first is a zoom and the second is a function output value.</p>
+          <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements, the first is a zoom and the second is a function output value.</p>
 
           <div class='col12'>
               {% highlight js %}
@@ -724,7 +724,7 @@ navigation:
               {% endhighlight %}
           </div>
 
-          <p class='small'><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
+          <p><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
 
           <div class='col12'>
               {% highlight js %}
@@ -745,7 +745,7 @@ navigation:
               {% endhighlight %}
           </div>
 
-          <p class='small'><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
+          <p><strong>Zoom-and-property functions</strong> allow the appearance of a map feature to change with both its properties <em>and</em> zoom. Each stop is an array with two elements, the first is an object with a property input value and a zoom, and the second is a function output value. Note that support for property functions is not yet complete.</p>
 
           <div class='col12'>
               {% highlight js %}
