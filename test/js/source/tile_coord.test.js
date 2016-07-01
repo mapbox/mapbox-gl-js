@@ -48,6 +48,11 @@ test('TileCoord', function(t) {
             t.end();
         });
 
+        t.test('replaces {quadkey}', function(t) {
+            t.equal(new TileCoord(17, 22914, 52870).url(['a{quadkey}']), 'a02301322130000230');
+            t.end();
+        });
+
         t.test('replaces {bbox-epsg-3857}', function(t) {
             t.equal(new TileCoord(1, 0, 0).url(['bbox={bbox-epsg-3857}']), 'bbox=-20037508.342789244,0,0,20037508.342789244');
             t.end();
