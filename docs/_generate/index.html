@@ -1,7 +1,7 @@
 ---
 layout: default
 category: reference
-title: Mapbox GL Style Reference
+title: Mapbox Style Specification
 permalink: /
 class: fill-light
 options: full
@@ -59,11 +59,6 @@ navigation:
 <div class='docnav hide-mobile'>
   <div class='limiter'><div class='col3 contain'>
     <nav class='scroll-styled quiet-scroll small'>
-
-      <div class='space-bottom1'>
-        <a class='block truncate strong' href='#'>Style Reference <span class='quiet'>v<%= ref.$version %></span></a>
-      </div>
-
       {% for navitem in page.navigation %}
       <div class='space-bottom1'>
         {% assign navitem_id = navitem.title | downcase | slugify %}
@@ -88,30 +83,30 @@ navigation:
       </div>
       <div class='col9 dark tabs mobile-cols pad1'><!--
         --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3 truncate'>API</a><!--
-        --><a href='#' class='col3 truncate active'>Style Reference</a><!--
+        --><a href='#' class='col3 truncate active'>Style Specification</a><!--
         --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3 truncate'>Examples</a><!--
         --><a href='https://mapbox.com/mapbox-gl-js/plugins' class='col3 truncate'>Plugins</a>
       </div>
     </nav>
   </div>
 
-  <div class='contain margin3 col9'>
-    <div class='pad2 prose'>
+  <div class='contain margin3 col9 pad2'>
+    <div class='prose'>
       <h1>{{ page.title }}</h1>
-
-      <p>The Mapbox GL style is an object that defines what data to draw, the order to draw it in, and how to style the data when drawing it. The <a href='http://json.org'>JSON</a> structure follows the renderer implementation very closely. It provides the basic building blocks out of which more complex styles can be built.</p>
-
-      <p class='space-bottom4 quiet small'>Key:
-        <a class='icon smooth-ramp quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
-        <a class='icon step-ramp quiet micro space-right inline' href='#function' title='Supports piecewise constant functions'>supports piecewise constant functions</a>
-        <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
+      <p>A Mapbox style is a document that defines the visual appearance of a map: what data to draw, the order to draw it in, and how to style the data when drawing it. A style document is a <a href="http://www.json.org/">JSON</a> object with specific root level and nested properties. This specification defines and describes these properties.</p>
+      <p>The intended audience of this specification includes:
+      <ul>
+      <li>Advanced designers and cartographers who want to write styles by hand rather than use <a href='https://www.mapbox.com/studio'>Mapbox Studio</a></li>
+      <li>Developers using style-related features of <a href='https://www.mapbox.com/mapbox-gl-js/'>Mapbox GL JS</a> or the Mapbox <a href='https://www.mapbox.com/ios-sdk/'>iOS</a> or <a href='https://www.mapbox.com/android-sdk/'>Android</a> SDKs</li>
+      <li>Authors of software that generates or processes Mapbox styles.</li>
+      </ul>
       </p>
     </div>
 
-    <div class='pad2 prose'>
+    <div class='prose'>
       <a id='root' class='anchor'></a>
       <h2><a href='#root' title='link to root'>Root Properties</a></h2>
-      <p>Top level properties on the Mapbox GL style object specify the map's appearance, sources, and layers.</p>
+      <p>Root level properties of a Mapbox style specify the map's layers, tile sources and other resources, and default values for the initial camera position when not specified elsewhere.</p>
       <div class='space-bottom1 clearfix'>
 {% highlight json%}
 {
@@ -454,7 +449,7 @@ navigation:
         </li>
       </ul>
       <p>
-        Mapbox GL renderers will use the value of the <code>sprite</code> property in the style to generate the URLs for
+        Mapbox SDKs will use the value of the <code>sprite</code> property in the style to generate the URLs for
         loading both files. First, for both file types, it will append <code>@2x</code> to the URL on high-DPI devices.
         Second, it will append a file extension: <code>.json</code> for the index file, and <code>.png</code> for the
         image file. For example, if you specified <code>"sprite": "https://example.com/sprite"</code>, renderers would
@@ -557,6 +552,11 @@ navigation:
         name set. For example, a layer with a <code>"paint.night"</code> property would have those properties applied
         when the map has the <code>"night"</code> class set.
       </p>
+      <p class='space-bottom4 quiet small'>Key:
+        <a class='icon smooth-ramp quiet micro space-right inline' href='#function' title='Supports interpolated functions'>supports interpolated functions</a>
+        <a class='icon step-ramp quiet micro space-right inline' href='#function' title='Supports piecewise constant functions'>supports piecewise constant functions</a>
+        <span class='icon opacity quiet micro space-right inline' title='Transitionable'>transitionable</span>
+      </p>
 
       <div class='space-bottom4 fill-white keyline-all'>
         <% _(layer_types).each(function(t) { %>
@@ -590,14 +590,14 @@ navigation:
     <div class='pad2 prose'>
       <a id='types' class='anchor'></a>
       <h2><a href='#types' title='link to types'>Types</a></h2>
-      <p>Below is a list of types and an explanation of any expression that can be applied to properties in Mapbox GL.</p>
+      <p>A Mapbox style contains values of various types, most commonly as values for the style properties of a layer.</p>
 
       <div class='keyline-all fill-white'>
         <div class='pad2 keyline-bottom'>
           <a id='types-color' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-color' title='link to color'>Color</a></h3>
           <p>
-            Mapbox GL accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like <code>yellow</code> and <code>blue</code>.
+            Colors are written as JSON strings in a variety of permitted formats: HTML-style hex values, rgb, rgba, hsl, and hsla. Predefined HTML colors names, like <code>yellow</code> and <code>blue</code>, are also permitted.
           </p>
 {% highlight json %}
 {
@@ -628,7 +628,7 @@ navigation:
         <div class='pad2 keyline-bottom'>
           <a id='types-string' class='anchor'></a>
           <h3 class='space-bottom1'><a href='#types-string' title='link to string'>String</a></h3>
-          <p>A string is basically just text. In the case of Mapbox GL, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
+          <p>A string is basically just text. In Mapbox styles, you're going to put it in quotes. Strings can be anything, though pay attention to the case of <code>text-field</code> - it actually will refer to features, which you refer to by putting them in curly braces, as seen in the example below.</p>
 {% highlight json %}
 {
   "text-field": "{MY_FIELD}"
