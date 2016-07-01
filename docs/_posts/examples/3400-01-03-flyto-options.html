@@ -35,7 +35,7 @@ var map = new mapboxgl.Map({
 
 var isAtStart = true;
 
-function fly() {
+document.getElementById.addEventListener('click', function() {
     // depending on whether we're currently at point a or b, aim for
     // point a or b
     var target = isAtStart ? end : start;
@@ -62,5 +62,5 @@ function fly() {
             return t;
         }
     });
-}
+});
 </script>

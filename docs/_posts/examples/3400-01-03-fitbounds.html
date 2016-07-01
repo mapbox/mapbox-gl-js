@@ -31,7 +31,7 @@ var map = new mapboxgl.Map({
     zoom: 9
 });
 
-function fit() {
+document.getElementById('fit').addEventListener('click', function() {
     map.fitBounds([[
         32.958984,
         -5.353521
@@ -39,5 +39,6 @@ function fit() {
         43.50585,
         5.615985
     ]]);
-}
+});
+
 </script>

@@ -5,11 +5,11 @@ title: Change a map's language
 description: Using .setLayoutProperty to switch languages dynamically.
 ---
 <style>
-    #languageButtons {
+    #buttons {
         width: 90%;
         margin: 0 auto;
     }
-    .language-switch-button {
+    .button {
         display: inline-block;
         position: relative;
         cursor: pointer;
@@ -26,11 +26,11 @@ description: Using .setLayoutProperty to switch languages dynamically.
     }
 </style>
 <div id='map'></div>
-<ul id="languageButtons">
-    <li onclick='switchLanguage("fr");' class='language-switch-button'>French</li>
-    <li onclick='switchLanguage("ru");' class='language-switch-button'>Russian</li>
-    <li onclick='switchLanguage("de");' class='language-switch-button'>German</li>
-    <li onclick='switchLanguage("es");' class='language-switch-button'>Spanish</li>
+<ul id="buttons">
+    <li id='button-fr' class='button'>French</li>
+    <li id='button-ru' class='button'>Russian</li>
+    <li id='button-de' class='button'>German</li>
+    <li id='button-es' class='button'>Spanish</li>
 </ul>
 <script>
 var map = new mapboxgl.Map({
@@ -40,10 +40,12 @@ var map = new mapboxgl.Map({
     zoom: 2.9
 });
 
-function switchLanguage(language) {
+document.getElementById('buttons').addEventListener('click', function(event) {
+    var language = event.target.id.substr('button-'.length);
     // Use setLayoutProperty to set the value of a layout property in a style layer.
     // The three arguments are the id of the layer, the name of the layout property,
     // and the new property value.
     map.setLayoutProperty('country-label-lg', 'text-field', '{name_' + language + '}');
-}
+});
+
 </script>

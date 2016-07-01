@@ -75,12 +75,12 @@ map.on('load', function() {
         type: 'line',
         source: 'geojson',
         layout: {
-          'line-cap': 'round',
-          'line-join': 'round'
+            'line-cap': 'round',
+            'line-join': 'round'
         },
         paint: {
-          'line-color': '#000',
-          'line-width': 2.5
+            'line-color': '#000',
+            'line-width': 2.5
         },
         filter: ['in', '$type', 'LineString']
     });

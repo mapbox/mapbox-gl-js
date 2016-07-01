@@ -12,10 +12,10 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v9',
     center: [-103.59179687498357, 40.66995747013945],
-    zoom: 3,
+    zoom: 3
 });
 
-map.on('load', function(){
+map.on('load', function() {
 
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true.
@@ -58,7 +58,7 @@ map.on('load', function(){
                 "circle-color": layer[1],
                 "circle-radius": 18
             },
-            "filter": i == 0 ?
+            "filter": i === 0 ?
                 [">=", "point_count", layer[0]] :
                 ["all",
                     [">=", "point_count", layer[0]],
@@ -74,9 +74,9 @@ map.on('load', function(){
         "layout": {
             "text-field": "{point_count}",
             "text-font": [
-                    "DIN Offc Pro Medium",
-                    "Arial Unicode MS Bold"
-                ],
+                "DIN Offc Pro Medium",
+                "Arial Unicode MS Bold"
+            ],
             "text-size": 12
         }
     });

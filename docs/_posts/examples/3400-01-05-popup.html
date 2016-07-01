@@ -13,7 +13,7 @@ var map = new mapboxgl.Map({
     zoom: 3
 });
 
-var tooltip = new mapboxgl.Popup({closeOnClick: false})
+var popup = new mapboxgl.Popup({closeOnClick: false})
     .setLngLat([-96, 37.8])
     .setHTML('<h1>Hello World!</h1>')
     .addTo(map);
