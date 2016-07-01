@@ -108,9 +108,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         }
     }
 
-    var buckets = [],
+    var buckets = this.buckets = [],
         symbolBuckets = this.symbolBuckets = [],
-        otherBuckets = [];
+        otherBuckets = this.otherBuckets = [];
 
     featureIndex.bucketLayerIDs = {};
 
@@ -222,6 +222,64 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             .concat(collisionTile_.transferables));
     }
 };
+
+/**
+ * Update this tile's feature properties, but not its geometries.  Yields
+ * `{ buckets: [...] }`, where `buckets` is analogous to `WorkerTile#parse`,
+ * except that only the 'paint' arrays (not the 'layout' and 'element' arrays)
+ * are populated with legitimate data.
+ *
+ * Params are analogous to WorkerTile#parse, except that `data`, rather than
+ * being a `VectorTile`, is an object like:
+ * {
+ *     source-layer-name: [{ ...feature 0 properties... }, {...feature 1 properties...}, ...],
+ *     another-layer-name: [...]
+ * }
+ * where feature 0, 1, 2 are the features, in order, in this vector tile.
+ * @private
+ */
+WorkerTile.prototype.updateProperties = function(data, layerFamilies, actor, callback) {
+    // load up data cached from initial parse()
+    var buckets = this.buckets;
+    var updatedBuckets = [];
+
+    var tile = this;
+
+    var i;
+
+    // immediately parse non-symbol buckets (they have no dependencies)
+    for (i = buckets.length - 1; i >= 0; i--) {
+        var bucket = buckets[i];
+        if (!bucket.updateFeatureProperties) continue;
+
+        // clear out previous array groups
+        for (var programName in bucket.arrayGroups) {
+            bucket.arrayGroups[programName] = [];
+        }
+
+        var properties = data[bucket.layer.sourceLayer];
+        bucket.updateFeatureProperties(properties || []);
+        updatedBuckets.push(bucket);
+    }
+
+    // this will probably be async once we include the symbol stuff
+    done();
+
+    function done() {
+        tile.status = 'done';
+
+        if (tile.redoPlacementAfterDone) {
+            tile.redoPlacement(tile.angle, tile.pitch, null);
+            tile.redoPlacementAfterDone = false;
+        }
+
+        var nonEmptyBuckets = updatedBuckets.filter(isBucketNonEmpty);
+        callback(null, {
+            buckets: nonEmptyBuckets.map(serializeBucket)
+        }, getTransferables(nonEmptyBuckets));
+    }
+};
+
 
 WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) {
     if (this.status !== 'done') {

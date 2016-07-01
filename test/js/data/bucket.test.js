@@ -42,7 +42,13 @@ test('Bucket', function(t) {
             group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
             group.elementArray.emplaceBack(1, 2, 3);
             group.elementArray2.emplaceBack(point.x, point.y);
-            this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
+            var range = {
+                startGroup: group.index,
+                startVertex: startIndex,
+                endGroup: group.index,
+                endVertex: group.layoutVertexArray.length - 1
+            };
+            this.populatePaintArrays('test', {}, feature.properties, range, feature.index);
         };
 
         return Class;
@@ -318,6 +324,37 @@ test('Bucket', function(t) {
 
         t.end();
     });
+
+    t.test('update feature properties', function(t) {
+        var bucket = create();
+
+        bucket.features = [createFeature(17, 42)];
+        // this represents the feature's original, pre-filtered index
+        bucket.features[0].index = 3;
+        bucket.populateArrays();
+
+
+        var testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
+        t.equal(testVertex.length, 1);
+        var v0 = testVertex.get(0);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
+        var testPaintVertex = bucket.arrayGroups.test[0].paintVertexArrays.layerid;
+        t.equal(testPaintVertex.length, 1);
+        var p0 = testPaintVertex.get(0);
+        t.equal(p0.a_map, 17);
+
+        bucket.updatePaintArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+
+        v0 = testVertex.get(0);
+        p0 = testPaintVertex.get(0);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
+        t.equal(p0.a_map, 3);
+
+        t.end();
+    });
+
 
     t.end();
 });

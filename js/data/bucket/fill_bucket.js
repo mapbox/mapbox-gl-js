@@ -61,13 +61,22 @@ FillBucket.prototype.addFeature = function(feature) {
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
     var startGroup = this.prepareArrayGroup('fill', 0);
-    var startIndex = startGroup.layoutVertexArray.length;
+    var startVertex = startGroup.layoutVertexArray.length;
+
+    var range = {
+        startGroup: this.arrayGroups['fill'].length - 1,
+        startVertex: startVertex
+    };
 
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
 
-    this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
+    var endGroupIndex = this.arrayGroups['fill'].length - 1;
+    range.endGroup = endGroupIndex;
+    range.endVertex = this.arrayGroups['fill'][endGroupIndex].layoutVertexArray.length - 1;
+
+    this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, range, feature.index);
 };
 
 FillBucket.prototype.addPolygon = function(polygon) {
@@ -107,3 +116,8 @@ FillBucket.prototype.addPolygon = function(polygon) {
         group.elementArray.emplaceBack(triangleIndices[i] + startIndex);
     }
 };
+
+FillBucket.prototype.updateFeatureProperties = function (propertiesList) {
+    this.updatePaintArrays('fill', propertiesList);
+};
+
