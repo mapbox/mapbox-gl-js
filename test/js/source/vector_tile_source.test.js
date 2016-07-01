@@ -4,13 +4,13 @@ var test = require('tap').test;
 var st = require('st');
 var http = require('http');
 var path = require('path');
-var createVectorTileSource = require('../../../js/source/vector_tile_source').create;
+var VectorTileSource = require('../../../js/source/vector_tile_source');
 var TileCoord = require('../../../js/source/tile_coord');
 
 var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
 
 function createSource(options) {
-    var source = createVectorTileSource('id', options, { send: function() {} });
+    var source = new VectorTileSource('id', options, { send: function() {} });
 
     source.on('error', function(e) {
         throw e.error;

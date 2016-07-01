@@ -47,7 +47,7 @@ var hawkHill = {
 
 test('GeoJSONSource#setData', function(t) {
     t.test('returns self', function(t) {
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         t.equal(source.setData({}), source);
         t.end();
     });
@@ -58,7 +58,7 @@ test('GeoJSONSource#setData', function(t) {
                 return callback();
             }
         };
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.on('change', function() {
             t.end();
         });
@@ -84,7 +84,8 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        /* eslint-disable no-new */
+        new GeoJSONSource('id', {data: {}}, mockDispatcher);
     });
 
     t.test('forwards geojson-vt options with worker request', function(t) {
@@ -101,7 +102,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        GeoJSONSource.create('id', {
+        new GeoJSONSource('id', {
             data: {},
             maxzoom: 10,
             tolerance: 0.25,
@@ -116,7 +117,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('load', function() {
             t.end();
@@ -130,7 +131,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('error', function(err) {
             t.equal(err.error, 'error');
@@ -145,7 +146,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('load', function() {
             // Note: we register this before calling setData because `change`
@@ -169,7 +170,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.map = {
             transform: {}
         };
@@ -186,7 +187,7 @@ test('GeoJSONSource#update', function(t) {
 test('GeoJSONSource#serialize', function(t) {
 
     t.test('serialize source with inline data', function(t) {
-        var source = GeoJSONSource.create('id', {data: hawkHill}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: hawkHill
@@ -195,7 +196,7 @@ test('GeoJSONSource#serialize', function(t) {
     });
 
     t.test('serialize source with url', function(t) {
-        var source = GeoJSONSource.create('id', {data: 'local://data.json'}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: 'local://data.json'
@@ -204,7 +205,7 @@ test('GeoJSONSource#serialize', function(t) {
     });
 
     t.test('serialize source with updated data', function(t) {
-        var source = GeoJSONSource.create('id', {data: {}}, mockDispatcher);
+        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.setData(hawkHill);
         t.deepEqual(source.serialize(), {
             type: 'geojson',

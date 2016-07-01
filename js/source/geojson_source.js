@@ -5,9 +5,7 @@ var util = require('../util/util');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
 
-module.exports.create = function (id, options, dispatcher) {
-    return new GeoJSONSource(id, options, dispatcher);
-};
+module.exports = GeoJSONSource;
 
 /**
  * A datasource containing GeoJSON.

@@ -6,9 +6,7 @@ var Evented = require('../util/evented');
 var loadTileJSON = require('./load_tilejson');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports.create = function (id, options, dispatcher) {
-    return new RasterTileSource(id, options, dispatcher);
-};
+module.exports = RasterTileSource;
 
 function RasterTileSource(id, options, dispatcher) {
     this.id = id;

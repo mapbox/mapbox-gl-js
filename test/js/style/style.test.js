@@ -1182,7 +1182,7 @@ test('Style#addSourceType', function (t) {
 
     t.test('adds factory function', function (t) {
         var style = new Style(createStyleJSON());
-        var create = function () {};
+        var SourceType = function () {};
 
         // expect no call to load worker source
         style.dispatcher.broadcast = function (type) {
@@ -1191,34 +1191,32 @@ test('Style#addSourceType', function (t) {
             }
         };
 
-        style.addSourceType('foo', { create: create }, function () {
-            t.equal(_types['foo'], create);
+        style.addSourceType('foo', SourceType, function () {
+            t.equal(_types['foo'], SourceType);
             t.end();
         });
     });
 
     t.test('triggers workers to load worker source code', function (t) {
         var style = new Style(createStyleJSON());
-        var create = function () {};
+        var SourceType = function () {};
+        SourceType.workerSourceURL = 'worker-source.js';
 
         style.dispatcher.broadcast = function (type, params) {
             if (type === 'load worker source') {
-                t.equal(_types['bar'], create);
+                t.equal(_types['bar'], SourceType);
                 t.equal(params.name, 'bar');
                 t.equal(params.url, 'worker-source.js');
                 t.end();
             }
         };
 
-        style.addSourceType('bar', {
-            create: create,
-            workerSourceURL: 'worker-source.js'
-        }, function (err) { t.error(err); });
+        style.addSourceType('bar', SourceType, function (err) { t.error(err); });
     });
 
     t.test('refuses to add new type over existing name', function (t) {
         var style = new Style(createStyleJSON());
-        style.addSourceType('existing', { create: function () {} }, function (err) {
+        style.addSourceType('existing', function () {}, function (err) {
             t.ok(err);
             t.end();
         });

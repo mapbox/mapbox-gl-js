@@ -5,9 +5,7 @@ var util = require('../util/util');
 var loadTileJSON = require('./load_tilejson');
 var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports.create = function (id, options, dispatcher) {
-    return new VectorTileSource(id, options, dispatcher);
-};
+module.exports = VectorTileSource;
 
 function VectorTileSource(id, options, dispatcher) {
     this.id = id;

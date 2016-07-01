@@ -668,20 +668,20 @@ Style.prototype = util.inherit(Evented, {
         return source ? QueryFeatures.source(source, params) : [];
     },
 
-    addSourceType: function (name, options, callback) {
+    addSourceType: function (name, SourceType, callback) {
         if (Source.getType(name)) {
             return callback(new Error('A source type called "' + name + '" already exists.'));
         }
 
-        Source.setType(name, options.create);
+        Source.setType(name, SourceType);
 
-        if (!options.workerSourceURL) {
+        if (!SourceType.workerSourceURL) {
             return callback(null, null);
         }
 
         this.dispatcher.broadcast('load worker source', {
             name: name,
-            url: options.workerSourceURL
+            url: SourceType.workerSourceURL
         }, callback);
     },
 

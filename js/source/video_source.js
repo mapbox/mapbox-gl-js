@@ -11,9 +11,7 @@ var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
 var Buffer = require('../data/buffer');
 var VertexArrayObject = require('../render/vertex_array_object');
 
-module.exports.create = function (id, options, dispatcher) {
-    return new VideoSource(id, options, dispatcher);
-};
+module.exports = VideoSource;
 
 /**
  * A data source containing video.
