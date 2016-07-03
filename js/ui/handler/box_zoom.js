@@ -150,7 +150,7 @@ BoxZoomHandler.prototype = {
 
 /**
  * @typedef {Object} MapBoxZoomEvent
- * @property {MouseUpEvent} originalEvent
+ * @property {MouseEvent} originalEvent
  * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
  *   This property is only provided for `boxzoomend` events.
  */
