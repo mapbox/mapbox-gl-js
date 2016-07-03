@@ -54,7 +54,7 @@ Bucket.EXTENT = 8192;
  * @param options
  * @param {number} options.zoom Zoom level of the buffers being built. May be
  *     a fractional zoom level.
- * @param options.layer A Mapbox GL style layer object
+ * @param options.layer A Mapbox style layer object
  * @param {Object.<string, Buffer>} options.buffers The set of `Buffer`s being
  *     built for this tile. This object facilitates sharing of `Buffer`s be
        between `Bucket`s.

@@ -72,8 +72,8 @@ var defaultOptions = {
  * @param {Element|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (1-20).
  * @param {number} [options.maxZoom=20] The maximum zoom level of the map (1-20).
- * @param {Object|string} [options.style] The map's Mapbox GL style. This must be an a JSON object conforming to
- * the schema described in the [Mapbox GL Style Reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
+ * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+ * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
  *
  * To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`,
@@ -93,9 +93,9 @@ var defaultOptions = {
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
  *   the map within 7 degrees of north, the map will automatically snap to exact north.
- * @param {Array<string>} [options.classes] Mapbox GL style class names with which to initialize the map.
+ * @param {Array<string>} [options.classes] Mapbox style class names with which to initialize the map.
  *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
- *   in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
+ *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if it is determined
@@ -236,10 +236,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Adds a Mapbox GL style class to the map.
+     * Adds a Mapbox style class to the map.
      *
      * Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
-     * in an HTML element's `class` attribute. To learn more about Mapbox GL style classes, read about
+     * in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
      * [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
      *
      * @param {string} klass The style class to add.
@@ -257,7 +257,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Removes a Mapbox GL style class from the map.
+     * Removes a Mapbox style class from the map.
      *
      * @param {string} klass The style class to remove.
      * @param {StyleOptions} [options]
@@ -275,7 +275,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Replaces the map's existing Mapbox GL style classes with a new array of classes.
+     * Replaces the map's existing Mapbox style classes with a new array of classes.
      *
      * @param {Array<string>} klasses The style classes to set.
      * @param {StyleOptions} [options]
@@ -296,7 +296,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
      * Returns a Boolean indicating whether the map has the
-     * specified Mapbox GL style class.
+     * specified Mapbox style class.
      *
      * @param {string} klass The style class to test.
      * @returns {boolean} `true` if the map has the specified style class.
@@ -306,7 +306,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns the map's Mapbox GL style classes.
+     * Returns the map's Mapbox style classes.
      *
      * @returns {Array<string>} The map's style classes.
      */
@@ -596,10 +596,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Replaces the map's Mapbox GL style object with a new value.
+     * Replaces the map's Mapbox style object with a new value.
      *
      * @param {Object|string} style A JSON object conforming to the schema described in the
-     *   [Mapbox GL Style Reference](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
+     *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @returns {Map} `this`
      */
     setStyle: function(style) {
@@ -661,7 +661,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns the map's Mapbox GL style object, which can be used to recreate the map's style.
+     * Returns the map's Mapbox style object, which can be used to recreate the map's style.
      *
      * @returns {Object} The map's style object.
      */
@@ -675,8 +675,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Adds a source to the map's style.
      *
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
-     * @param {Object} source The source object, satisfying the
-     * Mapbox GL Style Reference's [source specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
+     * @param {Object} source The source object, conforming to the
+     * Mapbox Style Specification's [source defintion](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
      * @fires source.add
      * @returns {Map} `this`
      */
@@ -711,13 +711,13 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Adds a [Mapbox GL style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
+     * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map's style.
      *
      * A layer defines styling for data from a specified source.
      *
-     * @param {Object} layer The style layer to add, satisfying the Mapbox GL Style Reference's
-     *   [layer specification](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
+     * @param {Object} layer The style layer to add, conforming to the Mapbox Style Specification's
+     *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be inserted before every existing layer.
      * @fires layer.add
@@ -761,8 +761,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Sets the filter for the specified style layer.
      *
      * @param {string} layer The ID of the layer to which the filter will be applied.
-     * @param {Array<string>} filter The filter, satisfying the Mapbox GL Style Reference's
-     *   [filter specification](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
+     * @param {Array<string>} filter The filter, conforming to the Mapbox Style Specification's
+     *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
@@ -805,7 +805,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} layer The ID of the layer to set the paint property in.
      * @param {string} name The name of the paint property to set.
      * @param {*} value The value of the paint propery to set.
-     *   Must be of a type appropriate for the property, as defined in the [Mapbox GL Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/).
+     *   Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @param {string=} klass A style class specifier for the paint property.
      * @returns {Map} `this`
      * @example
@@ -834,7 +834,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} layer The ID of the layer to set the layout property in.
      * @param {string} name The name of the layout property to set.
-     * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox GL Style Reference](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @param {*} value The value of the layout propery. Must be of a type appropriate for the property, as defined in the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
      * @returns {Map} `this`
      * @example
      * map.setLayoutProperty('my-layer', 'visibility', 'none');
