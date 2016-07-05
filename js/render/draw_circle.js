@@ -33,9 +33,16 @@ function drawCircles(painter, source, layer, coords) {
             programOptions.fragmentPragmas
         );
 
-        gl.uniform2f(program.u_extrude_scale,
+        if (layer.paint['circle-pitch-scale'] === 'map') {
+            gl.uniform1i(program.u_scale_with_map, true);
+            gl.uniform2f(program.u_extrude_scale,
                 painter.transform.pixelsToGLUnits[0] * painter.transform.altitude,
                 painter.transform.pixelsToGLUnits[1] * painter.transform.altitude);
+        } else {
+            gl.uniform1i(program.u_scale_with_map, false);
+            gl.uniform2fv(program.u_extrude_scale, painter.transform.pixelsToGLUnits);
+        }
+
         gl.uniform1f(program.u_devicepixelratio, browser.devicePixelRatio);
 
         gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
