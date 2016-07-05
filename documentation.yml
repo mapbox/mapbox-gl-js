@@ -51,8 +51,10 @@ toc:
       This event functionality is used by Mapbox GL JS itself
       and can be useful to other developers who want to create
       [Controls](#Control) or other extensions.
-  - MapEventData
   - Evented
+  - MapMouseEvent
+  - MapTouchEvent
+  - MapBoxZoomEvent
   - name: Types
     description: |
       These are types used in the documentation above to describe arguments,
