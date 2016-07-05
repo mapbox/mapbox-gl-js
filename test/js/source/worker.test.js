@@ -39,28 +39,6 @@ test('load tile', function(t) {
     t.end();
 });
 
-test('abort tile', function(t) {
-    t.test('aborts pending request', function(t) {
-        var worker = new Worker(_self);
-
-        worker['load tile']({
-            source: 'source',
-            uid: 0,
-            url: 'http://localhost:2900/abort'
-        }, t.fail);
-
-        worker['abort tile']({
-            source: 'source',
-            uid: 0
-        });
-
-        t.deepEqual(worker.loading, { source: {} });
-        t.end();
-    });
-
-    t.end();
-});
-
 test('set layers', function(t) {
     var worker = new Worker(_self);
 
@@ -105,28 +83,6 @@ test('update layers', function(t) {
     t.equal(worker.layers.one.getPaintProperty('circle-color'), 'cyan');
     t.equal(worker.layers.two.getPaintProperty('circle-color'), 'magenta');
     t.equal(worker.layers.three.getPaintProperty('circle-color'), 'yellow');
-
-    t.end();
-});
-
-test('remove tile', function(t) {
-    t.test('removes loaded tile', function(t) {
-        var worker = new Worker(_self);
-
-        worker.loaded = {
-            source: {
-                '0': {}
-            }
-        };
-
-        worker['remove tile']({
-            source: 'source',
-            uid: 0
-        });
-
-        t.deepEqual(worker.loaded, { source: {} });
-        t.end();
-    });
 
     t.end();
 });
