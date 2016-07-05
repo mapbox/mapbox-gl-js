@@ -1,11 +1,14 @@
 'use strict';
 
+var util = require('../util/util');
 var ajax = require('../util/ajax');
 var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
 var vtpbf = require('vt-pbf');
 var supercluster = require('supercluster');
 var geojsonvt = require('geojson-vt');
+
+var VectorTileWorkerSource = require('./vector_tile_worker_source');
 
 module.exports = GeoJSONWorkerSource;
 
@@ -14,23 +17,24 @@ module.exports = GeoJSONWorkerSource;
  * This class is designed to be easily reused to support custom source types
  * for data formats that can be parsed/converted into an in-memory GeoJSON
  * representation.  To do so, create it with
- * `new GeoJSONWorker(customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
+ * `new GeoJSONWorkerSource(actor, styleLayers, customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
  *
  * @class GeoJSONWorkerSource
  * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  See {@link GeoJSONWorkerSource#loadGeoJSON}.
  */
-function GeoJSONWorkerSource (loadGeoJSON) {
+function GeoJSONWorkerSource (actor, styleLayers, loadGeoJSON) {
     if (loadGeoJSON) { this.loadGeoJSON = loadGeoJSON; }
+    VectorTileWorkerSource.call(this, actor, styleLayers);
 }
 
-GeoJSONWorkerSource.prototype = {
+GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, {
     // object mapping source ids to geojson-vt-like tile indexes
     _geoJSONIndexes: {},
 
     /**
-     * See {@link WorkerSource#loadTile}.
+     * See {@link VectorTileWorkerSource#loadTile}.
      */
-    loadTile: function (params, callback) {
+    loadVectorData: function (params, callback) {
         var source = params.source,
             coord = params.coord;
 
@@ -128,4 +132,4 @@ GeoJSONWorkerSource.prototype = {
             return callback(err);
         }
     }
-};
+});

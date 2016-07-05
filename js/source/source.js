@@ -117,18 +117,51 @@ exports.setType = function (name, type) {
  *
  * @see {@link Map#addSourceType}
  *
- * @interface WorkerSource
+ * @class WorkerSource
+ * @param {Actor} actor
+ * @param {object} styleLayers An accessor provided by the Worker to get the current style layers and layer families.
+ * @param {Function} styleLayers.getLayers
+ * @param {Function} styleLayers.getLayerFamilies
  */
 
 /**
- * Optional method that provides a custom implementation for loading a
- * VectorTile from the given params.
+ * Loads a tile from the given params and parse it into buckets ready to send
+ * back to the main thread for rendering.  Should call the callback with:
+ * `{ buckets, featureIndex, collisionTile, symbolInstancesArray, symbolQuadsArray, rawTileData}`.
  *
  * @method
  * @name loadTile
- * @param {object} params The `params` that are sent by the {@link Source} when invokes the Worker's `load tile` or `reload tile` tasks.
- * @param {Function} callback Called with `{tile: VectorTile, rawTileData: Buffer}`
- * @returns {Function} A cancellation callback, called if a requested tile is no longer needed.
+ * @param {object} params Parameters sent by the main-thread Source identifying the tile to load.
+ * @param {Function} callback
+ * @memberof WorkerSource
+ * @instance
+ */
+
+/**
+ * Re-parses a tile that has already been loaded.  Yields the same data as
+ * {@link WorkerSource#loadTile}.
+ *
+ * @method
+ * @name reloadTile
+ * @param {object} params
+ * @param {Function} callback
+ * @memberof WorkerSource
+ * @instance
+ */
+
+/**
+ * Aborts loading a tile that is in progress.
+ * @method
+ * @name abortTile
+ * @param {object} params
+ * @memberof WorkerSource
+ * @instance
+ */
+
+/**
+ * Removes this tile from any local caches.
+ * @method
+ * @name removeTile
  * @memberof WorkerSource
  * @instance
  */

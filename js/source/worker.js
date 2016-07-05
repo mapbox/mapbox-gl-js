@@ -1,13 +1,10 @@
 'use strict';
 
 var Actor = require('../util/actor');
-var WorkerTile = require('./worker_tile');
 var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
-var ajax = require('../util/ajax');
-var vt = require('vector-tile');
-var Protobuf = require('pbf');
 
+var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
 
 module.exports = function(self) {
@@ -18,11 +15,14 @@ function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
 
-    this.loading = {};
-    this.loaded = {};
+    var style = {
+        getLayers: function () { return this.layers; }.bind(this),
+        getLayerFamilies: function () { return this.layerFamilies; }.bind(this)
+    };
 
     this.workerSources = {
-        geojson: new GeoJSONWorkerSource()
+        vector: new VectorTileWorkerSource(this.actor, style),
+        geojson: new GeoJSONWorkerSource(this.actor, style)
     };
 
     this.self.registerWorkerSource = function (name, workerSource) {
@@ -34,17 +34,6 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    // used by 'load tile' target
-    loadVectorTile: function (params, callback) {
-        var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
-        return function abort () { xhr.abort(); };
-        function done(err, data) {
-            if (err) { return callback(err); }
-            var tile =  new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            callback(err, { tile: tile, rawTileData: data });
-        }
-    },
-
     'set layers': function(layers) {
         this.layers = {};
         var that = this;
@@ -110,75 +99,28 @@ util.extend(Worker.prototype, {
     },
 
     'load tile': function(params, callback) {
-        var source = params.source,
-            uid = params.uid;
-
-        if (!this.loading[source])
-            this.loading[source] = {};
-
-        var tile = this.loading[source][uid] = new WorkerTile(params);
-        if (!params.type || !this.workerSources[params.type].loadTile) {
-            tile.abort = this.loadVectorTile(params, done.bind(this));
-        } else {
-            tile.abort = this.workerSources[params.type].loadTile(params, done.bind(this));
-        }
-
-        function done(err, data) {
-            delete this.loading[source][uid];
-
-            if (err) return callback(err);
-            if (!data) return callback(null, null);
-
-            tile.data = data.tile;
-            tile.parse(tile.data, this.layerFamilies, this.actor, data.rawTileData, callback);
-
-            this.loaded[source] = this.loaded[source] || {};
-            this.loaded[source][uid] = tile;
-        }
+        var type = params.type || 'vector';
+        this.workerSources[type].loadTile(params, callback);
     },
 
     'reload tile': function(params, callback) {
-        var loaded = this.loaded[params.source],
-            uid = params.uid;
-        if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            tile.parse(tile.data, this.layerFamilies, this.actor, params.rawTileData, callback);
-        }
+        var type = params.type || 'vector';
+        this.workerSources[type].reloadTile(params, callback);
     },
 
     'abort tile': function(params) {
-        var loading = this.loading[params.source],
-            uid = params.uid;
-        if (loading && loading[uid] && loading[uid].abort) {
-            loading[uid].abort();
-            delete loading[uid];
-        }
+        var type = params.type || 'vector';
+        this.workerSources[type].abortTile(params);
     },
 
     'remove tile': function(params) {
-        var loaded = this.loaded[params.source],
-            uid = params.uid;
-        if (loaded && loaded[uid]) {
-            delete loaded[uid];
-        }
+        var type = params.type || 'vector';
+        this.workerSources[type].removeTile(params);
     },
 
     'redo placement': function(params, callback) {
-        var loaded = this.loaded[params.source],
-            loading = this.loading[params.source],
-            uid = params.uid;
-
-        if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            var result = tile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
-
-            if (result.result) {
-                callback(null, result.result, result.transferables);
-            }
-
-        } else if (loading && loading[uid]) {
-            loading[uid].angle = params.angle;
-        }
+        var type = params.type || 'vector';
+        this.workerSources[type].redoPlacement(params, callback);
     },
 
     /**
