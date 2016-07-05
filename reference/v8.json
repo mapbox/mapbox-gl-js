@@ -1761,6 +1761,22 @@
           "android": "2.0.1"
         }
       }
+    },
+    "circle-pitch-scale": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": true,
+      "values": [
+        "map",
+        "viewport"
+      ],
+      "default": "map",
+      "doc": "Controls the scaling behavior of the circle when the map is pitched. The value `map` scales circles according to their apparent distance to the camera. The value `viewport` results in no pitch-related scaling.",
+      "sdk-support": {
+        "basic": {
+        }
+      }
     }
   },
   "paint_symbol": {
