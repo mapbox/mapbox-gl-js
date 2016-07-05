@@ -15,21 +15,22 @@ function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
 
-    var style = {
+    // simple accessor object for passing to WorkerSources
+    var styleLayers = {
         getLayers: function () { return this.layers; }.bind(this),
         getLayerFamilies: function () { return this.layerFamilies; }.bind(this)
     };
 
     this.workerSources = {
-        vector: new VectorTileWorkerSource(this.actor, style),
-        geojson: new GeoJSONWorkerSource(this.actor, style)
+        vector: new VectorTileWorkerSource(this.actor, styleLayers),
+        geojson: new GeoJSONWorkerSource(this.actor, styleLayers)
     };
 
-    this.self.registerWorkerSource = function (name, workerSource) {
+    this.self.registerWorkerSource = function (name, WorkerSource) {
         if (this.workerSources[name]) {
             throw new Error('Worker source with name "' + name + '" already registered.');
         }
-        this.workerSources[name] = workerSource;
+        this.workerSources[name] = new WorkerSource(this.actor, styleLayers);
     }.bind(this);
 }
 

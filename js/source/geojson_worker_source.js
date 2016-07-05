@@ -27,7 +27,7 @@ function GeoJSONWorkerSource (actor, styleLayers, loadGeoJSON) {
     VectorTileWorkerSource.call(this, actor, styleLayers);
 }
 
-GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, {
+GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends GeoJSONWorkerSource.prototype */ {
     // object mapping source ids to geojson-vt-like tile indexes
     _geoJSONIndexes: {},
 
