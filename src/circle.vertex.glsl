@@ -7,6 +7,7 @@ precision highp float;
 #endif
 
 uniform mat4 u_matrix;
+uniform bool u_scale_with_map;
 uniform vec2 u_extrude_scale;
 uniform float u_devicepixelratio;
 
@@ -34,7 +35,11 @@ void main(void) {
     // in extrusion data
     gl_Position = u_matrix * vec4(floor(a_pos * 0.5), 0, 1);
 
-    gl_Position.xy += extrude;
+    if (u_scale_with_map) {
+        gl_Position.xy += extrude;
+    } else {
+        gl_Position.xy += extrude * gl_Position.w;
+    }
 
     // This is a minimum blur distance that serves as a faux-antialiasing for
     // the circle. since blur is a ratio of the circle's size and the intent is
