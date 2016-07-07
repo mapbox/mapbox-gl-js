@@ -268,12 +268,15 @@ Bucket.prototype.destroy = function(gl) {
 
 Bucket.prototype.trimArrays = function() {
     for (var programName in this.arrayGroups) {
-        var programArrays = this.arrayGroups[programName];
-        for (var paintArray in programArrays.paint) {
-            programArrays.paint[paintArray].trim();
-        }
-        for (var layoutArray in programArrays.layout) {
-            programArrays.layout[layoutArray].trim();
+        var arrayGroups = this.arrayGroups[programName];
+        for (var i = 0; i < arrayGroups.length; i++) {
+            var arrayGroup = arrayGroups[i];
+            for (var paintArray in arrayGroup.paint) {
+                arrayGroup.paint[paintArray].trim();
+            }
+            for (var layoutArray in arrayGroup.layout) {
+                arrayGroup.layout[layoutArray].trim();
+            }
         }
     }
 };
