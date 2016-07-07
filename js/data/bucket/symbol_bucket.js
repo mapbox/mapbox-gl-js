@@ -454,8 +454,8 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
 
     var group = this.prepareArrayGroup(programName, 4 * (quadsEnd - quadsStart));
 
-    var elementArray = group.layout.element;
-    var vertexArray = group.layout.vertex;
+    var elementArray = group.elementArray;
+    var vertexArray = group.vertexArray;
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -519,7 +519,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     var group = this.prepareArrayGroup('collisionBox', 0);
-    var vertexArray = group.layout.vertex;
+    var vertexArray = group.vertexArray;
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
 

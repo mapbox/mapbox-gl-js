@@ -61,7 +61,7 @@ FillBucket.prototype.addFeature = function(feature) {
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
     var startGroup = this.prepareArrayGroup('fill', 0);
-    var startIndex = startGroup.layout.vertex.length;
+    var startIndex = startGroup.vertexArray.length;
 
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
@@ -79,7 +79,7 @@ FillBucket.prototype.addPolygon = function(polygon) {
     var group = this.prepareArrayGroup('fill', numVertices);
     var flattened = [];
     var holeIndices = [];
-    var startIndex = group.layout.vertex.length;
+    var startIndex = group.vertexArray.length;
 
     for (var r = 0; r < polygon.length; r++) {
         var ring = polygon[r];
@@ -89,10 +89,10 @@ FillBucket.prototype.addPolygon = function(polygon) {
         for (var v = 0; v < ring.length; v++) {
             var vertex = ring[v];
 
-            var index = group.layout.vertex.emplaceBack(vertex.x, vertex.y);
+            var index = group.vertexArray.emplaceBack(vertex.x, vertex.y);
 
             if (v >= 1) {
-                group.layout.element2.emplaceBack(index - 1, index);
+                group.elementArray2.emplaceBack(index - 1, index);
             }
 
             // convert to format used by earcut
@@ -104,6 +104,6 @@ FillBucket.prototype.addPolygon = function(polygon) {
     var triangleIndices = earcut(flattened, holeIndices);
 
     for (var i = 0; i < triangleIndices.length; i++) {
-        group.layout.element.emplaceBack(triangleIndices[i] + startIndex);
+        group.elementArray.emplaceBack(triangleIndices[i] + startIndex);
     }
 };

@@ -38,10 +38,10 @@ test('Bucket', function(t) {
         Class.prototype.addFeature = function(feature) {
             var group = this.prepareArrayGroup('test', 1);
             var point = feature.loadGeometry()[0][0];
-            var startIndex = group.layout.vertex.length;
-            group.layout.vertex.emplaceBack(point.x * 2, point.y * 2);
-            group.layout.element.emplaceBack(1, 2, 3);
-            group.layout.element2.emplaceBack(point.x, point.y);
+            var startIndex = group.vertexArray.length;
+            group.vertexArray.emplaceBack(point.x * 2, point.y * 2);
+            group.elementArray.emplaceBack(1, 2, 3);
+            group.elementArray2.emplaceBack(point.x, point.y);
             this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
         };
 
@@ -97,24 +97,24 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.arrayGroups.test[0].layout.vertex;
+        var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        var paintVertex = bucket.arrayGroups.test[0].paint.layerid;
+        var paintVertex = bucket.arrayGroups.test[0].paintArrays.layerid;
         t.equal(paintVertex.length, 1);
         var p0 = paintVertex.get(0);
         t.equal(p0.a_map, 17);
 
-        var testElement = bucket.arrayGroups.test[0].layout.element;
+        var testElement = bucket.arrayGroups.test[0].elementArray;
         t.equal(testElement.length, 1);
         var e1 = testElement.get(0);
         t.equal(e1.vertices0, 1);
         t.equal(e1.vertices1, 2);
         t.equal(e1.vertices2, 3);
 
-        var testElement2 = bucket.arrayGroups.test[0].layout.element2;
+        var testElement2 = bucket.arrayGroups.test[0].elementArray2;
         t.equal(testElement2.length, 1);
         var e2 = testElement2.get(0);
         t.equal(e2.vertices0, 17);
@@ -132,9 +132,9 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var v0 = bucket.arrayGroups.test[0].layout.vertex.get(0);
-        var a0 = bucket.arrayGroups.test[0].paint.one.get(0);
-        var b0 = bucket.arrayGroups.test[0].paint.two.get(0);
+        var v0 = bucket.arrayGroups.test[0].vertexArray.get(0);
+        var a0 = bucket.arrayGroups.test[0].paintArrays.one.get(0);
+        var b0 = bucket.arrayGroups.test[0].paintArrays.two.get(0);
         t.equal(a0.a_map, 17);
         t.equal(b0.a_map, 17);
         t.equal(v0.a_box0, 34);
@@ -160,7 +160,7 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        t.equal(bucket.arrayGroups.test[0].layout.vertex.bytesPerElement, 0);
+        t.equal(bucket.arrayGroups.test[0].vertexArray.bytesPerElement, 0);
         t.deepEqual(
             bucket.paintAttributes.test.one.uniforms[0].getValue.call(bucket),
             [5]
@@ -181,7 +181,7 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var v0 = bucket.arrayGroups.test[0].layout.vertex.get(0);
+        var v0 = bucket.arrayGroups.test[0].vertexArray.get(0);
         t.equal(v0.a_map, 34);
 
         t.end();
@@ -205,12 +205,12 @@ test('Bucket', function(t) {
 
         bucket.createArrays();
         bucket.prepareArrayGroup('test', 10);
-        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.length);
-        t.notEqual(0, bucket.arrayGroups.test[0].layout.vertex.capacity);
+        t.equal(0, bucket.arrayGroups.test[0].vertexArray.length);
+        t.notEqual(0, bucket.arrayGroups.test[0].vertexArray.capacity);
 
         bucket.trimArrays();
-        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.length);
-        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.capacity);
+        t.equal(0, bucket.arrayGroups.test[0].vertexArray.length);
+        t.equal(0, bucket.arrayGroups.test[0].vertexArray.capacity);
 
         t.end();
     });
@@ -224,24 +224,24 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.arrayGroups.test[0].layout.vertex;
+        var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        var testPaintVertex = bucket.arrayGroups.test[0].paint.layerid;
+        var testPaintVertex = bucket.arrayGroups.test[0].paintArrays.layerid;
         t.equal(testPaintVertex.length, 1);
         var p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);
 
-        var testElement = bucket.arrayGroups.test[0].layout.element;
+        var testElement = bucket.arrayGroups.test[0].elementArray;
         t.equal(testElement.length, 1);
         var e1 = testElement.get(0);
         t.equal(e1.vertices0, 1);
         t.equal(e1.vertices1, 2);
         t.equal(e1.vertices2, 3);
 
-        var testElement2 = bucket.arrayGroups.test[0].layout.element2;
+        var testElement2 = bucket.arrayGroups.test[0].elementArray2;
         t.equal(testElement2.length, 1);
         var e2 = testElement2.get(0);
         t.equal(e2.vertices0, 17);
@@ -262,24 +262,24 @@ test('Bucket', function(t) {
         bucket.features = [createFeature(17, 42)];
         bucket.populateBuffers();
 
-        var testVertex = bucket.arrayGroups.test[0].layout.vertex;
+        var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);
         var v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        var testPaintVertex = bucket.arrayGroups.test[0].paint.layerid;
+        var testPaintVertex = bucket.arrayGroups.test[0].paintArrays.layerid;
         t.equal(testPaintVertex.length, 1);
         var p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);
 
-        var testElement = bucket.arrayGroups.test[0].layout.element;
+        var testElement = bucket.arrayGroups.test[0].elementArray;
         t.equal(testElement.length, 1);
         var e1 = testElement.get(0);
         t.equal(e1.vertices0, 1);
         t.equal(e1.vertices1, 2);
         t.equal(e1.vertices2, 3);
 
-        var testElement2 = bucket.arrayGroups.test[0].layout.element2;
+        var testElement2 = bucket.arrayGroups.test[0].elementArray2;
         t.equal(testElement2.length, 1);
         var e2 = testElement2.get(0);
         t.equal(e2.vertices0, 17);
