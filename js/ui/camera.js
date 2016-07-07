@@ -238,7 +238,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     snapToNorth: function(options, eventData) {
-        if (Math.abs(this.getBearing()) < this.options.bearingSnap) {
+        if (Math.abs(this.getBearing()) < this._bearingSnap) {
             return this.resetNorth(options, eventData);
         }
         return this;
