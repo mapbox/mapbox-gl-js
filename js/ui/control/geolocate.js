@@ -78,25 +78,22 @@ Geolocate.prototype = util.inherit(Control, {
 
 });
 
- /**
-  * Fired when the map has successfully jumped to the user's location,
-  * as the result of a click on a [Geolocate](#Geolocate) control.
-  *
-  * @event geolocate
-  * @memberof Control
-  * @instance
-  * @property {Position} data
-  *   The [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object returned from the callback in
-  *   [`Geolocation.getCurrentPosition()`](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
-  */
+/**
+ * geolocate event.
+ *
+ * @event geolocate
+ * @memberof Geolocate
+ * @instance
+ * @property {EventData} data The returned Position object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
+ *
+ */
 
- /**
-  * Fired when the browser has failed to geolocate the user.
-  *
-  * @event error
-  * @memberof Control
-  * @instance
-  * @property {PositionError} data
-  *   The [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object returned from the callback in
-  *   [`Geolocation.getCurrentPosition()`](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
-  */
+/**
+ * error event.
+ *
+ * @event error
+ * @memberof Geolocate
+ * @instance
+ * @property {EventData} data The returned PositionError object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
+ *
+ */
