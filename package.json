@@ -90,7 +90,7 @@
     "build": "npm run build-docs # this script exists only to be invoked by the documenation server",
     "download-bench-data": "[ -f ./bench/data/naturalearth-land.json ] || (mkdir -p ./bench/data && curl -s https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson > ./bench/data/naturalearth-land.json)",
     "lint": "eslint js test bench docs/_posts/examples/*.html",
-    "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33, length($0) - 32 - 5)}' | xargs open",
+    "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve -w",
     "start": "npm run download-bench-data && node server.js",
     "test-suite": "node test/render.test.js && node test/query.test.js # update ci.sh if test invocation changes",
