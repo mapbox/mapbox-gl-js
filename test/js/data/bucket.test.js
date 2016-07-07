@@ -202,6 +202,21 @@ test('Bucket', function(t) {
         t.end();
     });
 
+    t.test('trimArrays', function(t) {
+        var bucket = create();
+
+        bucket.createArrays();
+        bucket.prepareArrayGroup('test', 10);
+        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.length);
+        t.notEqual(0, bucket.arrayGroups.test[0].layout.vertex.capacity);
+
+        bucket.trimArrays();
+        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.length);
+        t.equal(0, bucket.arrayGroups.test[0].layout.vertex.capacity);
+
+        t.end();
+    });
+
     t.test('add features after resetting buffers', function(t) {
         var bucket = create();
 
