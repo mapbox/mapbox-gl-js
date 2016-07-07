@@ -124,10 +124,10 @@ function Bucket(options) {
 }
 
 /**
- * Build the buffers! Features are set directly to the `features` property.
+ * Build the arrays! Features are set directly to the `features` property.
  * @private
  */
-Bucket.prototype.populateBuffers = function() {
+Bucket.prototype.populateArrays = function() {
     this.createArrays();
     this.recalculateStyleLayers();
 
@@ -141,7 +141,7 @@ Bucket.prototype.populateBuffers = function() {
 /**
  * Check if there is enough space available in the current array group for
  * `vertexLength` vertices. If not, append a new array group. Should be called
- * by `populateBuffers` and its callees.
+ * by `populateArrays` and its callees.
  *
  * Array groups are added to this.arrayGroups[programName].
  * An individual array group looks like:

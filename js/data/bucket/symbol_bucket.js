@@ -131,7 +131,7 @@ SymbolBucket.prototype.programInterfaces = {
     }
 };
 
-SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) {
+SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
 
     // To reduce the number of labels that jump around when zooming we need
     // to use a text-size value that is the same for all zoom levels.

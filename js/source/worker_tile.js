@@ -185,7 +185,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
 
     function parseBucket(tile, bucket) {
         var now = Date.now();
-        bucket.populateBuffers(collisionTile, stacks, icons);
+        bucket.populateArrays(collisionTile, stacks, icons);
         var time = Date.now() - now;
 
 

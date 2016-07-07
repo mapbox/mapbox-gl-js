@@ -95,7 +95,7 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);
@@ -130,7 +130,7 @@ test('Bucket', function(t) {
         ]});
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         var v0 = bucket.arrayGroups.test[0].vertexArray.get(0);
         var a0 = bucket.arrayGroups.test[0].paintArrays.one.get(0);
@@ -158,7 +158,7 @@ test('Bucket', function(t) {
         });
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         t.equal(bucket.arrayGroups.test[0].vertexArray.bytesPerElement, 0);
         t.deepEqual(
@@ -179,7 +179,7 @@ test('Bucket', function(t) {
         });
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         var v0 = bucket.arrayGroups.test[0].vertexArray.get(0);
         t.equal(v0.a_map, 34);
@@ -191,7 +191,7 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         t.equal(bucket.arrayGroups.test.length, 1);
         bucket.createArrays();
@@ -219,10 +219,10 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(1, 5)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
         bucket.createArrays();
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);
@@ -260,7 +260,7 @@ test('Bucket', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
-        bucket.populateBuffers();
+        bucket.populateArrays();
 
         var testVertex = bucket.arrayGroups.test[0].vertexArray;
         t.equal(testVertex.length, 1);

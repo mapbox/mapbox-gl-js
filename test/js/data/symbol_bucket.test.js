@@ -62,13 +62,13 @@ test('SymbolBucket', function(t) {
 
     // add feature from bucket A
     var a = collision.grid.keys.length;
-    t.equal(bucketA.populateBuffers(collision, stacks), undefined);
+    t.equal(bucketA.populateArrays(collision, stacks), undefined);
     var b = collision.grid.keys.length;
     t.notEqual(a, b, 'places feature');
 
     // add same feature from bucket B
     var a2 = collision.grid.keys.length;
-    t.equal(bucketB.populateBuffers(collision, stacks), undefined);
+    t.equal(bucketB.populateArrays(collision, stacks), undefined);
     var b2 = collision.grid.keys.length;
     t.equal(a2, b2, 'detects collision and does not place feature');
 
