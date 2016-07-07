@@ -215,6 +215,37 @@ test('Bucket', function(t) {
         t.end();
     });
 
+    t.test('isEmpty', function(t) {
+        var bucket = create();
+        t.ok(bucket.isEmpty());
+
+        bucket.createArrays();
+        t.ok(bucket.isEmpty());
+
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateArrays();
+        t.ok(!bucket.isEmpty());
+
+        t.end();
+    });
+
+    t.test('getTransferables', function(t) {
+        var bucket = create();
+        bucket.features = [createFeature(17, 42)];
+        bucket.populateArrays();
+
+        var transferables = [];
+        bucket.getTransferables(transferables);
+
+        t.equal(4, transferables.length);
+        t.equal(bucket.arrayGroups.test[0].vertexArray.arrayBuffer, transferables[0]);
+        t.equal(bucket.arrayGroups.test[0].elementArray.arrayBuffer, transferables[1]);
+        t.equal(bucket.arrayGroups.test[0].elementArray2.arrayBuffer, transferables[2]);
+        t.equal(bucket.arrayGroups.test[0].paintArrays.layerid.arrayBuffer, transferables[3]);
+
+        t.end();
+    });
+
     t.test('add features after resetting buffers', function(t) {
         var bucket = create();
 

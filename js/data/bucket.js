@@ -265,6 +265,38 @@ Bucket.prototype.trimArrays = function() {
     }
 };
 
+Bucket.prototype.isEmpty = function() {
+    for (var programName in this.arrayGroups) {
+        var arrayGroups = this.arrayGroups[programName];
+        for (var i = 0; i < arrayGroups.length; i++) {
+            var arrayGroup = arrayGroups[i];
+            if (arrayGroup.vertexArray.length > 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+Bucket.prototype.getTransferables = function(transferables) {
+    for (var programName in this.arrayGroups) {
+        var arrayGroups = this.arrayGroups[programName];
+        for (var i = 0; i < arrayGroups.length; i++) {
+            var arrayGroup = arrayGroups[i];
+            transferables.push(arrayGroup.vertexArray.arrayBuffer);
+            if (arrayGroup.elementArray) {
+                transferables.push(arrayGroup.elementArray.arrayBuffer);
+            }
+            if (arrayGroup.elementArray2) {
+                transferables.push(arrayGroup.elementArray2.arrayBuffer);
+            }
+            for (var paintArray in arrayGroup.paintArrays) {
+                transferables.push(arrayGroup.paintArrays[paintArray].arrayBuffer);
+            }
+        }
+    }
+};
+
 Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalProperties) {
     var uniforms = this.paintAttributes[programName][layer.id].uniforms;
     for (var i = 0; i < uniforms.length; i++) {
