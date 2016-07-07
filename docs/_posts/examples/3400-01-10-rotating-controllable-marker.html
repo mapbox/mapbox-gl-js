@@ -1,14 +1,14 @@
 ---
 layout: example
 category: example
-title: Move marker with the keyboard
-description: Control a marker with keybindings and rotate it
+title: Move symbol with the keyboard
+description: Control a symbol with keybindings and rotate it
 ---
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-hybrid-v9',
+    style: 'mapbox://styles/mapbox/satellite-v9',
     center: [-74.50, 40],
     zoom: 3
 });
@@ -17,8 +17,8 @@ var direction = 0, manual = false, speed = 1;
 
 // create a GeoJSON point to serve as a starting point
 var point = {
-  "type": "Point",
-  "coordinates": [-74.50, 40]
+    "type": "Point",
+    "coordinates": [-74.50, 40]
 };
 
 // add the GeoJSON above to a new vector tile source
@@ -70,7 +70,7 @@ map.on('load', function () {
         "type": "symbol",
         "source": "drone",
         "layout": {
-            "icon-image": "airport-15",
+            "icon-image": "airport-15"
         }
     });
 
@@ -79,20 +79,20 @@ map.on('load', function () {
 
 // Add manual control of the airplane with left and right arrow keys, just because
 document.body.addEventListener('keydown', function (e) {
-    if (e.which == 37) { // left
+    if (e.which === 37) { // left
         direction -= 0.1;
         manual = true;
     }
-    if (e.which == 39) { // right
+    if (e.which === 39) { // right
         direction += 0.1;
         manual = true;
     }
-    if (e.which == 38) { // faster
+    if (e.which === 38) { // faster
         speed = Math.min(speed + 0.1, 10);
         manual = true;
         e.preventDefault();
     }
-    if (e.which == 40) { // slower
+    if (e.which === 40) { // slower
         speed = Math.max(speed - 0.1, 0);
         manual = true;
         e.preventDefault();

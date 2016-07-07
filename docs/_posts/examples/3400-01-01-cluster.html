@@ -1,8 +1,8 @@
 ---
 layout: example
 category: example
-title: Create and style marker clusters
-description: Use Mapbox GL JS' built-in functions to visualize point data as marker clusters.
+title: Create and style clusters
+description: Use Mapbox GL JS' built-in functions to visualize points as clusters.
 ---
 
 <div id='map'></div>
@@ -12,10 +12,10 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v9',
     center: [-103.59179687498357, 40.66995747013945],
-    zoom: 3,
+    zoom: 3
 });
 
-map.on('load', function(){
+map.on('load', function() {
 
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true.
@@ -30,10 +30,10 @@ map.on('load', function(){
     });
 
     // Use the earthquakes source to create five layers:
-    // One for non-clustered markers, three for each cluster category,
+    // One for unclustered points, three for each cluster category,
     // and one for cluster labels.
     map.addLayer({
-        "id": "non-cluster-markers",
+        "id": "unclustered-points",
         "type": "symbol",
         "source": "earthquakes",
         "layout": {
@@ -58,7 +58,7 @@ map.on('load', function(){
                 "circle-color": layer[1],
                 "circle-radius": 18
             },
-            "filter": i == 0 ?
+            "filter": i === 0 ?
                 [">=", "point_count", layer[0]] :
                 ["all",
                     [">=", "point_count", layer[0]],
@@ -74,9 +74,9 @@ map.on('load', function(){
         "layout": {
             "text-field": "{point_count}",
             "text-font": [
-                    "DIN Offc Pro Medium",
-                    "Arial Unicode MS Bold"
-                ],
+                "DIN Offc Pro Medium",
+                "Arial Unicode MS Bold"
+            ],
             "text-size": 12
         }
     });

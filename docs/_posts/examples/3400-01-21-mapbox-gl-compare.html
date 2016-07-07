@@ -31,19 +31,19 @@ body * {
 <div id='after' class='map'></div>
 
 <script>
-var before = new mapboxgl.Map({
+var beforeMap = new mapboxgl.Map({
     container: 'before',
     style: 'mapbox://styles/mapbox/light-v9',
     center: [0, 0],
     zoom: 0
 });
 
-var after = new mapboxgl.Map({
+var afterMap = new mapboxgl.Map({
     container: 'after',
     style: 'mapbox://styles/mapbox/dark-v9',
     center: [0, 0],
     zoom: 0
 });
 
-new mapboxgl.Compare(before, after);
+var map = new mapboxgl.Compare(beforeMap, afterMap);
 </script>

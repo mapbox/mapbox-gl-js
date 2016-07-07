@@ -61,7 +61,7 @@ map.on('load', function() {
     });
 
     // Listen for the `geocoder.input` event that is triggered when a user
-    // makes a selection and add a marker that matches the result.
+    // makes a selection and add a symbol that matches the result.
     geocoder.on('result', function(ev) {
         map.getSource('single-point').setData(ev.result.geometry);
     });

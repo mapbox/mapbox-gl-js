@@ -54,7 +54,7 @@ var geojson = {
     }]
 };
 
-function mouseDown(e) {
+function mouseDown() {
     if (!isCursorOverPoint) return;
 
     isDragging = true;
@@ -118,12 +118,12 @@ map.on('load', function() {
         // Change point and cursor style as a UI indicator
         // and set a flag to enable other mouse events.
         if (features.length) {
-            map.setPaintProperty ('point', 'circle-color', '#3bb2d0');
+            map.setPaintProperty('point', 'circle-color', '#3bb2d0');
             canvas.style.cursor = 'move';
             isCursorOverPoint = true;
             map.dragPan.disable();
         } else {
-            map.setPaintProperty ('point', 'circle-color', '#3887be');
+            map.setPaintProperty('point', 'circle-color', '#3887be');
             canvas.style.cursor = '';
             isCursorOverPoint = false;
             map.dragPan.enable();

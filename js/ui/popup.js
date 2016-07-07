@@ -21,7 +21,7 @@ var LngLat = require('../geo/lng_lat');
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
  * `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
  * @example
- * var tooltip = new mapboxgl.Popup()
+ * var popup = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
@@ -114,7 +114,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @param {string} text Textual content for the popup.
      * @returns {Popup} `this`
      * @example
-     * var tooltip = new mapboxgl.Popup()
+     * var popup = new mapboxgl.Popup()
      *   .setLngLat(e.lngLat)
      *   .setText('Hello, world!')
      *   .addTo(map);
@@ -151,7 +151,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * // create an element with the popup content
      * var div = document.createElement('div');
      * div.innerHTML = 'Hello, world!';
-     * var tooltip = new mapboxgl.Popup()
+     * var popup = new mapboxgl.Popup()
      *   .setLngLat(e.lngLat)
      *   .setDOMContent(div)
      *   .addTo(map);
