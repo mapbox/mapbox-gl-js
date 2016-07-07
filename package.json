@@ -18,7 +18,7 @@
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.2.0",
     "gl-matrix": "^2.3.1",
-    "grid-index": "^0.1.0",
+    "grid-index": "mapbox/grid-index#a896ad68dc0ce923e3f29c4d48424d091e923426",
     "mapbox-gl-function": "^1.2.1",
     "mapbox-gl-supported": "^1.1.0",
     "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#ca9968c6703236ebf45749a9d09d767c54642398",
