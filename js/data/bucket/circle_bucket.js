@@ -28,14 +28,13 @@ CircleBucket.prototype.addCircleVertex = function(vertexArray, x, y, extrudeX, e
 
 CircleBucket.prototype.programInterfaces = {
     circle: {
-        vertexBuffer: true,
-        elementBuffer: true,
-
-        layoutAttributes: [{
+        vertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
-        }],
+        }]),
+        elementArrayType: new Bucket.ElementArrayType(),
+
         paintAttributes: [{
             name: 'a_color',
             components: 4,

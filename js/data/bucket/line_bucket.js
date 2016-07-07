@@ -70,10 +70,7 @@ LineBucket.prototype.addLineVertex = function(vertexBuffer, point, extrude, tx, 
 
 LineBucket.prototype.programInterfaces = {
     line: {
-        vertexBuffer: true,
-        elementBuffer: true,
-
-        layoutAttributes: [{
+        vertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -81,7 +78,8 @@ LineBucket.prototype.programInterfaces = {
             name: 'a_data',
             components: 4,
             type: 'Uint8'
-        }]
+        }]),
+        elementArrayType: new Bucket.ElementArrayType()
     }
 };
 

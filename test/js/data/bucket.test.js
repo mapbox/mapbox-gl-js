@@ -16,16 +16,14 @@ test('Bucket', function(t) {
 
         Class.prototype.programInterfaces = {
             test: {
-                vertexBuffer: 'testVertex',
-                elementBuffer: 'testElement',
-                elementBuffer2: 'testElement2',
-                elementBuffer2Components: 2,
-
-                layoutAttributes: options.layoutAttributes || [{
+                vertexArrayType: new Bucket.VertexArrayType(options.layoutAttributes || [{
                     name: 'a_box',
                     components: 2,
                     type: 'Int16'
-                }],
+                }]),
+                elementArrayType: new Bucket.ElementArrayType(),
+                elementArrayType2: new Bucket.ElementArrayType(2),
+
                 paintAttributes: options.paintAttributes || [{
                     name: 'a_map',
                     type: 'Int16',

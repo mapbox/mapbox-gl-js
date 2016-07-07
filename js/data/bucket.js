@@ -86,14 +86,23 @@ function Bucket(options) {
 
     if (options.arrays) {
         var childLayers = this.childLayers;
+        var programInterfaces = this.programInterfaces;
         this.bufferGroups = util.mapObject(options.arrays, function(programArrayGroups, programName) {
+            var programInterface = programInterfaces[programName];
+            var paintArrayTypes = options.paintArrayTypes[programName];
             return programArrayGroups.map(function(programArrayGroup) {
 
                 var group = util.mapObject(programArrayGroup, function(arrays, layoutOrPaint) {
                     return util.mapObject(arrays, function(array, name) {
-                        var arrayType = options.arrayTypes[programName][layoutOrPaint][name];
-                        var type = (arrayType.members.length && arrayType.members[0].name === 'vertices' ? Buffer.BufferType.ELEMENT : Buffer.BufferType.VERTEX);
-                        return new Buffer(array, arrayType, type);
+                        if (layoutOrPaint === 'paint') {
+                            return new Buffer(array, paintArrayTypes[name], Buffer.BufferType.VERTEX);
+                        } else if (name === 'vertex') {
+                            return new Buffer(array, programInterface.vertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+                        } else if (name === 'element') {
+                            return new Buffer(array, programInterface.elementArrayType.serialize(), Buffer.BufferType.ELEMENT);
+                        } else if (name === 'element2') {
+                            return new Buffer(array, programInterface.elementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
+                        }
                     });
                 });
 
@@ -155,10 +164,10 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
 
     if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_VERTEX_ARRAY_LENGTH) {
 
-        var arrayTypes = this.arrayTypes[programName];
-        var VertexArrayType = arrayTypes.layout.vertex;
-        var ElementArrayType = arrayTypes.layout.element;
-        var ElementArrayType2 = arrayTypes.layout.element2;
+        var programInterface = this.programInterfaces[programName];
+        var VertexArrayType = programInterface.vertexArrayType;
+        var ElementArrayType = programInterface.elementArrayType;
+        var ElementArrayType2 = programInterface.elementArrayType2;
 
         currentGroup = {
             index: groups.length,
@@ -170,9 +179,10 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
         if (ElementArrayType) currentGroup.layout.element = new ElementArrayType();
         if (ElementArrayType2) currentGroup.layout.element2 = new ElementArrayType2();
 
+        var paintArrayTypes = this.paintArrayTypes[programName];
         for (var i = 0; i < this.childLayers.length; i++) {
             var layerName = this.childLayers[i].id;
-            var PaintVertexArrayType = arrayTypes.paint[layerName];
+            var PaintVertexArrayType = paintArrayTypes[layerName];
             currentGroup.paint[layerName] = new PaintVertexArrayType();
         }
 
@@ -183,21 +193,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
 };
 
 /**
- * Start using a new shared `buffers` object and recreate instances of `Buffer`
- * as necessary.
- *
- * Sets up `this.arrayTypes` as:
- * {
- *     [programName]: {
- *         layout: {
- *             vertex: ArrayTypeType,
- *             ?element: ArrayTypeType,
- *             ?element2: ArrayTypeType
- *         },
- *         paint: { [layerName]: ArrayTypeType, ... }
- *     },
- *     ...
- * }
+ * Sets up `this.paintArrayTypes` as { [programName]: { [layerName]: PaintArrayType, ... }, ... }
  *
  * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
  * with array group structure over in `prepareArrayGroup`.
@@ -206,40 +202,19 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
  */
 Bucket.prototype.createArrays = function() {
     this.arrayGroups = {};
-    this.arrayTypes = {};
+    this.paintArrayTypes = {};
 
     for (var programName in this.programInterfaces) {
-        var programInterface = this.programInterfaces[programName];
-        var programArrayTypes = this.arrayTypes[programName] = { layout: {}, paint: {} };
         this.arrayGroups[programName] = [];
 
-        if (programInterface.vertexBuffer) {
-            var VertexArrayType = new StructArrayType({
-                members: this.programInterfaces[programName].layoutAttributes,
+        var paintArrayTypes = this.paintArrayTypes[programName] = {};
+        var layerPaintAttributes = this.paintAttributes[programName];
+
+        for (var layerName in layerPaintAttributes) {
+            paintArrayTypes[layerName] = new StructArrayType({
+                members: layerPaintAttributes[layerName].attributes,
                 alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
             });
-
-            programArrayTypes.layout.vertex = VertexArrayType;
-
-            var layerPaintAttributes = this.paintAttributes[programName];
-            for (var layerName in layerPaintAttributes) {
-                var PaintVertexArrayType = new StructArrayType({
-                    members: layerPaintAttributes[layerName].attributes,
-                    alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
-                });
-
-                programArrayTypes.paint[layerName] = PaintVertexArrayType;
-            }
-        }
-
-        if (programInterface.elementBuffer) {
-            var ElementArrayType = createElementBufferType(programInterface.elementBufferComponents);
-            programArrayTypes.layout.element = ElementArrayType;
-        }
-
-        if (programInterface.elementBuffer2) {
-            var ElementArrayType2 = createElementBufferType(programInterface.elementBuffer2Components);
-            programArrayTypes.layout.element2 = ElementArrayType2;
         }
     }
 };
@@ -303,11 +278,9 @@ Bucket.prototype.serialize = function() {
                 });
             });
         }),
-        arrayTypes: util.mapObject(this.arrayTypes, function(programArrayTypes) {
-            return util.mapObject(programArrayTypes, function(arrayTypes) {
-                return util.mapObject(arrayTypes, function(arrayType) {
-                    return arrayType.serialize();
-                });
+        paintArrayTypes: util.mapObject(this.paintArrayTypes, function(arrayTypes) {
+            return util.mapObject(arrayTypes, function(arrayType) {
+                return arrayType.serialize();
             });
         }),
 
@@ -361,7 +334,14 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
     }
 };
 
-function createElementBufferType(components) {
+Bucket.VertexArrayType = function (members) {
+    return new StructArrayType({
+        members: members,
+        alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
+    });
+};
+
+Bucket.ElementArrayType = function (components) {
     return new StructArrayType({
         members: [{
             type: Buffer.ELEMENT_ATTRIBUTE_TYPE,
@@ -369,7 +349,7 @@ function createElementBufferType(components) {
             components: components || 3
         }]
     });
-}
+};
 
 function createPaintAttributes(bucket) {
     var attributes = {};

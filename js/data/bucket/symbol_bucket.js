@@ -51,7 +51,7 @@ SymbolBucket.prototype.serialize = function() {
     return serialized;
 };
 
-var programAttributes = [{
+var vertexArrayType = new Bucket.VertexArrayType([{
     name: 'a_pos',
     components: 2,
     type: 'Int16'
@@ -67,7 +67,9 @@ var programAttributes = [{
     name: 'a_data2',
     components: 2,
     type: 'Uint8'
-}];
+}]);
+
+var elementArrayType = new Bucket.ElementArrayType();
 
 function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
     return array.emplaceBack(
@@ -103,21 +105,17 @@ SymbolBucket.prototype.addCollisionBoxVertex = function(vertexArray, point, extr
 SymbolBucket.prototype.programInterfaces = {
 
     glyph: {
-        vertexBuffer: true,
-        elementBuffer: true,
-        layoutAttributes: programAttributes
+        vertexArrayType: vertexArrayType,
+        elementArrayType: elementArrayType
     },
 
     icon: {
-        vertexBuffer: true,
-        elementBuffer: true,
-        layoutAttributes: programAttributes
+        vertexArrayType: vertexArrayType,
+        elementArrayType: elementArrayType
     },
 
     collisionBox: {
-        vertexBuffer: true,
-
-        layoutAttributes: [{
+        vertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -129,7 +127,7 @@ SymbolBucket.prototype.programInterfaces = {
             name: 'a_data',
             components: 2,
             type: 'Uint8'
-        }]
+        }])
     }
 };
 

@@ -17,17 +17,14 @@ FillBucket.prototype = util.inherit(Bucket, {});
 
 FillBucket.prototype.programInterfaces = {
     fill: {
-        vertexBuffer: true,
-        elementBuffer: true,
-        elementBufferComponents: 1,
-        elementBuffer2: true,
-        elementBuffer2Components: 2,
-
-        layoutAttributes: [{
+        vertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
-        }],
+        }]),
+        elementArrayType: new Bucket.ElementArrayType(1),
+        elementArrayType2: new Bucket.ElementArrayType(2),
+
         paintAttributes: [{
             name: 'a_color',
             components: 4,
