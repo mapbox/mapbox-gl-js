@@ -56,8 +56,8 @@ function drawCircles(painter, source, layer, coords) {
 
         for (var k = 0; k < bufferGroups.length; k++) {
             var group = bufferGroups[k];
-            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
-            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+            group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer, group.paintBuffers[layer.id]);
+            gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 }

@@ -182,8 +182,8 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
 
             for (var j = 0; j < bufferGroups.length; j++) {
                 group = bufferGroups[j];
-                group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
-                gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+                group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer);
+                gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
             }
         }
 
@@ -197,16 +197,16 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
 
         for (var i = 0; i < bufferGroups.length; i++) {
             group = bufferGroups[i];
-            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
-            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+            group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer);
+            gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
         }
 
     } else {
         gl.uniform1f(program.u_opacity, opacity);
         for (var k = 0; k < bufferGroups.length; k++) {
             group = bufferGroups[k];
-            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
-            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+            group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer);
+            gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
 }

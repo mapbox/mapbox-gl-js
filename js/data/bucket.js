@@ -92,23 +92,21 @@ function Bucket(options) {
             var paintArrayTypes = options.paintArrayTypes[programName];
             return programArrayGroups.map(function(arrayGroup) {
                 var group = {
-                    layout: {
-                        vertex: new Buffer(arrayGroup.vertexArray,
-                            programInterface.vertexArrayType.serialize(), Buffer.BufferType.VERTEX)
-                    },
-                    paint: util.mapObject(arrayGroup.paintArrays, function(array, name) {
+                    vertexBuffer: new Buffer(arrayGroup.vertexArray,
+                        programInterface.vertexArrayType.serialize(), Buffer.BufferType.VERTEX),
+                    paintBuffers: util.mapObject(arrayGroup.paintArrays, function(array, name) {
                         return new Buffer(array, paintArrayTypes[name], Buffer.BufferType.VERTEX);
                     }),
                     vaos: {}
                 };
 
                 if (arrayGroup.elementArray) {
-                    group.layout.element = new Buffer(arrayGroup.elementArray,
+                    group.elementBuffer = new Buffer(arrayGroup.elementArray,
                         programInterface.elementArrayType.serialize(), Buffer.BufferType.ELEMENT);
                 }
 
                 if (arrayGroup.elementArray2) {
-                    group.layout.element2 = new Buffer(arrayGroup.elementArray2,
+                    group.elementBuffer2 = new Buffer(arrayGroup.elementArray2,
                         programInterface.elementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
                     group.secondVaos = {};
                 }
@@ -116,7 +114,7 @@ function Bucket(options) {
                 for (var l = 0; l < childLayers.length; l++) {
                     var layerName = childLayers[l].id;
                     group.vaos[layerName] = new VertexArrayObject();
-                    if (group.layout.element2) group.secondVaos[layerName] = new VertexArrayObject();
+                    if (arrayGroup.elementArray2) group.secondVaos[layerName] = new VertexArrayObject();
                 }
 
                 return group;
@@ -226,18 +224,22 @@ Bucket.prototype.destroy = function(gl) {
     for (var programName in this.bufferGroups) {
         var programBufferGroups = this.bufferGroups[programName];
         for (var i = 0; i < programBufferGroups.length; i++) {
-            var programBuffers = programBufferGroups[i];
-            for (var paintBuffer in programBuffers.paint) {
-                programBuffers.paint[paintBuffer].destroy(gl);
+            var bufferGroup = programBufferGroups[i];
+            bufferGroup.vertexBuffer.destroy(gl);
+            if (bufferGroup.elementBuffer) {
+                bufferGroup.elementBuffer.destroy(gl);
             }
-            for (var layoutBuffer in programBuffers.layout) {
-                programBuffers.layout[layoutBuffer].destroy(gl);
+            if (bufferGroup.elementBuffer2) {
+                bufferGroup.elementBuffer2.destroy(gl);
             }
-            for (var j in programBuffers.vaos) {
-                programBuffers.vaos[j].destroy(gl);
+            for (var n in bufferGroup.paintBuffers) {
+                bufferGroup.paintBuffers[n].destroy(gl);
             }
-            for (var k in programBuffers.secondVaos) {
-                programBuffers.secondVaos[k].destroy(gl);
+            for (var j in bufferGroup.vaos) {
+                bufferGroup.vaos[j].destroy(gl);
+            }
+            for (var k in bufferGroup.secondVaos) {
+                bufferGroup.secondVaos[k].destroy(gl);
             }
         }
     }
