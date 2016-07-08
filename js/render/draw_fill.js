@@ -99,7 +99,7 @@ function drawFill(painter, source, layer, coord) {
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer, group.paintBuffers[layer.id]);
+        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.elementBuffer.length, gl.UNSIGNED_SHORT, 0);
     }
 }
@@ -147,7 +147,7 @@ function drawStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer2, group.paintBuffers[layer.id]);
+        group.secondVaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }

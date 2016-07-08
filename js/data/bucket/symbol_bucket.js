@@ -51,7 +51,7 @@ SymbolBucket.prototype.serialize = function() {
     return serialized;
 };
 
-var vertexArrayType = new Bucket.VertexArrayType([{
+var layoutVertexArrayType = new Bucket.VertexArrayType([{
     name: 'a_pos',
     components: 2,
     type: 'Int16'
@@ -89,8 +89,8 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, 
             Math.min(maxzoom || 25, 25) * 10); // minzoom
 }
 
-SymbolBucket.prototype.addCollisionBoxVertex = function(vertexArray, point, extrude, maxZoom, placementZoom) {
-    return vertexArray.emplaceBack(
+SymbolBucket.prototype.addCollisionBoxVertex = function(layoutVertexArray, point, extrude, maxZoom, placementZoom) {
+    return layoutVertexArray.emplaceBack(
             // pos
             point.x,
             point.y,
@@ -105,17 +105,17 @@ SymbolBucket.prototype.addCollisionBoxVertex = function(vertexArray, point, extr
 SymbolBucket.prototype.programInterfaces = {
 
     glyph: {
-        vertexArrayType: vertexArrayType,
+        layoutVertexArrayType: layoutVertexArrayType,
         elementArrayType: elementArrayType
     },
 
     icon: {
-        vertexArrayType: vertexArrayType,
+        layoutVertexArrayType: layoutVertexArrayType,
         elementArrayType: elementArrayType
     },
 
     collisionBox: {
-        vertexArrayType: new Bucket.VertexArrayType([{
+        layoutVertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -455,7 +455,7 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
     var group = this.prepareArrayGroup(programName, 4 * (quadsEnd - quadsStart));
 
     var elementArray = group.elementArray;
-    var vertexArray = group.vertexArray;
+    var layoutVertexArray = group.layoutVertexArray;
 
     var zoom = this.zoom;
     var placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -486,10 +486,10 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
         // Encode angle of glyph
         var glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
 
-        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
+        var index = addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
 
         elementArray.emplaceBack(index, index + 1, index + 2);
         elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -519,7 +519,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     var group = this.prepareArrayGroup('collisionBox', 0);
-    var vertexArray = group.vertexArray;
+    var layoutVertexArray = group.layoutVertexArray;
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
 
@@ -544,14 +544,14 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
                 var maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                 var placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, tl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, br, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, br, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, bl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, bl, maxZoom, placementZoom);
-                this.addCollisionBoxVertex(vertexArray, anchorPoint, tl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
             }
         }
     }

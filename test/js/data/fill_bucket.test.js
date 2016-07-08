@@ -103,10 +103,10 @@ test('FillBucket - feature split across array groups', function (t) {
         10 + (Bucket.MAX_VERTEX_ARRAY_LENGTH - 20),
         20
     ];
-    t.equal(groups[0].paintArrays.test.length, expectedLengths[0], 'group 0 length, paint');
-    t.equal(groups[0].vertexArray.length, expectedLengths[0], 'group 0 length, layout');
-    t.equal(groups[1].paintArrays.test.length, expectedLengths[1], 'group 1 length, paint');
-    t.equal(groups[1].vertexArray.length, expectedLengths[1], 'group 1 length, layout');
+    t.equal(groups[0].paintVertexArrays.test.length, expectedLengths[0], 'group 0 length, paint');
+    t.equal(groups[0].layoutVertexArray.length, expectedLengths[0], 'group 0 length, layout');
+    t.equal(groups[1].paintVertexArrays.test.length, expectedLengths[1], 'group 1 length, paint');
+    t.equal(groups[1].layoutVertexArray.length, expectedLengths[1], 'group 1 length, layout');
 
     // check that every vertex's color values match the first vertex
     var expected = [0, 0, 255, 255];
@@ -116,7 +116,7 @@ test('FillBucket - feature split across array groups', function (t) {
     t.same(getVertexColor(1, expectedLengths[1] - 1), expected, 'last vertex');
 
     function getVertexColor(g, i) {
-        var vertex = groups[g].paintArrays.test.get(i);
+        var vertex = groups[g].paintVertexArrays.test.get(i);
         return [
             vertex['a_color0'],
             vertex['a_color1'],

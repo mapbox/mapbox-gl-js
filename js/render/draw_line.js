@@ -155,7 +155,7 @@ module.exports = function drawLine(painter, source, layer, coords) {
 
         for (var i = 0; i < bufferGroups.length; i++) {
             var group = bufferGroups[i];
-            group.vaos[layer.id].bind(gl, program, group.vertexBuffer, group.elementBuffer);
+            group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer);
             gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
         }
     }
