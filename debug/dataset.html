@@ -69,8 +69,7 @@ map.on('load', function() {
 
     map.addSource('circles', {
         "type": "geojson",
-        "data": localStorage.getItem('dataset_uri'),
-        "accessToken": localStorage.getItem('access_token')
+        "data": localStorage.getItem('dataset_uri')+'?access_token='+localStorage.getItem('access_token')
     });
 
     map.addLayer({

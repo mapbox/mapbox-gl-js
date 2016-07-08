@@ -36,7 +36,7 @@ module.exports.normalizeDatasetUrl = function(url, accessToken) {
     if (urlObject.protocol !== 'mapbox:') {
         return url;
     } else {
-        return config.API_URL + '/datasets/v1'  + urlObject.pathname + '/features?access_token='+accessToken;
+        return config.API_URL + '/datasets/v1'  + urlObject.pathname + '/features'+urlObject.search
     }
 }
 
