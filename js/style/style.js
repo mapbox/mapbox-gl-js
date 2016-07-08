@@ -441,6 +441,8 @@ Style.prototype = util.inherit(Evented, {
         layer.off('error', this._forwardLayerEvent);
 
         delete this._layers[id];
+        delete this._updates.layers[id];
+        delete this._updates.paintProps[id];
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
