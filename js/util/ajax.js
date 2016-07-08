@@ -28,7 +28,7 @@ function cached(data, callback) {
     });
 }
 
-exports.getJSON = function(url, callback) {
+var getJSON = exports.getJSON = function(url, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request(url, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
@@ -45,6 +45,29 @@ exports.getJSON = function(url, callback) {
         }
     });
 };
+
+
+exports.getDataset = function(url, callback) {
+
+    var featureCollection = {
+        type: 'FeatureCollection',
+        features: []
+    }
+
+    function page(start) {
+        var pageUrl = start ? url +'&start='+start : url;
+        getJSON(pageUrl, function(err, data) {
+            if (err) return callback(err);
+            if (data.features.length === 0) {
+                return callback(null, featureCollection);
+            }
+            featureCollection.features = featureCollection.features.concat(data.features);
+            page(data.features[data.features.length-1].id);
+        });
+    }
+
+    page();
+}
 
 exports.getArrayBuffer = function(url, callback) {
     if (cache[url]) return cached(cache[url], callback);

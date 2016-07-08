@@ -28,6 +28,18 @@ function normalizeURL(url, pathPrefix, accessToken) {
     return url;
 }
 
+module.exports.normalizeDatasetUrl = function(url, accessToken) {
+    accessToken = accessToken || config.ACCESS_TOKEN;
+
+    var urlObject = URL.parse(url);
+
+    if (urlObject.protocol !== 'mapbox:') {
+        return url;
+    } else {
+        return config.API_URL + '/datasets/v1'  + urlObject.pathname + '/features?access_token='+accessToken;
+    }
+}
+
 module.exports.normalizeStyleURL = function(url, accessToken) {
     var urlObject = URL.parse(url);
 

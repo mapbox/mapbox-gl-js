@@ -1,6 +1,6 @@
 'use strict';
 
-exports.getJSON = function(url, callback) {
+var getJSON = exports.getJSON = function(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
@@ -23,6 +23,28 @@ exports.getJSON = function(url, callback) {
     xhr.send();
     return xhr;
 };
+
+exports.getDataset = function(url, callback) {
+
+    var featureCollection = {
+        type: 'FeatureCollection',
+        features: []
+    }
+
+    function page(start) {
+        var pageUrl = start ? url +'&start='+start : url;
+        getJSON(pageUrl, function(err, data) {
+            if (err) return callback(err);
+            if (data.features.length === 0) {
+                return callback(null, featureCollection);
+            }
+            featureCollection.features = featureCollection.features.concat(data.features);
+            page(data.features[data.features.length-1].id);
+        });
+    }
+
+    page();
+}
 
 exports.getArrayBuffer = function(url, callback) {
     var xhr = new XMLHttpRequest();

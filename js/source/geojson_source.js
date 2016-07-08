@@ -6,6 +6,7 @@ var TilePyramid = require('./tile_pyramid');
 var Source = require('./source');
 var urlResolve = require('resolve-url');
 var EXTENT = require('../data/bucket').EXTENT;
+var normalizeDatasetUrl = require('../util/mapbox').normalizeDatasetUrl;
 
 module.exports = GeoJSONSource;
 
@@ -153,6 +154,14 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         var data = this._data;
         if (typeof data === 'string') {
             options.url = typeof window != 'undefined' ? urlResolve(window.location.href, data) : data;
+            var normalizedUrl = normalizeDatasetUrl(options.url);
+            if (normalizedUrl !== options.url) {
+                options.isDataset = true;
+                options.url = normalizedUrl;
+            }
+            else {
+                options.isDataset = false;
+            }
         } else {
             options.data = JSON.stringify(data);
         }
