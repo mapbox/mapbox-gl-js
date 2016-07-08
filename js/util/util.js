@@ -403,7 +403,7 @@ exports.deepEqual = function deepEqual(a, b) {
         }
         return true;
     }
-    if (typeof a === 'object') {
+    if (typeof a === 'object' && a !== null && b !== null) {
         if (!(typeof b === 'object')) return false;
         var keys = Object.keys(a);
         if (keys.length !== Object.keys(b).length) return false;
