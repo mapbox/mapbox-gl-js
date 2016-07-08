@@ -83,7 +83,7 @@ Buffer.prototype.setVertexAttribPointers = function(gl, program) {
  * @param gl The WebGL context
  */
 Buffer.prototype.destroy = function(gl) {
-    if (this.buffer) {
+    if (gl && this.buffer) {
         gl.deleteBuffer(this.buffer);
     }
 };
