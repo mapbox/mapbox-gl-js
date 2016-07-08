@@ -97,19 +97,3 @@ Buffer.BufferType = {
     VERTEX: 'ARRAY_BUFFER',
     ELEMENT: 'ELEMENT_ARRAY_BUFFER'
 };
-
-/**
- * An `BufferType.ELEMENT` buffer holds indicies of a corresponding `BufferType.VERTEX` buffer.
- * These indicies are stored in the `BufferType.ELEMENT` buffer as `UNSIGNED_SHORT`s.
- *
- * @private
- * @readonly
- */
-Buffer.ELEMENT_ATTRIBUTE_TYPE = 'Uint16';
-
-/**
- * WebGL performs best if vertex attribute offsets are aligned to 4 byte boundaries.
- * @private
- * @readonly
- */
-Buffer.VERTEX_ATTRIBUTE_ALIGNMENT = 4;

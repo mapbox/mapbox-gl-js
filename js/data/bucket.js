@@ -2,7 +2,6 @@
 
 var featureFilter = require('feature-filter');
 var ArrayGroup = require('./array_group');
-var Buffer = require('./buffer');
 var BufferGroup = require('./buffer_group');
 var util = require('../util/util');
 var StructArrayType = require('../util/struct_array');
@@ -278,17 +277,27 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
     }
 };
 
+/**
+ * A vertex array stores data for each vertex in a geometry. Elements are aligned to 4 byte
+ * boundaries for best performance in WebGL.
+ * @private
+ */
 Bucket.VertexArrayType = function (members) {
     return new StructArrayType({
         members: members,
-        alignment: Buffer.VERTEX_ATTRIBUTE_ALIGNMENT
+        alignment: 4
     });
 };
 
+/**
+ * An element array stores Uint16 indicies of vertexes in a corresponding vertex array. With no
+ * arguments, it defaults to three components per element, forming triangles.
+ * @private
+ */
 Bucket.ElementArrayType = function (components) {
     return new StructArrayType({
         members: [{
-            type: Buffer.ELEMENT_ATTRIBUTE_TYPE,
+            type: 'Uint16',
             name: 'vertices',
             components: components || 3
         }]
