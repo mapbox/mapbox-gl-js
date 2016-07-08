@@ -121,6 +121,7 @@ var Map = module.exports = function(options) {
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
     this._trackResize = options.trackResize;
     this._workerCount = options.workerCount;
+    this._bearingSnap = options.bearingSnap;
 
     if (typeof options.container === 'string') {
         this._container = document.getElementById(options.container);
