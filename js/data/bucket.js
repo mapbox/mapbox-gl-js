@@ -1,6 +1,7 @@
 'use strict';
 
 var featureFilter = require('feature-filter');
+var ArrayGroup = require('./array_group');
 var Buffer = require('./buffer');
 var util = require('../util/util');
 var StructArrayType = require('../util/struct_array');
@@ -40,14 +41,6 @@ Bucket.create = function(options) {
  * @readonly
  */
 Bucket.EXTENT = 8192;
-
-/**
- * The maximum size of a vertex array. This limit is imposed by WebGL's 16 bit
- * addressing of vertex buffers.
- * @private
- * @readonly
- */
-Bucket.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
 
 /**
  * The `Bucket` class is the single point of knowledge about turning vector
@@ -144,15 +137,6 @@ Bucket.prototype.populateArrays = function() {
  * by `populateArrays` and its callees.
  *
  * Array groups are added to this.arrayGroups[programName].
- * An individual array group looks like:
- * {
- *     index: number,
- *     layoutVertexArray: VertexArrayType,
- *     ?elementArray: ElementArrayType,
- *     ?elementArray2: ElementArrayType2,
- *     paintVertexArrays: { [layerName]: PaintArrayType, ...  }
- * }
- *
  *
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
@@ -163,29 +147,15 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.layoutVertexArray.length + numVertices > Bucket.MAX_VERTEX_ARRAY_LENGTH) {
+    if (!currentGroup || !currentGroup.hasCapacityFor(numVertices)) {
+        currentGroup = new ArrayGroup({
+            layoutVertexArrayType: this.programInterfaces[programName].layoutVertexArrayType,
+            elementArrayType: this.programInterfaces[programName].elementArrayType,
+            elementArrayType2: this.programInterfaces[programName].elementArrayType2,
+            paintVertexArrayTypes: this.paintVertexArrayTypes[programName]
+        });
 
-        var programInterface = this.programInterfaces[programName];
-        var LayoutVertexArrayType = programInterface.layoutVertexArrayType;
-
-        currentGroup = {
-            index: groups.length,
-            layoutVertexArray: new LayoutVertexArrayType(),
-            paintVertexArrays: {}
-        };
-
-        var ElementArrayType = programInterface.elementArrayType;
-        if (ElementArrayType) currentGroup.elementArray = new ElementArrayType();
-
-        var ElementArrayType2 = programInterface.elementArrayType2;
-        if (ElementArrayType2) currentGroup.elementArray2 = new ElementArrayType2();
-
-        var paintVertexArrayTypes = this.paintVertexArrayTypes[programName];
-        for (var i = 0; i < this.childLayers.length; i++) {
-            var layerName = this.childLayers[i].id;
-            var PaintVertexArrayType = paintVertexArrayTypes[layerName];
-            currentGroup.paintVertexArrays[layerName] = new PaintVertexArrayType();
-        }
+        currentGroup.index = groups.length;
 
         groups.push(currentGroup);
     }
@@ -247,17 +217,7 @@ Bucket.prototype.trimArrays = function() {
     for (var programName in this.arrayGroups) {
         var arrayGroups = this.arrayGroups[programName];
         for (var i = 0; i < arrayGroups.length; i++) {
-            var arrayGroup = arrayGroups[i];
-            arrayGroup.layoutVertexArray.trim();
-            if (arrayGroup.elementArray) {
-                arrayGroup.elementArray.trim();
-            }
-            if (arrayGroup.elementArray2) {
-                arrayGroup.elementArray2.trim();
-            }
-            for (var paintArray in arrayGroup.paintVertexArrays) {
-                arrayGroup.paintVertexArrays[paintArray].trim();
-            }
+            arrayGroups[i].trim();
         }
     }
 };
@@ -266,8 +226,7 @@ Bucket.prototype.isEmpty = function() {
     for (var programName in this.arrayGroups) {
         var arrayGroups = this.arrayGroups[programName];
         for (var i = 0; i < arrayGroups.length; i++) {
-            var arrayGroup = arrayGroups[i];
-            if (arrayGroup.layoutVertexArray.length > 0) {
+            if (!arrayGroups[i].isEmpty()) {
                 return false;
             }
         }
@@ -279,17 +238,7 @@ Bucket.prototype.getTransferables = function(transferables) {
     for (var programName in this.arrayGroups) {
         var arrayGroups = this.arrayGroups[programName];
         for (var i = 0; i < arrayGroups.length; i++) {
-            var arrayGroup = arrayGroups[i];
-            transferables.push(arrayGroup.layoutVertexArray.arrayBuffer);
-            if (arrayGroup.elementArray) {
-                transferables.push(arrayGroup.elementArray.arrayBuffer);
-            }
-            if (arrayGroup.elementArray2) {
-                transferables.push(arrayGroup.elementArray2.arrayBuffer);
-            }
-            for (var paintArray in arrayGroup.paintVertexArrays) {
-                transferables.push(arrayGroup.paintVertexArrays[paintArray].arrayBuffer);
-            }
+            arrayGroups[i].getTransferables(transferables);
         }
     }
 };
@@ -309,14 +258,7 @@ Bucket.prototype.serialize = function() {
         zoom: this.zoom,
         arrays: util.mapObject(this.arrayGroups, function(programArrayGroups) {
             return programArrayGroups.map(function(arrayGroup) {
-                return {
-                    layoutVertexArray: arrayGroup.layoutVertexArray.serialize(),
-                    elementArray: arrayGroup.elementArray && arrayGroup.elementArray.serialize(),
-                    elementArray2: arrayGroup.elementArray2 && arrayGroup.elementArray2.serialize(),
-                    paintVertexArrays: util.mapObject(arrayGroup.paintVertexArrays, function(array) {
-                        return array.serialize();
-                    })
-                };
+                return arrayGroup.serialize();
             });
         }),
         paintVertexArrayTypes: util.mapObject(this.paintVertexArrayTypes, function(arrayTypes) {
