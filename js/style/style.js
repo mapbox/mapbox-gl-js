@@ -500,7 +500,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
+        if (filter !== null && this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = util.clone(filter);
