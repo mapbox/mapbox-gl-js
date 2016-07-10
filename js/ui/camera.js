@@ -18,7 +18,7 @@ var Point = require('point-geometry');
  * @property {number} zoom The destination's zoom level.
  * @property {number} bearing The destination's bearing (rotation), measured in degrees counter-clockwise from north.
  * @property {number} pitch The destination's pitch (tilt), measured in degrees.
- * @property {LngLat} around If a `zoom` is specified, `around` determines the zoom center (defaults to the center of the map).
+ * @property {LngLatLike} around If a `zoom` is specified, `around` determines the zoom center (defaults to the center of the map).
  */
 
 /**
@@ -29,7 +29,7 @@ var Point = require('point-geometry');
  * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing The animation's easing function.
- * @property {Array<number>} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
+ * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
@@ -47,7 +47,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
      *
      * @param {LngLatLike} center The centerpoint to set.
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -64,7 +64,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {Array<number>} offset `x` and `y` coordinates by which to pan the map.
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -80,7 +80,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {LngLatLike} lnglat The location to pan the map to.
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -103,7 +103,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Sets the map's zoom level. Equivalent to `jumpTo({zoom: zoom})`.
      *
      * @param {number} zoom The zoom level to set (0-20).
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -125,7 +125,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {number} zoom The zoom level to transition to.
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -144,7 +144,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Increases the map's zoom level by 1.
      *
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -162,7 +162,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Decreases the map's zoom level by 1.
      *
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -188,7 +188,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Sets the maps' bearing (rotation). Equivalent to `jumpTo({bearing: bearing})`.
      *
      * @param {number} bearing The bearing to set, measured in degrees counter-clockwise from north.
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -206,7 +206,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *
      * @param {number} bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -221,7 +221,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Rotates the map to a bearing of 0 (due north), with an animated transition.
      *
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -235,7 +235,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
      *
      * @param {AnimationOptions} [options]
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -258,7 +258,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Sets the map's pitch (tilt). Equivalent to `jumpTo({pitch: pitch})`.
      *
      * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -279,9 +279,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
      * @param {Function} [options.easing] An easing function for the animated transition.
      * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
-     * @param {Array<number>=[0, 0]} [options.offset] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -319,7 +319,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * details not specified in `options`.
      *
      * @param {CameraOptions} options
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -383,7 +383,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * details not specified in `options`.
      *
      * @param {CameraOptions|AnimationOptions} options Options describing the destination and animation of the transition.
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -496,7 +496,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
      * the user maintain her bearings even after traversing a great distance.
      *
-     * @param {CameraOptions|AnimationOptions} options Options describing the destination and animation of the transition.
+     * @param {Object} options Options describing the destination and animation of the transition.
+     *     Accepts [CameraOptions](#CameraOptions), [AnimationOptions](#AnimationOptions),
+     *     and the following additional options.
      * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
      *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
      *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
@@ -513,7 +515,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
      * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {EventData} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
      * @fires move

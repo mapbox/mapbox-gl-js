@@ -69,7 +69,7 @@ var defaultOptions = {
  *
  * @class Map
  * @param {Object} options
- * @param {Element|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
+ * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (1-20).
  * @param {number} [options.maxZoom=20] The maximum zoom level of the map (1-20).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
@@ -394,7 +394,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * the map will zoom to the new minimum.
      *
      * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
-     *   If`null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
+     *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
     setMinZoom: function(minZoom) {
@@ -417,8 +417,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * If the map's current zoom level is higher than the new maximum,
      * the map will zoom to the new maximum.
      *
-     * @param {number} maxZoom The maximum zoom level to set (0-20).
-     *   If`null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
+     * @param {number | null | undefined} maxZoom The maximum zoom level to set (0-20).
+     *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
      * @returns {Map} `this`
      */
     setMaxZoom: function(maxZoom) {
@@ -761,7 +761,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Sets the filter for the specified style layer.
      *
      * @param {string} layer The ID of the layer to which the filter will be applied.
-     * @param {Array<string>} filter The filter, conforming to the Mapbox Style Specification's
+     * @param {Array} filter The filter, conforming to the Mapbox Style Specification's
      *   [filter definition](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter).
      * @returns {Map} `this`
      * @example
@@ -1236,6 +1236,11 @@ function removeNode(node) {
   * Returns a Boolean indicating whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
   *
   * @function supported
+  * @param {Object} options
+  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
+  *   the function will return `false` if it is determined
+  *   that the performance of the created WebGL context would be too low.
+  * @return {boolean}
   * @example
   * mapboxgl.supported() // = true
   */
