@@ -51,7 +51,7 @@ exports.redoPlacement = function() {
         return;
     }
 
-    var ids = this._pyramid.orderedIDs();
+    var ids = this._pyramid.getIds();
     for (var i = 0; i < ids.length; i++) {
         var tile = this._pyramid.getTile(ids[i]);
         this._redoTilePlacement(tile);
@@ -64,7 +64,7 @@ exports._getTile = function(coord) {
 
 exports._getVisibleCoordinates = function() {
     if (!this._pyramid) return [];
-    else return this._pyramid.renderedIDs().map(TileCoord.fromID);
+    else return this._pyramid.getRenderableIds().map(TileCoord.fromID);
 };
 
 function sortTilesIn(a, b) {
@@ -124,7 +124,7 @@ exports._querySourceFeatures = function(params) {
     }
 
     var pyramid = this._pyramid;
-    var tiles = pyramid.renderedIDs().map(function(id) {
+    var tiles = pyramid.getRenderableIds().map(function(id) {
         return pyramid.getTile(id);
     });
 

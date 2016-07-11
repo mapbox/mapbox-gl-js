@@ -254,7 +254,7 @@ test('TilePyramid#update', function(t) {
         var pyramid = createPyramid({});
         pyramid.update(false, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), []);
+        t.deepEqual(pyramid.getIds(), []);
         t.end();
     });
 
@@ -266,7 +266,7 @@ test('TilePyramid#update', function(t) {
         var pyramid = createPyramid({});
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.getIds(), [new TileCoord(0, 0, 0).id]);
         t.end();
     });
 
@@ -282,12 +282,12 @@ test('TilePyramid#update', function(t) {
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.getIds(), [new TileCoord(0, 0, 0).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(1, 0, 0).id,
             new TileCoord(1, 1, 0).id,
             new TileCoord(1, 0, 1).id,
@@ -310,12 +310,12 @@ test('TilePyramid#update', function(t) {
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0).id]);
+        t.deepEqual(pyramid.getIds(), [new TileCoord(0, 0, 0).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(0, 0, 0).id,
             new TileCoord(1, 0, 0).id,
             new TileCoord(1, 1, 0).id,
@@ -340,12 +340,12 @@ test('TilePyramid#update', function(t) {
         });
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.orderedIDs(), [new TileCoord(0, 0, 0, 1).id]);
+        t.deepEqual(pyramid.getIds(), [new TileCoord(0, 0, 0, 1).id]);
 
         transform.zoom = 1;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(0, 0, 0, 1).id,
             new TileCoord(1, 0, 0, 1).id,
             new TileCoord(1, 1, 0, 1).id,
@@ -368,7 +368,7 @@ test('TilePyramid#update', function(t) {
         });
 
         pyramid.update(true, transform, 100);
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(2, 1, 1).id,
             new TileCoord(2, 2, 1).id,
             new TileCoord(2, 1, 2).id,
@@ -378,7 +378,7 @@ test('TilePyramid#update', function(t) {
         transform.zoom = 0;
         pyramid.update(true, transform, 100);
 
-        t.deepEqual(pyramid.renderedIDs().length, 5);
+        t.deepEqual(pyramid.getRenderableIds().length, 5);
         t.end();
     });
 
@@ -425,7 +425,7 @@ test('TilePyramid#update', function(t) {
         t.equal(pyramid.maxzoom, 14);
 
         pyramid.update(true, transform);
-        t.deepEqual(pyramid.renderedIDs(), [
+        t.deepEqual(pyramid.getRenderableIds(), [
             new TileCoord(16, 8191, 8191, 0).id,
             new TileCoord(16, 8192, 8191, 0).id,
             new TileCoord(16, 8192, 8192, 0).id,
@@ -435,7 +435,7 @@ test('TilePyramid#update', function(t) {
         transform.zoom = 15;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.renderedIDs(), [
+        t.deepEqual(pyramid.getRenderableIds(), [
             new TileCoord(16, 8191, 8191, 0).id,
             new TileCoord(16, 8192, 8191, 0).id,
             new TileCoord(16, 8192, 8192, 0).id,
@@ -491,7 +491,7 @@ test('TilePyramid#tilesIn', function (t) {
 
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(1, 0, 0).id,
             new TileCoord(1, 1, 0).id,
             new TileCoord(1, 0, 1).id,
@@ -533,7 +533,7 @@ test('TilePyramid#tilesIn', function (t) {
         transform.zoom = 2.0;
         pyramid.update(true, transform);
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(2, 0, 0).id,
             new TileCoord(2, 1, 0).id,
             new TileCoord(2, 0, 1).id,
@@ -576,7 +576,7 @@ test('TilePyramid#tilesIn', function (t) {
         pyramid.update(true, transform);
 
 
-        t.deepEqual(pyramid.orderedIDs(), [
+        t.deepEqual(pyramid.getIds(), [
             new TileCoord(1, 0, 0).id,
             new TileCoord(1, 1, 0).id,
             new TileCoord(1, 0, 1).id,
@@ -635,7 +635,7 @@ test('TilePyramid#loaded (with errors)', function (t) {
     t.end();
 });
 
-test('TilePyramid#orderedIDs (ascending order by zoom level)', function(t) {
+test('TilePyramid#getIds (ascending order by zoom level)', function(t) {
     var ids = [
         new TileCoord(0, 0, 0),
         new TileCoord(3, 0, 0),
@@ -647,7 +647,7 @@ test('TilePyramid#orderedIDs (ascending order by zoom level)', function(t) {
     for (var i = 0; i < ids.length; i++) {
         pyramid._tiles[ids[i].id] = {};
     }
-    t.deepEqual(pyramid.orderedIDs(), [
+    t.deepEqual(pyramid.getIds(), [
         new TileCoord(0, 0, 0).id,
         new TileCoord(1, 0, 0).id,
         new TileCoord(2, 0, 0).id,
