@@ -84,7 +84,7 @@ Geolocate.prototype = util.inherit(Control, {
  * @event geolocate
  * @memberof Geolocate
  * @instance
- * @property {EventData} data The returned Position object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
+ * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
  *
  */
 
@@ -94,6 +94,6 @@ Geolocate.prototype = util.inherit(Control, {
  * @event error
  * @memberof Geolocate
  * @instance
- * @property {EventData} data The returned PositionError object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition)
+ * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
  *
  */

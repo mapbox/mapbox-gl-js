@@ -14,7 +14,7 @@ module.exports = GeoJSONSource;
  *
  * @class GeoJSONSource
  * @param {Object} [options]
- * @param {Object|string} options.data A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
+ * @param {Object|string} [options.data] A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
  * @param {number} [options.maxzoom=18] The maximum zoom level at which to preserve detail (1-20).
  * @param {number} [options.buffer=128] The tile buffer, measured in pixels. The buffer extends each
  *   tile's data just past its visible edges, helping to ensure seamless rendering across tile boundaries.

@@ -39,7 +39,7 @@ LngLatBounds.prototype = {
     /**
      * Extends the bounding box to include an area represented by a `LngLat` or `LngLatBounds`.
      *
-     * @param {LngLat|LngLatBounds} obj The area that the bounding box will extend to include.
+     * @param {LngLatLike|LngLatBoundsLike} obj The area that the bounding box will extend to include.
      * @returns {LngLatBounds} `this`
      */
     extend: function(obj) {
@@ -146,7 +146,7 @@ LngLatBounds.prototype = {
     /**
      * Returns the bounding box represented as an array.
      *
-     * @returns {array} The bounding box represented as an array, consisting of the
+     * @returns {Array<Array<number>>} The bounding box represented as an array, consisting of the
      *   southwest and northeast coordinates of the bounding represented as arrays of numbers.
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
