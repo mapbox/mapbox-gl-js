@@ -150,7 +150,6 @@ test('Map', function(t) {
             style.fire('tile.add');
             style.fire('tile.error');
             style.fire('tile.remove');
-            style.fire('layer.error');
         });
 
         t.test('can be called more than once', function(t) {
@@ -750,7 +749,7 @@ test('Map', function(t) {
                     "sources": {
                         "mapbox://mapbox.satellite": {
                             "type": "raster",
-                            "tiles": ["local://tiles/{z}-{x}-{y}.png"]
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
                         }
                     },
                     "layers": [{
@@ -764,8 +763,9 @@ test('Map', function(t) {
                 }
             });
 
-            // We're faking tiles
+            // Suppress errors because we're not loading tiles from a real URL.
             map.off('tile.error', map.onError);
+            map.on('tile.error', function() {});
 
             map.on('style.load', function () {
                 map.setLayoutProperty('satellite', 'visibility', 'visible');

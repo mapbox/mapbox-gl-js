@@ -433,6 +433,10 @@ test('Style#removeSource', function(t) {
             style.addSource('source-id', source);
             style.removeSource('source-id');
 
+            // Bind a listener to prevent fallback Evented error reporting.
+            source.on('error',  function() {});
+            source.on('tile.error',  function() {});
+
             source.fire('load');
             source.fire('error');
             source.fire('change');
@@ -689,6 +693,10 @@ test('Style#removeLayer', function(t) {
         style.on('load', function() {
             var layer = style._layers.background;
             style.removeLayer('background');
+
+            // Bind a listener to prevent fallback Evented error reporting.
+            layer.on('error', function() {});
+
             layer.fire('error', {mapbox: true});
             t.end();
         });

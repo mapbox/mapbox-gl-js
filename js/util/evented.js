@@ -85,7 +85,14 @@ var Evented = {
      * @returns {Object} `this`
      */
     fire: function(type, data) {
-        if (!this.listens(type)) return this;
+        if (!this.listens(type)) {
+            // Error events are important for debugging and should not be
+            // silently dropped.
+            if (util.endsWith(type, 'error')) {
+                (console.trace || console.error)('Dropped "error" event: ', data);
+            }
+            return this;
+        }
 
         data = util.extend({}, data);
         util.extend(data, {type: type, target: this});
