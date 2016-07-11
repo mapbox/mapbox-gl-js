@@ -98,8 +98,8 @@ var defaultOptions = {
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
- * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if it is determined
- *   that the performance of the created WebGL context would be too low.
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
+ *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
  * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
  * @param {boolean} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled (see [`ScrollZoomHandler`](#ScrollZoomHandler)).
@@ -393,7 +393,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * If the map's current zoom level is lower than the new minimum,
      * the map will zoom to the new minimum.
      *
-     * @param {number | null | undefined} minZoom The minimum zoom level to set (0-20).
+     * @param {?number} minZoom The minimum zoom level to set (0-20).
      *   If `null` or `undefined` is provided, the function removes the current minimum zoom (i.e. sets it to 0).
      * @returns {Map} `this`
      */
@@ -417,7 +417,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * If the map's current zoom level is higher than the new maximum,
      * the map will zoom to the new maximum.
      *
-     * @param {number | null | undefined} maxZoom The maximum zoom level to set (0-20).
+     * @param {?number} maxZoom The maximum zoom level to set (0-20).
      *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
      * @returns {Map} `this`
      */
@@ -1238,8 +1238,8 @@ function removeNode(node) {
   * @function supported
   * @param {Object} options
   * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
-  *   the function will return `false` if it is determined
-  *   that the performance of the created WebGL context would be too low.
+  *   the function will return `false` if the performance of Mapbox GL JS would
+  *   be dramatically worse than expected (i.e. a software renderer would be used).
   * @return {boolean}
   * @example
   * mapboxgl.supported() // = true
