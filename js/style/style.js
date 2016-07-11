@@ -112,6 +112,9 @@ Style.prototype = util.inherit(Evented, {
         if (!this._loaded)
             return false;
 
+        if (Object.keys(this._updates.sources).length)
+            return false;
+
         for (var id in this.sources)
             if (!this.sources[id].loaded())
                 return false;
