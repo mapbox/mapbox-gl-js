@@ -14,7 +14,7 @@ var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
 var vtpbf = require('vt-pbf');
 
-module.exports = function(self) {
+module.exports = function MapboxGlWorker(self) {
     return new Worker(self);
 };
 
