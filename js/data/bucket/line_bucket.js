@@ -28,7 +28,7 @@ var COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
 var SHARP_CORNER_OFFSET = 15;
 
 // The number of bits that is used to store the line distance in the buffer.
-var LINE_DISTANCE_BUFFER_BITS = 14;
+var LINE_DISTANCE_BUFFER_BITS = 15;
 
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
@@ -36,7 +36,7 @@ var LINE_DISTANCE_BUFFER_BITS = 14;
 var LINE_DISTANCE_SCALE = 1 / 2;
 
 // The maximum line distance, in tile units, that fits in the buffer.
-var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
+var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
 
 module.exports = LineBucket;
@@ -86,7 +86,7 @@ LineBucket.prototype.programInterfaces = {
 };
 
 LineBucket.prototype.addFeature = function(feature) {
-    var lines = loadGeometry(feature, 15);
+    var lines = loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS);
     for (var i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],

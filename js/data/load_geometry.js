@@ -9,12 +9,14 @@ var boundsCache = {};
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
  * used internally.
  * @param {VectorTileFeature} feature
- * @param {number} bits The number of signed integer bits available to store
+ * @param {number} [bits=16] The number of signed integer bits available to store
  *   each coordinate. A warning will be issued if any coordinate will not fits
  *   in the specified number of bits.
  * @private
  */
 module.exports = function loadGeometry(feature, bits) {
+    bits = bits || 16;
+
     if (!boundsCache[bits]) {
         boundsCache[bits] = {
             min: -1 * Math.pow(2, bits - 1),

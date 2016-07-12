@@ -197,7 +197,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
 
     var geometries = [];
     for (var g = 0; g < features.length; g++) {
-        geometries.push(loadGeometry(features[g], 16));
+        geometries.push(loadGeometry(features[g]));
     }
 
     if (layout['symbol-placement'] === 'line') {

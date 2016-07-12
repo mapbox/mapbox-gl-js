@@ -60,7 +60,7 @@ FillBucket.prototype.programInterfaces = {
 };
 
 FillBucket.prototype.addFeature = function(feature) {
-    var lines = loadGeometry(feature, 16);
+    var lines = loadGeometry(feature);
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
     var startGroup = this.prepareArrayGroup('fill', 0);

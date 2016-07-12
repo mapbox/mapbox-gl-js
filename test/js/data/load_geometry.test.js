@@ -13,7 +13,7 @@ var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__
 test('loadGeometry', function(t) {
     var feature = vt.layers.road.feature(0);
     var originalGeometry = feature.loadGeometry();
-    var scaledGeometry = loadGeometry(feature, 16);
+    var scaledGeometry = loadGeometry(feature);
     t.equal(scaledGeometry[0][0].x, originalGeometry[0][0].x * 2, 'scales x coords by 2x');
     t.equal(scaledGeometry[0][0].y, originalGeometry[0][0].y * 2, 'scales y coords by 2x');
     t.end();
