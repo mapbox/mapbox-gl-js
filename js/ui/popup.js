@@ -18,6 +18,7 @@ var LngLat = require('../geo/lng_lat');
  * @param {string} options.anchor - One of "top", "bottom", "left", "right", "top-left",
  * "top-right", "bottom-left", or "bottom-right", describing where the popup's anchor
  * relative to the coordinate set via `setLngLat`.
+ * @param {string} options.css for custom css
  * @example
  * var tooltip = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
@@ -168,10 +169,11 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     _update: function() {
+        var customCSS = (this.options.css) ? ' ' + this.options.css : '';
         if (!this._map || !this._lngLat || !this._content) { return; }
 
         if (!this._container) {
-            this._container = DOM.create('div', 'mapboxgl-popup', this._map.getContainer());
+            this._container = DOM.create('div', 'mapboxgl-popup' + customCSS, this._map.getContainer());
             this._tip       = DOM.create('div', 'mapboxgl-popup-tip', this._container);
             this._container.appendChild(this._content);
         }
