@@ -81,7 +81,7 @@ CircleBucket.prototype.programInterfaces = {
 
 CircleBucket.prototype.addFeature = function(feature) {
     var globalProperties = {zoom: this.zoom};
-    var geometries = loadGeometry(feature);
+    var geometries = loadGeometry(feature, 16);
 
     var startGroup = this.prepareArrayGroup('circle', 0);
     var startIndex = startGroup.layout.vertex.length;

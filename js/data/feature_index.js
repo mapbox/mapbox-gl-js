@@ -55,7 +55,7 @@ function FeatureIndex(coord, overscaling, collisionTile) {
 FeatureIndex.prototype.insert = function(feature, featureIndex, sourceLayerIndex, bucketIndex) {
     var key = this.featureIndexArray.length;
     this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
-    var geometry = loadGeometry(feature);
+    var geometry = loadGeometry(feature, 16);
 
     for (var r = 0; r < geometry.length; r++) {
         var ring = geometry[r];
@@ -207,7 +207,7 @@ FeatureIndex.prototype.filterMatching = function(result, matching, array, queryG
             if (styleLayer.type !== 'symbol') {
                 // all symbols already match the style
 
-                if (!geometry) geometry = loadGeometry(feature);
+                if (!geometry) geometry = loadGeometry(feature, 16);
 
                 var paint = styleLayer.paint;
 

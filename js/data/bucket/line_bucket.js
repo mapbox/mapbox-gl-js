@@ -86,7 +86,7 @@ LineBucket.prototype.programInterfaces = {
 };
 
 LineBucket.prototype.addFeature = function(feature) {
-    var lines = loadGeometry(feature);
+    var lines = loadGeometry(feature, 15);
     for (var i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],
