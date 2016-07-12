@@ -88,7 +88,7 @@ VertexArrayObject.prototype.unbind = function(gl) {
 };
 
 VertexArrayObject.prototype.destroy = function(gl) {
-    var ext = gl && gl.extVertexArrayObject;
+    var ext = gl.extVertexArrayObject;
     if (ext && this.vao) {
         ext.deleteVertexArrayOES(this.vao);
         this.vao = null;
