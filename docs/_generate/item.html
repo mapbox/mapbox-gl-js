@@ -8,7 +8,7 @@
   <div>
     <em class='inline quiet'>
       <%= prop.required ? 'Required' : 'Optional' %>
-      <% if (prop.type && prop.type !== '*') { %><a href='#<%= prop.type %>'><%= prop.type %></a>.<% } %>
+      <% if (prop.type && prop.type !== '*') { %><a href='#types-<%= prop.type %>'><%= prop.type %></a>.<% } %>
     </em>
     <% if (prop.values) { %><span class='space-right quiet'>
       <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
