@@ -89,7 +89,7 @@ var Evented = {
             // Error events are important for debugging and should not be
             // silently dropped.
             if (util.endsWith(type, 'error')) {
-                (console.trace || console.error)('Dropped "error" event: ', data);
+                console.error('Dropped "error" event: ', data);
             }
             return this;
         }
