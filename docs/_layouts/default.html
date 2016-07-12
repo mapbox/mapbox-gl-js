@@ -101,7 +101,7 @@ footer:
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
   <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
-  {% if page.card %}
+  {% if page.card or layout.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
   <meta name='twitter:url' content='{{site.url}}{{site.baseurl}}{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
@@ -110,7 +110,7 @@ footer:
   <meta property='og:title' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;"}}' />
   <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
   <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
-  {% if page.video %}
+  {% if page.video or layout.video %}
   <meta name='twitter:card' content='player' />
   <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
   <meta name='twitter:player:width' content='640' />
@@ -119,7 +119,7 @@ footer:
   <meta property='og:video' content='{{page.video}}' />
   <meta property='og:video:width' content='640' />
   <meta property='og:video:height' content='480' />
-  {% elsif page.image %}
+  {% elsif page.image or layout.image %}
   <meta name='twitter:image' content='{{page.image | replace:"https:","http:"}}' />
   <meta name='st:image' content='{{page.image | replace:"https:","http:"}}' />
   <meta property='og:image' content='{{page.image | replace:"https:","http:"}}' />
