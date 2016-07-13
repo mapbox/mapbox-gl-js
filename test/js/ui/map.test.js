@@ -135,10 +135,8 @@ test('Map', function(t) {
             map.on('tile.error',    checkEvent);
             map.on('tile.remove',   checkEvent);
 
-            map.off('style.error', map.onError);
-            map.off('source.error', map.onError);
-            map.off('tile.error', map.onError);
-            map.off('layer.error', map.onError);
+            // Suppress error messages
+            map.on('error', function() {});
 
             t.plan(10);
             map.setStyle(style); // Fires load
@@ -764,8 +762,7 @@ test('Map', function(t) {
             });
 
             // Suppress errors because we're not loading tiles from a real URL.
-            map.off('tile.error', map.onError);
-            map.on('tile.error', function() {});
+            map.on('error', function() {});
 
             map.on('style.load', function () {
                 map.setLayoutProperty('satellite', 'visibility', 'visible');
@@ -884,48 +881,29 @@ test('Map', function(t) {
         t.end();
     });
 
-    t.test('#onError', function (t) {
-        t.test('logs errors to console by default', function (t) {
-            var error = console.error;
-
-            console.error = function (e) {
-                console.error = error;
-                t.deepEqual(e.message, 'version: expected one of [8], 7 found');
+    t.test('error event', function (t) {
+        t.test('logs errors to console when it has NO listeners', function (t) {
+            sinon.stub(console, 'error', function(message) {
+                console.error.restore();
+                t.deepEqual(message, 'version: expected one of [8], 7 found');
                 t.end();
-            };
-
-            createMap({
-                style: {
-                    version: 7,
-                    sources: {},
-                    layers: []
-                }
             });
+
+            createMap({ style: { version: 7, sources: {}, layers: [] } });
         });
 
-        t.test('logs errors that happen during render', function (t) {
-            var error = console.error;
+        t.test('calls listeners', function (t) {
+            sinon.stub(console, 'error', function() {
+                console.error.restore();
+                t.fail();
+            });
 
-            console.error = function (e) {
-                console.error = error;
-                t.deepEqual(e.message, 'in render');
+            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
+            map.on('error', function(event) {
+                t.deepEqual(event.error.message, 'version: expected one of [8], 7 found');
                 t.end();
-            };
-
-            var map = createMap({
-                style: {
-                    version: 8,
-                    sources: {},
-                    layers: []
-                }
             });
-
-            map.on('render', function () {
-                throw new Error('in render');
-            });
-
-            map._rerender = function () {};
-            map._render();
+            map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
         t.end();

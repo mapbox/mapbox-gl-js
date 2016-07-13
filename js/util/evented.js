@@ -86,10 +86,10 @@ var Evented = {
      */
     fire: function(type, data) {
         if (!this.listens(type)) {
-            // Error events are important for debugging and should not be
-            // silently dropped.
+            // To ensure that no error events are dropped, print them to the
+            // console if they have no listeners.
             if (util.endsWith(type, 'error')) {
-                console.error('Dropped "error" event: ', data);
+                console.error(data.error.message);
             }
             return this;
         }
