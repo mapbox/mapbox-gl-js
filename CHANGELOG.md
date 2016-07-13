@@ -1,7 +1,5 @@
 ## 0.21.0 (July 13 2016)
 
-#### Breaking Changes
-
 #### New Features & Improvements
 
  * Add `text-pitch-alignment` style property #2668
