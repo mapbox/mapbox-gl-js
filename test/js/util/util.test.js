@@ -252,6 +252,9 @@ test('util', function(t) {
 
         t.ok(util.deepEqual(a, b));
         t.notOk(util.deepEqual(a, c));
+        t.notOk(util.deepEqual(a, null));
+        t.notOk(util.deepEqual(null, c));
+        t.ok(util.deepEqual(null, null));
 
         t.end();
     });

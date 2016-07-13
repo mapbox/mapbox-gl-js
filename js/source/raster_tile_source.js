@@ -63,7 +63,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 return;
 
             if (err) {
-                tile.errored = true;
+                tile.state = 'errored';
                 this.fire('tile.error', {tile: tile, error: err});
                 return;
             }
@@ -90,7 +90,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
             this.map.animationLoop.set(this.style.rasterFadeDuration);
 
             tile.source = this;
-            tile.loaded = true;
+            tile.state = 'loaded';
 
             this.fire('tile.load', {tile: tile});
         }

@@ -112,6 +112,9 @@ Style.prototype = util.inherit(Evented, {
         if (!this._loaded)
             return false;
 
+        if (Object.keys(this._updates.sources).length)
+            return false;
+
         for (var id in this.sources)
             if (!this.sources[id].loaded())
                 return false;
@@ -500,7 +503,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
+        if (filter !== null && this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = util.clone(filter);
