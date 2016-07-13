@@ -3,7 +3,7 @@ machine:
     version: '4'
 dependencies:
   override:
-    - npm update
+    - if [ "$(git symbolic-ref --short -q HEAD)" == "master" ]; then npm update; else npm install; fi;
 test:
   override:
     - ./ci.sh
