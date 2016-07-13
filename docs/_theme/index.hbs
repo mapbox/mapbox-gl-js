@@ -90,8 +90,8 @@ options: full
       <h1 class=''>Mapbox GL JS</h1>
       <div class='pad1y quiet small'>Current version: <span class='round fill-light pad0'><a class='' href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js {{site.version}}</a></span></div>
       <div class='prose space-bottom2'>
-        <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.url}}/mapbox-gl-style-spec'>Mapbox GL styles</a>.
-        It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a> which includes <a href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
+        <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.url}}/mapbox-gl-style-spec'>Mapbox styles</a>.
+        It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a>, which includes <a href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
         <div class='col12 fill-light round pad2 clearfix space-top2'>
         <div class='space-bottom2 space-left1 space-top1 contain'>
           <div class='icon inline dark pad0 round fill-green space-bottom1 github space-right1'></div>
@@ -125,7 +125,9 @@ options: full
              <a class='method-toggle' data-target='browserify-example'  href='#'>Browserify</a>
            </div>
            <div id='script-example'>
-         <p>To use Mapbox GL JS with a <code>&lt;script&gt;</code> tag, include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.</p>
+        <div class='space-top2 space-bottom2'>
+          To use Mapbox GL JS with a <code>&lt;script&gt;</code> tag, include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.
+        </div>
         <div class='contain ' id='head-code'>
           {% highlight html %}
 <script src='{{site.tileApi}}/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
@@ -133,15 +135,17 @@ options: full
           {% endhighlight html %}
           <a class='icon clipboard pin-bottom space-bottom1 text-right quiet js-clipboard space-right1' href='#' data-clipboard-target='head-code'></a>
         </div>
-        <p>Then include this code in the <code>&lt;body&gt;</code> of your HTML file to initialize a map on the page.</p>
+        <div class='space-top2 space-bottom2'>
+          Then include this code in the <code>&lt;body&gt;</code> of your HTML file to initialize a map on the page.
+        </div>
         <div class='js-replace-token contain' id='body-code'>
           {% capture getting_started_html %}
 <div id='map' style='width: 400px; height: 300px;'></div>
 <script>
-  var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v9'
-  });
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
 </script>
           {% endcapture %}
           <a class='quiet pin-bottom space-right1 text-right icon clipboard js-clipboard space-bottom1' href='#' data-clipboard-target='body-code'></a>
@@ -149,7 +153,7 @@ options: full
         </div>
         </div>
         <div id='browserify-example' class='hidden'>
-<p>Install the mapbox-gl npm package</p>
+<p>Install the mapbox-gl npm package.</p>
 
 <pre>
 npm install --save mapbox-gl

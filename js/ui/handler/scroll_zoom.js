@@ -13,8 +13,10 @@ var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : 
 
 
 /**
- * The `ScrollZoomHandler` allows a user to zoom the map by scrolling.
+ * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
+ *
  * @class ScrollZoomHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function ScrollZoomHandler(map) {
     this._map = map;
@@ -28,15 +30,17 @@ ScrollZoomHandler.prototype = {
     _enabled: false,
 
     /**
-     * Returns the current enabled/disabled state of the "scroll to zoom" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "scroll to zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "scroll to zoom" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Enable the "scroll to zoom" interaction.
+     * Enables the "scroll to zoom" interaction.
+     *
      * @example
      *   map.scrollZoom.enable();
      */
@@ -48,7 +52,8 @@ ScrollZoomHandler.prototype = {
     },
 
     /**
-     * Disable the "scroll to zoom" interaction.
+     * Disables the "scroll to zoom" interaction.
+     *
      * @example
      *   map.scrollZoom.disable();
      */
@@ -146,31 +151,31 @@ ScrollZoomHandler.prototype = {
 
 
 /**
- * Zoom start event. This event is emitted just before the map begins a transition from one
- * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ * Fired just before the map begins a transition from one zoom level to another,
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoomstart
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data, if fired interactively
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
- * Zoom event. This event is emitted repeatedly during animated transitions from one zoom level to
- * another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ * Fired repeatedly during an animated transition from one zoom level to another,
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoom
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data, if fired interactively
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
- * Zoom end event. This event is emitted just after the map completes a transition from one
- * zoom level to another, either as a result of user interaction or the use of methods such as `Map#jumpTo`.
+ * Fired just after the map completes a transition from one zoom level to another,
+ * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event zoomend
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data, if fired interactively
+ * @property {MapMouseEvent | MapTouchEvent} data
  */

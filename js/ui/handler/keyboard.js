@@ -8,18 +8,21 @@ var panDelta = 80,
     pitchDelta = 5;
 
 /**
- * The `KeyboardHandler` allows a user to zoom, rotate, and pan the map using
- * following keyboard shortcuts:
- *  * `=` / `+`: increase zoom level by 1
- *  * `Shift-=` / `Shift-+`: increase zoom level by 2
- *  * `-`: decrease zoom level by 1
- *  * `Shift--`: decrease zoom level by 2
- *  * Arrow keys: pan by 80 pixels
- *  * `Shift+⇢`: increase rotation by 2 degrees
- *  * `Shift+⇠`: decrease rotation by 2 degrees
- *  * `Shift+⇡`: increase pitch by 5 degrees
- *  * `Shift+⇣`: decrease pitch by 5 degrees
+ * The `KeyboardHandler` allows the user to zoom, rotate, and pan the map using
+ * the following keyboard shortcuts:
+ *
+ * - `=` / `+`: Increase the zoom level by 1.
+ * - `Shift-=` / `Shift-+`: Increase the zoom level by 2.
+ * - `-`: Decrease the zoom level by 1.
+ * - `Shift--`: Decrease the zoom level by 2.
+ * - Arrow keys: Pan by 80 pixels.
+ * - `Shift+⇢`: Increase the rotation by 2 degrees.
+ * - `Shift+⇠`: Decrease the rotation by 2 degrees.
+ * - `Shift+⇡`: Increase the pitch by 5 degrees.
+ * - `Shift+⇣`: Decrease the pitch by 5 degrees.
+ *
  * @class KeyboardHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function KeyboardHandler(map) {
     this._map = map;
@@ -33,15 +36,17 @@ KeyboardHandler.prototype = {
     _enabled: false,
 
     /**
-     * Returns the current enabled/disabled state of keyboard interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether keyboard interaction is enabled.
+     *
+     * @returns {boolean} `true` if keyboard interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Enable the ability to interact with the map using keyboard input.
+     * Enables keyboard interaction.
+     *
      * @example
      * map.keyboard.enable();
      */
@@ -52,7 +57,8 @@ KeyboardHandler.prototype = {
     },
 
     /**
-     * Disable the ability to interact with the map using keyboard input.
+     * Disables keyboard interaction.
+     *
      * @example
      * map.keyboard.disable();
      */

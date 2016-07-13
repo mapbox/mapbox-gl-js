@@ -39,8 +39,6 @@ var popup = new mapboxgl.Popup({
 });
 
 map.on('load', function() {
-    var canvas = map.getCanvasContainer();
-
     // Add the source to query. In this example we're using
     // county polygons uploaded as vector tiles
     map.addSource('counties', {

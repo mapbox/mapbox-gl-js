@@ -67,8 +67,8 @@ map.on('load', function () {
     });
 
     // Reset the route-hover layer's filter when the mouse leaves the map
-    map.on("mouseout", function(e) {
+    map.on("mouseout", function() {
         map.setFilter("route-hover", ["==", "name", ""]);
-    }
+    });
 });
 </script>

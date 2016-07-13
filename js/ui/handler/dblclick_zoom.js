@@ -3,9 +3,11 @@
 module.exports = DoubleClickZoomHandler;
 
 /**
- * The `DoubleClickZoomHandler` allows a user to zoom the map around point by
+ * The `DoubleClickZoomHandler` allows the user to zoom the map at a point by
  * double clicking.
+ *
  * @class DoubleClickZoomHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function DoubleClickZoomHandler(map) {
     this._map = map;
@@ -17,15 +19,17 @@ DoubleClickZoomHandler.prototype = {
     _enabled: false,
 
     /**
-     * Returns the current enabled/disabled state of the "double click to zoom" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "double click to zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "double click to zoom" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Enable the "double click to zoom" interaction.
+     * Enables the "double click to zoom" interaction.
+     *
      * @example
      * map.doubleClickZoom.enable();
      */
@@ -36,7 +40,8 @@ DoubleClickZoomHandler.prototype = {
     },
 
     /**
-     * Disable the "double click to zoom" interaction.
+     * Disables the "double click to zoom" interaction.
+     *
      * @example
      * map.doubleClickZoom.disable();
      */

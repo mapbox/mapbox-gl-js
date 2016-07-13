@@ -7,8 +7,8 @@ tags:
   - plugins
   - mapbox-geocoding
 ---
-<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.1.0/mapbox-gl-geocoder.js'></script>
-<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.1.0/mapbox-gl-geocoder.css' type='text/css' />
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.3.0/mapbox-gl-geocoder.js'></script>
+<link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.3.0/mapbox-gl-geocoder.css' type='text/css' />
 <style>
 #geocoder-container {
     position: absolute;
@@ -61,7 +61,7 @@ map.on('load', function() {
     });
 
     // Listen for the `geocoder.input` event that is triggered when a user
-    // makes a selection and add a marker that matches the result.
+    // makes a selection and add a symbol that matches the result.
     geocoder.on('result', function(ev) {
         map.getSource('single-point').setData(ev.result.geometry);
     });

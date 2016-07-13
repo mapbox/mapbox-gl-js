@@ -5,20 +5,17 @@ module.exports = LngLat;
 var wrap = require('../util/util').wrap;
 
 /**
- * Create a longitude, latitude object from a given longitude and latitude pair in degrees.
- * Mapbox GL uses Longitude, Latitude coordinate order to match GeoJSON.
+ * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.
  *
- * Note that any Mapbox GL method that accepts a `LngLat` object can also accept an
- * `Array` and will perform an implicit conversion.  The following lines are equivalent:
- ```
- map.setCenter([-73.9749, 40.7736]);
- map.setCenter( new mapboxgl.LngLat(-73.9749, 40.7736) );
- ```
+ * Mapbox GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
+ *
+ * Note that any Mapbox GL method that accepts a `LngLat` object as an argument or option
+ * can also accept an `Array` of two numbers and will perform an implicit conversion.
+ * This flexible type is documented as [`LngLatLike`](#LngLatLike).
  *
  * @class LngLat
- * @classdesc A representation of a longitude, latitude point, in degrees.
- * @param {number} lng longitude
- * @param {number} lat latitude
+ * @param {number} lng Longitude, measured in degrees.
+ * @param {number} lat Latitude, measured in degrees.
  * @example
  * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
  */
@@ -34,9 +31,9 @@ function LngLat(lng, lat) {
 }
 
 /**
- * Return a new `LngLat` object whose longitude is wrapped to the range (-180, 180).
+ * Returns a new `LngLat` object whose longitude is wrapped to the range (-180, 180).
  *
- * @returns {LngLat} wrapped LngLat object
+ * @returns {LngLat} The wrapped `LngLat` object.
  * @example
  * var ll = new mapboxgl.LngLat(286.0251, 40.7736);
  * var wrapped = ll.wrap();
@@ -47,9 +44,9 @@ LngLat.prototype.wrap = function () {
 };
 
 /**
- * Return a `LngLat` as an array
+ * Returns the coordinates represented as an array of two numbers.
  *
- * @returns {array} [lng, lat]
+ * @returns {Array<number>} The coordinates represeted as an array of longitude and latitude.
  * @example
  * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
  * ll.toArray(); // = [-73.9749, 40.7736]
@@ -59,9 +56,9 @@ LngLat.prototype.toArray = function () {
 };
 
 /**
- * Return a `LngLat` as a string
+ * Returns the coordinates represent as a string.
  *
- * @returns {string} "LngLat(lng, lat)"
+ * @returns {string} The coordinates represented as a string of the format `'LngLat(lng, lat)'`.
  * @example
  * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
  * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
@@ -71,11 +68,12 @@ LngLat.prototype.toString = function () {
 };
 
 /**
- * Convert an array to a `LngLat` object, or return an existing `LngLat` object
- * unchanged.
+ * Converts an array of two numbers to a `LngLat` object.
  *
- * @param {Array<number>|LngLat} input `input` to convert
- * @returns {LngLat} LngLat object or original input
+ * If a `LngLat` object is passed in, the function returns it unchanged.
+ *
+ * @param {LngLatLike} input An array of two numbers to convert, or a `LngLat` object to return.
+ * @returns {LngLat} A new `LngLat` object, if a conversion occurred, or the original `LngLat` object.
  * @example
  * var arr = [-73.9749, 40.7736];
  * var ll = mapboxgl.LngLat.convert(arr);

@@ -75,12 +75,12 @@ map.on('load', function() {
         type: 'line',
         source: 'geojson',
         layout: {
-          'line-cap': 'round',
-          'line-join': 'round'
+            'line-cap': 'round',
+            'line-join': 'round'
         },
         paint: {
-          'line-color': '#000',
-          'line-width': 2.5
+            'line-color': '#000',
+            'line-width': 2.5
         },
         filter: ['in', '$type', 'LineString']
     });
@@ -95,7 +95,7 @@ map.on('load', function() {
         // Clear the Distance container to populate it with a new value
         distanceContainer.innerHTML = '';
 
-        // If a marker was clicked, remove it from the
+        // If a feature was clicked, remove it from the map
         if (features.length) {
             var id = features[0].properties.id;
             geojson.features = geojson.features.filter(function(point) {

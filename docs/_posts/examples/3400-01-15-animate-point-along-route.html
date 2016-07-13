@@ -61,7 +61,7 @@ var route = {
             ]
         }
     }]
-}
+};
 
 // A single point that animates along the route.
 // Coordinates are initially set to origin.
@@ -74,7 +74,7 @@ var point = {
             "coordinates": origin
         }
     }]
-}
+};
 
 // Calculate the distance in kilometers between route start/end point.
 var lineDistance = turf.lineDistance(route.features[0], 'kilometers');
@@ -83,8 +83,8 @@ var arc = [];
 
 // Draw an arc between the `origin` & `destination` of the two points
 for (var i = 0; i < lineDistance; i++) {
-   var segment = turf.along(route.features[0], i / 1000 * lineDistance, 'kilometers');
-   arc.push(segment.geometry.coordinates);
+    var segment = turf.along(route.features[0], i / 1000 * lineDistance, 'kilometers');
+    arc.push(segment.geometry.coordinates);
 }
 
 // Update the route with calculated arc coordinates
