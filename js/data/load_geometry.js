@@ -2,8 +2,24 @@
 
 var util = require('../util/util');
 var EXTENT = require('./bucket').EXTENT;
+var assert = require('assert');
 
-var boundsCache = {};
+
+// These bounds define the minimum and maximum supported coordinate values.
+// While visible coordinates are within [0, EXTENT], tiles may theoretically
+// contain cordinates within [-Infinity, Infinity]. Our range is limited by the
+// number of bits used to represent the coordinate.
+function createBounds(bits) {
+    return {
+        min: -1 * Math.pow(2, bits - 1),
+        max: Math.pow(2, bits - 1) - 1
+    };
+}
+
+var boundsLookup = {
+    15: createBounds(15),
+    16: createBounds(16)
+};
 
 /**
  * Loads a geometry from a VectorTileFeature and scales it to the common extent
@@ -15,15 +31,8 @@ var boundsCache = {};
  * @private
  */
 module.exports = function loadGeometry(feature, bits) {
-    bits = bits || 16;
-
-    if (!boundsCache[bits]) {
-        boundsCache[bits] = {
-            min: -1 * Math.pow(2, bits - 1),
-            max: Math.pow(2, bits - 1) - 1
-        };
-    }
-    var bounds = boundsCache[bits];
+    var bounds = boundsLookup[bits || 16];
+    assert(bounds);
 
     var scale = EXTENT / feature.extent;
     var geometry = feature.loadGeometry();
