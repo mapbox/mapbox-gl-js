@@ -20,7 +20,7 @@
     "gl-matrix": "^2.3.1",
     "grid-index": "^1.0.0",
     "mapbox-gl-function": "^1.2.1",
-    "mapbox-gl-supported": "^1.1.0",
+    "mapbox-gl-supported": "^1.2.0",
     "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#4d1f89514bf03536c8e682439df165c33a37122a",
     "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#83b1a3e5837d785af582efd5ed1a212f2df6a4ae",
     "pbf": "^1.3.2",
