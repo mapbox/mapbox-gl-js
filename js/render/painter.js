@@ -151,7 +151,10 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var pragmas = createUniformPragmas([{name: 'u_color', components: 4}]);
+        var pragmas = createUniformPragmas([
+            {name: 'u_color', components: 4},
+            {name: 'u_opacity', components: 1}
+        ]);
         var program = this.useProgram('fill', [], pragmas, pragmas);
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 

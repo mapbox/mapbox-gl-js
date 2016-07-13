@@ -48,6 +48,19 @@ test('TileCoord', function(t) {
             t.end();
         });
 
+        t.test('replaces {quadkey}', function(t) {
+            t.equal(new TileCoord(1, 0, 0).url(['quadkey={quadkey}']), 'quadkey=0');
+            t.equal(new TileCoord(2, 0, 0).url(['quadkey={quadkey}']), 'quadkey=00');
+            t.equal(new TileCoord(2, 1, 1).url(['quadkey={quadkey}']), 'quadkey=03');
+            t.equal(new TileCoord(17, 22914, 52870).url(['quadkey={quadkey}']), 'quadkey=02301322130000230');
+
+            // Test case confirmed by quadkeytools package
+            // https://bitbucket.org/steele/quadkeytools/src/master/test/quadkey.js?fileviewer=file-view-default#quadkey.js-57
+            t.equal(new TileCoord(6, 29, 3).url(['quadkey={quadkey}']), 'quadkey=011123');
+
+            t.end();
+        });
+
         t.test('replaces {bbox-epsg-3857}', function(t) {
             t.equal(new TileCoord(1, 0, 0).url(['bbox={bbox-epsg-3857}']), 'bbox=-20037508.342789244,0,0,20037508.342789244');
             t.end();

@@ -47,7 +47,10 @@ function drawBackground(painter, source, layer) {
         // Draw filling rectangle.
         if (painter.isOpaquePass !== (color[3] === 1)) return;
 
-        var pragmas = createUniformPragmas([{name: 'u_color', components: 4}]);
+        var pragmas = createUniformPragmas([
+            {name: 'u_color', components: 4},
+            {name: 'u_opacity', components: 1}
+        ]);
         program = painter.useProgram('fill', [], pragmas, pragmas);
         gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_opacity, opacity);

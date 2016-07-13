@@ -13,19 +13,20 @@ var handlers = {
     touchZoomRotate: require('./handler/touch_zoom_rotate')
 };
 
-module.exports = function bindHandlers(map, bindOptions, mapOptions) {
+module.exports = function bindHandlers(map, options) {
     var el = map.getCanvasContainer();
     var contextMenuEvent = null;
     var startPos = null;
     var tapped = null;
 
     for (var name in handlers) {
-        map[name] = new handlers[name](map, mapOptions);
-        if (bindOptions[name]) {
+        map[name] = new handlers[name](map, options);
+        if (options.interactive && options[name]) {
             map[name].enable();
         }
     }
 
+    el.addEventListener('mouseout', onMouseOut, false);
     el.addEventListener('mousedown', onMouseDown, false);
     el.addEventListener('mouseup', onMouseUp, false);
     el.addEventListener('mousemove', onMouseMove, false);
@@ -36,6 +37,10 @@ module.exports = function bindHandlers(map, bindOptions, mapOptions) {
     el.addEventListener('click', onClick, false);
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
+
+    function onMouseOut(e) {
+        fireMouseEvent('mouseout', e);
+    }
 
     function onMouseDown(e) {
         map.stop();

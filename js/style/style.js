@@ -22,7 +22,7 @@ module.exports = Style;
 function Style(stylesheet, animationLoop, workerCount) {
     this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(workerCount || 1, this);
-    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
@@ -110,6 +110,9 @@ Style.prototype = util.inherit(Evented, {
 
     loaded: function() {
         if (!this._loaded)
+            return false;
+
+        if (Object.keys(this._updates.sources).length)
             return false;
 
         for (var id in this.sources)
@@ -441,6 +444,8 @@ Style.prototype = util.inherit(Evented, {
         layer.off('error', this._forwardLayerEvent);
 
         delete this._layers[id];
+        delete this._updates.layers[id];
+        delete this._updates.paintProps[id];
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
@@ -498,7 +503,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
+        if (filter !== null && this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = util.clone(filter);

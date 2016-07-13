@@ -42,6 +42,14 @@ Bucket.create = function(options) {
 Bucket.EXTENT = 8192;
 
 /**
+ * The maximum size of a vertex array. This limit is imposed by WebGL's 16 bit
+ * addressing of vertex buffers.
+ * @private
+ * @readonly
+ */
+Bucket.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
+
+/**
  * The `Bucket` class is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
  *
@@ -119,19 +127,33 @@ Bucket.prototype.populateBuffers = function() {
 };
 
 /**
- * Check if there is enough space available in the current element group for
+ * Check if there is enough space available in the current array group for
  * `vertexLength` vertices. If not, append a new elementGroup. Should be called
  * by `populateBuffers` and its callees.
+ *
+ * Array groups are added to this.arrayGroups[programName].
+ * An individual array group looks like:
+ * {
+ *     index: number,
+ *     layout: {
+ *         layout: VertexArrayType,
+ *         ?element: ElementArrayType,
+ *         ?element2: ElementArrayType
+ *     },
+ *     paint: { [layerName]: PaintVertexArrayType, ...  }
+ * }
+ *
+ *
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
  * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
- * @returns The current element group
+ * @returns The current array group
  */
-Bucket.prototype.makeRoomFor = function(programName, numVertices) {
+Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
 
-    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > 65535) {
+    if (!currentGroup || currentGroup.layout.vertex.length + numVertices > Bucket.MAX_VERTEX_ARRAY_LENGTH) {
 
         var arrayTypes = this.arrayTypes[programName];
         var VertexArrayType = arrayTypes.layout.vertex;
@@ -163,6 +185,23 @@ Bucket.prototype.makeRoomFor = function(programName, numVertices) {
 /**
  * Start using a new shared `buffers` object and recreate instances of `Buffer`
  * as necessary.
+ *
+ * Sets up `this.arrayTypes` as:
+ * {
+ *     [programName]: {
+ *         layout: {
+ *             vertex: ArrayTypeType,
+ *             ?element: ArrayTypeType,
+ *             ?element2: ArrayTypeType
+ *         },
+ *         paint: { [layerName]: ArrayTypeType, ... }
+ *     },
+ *     ...
+ * }
+ *
+ * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
+ * with array group structure over in `prepareArrayGroup`.
+ *
  * @private
  */
 Bucket.prototype.createArrays = function() {
@@ -306,7 +345,8 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
                 var multiplier = attribute.multiplier || 1;
                 var components = attribute.components || 1;
 
-                for (var i = startIndex; i < length; i++) {
+                var start = g === startGroup.index  ? startIndex : 0;
+                for (var i = start; i < length; i++) {
                     var vertex = vertexArray.get(i);
                     for (var c = 0; c < components; c++) {
                         var memberName = components > 1 ? (attribute.name + c) : attribute.name;
@@ -347,6 +387,12 @@ function createPaintAttributes(bucket) {
 
         var interface_ = bucket.programInterfaces[interfaceName];
         if (!interface_.paintAttributes) continue;
+
+        // These tokens are replaced by arguments to the pragma
+        // https://github.com/mapbox/mapbox-gl-shaders#pragmas
+        var attributePrecision = '{precision}';
+        var attributeType = '{type}';
+
         for (var i = 0; i < interface_.paintAttributes.length; i++) {
             var attribute = interface_.paintAttributes[i];
             attribute.multiplier = attribute.multiplier || 1;
@@ -355,18 +401,12 @@ function createPaintAttributes(bucket) {
                 var layer = bucket.childLayers[j];
                 var paintAttributes = layerPaintAttributes[layer.id];
 
-                var attributeType = attribute.components === 1 ? 'float' : 'vec' + attribute.components;
                 var attributeInputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
                 var attributeInnerName = attribute.name.slice(2);
                 var attributeVaryingDefinition;
 
                 paintAttributes.fragmentPragmas.initialize[attributeInnerName] = '';
-
-                // This token is replaced by the first argument to the pragma,
-                // which must be the attribute's precision ("lowp", "mediump",
-                // or "highp")
-                var attributePrecision = '{precision}';
 
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);

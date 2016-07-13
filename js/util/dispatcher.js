@@ -36,6 +36,11 @@ function Dispatcher(length, parent) {
 
     this.worker = new Worker(workerBus);
     this.actor = new Actor(parentBus, parent);
+
+    this.remove = function() {
+        parentListeners.splice(0, parentListeners.length);
+        workerListeners.splice(0, workerListeners.length);
+    };
 }
 
 Dispatcher.prototype = {
@@ -45,9 +50,5 @@ Dispatcher.prototype = {
 
     send: function(type, data, callback, targetID, buffers) {
         this.actor.send(type, data, callback, buffers);
-    },
-
-    remove: function() {
-        // noop
     }
 };

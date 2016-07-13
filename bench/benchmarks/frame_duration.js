@@ -65,7 +65,7 @@ function measureFrameTime(options, zoom, callback) {
         height: 768,
         zoom: zoom,
         center: [-77.032194, 38.912753],
-        style: 'mapbox://styles/mapbox/streets-v8'
+        style: 'mapbox://styles/mapbox/streets-v9'
     });
 
     map.on('load', function() {

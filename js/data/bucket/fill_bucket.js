@@ -46,6 +46,15 @@ FillBucket.prototype.programInterfaces = {
             },
             multiplier: 255,
             paintProperty: 'fill-outline-color'
+        }, {
+            name: 'a_opacity',
+            components: 1,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return [layer.getPaintValue("fill-opacity", globalProperties, featureProperties)];
+            },
+            multiplier: 255,
+            paintProperty: 'fill-opacity'
         }]
     }
 };
@@ -54,7 +63,7 @@ FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
-    var startGroup = this.makeRoomFor('fill', 0);
+    var startGroup = this.prepareArrayGroup('fill', 0);
     var startIndex = startGroup.layout.vertex.length;
 
     for (var i = 0; i < polygons.length; i++) {
@@ -70,7 +79,7 @@ FillBucket.prototype.addPolygon = function(polygon) {
         numVertices += polygon[k].length;
     }
 
-    var group = this.makeRoomFor('fill', numVertices);
+    var group = this.prepareArrayGroup('fill', numVertices);
     var flattened = [];
     var holeIndices = [];
     var startIndex = group.layout.vertex.length;

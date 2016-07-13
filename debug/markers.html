@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+
+        .mapboxgl-marker {
+            width: 10px;
+            height: 10px;
+            background: red;
+            margin-top: -5px;
+            margin-left: -5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
+<script>
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: true
+});
+
+function addRandomMarker() {
+    var bounds = map.getBounds();
+    var s = bounds.getSouth();
+    var n = bounds.getNorth();
+    var w = bounds.getWest();
+    var e = bounds.getEast();
+
+    var lng = w + (e - w) * Math.random();
+    var lat = s + (n - s) * Math.random();
+
+    var marker = new mapboxgl.Marker()
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+    marker.getElement().onclick = function(e) {
+        alert('Hello world');
+        e.stopPropagation();
+    };
+}
+
+for (var i = 0; i < 100; i++) addRandomMarker();
+
+map.addControl(new mapboxgl.Navigation());
+</script>
+
+</body>
+</html>

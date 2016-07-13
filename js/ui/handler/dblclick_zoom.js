@@ -52,7 +52,10 @@ DoubleClickZoomHandler.prototype = {
     },
 
     _onDblClick: function (e) {
-        this._map.zoomTo(this._map.getZoom() +
-            (e.originalEvent.shiftKey ? -1 : 1), {around: e.lngLat});
+        this._map.zoomTo(
+            this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1),
+            {around: e.lngLat},
+            e
+        );
     }
 };

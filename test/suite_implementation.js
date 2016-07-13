@@ -69,7 +69,8 @@ module.exports = function(style, options, _callback) {
                 [];
 
             map.remove();
-            gl.destroy();
+            gl.getExtension('STACKGL_destroy_context').destroy();
+            delete map.painter.gl;
 
             callback(null, data, results.map(function (feature) {
                 feature = feature.toJSON();

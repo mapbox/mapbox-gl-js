@@ -38,7 +38,7 @@ function TilePyramid(options) {
     this._tiles = {};
     this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
 
-    this._filterRendered = this._filterRendered.bind(this);
+    this._isIdRenderable = this._isIdRenderable.bind(this);
 }
 
 
@@ -47,13 +47,15 @@ TilePyramid.maxUnderzooming = 3;
 
 TilePyramid.prototype = {
     /**
-     * Confirm that every tracked tile is loaded.
-     * @returns {boolean} whether all tiles are loaded.
+     * Return true if no tile data is pending, tiles will not change unless
+     * an additional API call is received.
+     * @returns {boolean}
      * @private
      */
     loaded: function() {
         for (var t in this._tiles) {
-            if (!this._tiles[t].loaded && !this._tiles[t].errored)
+            var tile = this._tiles[t];
+            if (tile.state !== 'loaded' && tile.state !== 'errored')
                 return false;
         }
         return true;
@@ -64,22 +66,32 @@ TilePyramid.prototype = {
      * @returns {Array<number>} ids
      * @private
      */
-    orderedIDs: function() {
+    getIds: function() {
         return Object.keys(this._tiles).map(Number).sort(compareKeyZoom);
     },
 
-    renderedIDs: function() {
-        return this.orderedIDs().filter(this._filterRendered);
+    getRenderableIds: function() {
+        return this.getIds().filter(this._isIdRenderable);
     },
 
-    _filterRendered: function(id) {
-        return this._tiles[id].loaded && !this._coveredTiles[id];
+    _isIdRenderable: function(id) {
+        return this._tiles[id].isRenderable() && !this._coveredTiles[id];
     },
 
     reload: function() {
         this._cache.reset();
         for (var i in this._tiles) {
-            this._load(this._tiles[i]);
+            var tile = this._tiles[i];
+
+            // The difference between "loading" tiles and "reloading" tiles is
+            // that "reloading" tiles are "renderable". Therefore, a "loading"
+            // tile cannot become a "reloading" tile without first becoming
+            // a "loaded" tile.
+            if (tile.state !== 'loading') {
+                tile.state = 'reloading';
+            }
+
+            this._load(tile);
         }
     },
 
@@ -157,8 +169,8 @@ TilePyramid.prototype = {
         for (var id in this._tiles) {
             var tile = this._tiles[id];
 
-            // only consider loaded tiles on higher zoom levels (up to maxCoveringZoom)
-            if (retain[id] || !tile.loaded || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
+            // only consider renderable tiles on higher zoom levels (up to maxCoveringZoom)
+            if (retain[id] || !tile.isRenderable() || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
 
             // disregard tiles that are not descendants of the given tile coordinate
             var z2 = Math.pow(2, Math.min(tile.coord.z, this.maxzoom) - Math.min(coord.z, this.maxzoom));
@@ -175,7 +187,7 @@ TilePyramid.prototype = {
                 var parentId = tile.coord.parent(this.maxzoom).id;
                 tile = this._tiles[parentId];
 
-                if (tile && tile.loaded) {
+                if (tile && tile.isRenderable()) {
                     delete retain[id];
                     retain[parentId] = true;
                 }
@@ -198,7 +210,7 @@ TilePyramid.prototype = {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
             coord = coord.parent(this.maxzoom);
             var tile = this._tiles[coord.id];
-            if (tile && tile.loaded) {
+            if (tile && tile.isRenderable()) {
                 retain[coord.id] = true;
                 return tile;
             }
@@ -261,7 +273,7 @@ TilePyramid.prototype = {
 
             retain[coord.id] = true;
 
-            if (tile.loaded)
+            if (tile.isRenderable())
                 continue;
 
             // The tile we require is not yet loaded.
@@ -360,7 +372,7 @@ TilePyramid.prototype = {
         if (tile.uses > 0)
             return;
 
-        if (tile.loaded) {
+        if (tile.isRenderable()) {
             this._cache.add(tile.coord.wrapped().id, tile);
         } else {
             this._abort(tile);
@@ -387,7 +399,7 @@ TilePyramid.prototype = {
      */
     tilesIn: function(queryGeometry) {
         var tileResults = {};
-        var ids = this.orderedIDs();
+        var ids = this.getIds();
 
         var minX = Infinity;
         var minY = Infinity;

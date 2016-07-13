@@ -66,7 +66,15 @@ exports.timed = function (fn, dur, ctx) {
     return function() { abort = true; };
 };
 
-exports.supported = require('mapbox-gl-js-supported');
+/**
+ * Test if the current browser supports Mapbox GL JS
+ * @param {Object} options
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] Return `false`
+ *   if the performance of Mapbox GL JS would be dramatically worse than
+ *   expected (i.e. a software renderer would be used)
+ * @return {boolean}
+ */
+exports.supported = require('mapbox-gl-supported');
 
 exports.hardwareConcurrency = navigator.hardwareConcurrency || 4;
 

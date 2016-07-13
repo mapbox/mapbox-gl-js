@@ -22,8 +22,8 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on htt
 <!DOCTYPE html>
 <html>
 <head>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.21.0/mapbox-gl.css' rel='stylesheet' />
 </head>
 
 <body>
@@ -33,7 +33,7 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on htt
         mapboxgl.accessToken = '<your access token here>';
         var map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v8'
+            style: 'mapbox://styles/mapbox/streets-v9'
         });
     </script>
 </body>
@@ -57,7 +57,7 @@ var mapboxgl = require('mapbox-gl');
 mapboxgl.accessToken = '<your access token here>';
 var map = new mapboxgl.Map({
     container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v8'
+    style: 'mapbox://styles/mapbox/streets-v9'
 });
 ```
 
@@ -85,7 +85,7 @@ var mapboxgl = require('mapbox-gl');
 mapboxgl.accessToken = '<your access token here>';
 var map = new mapboxgl.Map({
     container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v8'
+    style: 'mapbox://styles/mapbox/streets-v9'
 });
 ```
 

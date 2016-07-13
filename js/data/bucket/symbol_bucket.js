@@ -69,7 +69,7 @@ var programAttributes = [{
     type: 'Uint8'
 }];
 
-function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) {
+function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
     return array.emplaceBack(
             // pos
             x,
@@ -81,7 +81,7 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom) 
             tx / 4,                   // tex
             ty / 4,                   // tex
             (labelminzoom || 0) * 10, // labelminzoom
-            0,
+            labelangle,               // labelangle
             // data2
             (minzoom || 0) * 10,               // minzoom
             Math.min(maxzoom || 25, 25) * 10); // minzoom
@@ -235,6 +235,8 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
                 }
                 if (image.pixelRatio !== 1) {
                     this.iconsNeedLinear = true;
+                } else if (layout['icon-rotate'] !== 0 || !this.layer.isLayoutValueFeatureConstant('icon-rotate')) {
+                    this.iconsNeedLinear = true;
                 }
             }
         } else {
@@ -242,7 +244,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
         }
 
         if (shapedText || shapedIcon) {
-            this.addFeature(geometries[k], shapedText, shapedIcon, features[k].index);
+            this.addFeature(geometries[k], shapedText, shapedIcon, features[k]);
         }
     }
     this.symbolInstancesEndIndex = this.symbolInstancesArray.length;
@@ -251,7 +253,7 @@ SymbolBucket.prototype.populateBuffers = function(collisionTile, stacks, icons) 
     this.trimArrays();
 };
 
-SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, featureIndex) {
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feature) {
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -322,10 +324,10 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
             // be drawn across tile boundaries. Instead they need to be included in
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
-            this.addSymbolInstance(anchor, line, shapedText, shapedIcon, layout,
-                addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, featureIndex, this.sourceLayerIndex, this.index,
+            this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layer,
+                addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, this.sourceLayerIndex, this.index,
                 textBoxScale, textPadding, textAlongLine,
-                iconBoxScale, iconPadding, iconAlongLine);
+                iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
         }
     }
 };
@@ -452,7 +454,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
 SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
 
-    var group = this.makeRoomFor(programName, 4 * (quadsEnd - quadsStart));
+    var group = this.prepareArrayGroup(programName, 4 * (quadsEnd - quadsStart));
 
     var elementArray = group.layout.element;
     var vertexArray = group.layout.vertex;
@@ -462,11 +464,10 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
 
     for (var k = quadsStart; k < quadsEnd; k++) {
 
-        var symbol = this.symbolQuadsArray.get(k).SymbolQuad,
-            angle = symbol.angle;
+        var symbol = this.symbolQuadsArray.get(k).SymbolQuad;
 
         // drop upside down versions of glyphs
-        var a = (angle + placementAngle + Math.PI) % (Math.PI * 2);
+        var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
         if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
         var tl = symbol.tl,
@@ -484,10 +485,13 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
         // Lower min zoom so that while fading out the label it can be shown outside of collision-free zoom levels
         if (minZoom === placementZoom) minZoom = 0;
 
-        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom);
-        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom);
+        // Encode angle of glyph
+        var glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
+
+        var index = addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
+        addVertex(vertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
 
         elementArray.emplaceBack(index, index + 1, index + 2);
         elementArray.emplaceBack(index + 1, index + 2, index + 3);
@@ -516,7 +520,7 @@ SymbolBucket.prototype.updateFont = function(stacks) {
 };
 
 SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
-    var group = this.makeRoomFor('collisionBox', 0);
+    var group = this.prepareArrayGroup('collisionBox', 0);
     var vertexArray = group.layout.vertex;
     var angle = -collisionTile.angle;
     var yStretch = collisionTile.yStretch;
@@ -555,13 +559,13 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     }
 };
 
-SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedIcon, layout, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
+SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
     textBoxScale, textPadding, textAlongLine,
-    iconBoxScale, iconPadding, iconAlongLine) {
+    iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
     if (shapedText) {
-        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layout, textAlongLine) : [];
+        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine) : [];
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false);
     }
 
@@ -577,7 +581,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
     if (shapedIcon) {
-        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layout, iconAlongLine) : [];
+        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText, globalProperties, featureProperties) : [];
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 
@@ -624,9 +628,9 @@ SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
         symbolQuad.tex.x,
         symbolQuad.tex.y,
         //angle
-        symbolQuad.angle,
+        symbolQuad.anchorAngle,
+        symbolQuad.glyphAngle,
         // scales
         symbolQuad.maxScale,
         symbolQuad.minScale);
 };
-

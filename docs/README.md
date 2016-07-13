@@ -4,12 +4,17 @@ Mapbox GL JS has [API documentation](#api-documentation) and [examples](#example
 
 API documentation is written as [JSDoc comments](http://usejsdoc.org/) and processed with [documentationjs](http://documentation.js.org/).
 
- - Classes, methods, events and anything else in the public interface must be documented with a JSDoc comment. Everything outside of the public interface may be documented and must be tagged as `@private`.
- - Text within JSDoc comments may use markdown formatting. Code identifiers must be surrounded by \`backticks\`.
- - Documentation must be written in complete gramatically-correct sentences.
- - Documentation must specify measurement units when applicable.
- - Documentation descriptions must contain more information than what is obvious from the identifier and JSDoc metadata.
- - `@param` and `@property` descriptions should be capitalized and written as if completing a sentance beginning with "This is..." or "This...".
+* Classes, methods, events, and anything else in the public interface must be documented with JSDoc comments. Everything outside of the public interface may be documented and must be tagged as `@private`.
+* Text within JSDoc comments may use markdown formatting. Code identifiers must be surrounded by \`backticks\`.
+* Documentation must be written in grammatically correct sentences ending with periods.
+* Documentation must specify measurement units when applicable.
+* Documentation descriptions must contain more information than what is obvious from the identifier and JSDoc metadata.
+* Class descriptions should describe what the class *is*, or what its instances *are*. They do not document the constructor, but the class. They should begin with either a complete sentence or a phrase that would complete a sentence beginning with "A `T` is..." or "The `T` class is..." Examples: "Lists are ordered indexed dense collections." "A class used for asynchronous computations."
+* Function descriptions should begin with a third person singular present tense verb, as if completing a sentence beginning with "This function..." If the primary purpose of the function is to return a value, the description should begin with "Returns..." Examples: "Returns the layer with the specified id." "Sets the map's center point."
+* `@param`, `@property`, and `@returns` descriptions should be capitalized and end with a period. They should begin as if completing a sentence beginning with "This is..." or "This..."
+* Functions that do not return a value (return `undefined`), should not have a `@returns` annotation.
+* Member descriptions should document what a member represents or gets and sets. They should also indicate whether the member is read-only.
+* Event descriptions should begin with "Fired when..." and so should describe when the event fires. Event entries should clearly document any data passed to the handler, with a link to MDN documentation of native Event objects when applicable.
 
 ## Writing Examples
 

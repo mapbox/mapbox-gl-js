@@ -137,6 +137,7 @@ var Map = module.exports = function(options) {
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
     this._trackResize = options.trackResize;
     this._workerCount = options.workerCount;
+    this._bearingSnap = options.bearingSnap;
 
     if (typeof options.container === 'string') {
         this._container = document.getElementById(options.container);
@@ -183,15 +184,7 @@ var Map = module.exports = function(options) {
         window.addEventListener('resize', this._onWindowResize, false);
     }
 
-    bindHandlers(this, {
-        scrollZoom: options.interactive && options.scrollZoom,
-        boxZoom: options.interactive && options.boxZoom,
-        dragRotate: options.interactive && options.dragRotate,
-        dragPan: options.interactive && options.dragPan,
-        keyboard: options.interactive && options.keyboard,
-        doubleClickZoom: options.interactive && options.doubleClickZoom,
-        touchZoomRotate: options.interactive && options.touchZoomRotate
-    }, options);
+    bindHandlers(this, options);
 
     this._hash = options.hash && (new Hash()).addTo(this);
     // don't set position from options if set through hash

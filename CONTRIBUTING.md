@@ -50,7 +50,7 @@ npm install
 Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
 ```bash
 sudo apt-get update &&
-sudo apt-get install build-essential git nodejs libglew-dev
+sudo apt-get install build-essential git nodejs libglew-dev libxi-dev
 ```
 
 Clone the repository
@@ -62,6 +62,26 @@ Install node module dependencies
 ```bash
 cd mapbox-gl-js &&
 npm install
+```
+
+### Windows
+
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
+
+Clone the repository
+```bash
+git clone git@github.com:mapbox/mapbox-gl-js.git
+```
+
+Install node module dependencies
+```bash
+cd mapbox-gl-js
+npm install
+```
+
+Install headless-gl dependencies https://github.com/stackgl/headless-gl#windows
+```
+copy node_modules/headless-gl/deps/windows/dll/x64/*.dll c:\windows\system32
 ```
 
 ## Serving the Debug Page

@@ -85,7 +85,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             return;
 
         if (err) {
-            tile.errored = true;
+            tile.state = 'errored';
             this.fire('tile.error', {tile: tile, error: err});
             return;
         }

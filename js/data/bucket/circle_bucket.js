@@ -83,7 +83,7 @@ CircleBucket.prototype.addFeature = function(feature) {
     var globalProperties = {zoom: this.zoom};
     var geometries = loadGeometry(feature);
 
-    var startGroup = this.makeRoomFor('circle', 0);
+    var startGroup = this.prepareArrayGroup('circle', 0);
     var startIndex = startGroup.layout.vertex.length;
 
     for (var j = 0; j < geometries.length; j++) {
@@ -104,7 +104,7 @@ CircleBucket.prototype.addFeature = function(feature) {
             // │ 0     1 │
             // └─────────┘
 
-            var group = this.makeRoomFor('circle', 4);
+            var group = this.prepareArrayGroup('circle', 4);
             var vertexArray = group.layout.vertex;
 
             var index = this.addCircleVertex(vertexArray, x, y, -1, -1);
