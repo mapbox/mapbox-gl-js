@@ -33,7 +33,7 @@ test('loadGeometry extent error', function(t) {
         }
     };
 
-    loadGeometry(feature);
+    loadGeometry(feature, 15);
 
     t.equal(numWarnings, 1);
 
@@ -42,4 +42,3 @@ test('loadGeometry extent error', function(t) {
 
     t.end();
 });
-
