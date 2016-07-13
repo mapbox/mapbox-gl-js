@@ -18,15 +18,15 @@ layout: pages
     </div>
 </div>
 
-<script src='{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.js'></script>
+<script src='{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/v{{site.data.package.version}}{% endif %}/mapbox-gl.js'></script>
 
 <iframe id='demo' class='row10 col12' allowfullscreen='true' mozallowfullscreen='true' webkitallowfullscreen='true'></iframe>
 <script>
     if (mapboxgl.supported()) {
         var doc = $('#demo')[0].contentWindow.document;
 
-        var jsURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.js',
-            cssURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}{% endif %}/mapbox-gl.css';
+        var jsURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/v{{site.data.package.version}}{% endif %}/mapbox-gl.js',
+            cssURL = '{% if site.mapboxglbase %}{{site.mapboxglbase}}{% else %}https://api.tiles.mapbox.com/mapbox-gl-js/v{{site.data.package.version}}{% endif %}/mapbox-gl.css';
 
         var exampleCSS = 'body { margin:0; padding:0; }\n#map { position:absolute; top:0; bottom:0; width:100%; }';
 
@@ -62,8 +62,8 @@ layout: pages
     <meta charset='utf-8' />
     <title>{{ page.exampletitle }}</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/{{site.version}}/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.css' rel='stylesheet' />
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
