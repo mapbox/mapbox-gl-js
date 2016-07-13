@@ -1,3 +1,34 @@
+## 0.21.0 (July 13 2016)
+
+#### Breaking Changes
+
+#### New Features & Improvements
+
+ * Add `text-pitch-alignment` style property #2668
+ * Allow query parameters on `mapbox://` URLs #2702
+ * Add `icon-text-fit` and `icon-text-fit-padding` style properties #2720
+ * Enable property functions for `icon-rotate` #2738
+ * Enable property functions for `fill-opacity` #2733
+ * Fire `Map#mouseout` events #2777
+ * Allow query parameters on all sprite URLs #2772
+ * Increase sprite atlas size to 1024px square, allowing more and larger sprites #2802
+ * Add `Marker` class #2725 #2810
+ * Add `{quadkey}` URL parameter #2805
+ * Add `circle-pitch-scale` style property #2821
+
+#### Bugfixes
+
+ * Fix rendering of layers with large numbers of features #2794
+ * Fix exceptions thrown during drag-rotate interactions #2840
+ * Fix error when adding and removing a layer within the same update cycle #2845
+ * Fix false "Geometry exceeds allowed extent" warnings #2568
+ * Fix `Map#loaded` returning true while there are outstanding tile updates #2847
+ * Fix style validation error thrown while removing a filter #2847
+ * Fix event data object not being passed for double click events #2814
+ * Fix multipolygons disappearing from map at certain zoom levels #2704
+ * Fix exceptions caused by `queryRenderedFeatures` in Safari and Firefox #2822
+ * Fix `mapboxgl#supported()` returning `true` in old versions of IE11 mapbox/mapbox-gl-supported#1
+
 ## 0.20.1 (June 21 2016)
 
 #### Bugfixes

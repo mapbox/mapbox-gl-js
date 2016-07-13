@@ -5,6 +5,6 @@ source: docs
 permalink: /:categories/:title/
 baseurl: https://www.mapbox.com/mapbox-gl-js
 excerpt_separator: ""
-version: v0.20.1
+version: v0.21.0
 exclude: [dist]
 future: true
