@@ -181,7 +181,7 @@ navigation:
           <h3 class='space-bottom1'><a href='#sources-vector' title='link to vector'>vector</a></h3>
           <p>
             A vector tile source. Tiles must be in <a href="https://www.mapbox.com/developers/vector-tiles/">Mapbox
-            Vector Tile format</a>. All layers that use a vector source must specify a <code>"source-layer"</code> value.
+            Vector Tile format</a>. All geometric coordinates in vector tiles must be between <code>-1 * extent</code> and <code>(extent * 2) - 1</code> inclusive. All layers that use a vector source must specify a <code>"source-layer"</code> value.
             For vector tiles hosted by Mapbox, the <code>"url"</code> value should be of the
             form <code>mapbox://<var>mapid</var></code>.
           </p>
