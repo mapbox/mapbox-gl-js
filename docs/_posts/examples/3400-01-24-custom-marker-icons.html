@@ -86,19 +86,8 @@ for (var i = 0; i < geojson.features.length; i++) {
     div.style['background-size'] = 'contain';
 
     // add marker to map
-    var marker = new mapboxgl.Marker(div)
-                    .setLngLat(feature.geometry.coordinates)
-                    .addTo(map);
-
-    // add popups on click
-    marker.addEventListener('click', function(e) {
-        var popup = new mapboxgl.Popup();
-        var coordinates = map.unproject([e.x, e.y]);
-        popup.setLngLat(coordinates)
-          .setText(feature.properties.name)
-          .addTo(map);
-
-        e.stopPropagation();
-    })
+    new mapboxgl.Marker(div)
+        .setLngLat(feature.geometry.coordinates)
+        .addTo(map);
 }
 </script>
