@@ -75,11 +75,11 @@ for (var i = 0; i < geojson.features.length; i++) {
     var feature = geojson.features[i];
     var div = document.createElement('div');
     div.setAttribute('id', feature.properties.name);
-    div.style["width"] = feature.properties.icon.iconSize[0] + "px";
-    div.style["height"] = feature.properties.icon.iconSize[1] + "px";
-    div.style["background-image"] = "url(" + feature.properties.icon.iconUrl + ")";
-    div.style["background-position"] = "center center";
-    div.style["background-size"] = "contain";
+    div.style['width'] = feature.properties.icon.iconSize[0] + "px";
+    div.style['height'] = feature.properties.icon.iconSize[1] + "px";
+    div.style['background-image'] = 'url(' + feature.properties.icon.iconUrl + ')';
+    div.style['background-position'] = 'center center';
+    div.style['background-size'] = 'contain';
     var marker = new mapboxgl.Marker(div)
                     .setLngLat(feature.geometry.coordinates)
                     .addTo(map);
