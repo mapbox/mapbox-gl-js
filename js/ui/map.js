@@ -1226,7 +1226,8 @@ function removeNode(node) {
  */
 
 /**
- * Gets the version number of Mapbox GL JS.
+ * The version of Mapbox GL JS in use as specified in `package.json`,
+ * `CHANGELOG.md`, and the GitHub release.
  *
  * @var {string} version
  */
