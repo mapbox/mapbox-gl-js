@@ -640,7 +640,7 @@ test('SourceCache#loaded (no errors)', function (t) {
 test('SourceCache#loaded (with errors)', function (t) {
     var sourceCache = createSourceCache({
         loadTile: function(tile) {
-            tile.errored = true;
+            tile.state = 'errored';
         }
     });
 
