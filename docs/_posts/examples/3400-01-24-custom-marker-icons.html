@@ -1,0 +1,87 @@
+---
+layout: example
+category: example
+title: Add custom icons with Markers
+description: 'Use Markers to add custom icons to your map.'
+---
+<div id='map'></div>
+
+<script>
+var geojson = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "circle",
+        "icon": {
+            "iconUrl": "/mapbox-gl-js/docs/assets/circle.png",
+            "iconSize": [25, 25]
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -66.324462890625,
+          -16.024695711685304
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "square",
+        "icon": {
+            "iconUrl": "/mapbox-gl-js/docs/assets/square.png",
+            "iconSize": [25, 25]
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -61.2158203125,
+          -15.97189158092897
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "triangle",
+        "icon": {
+            "iconUrl": "/mapbox-gl-js/docs/assets/triangle.png",
+            "iconSize": [25, 25]
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -63.29223632812499,
+          -18.28151823530889
+        ]
+      }
+    }
+  ]
+}
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v9', //stylesheet location
+    center: [-65.017, -16.457], // starting position
+    zoom: 5 // starting zoom
+});
+
+// add markers to map
+for (var i = 0; i < geojson.features.length; i++) {
+    var feature = geojson.features[i];
+    var div = document.createElement('div');
+    div.setAttribute('id', feature.properties.name);
+    div.style["width"] = feature.properties.icon.iconSize[0] + "px";
+    div.style["height"] = feature.properties.icon.iconSize[1] + "px";
+    div.style["background-image"] = "url(" + feature.properties.icon.iconUrl + ")";
+    div.style["background-position"] = "center center";
+    div.style["background-size"] = "contain";
+    var marker = new mapboxgl.Marker(div)
+                    .setLngLat(feature.geometry.coordinates)
+                    .addTo(map);
+}
+</script>
