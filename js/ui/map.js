@@ -1414,3 +1414,15 @@ function removeNode(node) {
  * @instance
  * @property {MapMouseEvent | MapTouchEvent} data
  */
+
+ /**
+  * Fired if any error occurs. This is GL JS's primary error reporting
+  * mechanism. We use an event instead of `throw` to better accommodate
+  * asyncronous operations. If no listeners are bound to the `error` event, the
+  * error will be printed to the console.
+  *
+  * @event error
+  * @memberof Map
+  * @instance
+  * @property {{error: {message: string}}} data
+  */
