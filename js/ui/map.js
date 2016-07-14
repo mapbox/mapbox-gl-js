@@ -1225,18 +1225,24 @@ function removeNode(node) {
  * mapboxgl.accessToken = myAccessToken;
  */
 
- /**
-  * Returns a Boolean indicating whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
-  *
-  * @function supported
-  * @param {Object} options
-  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
-  *   the function will return `false` if the performance of Mapbox GL JS would
-  *   be dramatically worse than expected (i.e. a software renderer would be used).
-  * @return {boolean}
-  * @example
-  * mapboxgl.supported() // = true
-  */
+/**
+ * Gets the version number of Mapbox GL JS.
+ *
+ * @var version
+ */
+
+/**
+ * Returns a Boolean indicating whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
+ *
+ * @function supported
+ * @param {Object} options
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
+ *   the function will return `false` if the performance of Mapbox GL JS would
+ *   be dramatically worse than expected (i.e. a software renderer would be used).
+ * @return {boolean}
+ * @example
+ * mapboxgl.supported() // = true
+ */
 
 /**
  * A [`LngLat`](#LngLat) object or an array of two numbers representing longitude and latitude.
