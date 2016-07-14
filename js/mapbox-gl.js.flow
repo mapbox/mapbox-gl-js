@@ -1,0 +1,367 @@
+type Style = Object;
+type Filter = Array<any>;
+type Source = Object;
+type Layer = Object;
+
+type MapOptions = {
+  container: HTMLElement | string,
+  minZoom?: number,
+  maxZoom?: number,
+  style?: Style | string,
+  hash?: boolean,
+  interactive?: boolean,
+  bearingSnap?: number,
+  classes?: Array<string>,
+  attributionControl?: boolean,
+  failIfMajorPerformanceCaveat?: boolean,
+  preserveDrawingBuffer?: boolean,
+  maxBounds?: LngLatBoundsLike,
+  scrollZoom?: boolean,
+  boxZoom?: boolean,
+  dragRotate?: boolean,
+  dragPan?: boolean,
+  keyboard?: boolean,
+  doubleClickZoom?: boolean,
+  touchZoomRotate?: boolean,
+  trackResize?: boolean,
+  center?: Array<number>,
+  zoom?: number,
+  bearing?: number,
+  pitch?: number,
+  workerCount?: number
+}
+
+declare class Map mixins Evented {
+  constructor(options: MapOptions): void;
+  accessToken?: string;
+  addControl(control: Control | Object): Map;
+  addClass(klass: string, options?: StyleOptions): Map;
+  removeClass(klass: string, options?: StyleOptions): Map;
+  setClasses(klasses: Array<string>, options?: StyleOptions): Map;
+  hasClass(klass: string): boolean;
+  getClasses(klass: string): Array<string>;
+  resize(): Map;
+  getBounds(): LngLatBounds;
+  setMaxBounds(lnglatbounds: ?LngLatBoundsLike): this;
+  setMinZoom(minZoom: ?number): this;
+  setMaxZoom(maxZoom: ?number): this;
+  project(lnglat: LngLatLike): Object;
+  unproject(point: PointLike): LngLat;
+  queryRenderedFeatures(
+    pointOrBox?: PointLike | Array<PointLike>,
+    parameters?: {
+      layers: ?Array<string>,
+      filter?: Filter
+    }): Array<Object>;
+  querySourceFeatures(
+    sourceID: string,
+    parameters: {
+      sourceLayer?: string,
+      filter?: Filter
+    }): Array<Object>;
+  setStyle(style: Style | string): this;
+  getStyle(): Style;
+  addSource(id: string, source: Source): this;
+  removeSource(id: string): this;
+  getSource(id: string): ?Source;
+  addLayer(layer: Layer, before?: string): this;
+  removeLayer(id: string): this;
+  getLayer(id: string): ?Layer;
+  setFilter(layer: string, filter: Filter): this;
+  setLayerZoomRange(layerId: string, minzoom: number, maxzoom: number): this;
+  getFilter(layer: string): Filter;
+  setPaintProperty(layer: string, name: string, value: any, klass?: string): this;
+  getPaintProperty(layer: string, name: string, klass?: string): any;
+  setLayoutProperty(layer: string, name: string, value: any, klass?: string): this;
+  getLayoutProperty(layer: string, name: string): any;
+  getContainer(): HTMLElement,
+  getCanvasContainer(): HTMLElement,
+  getCanvas(): HTMLCanvasElement,
+  loaded(): boolean,
+  remove(): void,
+  onError: Function,
+  showTileBoundaries: boolean,
+  showCollisionBoxes: boolean,
+  repaint: boolean,
+  getCenter(): LngLat,
+  setCenter(center: LngLatLike,
+    eventData?: Object): this;
+  panBy(offset: Array<number>,
+    options?: AnimationOptions,
+    eventData?: Object): this;
+  panTo(lnglat: LngLatLike,
+    options?: AnimationOptions,
+    eventData?: Object): this;
+  getZoom(): number,
+  setZoom(zoom: number, eventData?: Object): this;
+  zoomTo(zoom: number,
+    options?: AnimationOptions,
+    eventData?: Object): this;
+  zoomIn(options?: AnimationOptions, eventData?: Object): this;
+  zoomOut(options?: AnimationOptions, eventData?: Object): this;
+  getBearing(): number;
+  setBearing(bearing: number, eventData?: Object): this;
+  rotateTo(bearing: number,
+    options?: AnimationOptions,
+    eventData?: Object): this;
+  resetNorth(options?: AnimationOptions, eventData?: Object): this;
+  snapToNorth(options?: AnimationOptions, eventData?: Object): this;
+  getPitch(): number;
+  setPitch(pitch: number, eventData?: Object): this;
+  fitBounds(bounds: LngLatBoundsLike,
+    options?: {
+      linear?: boolean,
+      easing?: Function,
+      padding?: number,
+      maxZoom?: number
+    },
+    eventData?: Object): this;
+  jumpTo(options: CameraOptions, eventData?: Object): this;
+  easeTo(options: CameraAnimationOptions, eventData?: Object): this;
+  flyTo(options: FlyOptions, eventData?: Object): this;
+  stop(): this;
+}
+
+declare class LngLat {
+  constructor(lng: number, lat: number): void;
+  wrap(): LngLat;
+  toArray(): Array<number>;
+  toString(): string;
+  lng: number;
+  lat: number;
+  static convert(input: LngLatLike): LngLat;
+}
+
+type LngLatLike = LngLat | Array<number>;
+
+declare class LngLatBounds {
+  constructor(sw: LngLatLike, ne: LngLatLike): void;
+  extend(obj: LngLatLike | LngLatBoundsLike): LngLatBounds;
+  getCenter(): LngLat;
+  getSouthWest(): LngLat;
+  getNorthEast(): LngLat;
+  getNorthWest(): LngLat;
+  getWest(): LngLat;
+  getSouth(): LngLat;
+  getEast(): LngLat;
+  getNorth(): LngLat;
+  toArray(): Array<Array<number>>;
+  toString(): string;
+  static convert(input: LngLatBoundsLike): LngLatBounds;
+}
+
+type LngLatBoundsLike = LngLatBounds | Array<LngLatLike>;
+
+type Point = { x: number, y: number };
+type PointLike = Point | Array<number>;
+
+type ControlPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+declare class Navigation extends Control {
+  constructor(options?: { position?: ControlPosition }): void;
+}
+
+declare class Geolocate extends Control {
+  constructor(options?: { position?: ControlPosition }): void;
+}
+
+declare class Attribution extends Control {
+  constructor(options?: { position?: ControlPosition }): void
+}
+
+declare class Control mixins Evented {
+  addTo(map: Map): this;
+  remove(): this;
+}
+
+declare class BoxZoomHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  isActive(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class ScrollZoomHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class DragPanHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  isActive(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class DragRotateHandler {
+  constructor(map: Map, options?: Object): void;
+  isEnabled(): boolean;
+  isActive(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class KeyboardHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class DoubleClickZoomHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  enable(): void;
+  disable(): void;
+}
+
+declare class TouchZoomRotateHandler {
+  constructor(map: Map): void;
+  isEnabled(): boolean;
+  enable(): void;
+  disable(): void;
+  disableRotation(): void;
+  enableRotation(): void;
+}
+
+declare class GeoJSONSource {
+  constructor(options?: {
+    data?: Object | string,
+    maxzoom?: number,
+    buffer?: number,
+    tolerance?: number,
+    cluster?: number,
+    clusterRadius?: number,
+    clusterMaxZoom?: number
+  }): void;
+  setData(data: Object | string): this;
+}
+
+declare class VideoSource {
+  constructor(options: {
+    urls: Array<string>,
+    coordinates: Array<Array<number>>
+  }): void;
+  getVideo(): HTMLVideoElement;
+  setCoordinates(coordinates: Array<Array<number>>): this;
+}
+
+declare class ImageSource {
+  constructor(options: {
+    url: string,
+    coordinates: Array<Array<number>>
+  }): void;
+  setCoordinates(coordinates: Array<Array<number>>): this;
+}
+
+type CameraOptions = {
+  center?: LngLatLike,
+  zoom?: number,
+  bearing?: number,
+  pitch?: number,
+  around?: LngLatLike
+};
+
+type AnimationOptions = {
+  duration?: number,
+  easing?: Function,
+  offset?: Array<number>,
+  animate?: boolean
+};
+
+type StyleOptions = {
+  transition: boolean
+}
+
+type CameraAnimationOptions = {
+  // Copied from CameraOptions
+  center?: LngLatLike,
+  zoom?: number,
+  bearing?: number,
+  pitch?: number,
+  around?: LngLatLike,
+  // Copied from AnimationOptions
+  duration?: number,
+  easing?: Function,
+  offset?: Array<number>,
+  animate?: boolean
+};
+
+type FlyOptions = {
+  curve?: number,
+  minZoom?: number,
+  speed?: number,
+  screenSpeed?: number,
+  easing?: Function,
+  // Copied from CameraOptions
+  center?: LngLatLike,
+  zoom?: number,
+  bearing?: number,
+  pitch?: number,
+  around?: LngLatLike,
+  // Copied from AnimationOptions
+  duration?: number,
+  easing?: Function,
+  offset?: Array<number>,
+  animate?: boolean
+};
+
+declare class Popup {
+  constructor(options?: {
+    closeButton?: boolean,
+    closeOnClick?: boolean,
+    anchor?: 'top' | 'bottom' | 'left' | 'right' |
+      'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  }): void;
+  addTo(map: Map): this;
+  remove(): this;
+  getLngLat(): LngLat;
+  setLngLat(lnglat: LngLatLike): this;
+  setText(text: string): this;
+  setHTML(html: string): this;
+  setDOMContent(htmlNode: Node): this;
+}
+
+declare class Evented {
+  on(type: string, listener: Function): this;
+  off(type?: string, listener?: Function): this;
+  once(type: string, listener: Function): this;
+  fire(type: string, data?: Object): this;
+  listens(type: string): boolean;
+}
+
+declare module 'mapbox-gl' {
+  declare var Map: typeof Map;
+  declare var accessToken: string;
+  declare var version: string;
+  declare function supported(options?: {
+    failIfMajorPerformanceCaveat?: boolean
+  }): boolean;
+  declare var LngLat: typeof LngLat;
+  declare var LngLatBounds: typeof LngLatBounds;
+  declare var Navigation: typeof Navigation;
+  declare var Geolocate: typeof Geolocate;
+  declare var Attribution: typeof Attribution;
+  declare var Control: typeof Control;
+  declare var BoxZoomHandler: typeof BoxZoomHandler;
+  declare var ScrollZoomHandler: typeof ScrollZoomHandler;
+  declare var DragPanHandler: typeof DragPanHandler;
+  declare var DragRotateHandler: typeof DragRotateHandler;
+  declare var KeyboardHandler: typeof KeyboardHandler;
+  declare var DoubleClickZoomHandler: typeof DoubleClickZoomHandler;
+  declare var TouchZoomRotateHandler: typeof TouchZoomRotateHandler;
+  declare var GeoJSONSource: typeof GeoJSONSource;
+  declare var VideoSource: typeof VideoSource;
+  declare var ImageSource: typeof ImageSource;
+  declare var Popup: typeof Popup;
+
+  // Not in public API
+  declare var config: {
+    API_URL: string,
+    REQUIRE_ACCESS_TOKEN: boolean
+  };
+}
