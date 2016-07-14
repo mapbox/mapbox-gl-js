@@ -1220,7 +1220,7 @@ function removeNode(node) {
 /**
  * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
  *
- * @var accessToken
+ * @var {string} accessToken
  * @example
  * mapboxgl.accessToken = myAccessToken;
  */
@@ -1228,7 +1228,7 @@ function removeNode(node) {
 /**
  * Gets the version number of Mapbox GL JS.
  *
- * @var version
+ * @var {string} version
  */
 
 /**
