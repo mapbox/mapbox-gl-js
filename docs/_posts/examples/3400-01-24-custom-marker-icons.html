@@ -14,10 +14,8 @@ var geojson = {
             "type": "Feature",
             "properties": {
                 "name": "circle",
-                "icon": {
-                    "iconUrl": "{{site.baseurl}}/assets/circle.png",
-                    "iconSize": [25, 25]
-                }
+                "iconUrl": "{{site.baseurl}}/assets/circle.png",
+                "iconSize": [25, 25]
             },
             "geometry": {
                 "type": "Point",
@@ -31,10 +29,8 @@ var geojson = {
             "type": "Feature",
             "properties": {
                 "name": "square",
-                "icon": {
-                    "iconUrl": "{{site.baseurl}}/assets/square.png",
-                    "iconSize": [25, 25]
-                }
+                "iconUrl": "{{site.baseurl}}/assets/square.png",
+                "iconSize": [25, 25]
             },
             "geometry": {
                 "type": "Point",
@@ -48,10 +44,8 @@ var geojson = {
             "type": "Feature",
             "properties": {
                 "name": "triangle",
-                "icon": {
-                    "iconUrl": "{{site.baseurl}}/assets/triangle.png",
-                    "iconSize": [25, 25]
-                }
+                "iconUrl": "{{site.baseurl}}/assets/triangle.png",
+                "iconSize": [25, 25]
             },
             "geometry": {
                 "type": "Point",
@@ -74,19 +68,14 @@ var map = new mapboxgl.Map({
 for (var i = 0; i < geojson.features.length; i++) {
     var feature = geojson.features[i];
 
-    // create a div for the marker
-    var div = document.createElement('div');
-    div.setAttribute('id', feature.properties.name);
-    div.style['width'] = feature.properties.icon.iconSize[0] + "px";
-    div.style['height'] = feature.properties.icon.iconSize[1] + "px";
-
-    // set image as icon
-    div.style['background-image'] = 'url(' + feature.properties.icon.iconUrl + ')';
-    div.style['background-position'] = 'center center';
-    div.style['background-size'] = 'contain';
+    // create an img element for the marker
+    var img = document.createElement('img');
+    img.src = feature.properties.iconUrl;
+    img.style.width = feature.properties.iconSize[0] + "px";
+    img.style.height = feature.properties.iconSize[1] + "px";
 
     // add marker to map
-    new mapboxgl.Marker(div)
+    new mapboxgl.Marker(img)
         .setLngLat(feature.geometry.coordinates)
         .addTo(map);
 }
