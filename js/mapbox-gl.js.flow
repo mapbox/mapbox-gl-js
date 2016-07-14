@@ -24,7 +24,7 @@ type MapOptions = {
   doubleClickZoom?: boolean,
   touchZoomRotate?: boolean,
   trackResize?: boolean,
-  center?: Array<number>,
+  center?: LngLatLike,
   zoom?: number,
   bearing?: number,
   pitch?: number,
