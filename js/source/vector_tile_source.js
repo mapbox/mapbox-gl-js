@@ -8,7 +8,7 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 module.exports = VectorTileSource;
 
 function VectorTileSource(options) {
-    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+    util.extend(this, util.pick(options, ['url', 'tileSize']));
     this._options = util.extend({ type: 'vector' }, options);
 
     if (this.tileSize !== 512) {
