@@ -89,7 +89,7 @@ var Evented = {
             // To ensure that no error events are dropped, print them to the
             // console if they have no listeners.
             if (util.endsWith(type, 'error')) {
-                console.error(data.error.message);
+                console.error((data && data.error) || data || 'Empty error event');
             }
             return this;
         }

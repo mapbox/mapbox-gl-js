@@ -883,9 +883,9 @@ test('Map', function(t) {
 
     t.test('error event', function (t) {
         t.test('logs errors to console when it has NO listeners', function (t) {
-            sinon.stub(console, 'error', function(message) {
+            sinon.stub(console, 'error', function(error) {
                 console.error.restore();
-                t.deepEqual(message, 'version: expected one of [8], 7 found');
+                t.equal(error.message, 'version: expected one of [8], 7 found');
                 t.end();
             });
 
@@ -900,10 +900,32 @@ test('Map', function(t) {
 
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
             map.on('error', function(event) {
-                t.deepEqual(event.error.message, 'version: expected one of [8], 7 found');
+                t.equal(event.error.message, 'version: expected one of [8], 7 found');
                 t.end();
             });
             map.setStyle({ version: 7, sources: {}, layers: [] });
+        });
+
+        t.test('logs errors that happen during render', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('render', function () {
+                throw new Error('in render');
+            });
+
+            map.on('error', function (event) {
+                t.equal(event.error.message, 'in render');
+                t.end();
+            });
+
+            map._rerender = function () {};
+            map._render();
         });
 
         t.end();
