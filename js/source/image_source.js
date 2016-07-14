@@ -129,7 +129,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
 
         this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-        this.tile.loaded = true;
+        this.tile.state = 'loaded';
     },
 
     prepare: function() {
@@ -162,7 +162,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
             this._setTile(tile);
             callback(null);
         } else {
-            tile.errored = true;
+            tile.state = 'errored';
             callback(null);
         }
     },

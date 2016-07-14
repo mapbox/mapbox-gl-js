@@ -153,7 +153,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
 
         this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-        this.tile.loaded = true;
+        this.tile.state = 'loaded';
     },
 
     prepare: function() {
@@ -187,7 +187,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
             this._setTile(tile);
             callback(null);
         } else {
-            tile.errored = true;
+            tile.state = 'errored';
             callback(null);
         }
     },
