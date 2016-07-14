@@ -648,6 +648,7 @@
       ],
       "sdk-support": {
         "basic": {
+          "js": "0.21.0"
         }
       }
     },
@@ -673,6 +674,7 @@
       ],
       "sdk-support": {
         "basic": {
+          "js": "0.21.0"
         }
       }
     },
@@ -708,6 +710,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.21.0"
         }
       }
     },
@@ -793,6 +798,7 @@
       ],
       "sdk-support": {
         "basic": {
+          "js": "0.21.0"
         }
       }
     },
@@ -1333,6 +1339,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "property-function": {
+          "js": "0.21.0"
         }
       }
     },
@@ -1775,6 +1784,7 @@
       "doc": "Controls the scaling behavior of the circle when the map is pitched. The value `map` scales circles according to their apparent distance to the camera. The value `viewport` results in no pitch-related scaling.",
       "sdk-support": {
         "basic": {
+          "js": "0.21.0"
         }
       }
     }
