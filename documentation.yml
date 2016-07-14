@@ -2,6 +2,7 @@ toc:
   - Map
   - accessToken
   - supported
+  - version
   - name: Geography
     description: |
       These are Mapbox GL JS's ways of representing locations
