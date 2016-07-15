@@ -50,6 +50,16 @@ test('==, $type', function(t) {
     t.end();
 });
 
+test('==, $id', function(t) {
+    var f = filter(['==', '$id', 1234]);
+
+    t.equal(f({id: 1234}), true);
+    t.equal(f({id: '1234'}), false);
+    t.equal(f({properties: {id: 1234}}), false);
+
+    t.end();
+});
+
 test('!=, string', function(t) {
     var f = filter(['!=', 'foo', 'bar']);
     t.equal(f({properties: {foo: 'bar'}}), false);
