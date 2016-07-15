@@ -638,7 +638,16 @@ Style.prototype = util.inherit(Evented, {
         }
 
         var sourceResults = [];
-        for (var id in this.sources) {
+        var sourcesToQuery = {};
+        if (params.layers) {
+            for (var i = 0; i < params.layers.length; i++) {
+                var sourceId = this._layers[params.layers[i]].source;
+                sourcesToQuery[sourceId] = true;
+            }
+        } else {
+            sourcesToQuery = this.sources;
+        }
+        for (var id in sourcesToQuery) {
             var source = this.sources[id];
             if (source.queryRenderedFeatures) {
                 sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
