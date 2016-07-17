@@ -52,19 +52,19 @@ description: Create a custom layer switcher to display different datasets.
 <div id="map"></div>
 
 <script>
-var map = new mapboxgl.Map({
+var myMap = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9',
     zoom: 15,
     center: [-71.97722138410576, -13.517379300798098]
 });
 
-map.on('load', function () {
-    map.addSource('museums', {
+myMap.on('load', function () {
+    myMap.addSource('museums', {
         type: 'vector',
         url: 'mapbox://mapbox.2opop9hr'
     });
-    map.addLayer({
+    myMap.addLayer({
         'id': 'museums',
         'type': 'circle',
         'source': 'museums',
@@ -78,11 +78,11 @@ map.on('load', function () {
         'source-layer': 'museum-cusco'
     });
 
-    map.addSource('contours', {
+    myMap.addSource('contours', {
         type: 'vector',
         url: 'mapbox://mapbox.mapbox-terrain-v2'
     });
-    map.addLayer({
+    myMap.addLayer({
         'id': 'contours',
         'type': 'line',
         'source': 'contours',
@@ -99,10 +99,10 @@ map.on('load', function () {
     });
 });
 
-addLayer('Contours', 'contours');
-addLayer('Museums', 'museums');
+addLayerToToggle('Contours', 'contours');
+addLayerToToggle('Museums', 'museums');
 
-function addLayer(name, id) {
+function addLayerToToggle(name, id) {
     var link = document.createElement('a');
     link.href = '#';
     link.className = 'active';
@@ -112,14 +112,14 @@ function addLayer(name, id) {
         e.preventDefault();
         e.stopPropagation();
 
-        var visibility = map.getLayoutProperty(id, 'visibility');
+        var visibility = myMap.getLayoutProperty(id, 'visibility');
 
         if (visibility === 'visible') {
-            map.setLayoutProperty(id, 'visibility', 'none');
+            myMap.setLayoutProperty(id, 'visibility', 'none');
             this.className = '';
         } else {
             this.className = 'active';
-            map.setLayoutProperty(id, 'visibility', 'visible');
+            myMap.setLayoutProperty(id, 'visibility', 'visible');
         }
     };
 
