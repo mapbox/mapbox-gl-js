@@ -906,6 +906,10 @@ test('Style#queryRenderedFeatures', function(t) {
             "mapbox": {
                 "type": "vector",
                 "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            },
+            "other": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
             }
         },
         "layers": [{
@@ -928,12 +932,38 @@ test('Style#queryRenderedFeatures', function(t) {
             "paint": {
                 "line-color": "blue"
             }
+        }, {
+            "id": "land--other",
+            "type": "line",
+            "source": "other",
+            "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
+            "paint": {
+                "line-color": "red"
+            },
+            "metadata": {
+                "something": "else"
+            }
         }]
     });
 
     style.on('load', function() {
         style._applyClasses([]);
         style._recalculate(0);
+
+        style.sources.other.queryRenderedFeatures = function(position, params) {
+            var features = {'land--other': []};
+            if (params.layers) {
+                for (var l in features) {
+                    if (params.layers.indexOf(l) < 0) {
+                        delete features[l];
+                    }
+                }
+            }
+            return features;
+        };
 
         style.sources.mapbox.queryRenderedFeatures = function(position, params) {
             var features = {
@@ -977,7 +1007,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('filters by `layers` option', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: 'land'}, 0, 0);
+            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
             t.equal(results.length, 2);
             t.end();
         });
@@ -1018,6 +1048,12 @@ test('Style#queryRenderedFeatures', function(t) {
         t.test('include multiple layers', function(t) {
             var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
             t.equals(results.length, 3);
+            t.end();
+        });
+
+        t.test('does not query sources not implicated by `layers` parameter', function (t) {
+            style.sources.mapbox.queryRenderedFeatures = function() { t.fail(); };
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']});
             t.end();
         });
 
