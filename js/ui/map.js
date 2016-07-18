@@ -669,7 +669,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
      * @param {Object} source The source object, conforming to the
-     * Mapbox Style Specification's [source defintion](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
+     * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
      * @fires source.add
      * @returns {Map} `this`
      */
