@@ -14,7 +14,7 @@
   "dependencies": {
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
-    "feature-filter": "^2.1.0",
+    "feature-filter": "^2.2.0",
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.3.0",
     "gl-matrix": "^2.3.1",
