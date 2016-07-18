@@ -17,7 +17,7 @@ npm run build-min
 npm run build-dev
 
 # run unit tests
-tap --reporter dot --coverage --no-coverage-report test/js/*/*.js
+tap --reporter dot --coverage --no-coverage-report test/js/*/*.js test/build/webpack.test.js
 
 # allow writing core files for render tests
 ulimit -c unlimited -S
