@@ -1,5 +1,9 @@
 ## 0.21.0 (July 13 2016)
 
+#### Breaking Changes
+
+ * Polygons from GeoJSON sources have been rewinded for vt2 compliance, meaning the association between positive/negative `line-offset` properties and inside/outside the polygon has been reversed. #2889
+
 #### New Features & Improvements
 
  * Add `text-pitch-alignment` style property #2668
