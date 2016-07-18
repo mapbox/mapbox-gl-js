@@ -32,8 +32,7 @@ const path = require('path');
  * Mapbox GL JS uses the webworkify module by default, and that module
  * does things very specific to browserify's module loading system. In this
  * configuration, we alias webworkify to webworkify-webpack to add webpack
- * support. NOTE: there is a known caveat when using 'eval'-related devtool
- * settings, make sure to double-check your configuration.
+ * support.
  */
 module.exports = {
     entry: './test.js',
@@ -61,5 +60,9 @@ module.exports = {
             query: 'brfs'
         }]
     },
-    devtool: 'cheap-source-map' // don't use eval-related options
+
+    // You may use any "devtool" except "eval" and "eval-source-map" due to
+    // a "webworkify-webpack" caveat. 
+    // See https://github.com/borisirota/webworkify-webpack#caveats
+    devtool: 'cheap-source-map'
 }
