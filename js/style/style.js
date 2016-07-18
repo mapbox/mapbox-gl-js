@@ -637,17 +637,15 @@ Style.prototype = util.inherit(Evented, {
             this._handleErrors(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, true);
         }
 
-        var sourceResults = [];
-        var sourcesToQuery = {};
+        var includedSources;
         if (params.layers) {
-            for (var i = 0; i < params.layers.length; i++) {
-                var sourceId = this._layers[params.layers[i]].source;
-                sourcesToQuery[sourceId] = true;
-            }
-        } else {
-            sourcesToQuery = this.sources;
+            var styleLayers = this._layers;
+            includedSources = params.layers.map(function (layerId) { return styleLayers[layerId].source; });
         }
-        for (var id in sourcesToQuery) {
+
+        var sourceResults = [];
+        for (var id in this.sources) {
+            if (includedSources && includedSources.indexOf(id) < 0) continue;
             var source = this.sources[id];
             if (source.queryRenderedFeatures) {
                 sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
