@@ -10,7 +10,6 @@ It is part of the [Mapbox GL ecosystem](https://github.com/mapbox/mapbox-gl) whi
 - [API Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec)
 - [Gallery](https://www.mapbox.com/gallery/)
-- [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
 
 [<img width="981" alt="Mapbox GL JS gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
@@ -96,6 +95,13 @@ If you're using the ES6 module system, you can import `mapboxgl` like so:
 ```js
 import mapboxgl from 'mapbox-gl';
 ```
+
+## Third Party Projects
+
+These projects are written and maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects! 
+
+ - [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
+ - [Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
 
 ## Contributing to Mapbox GL JS
 
