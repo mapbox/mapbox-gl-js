@@ -99,14 +99,15 @@ map.on('load', function () {
     });
 });
 
-addLayer('Contours', 'contours');
-addLayer('Museums', 'museums');
+var toggleableLayerIds = [ 'contours', 'museums' ];
 
-function addLayer(name, id) {
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+
     var link = document.createElement('a');
     link.href = '#';
     link.className = 'active';
-    link.textContent = name;
+    link.textContent = id;
 
     link.onclick = function (e) {
         e.preventDefault();
