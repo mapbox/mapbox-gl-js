@@ -1578,7 +1578,7 @@
     "line-offset": {
       "type": "number",
       "default": 0,
-      "doc": "The line's offset perpendicular to its direction. Values may be positive or negative, where positive indicates \"rightwards\" (if you were moving in the direction of the line) and negative indicates \"leftwards.\"",
+      "doc": "The line's offset. For linear features, a positive value offsets the line to the right, relative to the direction of the line, and a negative value to the left. For polygon features, a positive value results in an inset, and a negative value results in an outset.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
