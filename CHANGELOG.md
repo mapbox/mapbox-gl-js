@@ -2,7 +2,7 @@
 
 #### Breaking Changes
 
- * Polygons from GeoJSON sources have been rewinded for vt2 compliance, meaning the association between positive/negative `line-offset` properties and inside/outside the polygon has been reversed. #2889
+ * GeoJSON polygon inner rings are now rewound for compliance with the [v2 vector tile](https://github.com/mapbox/vector-tile-spec/blob/master/2.1/README.md#4344-polygon-geometry-type). This may affect some uses of `line-offset`, reversing the direction of the offset. #2889
 
 #### New Features & Improvements
 
