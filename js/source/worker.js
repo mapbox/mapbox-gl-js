@@ -8,7 +8,6 @@ var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var supercluster = require('supercluster');
-
 var geojsonvt = require('geojson-vt');
 var rewind = require('geojson-rewind');
 var GeoJSONWrapper = require('./geojson_wrapper');
@@ -182,7 +181,9 @@ util.extend(Worker.prototype, {
         // explicit origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
-        if (params.url) {
+        if (params.isDataset) {
+            ajax.getDataset(params.url, indexData);
+        } else if (params.url) {
             ajax.getJSON(params.url, indexData);
         } else if (typeof params.data === 'string') {
             indexData(null, JSON.parse(params.data));

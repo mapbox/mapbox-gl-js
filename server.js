@@ -42,8 +42,9 @@ app.use(express.static(path.join(__dirname, 'debug')));
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
 downloadBenchData(function() {
-    app.listen(9966, function () {
-        console.log('mapbox-gl-js debug server running at http://localhost:9966');
+    var port = process.env.PORT || 9966
+    app.listen(port, function () {
+        console.log('mapbox-gl-js debug server running at http://localhost:'+port);
     });
 });
 

@@ -4,7 +4,7 @@ var util = require('../util/util');
 var ajax = require('../util/ajax');
 var browser = require('../util/browser');
 var TilePyramid = require('./tile_pyramid');
-var normalizeURL = require('../util/mapbox').normalizeSourceURL;
+var normalizeSourceURL = require('../util/mapbox').normalizeSourceURL;
 var TileCoord = require('./tile_coord');
 
 exports._loadTileJSON = function(options) {
@@ -40,7 +40,7 @@ exports._loadTileJSON = function(options) {
     }.bind(this);
 
     if (options.url) {
-        ajax.getJSON(normalizeURL(options.url), loaded);
+        ajax.getJSON(normalizeSourceURL(options.url), loaded);
     } else {
         browser.frame(loaded.bind(this, null, options));
     }
