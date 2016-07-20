@@ -58,7 +58,9 @@ function drawSymbols(painter, source, layer, coords) {
 
     gl.enable(gl.DEPTH_TEST);
 
-    drawCollisionDebug(painter, source, layer, coords);
+    if (source.map.showCollisionBoxes) {
+        drawCollisionDebug(painter, source, layer, coords);
+    }
 }
 
 function drawLayerSymbols(painter, source, layer, coords, isText,
