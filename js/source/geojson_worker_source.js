@@ -20,6 +20,7 @@ module.exports = GeoJSONWorkerSource;
  * `new GeoJSONWorkerSource(actor, styleLayers, customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
  *
  * @class GeoJSONWorkerSource
+ * @private
  * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  See {@link GeoJSONWorkerSource#loadGeoJSON}.
  */
 function GeoJSONWorkerSource (actor, styleLayers, loadGeoJSON) {

@@ -11,6 +11,7 @@ module.exports = Dispatcher;
  * {@link WorkerSource}.
  *
  * @interface Dispatcher
+ * @private
  */
 function Dispatcher(length, parent) {
     this.actors = [];

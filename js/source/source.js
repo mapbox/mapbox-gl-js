@@ -15,7 +15,7 @@ var sourceTypes = {
  *
  * @param {string} id
  * @param {Object} source A source definition object compliant with [`mapbox-gl-style-spec`](https://www.mapbox.com/mapbox-gl-style-spec/#sources) or, for a third-party source type, with that type's requirements.
- * @param {string} options.type A source type like `raster`, `vector`, `video`, etc. Can include 3rd-party source types that have been added with {@link Style#addSourceType}.
+ * @param {string} options.type A source type like `raster`, `vector`, `video`, etc.
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
@@ -42,6 +42,7 @@ exports.setType = function (name, type) {
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`, `video`, etc.) and all custom, third-party types.
  *
  * @class Source
+ * @private
  *
  * @param {string} id The id for the source. Must not be used by any existing source.
  * @param {Object} options Source options, specific to the source type (except for `options.type`, which is always required).
@@ -116,6 +117,7 @@ exports.setType = function (name, type) {
  * `dispatcher.send('source-type.methodname', params, callback)`.
  *
  * @see {@link Map#addSourceType}
+ * @private
  *
  * @class WorkerSource
  * @param {Actor} actor
@@ -165,5 +167,3 @@ exports.setType = function (name, type) {
  * @memberof WorkerSource
  * @instance
  */
-
-

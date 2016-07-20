@@ -14,6 +14,7 @@ module.exports = VectorTileWorkerSource;
  * `new VectorTileWorkerSource(actor, styleLayers, customLoadVectorDataFunction)`.
  *
  * @class VectorTileWorkerSource
+ * @private
  * @param {Function} [loadVectorData] Optional method for custom loading of a VectorTile object based on parameters passed from the main-thread Source.  See {@link VectorTileWorkerSource#loadTile}.  The default implementation simply loads the pbf at `params.url`.
  */
 function VectorTileWorkerSource (actor, styleLayers, loadVectorData) {
