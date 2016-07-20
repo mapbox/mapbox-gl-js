@@ -54,9 +54,9 @@ exports.setType = function (name, type) {
  * @property {string} id The id for the source.  Must match the id passed to the constructor.
  * @property {number} minzoom
  * @property {number} maxzoom
- * @property {boolean} isTileClipped
- * @property {boolean} reparseOverscaled
- * @property {boolean} roundZoom
+ * @property {boolean} isTileClipped `false` if tiles can be drawn outside their boundaries, `true` if they cannot.
+ * @property {boolean} reparseOverscaled `true` if tiles should be sent back to the worker for each overzoomed zoom level, `false` if not.
+ * @property {boolean} roundZoom `true` if zoom levels are rounded to the nearest integer in the source data, `false` if they are floor-ed to the nearest integer.
  */
 
 /**
