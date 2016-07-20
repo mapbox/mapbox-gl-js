@@ -8,17 +8,19 @@ Hi, and thanks in advance for contributing to Mapbox GL. Here's how we work. Ple
 
 ## Git Conventions
 
-If you have commit access to the repository, please be aware that we strive to maintain a clean, mostly-linear history. When merging a branch, please do the following:
+If you have commit access to the repository, please be aware that we strive to maintain a clean, mostly-linear history.
 
-* Rebase the branch onto the current tip of the target branch (`master` or `mb-pages`).
-* Squash commits until they are self-contained, potentially down to a single commit if appropriate.
-* Perform a fast-forward merge into the target branch and push the result.
-
-In particular **do not** use the "Merge pull request" button on GitHub.
-
-This applies when merging pull-requests from external contributors as well. If necessary, rebase and clean up the commits yourself before manually merging them. Then comment in the PR thanking the contributor and noting the final commit hash(es), and close it.
+You may use the GitHub merge button to squash and merge a branch. If you do not want to squash the branch into a single commit, see "Manually Merging a Branch" below.
 
 Never merge a branch that is failing CI.
+
+### Manually Merging a Branch
+
+Before manually merging a branch, please
+
+ - rebase the branch onto the current tip of the target branch (`master` or `mb-pages`).
+ - squash commits until they are self-contained, potentially down to a single commit if appropriate.
+ - perform a fast-forward merge into the target branch and push the result
 
 ## Preparing your Development Environment
 
