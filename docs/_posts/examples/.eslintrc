@@ -8,5 +8,6 @@
     "rules": {
         "strict": "off",
         "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
+        "no-loop-func": "off"
     }
 }

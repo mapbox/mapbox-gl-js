@@ -33,7 +33,7 @@
     "supercluster": "^2.0.1",
     "unassertify": "^2.0.0",
     "unitbezier": "^0.0.0",
-    "vector-tile": "^1.2.1",
+    "vector-tile": "1.2.1",
     "vt-pbf": "^2.0.2",
     "webworkify": "^1.3.0",
     "whoots-js": "^2.0.0"
@@ -57,7 +57,7 @@
     "highlight.js": "9.3.0",
     "istanbul": "^0.4.2",
     "lodash": "^4.13.1",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#dd5b5c93e13f8760bad6c6288d18f286f0a752d4",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#9007694833172b364acb9a6a56113241dc9f07ac",
     "minifyify": "^7.0.1",
     "nyc": "6.4.0",
     "remark": "4.2.2",
