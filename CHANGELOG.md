@@ -3,6 +3,7 @@
 #### Breaking Changes
 
  * The `GeoJSONSource`, `VideoSource`, `ImageSource` constructors are now private. Please use `map.addSource({...})` to create sources and `map.getSource(...).setData(...)` to update GeoJSON sources.
+ * `Map#onError` has been removed. You may catch errors by listening for the `error` event. If no listeners are bound to `error`, error messages will be printed to the console.
 
 ## 0.21.0 (July 13 2016)
 
