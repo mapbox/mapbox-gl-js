@@ -82,7 +82,7 @@ function GeoJSONSource(id, options, dispatcher) {
         }
     }, options.workerOptions);
 
-    this._sendDataToWorker(function done(err) {
+    this._updateWorkerData(function done(err) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -114,7 +114,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     setData: function(data) {
         this._data = data;
 
-        this._sendDataToWorker(function (err) {
+        this._updateWorkerData(function (err) {
             if (err) {
                 return this.fire('error', { error: err });
             }
@@ -129,7 +129,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
      * handles loading the geojson data and preparing to serve it up as tiles,
      * using geojson-vt or supercluster as appropriate.
      */
-    _sendDataToWorker: function(callback) {
+    _updateWorkerData: function(callback) {
         var options = util.extend({}, this.workerOptions);
         var data = this._data;
         if (typeof data === 'string') {
@@ -149,10 +149,6 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     loadTile: function (tile, callback) {
-        return this._loadTileFromWorker(tile, callback);
-    },
-
-    _loadTileFromWorker: function(tile, callback) {
         var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         var params = {
             type: this.type,
