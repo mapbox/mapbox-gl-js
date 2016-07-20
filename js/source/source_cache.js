@@ -156,12 +156,14 @@ SourceCache.prototype = util.inherit(Evented, {
         if (err) {
             tile.state = 'errored';
             this.fire('tile.error', {tile: tile, error: err});
+            this._source.fire('tile.error', {tile: tile, error: err});
             return;
         }
 
         tile.source = this;
         tile.timeAdded = new Date().getTime();
         this.fire('tile.load', {tile: tile});
+        this._source.fire('tile.load', {tile: tile});
     },
 
     /**
@@ -392,6 +394,7 @@ SourceCache.prototype = util.inherit(Evented, {
         tile.uses++;
         this._tiles[coord.id] = tile;
         this.fire('tile.add', {tile: tile});
+        this._source.fire('tile.add', {tile: tile});
 
         return tile;
     },
@@ -410,6 +413,7 @@ SourceCache.prototype = util.inherit(Evented, {
         tile.uses--;
         delete this._tiles[id];
         this.fire('tile.remove', {tile: tile});
+        this._source.fire('tile.remove', {tile: tile});
 
         if (tile.uses > 0)
             return;
@@ -529,4 +533,3 @@ function coordinateToTilePoint(tileCoord, sourceMaxZoom, coord) {
 function compareKeyZoom(a, b) {
     return (a % 32) - (b % 32);
 }
-
