@@ -5,8 +5,9 @@ var st = require('st');
 var http = require('http');
 var path = require('path');
 var sinon = require('sinon');
+var proxyquire = require('proxyquire');
 var Style = require('../../../js/style/style');
-var VectorTileSource = require('../../../js/source/vector_tile_source');
+var SourceCache = require('../../../js/source/source_cache');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
@@ -19,13 +20,13 @@ function createStyleJSON(properties) {
 }
 
 function createSource() {
-    return new VectorTileSource({
+    return {
         type: 'vector',
         minzoom: 1,
         maxzoom: 10,
         attribution: 'Mapbox',
         tiles: ['http://example.com/{z}/{x}/{y}.png']
-    });
+    };
 }
 
 function createGeoJSONSource() {
@@ -68,7 +69,7 @@ test('Style', function(t) {
             }
         }));
         style.on('load', function() {
-            t.ok(style.getSource('mapbox') instanceof VectorTileSource);
+            t.ok(style.sources['mapbox'] instanceof SourceCache);
             t.end();
         });
     });
@@ -90,9 +91,9 @@ test('Style', function(t) {
             style.removeSource('-source-id-');
 
             var source = createSource();
+            source['vector_layers'] = [{ id: 'green' }];
             style.addSource('-source-id-', source);
             style.update();
-            source.vectorLayerIds = ['green'];
         });
 
         style.on('error', function(event) {
@@ -273,11 +274,25 @@ test('Style#addSource', function(t) {
         });
     });
 
+    t.test('throw if missing source type', function(t) {
+        var style = new Style(createStyleJSON()),
+            source = createSource();
+
+        delete source.type;
+
+        style.on('load', function() {
+            t.throws(function () {
+                style.addSource('source-id', source);
+            }, Error, /type/i);
+            t.end();
+        });
+    });
+
     t.test('fires source.add', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
         style.on('source.add', function(e) {
-            t.equal(e.source, source);
+            t.same(e.source.serialize(), source);
             t.end();
         });
         style.on('load', function () {
@@ -302,7 +317,7 @@ test('Style#addSource', function(t) {
         var style = new Style(createStyleJSON());
         style.on('load', function() {
             style.on('error', function() {
-                t.notOk(style.getSource('source-id'));
+                t.notOk(style.sources['source-id']);
                 t.end();
             });
             style.addSource('source-id', {
@@ -325,11 +340,11 @@ test('Style#addSource', function(t) {
         var source = createSource();
 
         function sourceEvent(e) {
-            t.equal(e.source, source);
+            t.same(e.source.serialize(), source);
         }
 
         function tileEvent(e) {
-            t.equal(e.source, source);
+            t.same(e.source.serialize(), source);
         }
 
         style.on('source.load',   sourceEvent);
@@ -343,12 +358,12 @@ test('Style#addSource', function(t) {
         style.on('load', function () {
             t.plan(7);
             style.addSource('source-id', source); // Fires load
-            source.fire('error');
-            source.fire('change');
-            source.fire('tile.add');
-            source.fire('tile.load');
-            source.fire('tile.error');
-            source.fire('tile.remove');
+            style.sources['source-id'].fire('error');
+            style.sources['source-id'].fire('change');
+            style.sources['source-id'].fire('tile.add');
+            style.sources['source-id'].fire('tile.load');
+            style.sources['source-id'].fire('tile.error');
+            style.sources['source-id'].fire('tile.remove');
         });
     });
 
@@ -387,7 +402,7 @@ test('Style#removeSource', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
         style.on('source.remove', function(e) {
-            t.equal(e.source, source);
+            t.same(e.source.serialize(), source);
             t.end();
         });
         style.on('load', function () {
@@ -431,6 +446,8 @@ test('Style#removeSource', function(t) {
 
         style.on('load', function () {
             style.addSource('source-id', source);
+            source = style.sources['source-id'];
+
             style.removeSource('source-id');
 
             // Bind a listener to prevent fallback Evented error reporting.
@@ -501,6 +518,7 @@ test('Style#addLayer', function(t) {
 
         style.on('load', function() {
             var source = createSource();
+            source['vector_layers'] = [{id: 'green'}];
             style.addSource('-source-id-', source);
             style.addLayer({
                 'id': '-layer-id-',
@@ -508,7 +526,6 @@ test('Style#addLayer', function(t) {
                 'source': '-source-id-',
                 'source-layer': '-source-layer-'
             });
-            source.vectorLayerIds = ['green'];
         });
 
         style.on('error', function(event) {
@@ -558,7 +575,7 @@ test('Style#addLayer', function(t) {
         };
 
         style.on('load', function() {
-            style.getSource('mapbox').reload = t.end;
+            style.sources['mapbox'].reload = t.end;
 
             style.addLayer(layer);
             style.update();
@@ -908,7 +925,51 @@ test('Style#setLayerZoomRange', function(t) {
 });
 
 test('Style#queryRenderedFeatures', function(t) {
-    var style = new Style({
+    var style;
+    var Style = proxyquire('../../../js/style/style', {
+        '../source/query_features': {
+            rendered: function(source, layers, queryGeom, params) {
+                if (source.id !== 'mapbox') {
+                    return [];
+                }
+
+                var features = {
+                    'land': [{
+                        type: 'Feature',
+                        layer: style._layers.land,
+                        geometry: {
+                            type: 'Polygon'
+                        }
+                    }, {
+                        type: 'Feature',
+                        layer: style._layers.land,
+                        geometry: {
+                            type: 'Point'
+                        }
+                    }],
+                    'landref': [{
+                        type: 'Feature',
+                        layer: style._layers.landref,
+                        geometry: {
+                            type: 'Line'
+                        }
+                    }]
+                };
+
+                if (params.layers) {
+                    for (var l in features) {
+                        if (params.layers.indexOf(l) < 0) {
+                            delete features[l];
+                        }
+                    }
+                }
+
+                return features;
+            }
+        }
+    });
+
+    style = new Style({
         "version": 8,
         "sources": {
             "mapbox": {
@@ -960,53 +1021,6 @@ test('Style#queryRenderedFeatures', function(t) {
     style.on('load', function() {
         style._applyClasses([]);
         style._recalculate(0);
-
-        style.sources.other.queryRenderedFeatures = function(position, params) {
-            var features = {'land--other': []};
-            if (params.layers) {
-                for (var l in features) {
-                    if (params.layers.indexOf(l) < 0) {
-                        delete features[l];
-                    }
-                }
-            }
-            return features;
-        };
-
-        style.sources.mapbox.queryRenderedFeatures = function(position, params) {
-            var features = {
-                'land': [{
-                    type: 'Feature',
-                    layer: style._layers.land,
-                    geometry: {
-                        type: 'Polygon'
-                    }
-                }, {
-                    type: 'Feature',
-                    layer: style._layers.land,
-                    geometry: {
-                        type: 'Point'
-                    }
-                }],
-                'landref': [{
-                    type: 'Feature',
-                    layer: style._layers.landref,
-                    geometry: {
-                        type: 'Line'
-                    }
-                }]
-            };
-
-            if (params.layers) {
-                for (var l in features) {
-                    if (params.layers.indexOf(l) < 0) {
-                        delete features[l];
-                    }
-                }
-            }
-
-            return features;
-        };
 
         t.test('returns feature type', function(t) {
             var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
@@ -1158,6 +1172,60 @@ test('Style#query*Features', function(t) {
             t.throws(function() {
                 t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
             }, /queryRenderedFeatures\.filter/);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#addSourceType', function (t) {
+    var _types = { 'existing': function () {} };
+    var Style = proxyquire('../../../js/style/style', {
+        '../source/source': {
+            getType: function (name) { return _types[name]; },
+            setType: function (name, create) { _types[name] = create; }
+        }
+    });
+
+    t.test('adds factory function', function (t) {
+        var style = new Style(createStyleJSON());
+        var SourceType = function () {};
+
+        // expect no call to load worker source
+        style.dispatcher.broadcast = function (type) {
+            if (type === 'load worker source') {
+                t.fail();
+            }
+        };
+
+        style.addSourceType('foo', SourceType, function () {
+            t.equal(_types['foo'], SourceType);
+            t.end();
+        });
+    });
+
+    t.test('triggers workers to load worker source code', function (t) {
+        var style = new Style(createStyleJSON());
+        var SourceType = function () {};
+        SourceType.workerSourceURL = 'worker-source.js';
+
+        style.dispatcher.broadcast = function (type, params) {
+            if (type === 'load worker source') {
+                t.equal(_types['bar'], SourceType);
+                t.equal(params.name, 'bar');
+                t.equal(params.url, 'worker-source.js');
+                t.end();
+            }
+        };
+
+        style.addSourceType('bar', SourceType, function (err) { t.error(err); });
+    });
+
+    t.test('refuses to add new type over existing name', function (t) {
+        var style = new Style(createStyleJSON());
+        style.addSourceType('existing', function () {}, function (err) {
+            t.ok(err);
             t.end();
         });
     });

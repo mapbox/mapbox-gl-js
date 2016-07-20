@@ -30,10 +30,8 @@ toc:
   - TouchZoomRotateHandler
   - name: Sources
     description: |
-      Use these methods to dynamically add content to your map after
-      it has been loaded, or to add GeoJSON content generated
-      by other JavaScript. You can also add sources to your map
-      by including them in the map's Mapbox style.
+      Sources specify the geographic features to be rendered on the map. Source
+      objects may be obtained from `Map#getSource`.
   - GeoJSONSource
   - VideoSource
   - ImageSource

@@ -33,6 +33,9 @@ function Dispatcher(length, parent) {
 
     parentBus.target = workerBus;
     workerBus.target = parentBus;
+    // workerBus substitutes the WebWorker global `self`, and Worker uses
+    // self.importScripts for the 'load worker source' target.
+    workerBus.importScripts = function () {};
 
     this.worker = new Worker(workerBus);
     this.actor = new Actor(parentBus, parent);
@@ -44,8 +47,8 @@ function Dispatcher(length, parent) {
 }
 
 Dispatcher.prototype = {
-    broadcast: function(type, data) {
-        this.actor.send(type, data);
+    broadcast: function(type, data, callback) {
+        this.actor.send(type, data, callback);
     },
 
     send: function(type, data, callback, targetID, buffers) {

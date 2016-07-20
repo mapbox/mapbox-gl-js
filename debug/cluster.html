@@ -53,72 +53,89 @@
 <script src='access-token.js'></script>
 
 <script>
+var style = {
+  "version": 8,
+  "metadata": {
+    "test": {
+      "native": false,
+      "width": 512,
+      "height": 512
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "mapbox-gl-test-suite/data/places.geojson",
+      "cluster": true,
+      "clusterRadius": 25
+    }
+  },
+  "glyphs": "mapbox-gl-test-suite/glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "cluster",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": "rgba(0, 200, 0, 1)",
+        "circle-radius": 20
+      }
+    },
+    {
+      "id": "cluster_label",
+      "type": "symbol",
+      "source": "geojson",
+      "filter": [
+        "==",
+        "cluster",
+        true
+      ],
+      "layout": {
+        "text-field": "{point_count}",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ],
+        "text-size": 12,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      }
+    },
+    {
+      "id": "unclustered_point",
+      "type": "circle",
+      "source": "geojson",
+      "filter": [
+        "!=",
+        "cluster",
+        true
+      ],
+      "paint": {
+        "circle-color": "rgba(0, 0, 200, 1)",
+        "circle-radius": 10
+      }
+    }
+  ]
+}
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: style,
     hash: true
 });
 
 map.addControl(new mapboxgl.Navigation());
 map.addControl(new mapboxgl.Geolocate());
-
-map.on('load', function() {
-    map.addSource('geojson', {
-        "type": "geojson",
-        "data": "mapbox-gl-test-suite/data/linestring.geojson"
-    });
-
-    map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "geojson",
-        "paint": {
-            "line-color": "#EC8D8D",
-            "line-width": {
-                "base": 1.5,
-                "stops": [
-                    [
-                        5,
-                        0.75
-                    ],
-                    [
-                        18,
-                        32
-                    ]
-                ]
-            }
-        }
-    }, 'country-label-lg');
-
-    var bufferTimes = {};
-    map.on('tile.stats', function(bufferTimes) {
-        var _stats = [];
-        for (var name in bufferTimes) {
-            var value = Math.round(bufferTimes[name]);
-            if (isNaN(value)) continue;
-            var width = value;
-            _stats.push({name: name, value: value, width: width});
-        }
-        _stats = _stats.sort(function(a, b) { return b.value - a.value }).slice(0, 10);
-
-        var html = '';
-        for (var i in _stats) {
-            html += '<div style="width:' + _stats[i].width * 2 + 'px">' + _stats[i].value + 'ms - ' + _stats[i].name + '</div>';
-        }
-
-        document.getElementById('buffer').innerHTML = html;
-    });
-});
-
-map.on('click', function(e) {
-    if (e.originalEvent.shiftKey) return;
-    (new mapboxgl.Popup())
-        .setLngLat(map.unproject(e.point))
-        .setHTML("<h1>Hello World!</h1>")
-        .addTo(map);
-});
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;

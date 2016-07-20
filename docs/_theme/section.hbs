@@ -16,7 +16,7 @@
   <%= md(section.description) %>
 
 
-  <% if (section.kind === 'class') { %>
+  <% if (section.kind === 'class' && !section.interface) { %>
     <div class='code pad1 small round fill-light'><%= signature(section, true) %></div>
   <% } %>
 
@@ -35,7 +35,7 @@
   <% if (section.copyright) { %><div>Copyright: <%- section.copyright %></div><% }%>
   <% if (section.since) { %><div>Since: <%- section.since %></div><% }%>
 
-  <% if (section.params) { %>
+  <% if (section.params && !(section.kind === 'class' && section.interface)) { %>
     <div class='pad1y quiet space-top2 prose-big'>Parameters</div>
     <div>
       <% section.params.forEach(function(param) { %>

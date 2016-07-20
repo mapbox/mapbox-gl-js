@@ -1,3 +1,9 @@
+## master
+
+#### Breaking Changes
+
+ * The `GeoJSONSource`, `VideoSource`, `ImageSource` constructors are now private. Please use `map.addSource({...})` to create sources and `map.getSource(...).setData(...)` to update GeoJSON sources.
+
 ## 0.21.0 (July 13 2016)
 
 #### Breaking Changes

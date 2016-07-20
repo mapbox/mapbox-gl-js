@@ -1,9 +1,9 @@
 'use strict';
 
-var TilePyramid = require('../source/tile_pyramid');
-var pyramid = new TilePyramid({ tileSize: 512 });
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var createUniformPragmas = require('./create_uniform_pragmas');
+
+var tileSize = 512;
 
 module.exports = drawBackground;
 
@@ -64,10 +64,9 @@ function drawBackground(painter, source, layer) {
     // the depth and stencil buffers get into a bad state.
     // This can be refactored into a single draw call once earcut lands and
     // we don't have so much going on in the stencil buffer.
-    var coords = pyramid.coveringTiles(transform);
+    var coords = transform.coveringTiles({ tileSize: tileSize });
     for (var c = 0; c < coords.length; c++) {
         var coord = coords[c];
-        var tileSize = 512;
         // var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
         if (imagePosA && imagePosB) {
             var tile = {coord:coord, tileSize: tileSize};

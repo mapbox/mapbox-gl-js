@@ -23,24 +23,31 @@ function Actor(target, parent) {
 
 Actor.prototype.receive = function(message) {
     var data = message.data,
+        id = data.id,
         callback;
 
     if (data.type === '<response>') {
         callback = this.callbacks[data.id];
         delete this.callbacks[data.id];
-        callback(data.error || null, data.data);
-    } else if (typeof data.id !== 'undefined') {
-        var id = data.id;
-        this.parent[data.type](data.data, function(err, data, buffers) {
-            this.postMessage({
-                type: '<response>',
-                id: String(id),
-                error: err ? String(err) : null,
-                data: data
-            }, buffers);
-        }.bind(this));
+        if (callback) callback(data.error || null, data.data);
+    } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
+        // data.type == 'load tile', 'remove tile', etc.
+        this.parent[data.type](data.data, done.bind(this));
+    } else if (typeof data.id !== 'undefined' && this.parent.workerSources) {
+        // data.type == sourcetype.method
+        var keys = data.type.split('.');
+        this.parent.workerSources[keys[0]][keys[1]](data.data, done.bind(this));
     } else {
         this.parent[data.type](data.data);
+    }
+
+    function done(err, data, buffers) {
+        this.postMessage({
+            type: '<response>',
+            id: String(id),
+            error: err ? String(err) : null,
+            data: data
+        }, buffers);
     }
 };
 

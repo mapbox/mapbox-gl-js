@@ -14,15 +14,12 @@ var map = new mapboxgl.Map({
 });
 
 var url = 'https://wanderdrone.appspot.com/';
-var source = new mapboxgl.GeoJSONSource({
-    data: url
-});
-window.setInterval(function() {
-    source.setData(url);
-}, 2000);
-
 map.on('load', function () {
-    map.addSource('drone', source);
+    window.setInterval(function() {
+        map.getSource('drone').setData(url);
+    }, 2000);
+
+    map.addSource('drone', { type: 'geojson', data: url });
     map.addLayer({
         "id": "drone",
         "type": "symbol",

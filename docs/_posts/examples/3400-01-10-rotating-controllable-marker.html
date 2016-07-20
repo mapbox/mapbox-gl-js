@@ -21,15 +21,10 @@ var point = {
     "coordinates": [-74.50, 40]
 };
 
-// add the GeoJSON above to a new vector tile source
-var source = new mapboxgl.GeoJSONSource({
-    data: point
-});
-
 function setPosition() {
     point.coordinates[0] += speed * Math.sin(direction) / 100;
     point.coordinates[1] += speed * Math.cos(direction) / 100;
-    source.setData(point);
+    map.getSource('drone').setData(point);
 
     map.setLayoutProperty('drone', 'icon-rotate', direction * (180 / Math.PI));
 
@@ -41,7 +36,8 @@ function setPosition() {
 }
 
 map.on('load', function () {
-    map.addSource('drone', source);
+    // add the GeoJSON above to a new vector tile source
+    map.addSource('drone', { type: 'geojson', data: point });
 
     map.addLayer({
         "id": "drone-glow-strong",

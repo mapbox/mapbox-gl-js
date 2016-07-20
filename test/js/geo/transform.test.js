@@ -3,6 +3,7 @@
 var test = require('tap').test;
 var Point = require('point-geometry');
 var Transform = require('../../../js/geo/transform');
+var TileCoord = require('../../../js/source/tile_coord');
 var LngLat = require('../../../js/geo/lng_lat');
 
 var fixed = require('../../testutil/fixed');
@@ -104,6 +105,95 @@ test('transform', function(t) {
 
         t.end();
     });
+
+    test('coveringTiles', function(t) {
+        var options = {
+            minzoom: 1,
+            maxzoom: 10,
+            tileSize: 512
+        };
+
+        var transform = new Transform();
+        transform.resize(200, 200);
+
+        transform.zoom = 0;
+        t.deepEqual(transform.coveringTiles(options), []);
+
+        transform.zoom = 1;
+        t.deepEqual(transform.coveringTiles(options), ['1', '33', '65', '97'].map(TileCoord.fromID));
+
+        transform.zoom = 2.4;
+        t.deepEqual(transform.coveringTiles(options), ['162', '194', '290', '322'].map(TileCoord.fromID));
+
+        transform.zoom = 10;
+        t.deepEqual(transform.coveringTiles(options), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+
+        transform.zoom = 11;
+        t.deepEqual(transform.coveringTiles(options), ['16760810', '16760842', '16793578', '16793610'].map(TileCoord.fromID));
+
+        t.end();
+    });
+
+    test('coveringZoomLevel', function(t) {
+        var options = {
+            minzoom: 1,
+            maxzoom: 10,
+            tileSize: 512
+        };
+
+        var transform = new Transform();
+
+        transform.zoom = 0;
+        t.deepEqual(transform.coveringZoomLevel(options), 0);
+
+        transform.zoom = 0.1;
+        t.deepEqual(transform.coveringZoomLevel(options), 0);
+
+        transform.zoom = 1;
+        t.deepEqual(transform.coveringZoomLevel(options), 1);
+
+        transform.zoom = 2.4;
+        t.deepEqual(transform.coveringZoomLevel(options), 2);
+
+        transform.zoom = 10;
+        t.deepEqual(transform.coveringZoomLevel(options), 10);
+
+        transform.zoom = 11;
+        t.deepEqual(transform.coveringZoomLevel(options), 11);
+
+        transform.zoom = 11.5;
+        t.deepEqual(transform.coveringZoomLevel(options), 11);
+
+        options.tileSize = 256;
+
+        transform.zoom = 0;
+        t.deepEqual(transform.coveringZoomLevel(options), 1);
+
+        transform.zoom = 0.1;
+        t.deepEqual(transform.coveringZoomLevel(options), 1);
+
+        transform.zoom = 1;
+        t.deepEqual(transform.coveringZoomLevel(options), 2);
+
+        transform.zoom = 2.4;
+        t.deepEqual(transform.coveringZoomLevel(options), 3);
+
+        transform.zoom = 10;
+        t.deepEqual(transform.coveringZoomLevel(options), 11);
+
+        transform.zoom = 11;
+        t.deepEqual(transform.coveringZoomLevel(options), 12);
+
+        transform.zoom = 11.5;
+        t.deepEqual(transform.coveringZoomLevel(options), 12);
+
+        options.roundZoom = true;
+
+        t.deepEqual(transform.coveringZoomLevel(options), 13);
+
+        t.end();
+    });
+
 
     t.end();
 });

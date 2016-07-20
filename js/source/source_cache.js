@@ -1,14 +1,15 @@
 'use strict';
 
+var Source = require('./source');
 var Tile = require('./tile');
+var Evented = require('../util/evented');
 var TileCoord = require('./tile_coord');
-var Point = require('point-geometry');
 var Cache = require('../util/lru_cache');
 var Coordinate = require('../geo/coordinate');
 var util = require('../util/util');
 var EXTENT = require('../data/bucket').EXTENT;
 
-module.exports = TilePyramid;
+module.exports = SourceCache;
 
 /**
  * A tile pyramid is a specialized cache and datastructure
@@ -16,36 +17,59 @@ module.exports = TilePyramid;
  * data.
  *
  * @param {Object} options
- * @param {number} options.tileSize
- * @param {number} options.minzoom
- * @param {number} options.maxzoom
  * @private
  */
-function TilePyramid(options) {
-    this.tileSize = options.tileSize;
-    this.minzoom = options.minzoom;
-    this.maxzoom = options.maxzoom;
-    this.roundZoom = options.roundZoom;
-    this.reparseOverscaled = options.reparseOverscaled;
+function SourceCache(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
 
-    this._load = options.load;
-    this._abort = options.abort;
-    this._unload = options.unload;
-    this._add = options.add;
-    this._remove = options.remove;
-    this._redoPlacement = options.redoPlacement;
+    var source = this._source = Source.create(id, options, dispatcher)
+    .on('load', function () {
+        if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
+
+        this._sourceLoaded = true;
+
+        this.tileSize = source.tileSize;
+        this.minzoom = source.minzoom;
+        this.maxzoom = source.maxzoom;
+        this.roundZoom = source.roundZoom;
+        this.reparseOverscaled = source.reparseOverscaled;
+        this.isTileClipped = source.isTileClipped;
+
+        this.vectorLayerIds = source.vectorLayerIds;
+
+        this.fire('load');
+    }.bind(this))
+    .on('error', function (e) {
+        this._sourceErrored = true;
+        this.fire('error', e);
+    }.bind(this))
+    .on('change', function () {
+        this.reload();
+        if (this.transform) {
+            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+        }
+        this.fire('change');
+    }.bind(this));
 
     this._tiles = {};
-    this._cache = new Cache(0, function(tile) { return this._unload(tile); }.bind(this));
+    this._cache = new Cache(0, this.unloadTile.bind(this));
 
     this._isIdRenderable = this._isIdRenderable.bind(this);
 }
 
 
-TilePyramid.maxOverzooming = 10;
-TilePyramid.maxUnderzooming = 3;
+SourceCache.maxOverzooming = 10;
+SourceCache.maxUnderzooming = 3;
 
-TilePyramid.prototype = {
+SourceCache.prototype = util.inherit(Evented, {
+    onAdd: function (map) {
+        this.map = map;
+        if (this._source && this._source.onAdd) {
+            this._source.onAdd(map);
+        }
+    },
+
     /**
      * Return true if no tile data is pending, tiles will not change unless
      * an additional API call is received.
@@ -53,12 +77,45 @@ TilePyramid.prototype = {
      * @private
      */
     loaded: function() {
+        if (this._sourceErrored) { return true; }
+        if (!this._sourceLoaded) { return false; }
         for (var t in this._tiles) {
             var tile = this._tiles[t];
             if (tile.state !== 'loaded' && tile.state !== 'errored')
                 return false;
         }
         return true;
+    },
+
+    /**
+     * @returns {Source} The underlying source object
+     * @private
+     */
+    getSource: function () {
+        return this._source;
+    },
+
+    loadTile: function (tile, callback) {
+        return this._source.loadTile(tile, callback);
+    },
+
+    unloadTile: function (tile) {
+        if (this._source.unloadTile)
+            return this._source.unloadTile(tile);
+    },
+
+    abortTile: function (tile) {
+        if (this._source.abortTile)
+            return this._source.abortTile(tile);
+    },
+
+    serialize: function () {
+        return this._source.serialize();
+    },
+
+    prepare: function () {
+        if (this._sourceLoaded && this._source.prepare)
+            return this._source.prepare();
     },
 
     /**
@@ -91,17 +148,41 @@ TilePyramid.prototype = {
                 tile.state = 'reloading';
             }
 
-            this._load(tile);
+            this.loadTile(this._tiles[i], this._tileLoaded.bind(this, this._tiles[i]));
         }
+    },
+
+    _tileLoaded: function (tile, err) {
+        if (err) {
+            tile.state = 'errored';
+            this.fire('tile.error', {tile: tile, error: err});
+            this._source.fire('tile.error', {tile: tile, error: err});
+            return;
+        }
+
+        tile.source = this;
+        tile.timeAdded = new Date().getTime();
+        this.fire('tile.load', {tile: tile});
+        this._source.fire('tile.load', {tile: tile});
+    },
+
+    /**
+     * Get a specific tile by TileCoordinate
+     * @param {TileCoordinate} coord
+     * @returns {Object} tile
+     * @private
+     */
+    getTile: function(coord) {
+        return this.getTileByID(coord.id);
     },
 
     /**
      * Get a specific tile by id
-     * @param {string|number} id tile id
+     * @param {number|string} id
      * @returns {Object} tile
      * @private
      */
-    getTile: function(id) {
+    getTileByID: function(id) {
         return this._tiles[id];
     },
 
@@ -112,45 +193,7 @@ TilePyramid.prototype = {
      * @private
      */
     getZoom: function(transform) {
-        return transform.zoom + Math.log(transform.tileSize / this.tileSize) / Math.LN2;
-    },
-
-    /**
-     * Return a zoom level that will cover all tiles in a given transform
-     * @param {Object} transform
-     * @returns {number} zoom level
-     * @private
-     */
-    coveringZoomLevel: function(transform) {
-        return (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-    },
-
-    /**
-     * Given a transform, return all coordinates that could cover that
-     * transform for a covering zoom level.
-     * @param {Object} transform
-     * @returns {Array<Tile>} tiles
-     * @private
-     */
-    coveringTiles: function(transform) {
-        var z = this.coveringZoomLevel(transform);
-        var actualZ = z;
-
-        if (z < this.minzoom) return [];
-        if (z > this.maxzoom) z = this.maxzoom;
-
-        var tr = transform,
-            tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
-            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
-
-        return TileCoord.cover(z, [
-            tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
-            tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
-        ], this.reparseOverscaled ? actualZ : z).sort(function(a, b) {
-            return centerPoint.dist(a) - centerPoint.dist(b);
-        });
+        return transform.zoom + transform.scaleZoom(transform.tileSize / this.tileSize);
     },
 
     /**
@@ -244,7 +287,8 @@ TilePyramid.prototype = {
      * are inside the viewport.
      * @private
      */
-    update: function(used, transform, fadeDuration) {
+    update: function(transform, fadeDuration) {
+        if (!this._sourceLoaded) { return; }
         var i;
         var coord;
         var tile;
@@ -253,8 +297,8 @@ TilePyramid.prototype = {
 
         // Determine the overzooming/underzooming amounts.
         var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = Math.max(zoom - TilePyramid.maxOverzooming, this.minzoom);
-        var maxCoveringZoom = Math.max(zoom + TilePyramid.maxUnderzooming,  this.minzoom);
+        var minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this.minzoom);
+        var maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
@@ -266,7 +310,7 @@ TilePyramid.prototype = {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = used ? this.coveringTiles(transform) : [];
+        var required = this.used ? transform.coveringTiles(this._source) : [];
         for (i = 0; i < required.length; i++) {
             coord = required[i];
             tile = this.addTile(coord);
@@ -344,12 +388,13 @@ TilePyramid.prototype = {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
             tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
-            this._load(tile);
+            this.loadTile(tile, this._tileLoaded.bind(this, tile));
         }
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._add(tile, coord);
+        this.fire('tile.add', {tile: tile});
+        this._source.fire('tile.add', {tile: tile});
 
         return tile;
     },
@@ -367,7 +412,8 @@ TilePyramid.prototype = {
 
         tile.uses--;
         delete this._tiles[id];
-        this._remove(tile);
+        this.fire('tile.remove', {tile: tile});
+        this._source.fire('tile.remove', {tile: tile});
 
         if (tile.uses > 0)
             return;
@@ -375,8 +421,9 @@ TilePyramid.prototype = {
         if (tile.isRenderable()) {
             this._cache.add(tile.coord.wrapped().id, tile);
         } else {
-            this._abort(tile);
-            this._unload(tile);
+            tile.aborted = true;
+            this.abortTile(tile);
+            this.unloadTile(tile);
         }
     },
 
@@ -452,8 +499,20 @@ TilePyramid.prototype = {
             results.push(tileResults[t]);
         }
         return results;
+    },
+
+    redoPlacement: function () {
+        var ids = this.getIds();
+        for (var i = 0; i < ids.length; i++) {
+            var tile = this.getTileByID(ids[i]);
+            tile.redoPlacement(this);
+        }
+    },
+
+    getVisibleCoordinates: function () {
+        return this.getRenderableIds().map(TileCoord.fromID);
     }
-};
+});
 
 /**
  * Convert a coordinate to a point in a tile's coordinate space.
