@@ -39,10 +39,6 @@ module.exports = function(style, options, _callback) {
 
     var gl = map.painter.gl;
 
-    map.on('error', function(event) {
-        callback(event.error);
-    });
-
     map.once('load', function() {
         applyOperations(map, options.operations, function() {
             var w = options.width * browser.devicePixelRatio;

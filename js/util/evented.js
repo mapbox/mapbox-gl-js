@@ -85,7 +85,14 @@ var Evented = {
      * @returns {Object} `this`
      */
     fire: function(type, data) {
-        if (!this.listens(type)) return this;
+        if (!this.listens(type)) {
+            // To ensure that no error events are dropped, print them to the
+            // console if they have no listeners.
+            if (util.endsWith(type, 'error')) {
+                console.error((data && data.error) || data || 'Empty error event');
+            }
+            return this;
+        }
 
         data = util.extend({}, data);
         util.extend(data, {type: type, target: this});
