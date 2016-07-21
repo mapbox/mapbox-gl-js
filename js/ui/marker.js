@@ -5,22 +5,28 @@ module.exports = Marker;
 
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
+var Point = require('point-geometry');
 
 /**
  * Creates a marker component
  * @class Marker
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
+ * @param {Object=} options
+ * @param {PointLike=} options.offset The offset in pixels as a [`PointLike`](#PointLike) object to apply relative to the element's top left corner. Negatives indicate left and up.
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
  */
-function Marker(element) {
+function Marker(element, options) {
     if (!element) {
         element = DOM.create('div');
     }
     element.classList.add('mapboxgl-marker');
     this._el = element;
+
+    this._offset = Point.convert(options && options.offset || [0, 0]);
+
     this._update = this._update.bind(this);
 }
 
@@ -81,7 +87,7 @@ Marker.prototype = {
 
     _update: function() {
         if (!this._map) return;
-        var pos = this._map.project(this._lngLat);
+        var pos = this._map.project(this._lngLat)._add(this._offset);
         DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
