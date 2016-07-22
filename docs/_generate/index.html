@@ -144,7 +144,7 @@ navigation:
       <p>
         Tiled sources (vector and raster) must specify
         their details in terms of the <a href="https://github.com/mapbox/tilejson-spec">TileJSON specification</a>.
-        This can be done in two ways:
+        This can be done in several ways:
       </p>
       <ul>
         <li>
@@ -174,6 +174,23 @@ navigation:
 {% endhighlight %}
           </div>
         </li>
+        <li>
+          By providing a url to a WMS server that supports
+          EPSG:3857 (or EPSG:900913) as a source of tiled data.
+          The server url should contain a <code>"{bbox-epsg-3857}"</code>
+          replacement token to supply the <code>bbox</code> parameter.
+          <em>(This feature is currently supported only in Mapbox GL JS.)</em>
+{% highlight json%}
+"wms-imagery": {
+  "type": "raster",
+  "tiles": [
+  'http://a.example.com/wms?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&width=256&height=256&layers=example'
+  ],
+  "tileSize": 256
+}
+{% endhighlight %}
+        </li>
+
       </ul>
 
       <div class='space-bottom4 fill-white keyline-all'>
@@ -272,7 +289,7 @@ navigation:
           </div>
         <p>
           This example of a GeoJSON source refers to an external GeoJSON document via its URL. The
-          GeoJSON document must be on the same domain or accessible using 
+          GeoJSON document must be on the same domain or accessible using
           <a href='http://enable-cors.org/'>CORS</a>.
         </p>
   <div class='space-bottom1 clearfix'>
