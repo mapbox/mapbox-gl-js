@@ -893,8 +893,8 @@ test('Map', function(t) {
         });
 
         t.test('calls listeners', function (t) {
-            sinon.stub(console, 'error', function() {
-                t.fail();
+            sinon.stub(console, 'error', function(event) {
+                t.fail(event.error);
             });
 
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
