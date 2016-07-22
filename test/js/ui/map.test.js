@@ -894,13 +894,13 @@ test('Map', function(t) {
 
         t.test('calls listeners', function (t) {
             sinon.stub(console, 'error', function() {
-                console.error.restore();
                 t.fail();
             });
 
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
             map.on('error', function(event) {
                 t.equal(event.error.message, 'version: expected one of [8], 7 found');
+                console.error.restore();
                 t.end();
             });
             map.setStyle({ version: 7, sources: {}, layers: [] });
