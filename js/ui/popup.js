@@ -6,6 +6,7 @@ var util = require('../util/util');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
+var Point = require('point-geometry');
 
 /**
  * A popup component.
@@ -16,10 +17,19 @@ var LngLat = require('../geo/lng_lat');
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
- * @param {string} options.anchor - A string indicating the popup's location relative to
+ * @param {string} [options.anchor] - A string indicating the popup's location relative to
  *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
- * `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+ *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
+ *   dynamically set to ensure the popup falls within the map container with a preference
+ *   for `'bottom'`.
+ *  @param {number|PointLike|Object} [options.offset] - The offset in pixels to apply
+ *  from the geographical location of the popup. This can be a single number representing
+ *  the radius of circular offsets, [`PointLike`](#PointLike) for a fixed `[x,y]` offset
+ *  regardless of the anchor, or an Object mapping anchor to a [`PointLike`](#PointLike)
+ *  objects to apply a different offsets for each anchor, eg. `{top: [0,-10], bottom: [0,0]}`.
+ *  For the offset values represented by a [`PointLike`](#PointLike), negatives indicate
+ *  left and up.
  * @example
  * var popup = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
@@ -199,15 +209,48 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
         }
 
         var pos = this._map.project(this._lngLat).round(),
-            anchor = this.options.anchor;
+            anchor = this.options.anchor,
+            offset = this.options.offset;
+
+        // a fixed offset regardless of the anchor
+        var offsetFixed = [0, 0];
+        // an object of offsets per each anchor
+        var offsets;
+
+        if (offset) {
+            if (typeof offset === 'number') {
+                // when offset is a fixed radius
+                var cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
+                offsets = {
+                    'top': [0, offset],
+                    'top-left': [cornerOffset, cornerOffset],
+                    'top-right': [-cornerOffset, cornerOffset],
+                    'bottom': [0, -offset],
+                    'bottom-left': [cornerOffset, -cornerOffset],
+                    'bottom-right': [-cornerOffset, -cornerOffset],
+                    'left': [offset, 0],
+                    'right': [-offset, 0]
+                };
+            } else if (offset.length && offset.length === 2) {
+                // when the offset is a fixed [x,y]
+                offsetFixed = offset;
+            } else {
+                // when the offset is preset for each anchor
+                offsets = offset;
+            }
+        }
+
+        // maximum offsets for each anchor configuration: top, bottom
+        var offsetTop = (offsets && offsets.top || offsetFixed)[1];
+        var offsetBottom = (offsets && offsets.bottom || offsetFixed)[1];
 
         if (!anchor) {
             var width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (pos.y < height) {
+            if (pos.y + offsetBottom < height) {
                 anchor = ['top'];
-            } else if (pos.y > this._map.transform.height - height) {
+            } else if (pos.y + offsetTop > this._map.transform.height - height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
@@ -225,6 +268,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
                 anchor = anchor.join('-');
             }
         }
+
+        // apply the offset to the Popup pos
+        pos = pos._add(Point.convert(offsets && offsets[anchor] || offsetFixed));
 
         var anchorTranslate = {
             'top': 'translate(-50%,0)',
