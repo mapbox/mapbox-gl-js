@@ -73,7 +73,7 @@ Marker.prototype = {
     /**
      * Set the marker's geographical position and move it.
      * @param {LngLat} lnglat
-     * @returns {Popup} `this`
+     * @returns {Marker} `this`
      */
     setLngLat: function(lnglat) {
         this._lngLat = LngLat.convert(lnglat);
