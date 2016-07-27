@@ -1,6 +1,7 @@
 'use strict';
 
 var resolveTokens = require('../util/token');
+var bidi = require('../util/twitter-cldr-bidi');
 
 module.exports = resolveText;
 
@@ -28,6 +29,8 @@ function resolveText(features, layoutProperties, codepoints) {
         } else if (transform === 'lowercase') {
             text = text.toLocaleLowerCase();
         }
+
+        text = bidi.from_string(text).reorder_visually().toString();
 
         for (var j = 0; j < text.length; j++) {
             codepoints[text.charCodeAt(j)] = true;
