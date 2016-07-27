@@ -1,0 +1,71 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "mapbox-gl-js build user",
+  "Resources": {
+    "BuildUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Policies": [
+          {
+            "PolicyName": "list",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws-cn:s3:::mapbox-gl-js-cn-north-1"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "build",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws-cn:s3:::mapbox-gl-js-cn-north-1/*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "BuildUserKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "BuildUser"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AwsAccessKeyId": {
+      "Value": {
+        "Ref": "BuildUserKey"
+      }
+    },
+    "AwsSecretAccessKey": {
+      "Value": {
+        "Fn::GetAtt": [
+          "BuildUserKey",
+          "SecretAccessKey"
+        ]
+      }
+    }
+  }
+}
