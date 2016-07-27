@@ -35,7 +35,7 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(layers) {
+    'set layers': function(map, layers) {
         this.layers = {};
         var that = this;
 
@@ -69,7 +69,7 @@ util.extend(Worker.prototype, {
         this.layerFamilies = createLayerFamilies(this.layers);
     },
 
-    'update layers': function(layers) {
+    'update layers': function(map, layers) {
         var that = this;
         var id;
         var layer;
@@ -99,29 +99,29 @@ util.extend(Worker.prototype, {
         this.layerFamilies = createLayerFamilies(this.layers);
     },
 
-    'load tile': function(params, callback) {
+    'load tile': function(map, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].loadTile(params, callback);
+        this.workerSources[type].loadTile(map, params, callback);
     },
 
-    'reload tile': function(params, callback) {
+    'reload tile': function(map, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].reloadTile(params, callback);
+        this.workerSources[type].reloadTile(map, params, callback);
     },
 
-    'abort tile': function(params) {
+    'abort tile': function(map, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].abortTile(params);
+        this.workerSources[type].abortTile(map, params);
     },
 
-    'remove tile': function(params) {
+    'remove tile': function(map, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].removeTile(params);
+        this.workerSources[type].removeTile(map, params);
     },
 
-    'redo placement': function(params, callback) {
+    'redo placement': function(map, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].redoPlacement(params, callback);
+        this.workerSources[type].redoPlacement(map, params, callback);
     },
 
     /**
@@ -130,7 +130,7 @@ util.extend(Worker.prototype, {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    'load worker source': function(params, callback) {
+    'load worker source': function(map, params, callback) {
         try {
             this.self.importScripts(params.url);
             callback();

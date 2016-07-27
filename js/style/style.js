@@ -730,7 +730,7 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    'get sprite json': function(params, callback) {
+    'get sprite json': function(_, params, callback) {
         var sprite = this.sprite;
         if (sprite.loaded()) {
             callback(null, { sprite: sprite.data, retina: sprite.retina });
@@ -741,7 +741,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get icons': function(params, callback) {
+    'get icons': function(_, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
@@ -755,7 +755,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get glyphs': function(params, callback) {
+    'get glyphs': function(_, params, callback) {
         var stacks = params.stacks,
             remaining = Object.keys(stacks).length,
             allGlyphs = {};
