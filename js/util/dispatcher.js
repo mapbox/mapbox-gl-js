@@ -1,8 +1,7 @@
 'use strict';
 
 var util = require('./util');
-var Actor = require('./actor');
-var WebWorker = require('./web_worker');
+var workerPool = require('./worker_pool');
 
 module.exports = Dispatcher;
 
@@ -14,14 +13,9 @@ module.exports = Dispatcher;
  * @private
  */
 function Dispatcher(length, parent) {
-    this.actors = [];
+    this.id = util.uniqueId();
+    this.actors = workerPool.requestActors(this.id, length, parent);
     this.currentActor = 0;
-    for (var i = 0; i < length; i++) {
-        var worker = new WebWorker();
-        var actor = new Actor(worker, parent);
-        actor.name = "Worker " + i;
-        this.actors.push(actor);
-    }
 }
 
 Dispatcher.prototype = {
@@ -37,7 +31,7 @@ Dispatcher.prototype = {
      */
     broadcast: function(type, data, cb) {
         cb = cb || function () {};
-        util.asyncAll(this.actors, function (actor, done) {
+        util.asyncAll(this.actors.getAll(), function (actor, done) {
             actor.send(type, data, done);
         }, cb);
     },
@@ -49,25 +43,15 @@ Dispatcher.prototype = {
      * @param {string} type
      * @param {object} data
      * @param {Function} callback
-     * @param {number|undefined} [targetID] The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
-     * @returns {number} The ID of the worker to which the message was sent.
+     * @param {string|undefined} [actorKey] When defined, messages send with a given value of actorKey will always be sent to the same actor.
      * @memberof Dispatcher
      * @instance
      */
-    send: function(type, data, callback, targetID, buffers) {
-        if (typeof targetID !== 'number' || isNaN(targetID)) {
-            // Use round robin to send requests to web workers.
-            targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
-        }
-
-        this.actors[targetID].send(type, data, callback, buffers);
-        return targetID;
+    send: function(type, data, callback, actorKey, buffers) {
+        this.actors.get(actorKey).send(type, data, callback, buffers);
     },
 
     remove: function() {
-        for (var i = 0; i < this.actors.length; i++) {
-            this.actors[i].target.terminate();
-        }
-        this.actors = [];
+        this.actors.release();
     }
 };

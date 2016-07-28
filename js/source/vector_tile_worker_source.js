@@ -11,15 +11,15 @@ module.exports = VectorTileWorkerSource;
  * This class is designed to be easily reused to support custom source types
  * for data formats that can be parsed/converted into an in-memory VectorTile
  * representation.  To do so, create it with
- * `new VectorTileWorkerSource(actor, styleLayers, customLoadVectorDataFunction)`.
+ * `new VectorTileWorkerSource(actor, styles, customLoadVectorDataFunction)`.
  *
  * @class VectorTileWorkerSource
  * @private
  * @param {Function} [loadVectorData] Optional method for custom loading of a VectorTile object based on parameters passed from the main-thread Source.  See {@link VectorTileWorkerSource#loadTile}.  The default implementation simply loads the pbf at `params.url`.
  */
-function VectorTileWorkerSource (actor, styleLayers, loadVectorData) {
+function VectorTileWorkerSource (actor, styles, loadVectorData) {
     this.actor = actor;
-    this.styleLayers = styleLayers;
+    this.styles = styles;
 
     if (loadVectorData) { this.loadVectorData = loadVectorData; }
 
@@ -42,26 +42,39 @@ VectorTileWorkerSource.prototype = {
      * @param {boolean} params.showCollisionBoxes
      */
     loadTile: function(map, params, callback) {
-        var source = params.source,
+        var style = this.styles.getKey(map),
+            source = params.source,
             uid = params.uid;
 
-        if (!this.loading[source])
-            this.loading[source] = {};
+        var loading = this.loading[style + source];
 
-        var tile = this.loading[source][uid] = new WorkerTile(params);
+        if (!loading)
+            loading = this.loading[style + source] = {};
+
+        if (loading[uid]) {
+            loading[uid].callbacks.push(callback);
+            return;
+        }
+
+        var tile = loading[uid] = new WorkerTile(params);
+        tile.callbacks = [callback];
+        callback = function (err, data) {
+            tile.callbacks.forEach(function(cb) { cb(err, data); });
+        };
+
         tile.abort = this.loadVectorData(params, done.bind(this));
 
         function done(err, data) {
-            delete this.loading[source][uid];
+            delete loading[uid];
 
             if (err) return callback(err);
             if (!data) return callback(null, null);
 
             tile.data = data.tile;
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, data.rawTileData, callback);
+            tile.parse(tile.data, this.styles.getLayerFamilies(map), this.actor, data.rawTileData, callback);
 
-            this.loaded[source] = this.loaded[source] || {};
-            this.loaded[source][uid] = tile;
+            this.loaded[style + source] = this.loaded[style + source] || {};
+            this.loaded[style + source][uid] = tile;
         }
     },
 
@@ -73,11 +86,11 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     reloadTile: function(map, params, callback) {
-        var loaded = this.loaded[params.source],
+        var loaded = this.loaded[this.styles.getKey(map) + params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, params.rawTileData, callback);
+            tile.parse(tile.data, this.styles.getLayerFamilies(map), this.actor, params.rawTileData, callback);
         }
     },
 
@@ -89,7 +102,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     abortTile: function(map, params) {
-        var loading = this.loading[params.source],
+        var loading = this.loading[this.styles.getKey(map) + params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
@@ -105,7 +118,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     removeTile: function(map, params) {
-        var loaded = this.loaded[params.source],
+        var loaded = this.loaded[this.styles.getKey(map) + params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];

@@ -387,7 +387,7 @@ SourceCache.prototype = util.inherit(Evented, {
         if (!tile) {
             var zoom = coord.z;
             var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
+            tile = new Tile(this.id + coord.id, wrapped, this.tileSize * overscaling, this.maxzoom);
             this.loadTile(tile, this._tileLoaded.bind(this, tile));
         }
 

@@ -22,9 +22,9 @@ module.exports = Tile;
  * @param {number} size
  * @private
  */
-function Tile(coord, size, sourceMaxZoom) {
+function Tile(id, coord, size, sourceMaxZoom) {
     this.coord = coord;
-    this.uid = util.uniqueId();
+    this.uid = id;
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;

@@ -178,7 +178,12 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _updateWorkerLayers: function(ids) {
-        this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
+        this.dispatcher.broadcast(ids ? 'update style' : 'set style', {
+            layers: this._serializeLayers(ids),
+            sources: util.mapObject(this.sources, function(source) {
+                return source.serialize();
+            })
+        });
     },
 
     _serializeLayers: function(ids) {

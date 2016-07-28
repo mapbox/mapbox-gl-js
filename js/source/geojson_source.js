@@ -138,14 +138,16 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             options.data = JSON.stringify(data);
         }
 
+        var workerKey = options.url || options.data;
+
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(this.type + '.loadData', options, function(err) {
+        this.dispatcher.send(this.type + '.loadData', options, function(err) {
             this._loaded = true;
+            this.workerKey = workerKey;
             callback(err);
-
-        }.bind(this));
+        }.bind(this), workerKey);
     },
 
     loadTile: function (tile, callback) {
@@ -164,7 +166,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('load tile', params, function(err, data) {
+        this.dispatcher.send('load tile', params, function(err, data) {
 
             tile.unloadVectorData(this.map.painter);
 
@@ -184,7 +186,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
             return callback(null);
 
-        }.bind(this), this.workerID);
+        }.bind(this), this.workerKey);
     },
 
     abortTile: function(tile) {
@@ -193,7 +195,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
     unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
-        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, function() {}, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, function() {}, this.workerKey);
     },
 
     serialize: function() {
