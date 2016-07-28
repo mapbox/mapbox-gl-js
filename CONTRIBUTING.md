@@ -143,12 +143,11 @@ Our labeling system is
 
 We have divided our labels into categories to make them easier to use.
 
+ - type (blue)
  - actionable status (red)
  - non-actionable status (grey)
- - issue type (blue)
- - issue topic / project (yellow)
- - difficulty (green)
- - priority (orange)
+ - importance / urgency (green)
+ - topic / project / misc (yellow)
 
 ## Recommended Reading
 
