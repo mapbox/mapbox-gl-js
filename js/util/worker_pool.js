@@ -4,6 +4,13 @@ var assert = require('assert');
 var Actor = require('./actor');
 var WebWorker = require('./web_worker');
 
+/**
+ * A pool for sharing Worker instances across Map instances on the same page.
+ * Maintains the relationship Dispatcher:Actor:Worker :: 1:many:1, with Actors
+ * serving essentially as individual dispatcher-worker connections.
+ *
+ * @private
+ */
 var WorkerPool = {
     reset: function () {
         this.workers = [];
@@ -26,6 +33,10 @@ var WorkerPool = {
         };
     },
 
+    /**
+     * Release the given dispatcherId's claim on the workers, and clean up
+     * worker instances if this was the last claim.
+     */
     releaseActors: function (dispatcherId) {
         assert(this.actors[dispatcherId]);
         var removed = this.actors[dispatcherId];
@@ -39,6 +50,11 @@ var WorkerPool = {
         }
     },
 
+    /**
+     * Get an actor for the given dispatcher.  If `uid` is provided, then
+     * subsequent calls with the same value of uid will return the same Actor
+     * (with the same target Worker).
+     */
     getActor: function (dispatcherId, uid) {
         assert(this.actors[dispatcherId]);
         var actorId;
