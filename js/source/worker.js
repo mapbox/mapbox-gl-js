@@ -22,14 +22,14 @@ function Worker(self) {
 
     // simple accessor object for passing to WorkerSources
     var styleLayers = {
-        getKey: function (map) {
-            return this.styles[map];
+        getKey: function (mapId) {
+            return this.styles[mapId];
         }.bind(this),
-        getLayers: function (map) {
-            return this.layers[this.styles[map]];
+        getLayers: function (mapId) {
+            return this.layers[this.styles[mapId]];
         }.bind(this),
-        getLayerFamilies: function (map) {
-            return this.layerFamilies[this.styles[map]];
+        getLayerFamilies: function (mapId) {
+            return this.layerFamilies[this.styles[mapId]];
         }.bind(this)
     };
 
@@ -47,15 +47,15 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set style': function(map, style) {
+    'set style': function(mapId, style) {
         // this.styles is an object mapping map id to a content-based key for
         // the map instance's style. ideally, the key should be the same for
         // two map instances whose style is identical.
         var key = createKeyForStyle(style);
 
-        var prevKey = this.styles[map];
+        var prevKey = this.styles[mapId];
         if (prevKey === key) return;
-        this.styles[map] = key;
+        this.styles[mapId] = key;
 
         var shouldDeletePreviousLayers = util.values(this.styles)
             .some(function (usedKey) { return usedKey === prevKey; });
@@ -98,25 +98,25 @@ util.extend(Worker.prototype, {
         }
     },
 
-    'update style': function(map, style) {
+    'update style': function(mapId, style) {
         var that = this;
         var id;
         var layer;
 
         var key = createKeyForStyle(style);
 
-        var prevKey = this.styles[map];
+        var prevKey = this.styles[mapId];
         if (prevKey === key) return;
         assert(this.layers[prevKey]);
 
-        this.styles[map] = key;
+        this.styles[mapId] = key;
 
         // if the current style is being used by another map instance, then
         // delegate to 'set style'.
         var existingStyleIsUsed = util.values(this.styles)
             .some(function (usedKey) { return usedKey === prevKey; });
         if (existingStyleIsUsed)
-            return this['set style'](map, style);
+            return this['set style'](mapId, style);
 
         var prevLayers = this.layers[prevKey];
         delete this.layers[prevKey];
@@ -151,29 +151,29 @@ util.extend(Worker.prototype, {
         }
     },
 
-    'load tile': function(map, params, callback) {
+    'load tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].loadTile(map, params, callback);
+        this.workerSources[type].loadTile(mapId, params, callback);
     },
 
-    'reload tile': function(map, params, callback) {
+    'reload tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].reloadTile(map, params, callback);
+        this.workerSources[type].reloadTile(mapId, params, callback);
     },
 
-    'abort tile': function(map, params) {
+    'abort tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].abortTile(map, params);
+        this.workerSources[type].abortTile(mapId, params);
     },
 
-    'remove tile': function(map, params) {
+    'remove tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].removeTile(map, params);
+        this.workerSources[type].removeTile(mapId, params);
     },
 
-    'redo placement': function(map, params, callback) {
+    'redo placement': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].redoPlacement(map, params, callback);
+        this.workerSources[type].redoPlacement(mapId, params, callback);
     },
 
     /**
@@ -182,7 +182,7 @@ util.extend(Worker.prototype, {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    'load worker source': function(map, params, callback) {
+    'load worker source': function(mapId, params, callback) {
         try {
             this.self.importScripts(params.url);
             callback();

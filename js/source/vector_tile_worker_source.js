@@ -31,6 +31,7 @@ VectorTileWorkerSource.prototype = {
     /**
      * Implements {@link WorkerSource#loadTile}.  Delegates to {@link VectorTileWorkerSource#loadVectorData} (which by default expects a `params.url` property) for fetching and producing a VectorTile object.
      *
+     * @param {string} mapId A unique identifier for the map instance making this request
      * @param {object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
@@ -41,8 +42,8 @@ VectorTileWorkerSource.prototype = {
      * @param {number} params.pitch
      * @param {boolean} params.showCollisionBoxes
      */
-    loadTile: function(map, params, callback) {
-        var style = this.styles.getKey(map),
+    loadTile: function(mapId, params, callback) {
+        var style = this.styles.getKey(mapId),
             source = params.source,
             uid = params.uid;
 
@@ -71,7 +72,7 @@ VectorTileWorkerSource.prototype = {
             if (!data) return callback(null, null);
 
             tile.data = data.tile;
-            tile.parse(tile.data, this.styles.getLayerFamilies(map), this.actor, data.rawTileData, callback);
+            tile.parse(tile.data, this.styles.getLayerFamilies(mapId), this.actor, data.rawTileData, callback);
 
             this.loaded[style + source] = this.loaded[style + source] || {};
             this.loaded[style + source][uid] = tile;
@@ -81,28 +82,30 @@ VectorTileWorkerSource.prototype = {
     /**
      * Implements {@link WorkerSource#reloadTile}.
      *
+     * @param {string} mapId A unique identifier for the map instance making this request
      * @param {object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    reloadTile: function(map, params, callback) {
-        var loaded = this.loaded[this.styles.getKey(map) + params.source],
+    reloadTile: function(mapId, params, callback) {
+        var loaded = this.loaded[this.styles.getKey(mapId) + params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.styles.getLayerFamilies(map), this.actor, params.rawTileData, callback);
+            tile.parse(tile.data, this.styles.getLayerFamilies(mapId), this.actor, params.rawTileData, callback);
         }
     },
 
     /**
      * Implements {@link WorkerSource#abortTile}.
      *
+     * @param {string} mapId A unique identifier for the map instance making this request
      * @param {object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    abortTile: function(map, params) {
-        var loading = this.loading[this.styles.getKey(map) + params.source],
+    abortTile: function(mapId, params) {
+        var loading = this.loading[this.styles.getKey(mapId) + params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
@@ -113,12 +116,13 @@ VectorTileWorkerSource.prototype = {
     /**
      * Implements {@link WorkerSource#removeTile}.
      *
+     * @param {string} mapId A unique identifier for the map instance making this request
      * @param {object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    removeTile: function(map, params) {
-        var loaded = this.loaded[this.styles.getKey(map) + params.source],
+    removeTile: function(mapId, params) {
+        var loaded = this.loaded[this.styles.getKey(mapId) + params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];

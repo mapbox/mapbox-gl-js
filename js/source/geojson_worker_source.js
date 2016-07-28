@@ -65,11 +65,12 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
      * Defers to {@link GeoJSONWorkerSource#loadGeoJSON} for the fetching/parsing,
      * expecting `callback(error, data)` to be called with either an error or a
      * parsed GeoJSON object.
+     * @param {string} mapId A unique identifier for the map instance making this request
      * @param {object} params
      * @param {string} params.source The id of the source.
      * @param {Function} callback
      */
-    loadData: function (map, params, callback) {
+    loadData: function (mapId, params, callback) {
         var handleData = function(err, data) {
             if (err) return callback(err);
             if (typeof data != 'object') {
