@@ -29,25 +29,28 @@ module.exports = GeoJSONSource;
  * @param {number} [options.clusterRadius=50] The radius of each cluster when clustering points, measured in pixels.
  * @param {number} [options.clusterMaxZoom] The maximum zoom level to cluster points in. By default, this value is
  *   one zoom level less than the map's `maxzoom`, so that at the highest zoom level features are not clustered.
-
+ *
  * @example
- * var sourceObj = new mapboxgl.GeoJSONSource({
- *    data: {
- *        "type": "FeatureCollection",
- *        "features": [{
- *            "type": "Feature",
- *            "geometry": {
- *                "type": "Point",
- *                "coordinates": [
- *                    -76.53063297271729,
- *                    39.18174077994108
- *                ]
- *            }
- *        }]
- *    }
+ * map.addSource('some id', {
+ *     data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
  * });
- * map.addSource('some id', sourceObj); // add
- * map.removeSource('some id');  // remove
+ *
+ * @example
+ * map.addSource('some id', {
+ *     data: {
+ *         "type": "FeatureCollection",
+ *         "features": [{
+ *             "type": "Feature",
+ *             "geometry": {
+ *                 "type": "Point",
+ *                 "coordinates": [
+ *                     -76.53063297271729,
+ *                     39.18174077994108
+ *                 ]
+ *             }
+ *         }]
+ *     }
+ * });
  */
 function GeoJSONSource(options) {
     options = options || {};
