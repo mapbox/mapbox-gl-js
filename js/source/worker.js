@@ -22,12 +22,26 @@ function Worker(self) {
 
     // simple accessor object for passing to WorkerSources
     var styleLayers = {
+        /**
+         * Get the 'style key' for the given map instance.  Two maps with
+         * identical styles may have the same style key.  Thus, this may be
+         * used to support caching of common work across map instances with
+         * the same style.
+         */
         getKey: function (mapId) {
             return this.styles[mapId];
         }.bind(this),
+
+        /**
+         * Get the style layers for the given map instance.
+         */
         getLayers: function (mapId) {
             return this.layers[this.styles[mapId]];
         }.bind(this),
+
+        /**
+         * Get the style 'layer families' for the given map instance.
+         */
         getLayerFamilies: function (mapId) {
             return this.layerFamilies[this.styles[mapId]];
         }.bind(this)
@@ -48,18 +62,15 @@ function Worker(self) {
 
 util.extend(Worker.prototype, {
     'set style': function(mapId, style) {
-        // this.styles is an object mapping map id to a content-based key for
-        // the map instance's style. ideally, the key should be the same for
-        // two map instances whose style is identical.
         var key = createKeyForStyle(style);
 
         var prevKey = this.styles[mapId];
         if (prevKey === key) return;
         this.styles[mapId] = key;
 
-        var shouldDeletePreviousLayers = util.values(this.styles)
+        var shouldDeletePreviousStyle = util.values(this.styles)
             .some(function (usedKey) { return usedKey === prevKey; });
-        if (shouldDeletePreviousLayers) {
+        if (shouldDeletePreviousStyle) {
             delete this.layers[prevKey];
             delete this.layerFamilies[prevKey];
         }
