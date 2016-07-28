@@ -1,27 +1,5 @@
 Hi, and thanks in advance for contributing to Mapbox GL. Here's how we work. Please follow these conventions when submitting an issue or pull request.
 
-## Code Conventions
-
-* Our code conventions are mostly enforced with eslint, which will be run as part of `npm test`.
-* In internal / private methods, we check preconditions with `assert`, helping us catch mistakes within the library. For performance, these checks are removed from the production build with [unassertify](https://www.npmjs.com/package/unassertify).
-* In external / public methods, we check preconditions where appropriate and emit an error. "Emit" can mean throwing an `Error`, passing an `Error` as a first callback argument, or emitting an `error` event, as appropriate for the context. These checks remain present in production builds, helping downstream authors avoid common mistakes.
-
-## Git Conventions
-
-If you have commit access to the repository, please be aware that we strive to maintain a clean, mostly-linear history.
-
-You may use the GitHub merge button to squash and merge a branch. If you do not want to squash the branch into a single commit, see "Manually Merging a Branch" below.
-
-Never merge a branch that is failing CI.
-
-### Manually Merging a Branch
-
-Before manually merging a branch, please
-
- - rebase the branch onto the current tip of the target branch (`master` or `mb-pages`).
- - squash commits until they are self-contained, potentially down to a single commit if appropriate.
- - perform a fast-forward merge into the target branch and push the result
-
 ## Preparing your Development Environment
 
 ### OSX
@@ -118,11 +96,44 @@ There are two test suites associated with Mapbox GL JS
 
 See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
 
-## Writing Documentation
+## Sprint Planning
+
+* We will use Github milestones to schedule tasks into two week sprints
+* We will end each sprint and publish a release every other Wednesday unless there is an outstanding “release blocker” issue.
+    * If there is a "release blocker" issue, we fix it as soon as possible and do the release
+* We will prioritize feature work as follows:
+    1. “release blocker” bugs
+    3. in-progress things
+    2. things needed by customers
+    4. new things
+* We will try to include one "testing and release process", one "refactoring", and one "bug" issue in each release.
+* We will name releases alphabetically after [cities](https://en.wikipedia.org/wiki/List_of_towns_and_cities_with_100,000_or_more_inhabitants/cityname:_A). (Fun facts are encouraged!)
+
+## Code Conventions
+
+* Our code conventions are mostly enforced with eslint, which will be run as part of `npm test`.
+* In internal / private methods, we check preconditions with `assert`, helping us catch mistakes within the library. For performance, these checks are removed from the production build with [unassertify](https://www.npmjs.com/package/unassertify).
+* In external / public methods, we check preconditions where appropriate and emit an error. "Emit" can mean throwing an `Error`, passing an `Error` as a first callback argument, or emitting an `error` event, as appropriate for the context. These checks remain present in production builds, helping downstream authors avoid common mistakes.
+
+## Git Conventions
+
+ - If you have commit access to the repository, please be aware that we strive to maintain a clean, mostly-linear history.
+ - You may use the GitHub merge button to squash and merge a branch. If you do not want to squash the branch into a single commit, see "Manually Merging a Branch" below.
+ - Never merge a branch that is failing CI.
+
+### Manually Merging a Branch
+
+Before manually merging a branch, please
+
+ - rebase the branch onto the current tip of the target branch (`master` or `mb-pages`).
+ - squash commits until they are self-contained, potentially down to a single commit if appropriate.
+ - perform a fast-forward merge into the target branch and push the result
+
+## Documentation Conventions
 
 See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
-## Issue Labels
+### Github Issue Labels
 
 Our labeling system is
 
