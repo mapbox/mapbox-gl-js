@@ -138,6 +138,9 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             options.data = JSON.stringify(data);
         }
 
+        // We use a 'worker key' that's tied to the current geojson data for
+        // this source, so that when we ask the worker for tiles, the request
+        // goes to the same worker that parsed/prepared the geojson.
         var workerKey = options.url || options.data;
 
         // target {this.type}.loadData rather than literally geojson.loadData,
