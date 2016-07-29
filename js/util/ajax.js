@@ -46,7 +46,7 @@ exports.getJSON = function(url, callback) {
     });
 };
 
-exports.getArrayBuffer = function(url, callback) {
+exports.getArrayBuffer = function(url, headers, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {

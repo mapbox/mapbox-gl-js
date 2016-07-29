@@ -24,13 +24,20 @@ exports.getJSON = function(url, callback) {
     return xhr;
 };
 
-exports.getArrayBuffer = function(url, callback) {
+exports.getArrayBuffer = function(url, headers, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'arraybuffer';
     xhr.onerror = function(e) {
         callback(e);
     };
+
+    if (headers !== undefined && headers !== null) {
+        for (var i = 0; i < headers.length; i++) {
+            xhr.setRequestHeader(headers[i][0], headers[i][1]);
+        }
+    }
+
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, xhr.response);
@@ -49,7 +56,7 @@ function sameOrigin(url) {
 }
 
 exports.getImage = function(url, callback) {
-    return exports.getArrayBuffer(url, function(err, imgData) {
+    return exports.getArrayBuffer(url, null, function(err, imgData) {
         if (err) return callback(err);
         var img = new Image();
         img.onload = function() {
