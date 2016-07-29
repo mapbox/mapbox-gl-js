@@ -355,6 +355,53 @@ test('Bucket', function(t) {
         t.end();
     });
 
+    t.test('Bucket#updatePaintBufferData', function(t) {
+        // Make a 'worker-side' bucket
+        var workerBucket = create();
+        workerBucket.features = [createFeature(17, 42)];
+        workerBucket.features[0].index = 3;
+        workerBucket.populateArrays();
+        var serialized = workerBucket.serialize();
+
+        // Now build a main-thread bucket, using the serialized arrays from
+        // the worker-side one
+        var Class = createClass({});
+        var serializedLayers = [{
+            id: 'layerid',
+            type: 'circle',
+            paint: dataDrivenPaint
+        }];
+        var layers = serializedLayers.map(function(serializedLayer) {
+            var styleLayer = new StyleLayer(serializedLayer);
+            styleLayer.updatePaintTransitions([], {}, {});
+            return styleLayer;
+        });
+        var paintData = serialized.arrays.test[0].paintVertexArrays.layerid;
+        // clone the arrayBuffer so that main thread bucket has a different one
+        // underlying its Buffers
+        paintData.arrayBuffer = paintData.arrayBuffer.slice();
+        var mainThreadBucket = new Class(util.extend({
+            layer: layers[0],
+            childLayers: layers
+        }, serialized));
+
+        var bufferGroup = mainThreadBucket.bufferGroups.test[0];
+        var arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
+
+        // update worker-side bucket, and make sure main-thread still has
+        // original paint data
+        workerBucket.updatePaintArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+        arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
+
+        // now update main-thread bucket's paint buffers
+        mainThreadBucket.updatePaintBufferData(workerBucket.serialize().arrays);
+        arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [3, 0, 0, 0]);
+
+        t.end();
+    });
 
     t.end();
 });
