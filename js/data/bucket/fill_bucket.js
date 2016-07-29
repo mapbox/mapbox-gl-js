@@ -118,6 +118,6 @@ FillBucket.prototype.addPolygon = function(polygon) {
 };
 
 FillBucket.prototype.updateFeatureProperties = function (propertiesList) {
-    this.updatePaintArrays('fill', propertiesList);
+    this.updatePaintVertexArrays('fill', propertiesList);
 };
 

@@ -325,7 +325,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('update feature properties', function(t) {
+    t.test('Bucket#updatePaintVertexArrays', function(t) {
         var bucket = create();
 
         bucket.features = [createFeature(17, 42)];
@@ -344,7 +344,7 @@ test('Bucket', function(t) {
         var p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);
 
-        bucket.updatePaintArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+        bucket.updatePaintVertexArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
 
         v0 = testVertex.get(0);
         p0 = testPaintVertex.get(0);
@@ -391,7 +391,7 @@ test('Bucket', function(t) {
 
         // update worker-side bucket, and make sure main-thread still has
         // original paint data
-        workerBucket.updatePaintArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+        workerBucket.updatePaintVertexArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
         arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
         t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
 

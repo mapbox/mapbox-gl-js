@@ -113,7 +113,7 @@ Bucket.prototype.populateArrays = function() {
  * as-is.
  * @private
  */
-Bucket.prototype.updatePaintArrays = function(programName, propertiesList) {
+Bucket.prototype.updatePaintVertexArrays = function(programName, propertiesList) {
     this.recalculateStyleLayers();
 
     for (var i = 0; i < propertiesList.length; i++) {
