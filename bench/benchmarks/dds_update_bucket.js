@@ -203,16 +203,9 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, getWorkerTile, call
                     if (err) return callback(err);
                     eachCallback();
                 });
-
-                // in reality, this data will be transferred from the main
-                // thread
-                workerTile.__arrayGroupData = {};
-                workerTile.buckets.forEach(function (bucket) {
-                    workerTile.__arrayGroupData[bucket] = bucket.arrayGroups;
-                });
             });
         } else {
-            workerTile.updateProperties(workerTile.__propertyData, layerFamilies, actor, workerTile.__arrayGroupData, function(err) {
+            workerTile.updateProperties(workerTile.__propertyData, layerFamilies, actor, function(err) {
                 if (err) return callback(err);
                 eachCallback();
             });
