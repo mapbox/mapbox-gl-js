@@ -355,7 +355,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('Bucket#updatePaintBufferData', function(t) {
+    t.test('Bucket#updatePaintVertexBuffers', function(t) {
         // Make a 'worker-side' bucket
         var workerBucket = create();
         workerBucket.features = [createFeature(17, 42)];
@@ -396,7 +396,7 @@ test('Bucket', function(t) {
         t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
 
         // now update main-thread bucket's paint buffers
-        mainThreadBucket.updatePaintBufferData(workerBucket.serialize().arrays);
+        mainThreadBucket.updatePaintVertexBuffers(workerBucket.serialize().arrays);
         arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
         t.same(new Uint8Array(arrayBuffer), [3, 0, 0, 0]);
 

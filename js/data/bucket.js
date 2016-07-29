@@ -176,7 +176,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
  * @private
  * @param {object} arrayGroups object mapping program name to [group0, group1, ...], where groupX is a serialized array group structure as returned from the workers.
  */
-Bucket.prototype.updatePaintBufferData = function (arrayGroups) {
+Bucket.prototype.updatePaintVertexBuffers = function (arrayGroups) {
     for (var programName in arrayGroups) {
         var groups = arrayGroups[programName];
         var bufferGroups = this.bufferGroups[programName];
