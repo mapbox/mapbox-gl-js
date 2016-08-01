@@ -79,6 +79,16 @@ LineBucket.prototype.programInterfaces = {
             components: 4,
             type: 'Uint8'
         }]),
+        paintAttributes: [{
+            name: 'a_color',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return layer.getPaintValue("line-color", globalProperties, featureProperties);
+            },
+            multiplier: 255,
+            paintProperty: 'line-color'
+        }],
         elementArrayType: new Bucket.ElementArrayType()
     }
 };
@@ -88,6 +98,7 @@ LineBucket.prototype.addFeature = function(feature) {
     for (var i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],
+            feature.properties,
             this.layer.layout['line-join'],
             this.layer.layout['line-cap'],
             this.layer.layout['line-miter-limit'],
@@ -96,7 +107,7 @@ LineBucket.prototype.addFeature = function(feature) {
     }
 };
 
-LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
+LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, miterLimit, roundLimit) {
 
     var len = vertices.length;
     // If the line has duplicate vertices at the end, adjust length to remove them.
@@ -116,7 +127,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         closed = firstVertex.equals(lastVertex);
 
     // we could be more precise, but it would only save a negligible amount of space
-    this.prepareArrayGroup('line', len * 10);
+    var group = this.prepareArrayGroup('line', len * 10);
+    var startIndex = group.layoutVertexArray.length;
 
     // a line may not have coincident points
     if (len === 2 && closed) return;
@@ -347,6 +359,12 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         startOfLine = false;
     }
 
+    this.populatePaintArrays(
+        'line', {zoom: this.zoom},
+        featureProperties,
+        group,
+        startIndex
+    );
 };
 
 /**

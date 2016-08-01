@@ -28,27 +28,27 @@ test('LineBucket', function(t) {
     // should throw in the future?
     t.equal(bucket.addLine([
         new Point(0, 0)
-    ]), undefined);
+    ], {}), undefined);
 
     // should also throw in the future?
     // this is a closed single-segment line
     t.equal(bucket.addLine([
         new Point(0, 0),
         new Point(0, 0)
-    ]), undefined);
+    ], {}), undefined);
 
     t.equal(bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20)
-    ]), undefined);
+    ], {}), undefined);
 
     t.equal(bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20),
         new Point(0, 0)
-    ]), undefined);
+    ], {}), undefined);
 
     t.equal(bucket.addFeature(feature), undefined);
 
