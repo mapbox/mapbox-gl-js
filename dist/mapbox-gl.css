@@ -21,13 +21,13 @@
 .mapboxgl-ctrl-top-left,
 .mapboxgl-ctrl-top-right,
 .mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right  { position:absolute; }
+.mapboxgl-ctrl-bottom-right  { position:absolute; pointer-events:none; }
 .mapboxgl-ctrl-top-left      { top:0; left:0; }
 .mapboxgl-ctrl-top-right     { top:0; right:0; }
 .mapboxgl-ctrl-bottom-left   { bottom:0; left:0; }
 .mapboxgl-ctrl-bottom-right  { right:0; bottom:0; }
 
-.mapboxgl-ctrl { clear:both; }
+.mapboxgl-ctrl { clear:both; pointer-events:auto }
 .mapboxgl-ctrl-top-left .mapboxgl-ctrl { margin:10px 0 0 10px; float:left; }
 .mapboxgl-ctrl-top-right .mapboxgl-ctrl{ margin:10px 10px 0 0; float:right; }
 .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl { margin:0 0 10px 10px; float:left; }
