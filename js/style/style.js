@@ -364,6 +364,7 @@ Style.prototype = util.inherit(Evented, {
         }
         var source = this.sources[id];
         delete this.sources[id];
+        delete this._updates.sources[id];
         source
             .off('load', this._forwardSourceEvent)
             .off('error', this._forwardSourceEvent)
