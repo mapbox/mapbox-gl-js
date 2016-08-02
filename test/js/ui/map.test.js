@@ -883,26 +883,34 @@ test('Map', function(t) {
 
     t.test('error event', function (t) {
         t.test('logs errors to console when it has NO listeners', function (t) {
+            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
+
+            sinon.spy(map, 'fire');
             sinon.stub(console, 'error', function(error) {
-                console.error.restore();
-                t.equal(error.message, 'version: expected one of [8], 7 found');
-                t.end();
+                if (error.message === 'version: expected one of [8], 7 found') {
+                    t.notOk(map.fire.calledWith('error'));
+                    console.error.restore();
+                    map.fire.restore();
+                    t.end();
+                } else {
+                    console.log(error);
+                }
             });
 
-            createMap({ style: { version: 7, sources: {}, layers: [] } });
+            map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
         t.test('calls listeners', function (t) {
-            sinon.stub(console, 'error', function(event) {
-                t.fail(event.error);
-            });
-
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
+
+            sinon.spy(console, 'error');
             map.on('error', function(event) {
                 t.equal(event.error.message, 'version: expected one of [8], 7 found');
+                t.notOk(console.error.calledWith('version: expected one of [8], 7 found'));
                 console.error.restore();
                 t.end();
             });
+
             map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
@@ -941,7 +949,6 @@ test('Map', function(t) {
         });
         t.end();
     });
-
 
     t.end();
 });
