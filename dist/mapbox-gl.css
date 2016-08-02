@@ -21,7 +21,7 @@
 .mapboxgl-ctrl-top-left,
 .mapboxgl-ctrl-top-right,
 .mapboxgl-ctrl-bottom-left,
-.mapboxgl-ctrl-bottom-right  { position:absolute; pointer-events:none; }
+.mapboxgl-ctrl-bottom-right  { position:absolute; pointer-events:none; z-index:2; }
 .mapboxgl-ctrl-top-left      { top:0; left:0; }
 .mapboxgl-ctrl-top-right     { top:0; right:0; }
 .mapboxgl-ctrl-bottom-left   { bottom:0; left:0; }
