@@ -17,7 +17,7 @@ function ExtrusionBucket() {
 ExtrusionBucket.prototype = util.inherit(Bucket, {});
 
 
-ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, ny, nz, t, isUpper, e) {
+ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, ny, nz, t, e) {
     const factor = Math.pow(2, 13);
 
     return vertexBuffer.emplaceBack(
@@ -29,9 +29,6 @@ ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, 
             Math.floor(nx * factor) * 2 + t,
             ny * factor * 2,
             nz * factor * 2,
-
-            // a_isUpper
-            isUpper,
 
             // a_edgedistance
             e
@@ -55,10 +52,6 @@ ExtrusionBucket.prototype.programInterfaces = {
             name: 'a_normal',
             components: 3,
             type: 'Int16'
-        }, {
-            name: 'a_isUpper',
-            components: 1,
-            type: 'Uint8'
         }, {
             name: 'a_edgedistance',
             components: 1,
@@ -137,46 +130,46 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
 
         if (r > 0) holeIndices.push(flattened.length / 2);
 
+        var edgeDistance = 0;
+        var lastIndex;
+
         // add vertices from the roof
         for (var v = 0; v < ring.length; v++) {
-            var vertex = ring[v];
+            var v1 = ring[v];
 
-            var fIndex = this.addExtrusionVertex(group.layout.vertex, vertex[0], vertex[1], 0, 0, 1, 1, 1, 0);
-            indices.push(fIndex);
+            var topIndex = this.addExtrusionVertex(group.layout.vertex, v1[0], v1[1], 0, 0, 1, 1, 0);
+            indices.push(topIndex);
 
             if (v >= 1) {
-                group.layout.element2.emplaceBack(fIndex - 1, fIndex);
-                // TODO we could just not and only do them below maybe?
+                var v2 = ring[v - 1];
+                var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
+                var vertexArray = group.layout.vertex;
+
+                var topRight = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
+                this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
+
+                edgeDistance += Point.convert(v2).dist(Point.convert(v1));
+
+                this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
+                this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
+
+                group.layout.element.emplaceBack(topRight, topRight + 1, topRight + 2);
+                group.layout.element.emplaceBack(topRight + 1, topRight + 2, topRight + 3);
+
+                if (!isBoundaryEdge(v1, ring[v - 1])) {
+                    group.layout.element2.emplaceBack(lastIndex, topIndex);
+                    group.layout.element2.emplaceBack(topRight, topRight + 1);
+                    group.layout.element2.emplaceBack(topRight + 2, topRight + 3);
+                    group.layout.element2.emplaceBack(topRight, topRight + 2);
+                    group.layout.element2.emplaceBack(topRight + 1, topRight + 3);
+                }
             }
 
             // convert to format used by earcut
-            flattened.push(vertex[0]);
-            flattened.push(vertex[1]);
-        }
+            flattened.push(v1[0]);
+            flattened.push(v1[1]);
 
-        var edgeDistance = 0;
-
-        for (var s = 0; s < ring.length - 1; s++) {
-            var v1 = ring[s];
-            var v2 = ring[s + 1];
-            var perp = Point.convert(v2)._sub(Point.convert(v1))._perp()._unit();
-
-            var vertexArray = group.layout.vertex;
-            var wIndex = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, 0, edgeDistance);
-            this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, 1, edgeDistance);
-
-            edgeDistance += Point.convert(v2).dist(Point.convert(v1));
-
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, 0, edgeDistance);
-            this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, 1, edgeDistance);
-
-            group.layout.element.emplaceBack(wIndex, wIndex + 1, wIndex + 2);
-            group.layout.element.emplaceBack(wIndex + 1, wIndex + 2, wIndex + 3);
-
-            group.layout.element2.emplaceBack(wIndex, wIndex + 1);
-            group.layout.element2.emplaceBack(wIndex + 2, wIndex + 3);
-            group.layout.element2.emplaceBack(wIndex, wIndex + 2);
-            group.layout.element2.emplaceBack(wIndex + 1, wIndex + 3);
+            lastIndex = topIndex;
         }
     }
 
@@ -194,4 +187,8 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
 function convertCoords(rings) {
     if (rings instanceof Point) return [rings.x, rings.y];
     return rings.map(convertCoords);
+}
+
+function isBoundaryEdge(v1, v2) {
+    return v1.some((a, i) => (a === 0 - 64 || a === Bucket.EXTENT + 64) && v2[i] === a);
 }
