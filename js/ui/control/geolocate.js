@@ -38,6 +38,7 @@ Geolocate.prototype = util.inherit(Control, {
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._geolocateButton = DOM.create('button', (className + '-icon ' + className + '-geolocate'), this._container);
+        this._geolocateButton.type = 'button';
         this._geolocateButton.addEventListener('click', this._onClickGeolocate.bind(this));
         return container;
     },
