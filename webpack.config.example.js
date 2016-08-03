@@ -59,5 +59,10 @@ module.exports = {
             loader: 'transform',
             query: 'brfs'
         }]
-    }
+    },
+
+    // You may use any "devtool" except "eval" and "eval-source-map" due to
+    // a "webworkify-webpack" caveat. 
+    // See https://github.com/borisirota/webworkify-webpack#caveats
+    devtool: 'cheap-source-map'
 }

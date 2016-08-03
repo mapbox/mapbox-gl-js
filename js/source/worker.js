@@ -7,7 +7,7 @@ var util = require('../util/util');
 var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
 
-module.exports = function(self) {
+module.exports = function createWorker(self) {
     return new Worker(self);
 };
 
