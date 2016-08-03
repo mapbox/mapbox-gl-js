@@ -40,7 +40,11 @@ varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
 
+#pragma mapbox: define lowp vec4 color
+
 void main() {
+    #pragma mapbox: initialize lowp vec4 color
+
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
     float a_linesofar = (floor(a_data.z / 4.0) + a_data.w * 64.0) * LINE_DISTANCE_SCALE;
