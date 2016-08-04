@@ -38,17 +38,12 @@ test('Bucket', function(t) {
         Class.prototype.addFeature = function(feature) {
             var group = this.prepareArrayGroup('test', 1);
             var point = feature.loadGeometry()[0][0];
-            var startIndex = group.layoutVertexArray.length;
+            var startIndex = this.vertexArrayLength('test');
             group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
             group.elementArray.emplaceBack(1, 2, 3);
             group.elementArray2.emplaceBack(point.x, point.y);
-            var range = {
-                startGroup: group.index,
-                startVertex: startIndex,
-                endGroup: group.index,
-                endVertex: group.layoutVertexArray.length - 1
-            };
-            this.populatePaintArrays('test', {}, feature.properties, range, feature.index);
+            var endIndex = this.vertexArrayLength('test') - 1;
+            this.populatePaintArrays('test', {}, feature.properties, startIndex, endIndex, feature.index);
         };
 
         return Class;

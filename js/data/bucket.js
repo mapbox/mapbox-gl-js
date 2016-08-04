@@ -116,57 +116,81 @@ Bucket.prototype.populateArrays = function() {
 Bucket.prototype.updatePaintVertexArrays = function(programName, propertiesList) {
     this.recalculateStyleLayers();
 
+    var capacityRequired = this._featureIndexToArrayRange.reduce(function (max, range) {
+        return range ? Math.max(max, range[1]) : max;
+    }, 0);
+
+    this.resizeVertexArrays(programName, capacityRequired);
+
     for (var i = 0; i < propertiesList.length; i++) {
         var range = this._featureIndexToArrayRange[i];
         if (!range) continue;
-        var numVertices = range.endVertex - range.startVertex + (range.endGroup - range.startGroup) * ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
-        this.prepareArrayGroup(programName, numVertices);
-        this.populatePaintArrays(programName, {zoom: this.zoom}, propertiesList[i], range);
-
-        // Maintain the ArrayGroup invariant that layoutVertexArray.length ===
-        // paintVertexArrays[*].length, necessary for proper operation of
-        // prepareArrayGroup
-        for (var g = range.startGroup; g <= range.endGroup; g++) {
-            var start = g === range.startGroup ? range.startVertex : 0;
-            var end = g === range.endGroup ? range.endVertex : 0;
-            for (var v = start; v <= end; v++) {
-                this.arrayGroups[programName][g].layoutVertexArray.emplaceBack(0, 0);
-            }
-        }
-
+        this.populatePaintArrays(programName, {zoom: this.zoom}, propertiesList[i], range[0], range[1]);
     }
 };
 
 /**
- * Check if there is enough space available in the current array group for
- * `vertexLength` vertices. If not, append a new array group. Should be called
- * by `populateArrays` and its callees.
+ * Returns the length of the vertex arrays for the given programName.
+ *
+ * Note: the vertex arrays actually consist of a sequence of ArrayGroups, each
+ * with a max length of 65535.  Since each group is not necessarily filled to
+ * capacity, we effectively have 'gaps', meaning that vertexArrayLength() is
+ * generally greater than the literal number of vertices represented.
+ * @private
+ */
+Bucket.prototype.vertexArrayLength = function(programName) {
+    var groups = this.arrayGroups[programName];
+    if (!groups.length) return 0;
+    return (groups.length - 1) * ArrayGroup.MAX_VERTEX_ARRAY_LENGTH +
+        groups[groups.length - 1].vertexArrayLength();
+};
+
+/**
+ * Returns the total capacity of the vertex arrays for the given programName.
+ * @private
+ */
+Bucket.prototype.vertexArrayCapacity = function(programName) {
+    return this.arrayGroups[programName].length * ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
+};
+
+/**
+ * Return an ArrayGroup with enough space available for `numVertices`
+ * additional vertices.  If there is enough space available in the 'current'
+ * array group, then return that one.  If not, append a new array group and
+ * return the new one. Should be called by `populateArrays` and its callees.
  *
  * Array groups are added to this.arrayGroups[programName].
  *
  * @private
  * @param {string} programName the name of the program associated with the buffer that will receive the vertices
- * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
+ * @param {number} numVertices The number of vertices that will be inserted to the buffer. Must be <= ArrayGroup.MAX_VERTEX_ARRAY_LENGTH.
  * @returns The current array group
  */
 Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
+    assert(numVertices <= ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
+
     var groups = this.arrayGroups[programName];
     var currentGroup = groups.length && groups[groups.length - 1];
+    if (currentGroup && currentGroup.hasCapacityFor(numVertices))
+        return currentGroup;
 
-    if (!currentGroup || !currentGroup.hasCapacityFor(numVertices)) {
-        currentGroup = new ArrayGroup({
+    this.resizeVertexArrays(programName, this.vertexArrayCapacity(programName) + numVertices);
+    return groups[groups.length - 1];
+};
+
+Bucket.prototype.resizeVertexArrays = function(programName, capacity) {
+    var targetGroupCount = Math.ceil(capacity / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
+    var groups = this.arrayGroups[programName];
+    for (var i = groups.length; i < targetGroupCount; i++) {
+        var group = new ArrayGroup({
             layoutVertexArrayType: this.programInterfaces[programName].layoutVertexArrayType,
             elementArrayType: this.programInterfaces[programName].elementArrayType,
             elementArrayType2: this.programInterfaces[programName].elementArrayType2,
             paintVertexArrayTypes: this.paintVertexArrayTypes[programName]
         });
-
-        currentGroup.index = groups.length;
-
-        groups.push(currentGroup);
+        group.index = i;
+        groups.push(group);
     }
-
-    return currentGroup;
 };
 
 /**
@@ -200,7 +224,7 @@ Bucket.prototype.createArrays = function() {
     // mapping from `feature.index` to the start & end vertex array indexes.
     // `feature.index` is the index into the _original_ source layer's feature
     // list (as opposed to this bucket's post-filtered list).
-    this._featureIndexToArrayRange = {};
+    this._featureIndexToArrayRange = [];
     this.arrayGroups = {};
     this.paintVertexArrayTypes = {};
 
@@ -299,32 +323,25 @@ Bucket.prototype.recalculateStyleLayers = function() {
 };
 
 
-/**
- * @typedef {object} ArrayRange
- * @property {number} arrayRange.startGroup
- * @property {number} arrayRange.startVertex
- * @property {number} arrayRange.endGroup
- * @property {number} arrayRange.endVertex
- * @private
- */
-
-Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, arrayRange, featureIndex) {
+Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, startVertex, endVertex, featureIndex) {
     if (typeof featureIndex !== 'undefined') {
-        this._featureIndexToArrayRange[featureIndex] = arrayRange;
+        this._featureIndexToArrayRange[featureIndex] = [startVertex, endVertex];
     }
 
+    var startGroup = Math.floor(startVertex / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
+    var endGroup = Math.floor(endVertex / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
     for (var l = 0; l < this.childLayers.length; l++) {
         var layer = this.childLayers[l];
         var groups = this.arrayGroups[interfaceName];
 
-        for (var g = arrayRange.startGroup; g <= arrayRange.endGroup; g++) {
+        for (var g = startGroup; g <= endGroup; g++) {
             var group = groups[g];
             var length = group.layoutVertexArray.length;
             var paintArray = group.paintVertexArrays[layer.id];
             paintArray.resize(length);
 
-            var start = g === arrayRange.startGroup ? arrayRange.startVertex : 0;
-            var end = g === arrayRange.endGroup ? arrayRange.endVertex : length - 1;
+            var start = g === startGroup ? startVertex % ArrayGroup.MAX_VERTEX_ARRAY_LENGTH : 0;
+            var end = g === endGroup ? endVertex % ArrayGroup.MAX_VERTEX_ARRAY_LENGTH : length - 1;
 
             var attributes = this.paintAttributes[interfaceName][layer.id].attributes;
             for (var m = 0; m < attributes.length; m++) {

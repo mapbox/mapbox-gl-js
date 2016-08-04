@@ -50,6 +50,10 @@ ArrayGroup.prototype.isEmpty = function() {
     return this.layoutVertexArray.length === 0;
 };
 
+ArrayGroup.prototype.vertexArrayLength = function() {
+    return this.layoutVertexArray.length;
+};
+
 ArrayGroup.prototype.trim = function() {
     this.layoutVertexArray.trim();
 
