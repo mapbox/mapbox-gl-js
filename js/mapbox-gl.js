@@ -10,6 +10,7 @@ mapboxgl.Control = require('./ui/control/control');
 mapboxgl.Navigation = require('./ui/control/navigation');
 mapboxgl.Geolocate = require('./ui/control/geolocate');
 mapboxgl.Attribution = require('./ui/control/attribution');
+mapboxgl.Scale = require('./ui/control/scale');
 mapboxgl.Popup = require('./ui/popup');
 mapboxgl.Marker = require('./ui/marker');
 

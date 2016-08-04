@@ -109,6 +109,19 @@
     margin-left: 2px;
 }
 
+.mapboxgl-ctrl-scale {
+  font-size:11px;
+  position:relative;
+  background:white;
+  border-width:medium 2px 2px;
+  border-style:none solid solid;
+  border-color: #777;
+  color: #333;
+  line-height: 1.1;
+  z-index: 1;
+  height: 15px;
+}
+
 .mapboxgl-popup {
     position: absolute;
     top: 0;
