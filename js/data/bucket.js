@@ -111,6 +111,9 @@ Bucket.prototype.populateArrays = function() {
 /**
  * Update paint arrays with the given feature properties, leaving geometries
  * as-is.
+ *
+ * @param {string} programName
+ * @param {Array<Object>} propertiesList Similar to in WorkerTile#updateProperties, an array of properties objects corresponding to the features, in order in the parent vector tile.
  * @private
  */
 Bucket.prototype.updatePaintVertexArrays = function(programName, propertiesList) {
