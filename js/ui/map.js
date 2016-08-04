@@ -724,7 +724,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object} layer The style layer to add, conforming to the Mapbox Style Specification's
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
-     *   If this argument is omitted, the layer will be inserted before every existing layer.
+     *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @fires layer.add
      * @returns {Map} `this`
      */
