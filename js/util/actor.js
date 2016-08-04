@@ -10,11 +10,13 @@ module.exports = Actor;
  *
  * @param {WebWorker} target
  * @param {WebWorker} parent
+ * @param {string|undefined} parentId
  * @private
  */
-function Actor(target, parent) {
+function Actor(target, parent, parentId) {
     this.target = target;
     this.parent = parent;
+    this.parentId = parentId;
     this.callbacks = {};
     this.callbackID = 0;
     this.receive = this.receive.bind(this);
@@ -32,11 +34,11 @@ Actor.prototype.receive = function(message) {
         if (callback) callback(data.error || null, data.data);
     } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
         // data.type == 'load tile', 'remove tile', etc.
-        this.parent[data.type](data.data, done.bind(this));
+        this.parent[data.type](data.parentId, data.data, done.bind(this));
     } else if (typeof data.id !== 'undefined' && this.parent.workerSources) {
         // data.type == sourcetype.method
         var keys = data.type.split('.');
-        this.parent.workerSources[keys[0]][keys[1]](data.data, done.bind(this));
+        this.parent.workerSources[keys[0]][keys[1]](data.parentId, data.data, done.bind(this));
     } else {
         this.parent[data.type](data.data);
     }
@@ -54,7 +56,7 @@ Actor.prototype.receive = function(message) {
 Actor.prototype.send = function(type, data, callback, buffers) {
     var id = null;
     if (callback) this.callbacks[id = this.callbackID++] = callback;
-    this.postMessage({ type: type, id: String(id), data: data }, buffers);
+    this.postMessage({ parentId: this.parentId, type: type, id: String(id), data: data }, buffers);
 };
 
 /**

@@ -58,11 +58,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        if (tile.workerID) {
+        if (tile.state === 'loaded') {
             params.rawTileData = tile.rawTileData;
-            this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
+            this.dispatcher.send('reload tile', params, done.bind(this), tile.uid);
         } else {
-            tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
+            this.dispatcher.send('load tile', params, done.bind(this), tile.uid);
         }
 
         function done(err, data) {
@@ -85,11 +85,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     abortTile: function(tile) {
-        this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.uid);
     },
 
     unloadTile: function(tile) {
         tile.unloadVectorData(this.map.painter);
-        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.uid);
     }
 });

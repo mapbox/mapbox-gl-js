@@ -1,57 +1,57 @@
 'use strict';
 
-var Worker = require('../source/worker');
-var Actor = require('../util/actor');
+var util = require('./util');
+var workerPool = require('./worker_pool');
 
 module.exports = Dispatcher;
 
-function MessageBus(addListeners, postListeners) {
-    return {
-        addEventListener: function(event, callback) {
-            if (event === 'message') {
-                addListeners.push(callback);
-            }
-        },
-        postMessage: function(data) {
-            setImmediate(function() {
-                for (var i = 0; i < postListeners.length; i++) {
-                    postListeners[i]({data: data, target: this.target});
-                }
-            }.bind(this));
-        }
-    };
-}
-
+/**
+ * Responsible for sending messages from a {@link Source} to an associated
+ * {@link WorkerSource}.
+ *
+ * @interface Dispatcher
+ * @private
+ */
 function Dispatcher(length, parent) {
-
-    this.actors = new Array(length);
-
-    var parentListeners = [],
-        workerListeners = [],
-        parentBus = new MessageBus(workerListeners, parentListeners),
-        workerBus = new MessageBus(parentListeners, workerListeners);
-
-    parentBus.target = workerBus;
-    workerBus.target = parentBus;
-    // workerBus substitutes the WebWorker global `self`, and Worker uses
-    // self.importScripts for the 'load worker source' target.
-    workerBus.importScripts = function () {};
-
-    this.worker = new Worker(workerBus);
-    this.actor = new Actor(parentBus, parent);
-
-    this.remove = function() {
-        parentListeners.splice(0, parentListeners.length);
-        workerListeners.splice(0, workerListeners.length);
-    };
+    this.id = util.uniqueId();
+    this.actors = workerPool.requestActors(this.id, length, parent);
+    this.currentActor = 0;
 }
 
 Dispatcher.prototype = {
-    broadcast: function(type, data, callback) {
-        this.actor.send(type, data, callback);
+    /**
+     * Broadcast a message to all Workers.
+     * @method
+     * @name broadcast
+     * @param {string} type
+     * @param {object} data
+     * @param {Function} callback
+     * @memberof Dispatcher
+     * @instance
+     */
+    broadcast: function(type, data, cb) {
+        cb = cb || function () {};
+        util.asyncAll(this.actors.getAll(), function (actor, done) {
+            actor.send(type, data, done);
+        }, cb);
     },
 
-    send: function(type, data, callback, targetID, buffers) {
-        this.actor.send(type, data, callback, buffers);
+    /**
+     * Send a message to a Worker.
+     * @method
+     * @name send
+     * @param {string} type
+     * @param {object} data
+     * @param {Function} callback
+     * @param {string|undefined} [actorKey] When defined, messages send with a given value of actorKey will always be sent to the same actor.
+     * @memberof Dispatcher
+     * @instance
+     */
+    send: function(type, data, callback, actorKey, buffers) {
+        this.actors.get(actorKey).send(type, data, callback, buffers);
+    },
+
+    remove: function() {
+        this.actors.release();
     }
 };

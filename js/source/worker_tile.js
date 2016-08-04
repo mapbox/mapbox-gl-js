@@ -24,7 +24,7 @@ function WorkerTile(params) {
 }
 
 WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, callback) {
-
+    console.log('PARSING TILE', this.source, this.coord.z + '/' + this.coord.x + '/' + this.coord.y, this.uid)
     this.status = 'parsing';
     this.data = data;
 

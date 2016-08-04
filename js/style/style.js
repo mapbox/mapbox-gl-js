@@ -178,7 +178,12 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _updateWorkerLayers: function(ids) {
-        this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
+        this.dispatcher.broadcast(ids ? 'update style' : 'set style', {
+            layers: this._serializeLayers(ids),
+            sources: util.mapObject(this.sources, function(source) {
+                return source.serialize();
+            })
+        });
     },
 
     _serializeLayers: function(ids) {
@@ -731,7 +736,7 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    'get sprite json': function(params, callback) {
+    'get sprite json': function(_, params, callback) {
         var sprite = this.sprite;
         if (sprite.loaded()) {
             callback(null, { sprite: sprite.data, retina: sprite.retina });
@@ -742,7 +747,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get icons': function(params, callback) {
+    'get icons': function(_, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
@@ -756,7 +761,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get glyphs': function(params, callback) {
+    'get glyphs': function(_, params, callback) {
         var stacks = params.stacks,
             remaining = Object.keys(stacks).length,
             allGlyphs = {};

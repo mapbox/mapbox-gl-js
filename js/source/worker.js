@@ -1,5 +1,6 @@
 'use strict';
 
+var assert = require('assert');
 var Actor = require('../util/actor');
 var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
@@ -15,10 +16,35 @@ function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
 
+    this.styles = {};
+    this.layers = {};
+    this.layerFamilies = {};
+
     // simple accessor object for passing to WorkerSources
     var styleLayers = {
-        getLayers: function () { return this.layers; }.bind(this),
-        getLayerFamilies: function () { return this.layerFamilies; }.bind(this)
+        /**
+         * Get the 'style key' for the given map instance.  Two maps with
+         * identical styles may have the same style key.  Thus, this may be
+         * used to support caching of common work across map instances with
+         * the same style.
+         */
+        getKey: function (mapId) {
+            return this.styles[mapId];
+        }.bind(this),
+
+        /**
+         * Get the style layers for the given map instance.
+         */
+        getLayers: function (mapId) {
+            return this.layers[this.styles[mapId]];
+        }.bind(this),
+
+        /**
+         * Get the style 'layer families' for the given map instance.
+         */
+        getLayerFamilies: function (mapId) {
+            return this.layerFamilies[this.styles[mapId]];
+        }.bind(this)
     };
 
     this.workerSources = {
@@ -35,14 +61,28 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(layers) {
-        this.layers = {};
-        var that = this;
+    'set style': function(mapId, style) {
+        var key = createKeyForStyle(style);
+
+        var prevKey = this.styles[mapId];
+        if (prevKey === key) return;
+        this.styles[mapId] = key;
+
+        var shouldDeletePreviousStyle = util.values(this.styles)
+            .some(function (usedKey) { return usedKey === prevKey; });
+        if (shouldDeletePreviousStyle) {
+            delete this.layers[prevKey];
+            delete this.layerFamilies[prevKey];
+        }
+
+        if (this.layers[key]) return;
+
+        var styleLayers = this.layers[key] = {};
 
         // Filter layers and create an id -> layer map
         var childLayerIndicies = [];
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
+        for (var i = 0; i < style.layers.length; i++) {
+            var layer = style.layers[i];
             if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
                 if (layer.ref) {
                     childLayerIndicies.push(i);
@@ -54,74 +94,97 @@ util.extend(Worker.prototype, {
 
         // Create an instance of StyleLayer per layer
         for (var j = 0; j < childLayerIndicies.length; j++) {
-            setLayer(layers[childLayerIndicies[j]]);
+            setLayer(style.layers[childLayerIndicies[j]]);
         }
+
+        this.layerFamilies[key] = createLayerFamilies(styleLayers);
 
         function setLayer(serializedLayer) {
             var styleLayer = StyleLayer.create(
                 serializedLayer,
-                serializedLayer.ref && that.layers[serializedLayer.ref]
+                serializedLayer.ref && styleLayers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
-            that.layers[styleLayer.id] = styleLayer;
+            styleLayers[styleLayer.id] = styleLayer;
         }
-
-        this.layerFamilies = createLayerFamilies(this.layers);
     },
 
-    'update layers': function(layers) {
+    'update style': function(mapId, style) {
         var that = this;
         var id;
         var layer;
 
+        var key = createKeyForStyle(style);
+
+        var prevKey = this.styles[mapId];
+        if (prevKey === key) return;
+        assert(this.layers[prevKey]);
+
+        this.styles[mapId] = key;
+
+        // if the current style is being used by another map instance, then
+        // delegate to 'set style'.
+        var existingStyleIsUsed = util.values(this.styles)
+            .some(function (usedKey) { return usedKey === prevKey; });
+        if (existingStyleIsUsed)
+            return this['set style'](mapId, style);
+
+        var prevLayers = this.layers[prevKey];
+        delete this.layers[prevKey];
+        delete this.layerFamilies[prevKey];
+
+        if (this.layers[key]) return;
+
+        this.layers[key] = prevLayers;
+
         // Update ref parents
-        for (id in layers) {
-            layer = layers[id];
+        for (id in style.layers) {
+            layer = style.layers[id];
             if (layer.ref) updateLayer(layer);
         }
 
         // Update ref children
-        for (id in layers) {
-            layer = layers[id];
+        for (id in style.layers) {
+            layer = style.layers[id];
             if (!layer.ref) updateLayer(layer);
         }
 
+        this.layerFamilies[key] = createLayerFamilies(this.layers);
+
         function updateLayer(layer) {
-            var refLayer = that.layers[layer.ref];
-            if (that.layers[layer.id]) {
+            var refLayer = that.layers[prevKey][layer.ref];
+            if (that.layers[prevKey][layer.id]) {
                 that.layers[layer.id].set(layer, refLayer);
             } else {
                 that.layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
             that.layers[layer.id].updatePaintTransitions({}, {transition: false});
         }
-
-        this.layerFamilies = createLayerFamilies(this.layers);
     },
 
-    'load tile': function(params, callback) {
+    'load tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].loadTile(params, callback);
+        this.workerSources[type].loadTile(mapId, params, callback);
     },
 
-    'reload tile': function(params, callback) {
+    'reload tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].reloadTile(params, callback);
+        this.workerSources[type].reloadTile(mapId, params, callback);
     },
 
-    'abort tile': function(params) {
+    'abort tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].abortTile(params);
+        this.workerSources[type].abortTile(mapId, params);
     },
 
-    'remove tile': function(params) {
+    'remove tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].removeTile(params);
+        this.workerSources[type].removeTile(mapId, params);
     },
 
-    'redo placement': function(params, callback) {
+    'redo placement': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].redoPlacement(params, callback);
+        this.workerSources[type].redoPlacement(mapId, params, callback);
     },
 
     /**
@@ -130,7 +193,7 @@ util.extend(Worker.prototype, {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    'load worker source': function(params, callback) {
+    'load worker source': function(mapId, params, callback) {
         try {
             this.self.importScripts(params.url);
             callback();
@@ -159,5 +222,9 @@ function createLayerFamilies(layers) {
     }
 
     return families;
+}
+
+function createKeyForStyle(style) {
+    return JSON.stringify(style);
 }
 
