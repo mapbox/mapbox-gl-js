@@ -481,14 +481,16 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     _easeToEnd: function(eventData) {
-        if (this.zooming) {
+        var wasZooming = this.zooming;
+        this.zooming = false;
+        this.rotating = false;
+        this.pitching = false;
+
+        if (wasZooming) {
             this.fire('zoomend', eventData);
         }
         this.fire('moveend', eventData);
 
-        this.zooming = false;
-        this.rotating = false;
-        this.pitching = false;
     },
 
     /**
@@ -688,11 +690,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 this.fire('pitch', eventData);
             }
         }, function() {
-            this.fire('zoomend', eventData);
-            this.fire('moveend', eventData);
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
+
+            this.fire('zoomend', eventData);
+            this.fire('moveend', eventData);
         }, options);
 
         return this;
