@@ -17,7 +17,7 @@ test('querySourceFeatures', function(t) {
 
 
     t.test('geojson tile', function(t) {
-        var tile = new Tile(new TileCoord(1, 1, 1));
+        var tile = new Tile('0', new TileCoord(1, 1, 1));
         var result;
 
         result = [];
@@ -42,7 +42,7 @@ test('querySourceFeatures', function(t) {
     });
 
     t.test('vector tile', function(t) {
-        var tile = new Tile(new TileCoord(1, 1, 1));
+        var tile = new Tile('0', new TileCoord(1, 1, 1));
         var result;
 
         result = [];
