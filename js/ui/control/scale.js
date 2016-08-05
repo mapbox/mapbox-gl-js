@@ -5,62 +5,72 @@ var DOM = require('../../util/dom');
 
 module.exports = Scale;
 
+/**
+ * A `Scale` control displays the ratio of a distance on the map to the corresponding distance on the ground.
+ * Extends [`Control`](#Control).
+ *
+ * @class Scale
+ * @param {Object} [options]
+ * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
+ * @example
+ * map.addControl(new mapboxgl.Scale({position: 'top-left'})); // position is optional
+ */
 function Scale(options) {
     util.setOptions(this, options);
 }
 
 Scale.prototype = util.inherit(Control, {
     options: {
-    position: 'bottom-left'
+        position: 'bottom-left'
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl';
+        var className = 'mapboxgl-ctrl-scale',
+            container = this._container = DOM.create('div', className, map.getContainer());
 
-        var container = this._container = DOM.create('div', className + '-group', map.getContainer());
-
-        this._scale = DOM.create('div', ('mapboxgl-ctrl-scale'), this._container);
-
-        _updateScale(map, container);
-         map.on('moveend', function() {
-            _updateScale(map, container);
-         });        
+        updateScale(map, container);
+        map.on('moveend', function() {
+            updateScale(map, container);
+        });
 
         return container;
     }
 });
 
-function _updateScale(map, scale) {
-  var y = map._container.clientHeight / 2;
+function updateScale(map, scale) {
+    // A horizontal scale is imagined to be present at center of the map
+    // container with maximum length (Also the initial length) as 100px.
+    // Using spherical law of cosines approximation, the real distance is
+    // found between the two coordinates.
+    var y = map._container.clientHeight / 2;
+    var maxMeters = getDistance(map.unproject([0, y]), map.unproject([100, y]));
 
-
-  var maxMeters = _getDistance( map.unproject([0, y]), map.unproject([100, y]));
-
-  var meters = _getRoundNum(maxMeters);
-
-  var ratio = meters / maxMeters;
-
-  scale.style.width = 100 * ratio + 'px';
-  scale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km'; 
+    // The real distance corresponding to 100px scale length is rounded off to
+    // near pretty number and the scale length for the same is found out.
+    var meters = getRoundNum(maxMeters);
+    var ratio = meters / maxMeters;
+    scale.style.width = 100 * ratio + 'px';
+    scale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
 
 }
 
-function _getDistance(latlng1, latlng2) {
-  var R = 6371000;
+function getDistance(latlng1, latlng2) {
+    // Uses spherical law of cosines approximation.
+    var R = 6371000;
 
-  var rad = Math.PI / 180,
-      lat1 = latlng1.lat * rad,
-      lat2 = latlng2.lat * rad,
-      a = Math.sin(lat1) * Math.sin(lat2) +
+    var rad = Math.PI / 180,
+        lat1 = latlng1.lat * rad,
+        lat2 = latlng2.lat * rad,
+        a = Math.sin(lat1) * Math.sin(lat2) +
           Math.cos(lat1) * Math.cos(lat2) * Math.cos((latlng2.lng - latlng1.lng) * rad);
 
-  var maxMeters = R * Math.acos(Math.min(a, 1));
-  return maxMeters;
+    var maxMeters = R * Math.acos(Math.min(a, 1));
+    return maxMeters;
 
 }
 
-function _getRoundNum(num) {
-   var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
+function getRoundNum(num) {
+    var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
         d = num / pow10;
 
     d = d >= 10 ? 10 :
