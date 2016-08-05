@@ -11,7 +11,12 @@ var coordinates = require('./coordinates');
  * the test sampleCount times.
  * @private
  */
-module.exports = function run(bench, stylesheet, sampleCount, perTileCallback) {
+module.exports = function run(bench, stylesheet, sampleCount, waitForClick, perTileCallback) {
+    if (typeof waitForClick === 'function') {
+        perTileCallback = waitForClick;
+        waitForClick = false;
+    }
+
     bench.fire('log', {
         message: 'preloading assets',
         color: 'dark'
@@ -21,33 +26,42 @@ module.exports = function run(bench, stylesheet, sampleCount, perTileCallback) {
         if (err) return bench.fire('error', {error: err});
 
         bench.fire('log', {
-            message: 'starting first test',
+            message: waitForClick ? 'click to start test' : 'starting first test',
             color: 'dark'
         });
 
         var timeSum = 0;
         var timeCount = 0;
 
-        asyncTimesSeries(sampleCount, function(callback) {
-            runSample(perTileCallback, stylesheet, assets, function(err, time) {
-                if (err) return bench.fire('error', { error: err });
-                timeSum += time;
-                timeCount++;
-                bench.fire('log', { message: formatNumber(time) + ' ms' });
-                callback();
-            });
-        }, function(err) {
-            if (err) {
-                bench.fire('error', { error: err });
+        if (waitForClick) {
+            window.addEventListener('click', go);
+        } else {
+            go();
+        }
 
-            } else {
-                var timeAverage = timeSum / timeCount;
-                bench.fire('end', {
-                    message: formatNumber(timeAverage) + ' ms',
-                    score: timeAverage
+        function go () {
+            asyncTimesSeries(sampleCount, function(callback) {
+                runSample(perTileCallback, stylesheet, assets, function(err, time) {
+                    if (err) return bench.fire('error', { error: err });
+                    timeSum += time;
+                    timeCount++;
+                    bench.fire('log', { message: formatNumber(time) + ' ms' });
+                    callback();
                 });
-            }
-        });
+            }, function(err) {
+                if (err) {
+                    bench.fire('error', { error: err });
+
+                } else {
+                    var timeAverage = timeSum / timeCount;
+                    bench.fire('log', { message: timeCount * coordinates.length + ' tiles' });
+                    bench.fire('end', {
+                        message: formatNumber(timeAverage) + ' ms',
+                        score: timeAverage
+                    });
+                }
+            });
+        }
     });
 };
 
