@@ -231,7 +231,7 @@ Bucket.prototype.createArrays = function() {
     // mapping from `feature.index` to the start & end vertex array indexes.
     // `feature.index` is the index into the _original_ source layer's feature
     // list (as opposed to this bucket's post-filtered list).
-    this._featureIndexToArrayRange = [];
+    this._featureIndexToArrayRange = this._featureIndexToArrayRange || [];
     this.arrayGroups = {};
     this.paintVertexArrayTypes = {};
 
