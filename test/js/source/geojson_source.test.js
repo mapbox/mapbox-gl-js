@@ -177,7 +177,7 @@ test('GeoJSONSource#update', function(t) {
 
         source.on('load', function () {
             source.setData({});
-            source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), function () {});
+            source.loadTile(new Tile('0', new TileCoord(0, 0, 0), 512), function () {});
         });
     });
 

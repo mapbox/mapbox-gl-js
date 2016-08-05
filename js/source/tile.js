@@ -22,9 +22,9 @@ module.exports = Tile;
  * @param {number} size
  * @private
  */
-function Tile(coord, size, sourceMaxZoom) {
+function Tile(id, coord, size, sourceMaxZoom) {
     this.coord = coord;
-    this.uid = util.uniqueId();
+    this.uid = id;
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
@@ -131,7 +131,7 @@ Tile.prototype = {
             angle: source.map.transform.angle,
             pitch: source.map.transform.pitch,
             showCollisionBoxes: source.map.showCollisionBoxes
-        }, done.bind(this), this.workerID);
+        }, done.bind(this), this.uid);
 
         function done(_, data) {
             this.reloadSymbolData(data, source.map.painter, source.map.style);
