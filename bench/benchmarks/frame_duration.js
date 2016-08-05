@@ -30,16 +30,14 @@ module.exports = function(options) {
         measureFrameTime(options, zooms[index], function(err_, result) {
             results[index] = result;
             evented.fire('log', {
-                message: formatNumber(result.sum / result.count * 10) / 10 + ' ms per frame at zoom ' + zooms[index] + '. ' +
-                    formatNumber(result.countAbove16 / result.count * 100) + '% of frames took longer than 16ms.'
+                message: formatNumber(result.sum / result.count * 10) / 10 + ' ms, ' +
+                    formatNumber(result.countAbove16 / result.count * 100) + '% > 16 ms at zoom ' + zooms[index]
             });
             callback();
         });
     }
 
     function done() {
-        document.getElementById('map').remove();
-
         var sum = 0;
         var count = 0;
         var countAbove16 = 0;
@@ -50,7 +48,7 @@ module.exports = function(options) {
             countAbove16 += result.countAbove16;
         }
         evented.fire('end', {
-            message: formatNumber(sum / count * 10) / 10 + ' ms per frame. ' + formatNumber(countAbove16 / count * 100) + '% of frames took longer than 16ms.',
+            message: formatNumber(sum / count * 10) / 10 + ' ms, ' + formatNumber(countAbove16 / count * 100) + '% > 16ms',
             score: sum / count
         });
     }
@@ -96,6 +94,7 @@ function measureFrameTime(options, zoom, callback) {
                 if (frameEnd - start > DURATION_MILLISECONDS) {
                     map.repaint = false;
                     map.remove();
+                    map.getContainer().remove();
                     callback(undefined, {
                         sum: sum,
                         count: count,

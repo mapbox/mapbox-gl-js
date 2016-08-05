@@ -7,6 +7,10 @@ var fs = require('fs');
 var http = require('http');
 var path = require('path');
 
+app.use(express.static(path.join(__dirname, 'debug')));
+app.use('/dist', express.static(path.join(__dirname, 'dist')));
+app.use('/mapbox-gl-test-suite', express.static(path.join(__dirname, 'node_modules/mapbox-gl-test-suite')));
+
 app.get('/mapbox-gl.js', browserify('./js/mapbox-gl.js', {
     ignoreTransform: ['unassertify'],
     standalone: 'mapboxgl',
@@ -23,27 +27,20 @@ app.get('/access-token.js', browserify('./debug/access-token.js', {
 }));
 
 app.get('/bench/index.js', browserify('./bench/index.js', {
-    transform: ['unassertify', 'envify'],
+    transform: ['reactify', 'unassertify', 'envify'],
     debug: true,
     minify: true,
     cache: 'dynamic',
     precompile: true
 }));
 
-app.get('/bench/:name', function(req, res) {
+app.get('/bench', function(req, res) {
     res.sendFile(path.join(__dirname, 'bench', 'index.html'));
 });
 
 app.get('/debug', function(req, res) {
     res.redirect('/');
 });
-
-app.use(express.static(path.join(__dirname, 'debug')));
-app.use('/dist', express.static(path.join(__dirname, 'dist')));
-
-// serve files in mapbox-gl-test-suite, so that debug files can use its
-// data/image/video/etc. assets
-app.use('/mapbox-gl-test-suite', express.static(path.join(__dirname, 'node_modules/mapbox-gl-test-suite')));
 
 downloadBenchData(function() {
     app.listen(9966, function () {

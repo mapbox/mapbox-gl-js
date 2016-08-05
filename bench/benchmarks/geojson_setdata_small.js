@@ -37,7 +37,7 @@ module.exports = function(options) {
         evented.fire('log', {message: 'loading small feature collection'});
         setDataPerf(source, 50, featureCollection, function(err, ms) {
             if (err) return evented.fire('error', {error: err});
-            evented.fire('end', {message: 'average load time: ' + formatNumber(ms) + ' ms', score: ms});
+            evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
         });
     });
 
