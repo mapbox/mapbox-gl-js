@@ -10,8 +10,8 @@ const float PI = 3.141592653589793;
 
 attribute vec2 a_pos;
 attribute vec2 a_offset;
-attribute vec4 a_data1;
-attribute vec4 a_data2;
+attribute vec2 a_texture_pos;
+attribute vec4 a_data;
 
 
 // matrix is for the vertex position.
@@ -32,9 +32,9 @@ varying vec2 v_fade_tex;
 varying float v_gamma_scale;
 
 void main() {
-    vec2 a_tex = a_data1.xy;
-    mediump float a_labelminzoom = a_data1[2];
-    mediump vec2 a_zoom = a_data2.st;
+    vec2 a_tex = a_texture_pos.xy;
+    mediump float a_labelminzoom = a_data[0];
+    mediump vec2 a_zoom = a_data.pq;
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
 
@@ -44,7 +44,7 @@ void main() {
     // pitch-alignment: map
     // rotation-alignment: map | viewport
     if (u_pitch_with_map) {
-        lowp float angle = u_rotate_with_map ? (a_data1[3] / 256.0 * 2.0 * PI) : u_bearing;
+        lowp float angle = u_rotate_with_map ? (a_data[1] / 256.0 * 2.0 * PI) : u_bearing;
         lowp float asin = sin(angle);
         lowp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
@@ -60,7 +60,7 @@ void main() {
         // it goes from 0% foreshortening to up to around 70% foreshortening
         lowp float pitchfactor = 1.0 - cos(u_pitch * sin(u_pitch * 0.75));
 
-        lowp float lineangle = a_data1[3] / 256.0 * 2.0 * PI;
+        lowp float lineangle = a_data[1] / 256.0 * 2.0 * PI;
 
         // use the lineangle to position points a,b along the line
         // project the points and calculate the label angle in projected space

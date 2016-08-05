@@ -8,8 +8,8 @@ precision highp float;
 
 attribute vec2 a_pos;
 attribute vec2 a_offset;
-attribute vec4 a_data1;
-attribute vec4 a_data2;
+attribute vec2 a_texture_pos;
+attribute vec4 a_data;
 
 
 // matrix is for the vertex position.
@@ -25,9 +25,9 @@ varying vec2 v_tex;
 varying vec2 v_fade_tex;
 
 void main() {
-    vec2 a_tex = a_data1.xy;
-    mediump float a_labelminzoom = a_data1[2];
-    mediump vec2 a_zoom = a_data2.st;
+    vec2 a_tex = a_texture_pos.xy;
+    mediump float a_labelminzoom = a_data[0];
+    mediump vec2 a_zoom = a_data.pq;
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
 
