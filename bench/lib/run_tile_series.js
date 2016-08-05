@@ -1,6 +1,7 @@
 'use strict';
 
 var Style = require('../../js/style/style');
+var Worker = require('../../js/source/worker');
 var util = require('../../js/util/util');
 var ajax = require('../../js/util/ajax');
 var formatNumber = require('./format_number');
@@ -74,6 +75,10 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
 
     var style = new Style(stylesheet);
 
+    var worker = new Worker({addEventListener: function() {} });
+    worker['set layers'](stylesheet.layers);
+    var layerFamilies = worker.layerFamilies;
+
     style.on('load', function() {
         var assets = {
             getGlyphs: function (params, callback) {
@@ -97,7 +102,8 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
                 });
             },
 
-            stylesheet: stylesheet
+            stylesheet: stylesheet,
+            layerFamilies: layerFamilies
         };
 
         runSample(perTileCallback, stylesheet, assets, function(err) {
@@ -112,7 +118,8 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
                 getTile: function (url, callback) {
                     callback(null, cache.tiles[url]);
                 },
-                stylesheet: stylesheet
+                stylesheet: stylesheet,
+                layerFamilies: layerFamilies
             };
             callback(err, assetsCached);
         });
@@ -124,13 +131,17 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
 }
 
 function runSample(perTileCallback, stylesheet, assets, callback) {
-    var timeStart = performance.now();
-    perTileCallback = perTileCallback.bind(null, assets);
-    assets.stylesheet = stylesheet;
-    util.asyncAll(coordinates, perTileCallback, function(err) {
-        var timeEnd = performance.now();
-        callback(err, timeEnd - timeStart);
-    });
+    // setTimeout to force async and ensure we get log events between samples
+    setTimeout(function () {
+        var timeStart = performance.now();
+        perTileCallback = perTileCallback.bind(null, assets);
+        assets.stylesheet = stylesheet;
+
+        util.asyncAll(coordinates, perTileCallback, function(err) {
+            var timeEnd = performance.now();
+            callback(err, timeEnd - timeStart);
+        });
+    }, 0);
 }
 
 function asyncTimesSeries(times, work, callback) {

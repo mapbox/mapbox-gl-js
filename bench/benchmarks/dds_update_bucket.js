@@ -8,7 +8,6 @@ var util = require('../../js/util/util');
 var ajax = require('../../js/util/ajax');
 var Evented = require('../../js/util/evented');
 var WorkerTile = require('../../js/source/worker_tile');
-var Worker = require('../../js/source/worker');
 var config = require('../../js/util/config');
 var runSeries = require('../lib/run_tile_series');
 
@@ -52,8 +51,6 @@ function runTile (assets, coordinate, callback) {
         }
     };
 
-    var layerFamilies = createLayerFamilies(assets.stylesheet.layers);
-
     if (!workerTile.data) {
         // preload data
         assets.getTile(url, function(err, response) {
@@ -75,10 +72,15 @@ function runTile (assets, coordinate, callback) {
                     workerTile.__props[layerId].push(properties);
                 }
             }
-            workerTile.parse(data, layerFamilies, actor, callback);
+            workerTile.parse(data, assets.layerFamilies, actor, callback);
         });
     } else {
-        workerTile.updateProperties(workerTile.__props, layerFamilies, actor, callback);
+        console.time(url);
+        workerTile.updateProperties(workerTile.__props, assets.layerFamilies, actor, function (err) {
+            console.timeEnd(url);
+            if (err) { return callback(err); }
+            callback();
+        });
     }
 }
 
@@ -100,15 +102,3 @@ function getWorkerTile (coordinate, url) {
     return workerTiles[url];
 }
 
-var createLayerFamiliesCacheKey;
-var createLayerFamiliesCacheValue;
-function createLayerFamilies(layers) {
-    if (layers !== createLayerFamiliesCacheKey) {
-        var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](layers);
-
-        createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies;
-    }
-    return createLayerFamiliesCacheValue;
-}

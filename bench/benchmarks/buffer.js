@@ -8,7 +8,6 @@ var util = require('../../js/util/util');
 var ajax = require('../../js/util/ajax');
 var Evented = require('../../js/util/evented');
 var WorkerTile = require('../../js/source/worker_tile');
-var Worker = require('../../js/source/worker');
 var config = require('../../js/util/config');
 var runSeries = require('../lib/run_tile_series');
 
@@ -52,27 +51,13 @@ function runTile (assets, coordinate, callback) {
         }
     };
 
-    var layerFamilies = createLayerFamilies(assets.stylesheet.layers);
-
     assets.getTile(url, function(err, response) {
         if (err) throw err;
         var data = new VT.VectorTile(new Protobuf(response));
-        workerTile.parse(data, layerFamilies, actor, function(err) {
+        workerTile.parse(data, assets.layerFamilies, actor, function(err) {
             if (err) return callback(err);
             callback();
         });
     });
 }
 
-var createLayerFamiliesCacheKey;
-var createLayerFamiliesCacheValue;
-function createLayerFamilies(layers) {
-    if (layers !== createLayerFamiliesCacheKey) {
-        var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](layers);
-
-        createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies;
-    }
-    return createLayerFamiliesCacheValue;
-}
