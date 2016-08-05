@@ -177,7 +177,11 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
     if (currentGroup && currentGroup.hasCapacityFor(numVertices))
         return currentGroup;
 
-    this.resizeVertexArrays(programName, this.vertexArrayCapacity(programName) + numVertices);
+    if (numVertices > 0)
+        this.resizeVertexArrays(programName, this.vertexArrayCapacity(programName) + numVertices);
+    else if (!currentGroup) // special case for prepareArrayGroup(programName, 0)
+        this.resizeVertexArrays(programName, 1);
+
     return groups[groups.length - 1];
 };
 
