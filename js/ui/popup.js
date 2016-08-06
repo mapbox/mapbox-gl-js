@@ -11,6 +11,7 @@ var LngLat = require('../geo/lng_lat');
  * A popup component.
  *
  * @class Popup
+ * @fires close to indicate when a popup has been removed via the 'x' or programatically
  * @param {Object} [options]
  * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
  *   top right corner of the popup.
@@ -79,6 +80,8 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             this._map.off('click', this._onClickClose);
             delete this._map;
         }
+
+        this.fire('close', {popup: this});
 
         return this;
     },
