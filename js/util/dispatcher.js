@@ -16,9 +16,10 @@ module.exports = Dispatcher;
 function Dispatcher(length, parent) {
     this.actors = [];
     this.currentActor = 0;
+    this.id = util.uniqueId();
     for (var i = 0; i < length; i++) {
         var worker = new WebWorker();
-        var actor = new Actor(worker, parent);
+        var actor = new Actor(worker, parent, this.id);
         actor.name = "Worker " + i;
         this.actors.push(actor);
     }
