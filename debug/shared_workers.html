@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, { height: 100%; }
+        .map {
+            height: 350px;
+            width: 350px;
+            display: inline-block;
+        }
+        #checkboxes {
+            position: absolute;
+            background: #fff;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+        #buffer {
+            position: absolute;
+            top:100px;
+            left:0;
+            pointer-events: none;
+        }
+        #buffer div {
+            background-color: #fff;
+            padding: 5px 0;
+            text-indent: 10px;
+            white-space: nowrap;
+            text-shadow:
+               -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                 1px 1px 0 #fff;
+        }
+    </style>
+</head>
+
+<body>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
+
+<div id='checkboxes'>
+  <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'> <label for='show-tile-boundaries'>tile debug</label><br />
+  <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'> <label for='show-symbol-collision-boxes'>collision debug</label><br />
+  <input id='show-overdraw-checkbox' name='show-overdraw' type='checkbox'> <label for='show-overdraw'>overdraw debug</label><br />
+  <input id='buffer-checkbox' name='buffer' type='checkbox'> <label for='buffer'>buffer stats</label>
+</div>
+
+<div id='buffer' style="display:none">
+    <em>Waiting for data...</em>
+</div>
+
+<script src='mapbox-gl.js'></script>
+<script src='access-token.js'></script>
+
+<script>
+var containers = document.querySelectorAll('.map')
+for (var i = 0; i < containers.length; i++) {
+    addMap(containers[i]);
+}
+
+function addMap (container) {
+    var map = new mapboxgl.Map({
+        container: container,
+        zoom: 12.5,
+        center: [-77.01866, 38.888],
+        style: 'mapbox://styles/mapbox/streets-v9',
+        hash: true
+    });
+
+    map.addControl(new mapboxgl.Navigation());
+    map.addControl(new mapboxgl.Geolocate());
+
+    map.on('load', function() {
+        map.addSource('geojson', {
+            "type": "geojson",
+            "data": "mapbox-gl-test-suite/data/linestring.geojson"
+        });
+
+        map.addLayer({
+            "id": "route",
+            "type": "line",
+            "source": "geojson",
+            "paint": {
+                "line-color": "#EC8D8D",
+                "line-width": {
+                    "base": 1.5,
+                    "stops": [
+                        [
+                            5,
+                            0.75
+                        ],
+                        [
+                            18,
+                            32
+                        ]
+                    ]
+                }
+            }
+        }, 'country-label-lg');
+    });
+
+    map.on('click', function(e) {
+        if (e.originalEvent.shiftKey) return;
+        (new mapboxgl.Popup())
+            .setLngLat(map.unproject(e.point))
+            .setHTML("<h1>Hello World!</h1>")
+            .addTo(map);
+    });
+}
+</script>
+
+</body>
+</html>
