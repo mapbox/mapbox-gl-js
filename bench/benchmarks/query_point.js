@@ -37,7 +37,7 @@ module.exports = function(options) {
             center: [-77.032194, 38.912753],
             style: 'mapbox://styles/mapbox/streets-v9'
         });
-        document.getElementById('map').style.display = 'none';
+        map.getContainer().style.display = 'none';
 
         map.on('load', function() {
 
@@ -46,7 +46,7 @@ module.exports = function(options) {
             asyncSeries(queryPoints.length, function(n, callback) {
                 var queryPoint = queryPoints[queryPoints.length - n];
                 var start = performance.now();
-                map.queryRenderedFeatures(queryPoint);
+                map.queryRenderedFeatures(queryPoint, {});
                 var duration = performance.now() - start;
                 sum += duration;
                 count++;
@@ -55,7 +55,7 @@ module.exports = function(options) {
                 callback();
             }, function() {
                 evented.fire('log', {
-                    message: 'zoom ' + zoomLevel + ' average: ' + (zoomSum / zoomCount).toFixed(2) + ' ms'
+                    message: (zoomSum / zoomCount).toFixed(2) + ' ms at zoom ' + zoomLevel
                 });
                 callback();
             });
@@ -90,4 +90,3 @@ function asyncSeries(times, work, callback) {
         callback();
     }
 }
-

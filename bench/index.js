@@ -1,67 +1,223 @@
 'use strict';
+/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-var mapboxgl = require('../js/mapbox-gl');
+var React = require('react');
+var ReactDOM = require('react-dom');
 var util = require('../js/util/util');
+var async = require('async');
+var mapboxgl = require('../js/mapbox-gl');
+var Clipboard = require('clipboard');
+var URL = require('url');
 
-try {
-    main();
-} catch (err) {
-    log('red', err.toString());
-    throw err;
+var BenchmarksView = React.createClass({
+
+    render: function() {
+        return <div style={{width: 960, paddingBottom: window.innerHeight, margin: '0 auto'}}>
+            {this.renderBenchmarkSummaries()}
+            {this.renderBenchmarkDetails()}
+        </div>;
+    },
+
+    renderBenchmarkSummaries: function() {
+        return <div className='col4 prose' style={{paddingTop: 40, width: 320, position: 'fixed'}}>
+            <h1 className="space-bottom">Benchmarks</h1>
+            <div className="space-bottom">
+                {Object.keys(this.state.results).map(this.renderBenchmarkSummary)}
+            </div>
+            <a
+                    className={[
+                        'icon',
+                        'clipboard',
+                        'button',
+                        (this.state.state === 'ended' ? '' : 'disabled')
+                    ].join(' ')}
+                    data-clipboard-text={this.renderBenchmarkTextSummaries()}>
+                Copy Results
+            </a>
+        </div>;
+    },
+
+    renderBenchmarkSummary: function(name) {
+        var results = this.state.results[name];
+        var that = this;
+
+        return <div
+                onClick={function() {
+                    that.scrollToBenchmark(name);
+                }}
+                style={{cursor: 'pointer'}}
+                key={name}
+                className={[
+                    results.state === 'waiting' ? 'quiet' : ''
+                ].join(' ')}>
+            <strong>{name}:</strong> {results.message || '...'}
+        </div>;
+    },
+
+    renderBenchmarkTextSummaries: function() {
+        var output = '# Benchmarks\n\n';
+        for (var name in this.state.results) {
+            var result = this.state.results[name];
+            output += '**' + name + ':** ' + (result.message || '...') + '\n';
+        }
+        return output;
+    },
+
+    renderBenchmarkDetails: function() {
+        return <div style={{width: 640, marginLeft: 320, marginBottom: 60}}>
+            {Object.keys(this.state.results).map(this.renderBenchmarkDetail)}
+        </div>;
+    },
+
+    renderBenchmarkDetail: function(name) {
+        var results = this.state.results[name];
+        return (
+                <div
+                    id={name}
+                    key={name}
+                    style={{paddingTop: 40}}
+                    className={results.state === 'waiting' ? 'quiet' : ''}>
+
+                <h2 className='space-bottom'>"{name}" Benchmark</h2>
+                {results.logs.map(function(log, index) {
+                    return <div key={index} className={'pad1 dark fill-' + log.color}>{log.message}</div>;
+                })}
+            </div>
+        );
+    },
+
+    scrollToBenchmark: function(name) {
+        var duration = 300;
+        var startTime = (new Date()).getTime();
+        var startYOffset = window.pageYOffset;
+
+        requestAnimationFrame(function frame() {
+            var endYOffset = document.getElementById(name).offsetTop;
+            var time = (new Date()).getTime();
+            var yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
+            window.scrollTo(0, yOffset);
+            if (time < startTime + duration) requestAnimationFrame(frame);
+        });
+    },
+
+    getInitialState: function() {
+        return {
+            state: 'waiting',
+            runningBenchmark: Object.keys(this.props.benchmarks)[0],
+            results: util.mapObject(this.props.benchmarks, function(_, name) {
+                return {
+                    name: name,
+                    state: 'waiting',
+                    logs: []
+                };
+            })
+        };
+    },
+
+    componentDidMount: function() {
+        var that = this;
+        setTimeout(function() {
+            async.eachSeries(
+                Object.keys(that.props.benchmarks),
+                that.runBenchmark,
+                function() {
+                    that.setState({state: 'ended'});
+                    that.scrollToBenchmark(Object.keys(that.props.benchmarks)[0]);
+                }
+            );
+        }, 500);
+    },
+
+    runBenchmark: function(name, outerCallback) {
+        var that = this;
+        var results = this.state.results[name];
+        var maps = [];
+
+        results.state = 'running';
+        this.scrollToBenchmark(name);
+        this.setState({runningBenchmark: name});
+        log('dark', 'starting');
+
+        this.props.benchmarks[name]({
+            accessToken: getAccessToken(),
+            createMap: createMap
+
+        }).on('log', function(event) {
+            log(event.color, event.message);
+
+        }).on('end', function(event) {
+            results.message = event.message;
+            results.state = 'ended';
+            log('green', event.message);
+            callback();
+
+        }).on('error', function(event) {
+            results.state = 'errored';
+            log('red', event.error);
+            callback();
+        });
+
+        function log(color, message) {
+            results.logs.push({
+                color: color || 'blue',
+                message: message
+            });
+            that.forceUpdate();
+        }
+
+        function callback() {
+            for (var i = 0; i < maps.length; i++) {
+                maps[i].remove();
+                maps[i].getContainer().remove();
+            }
+            setTimeout(function() {
+                that.setState({runningBenchmark: null});
+                outerCallback();
+            }, 500);
+        }
+
+        function createMap(options) {
+            options = util.extend({width: 512, height: 512}, options);
+
+            var element = document.createElement('div');
+            element.style.width = options.width + 'px';
+            element.style.height = options.height + 'px';
+            element.style.margin = '0 auto';
+            document.body.appendChild(element);
+
+            var map = new mapboxgl.Map(util.extend({
+                container: element,
+                style: 'mapbox://styles/mapbox/streets-v9',
+                interactive: false
+            }, options));
+            maps.push(map);
+
+            return map;
+        }
+    }
+});
+
+var benchmarks = {
+    buffer: require('./benchmarks/buffer'),
+    fps: require('./benchmarks/fps'),
+    'frame-duration': require('./benchmarks/frame_duration'),
+    'query-point': require('./benchmarks/query_point'),
+    'query-box': require('./benchmarks/query_box'),
+    'geojson-setdata-small': require('./benchmarks/geojson_setdata_small'),
+    'geojson-setdata-large': require('./benchmarks/geojson_setdata_large')
+};
+
+var filteredBenchmarks = {};
+var benchmarkName = URL.parse(window.location.toString()).pathname.split('/')[2];
+if (!benchmarkName) {
+    filteredBenchmarks = benchmarks;
+} else {
+    filteredBenchmarks[benchmarkName] = benchmarks[benchmarkName];
 }
 
-function main() {
-    log('dark', 'please keep this window in the foreground and close the debugger');
+ReactDOM.render(<BenchmarksView benchmarks={filteredBenchmarks} />, document.getElementById('benchmarks'));
 
-    var benchmarks = {
-        buffer: require('./benchmarks/buffer'),
-        fps: require('./benchmarks/fps'),
-        'frame-duration': require('./benchmarks/frame_duration'),
-        'query-point': require('./benchmarks/query_point'),
-        'query-box': require('./benchmarks/query_box'),
-        'geojson-setdata-small': require('./benchmarks/geojson_setdata_small'),
-        'geojson-setdata-large': require('./benchmarks/geojson_setdata_large')
-    };
-
-    var benchmarksDiv = document.getElementById('benchmarks');
-
-    Object.keys(benchmarks).forEach(function(id) {
-        benchmarksDiv.innerHTML += '<a href="/bench/' + id + '" class="button">' + id + '</a>';
-    });
-
-    var pathnameArray = location.pathname.split('/');
-    var benchmarkName = pathnameArray[pathnameArray.length - 1] || pathnameArray[pathnameArray.length - 2];
-    var createBenchmark = benchmarks[benchmarkName];
-    if (!createBenchmark) throw new Error('unknown benchmark "' + benchmarkName + '"');
-
-    var benchmark = createBenchmark({
-        accessToken: getAccessToken(),
-        createMap: createMap
-    });
-
-    benchmark.on('log', function(event) {
-        log(event.color || 'blue', event.message);
-        scrollToBottom();
-    });
-
-    benchmark.on('end', function(event) {
-        log('green', '<strong class="prose-big">' + event.message + '</strong>');
-        scrollToBottom();
-    });
-
-    benchmark.on('error', function(event) {
-        log('red', event.error);
-        scrollToBottom();
-    });
-}
-
-function scrollToBottom() {
-    window.scrollTo(0, document.body.scrollHeight);
-}
-
-function log(color, message) {
-    document.getElementById('logs').innerHTML += '<div class="log dark fill-' + color + '"><p>' + message + '</p></div>';
-}
+var clipboard = new Clipboard('.clipboard');
 
 function getAccessToken() {
     var accessToken = (
@@ -76,23 +232,6 @@ function getAccessToken() {
 
 function getURLParameter(name) {
     var regexp = new RegExp('[?&]' + name + '=([^&#]*)', 'i');
-    var output = regexp.exec(window.location.href);
-    return output && output[1];
-}
-
-function createMap(options) {
-    var mapElement = document.getElementById('map');
-
-    options = util.extend({width: 512, height: 512}, options);
-
-    mapElement.style.display = 'block';
-    mapElement.style.width = options.width + 'px';
-    mapElement.style.height = options.height + 'px';
-
-    mapboxgl.accessToken = getAccessToken();
-    return new mapboxgl.Map(util.extend({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v9',
-        interactive: false
-    }, options));
+    var results = regexp.exec(window.location.href);
+    return results && results[1];
 }
