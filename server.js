@@ -27,7 +27,7 @@ app.get('/access-token.js', browserify('./debug/access-token.js', {
 }));
 
 app.get('/bench/index.js', browserify('./bench/index.js', {
-    transform: ['reactify', 'unassertify', 'envify'],
+    transform: [['babelify', {presets: ['react']}], 'unassertify', 'envify'],
     debug: true,
     minify: true,
     cache: 'dynamic',
