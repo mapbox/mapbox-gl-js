@@ -219,6 +219,8 @@ ReactDOM.render(<BenchmarksView benchmarks={filteredBenchmarks} />, document.get
 
 var clipboard = new Clipboard('.clipboard');
 
+mapboxgl.accessToken = getAccessToken();
+
 function getAccessToken() {
     var accessToken = (
         process.env.MapboxAccessToken ||
