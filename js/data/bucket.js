@@ -119,16 +119,17 @@ Bucket.prototype.populateArrays = function() {
 Bucket.prototype.updatePaintVertexArrays = function(programName, propertiesList) {
     this.recalculateStyleLayers();
 
-    var capacityRequired = this._featureIndexToArrayRange.reduce(function (max, range) {
-        return range ? Math.max(max, range[1]) : max;
+    var capacityRequired = this._featureIndexToArrayRange.reduce(function (max, index) {
+        return index > max ? index : max;
     }, 0);
 
     this.resizeVertexArrays(programName, capacityRequired);
 
     for (var i = 0; i < propertiesList.length; i++) {
-        var range = this._featureIndexToArrayRange[i];
-        if (!range) continue;
-        this.populatePaintArrays(programName, {zoom: this.zoom}, propertiesList[i], range[0], range[1]);
+        var start = this._featureIndexToArrayRange[i * 2];
+        var end = this._featureIndexToArrayRange[i * 2 + 1];
+        if (isNaN(start)) continue;
+        this.populatePaintArrays(programName, {zoom: this.zoom}, propertiesList[i], start, end);
     }
 };
 
@@ -228,9 +229,11 @@ Bucket.prototype.updatePaintVertexBuffers = function (arrayGroups) {
  * @private
  */
 Bucket.prototype.createArrays = function() {
-    // mapping from `feature.index` to the start & end vertex array indexes.
-    // `feature.index` is the index into the _original_ source layer's feature
-    // list (as opposed to this bucket's post-filtered list).
+    // Tracks a mapping from `feature.index` to the start & end vertex array
+    // indexes.  `feature.index` is the index into the _original_ source
+    // layer's feature list (as opposed to this bucket's post-filtered list).
+    // _featureIndexToArrayRange[2*feature.index] = starting vertex array index
+    // _featureIndexToArrayRange[2*feature.index + 1] = ending vertex array index
     this._featureIndexToArrayRange = this._featureIndexToArrayRange || [];
     this.arrayGroups = {};
     this.paintVertexArrayTypes = {};
@@ -332,7 +335,8 @@ Bucket.prototype.recalculateStyleLayers = function() {
 
 Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, startVertex, endVertex, featureIndex) {
     if (typeof featureIndex !== 'undefined') {
-        this._featureIndexToArrayRange[featureIndex] = [startVertex, endVertex];
+        this._featureIndexToArrayRange[2 * featureIndex] = startVertex;
+        this._featureIndexToArrayRange[2 * featureIndex + 1] = endVertex;
     }
 
     var startGroup = Math.floor(startVertex / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
