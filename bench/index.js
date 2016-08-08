@@ -7,6 +7,7 @@ var util = require('../js/util/util');
 var async = require('async');
 var mapboxgl = require('../js/mapbox-gl');
 var Clipboard = require('clipboard');
+var URL = require('url');
 
 var BenchmarksView = React.createClass({
 
@@ -205,7 +206,16 @@ var benchmarks = {
     'geojson-setdata-small': require('./benchmarks/geojson_setdata_small'),
     'geojson-setdata-large': require('./benchmarks/geojson_setdata_large')
 };
-ReactDOM.render(<BenchmarksView benchmarks={benchmarks} />, document.getElementById('benchmarks'));
+
+var filteredBenchmarks = {};
+var benchmarkName = URL.parse(window.location.toString()).pathname.split('/')[2];
+if (!benchmarkName) {
+    filteredBenchmarks = benchmarks;
+} else {
+    filteredBenchmarks[benchmarkName] = benchmarks[benchmarkName];
+}
+
+ReactDOM.render(<BenchmarksView benchmarks={filteredBenchmarks} />, document.getElementById('benchmarks'));
 
 var clipboard = new Clipboard('.clipboard');
 

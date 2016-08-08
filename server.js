@@ -38,6 +38,10 @@ app.get('/bench', function(req, res) {
     res.sendFile(path.join(__dirname, 'bench', 'index.html'));
 });
 
+app.get('/bench/:name', function(req, res) {
+    res.sendFile(path.join(__dirname, 'bench', 'index.html'));
+});
+
 app.get('/debug', function(req, res) {
     res.redirect('/');
 });
