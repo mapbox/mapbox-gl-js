@@ -41,6 +41,8 @@ module.exports = function run(bench, stylesheet, sampleCount, waitForClick, perT
         }
 
         function go () {
+            window.removeEventListener('click', go);
+
             asyncTimesSeries(sampleCount, function(callback) {
                 runSample(perTileCallback, stylesheet, assets, function(err, time) {
                     if (err) return bench.fire('error', { error: err });
@@ -79,7 +81,7 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
     worker['set layers'](stylesheet.layers);
     var layerFamilies = worker.layerFamilies;
 
-    style.on('load', function() {
+    style.once('load', function() {
         var assets = {
             getGlyphs: function (params, callback) {
                 style['get glyphs'](params, function(err, glyphs) {
@@ -125,7 +127,7 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
         });
     });
 
-    style.on('error', function(event) {
+    style.once('error', function(event) {
         callback(event.error);
     });
 }
