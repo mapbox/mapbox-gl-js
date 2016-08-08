@@ -89,7 +89,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
          * @type {Object}
          * @property {Popup} popup object that was closed
          */
-        this.fire('close', {popup: this});
+        this.fire('close');
 
         return this;
     },
