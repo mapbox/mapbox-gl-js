@@ -595,6 +595,9 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     var iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
+    if (iconBoxEndIndex > 65535) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+    if (glyphQuadEndIndex > 65535) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+
     return this.symbolInstancesArray.emplaceBack(
         textBoxStartIndex,
         textBoxEndIndex,
