@@ -1,5 +1,5 @@
 <!--
-Hello! Thanks for contributing. To get your PR merged quickly, please complete
+Hello! Thanks for contributing. To help your PR be most easily reviewed, please complete
 the following checklist:
 -->
 
