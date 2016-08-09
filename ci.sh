@@ -9,11 +9,6 @@ set -o pipefail
 # add npm packages to $PATH
 export PATH=$(pwd)/node_modules/.bin:$PATH
 
-# disable spotlight to ensure we waste no CPU on needless file indexing
-if [[ $(uname -s) == 'Darwin' ]]; then
-    sudo mdutil -i off /
-fi
-
 # set up code coverage instrumentation
 rm -rf coverage .nyc_output
 
