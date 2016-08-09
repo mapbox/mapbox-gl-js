@@ -7,6 +7,7 @@
     "global-require": "off",
     "key-spacing": "off",
     "no-eq-null": "off",
+    "no-new": "off",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
     "quotes": "off",

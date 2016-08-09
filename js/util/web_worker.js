@@ -14,7 +14,7 @@ module.exports = function () {
     // self.importScripts for the 'load worker source' target.
     workerBus.importScripts = function () {};
 
-    new Worker(workerBus); // eslint-disable-line no-new
+    new Worker(workerBus);
 
     return parentBus;
 };
