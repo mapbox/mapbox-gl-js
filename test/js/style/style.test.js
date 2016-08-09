@@ -1239,3 +1239,22 @@ test('Style creates correct number of workers', function(t) {
     t.ok(style);
     t.end();
 });
+
+// This test fails due to https://github.com/mapbox/mapbox-gl-js/issues/2886
+// Remove the `{skip: true}` argument to include it once the bug is fixed.
+test('#setPaintProperty', {skip: true}, function (t) {
+    var style = new Style(createStyleJSON({
+        "sources": {
+            "streets": createGeoJSONSource()
+        }
+    }));
+    style.on('load', function () {
+        style.addLayer({ id: 'building', type: 'fill', source: 'streets' });
+        style.setPaintProperty('building', 'fill-outline-color', '#f00');
+        style.update();
+        style.setPaintProperty('building', 'fill-outline-color', undefined);
+        style.update();
+        t.end();
+    });
+});
+
