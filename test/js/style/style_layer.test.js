@@ -266,6 +266,26 @@ test('StyleLayer#setPaintProperty', function(t) {
         });
     });
 
+    t.test('can unset fill-outline-color #2886', function (t) {
+        var layer = StyleLayer.create({
+            id: 'building',
+            type: 'fill',
+            source: 'streets',
+            paint: {
+                'fill-color': '#00f'
+            }
+        });
+
+        layer.setPaintProperty('fill-outline-color', '#f00');
+        layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
+        t.deepEqual(layer.getPaintValue('fill-outline-color'), [1, 0, 0, 1]);
+        layer.setPaintProperty('fill-outline-color', undefined);
+        layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
+        t.deepEqual(layer.getPaintValue('fill-outline-color'), [0, 0, 1, 1]);
+
+        t.end();
+    });
+
     t.end();
 });
 
