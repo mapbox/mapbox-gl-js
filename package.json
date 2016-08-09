@@ -93,7 +93,7 @@
     "./js/util/browser.js": "./js/util/browser/browser.js",
     "./js/util/canvas.js": "./js/util/browser/canvas.js",
     "./js/util/dom.js": "./js/util/browser/dom.js",
-    "./js/util/dispatcher.js": "./js/util/browser/dispatcher.js"
+    "./js/util/web_worker.js": "./js/util/browser/web_worker.js"
   },
   "scripts": {
     "build-dev": "browserify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
