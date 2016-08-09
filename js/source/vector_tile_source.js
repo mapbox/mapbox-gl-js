@@ -59,8 +59,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
         };
 
         if (tile.workerID) {
-            params.rawTileData = tile.rawTileData;
-            this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
+            if (tile.state === 'loading') {
+                tile.reloadWhenLoaded = true;
+            } else {
+                reloadTile(this);
+            }
         } else {
             tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
         }
@@ -80,7 +83,17 @@ VectorTileSource.prototype = util.inherit(Evented, {
                 tile.redoPlacement(this);
             }
 
+            if (tile.reloadWhenLoaded) {
+                reloadTile(this);
+                tile.reloadWhenLoaded = false;
+            }
+
             callback(null);
+        }
+
+        function reloadTile(source) {
+            params.rawTileData = tile.rawTileData;
+            source.dispatcher.send('reload tile', params, done.bind(source), tile.workerID);
         }
     },
 
