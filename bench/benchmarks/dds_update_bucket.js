@@ -75,9 +75,7 @@ function runTile (assets, coordinate, callback) {
             workerTile.parse(data, assets.layerFamilies, actor, callback);
         });
     } else {
-        console.time(url);
         workerTile.updateProperties(workerTile.__props, assets.layerFamilies, actor, function (err) {
-            console.timeEnd(url);
             if (err) { return callback(err); }
             callback();
         });
