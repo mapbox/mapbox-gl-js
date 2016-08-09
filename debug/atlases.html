@@ -27,6 +27,14 @@ html, body, #map { height: 100%; }
     left: 10px;
     pointer-events: none;
     opacity: 0.85;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+#debugsize {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    pointer-events: none;
+    font: 10px sans-serif;
 }
 </style>
 </head>
@@ -42,7 +50,9 @@ html, body, #map { height: 100%; }
   <div id='radios'></div>
 </div>
 <div id='debugtexture'>
-    <canvas id='debugcanvas' width='400' height='400'/>
+    <canvas id='debugcanvas' width='0' height='0'/>
+</div>
+<div id='debugsize'>
 </div>
 
 <script src='mapbox-gl.js'></script>
@@ -65,15 +75,15 @@ document.getElementById('show-symbol-collision-boxes-checkbox').onclick = functi
 
 window.debug = {
     program: null,
-    atlases: [],
-    index: 0
+    atlases: {},
+    currAtlas: null
 };
 
 window.onload = initDebugCanvas;
 
 map.on('render', function() {
     if (window.debug.program) {
-        renderGlyphTexture();
+        renderAtlasTexture();
     }
 });
 
@@ -93,21 +103,31 @@ function initDebugCanvas() {
     window.debug.program = createProgram(gl, vertexShader, fragmentShader);
 }
 
-function renderGlyphTexture() {
+
+function renderAtlasTexture() {
     var program = window.debug.program;
 
     var canvas = document.getElementById('debugcanvas');
     var gl = canvas.getContext('webgl');
     if (!gl) { return; }
 
-    if (window.debug.atlases.length === 0) {
-        buildAtlasMenu();
+    // available atlases include 1 spriteAtlas + 1 lineAtlas + all atlases held by glyphSource
+    // this number can change as user moves around the map
+    var avail = 2 + Object.keys(map.painter.glyphSource.atlases).length;
+    if (window.debug.atlases.length !== avail) {
+        rebuildAtlasMenu();
     }
 
-    var source = map.painter.glyphSource;
-    var fontstacks = Object.keys(source.atlases);
-    var atlas = source.atlases[window.debug.atlases[window.debug.index]];
+    var atlas = window.debug.atlases[window.debug.currAtlas];
     if (!atlas) return;
+    if (!atlas.width || !atlas.height || !atlas.data) return;
+
+    document.getElementById('debugsize').textContent =
+        '' + atlas.width + 'x' + atlas.height;
+
+    canvas.width = Math.min(400, atlas.width);
+    canvas.height = Math.min(400, atlas.height);
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.useProgram(program);
 
@@ -133,13 +153,47 @@ function renderGlyphTexture() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     // Upload the image into the texture.
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, atlas.width, atlas.height, 0, gl.ALPHA, gl.UNSIGNED_BYTE, atlas.data);
+    var width, height;
+    if (window.debug.currAtlas === '__lineAtlas') {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            atlas.width,
+            atlas.height,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            atlas.data
+        );
+    } else if (window.debug.currAtlas === '__spriteAtlas') {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            atlas.width * atlas.pixelRatio,
+            atlas.height * atlas.pixelRatio,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            new Uint8Array(atlas.data.buffer)
+        );
+    } else {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.ALPHA,
+            atlas.width,
+            atlas.height,
+            0,
+            gl.ALPHA,
+            gl.UNSIGNED_BYTE,
+            atlas.data
+        );
+    }
 
     // lookup uniforms
     var resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
 
     // set the resolution
-    gl.uniform2f(resolutionLocation, atlas.width, atlas.height);
+    gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
 
     // Create a buffer for the position of the rectangle corners.
     var buffer = gl.createBuffer();
@@ -148,7 +202,7 @@ function renderGlyphTexture() {
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
     // Set a rectangle the same size as the image.
-    setRectangle(gl, 0, 0, atlas.width, atlas.height);
+    setRectangle(gl, 0, 0, canvas.width, canvas.height);
 
     // Draw the rectangle.
     gl.clearColor(0, 0, 0, 0);
@@ -189,35 +243,57 @@ function createProgram(gl, vertexShader, fragmentShader) {
     gl.deleteProgram(program);
 }
 
-function buildAtlasMenu() {
-    if (window.debug.atlases.length !== 0) return;
-
+function rebuildAtlasMenu() {
     var radioContainer = document.querySelector('#radios');
-    var keys = Object.keys(map.painter.glyphSource.atlases);
+    radioContainer.innerHTML = '';
+
+    // Available atlases include 1 lineAtlas + 1 spriteAtlas + all glyph atlases held by glyphSource
+    // The number of glyph atlases can change as user moves around the map..
+    var keys = ['__spriteAtlas', '__lineAtlas']
+        .concat(Object.keys(map.painter.glyphSource.atlases));
 
     for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        window.debug.atlases.push(key);
+        var key = keys[i],
+            atlas, prefix, text, id;
 
-        var text = key.split(',')[0];
-        var id = text.replace(/\s/g, '_');
+        if (key === '__lineAtlas') {
+            atlas = map.painter.lineAtlas;
+            prefix = '&#x2652;';
+            text = 'Line Atlas';
+            id = key;
+        } else if (key === '__spriteAtlas') {
+            atlas = map.painter.spriteAtlas;
+            prefix = '&#x267F;';
+            text = 'Sprite Atlas';
+            id = key;
+        } else {
+            atlas = map.painter.glyphSource.atlases[key];
+            prefix = '&#x1F520;';
+            text = key.split(',')[0];
+            id = text.replace(/\s/g, '_');
+        }
+
+        window.debug.atlases[key] = atlas;
+
+        if (!window.debug.currAtlas) {
+            window.debug.currAtlas = key;
+        }
 
         var input = document.createElement('input');
         input.id = id;
-        input.value = i;
+        input.value = key;
         input.type = 'radio';
         input.name = 'atlas';
-        input.textContent = label;
         input.onclick = function() {
-            window.debug.index = +this.value;
-            renderGlyphTexture();
+            window.debug.currAtlas = this.value;
+            renderAtlasTexture();
         };
-        input.checked = (i === 0 ? 'checked' : '');
+        input.checked = (key === window.debug.currAtlas ? 'checked' : '');
         radioContainer.appendChild(input);
 
         var label = document.createElement('label');
         label.for = id;
-        label.textContent = text;
+        label.innerHTML = prefix + ' ' + text;
         radioContainer.appendChild(label);
 
         radioContainer.appendChild(document.createElement('br'));
