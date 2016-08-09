@@ -80,6 +80,17 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             delete this._map;
         }
 
+        /**
+         * Fired when the popup is closed manually or programatically.
+         *
+         * @event close
+         * @memberof Popup
+         * @instance
+         * @type {Object}
+         * @property {Popup} popup object that was closed
+         */
+        this.fire('close');
+
         return this;
     },
 
