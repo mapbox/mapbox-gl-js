@@ -48,8 +48,7 @@ module.exports = function(options) {
             countAbove16 += result.countAbove16;
         }
         evented.fire('end', {
-            message: formatNumber(sum / count * 10) / 10 + ' ms, ' + formatNumber(countAbove16 / count * 100) + '% > 16ms',
-            score: sum / count
+            message: formatNumber(sum / count * 10) / 10 + ' ms, ' + formatNumber(countAbove16 / count * 100) + '% > 16ms'
         });
     }
 

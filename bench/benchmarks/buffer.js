@@ -68,8 +68,7 @@ module.exports = function run(options) {
                 } else {
                     var timeAverage = timeSum / timeCount;
                     evented.fire('end', {
-                        message: formatNumber(timeAverage) + ' ms',
-                        score: timeAverage
+                        message: formatNumber(timeAverage) + ' ms'
                     });
                 }
             });

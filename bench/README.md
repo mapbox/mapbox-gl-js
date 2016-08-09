@@ -55,7 +55,7 @@ one `log` event per sample.
 
 ```js
 benchmark.fire('log', {
-    message: 'Finished sample ' + i + ' in ' + formatNumber(time) + ' ms'
+    message: formatNumber(time) + ' ms'
 });
 ```
 
@@ -66,19 +66,15 @@ These events have no machine-semantic meaning.
 Fire the `end` event to indicate the benchmark has finished running and report
 its results.
 
-These events have both human-readable results (`message`) and machine-readable results (`score`). Smaller `score`s are "better."
-
 ```js
 {
     message: string;
-    score: number;
 }
 ```
 
 ```js
 benchmark.fire('end', {
-    message: 'Average time is ' + formatNumber(averageTime)) + 'ms',
-    score: averageTime
+    message: formatNumber(averageTime)) + 'ms'
 });
 ```
 

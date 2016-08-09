@@ -31,8 +31,7 @@ module.exports = function(options) {
                 evented.fire('error', { error: err });
             } else {
                 evented.fire('end', {
-                    message: formatNumber(fps) + ' fps',
-                    score: 1 / fps
+                    message: formatNumber(fps) + ' fps'
                 });
             }
         });
