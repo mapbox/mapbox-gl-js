@@ -7,10 +7,6 @@ var fs = require('fs');
 var http = require('http');
 var path = require('path');
 
-app.use(express.static(path.join(__dirname, 'debug')));
-app.use('/dist', express.static(path.join(__dirname, 'dist')));
-app.use('/mapbox-gl-test-suite', express.static(path.join(__dirname, 'node_modules/mapbox-gl-test-suite')));
-
 app.get('/mapbox-gl.js', browserify('./js/mapbox-gl.js', {
     ignoreTransform: ['unassertify'],
     standalone: 'mapboxgl',
@@ -42,9 +38,9 @@ app.get('/bench/:name', function(req, res) {
     res.sendFile(path.join(__dirname, 'bench', 'index.html'));
 });
 
-app.get('/debug', function(req, res) {
-    res.redirect('/');
-});
+app.use(express.static(path.join(__dirname, 'debug')));
+app.use('/dist', express.static(path.join(__dirname, 'dist')));
+app.use('/mapbox-gl-test-suite', express.static(path.join(__dirname, 'node_modules/mapbox-gl-test-suite')));
 
 downloadBenchData(function() {
     app.listen(9966, function () {
