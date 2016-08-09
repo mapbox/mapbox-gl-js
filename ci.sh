@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-set -e
+source ./nvm/nvm.sh
+nvm use ${NODE_VERSION}
+
+set -eu
 set -o pipefail
 
 # add npm packages to $PATH
