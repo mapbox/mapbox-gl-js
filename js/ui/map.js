@@ -514,12 +514,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      */
     queryRenderedFeatures: function(pointOrBox, params) {
+        var parameters = params || {};
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
-            params = pointOrBox;
+            console.log('we get here');
+            parameters = pointOrBox;
             pointOrBox = undefined;
         }
         var queryGeometry = this._makeQueryGeometry(pointOrBox);
-        return this.style.queryRenderedFeatures(queryGeometry, params, this.transform.zoom, this.transform.angle);
+        return this.style.queryRenderedFeatures(queryGeometry, parameters, this.transform.zoom, this.transform.angle);
     },
 
     _makeQueryGeometry: function(pointOrBox) {

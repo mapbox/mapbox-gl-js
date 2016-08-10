@@ -593,6 +593,26 @@ test('Map', function(t) {
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)), opts);
             });
 
+            t.test('if no options, defaults to empty object', function(t) {
+                map.style.queryRenderedFeatures = function (coords, o) {
+                    t.ok(coords);
+                    t.deepEqual(o, {}, 'options are set to a default object');
+                    t.end();
+                };
+
+                map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
+            });
+
+            t.test('options carry through query', function(t) {
+                map.style.queryRenderedFeatures = function (coords, o) {
+                    t.ok(coords);
+                    t.deepEqual(o, {foo: 'bar'}, 'options are expected');
+                    t.end();
+                };
+
+                map.queryRenderedFeatures(map.project(new LngLat(0, 0)), {foo: 'bar'});
+            });
+
             t.end();
         });
     });
