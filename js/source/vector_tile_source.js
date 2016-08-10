@@ -60,9 +60,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
 
         if (tile.workerID) {
             if (tile.state === 'loading') {
-                tile.reloadWhenLoaded = true;
+                // schedule tile reloading after it has been loaded
+                tile.reloadCallback = callback;
             } else {
-                reloadTile(this);
+                params.rawTileData = tile.rawTileData;
+                this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
             }
         } else {
             tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
@@ -83,17 +85,12 @@ VectorTileSource.prototype = util.inherit(Evented, {
                 tile.redoPlacement(this);
             }
 
-            if (tile.reloadWhenLoaded) {
-                reloadTile(this);
-                tile.reloadWhenLoaded = false;
-            }
-
             callback(null);
-        }
 
-        function reloadTile(source) {
-            params.rawTileData = tile.rawTileData;
-            source.dispatcher.send('reload tile', params, done.bind(source), tile.workerID);
+            if (tile.reloadCallback) {
+                this.loadTile(tile, tile.reloadCallback);
+                tile.reloadCallback = null;
+            }
         }
     },
 
