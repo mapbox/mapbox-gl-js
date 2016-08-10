@@ -133,6 +133,7 @@ test('VectorTileSource', function(t) {
                 }
             };
             source.loadTile(tile, function () {});
+            t.equal(tile.state, 'loading');
             source.loadTile(tile, function () {
                 t.same(events, ['load tile', 'tile loaded', 'reload tile', 'tile loaded']);
                 t.end();
