@@ -29,7 +29,7 @@ Scale.prototype = util.inherit(Control, {
             container = this._container = DOM.create('div', className, map.getContainer());
 
         updateScale(map, container);
-        map.on('moveend', function() {
+        map.on('zoom', function() {
             updateScale(map, container);
         });
 
