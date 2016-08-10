@@ -103,6 +103,25 @@ These projects are written and maintained by the GL JS community. Feel free to o
  - [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
  - [Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
 
+## Using Mapbox GL JS with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
+
+You may use a Content Security Policy to restrict the resources your page has
+access to, as a way of guarding against Cross-Site Scripting and other types of
+attacks. If you do, Mapbox GL JS requires the following directives:
+
+```
+child-src blob: ;
+img-src data: blob: ;
+script-src 'unsafe-eval' ;
+```
+
+Requesting styles from Mapbox or other services will require additional
+directives. For Mapbox, you can use this `connect-src` setting:
+
+```
+connect-src https://*.tiles.mapbox.com https://api.mapbox.com
+```
+
 ## Contributing to Mapbox GL JS
 
 See [CONTRIBUTING.md](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md).
