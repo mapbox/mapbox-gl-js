@@ -112,6 +112,35 @@ test('VectorTileSource', function(t) {
     testScheme('xyz', 'http://example.com/10/5/5.png');
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
+    t.test('reloads a loading tile properly', function (t) {
+        var source = createSource({
+            tiles: ["http://example.com/{z}/{x}/{y}.png"]
+        });
+        var events = [];
+        source.dispatcher.send = function(type, params, cb) {
+            events.push(type);
+            setTimeout(cb, 0);
+            return 1;
+        };
+
+        source.on('load', function () {
+            var tile = {
+                coord: new TileCoord(10, 5, 5, 0),
+                state: 'loading',
+                loadVectorData: function () {
+                    this.state = 'loaded';
+                    events.push('tile loaded');
+                }
+            };
+            source.loadTile(tile, function () {});
+            t.equal(tile.state, 'loading');
+            source.loadTile(tile, function () {
+                t.same(events, ['load tile', 'tile loaded', 'reload tile', 'tile loaded']);
+                t.end();
+            });
+        });
+    });
+
     t.test('after', function(t) {
         server.close(t.end);
     });
