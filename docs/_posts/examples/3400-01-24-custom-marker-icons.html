@@ -6,9 +6,11 @@ description: 'Use Markers to add custom icons to your map.'
 ---
 <style>
 .marker {
+    display: block;
     border: none;
     border-radius: 50%;
     cursor: pointer;
+    padding: 0;
 }
 </style>
 
@@ -76,8 +78,8 @@ geojson.features.forEach(function(marker) {
     var el = document.createElement('button');
     el.className = 'marker';
     el.style.backgroundImage = 'url(https://placekitten.com/g/' + marker.properties.iconSize.join('/') + '/)';
-    el.style.width = marker.properties.iconSize[0];
-    el.style.height = marker.properties.iconSize[1];
+    el.style.width = marker.properties.iconSize[0] + 'px';
+    el.style.height = marker.properties.iconSize[1] + 'px';
 
     el.addEventListener('click', function() {
         window.alert(marker.properties.message);
