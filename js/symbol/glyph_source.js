@@ -8,6 +8,7 @@ var Protobuf = require('pbf');
 
 module.exports = GlyphSource;
 
+
 /**
  * A glyph source has a URL from which to load new glyphs and manages
  * GlyphAtlases in which to store glyphs used by the requested fontstacks
@@ -22,6 +23,7 @@ function GlyphSource(url) {
     this.stacks = {};
     this.loading = {};
 }
+
 
 GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callback) {
     if (this.stacks[fontstack] === undefined) {
@@ -48,8 +50,10 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
 
         if (stack[range]) {
             var glyph = stack[range].glyphs[glyphID];
-            var rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
-            if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
+            var bin  = atlas.addGlyph(glyph, uid, buffer);
+            if (glyph) {
+                glyphs[glyphID] = new SimpleGlyph(glyph, bin, buffer);
+            }
         } else {
             if (missing[range] === undefined) {
                 missing[range] = [];
@@ -59,7 +63,9 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
         }
     }
 
-    if (!remaining) callback(undefined, glyphs, fontstack);
+    if (!remaining) {
+        callback(undefined, glyphs, fontstack);
+    }
 
     var onRangeLoaded = function(err, range, data) {
         if (!err) {
@@ -67,12 +73,16 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
             for (var i = 0; i < missing[range].length; i++) {
                 var glyphID = missing[range][i];
                 var glyph = stack.glyphs[glyphID];
-                var rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
-                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
+                var bin  = atlas.addGlyph(glyph, uid, buffer);
+                if (glyph) {
+                    glyphs[glyphID] = new SimpleGlyph(glyph, bin, buffer);
+                }
             }
         }
         remaining--;
-        if (!remaining) callback(undefined, glyphs, fontstack);
+        if (!remaining) {
+            callback(undefined, glyphs, fontstack);
+        }
     }.bind(this);
 
     for (var r in missing) {
@@ -80,21 +90,35 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
     }
 };
 
+
+// Mark all glyphs used by this tile as unused.
+GlyphSource.prototype.unloadTile = function(uid) {
+    var fontstacks = Object.keys(this.atlases);
+    for (var i = 0; i < fontstacks.length; i++) {
+        this.atlases[fontstacks[i]].removeTileGlyphs(uid);
+    }
+};
+
+
 // A simplified representation of the glyph containing only the properties needed for shaping.
-function SimpleGlyph(glyph, rect, buffer) {
+function SimpleGlyph(glyph, bin, buffer) {
     var padding = 1;
     this.advance = glyph.advance;
     this.left = glyph.left - buffer - padding;
     this.top = glyph.top + buffer + padding;
-    this.rect = rect;
+    this.rect = bin;
 }
 
+
 GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
-    if (range * 256 > 65535) return callback('glyphs > 65535 not supported');
+    if (range * 256 > 65535) {
+        return callback('glyphs > 65535 not supported');
+    }
 
     if (this.loading[fontstack] === undefined) {
         this.loading[fontstack] = {};
     }
+
     var loading = this.loading[fontstack];
 
     if (loading[range]) {
@@ -115,9 +139,11 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
     }
 };
 
+
 GlyphSource.prototype.getGlyphAtlas = function(fontstack) {
     return this.atlases[fontstack];
 };
+
 
 /**
  * Use CNAME sharding to load a specific glyph range over a randomized

@@ -4,64 +4,31 @@ var ShelfPack = require('shelf-pack');
 var util = require('../util/util');
 
 module.exports = GlyphAtlas;
+
+
 function GlyphAtlas(width, height) {
     this.width = width;
     this.height = height;
 
-    this.bin = new ShelfPack(width, height);
-    this.index = {};
-    this.ids = {};
+    this.sprite = new ShelfPack(width, height);
     this.data = new Uint8Array(width * height);
+    this.tilebins = {};
 }
 
-GlyphAtlas.prototype.getGlyphs = function() {
-    var glyphs = {},
-        split,
-        name,
-        id;
 
-    for (var key in this.ids) {
-        split = key.split('#');
-        name = split[0];
-        id = split[1];
-
-        if (!glyphs[name]) glyphs[name] = [];
-        glyphs[name].push(id);
-    }
-
-    return glyphs;
-};
-
-GlyphAtlas.prototype.getRects = function() {
-    var rects = {},
-        split,
-        name,
-        id;
-
-    for (var key in this.ids) {
-        split = key.split('#');
-        name = split[0];
-        id = split[1];
-
-        if (!rects[name]) rects[name] = {};
-        rects[name][id] = this.index[key];
-    }
-
-    return rects;
-};
-
-
-GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
+GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
     if (!glyph) return null;
 
-    var key = name + "#" + glyph.id;
+    if (!this.tilebins[uid]) {
+        this.tilebins[uid] = [];
+    }
 
     // The glyph is already in this texture.
-    if (this.index[key]) {
-        if (this.ids[key].indexOf(id) < 0) {
-            this.ids[key].push(id);
-        }
-        return this.index[key];
+    var bin = this.sprite.getBin(glyph.id);
+    if (bin) {
+        this.tilebins[uid].push(bin);
+        this.sprite.ref(bin);
+        return bin;
     }
 
     // The glyph bitmap has zero width.
@@ -83,23 +50,23 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     packWidth += (4 - packWidth % 4);
     packHeight += (4 - packHeight % 4);
 
-    var rect = this.bin.packOne(packWidth, packHeight);
-    if (!rect) {
+    bin = this.sprite.packOne(packWidth, packHeight, glyph.id);
+    if (!bin) {
         this.resize();
-        rect = this.bin.packOne(packWidth, packHeight);
+        bin = this.sprite.packOne(packWidth, packHeight, glyph.id);
     }
-    if (!rect) {
+    if (!bin) {
         util.warnOnce('glyph bitmap overflow');
         return null;
     }
 
-    this.index[key] = rect;
-    this.ids[key] = [id];
+    this.tilebins[uid].push(bin);
+
 
     var target = this.data;
     var source = glyph.bitmap;
     for (var y = 0; y < bufferedHeight; y++) {
-        var y1 = this.width * (rect.y + y + padding) + rect.x + padding;
+        var y1 = this.width * (bin.y + y + padding) + bin.x + padding;
         var y2 = bufferedWidth * y;
         for (var x = 0; x < bufferedWidth; x++) {
             target[y1 + x] = source[y2 + x];
@@ -108,8 +75,20 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
 
     this.dirty = true;
 
-    return rect;
+    return bin;
 };
+
+
+GlyphAtlas.prototype.removeTileGlyphs = function(uid) {
+    var bins = this.tilebins[uid];
+    if (!bins) return;
+
+    for (var i = 0; i < bins.length; i++) {
+        this.sprite.unref(bins[i]);
+    }
+    delete this.tilebins[uid];
+};
+
 
 GlyphAtlas.prototype.resize = function() {
     var origw = this.width,
@@ -128,7 +107,7 @@ GlyphAtlas.prototype.resize = function() {
 
     this.width *= 2;
     this.height *= 2;
-    this.bin.resize(this.width, this.height);
+    this.sprite.resize(this.width, this.height);
 
     var buf = new ArrayBuffer(this.width * this.height),
         src, dst;
@@ -139,6 +118,7 @@ GlyphAtlas.prototype.resize = function() {
     }
     this.data = new Uint8Array(buf);
 };
+
 
 GlyphAtlas.prototype.bind = function(gl) {
     this.gl = gl;
@@ -155,6 +135,7 @@ GlyphAtlas.prototype.bind = function(gl) {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 };
+
 
 GlyphAtlas.prototype.updateTexture = function(gl) {
     this.bind(gl);
