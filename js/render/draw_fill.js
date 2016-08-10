@@ -8,14 +8,17 @@ function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    var isOpaque = (
-        !layer.paint['fill-pattern'] || (
-            !layer.isPaintValueFeatureConstant('fill-color') &&
-            !layer.isPaintValueFeatureConstant('fill-opacity') &&
+    var isOpaque;
+    if (layer.paint['fill-pattern']) {
+        isOpaque = false;
+    } else {
+        isOpaque = (
+            layer.isPaintValueFeatureConstant('fill-color') &&
+            layer.isPaintValueFeatureConstant('fill-opacity') &&
             layer.paint['fill-color'][3] === 1 &&
             layer.paint['fill-opacity'] === 1
-        )
-    );
+        );
+    }
 
     // Draw fill
     if (painter.isOpaquePass === isOpaque) {
