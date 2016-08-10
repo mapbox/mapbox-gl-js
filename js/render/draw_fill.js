@@ -9,11 +9,12 @@ function draw(painter, source, layer, coords) {
     gl.enable(gl.STENCIL_TEST);
 
     var isOpaque = (
-        !layer.paint['fill-pattern'] &&
-        layer.isPaintValueFeatureConstant('fill-color') &&
-        layer.isPaintValueFeatureConstant('fill-opacity') &&
-        layer.paint['fill-color'] === 1 &&
-        layer.paint['fill-opacity'] === 1
+        !layer.paint['fill-pattern'] || (
+            !layer.isPaintValueFeatureConstant('fill-color') &&
+            !layer.isPaintValueFeatureConstant('fill-opacity') &&
+            layer.paint['fill-color'][3] === 1 &&
+            layer.paint['fill-opacity'] === 1
+        )
     );
 
     // Draw fill
