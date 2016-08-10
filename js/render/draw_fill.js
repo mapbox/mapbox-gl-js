@@ -8,13 +8,20 @@ function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    var color = layer.paint['fill-color'];
-    var image = layer.paint['fill-pattern'];
-    var opacity = layer.paint['fill-opacity'];
-    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
+    var isOpaque;
+    if (layer.paint['fill-pattern']) {
+        isOpaque = false;
+    } else {
+        isOpaque = (
+            layer.isPaintValueFeatureConstant('fill-color') &&
+            layer.isPaintValueFeatureConstant('fill-opacity') &&
+            layer.paint['fill-color'][3] === 1 &&
+            layer.paint['fill-opacity'] === 1
+        );
+    }
 
     // Draw fill
-    if (image ? !painter.isOpaquePass : painter.isOpaquePass === (color[3] === 1 && opacity === 1)) {
+    if (painter.isOpaquePass === isOpaque) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
@@ -27,6 +34,7 @@ function draw(painter, source, layer, coords) {
         painter.lineWidth(2);
         painter.depthMask(false);
 
+        var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
         if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
             if (isOutlineColorDefined) {
                 // If we defined a different color for the fill outline, we are
