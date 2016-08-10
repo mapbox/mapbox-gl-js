@@ -49,6 +49,16 @@ function createSourceCache(options, used) {
     return sc;
 }
 
+test('SourceCache#attribution is set', function(t) {
+    var sourceCache = createSourceCache({
+        attribution: 'Mapbox Heavy Industries'
+    });
+    sourceCache.on('load', function() {
+        t.equal(sourceCache.attribution, 'Mapbox Heavy Industries');
+        t.end();
+    });
+});
+
 test('SourceCache#addTile', function(t) {
     t.test('loads tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
