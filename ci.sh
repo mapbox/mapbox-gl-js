@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-set -e
+source ./nvm/nvm.sh
+nvm use ${NODE_VERSION}
+
+set -eu
 set -o pipefail
 
 # add npm packages to $PATH
@@ -17,13 +20,15 @@ npm run build-min
 npm run build-dev
 
 # run unit tests
-tap --reporter dot --coverage --no-coverage-report test/js/*/*.js
+tap --reporter dot --coverage --no-coverage-report test/js/*/*.js test/build/webpack.test.js
 
 # allow writing core files for render tests
 ulimit -c unlimited -S
 echo 'ulimit -c: '`ulimit -c`
-echo '/proc/sys/kernel/core_pattern: '`cat /proc/sys/kernel/core_pattern`
-sysctl kernel.core_pattern
+if [[ $(uname -s) == 'Linux' ]]; then
+    echo '/proc/sys/kernel/core_pattern: '`cat /proc/sys/kernel/core_pattern`
+    sysctl kernel.core_pattern
+fi
 
 # run render tests
 istanbul cover --dir .nyc_output --include-pid --report none --print none test/render.test.js &&
@@ -34,10 +39,12 @@ EXIT_CODE=$?
 if [[ ${EXIT_CODE} != 0 ]]; then
     echo "The program crashed with exit code ${EXIT_CODE}. We're now trying to output the core dump."
 fi
-for DUMP in $(find ./ -maxdepth 1 -name 'core*' -print); do
-    gdb `which node` ${DUMP} -ex "thread apply all bt" -ex "set pagination 0" -batch
-    rm -rf ${DUMP}
-done
+if [[ $(uname -s) == 'Linux' ]]; then
+    for DUMP in $(find ./ -maxdepth 1 -name 'core*' -print); do
+        gdb `which node` ${DUMP} -ex "thread apply all bt" -ex "set pagination 0" -batch
+        rm -rf ${DUMP}
+    done
+fi
 
 # send coverage report to coveralls
 nyc report --reporter=lcov
