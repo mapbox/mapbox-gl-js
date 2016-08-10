@@ -62,7 +62,7 @@
     "istanbul": "^0.4.2",
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#e40765f0ede7bfe7c55f9ffda11f2f0fbed19a2d",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#0ed5d988d81072e4b44b02581825979cbcfcf30b",
     "memory-fs": "^0.3.0",
     "minifyify": "^7.0.1",
     "nyc": "6.4.0",
