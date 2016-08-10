@@ -14,9 +14,9 @@
   "dependencies": {
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
-    "feature-filter": "^2.1.0",
+    "feature-filter": "^2.2.0",
     "geojson-rewind": "^0.1.0",
-    "geojson-vt": "^2.3.0",
+    "geojson-vt": "^2.4.0",
     "gl-matrix": "^2.3.1",
     "grid-index": "^1.0.0",
     "mapbox-gl-function": "^1.2.1",
@@ -33,7 +33,7 @@
     "supercluster": "^2.0.1",
     "unassertify": "^2.0.0",
     "unitbezier": "^0.0.0",
-    "vector-tile": "1.2.1",
+    "vector-tile": "^1.3.0",
     "vt-pbf": "^2.0.2",
     "webworkify": "^1.3.0",
     "whoots-js": "^2.0.0"
