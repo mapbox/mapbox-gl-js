@@ -60,11 +60,11 @@ FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
     var polygons = classifyRings(lines, EARCUT_MAX_RINGS);
 
-    var startVertex = this.vertexArrayLength('fill');
+    var startVertex = this.getVertexArrayLength('fill');
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
-    var endVertex = this.vertexArrayLength('fill') - 1;
+    var endVertex = this.getVertexArrayLength('fill') - 1;
     this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, startVertex, endVertex, feature.index);
 };
 

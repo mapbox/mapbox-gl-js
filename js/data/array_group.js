@@ -50,7 +50,7 @@ ArrayGroup.prototype.isEmpty = function() {
     return this.layoutVertexArray.length === 0;
 };
 
-ArrayGroup.prototype.vertexArrayLength = function() {
+ArrayGroup.prototype.getVertexArrayLength = function() {
     return this.layoutVertexArray.length;
 };
 

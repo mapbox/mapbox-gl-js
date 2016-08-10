@@ -82,7 +82,7 @@ CircleBucket.prototype.addFeature = function(feature) {
     var globalProperties = {zoom: this.zoom};
     var geometries = loadGeometry(feature);
 
-    var startVertex = this.vertexArrayLength('circle');
+    var startVertex = this.getVertexArrayLength('circle');
 
     for (var j = 0; j < geometries.length; j++) {
         for (var k = 0; k < geometries[j].length; k++) {
@@ -115,7 +115,7 @@ CircleBucket.prototype.addFeature = function(feature) {
         }
     }
 
-    var endVertex = this.vertexArrayLength('circle') - 1;
+    var endVertex = this.getVertexArrayLength('circle') - 1;
     this.populatePaintArrays('circle', globalProperties, feature.properties, startVertex, endVertex, feature.index);
 };
 

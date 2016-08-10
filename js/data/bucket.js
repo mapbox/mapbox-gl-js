@@ -138,22 +138,22 @@ Bucket.prototype.updatePaintVertexArrays = function(programName, propertiesList)
  *
  * Note: the vertex arrays actually consist of a sequence of ArrayGroups, each
  * with a max length of 65535.  Since each group is not necessarily filled to
- * capacity, we effectively have 'gaps', meaning that vertexArrayLength() is
+ * capacity, we effectively have 'gaps', meaning that getVertexArrayLength() is
  * generally greater than the literal number of vertices represented.
  * @private
  */
-Bucket.prototype.vertexArrayLength = function(programName) {
+Bucket.prototype.getVertexArrayLength = function(programName) {
     var groups = this.arrayGroups[programName];
     if (!groups.length) return 0;
     return (groups.length - 1) * ArrayGroup.MAX_VERTEX_ARRAY_LENGTH +
-        groups[groups.length - 1].vertexArrayLength();
+        groups[groups.length - 1].getVertexArrayLength();
 };
 
 /**
  * Returns the total capacity of the vertex arrays for the given programName.
  * @private
  */
-Bucket.prototype.vertexArrayCapacity = function(programName) {
+Bucket.prototype.getVertexArrayCapacity = function(programName) {
     return this.arrayGroups[programName].length * ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
 };
 
@@ -179,7 +179,7 @@ Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
         return currentGroup;
 
     if (numVertices > 0)
-        this.resizeVertexArrays(programName, this.vertexArrayCapacity(programName) + numVertices);
+        this.resizeVertexArrays(programName, this.getVertexArrayCapacity(programName) + numVertices);
     else if (!currentGroup) // special case for prepareArrayGroup(programName, 0)
         this.resizeVertexArrays(programName, 1);
 
