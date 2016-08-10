@@ -516,7 +516,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     queryRenderedFeatures: function(pointOrBox, params) {
         var parameters = params || {};
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
-            console.log('we get here');
             parameters = pointOrBox;
             pointOrBox = undefined;
         }
