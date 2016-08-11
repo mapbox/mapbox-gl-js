@@ -1051,7 +1051,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 this._styleDirty = true;
             }
 
-            if (this._sourcesDirty || this._repaint || this._styleDirty) {
+            if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
                 this._rerender();
             }
 

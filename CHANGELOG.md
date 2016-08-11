@@ -53,7 +53,6 @@
  * Fix exceptions thrown during drag-rotate interactions #2840
  * Fix error when adding and removing a layer within the same update cycle #2845
  * Fix false "Geometry exceeds allowed extent" warnings #2568
- * Fix `Map#loaded` returning true while there are outstanding tile updates #2847
  * Fix style validation error thrown while removing a filter #2847
  * Fix event data object not being passed for double click events #2814
  * Fix multipolygons disappearing from map at certain zoom levels #2704
