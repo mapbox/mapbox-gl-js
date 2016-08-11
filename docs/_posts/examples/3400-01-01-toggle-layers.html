@@ -99,27 +99,29 @@ map.on('load', function () {
     });
 });
 
-addLayer('Contours', 'contours');
-addLayer('Museums', 'museums');
+var toggleableLayerIds = [ 'contours', 'museums' ];
 
-function addLayer(name, id) {
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+    var id = toggleableLayerIds[i];
+
     var link = document.createElement('a');
     link.href = '#';
     link.className = 'active';
-    link.textContent = name;
+    link.textContent = id;
 
     link.onclick = function (e) {
+        var clickedLayer = this.textContent;
         e.preventDefault();
         e.stopPropagation();
 
-        var visibility = map.getLayoutProperty(id, 'visibility');
+        var visibility = map.getLayoutProperty(clickedLayer, 'visibility');
 
         if (visibility === 'visible') {
-            map.setLayoutProperty(id, 'visibility', 'none');
+            map.setLayoutProperty(clickedLayer, 'visibility', 'none');
             this.className = '';
         } else {
             this.className = 'active';
-            map.setLayoutProperty(id, 'visibility', 'visible');
+            map.setLayoutProperty(clickedLayer, 'visibility', 'visible');
         }
     };
 

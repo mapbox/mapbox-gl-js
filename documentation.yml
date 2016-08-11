@@ -2,6 +2,7 @@ toc:
   - Map
   - accessToken
   - supported
+  - version
   - name: Geography
     description: |
       These are Mapbox GL JS's ways of representing locations
@@ -42,8 +43,9 @@ toc:
   - CameraOptions
   - AnimationOptions
   - StyleOptions
-  - name: Popups
+  - name: Overlays
   - Popup
+  - Marker
   - name: Events
     description: |
       This event functionality is used by Mapbox GL JS itself

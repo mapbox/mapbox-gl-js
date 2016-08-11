@@ -1230,27 +1230,6 @@ function removeNode(node) {
 }
 
 /**
- * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).
- *
- * @var accessToken
- * @example
- * mapboxgl.accessToken = myAccessToken;
- */
-
- /**
-  * Returns a Boolean indicating whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
-  *
-  * @function supported
-  * @param {Object} options
-  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
-  *   the function will return `false` if the performance of Mapbox GL JS would
-  *   be dramatically worse than expected (i.e. a software renderer would be used).
-  * @return {boolean}
-  * @example
-  * mapboxgl.supported() // = true
-  */
-
-/**
  * A [`LngLat`](#LngLat) object or an array of two numbers representing longitude and latitude.
  *
  * @typedef {(LngLat | Array<number>)} LngLatLike
