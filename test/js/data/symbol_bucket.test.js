@@ -25,7 +25,7 @@ test('SymbolBucket', function(t) {
     var symbolQuadsArray = new SymbolQuadsArray();
     var symbolInstancesArray = new SymbolInstancesArray();
     var collision = new Collision(0, 0, collisionBoxArray);
-    var atlas = new GlyphAtlas(1024, 1024);
+    var atlas = new GlyphAtlas();
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
         glyphs[id].rect = atlas.addGlyph(id, 'Test', glyphs[id], 3);
