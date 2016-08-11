@@ -454,7 +454,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * [Feature objects](http://geojson.org/geojson-spec.html#feature-objects)
      * representing visible features that satisfy the query parameters.
      *
-     * @param {PointLike|Array<PointLike>} [region] - The geometry of the query region:
+     * @param {PointLike|Array<PointLike>} [geometry] - The geometry of the query region:
      * either a single point or southwest and northeast points describing a bounding box.
      * Omitting this parameter (i.e. calling [`Map#queryRenderedFeatures`](#Map#queryRenderedFeatures) with zero arguments,
      * or with only a `parameters` argument) is equivalent to passing a bounding box encompassing the entire
@@ -513,15 +513,29 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * // Query all rendered features from a single layer
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      */
-    queryRenderedFeatures: function(pointbox, params) {
-        var parameters = params || {};
-        var pointOrBox = pointbox || undefined;
-        if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
-            parameters = pointOrBox;
-            pointOrBox = undefined;
+    queryRenderedFeatures: function() {
+        var params = {};
+        var geometry;
+
+        if (arguments.length === 2) {
+            geometry = arguments[0];
+            params = arguments[1];
+        } else if (arguments.length === 1 && isPointLike(arguments[0])) {
+            geometry = arguments[0];
+        } else if (arguments.length === 1) {
+            params = arguments[0];
         }
-        var queryGeometry = this._makeQueryGeometry(pointOrBox);
-        return this.style.queryRenderedFeatures(queryGeometry, parameters, this.transform.zoom, this.transform.angle);
+
+        return this.style.queryRenderedFeatures(
+            this._makeQueryGeometry(geometry),
+            params,
+            this.transform.zoom,
+            this.transform.angle
+        );
+
+        function isPointLike(input) {
+            return input instanceof Point || Array.isArray(input);
+        }
     },
 
     _makeQueryGeometry: function(pointOrBox) {
