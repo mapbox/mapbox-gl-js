@@ -87,6 +87,18 @@ test('update layers', function(t) {
     t.end();
 });
 
+test('redo placement', function(t) {
+    var worker = new Worker(_self);
+    _self.registerWorkerSource('test', function() {
+        this.redoPlacement = function(options) {
+            t.ok(options.mapbox);
+            t.end();
+        };
+    });
+
+    worker['redo placement']({type: 'test', mapbox: true});
+});
+
 test('after', function(t) {
     server.close(t.end);
 });
