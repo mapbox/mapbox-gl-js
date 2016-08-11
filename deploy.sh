@@ -3,6 +3,7 @@
 set -eu
 
 TAG=$CIRCLE_TAG
+PATH=$PATH:~/.local/bin
 
 if [ -z $TAG ]; then
     echo '$CIRCLE_TAG must be set'
