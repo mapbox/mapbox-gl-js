@@ -1236,10 +1236,12 @@ test('Style#addSourceType', function (t) {
         style.addSourceType('bar', SourceType, function (err) { t.error(err); });
     });
 
-    t.test('refuses to add new type over existing name', function (t) {
+    t.test('does not overwrite existing source type, but returns gracefully', function (t) {
         var style = new Style(createStyleJSON());
+        var existing = _types['existing'];
         style.addSourceType('existing', function () {}, function (err) {
-            t.ok(err);
+            t.error(err);
+            t.equal(_types['existing'], existing);
             t.end();
         });
     });
