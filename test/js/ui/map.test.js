@@ -41,22 +41,6 @@ function createMap(options, callback) {
 }
 
 test('Map', function(t) {
-    function createMap(options) {
-        return new Map(extend({
-            container: {
-                offsetWidth: 200,
-                offsetHeight: 200,
-                classList: {
-                    add: function() {},
-                    remove: function() {}
-                }
-            },
-            interactive: false,
-            attributionControl: false,
-            trackResize: true
-        }, options));
-    }
-
     t.test('constructor', function(t) {
         var map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
