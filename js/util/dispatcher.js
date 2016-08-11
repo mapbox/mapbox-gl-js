@@ -19,7 +19,7 @@ function Dispatcher(length, parent) {
     this.currentActor = 0;
     this.id = util.uniqueId();
     var workers = Dispatcher.workerPool.acquire(this.id, length);
-    for (var i = 0; i < length; i++) {
+    for (var i = 0; i < workers.length; i++) {
         var worker = workers[i];
         var actor = new Actor(worker, parent, this.id);
         actor.name = "Worker " + i;
