@@ -192,36 +192,26 @@ function drawExtrusion(painter, source, layer, coord) {
     );
 
     if (image) {
-        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['extrusion-translate'] || [0,0],
-            layer.paint['extrusion-translate-anchor'] || 'viewport'
-        ));
-
-        setPattern(image, tile, coord, painter, program);
+        setPattern(image, tile, coord, painter, program, layer);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
     } else {
         // TODO I'm essentially copying all of this piecemeal for pattern; refactor later
 
-        gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['extrusion-translate'] || [0,0],
-            layer.paint['extrusion-translate-anchor'] || 'viewport'
-        ));
-
         // Draw extrusion rectangle.
         var zScale = Math.pow(2, painter.transform.zoom) / 50000;
         gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
             mat4.create(),
-            coord.posMatrix,
+            painter.translatePosMatrix(
+                coord.posMatrix,
+                tile,
+                layer.paint['extrusion-translate'],
+                layer.paint['extrusion-translate-anchor']
+            ),
             [1, 1, zScale, 1])
         );
 
-        // gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_opacity, 1);
     }
 
@@ -270,13 +260,6 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         programOptions.fragmentPragmas
     );
 
-    gl.uniformMatrix4fv(outlineProgram.u_matrix, false, painter.translatePosMatrix(
-        coord.posMatrix,
-        tile,
-        layer.paint['extrusion-translate'],
-        layer.paint['extrusion-translate-anchor']
-    ));
-
     var lightdir = [-0.5, -0.6, 0.9];
     var lightMat = mat3.create();
     if (true) mat3.fromRotation(lightMat, -painter.transform.angle);
@@ -285,9 +268,15 @@ function drawExtrusionStroke(painter, source, layer, coord) {
 
     // Draw extrusion rectangle.
     var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+
     gl.uniformMatrix4fv(outlineProgram.u_matrix, false, mat4.scale(
         mat4.create(),
-        coord.posMatrix,
+        painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint['extrusion-translate'],
+            layer.paint['extrusion-translate-anchor']
+        ),
         [1, 1, zScale, 1])
     );
 
@@ -304,7 +293,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     }
 }
 
-function setPattern(image, tile, coord, painter, program) {
+function setPattern(image, tile, coord, painter, program, layer) {
     var gl = painter.gl;
 
     var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
@@ -336,7 +325,12 @@ function setPattern(image, tile, coord, painter, program) {
     var zScale = Math.pow(2, painter.transform.zoom) / 50000;
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
         mat4.create(),
-        coord.posMatrix,
+        painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint['extrusion-translate'],
+            layer.paint['extrusion-translate-anchor']
+        ),
         [1, 1, zScale, 1])
     );
 
