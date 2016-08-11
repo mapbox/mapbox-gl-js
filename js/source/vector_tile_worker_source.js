@@ -124,5 +124,23 @@ VectorTileWorkerSource.prototype = {
             var tile =  new vt.VectorTile(new Protobuf(new Uint8Array(data)));
             callback(err, { tile: tile, rawTileData: data });
         }
+    },
+
+    redoPlacement: function(params, callback) {
+        var loaded = this.loaded[params.source],
+            loading = this.loading[params.source],
+            uid = params.uid;
+
+        if (loaded && loaded[uid]) {
+            var tile = loaded[uid];
+            var result = tile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
+
+            if (result.result) {
+                callback(null, result.result, result.transferables);
+            }
+
+        } else if (loading && loading[uid]) {
+            loading[uid].angle = params.angle;
+        }
     }
 };
