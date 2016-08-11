@@ -63,7 +63,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
 var invisible = {
     0x20:   true, // space
-    0x200b: true  // zero-width space
+    0x200b: false  // zero-width space
 };
 
 var breakableCJK = {
@@ -113,6 +113,8 @@ function linewrapLong(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, ve
     var positionedGlyphs = shaping.positionedGlyphs;
 
     if (maxWidth) {
+
+        var wordLength = positionedGlyphs.length;
 
         for (var i = 0; i < positionedGlyphs.length; i++) {
             var positionedGlyph = positionedGlyphs[i];
