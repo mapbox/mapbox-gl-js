@@ -87,6 +87,16 @@ ExtrusionBucket.prototype.programInterfaces = {
             multiplier: 255,
             paintProperty: 'extrusion-color'
         }, {
+            name: 'a_outlinecolor',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return layer.getPaintValue("extrusion-outline-color", globalProperties, featureProperties) ||
+                    layer.getPaintValue("extrusion-color", globalProperties, featureProperties);
+            },
+            multiplier: 255,
+            paintProperty: 'extrusion-outline-color'
+        }, {
             name: 'a_opacity',
             components: 1,
             type: 'Uint16',
@@ -101,10 +111,6 @@ ExtrusionBucket.prototype.programInterfaces = {
 };
 
 ExtrusionBucket.prototype.addFeature = function(feature) {
-    // var height = (feature.properties && feature.properties.levels) || 3;
-    // var minHeight = (feature.properties && feature.properties['min_height']) || 0;
-    // TODO I think the flickering must have to do with sometimes double polys, some with levels and some without :\
-
     var lines = loadGeometry(feature);
     var polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
     for (var i = 0; i < polygons.length; i++) {
@@ -145,23 +151,23 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
                 var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
                 var vertexArray = group.layout.vertex;
 
-                var topRight = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
+                var bottomRight = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
                 this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
 
+                // track distance from first edge for pattern wrapping
                 edgeDistance += Point.convert(v2).dist(Point.convert(v1));
 
                 this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
                 this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
 
-                group.layout.element.emplaceBack(topRight, topRight + 1, topRight + 2);
-                group.layout.element.emplaceBack(topRight + 1, topRight + 2, topRight + 3);
+                group.layout.element.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                group.layout.element.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
                 if (!isBoundaryEdge(v1, ring[v - 1])) {
-                    group.layout.element2.emplaceBack(lastIndex, topIndex);
-                    group.layout.element2.emplaceBack(topRight, topRight + 1);
-                    group.layout.element2.emplaceBack(topRight + 2, topRight + 3);
-                    group.layout.element2.emplaceBack(topRight, topRight + 2);
-                    group.layout.element2.emplaceBack(topRight + 1, topRight + 3);
+                    group.layout.element2.emplaceBack(bottomRight, bottomRight + 1);  // "right"
+                    group.layout.element2.emplaceBack(bottomRight + 2, bottomRight + 3);  // "left"
+                    group.layout.element2.emplaceBack(bottomRight, bottomRight + 2);  // bottom
+                    group.layout.element2.emplaceBack(bottomRight + 1, bottomRight + 3);  // top
                 }
             }
 

@@ -222,7 +222,7 @@ function drawExtrusion(painter, source, layer, coord) {
         );
 
         // gl.uniform4fv(program.u_color, color);
-        // gl.uniform1f(program.u_opacity, 1);
+        gl.uniform1f(program.u_opacity, 1);
     }
 
     gl.uniform4fv(program.u_shadow, shadowColor);
@@ -261,13 +261,11 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var strokeColor = layer.paint['extrusion-outline-color'] || layer.paint['extrusion-color'].slice();
-
     var image = layer.paint['extrusion-pattern'];
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
         image ? 'extrusionpattern' : 'extrusion',
-        programOptions.defines,
+        programOptions.defines.concat('OUTLINE'),
         programOptions.vertexPragmas,
         programOptions.fragmentPragmas
     );
@@ -292,8 +290,6 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         coord.posMatrix,
         [1, 1, zScale, 1])
     );
-
-    // gl.uniform4fv(outlineProgram.u_color, strokeColor);
 
     bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
 
