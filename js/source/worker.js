@@ -160,4 +160,3 @@ function createLayerFamilies(layers) {
 
     return families;
 }
-
