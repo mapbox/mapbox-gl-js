@@ -13,8 +13,8 @@ var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
 var fixedLngLat = fixed.LngLat;
 
-function createMap(options) {
-    return new Map(extend({
+function createMap(options, callback) {
+    var map = new Map(extend({
         container: {
             offsetWidth: 200,
             offsetHeight: 200,
@@ -25,13 +25,24 @@ function createMap(options) {
         },
         interactive: false,
         attributionControl: false,
-        trackResize: true
+        trackResize: true,
+        style: {
+            "version": 8,
+            "sources": {},
+            "layers": []
+        }
     }, options));
+
+    if (callback) map.on('load', function() {
+        callback(null, map);
+    });
+
+    return map;
 }
 
 test('Map', function(t) {
     t.test('constructor', function(t) {
-        var map = createMap({interactive: true});
+        var map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
         t.equal(map.getStyle(), undefined);
         t.ok(map.boxZoom.isEnabled());
@@ -554,47 +565,90 @@ test('Map', function(t) {
     });
 
     t.test('#queryRenderedFeatures', function(t) {
-        var map = createMap();
-        map.setStyle({
-            "version": 8,
-            "sources": {},
-            "layers": []
+
+        t.test('if no arguments provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                sinon.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures();
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
         });
 
-        map.on('style.load', function() {
-            var opts = {};
+        t.test('if only "geometry" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                sinon.spy(map.style, 'queryRenderedFeatures');
 
-            t.test('normal coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
-                    t.deepEqual(coords, [{ column: 0.5, row: 0.5, zoom: 0 }]);
-                    t.equal(o, opts);
-                    t.equal(bearing, map.transform.angle);
-                    t.equal(zoom, map.getZoom());
-                    t.end();
-                };
+                var output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
-                map.queryRenderedFeatures(map.project(new LngLat(0, 0)), opts);
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.deepEqual(args[0], [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
+                t.deepEqual(args[1], {}); // params
+                t.deepEqual(args[2], 0); // bearing
+                t.deepEqual(args[3], 0); // zoom
+                t.deepEqual(output, []);
+
+                t.end();
             });
-
-            t.test('does not wrap coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
-                    // avoid floating point issues
-                    t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
-                    t.equal(coords[0].row, 0.5);
-                    t.equal(coords[0].zoom, 0);
-
-                    t.equal(o, opts);
-                    t.equal(bearing, map.transform.angle);
-                    t.equal(zoom, map.getZoom());
-
-                    t.end();
-                };
-
-                map.queryRenderedFeatures(map.project(new LngLat(360, 0)), opts);
-            });
-
-            t.end();
         });
+
+        t.test('if only "params" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                sinon.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures({filter: ['all']});
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
+        });
+
+        t.test('if both "geometry" and "params" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                sinon.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures({filter: ['all']});
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
+        });
+
+        t.test('if "geometry" with unwrapped coords provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                sinon.spy(map.style, 'queryRenderedFeatures');
+
+                map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
+
+                var coords = map.style.queryRenderedFeatures.getCall(0).args[0];
+                t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
+                t.equal(coords[0].row, 0.5);
+                t.equal(coords[0].zoom, 0);
+
+                t.end();
+            });
+        });
+
+        t.end();
     });
 
     t.test('#setLayoutProperty', function (t) {

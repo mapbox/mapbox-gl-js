@@ -644,7 +644,7 @@ Style.prototype = util.inherit(Evented, {
         }
 
         var includedSources = {};
-        if (params.layers) {
+        if (params && params.layers) {
             for (var i = 0; i < params.layers.length; i++) {
                 var layerId = params.layers[i];
                 includedSources[this._layers[layerId].source] = true;
