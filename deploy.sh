@@ -3,7 +3,9 @@
 set -eu
 
 TAG=$CIRCLE_TAG
-PATH=$PATH:~/.local/bin
+
+# put awscli on PATH
+export PATH=$(python -m site --user-base)/bin:${PATH}
 
 if [ -z $TAG ]; then
     echo '$CIRCLE_TAG must be set'
