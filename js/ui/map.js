@@ -513,8 +513,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * // Query all rendered features from a single layer
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
      */
-    queryRenderedFeatures: function(pointOrBox, params) {
+    queryRenderedFeatures: function(pointbox, params) {
         var parameters = params || {};
+        var pointOrBox = pointbox || undefined;
         if (!(pointOrBox instanceof Point || Array.isArray(pointOrBox))) {
             parameters = pointOrBox;
             pointOrBox = undefined;
