@@ -56,8 +56,8 @@ Actor.prototype.receive = function(message) {
 };
 
 Actor.prototype.send = function(type, data, callback, buffers) {
-    var id = null;
-    if (callback) this.callbacks[id = this.callbackID++] = callback;
+    var id = callback ? this.mapId + ':' + this.callbackID++ : null;
+    if (callback) this.callbacks[id] = callback;
     this.postMessage({ mapId: this.mapId, type: type, id: String(id), data: data }, buffers);
 };
 
