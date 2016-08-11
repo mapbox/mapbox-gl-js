@@ -1035,7 +1035,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 this._styleDirty = true;
             }
 
-            if (this._sourcesDirty || this._repaint || !this.animationLoop.stopped()) {
+            if (this._sourcesDirty || this._repaint || this._styleDirty) {
                 this._rerender();
             }
 
@@ -1058,6 +1058,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
         }
+        var extension = this.painter.gl.getExtension('WEBGL_lose_context');
+        if (extension) extension.loseContext();
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');

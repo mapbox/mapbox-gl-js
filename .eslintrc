@@ -1,16 +1,17 @@
 {
   "extends": "mourner",
   "rules": {
-    "object-curly-spacing": "off",
-    "key-spacing": "off",
     "array-bracket-spacing": "off",
-    "space-before-function-paren": "off",
-    "quotes": "off",
-    "no-eq-null": "off",
+    "block-scoped-var": "error",
     "consistent-return": "off",
     "global-require": "off",
-    "block-scoped-var": "error",
-    "no-warning-comments": "error"
+    "key-spacing": "off",
+    "no-eq-null": "off",
+    "no-new": "off",
+    "no-warning-comments": "error",
+    "object-curly-spacing": "off",
+    "quotes": "off",
+    "space-before-function-paren": "off",
   },
   "env": {
     "es6": true

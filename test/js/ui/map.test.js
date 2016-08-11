@@ -13,23 +13,23 @@ var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
 var fixedLngLat = fixed.LngLat;
 
-test('Map', function(t) {
-    function createMap(options) {
-        return new Map(extend({
-            container: {
-                offsetWidth: 200,
-                offsetHeight: 200,
-                classList: {
-                    add: function() {},
-                    remove: function() {}
-                }
-            },
-            interactive: false,
-            attributionControl: false,
-            trackResize: true
-        }, options));
-    }
+function createMap(options) {
+    return new Map(extend({
+        container: {
+            offsetWidth: 200,
+            offsetHeight: 200,
+            classList: {
+                add: function() {},
+                remove: function() {}
+            }
+        },
+        interactive: false,
+        attributionControl: false,
+        trackResize: true
+    }, options));
+}
 
+test('Map', function(t) {
     t.test('constructor', function(t) {
         var map = createMap({interactive: true});
         t.ok(map.getContainer());
@@ -949,6 +949,39 @@ test('Map', function(t) {
         });
         t.end();
     });
+
+    test('#removeLayer restores Map#loaded() to true', function (t) {
+        var style = createStyle();
+        style.sources.mapbox = {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            tiles: ['http://example.com/{z}/{x}/{y}.png']
+        };
+        style.layers.push({
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        });
+
+        var map = createMap({ style: style });
+        map.on('render', function () {
+            if (map.animationLoop.stopped()) {
+                map.removeLayer('layerId');
+                map.off('render');
+                map.on('render', check);
+            }
+        });
+
+        function check () {
+            if (map.loaded()) {
+                map.remove();
+                t.end();
+            }
+        }
+    });
+
 
     t.end();
 });

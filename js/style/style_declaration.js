@@ -13,7 +13,7 @@ function StyleDeclaration(reference, value) {
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
-    var parsedValue = reference.type === 'color' ? parseColor(this.value) : value;
+    var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
     this.isZoomConstant = this.calculate.isZoomConstant;

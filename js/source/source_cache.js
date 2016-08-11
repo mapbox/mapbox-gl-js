@@ -35,6 +35,7 @@ function SourceCache(id, options, dispatcher) {
         this.roundZoom = source.roundZoom;
         this.reparseOverscaled = source.reparseOverscaled;
         this.isTileClipped = source.isTileClipped;
+        this.attribution = source.attribution;
 
         this.vectorLayerIds = source.vectorLayerIds;
 
