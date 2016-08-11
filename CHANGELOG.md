@@ -1,9 +1,31 @@
-## master
+## 0.22.0 (August 11 2016)
 
 #### Breaking Changes
 
- * The `GeoJSONSource`, `VideoSource`, `ImageSource` constructors are now private. Please use `map.addSource({...})` to create sources and `map.getSource(...).setData(...)` to update GeoJSON sources.
- * `Map#onError` has been removed. You may catch errors by listening for the `error` event. If no listeners are bound to `error`, error messages will be printed to the console.
+ * The `GeoJSONSource`, `VideoSource`, `ImageSource` constructors are now private. Please use `map.addSource({...})` to create sources and `map.getSource(...).setData(...)` to update GeoJSON sources. #2667
+ * `Map#onError` has been removed. You may catch errors by listening for the `error` event. If no listeners are bound to `error`, error messages will be printed to the console. #2852
+
+#### New Features & Improvements
+
+ * Increase max glyph atlas size to accomodate alphabets with large numbers of characters #2930
+ * Add support for filtering features on GeoJSON / vector tile `$id` #2888
+ * Update geolocate icon #2973
+ * Add a `close` event to `Popup`s #2953
+ * Add a `offset` option to `Marker` #2885
+ * Print `error` events without any listeners to the console #2852
+ * Refactored `Source` interface to prepare for custom source types #2667
+
+#### Bugfixes
+
+ * Fix opacity property-functions for fill layers #2971
+ * Fix `DataCloneError` in Firefox and IE11 #2559
+ * Fix bug causing `Map#loaded` to return false after removing a layer #2936
+ * Fix bug preventing camera animations from being triggered in `moveend` listeners #2944
+ * Fix bug preventing `fill-outline-color` from being unset #2964
+ * Fix webpack support #2887
+ * Prevent buttons in controls from acting like form submit buttons #2935
+ * Fix bug preventing map interactions near two controls in the same corner #2932
+ * Fix crash resulting for large style batch queue #2926
 
 ## 0.21.0 (July 13 2016)
 
