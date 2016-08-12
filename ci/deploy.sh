@@ -28,6 +28,8 @@ function cn_upload {
   done
 }
 
+pip install --user --upgrade awscli
+
 npm run build-dev
 npm run build-min
 
