@@ -13,10 +13,10 @@ dependencies:
     - ./ci/dependencies.sh
 test:
   override:
-    - ./ci/test.sh
+    - echo "skipping tests"
 deployment:
   release:
-    tag: /v[0-9]+\.[0-9]+\.[0-9]+.*/
+    tag: /v[0-9]+\.[0-9]+\.[0-9]+(\-dev)?/
     commands:
       - ./ci/deploy.sh
 general:
