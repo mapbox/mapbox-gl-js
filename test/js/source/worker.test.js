@@ -96,7 +96,7 @@ test('redo placement', function(t) {
         };
     });
 
-    worker['redo placement']({type: 'test', mapbox: true});
+    worker['redo placement'](0, {type: 'test', mapbox: true});
 });
 
 test('update layers isolates different instances\' data', function(t) {
