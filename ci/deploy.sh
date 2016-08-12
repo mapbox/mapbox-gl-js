@@ -11,19 +11,13 @@ if [ -z $CIRCLE_TAG ]; then
 fi
 
 function upload {
-  aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
-  echo "upload: dist/$1 to s3://mapbox-gl-js/$CIRCLE_TAG/$1"
+    aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
+    echo "upload: dist/$1 to s3://mapbox-gl-js/$CIRCLE_TAG/$1"
 }
 
-cnregions="
-cn-north-1
-"
-
 function cn_upload {
-  for region in cnregions; do
-    aws s3 cp --region $region --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-$region/$CIRCLE_TAG/$1
-    echo "upload: dist/$1 to s3://mapbox-gl-js-$region/$CIRCLE_TAG/$1"
-  done
+    aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
+    echo "upload: dist/$1 to s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1"
 }
 
 pip install --user --upgrade awscli
