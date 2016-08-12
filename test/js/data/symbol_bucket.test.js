@@ -59,6 +59,7 @@ test('SymbolBucket', function(t) {
 
     var bucketA = bucketSetup();
     var bucketB = bucketSetup();
+    var bucketC = bucketSetup();
 
     // add feature from bucket A
     var a = collision.grid.keys.length;
@@ -72,5 +73,19 @@ test('SymbolBucket', function(t) {
     var b2 = collision.grid.keys.length;
     t.equal(a2, b2, 'detects collision and does not place feature');
 
+    // Use a custom console.warn to count warnings
+    var numWarnings = 0;
+    var warn = console.warn;
+    console.warn = function(warning) {
+        if (warning.includes("Too many symbols being rendered in a tile.") || warning.includes("Too many glyphs being rendered in a tile.")) {
+            numWarnings++;
+        }
+    };
+
+    bucketC.MAX_QUADS = 14;
+    t.equal(bucketC.populateArrays(collision, stacks), undefined);
+    t.equal(numWarnings, 2, 'integer overflow warning is triggered when glyph and/or symbol quad exceeds MAX_QUADS');
+    // Put it back
+    console.warn = warn;
     t.end();
 });

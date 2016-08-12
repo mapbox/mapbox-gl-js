@@ -260,7 +260,6 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
 };
 
 SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feature) {
-    console.log(arguments);
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -570,7 +569,6 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     textBoxScale, textPadding, textAlongLine,
     iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
-
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
     if (shapedText) {
         glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine) : [];
@@ -601,7 +599,6 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
 
     var iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
-
     if (iconQuadEndIndex > this.MAX_QUADS) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
     if (glyphQuadEndIndex > this.MAX_QUADS) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
 
