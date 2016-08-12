@@ -63,8 +63,36 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
 var invisible = {
     0x20:   true, // space
-    0x200b: false  // zero-width space
+    0x200b: true  // zero-width space
 };
+
+// var breakableCJK = [
+//     0x0028, // dollar sign
+//     0x24, // left parenthesis
+//     0xA3, // english pound sign
+//     0xA5, // rmb sign
+//     0xB7, // dot
+//     0x2018, // left single quotation
+//     0x22, // quotation mark
+//     0x3008, // left angle bracket
+//     0x300A, // left angle double bracket
+//     0x300C, // left corner bracket
+//     0x300E,
+//     0x3010,
+//     0x3014,
+//     0x3016,
+//     0x301D,
+//     0xFE59,
+//     0xFE5B,
+//     0xFF04,
+//     0xFF08,
+//     0xFF0E,
+//     0xFF3B,
+//     0xFF5B,
+//     0xFFE1,
+//     0xFFE5,
+//     0x200b // zero-width space
+// ];
 
 var breakableCJK = {
     0x20:   true, // space
@@ -115,6 +143,8 @@ function linewrapLong(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, ve
     if (maxWidth) {
 
         var wordLength = positionedGlyphs.length;
+
+        // lastSafeBreak = Math.round(wordLength/2);
 
         for (var i = 0; i < positionedGlyphs.length; i++) {
             var positionedGlyph = positionedGlyphs[i];
@@ -214,6 +244,19 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 lengthBeforeCurrentLine += lineLength;
                 line++;
             }
+
+            // if (breakableCJK[positionedGlyph.codePoint]) {
+            //     lastSafeBreak = i - 1;
+            // }
+            // lastSafeBreak = Math.round(wordLength / 3);
+
+            // if (!breakableCJK[positionedGlyph.codePoint]) {
+            //     lastSafeBreak = Math.round(wordLength / 3);
+            // } else if (breakableCJK[positionedGlyph.codePoint]) {
+            //     lastSafeBreak = i - 1;
+            // } else {
+            //     lastSafeBreak = Math.round(wordLength / 4);
+            // }
 
             if (breakableCJK[positionedGlyph.codePoint]) {
                 lastSafeBreak = i - 1;
