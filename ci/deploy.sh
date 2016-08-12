@@ -2,9 +2,6 @@
 
 set -eu
 
-# put awscli on PATH
-PATH=$(python -m site --user-base)/bin:${PATH}
-
 if [ -z $CIRCLE_TAG ]; then
     echo '$CIRCLE_TAG must be set'
     exit 1
@@ -21,6 +18,7 @@ function cn_upload {
 }
 
 pip install --user --upgrade awscli
+PATH=$(python -m site --user-base)/bin:${PATH}
 
 npm run build-dev
 npm run build-min
