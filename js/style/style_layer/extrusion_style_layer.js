@@ -13,7 +13,9 @@ ExtrusionStyleLayer.prototype = util.inherit(StyleLayer, {
         if (name === 'extrusion-outline-color' && this.getPaintProperty('extrusion-outline-color') === undefined) {
             return StyleLayer.prototype.getPaintValue.call(this, 'extrusion-color', globalProperties, featureProperties);
         } else {
-            return StyleLayer.prototype.getPaintValue.call(this, name, globalProperties, featureProperties);
+            // This is to account for the case where extrusion-outline-color is defined but a feature property specified in the function is undefined
+            var paintValue = StyleLayer.prototype.getPaintValue.call(this, name, globalProperties, featureProperties);
+            return paintValue || StyleLayer.prototype.getPaintValue.call(this, 'extrusion-color', globalProperties, featureProperties);
         }
     },
 
