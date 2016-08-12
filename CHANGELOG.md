@@ -19,7 +19,6 @@
 
  * Fix opacity property-functions for fill layers #2971
  * Fix `DataCloneError` in Firefox and IE11 #2559
- * Fix bug causing `Map#loaded` to return false after removing a layer #2936
  * Fix bug preventing camera animations from being triggered in `moveend` listeners #2944
  * Fix bug preventing `fill-outline-color` from being unset #2964
  * Fix webpack support #2887
@@ -53,6 +52,7 @@
  * Fix exceptions thrown during drag-rotate interactions #2840
  * Fix error when adding and removing a layer within the same update cycle #2845
  * Fix false "Geometry exceeds allowed extent" warnings #2568
+ * Fix `Map#loaded` returning true while there are outstanding tile updates #2847
  * Fix style validation error thrown while removing a filter #2847
  * Fix event data object not being passed for double click events #2814
  * Fix multipolygons disappearing from map at certain zoom levels #2704
