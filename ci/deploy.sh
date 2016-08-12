@@ -2,29 +2,23 @@
 
 set -eu
 
-TAG=$CIRCLE_TAG
-PATH=$PATH:~/.local/bin
-
-if [ -z $TAG ]; then
+if [ -z $CIRCLE_TAG ]; then
     echo '$CIRCLE_TAG must be set'
     exit 1
 fi
 
 function upload {
-  aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$TAG/$1
-  echo "upload: dist/$1 to s3://mapbox-gl-js/$TAG/$1"
+    aws s3 cp --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js/$CIRCLE_TAG/$1
+    echo "upload: dist/$1 to s3://mapbox-gl-js/$CIRCLE_TAG/$1"
 }
-
-cnregions="
-cn-north-1
-"
 
 function cn_upload {
-  for region in cnregions; do
-    aws s3 cp --region $region --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-$region/$TAG/$1
-    echo "upload: dist/$1 to s3://mapbox-gl-js-$region/$TAG/$1"
-  done
+    aws s3 cp --region cn-north-1 --acl public-read --content-type $2 dist/$1 s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1
+    echo "upload: dist/$1 to s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1"
 }
+
+pip install --user --upgrade awscli
+PATH=$(python -m site --user-base)/bin:${PATH}
 
 npm run build-dev
 npm run build-min

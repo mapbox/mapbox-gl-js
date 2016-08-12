@@ -10,28 +10,15 @@ dependencies:
   cache_directories:
     - './nvm'
   override:
-    # disable spotlight to ensure we waste no CPU on needless file indexing
-    - if [[ $(uname -s) == 'Darwin' ]]; then sudo mdutil -i off /; fi;
-    - |
-      if [[ ! -d ./nvm ]]; then
-          git clone --depth 1 https://github.com/creationix/nvm.git ./nvm
-      fi
-    - source ./nvm/nvm.sh && nvm install ${NODE_VERSION}
-    - |
-      if [ "$(git symbolic-ref --short -q HEAD)" == "master" ]; then
-          source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update
-      else
-          source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install
-      fi
+    - ./ci/dependencies.sh
 test:
   override:
-    - ./ci.sh
+    - ./ci/test.sh
 deployment:
   release:
-    tag: /v[0-9]+\.[0-9]+\.[0-9]+/
+    tag: /v[0-9]+\.[0-9]+\.[0-9]+(\-dev)?/
     commands:
-      - pip install awscli --user
-      - ./deploy.sh
+      - ./ci/deploy.sh
 general:
   artifacts:
     - "node_modules/mapbox-gl-test-suite/render-tests/index.html"
