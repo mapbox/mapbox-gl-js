@@ -7,7 +7,7 @@ fi
 
 source ./nvm/nvm.sh && nvm install ${NODE_VERSION}
 
-if [ "$(git symbolic-ref --short -q HEAD)" == "master" ]; then
+if [ "$CIRCLE_BRANCH" == "master" ]; then
     source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update
 else
     source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install
