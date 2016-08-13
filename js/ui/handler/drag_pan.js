@@ -100,8 +100,14 @@ DragPanHandler.prototype = {
             this._fireEvent('movestart', e);
         }
 
-        var pos = DOM.mousePos(this._el, e),
-            map = this._map;
+        var pos;
+        if (e.touches) {
+            pos = DOM.touchPos(this.el, e)[0]; // first touch point, ignore others
+        } else {
+            pos = DOM.mousePos(this.el, e); // or use mouse position
+        }
+
+        var map = this._map;
 
         map.stop();
         this._drainInertiaBuffer();
@@ -186,9 +192,7 @@ DragPanHandler.prototype = {
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
         if (map.dragRotate && map.dragRotate.isActive()) return true;
-        if (e.touches) {
-            return (e.touches.length > 1);
-        } else {
+        if (!e.touches) {
             if (e.ctrlKey) return true;
             var buttons = 1,  // left button
                 button = 0;   // left button
