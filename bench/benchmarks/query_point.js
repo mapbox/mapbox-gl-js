@@ -66,8 +66,7 @@ module.exports = function(options) {
     function done() {
         var average = sum / count;
         evented.fire('end', {
-            message: (average).toFixed(2) + ' ms',
-            score: average
+            message: (average).toFixed(2) + ' ms'
         });
     }
     setTimeout(function() {
