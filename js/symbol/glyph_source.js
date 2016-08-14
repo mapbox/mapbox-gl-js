@@ -25,7 +25,11 @@ function GlyphSource(url) {
 }
 
 
-GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callback) {
+GlyphSource.prototype.loadSimpleGlyphs = function(fontstack, glyphIDs, uid, callback) {
+    if (glyphIDs.length === 0) {
+        return callback(undefined, {}, fontstack);
+    }
+
     if (this.stacks[fontstack] === undefined) {
         this.stacks[fontstack] = {};
     }
@@ -37,9 +41,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
     var stack = this.stacks[fontstack];
     var atlas = this.atlases[fontstack];
 
-    // the number of pixels the sdf bitmaps are padded by
-    var buffer = 3;
-
+    var buffer = 3;   // the number of pixels the sdf bitmaps are padded by
     var missing = {};
     var remaining = 0;
     var range;
@@ -64,7 +66,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
     }
 
     if (!remaining) {
-        callback(undefined, glyphs, fontstack);
+        return callback(undefined, glyphs, fontstack);
     }
 
     var onRangeLoaded = function(err, range, data) {
@@ -92,7 +94,7 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
 
 
 // Mark all glyphs used by this tile as unused.
-GlyphSource.prototype.unloadTile = function(uid) {
+GlyphSource.prototype.unloadTileGlyphs = function(uid) {
     var fontstacks = Object.keys(this.atlases);
     for (var i = 0; i < fontstacks.length; i++) {
         this.atlases[fontstacks[i]].removeTileGlyphs(uid);

@@ -120,7 +120,7 @@ function renderAtlasTexture() {
 
     var atlas = window.debug.atlases[window.debug.currAtlas];
     if (!atlas) return;
-    if (!atlas.width || !atlas.height || !atlas.data) return;
+    if (atlas.dirty || !atlas.width || !atlas.height || !atlas.data) return;
 
     document.getElementById('debugsize').textContent =
         '' + atlas.width + 'x' + atlas.height;

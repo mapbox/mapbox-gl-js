@@ -155,7 +155,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
         var mapMoving = painter.options.rotating || painter.options.zooming;
         var iconScaled = fontScale !== 1 || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
         var iconTransformed = pitchWithMap || painter.transform.pitch;
-        painter.spriteAtlas.bind(gl, sdf || mapMoving || iconScaled || iconTransformed);
+        painter.spriteAtlas.updateTexture(gl, sdf || mapMoving || iconScaled || iconTransformed);
         gl.uniform2f(program.u_texsize, painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4);
     }
 

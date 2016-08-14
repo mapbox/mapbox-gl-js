@@ -103,7 +103,7 @@ Tile.prototype = {
      */
     unloadVectorData: function(painter) {
         if (painter && painter.glyphSource) {
-            painter.glyphSource.unloadTile(this.uid);
+            painter.glyphSource.unloadTileGlyphs(this.uid);
         }
 
         for (var id in this.buckets) {

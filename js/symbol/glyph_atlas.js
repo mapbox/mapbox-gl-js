@@ -3,9 +3,8 @@
 var ShelfPack = require('shelf-pack');
 var util = require('../util/util');
 
-var SIZE_GROWTH_RATE = 4;
+var SIZE_GROWTH_RATE = 2;
 var DEFAULT_SIZE = 128;
-// must be "DEFAULT_SIZE * SIZE_GROWTH_RATE ^ n" for some integer n
 var MAX_SIZE = 2048;
 
 module.exports = GlyphAtlas;
@@ -14,10 +13,13 @@ module.exports = GlyphAtlas;
 function GlyphAtlas() {
     this.width = DEFAULT_SIZE;
     this.height = DEFAULT_SIZE;
+    this.binpacker = new ShelfPack(this.width, this.height);
 
-    this.sprite = new ShelfPack(this.width, this.height);
-    this.data = new Uint8Array(this.width * this.height);
     this.tilebins = {};
+    this.gl = null;
+    this.texture = null;
+
+    this.data = new Uint8Array(this.width * this.height);
 }
 
 
@@ -29,10 +31,10 @@ GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
     }
 
     // The glyph is already in this texture.
-    var bin = this.sprite.getBin(glyph.id);
+    var bin = this.binpacker.getBin(glyph.id);
     if (bin) {
         this.tilebins[uid].push(bin);
-        this.sprite.ref(bin);
+        this.binpacker.ref(bin);
         return bin;
     }
 
@@ -55,13 +57,13 @@ GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
     packWidth += (4 - packWidth % 4);
     packHeight += (4 - packHeight % 4);
 
-    bin = this.sprite.packOne(packWidth, packHeight, glyph.id);
+    bin = this.binpacker.packOne(packWidth, packHeight, glyph.id);
     if (!bin) {
         this.resize();
-        bin = this.sprite.packOne(packWidth, packHeight, glyph.id);
+        bin = this.binpacker.packOne(packWidth, packHeight, glyph.id);
     }
     if (!bin) {
-        util.warnOnce('glyph bitmap overflow');
+        util.warnOnce('GlyphAtlas out of space');
         return null;
     }
 
@@ -79,7 +81,6 @@ GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
     }
 
     this.dirty = true;
-
     return bin;
 };
 
@@ -89,7 +90,7 @@ GlyphAtlas.prototype.removeTileGlyphs = function(uid) {
     if (!bins) return;
 
     for (var i = 0; i < bins.length; i++) {
-        this.sprite.unref(bins[i]);
+        this.binpacker.unref(bins[i]);
     }
     delete this.tilebins[uid];
 };
@@ -110,7 +111,7 @@ GlyphAtlas.prototype.resize = function() {
 
     this.width *= SIZE_GROWTH_RATE;
     this.height *= SIZE_GROWTH_RATE;
-    this.sprite.resize(this.width, this.height);
+    this.binpacker.resize(this.width, this.height);
 
     var buf = new ArrayBuffer(this.width * this.height);
     for (var i = 0; i < prevHeight; i++) {
@@ -118,7 +119,9 @@ GlyphAtlas.prototype.resize = function() {
         var dst = new Uint8Array(buf, prevHeight * i * SIZE_GROWTH_RATE, prevWidth);
         dst.set(src);
     }
+
     this.data = new Uint8Array(buf);
+    this.ditry = true;
 };
 
 
