@@ -38,11 +38,13 @@ function SymbolBucket(options) {
     this.adjustedIconSize = options.adjustedIconSize;
     this.fontstack = options.fontstack;
 
-    // this constant is based on the size of the glyphQuadEndIndex and iconQuadEndIndex
-    // in the symbol_instances StructArrayType
-    // eg the max valid UInt16 is 65,535
-    this.MAX_QUADS = 65535;
+
 }
+
+// this constant is based on the size of the glyphQuadEndIndex and iconQuadEndIndex
+// in the symbol_instances StructArrayType
+// eg the max valid UInt16 is 65,535
+SymbolBucket.MAX_QUADS = 65535;
 
 SymbolBucket.prototype = util.inherit(Bucket, {});
 
