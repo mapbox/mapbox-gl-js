@@ -128,27 +128,47 @@ test('Style', function(t) {
         });
     });
 
-    t.test('registers existing custom sources', function (t) {
-        function SourceType () {}
-        SourceType.workerSourceURL = 'worker-source.js';
+    t.test('registers WorkerSource for custom sources', function (t) {
+        function MySourceType () {}
+        MySourceType.workerSourceURL = 'my-worker-source.js';
+        function LaterSourceType () {}
+        LaterSourceType.workerSourceURL = 'later-worker-source.js';
+        function WorkerlessSourceType () {}
+        var _types = { 'my-source-type': MySourceType, 'workerless': WorkerlessSourceType };
+
+        var expected = [
+            { name: 'my-source-type', url: 'my-worker-source.js' },
+            { name: 'later-source-type', url: 'later-worker-source.js' }
+        ];
+
+        t.plan(2 * expected.length);
+
         function Dispatcher () {}
         Dispatcher.prototype = {
             broadcast: function (type, params, callback) {
                 if (type === 'load worker source') {
-                    t.equal(params.name, 'my-source-type');
-                    t.equal(params.url, 'worker-source.js');
+                    var exp = expected.shift();
+                    t.equal(params.name, exp.name);
+                    t.equal(params.url, exp.url);
                     setTimeout(callback, 0);
                 }
             }
         };
 
-        t.plan(2);
-
         var Style = proxyquire('../../../js/style/style', {
             '../source/source': {
-                getType: function () { return SourceType; },
+                getType: function (name) { return _types[name]; },
                 setType: function () {},
-                getCustomTypeNames: function () { return ['my-source-type']; }
+                getCustomTypeNames: function () { return Object.keys(_types); },
+                on: function (type, handler) {
+                    if (type === '_add') {
+                        setTimeout(function () {
+                            _types['later-source-type'] = LaterSourceType;
+                            handler({ name: 'later-source-type' });
+                        });
+                    }
+                },
+                off: function () {}
             },
             '../util/dispatcher': Dispatcher
         });
@@ -1275,5 +1295,9 @@ test('Style#addSourceType', function (t) {
         });
     });
 
+test('Style creates correct number of workers', function(t) {
+    var style = new Style(createStyleJSON(), null, 3);
+    t.equal(style.dispatcher.actors.length, 3);
+    t.ok(style);
     t.end();
 });

@@ -1,5 +1,6 @@
 'use strict';
 
+var Evented = require('../util/evented');
 var util = require('../util/util');
 
 var sourceTypes = {
@@ -12,6 +13,8 @@ var sourceTypes = {
 
 var coreTypes = ['vector', 'raster', 'geojson', 'video', 'image'];
 
+var Source = module.exports = util.extend({}, Evented);
+
 /*
  * Creates a tiled data source instance given an options object.
  *
@@ -21,7 +24,7 @@ var coreTypes = ['vector', 'raster', 'geojson', 'video', 'image'];
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id, source, dispatcher) {
+Source.create = function(id, source, dispatcher) {
     source = new sourceTypes[source.type](id, source, dispatcher);
 
     if (source.id !== id) {
@@ -32,11 +35,11 @@ exports.create = function(id, source, dispatcher) {
     return source;
 };
 
-exports.getType = function (name) {
+Source.getType = function (name) {
     return sourceTypes[name];
 };
 
-exports.setType = function (name, type) {
+Source.setType = function (name, type) {
     sourceTypes[name] = type;
 };
 
@@ -44,11 +47,31 @@ exports.setType = function (name, type) {
  * Returns the names of any registered non-core source types.
  * @private
  */
-exports.getCustomTypeNames = function () {
+Source.getCustomTypeNames = function () {
     return Object.keys(sourceTypes).filter(function (type) {
         return coreTypes.indexOf(type) < 0;
     });
 };
+
+/**
+ * Adds a [custom source type](#Custom Sources), making it available for use with
+ * {@link Map#addSource}.
+ * @private
+ * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
+ * @param {Function} SourceType A {@link Source} constructor.
+ */
+Source.addType = function (name, SourceType) {
+    if (Source.getType(name)) {
+        throw new Error('A source type named ' + name + ' already exists.');
+    }
+
+    Source.setType(name, SourceType);
+
+    // an internal event, used to notify Style instances that there is a new
+    // custom source type.
+    Source.fire('_add', { name: name });
+};
+
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`, `video`, etc.) and all custom, third-party types.
@@ -58,7 +81,7 @@ exports.getCustomTypeNames = function () {
  *
  * @param {string} id The id for the source. Must not be used by any existing source.
  * @param {Object} options Source options, specific to the source type (except for `options.type`, which is always required).
- * @param {string} options.type The source type, matching the value of `name` used in {@link Style#addSourceType}.
+ * @param {string} options.type The source type, matching the value of `name` used in {@link Source.addType}.
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  *
  * @fires load to indicate source data has been loaded, so that it's okay to call `loadTile`
@@ -128,7 +151,7 @@ exports.getCustomTypeNames = function () {
  * implementation may also be targeted by the {@link Source} via
  * `dispatcher.send('source-type.methodname', params, callback)`.
  *
- * @see {@link Map#addSourceType}
+ * @see {@link Source.addType}
  * @private
  *
  * @class WorkerSource

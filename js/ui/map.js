@@ -676,7 +676,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
      * @param {Object} source The source object, conforming to the
      * Mapbox Style Specification's [source definition](https://www.mapbox.com/mapbox-gl-style-spec/#sources).
-     * @param {string} source.type The source type, which must be either one of the core Mapbox GL source types defined in the style specification or a custom type that has been added to the map with {@link Map#addSourceType}.
+     * @param {string} source.type The source type, which must be one of the core Mapbox GL source types defined in the style specification.
      * @fires source.add
      * @returns {Map} `this`
      */
@@ -684,18 +684,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this.style.addSource(id, source);
         this._update(true);
         return this;
-    },
-
-    /**
-     * Adds a [custom source type](#Custom Sources), making it available for use with
-     * {@link Map#addSource}.
-     * @private
-     * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
-     * @param {Function} SourceType A {@link Source} constructor.
-     * @param {Function} callback Called when the source type is ready or with an error argument if there is an error.
-     */
-    addSourceType: function (name, SourceType, callback) {
-        return this.style.addSourceType(name, SourceType, callback);
     },
 
     /**

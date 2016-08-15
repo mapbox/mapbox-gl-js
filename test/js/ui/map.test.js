@@ -7,6 +7,7 @@ var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 var sinon = require('sinon');
+var proxyquire = require('proxyquire');
 
 var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
