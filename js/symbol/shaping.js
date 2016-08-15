@@ -53,11 +53,9 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     }
 
     if (!positionedGlyphs.length) return false;
-    if (positionedGlyphs.length > 15) {
+    if (positionedGlyphs.length > 13) {
         linewrapLong(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
-    }
-    else {
-
+    } else {
         linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
     }
     return shaping;
@@ -97,7 +95,6 @@ var breakableCJK = {
     0xFFE1: true,
     0xFFE5: true,
     0x200b: true,
-    0x897F: true,
     0x533A: true
      // zero-width space
 };
@@ -152,9 +149,7 @@ function linewrapLong(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, ve
                 lengthBeforeCurrentLine += lineLength;
                 line++;
             }
-            
-            lastSafeBreak = Math.round(wordLength / 2);
-
+            lastSafeBreak = i;
         }
 
     }
@@ -224,56 +219,12 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            // if (breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = i - 1;
-            // }
-            // lastSafeBreak = Math.round(wordLength / 3);
-
-            // if (!breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = Math.round(wordLength / 3);
-            // } else if (breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = i - 1;
-            // } else {
-            //     lastSafeBreak = Math.round(wordLength / 4);
-            // }
-            if (wordLength > 10) {
-                lastSafeBreak = Math.round(wordLength / 2);
+            if (breakableCJK[positionedGlyph.codePoint]) {
+                lastSafeBreak = i - 1;
             }
-
-            if (wordLength < 15) {
-                if (breakableCJK[positionedGlyph.codePoint]) {
-                    lastSafeBreak = i - 1;
-                }
-                if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
-                        lastSafeBreak = Math.round(wordLength / 3);
-                }
+            if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
+                lastSafeBreak = Math.round(wordLength / 3);
             }
-
-
-            // if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 13211) {
-            //         lastSafeBreak = 6;
-            // }
-            // console.log(maxWidth)
-            // lastSafeBreak= maxWidth/4;
-
-            // 16.95/31.24019/121.48622
-            // else {
-            //     lastSafeBreak = (Math.round(wordLength / 3));
-            // }
-
-            // if (positionedGlyph.codePoint > 19968) {
-                // console.log(positionedGlyph.codePoint)
-                // lastSafeBreak = (Math.round(wordLength / 3));
-            // }
-
-            // console.log(typeof breakableCJK)
-            // if (breakableCJK.indexOf(positionedGlyph.codePoint) === 0) {
-            //     lastSafeBreak = i - 1;
-            // }
-            //
-            // if (breakableCJK.indexOf(positionedGlyph.codePoint) !=== 0) {
-            //     lastSafeBreak = Math.round(wordLength / 2);
-            // }
 
         }
 
