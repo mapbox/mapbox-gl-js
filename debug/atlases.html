@@ -43,10 +43,12 @@ html, body, #map { height: 100%; }
 <div id='map'></div>
 <div id='menu'>
   <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'>
-  <label for='show-tile-boundaries'>tile debug</label><br/>
+  <label for='show-tile-boundaries-checkbox'>tile debug</label><br/>
   <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'>
-  <label for='show-symbol-collision-boxes'>collision debug</label><br/>
-  <hr/>
+  <label for='show-symbol-collision-boxes-checkbox'>collision debug</label><br/>
+  <input id='show-atlases-checkbox' name='show-atlases' type='checkbox' checked='checked'>
+  <label for='show-atlases-checkbox'>atlas debug</label><br/>
+  <hr id='radios-hr'/>
   <div id='radios'></div>
 </div>
 <div id='debugtexture'>
@@ -66,14 +68,8 @@ var map = window.map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.Navigation());
 
-document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
-    map.showTileBoundaries = !!this.checked;
-};
-document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
-    map.showCollisionBoxes = !!this.checked;
-};
-
 window.debug = {
+    enabled: true,
     program: null,
     atlases: {},
     currAtlas: null
@@ -81,8 +77,22 @@ window.debug = {
 
 window.onload = initDebugCanvas;
 
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+document.getElementById('show-atlases-checkbox').onclick = function() {
+    window.debug.enabled = !!this.checked;
+    var disp = !!this.checked ? 'block' : 'none';
+    document.getElementById('debugcanvas').style.display = disp;
+    document.getElementById('radios-hr').style.display = disp;
+    document.getElementById('radios').style.display = disp;
+};
+
 map.on('render', function() {
-    if (window.debug.program) {
+    if (window.debug.enabled && window.debug.program) {
         renderAtlasTexture();
     }
 });
@@ -122,8 +132,7 @@ function renderAtlasTexture() {
     if (!atlas) return;
     if (atlas.dirty || !atlas.width || !atlas.height || !atlas.data) return;
 
-    document.getElementById('debugsize').textContent =
-        '' + atlas.width + 'x' + atlas.height;
+    document.getElementById('debugsize').textContent = '' + atlas.width + 'x' + atlas.height;
 
     canvas.width = Math.min(400, atlas.width);
     canvas.height = Math.min(400, atlas.height);
