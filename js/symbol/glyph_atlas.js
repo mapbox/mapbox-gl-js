@@ -72,11 +72,11 @@ GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
 
     var target = this.data;
     var source = glyph.bitmap;
-    for (var y = 0; y < bufferedHeight; y++) {
+    for (var y = 0; y < bin.maxh; y++) {
         var y1 = this.width * (bin.y + y + padding) + bin.x + padding;
         var y2 = bufferedWidth * y;
-        for (var x = 0; x < bufferedWidth; x++) {
-            target[y1 + x] = source[y2 + x];
+        for (var x = 0; x < bin.maxw; x++) {
+            target[y1 + x] = (y < bufferedHeight && x < bufferedWidth) ? source[y2 + x] : 0;
         }
     }
 
