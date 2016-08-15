@@ -10,6 +10,8 @@ var sourceTypes = {
     'image': require('../source/image_source')
 };
 
+var coreTypes = ['vector', 'raster', 'geojson', 'video', 'image'];
+
 /*
  * Creates a tiled data source instance given an options object.
  *
@@ -36,6 +38,16 @@ exports.getType = function (name) {
 
 exports.setType = function (name, type) {
     sourceTypes[name] = type;
+};
+
+/**
+ * Returns the names of any registered non-core source types.
+ * @private
+ */
+exports.getCustomTypeNames = function () {
+    return Object.keys(sourceTypes).filter(function (type) {
+        return coreTypes.indexOf(type) < 0;
+    });
 };
 
 /**

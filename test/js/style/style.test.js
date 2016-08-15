@@ -128,6 +128,34 @@ test('Style', function(t) {
         });
     });
 
+    t.test('registers existing custom sources', function (t) {
+        function SourceType () {}
+        SourceType.workerSourceURL = 'worker-source.js';
+        function Dispatcher () {}
+        Dispatcher.prototype = {
+            broadcast: function (type, params, callback) {
+                if (type === 'load worker source') {
+                    t.equal(params.name, 'my-source-type');
+                    t.equal(params.url, 'worker-source.js');
+                    setTimeout(callback, 0);
+                }
+            }
+        };
+
+        t.plan(2);
+
+        var Style = proxyquire('../../../js/style/style', {
+            '../source/source': {
+                getType: function () { return SourceType; },
+                setType: function () {},
+                getCustomTypeNames: function () { return ['my-source-type']; }
+            },
+            '../util/dispatcher': Dispatcher
+        });
+
+        new Style(createStyleJSON());
+    });
+
     t.end();
 });
 
@@ -1198,11 +1226,12 @@ test('Style#addSourceType', function (t) {
     var Style = proxyquire('../../../js/style/style', {
         '../source/source': {
             getType: function (name) { return _types[name]; },
-            setType: function (name, create) { _types[name] = create; }
+            setType: function (name, create) { _types[name] = create; },
+            getTypeNames: function () { return []; }
         }
     });
 
-    t.test('adds factory function', function (t) {
+    t.test('adds source type', function (t) {
         var style = new Style(createStyleJSON());
         var SourceType = function () {};
 
