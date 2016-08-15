@@ -37,8 +37,6 @@ function SymbolBucket(options) {
     this.adjustedTextSize = options.adjustedTextSize;
     this.adjustedIconSize = options.adjustedIconSize;
     this.fontstack = options.fontstack;
-
-
 }
 
 // this constant is based on the size of the glyphQuadEndIndex and iconQuadEndIndex

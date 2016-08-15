@@ -80,11 +80,14 @@ test('SymbolBucket', function(t) {
 
 test('SymbolBucket integer overflow', function(t) {
     var bucket = bucketSetup();
-    var spy = sinon.spy(util, 'warnOnce');
+    var numWarnings = 0;
+    sinon.stub(util, 'warnOnce', function(warning) {
+        if (warning.includes('Too many symbols being rendered in a tile.') || warning.includes('Too many glyphs being rendered in a tile.')) numWarnings++;
+    });
 
     bucket.MAX_QUADS = 5;
     bucket.populateArrays(collision, stacks);
-    t.ok(spy.calledTwice, 'warning is triggered when glyph and/or symbol quad exceeds MAX_QUADS');
+    t.equal(numWarnings, 2);
     t.end();
 });
 
