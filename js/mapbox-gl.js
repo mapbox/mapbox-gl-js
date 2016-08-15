@@ -20,6 +20,8 @@ mapboxgl.Marker = require('./ui/marker');
 
 mapboxgl.Style = require('./style/style');
 
+mapboxgl.addSourceType = require('./source/source').addType;
+
 mapboxgl.LngLat = require('./geo/lng_lat');
 mapboxgl.LngLatBounds = require('./geo/lng_lat_bounds');
 mapboxgl.Point = require('point-geometry');
