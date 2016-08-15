@@ -17,7 +17,9 @@ module.exports = function(source, numCalls, geojson, cb) {
                 startTime = performance.now();
                 source.setData(geojson);
             } else {
-                var avgTileTime = times.reduce((v, t) => v + t, 0) / times.length;
+                var avgTileTime = times.reduce(function (v, t) {
+                    return v + t;
+                }, 0) / times.length;
                 source.off('tile.load', tileCounter);
                 cb(null, avgTileTime);
             }
