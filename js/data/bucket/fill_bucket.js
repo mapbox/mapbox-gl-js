@@ -64,7 +64,7 @@ FillBucket.prototype.addFeature = function(feature) {
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
-    var endVertex = this.getVertexArrayLength('fill') - 1;
+    var endVertex = this.getVertexArrayLength('fill');
     this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, startVertex, endVertex, feature.index);
 };
 

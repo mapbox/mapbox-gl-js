@@ -42,7 +42,7 @@ test('Bucket', function(t) {
             group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
             group.elementArray.emplaceBack(1, 2, 3);
             group.elementArray2.emplaceBack(point.x, point.y);
-            var endIndex = this.getVertexArrayLength('test') - 1;
+            var endIndex = this.getVertexArrayLength('test');
             this.populatePaintArrays('test', {}, feature.properties, startIndex, endIndex, feature.index);
         };
 
@@ -339,13 +339,14 @@ test('Bucket', function(t) {
         var p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);
 
+        bucket.createArrays();
         bucket.updatePaintVertexArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
 
-        v0 = testVertex.get(0);
+        testPaintVertex = bucket.arrayGroups.test[0].paintVertexArrays.layerid;
         p0 = testPaintVertex.get(0);
-        t.equal(v0.a_box0, 34);
-        t.equal(v0.a_box1, 84);
         t.equal(p0.a_map, 3);
+
+        t.ok(!bucket.isEmpty());
 
         t.end();
     });
