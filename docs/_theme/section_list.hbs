@@ -4,7 +4,7 @@
       <div class="clearfix small pointer toggle-sibling">
         <div class="pad1y contain">
             <a class='rcon pin-right pad1y dark-link caret-right'></a>
-            <span class='code strong strong truncate'><%= member.name%></span>
+            <span class='code strong strong truncate'><a href='#<%=member.namespace%>'> <%= member.name%></a></span>
             <span class='quiet code space-right2'><%= shortSignature(member, false) %></span>
         </div>
       </div>
@@ -18,3 +18,4 @@
     </div>
   <% }) %>
 </div>
+
