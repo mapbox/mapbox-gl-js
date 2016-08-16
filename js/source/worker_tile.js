@@ -11,6 +11,7 @@ var SymbolQuadsArray = require('../symbol/symbol_quads');
 
 module.exports = WorkerTile;
 
+
 function WorkerTile(params) {
     this.coord = params.coord;
     this.uid = params.uid;
@@ -23,8 +24,8 @@ function WorkerTile(params) {
     this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
-WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, callback) {
 
+WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, callback) {
     this.status = 'parsing';
     this.data = data;
 
@@ -121,20 +122,18 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         featureIndex.bucketLayerIDs[bucket.index] = bucket.childLayers.map(getLayerId);
 
         buckets.push(bucket);
-
         if (bucket.type === 'symbol')
             symbolBuckets.push(bucket);
         else
             otherBuckets.push(bucket);
     }
 
+
     var icons = {};
     var stacks = {};
     var deps = 0;
 
-
     if (symbolBuckets.length > 0) {
-
         // Get dependencies for symbol buckets
         for (i = symbolBuckets.length - 1; i >= 0; i--) {
             symbolBuckets[i].updateIcons(icons);
@@ -144,13 +143,12 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         for (var fontName in stacks) {
             stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
         }
-        icons = Object.keys(icons);
-
         actor.send('get glyphs', {uid: this.uid, stacks: stacks}, function(err, newStacks) {
             stacks = newStacks;
             gotDependency(err);
         });
 
+        icons = Object.keys(icons);
         if (icons.length) {
             actor.send('get icons', {icons: icons}, function(err, newIcons) {
                 icons = newIcons;
@@ -183,8 +181,6 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
 
     function parseBucket(tile, bucket) {
         bucket.populateArrays(collisionTile, stacks, icons);
-
-
         if (bucket.type !== 'symbol') {
             for (var i = 0; i < bucket.features.length; i++) {
                 var feature = bucket.features[i];
@@ -223,6 +219,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
     }
 };
 
+
 WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) {
     if (this.status !== 'done') {
         this.redoPlacementAfterDone = true;
@@ -231,9 +228,7 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
     }
 
     var collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
-
     var buckets = this.symbolBuckets;
-
     for (var i = buckets.length - 1; i >= 0; i--) {
         buckets[i].placeFeatures(collisionTile, showCollisionBoxes);
     }

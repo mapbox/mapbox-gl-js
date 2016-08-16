@@ -3,70 +3,39 @@
 var ShelfPack = require('shelf-pack');
 var util = require('../util/util');
 
-var SIZE_GROWTH_RATE = 4;
+var SIZE_GROWTH_RATE = 2;
 var DEFAULT_SIZE = 128;
-// must be "DEFAULT_SIZE * SIZE_GROWTH_RATE ^ n" for some integer n
 var MAX_SIZE = 2048;
 
 module.exports = GlyphAtlas;
+
+
 function GlyphAtlas() {
     this.width = DEFAULT_SIZE;
     this.height = DEFAULT_SIZE;
+    this.binpacker = new ShelfPack(this.width, this.height);
 
-    this.bin = new ShelfPack(this.width, this.height);
-    this.index = {};
-    this.ids = {};
+    this.tilebins = {};
+    this.gl = null;
+    this.texture = null;
+
     this.data = new Uint8Array(this.width * this.height);
 }
 
-GlyphAtlas.prototype.getGlyphs = function() {
-    var glyphs = {},
-        split,
-        name,
-        id;
 
-    for (var key in this.ids) {
-        split = key.split('#');
-        name = split[0];
-        id = split[1];
-
-        if (!glyphs[name]) glyphs[name] = [];
-        glyphs[name].push(id);
-    }
-
-    return glyphs;
-};
-
-GlyphAtlas.prototype.getRects = function() {
-    var rects = {},
-        split,
-        name,
-        id;
-
-    for (var key in this.ids) {
-        split = key.split('#');
-        name = split[0];
-        id = split[1];
-
-        if (!rects[name]) rects[name] = {};
-        rects[name][id] = this.index[key];
-    }
-
-    return rects;
-};
-
-
-GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
+GlyphAtlas.prototype.addGlyph = function(glyph, uid, buffer) {
     if (!glyph) return null;
 
-    var key = name + "#" + glyph.id;
+    if (!this.tilebins[uid]) {
+        this.tilebins[uid] = [];
+    }
 
     // The glyph is already in this texture.
-    if (this.index[key]) {
-        if (this.ids[key].indexOf(id) < 0) {
-            this.ids[key].push(id);
-        }
-        return this.index[key];
+    var bin = this.binpacker.getBin(glyph.id);
+    if (bin) {
+        this.tilebins[uid].push(bin);
+        this.binpacker.ref(bin);
+        return bin;
     }
 
     // The glyph bitmap has zero width.
@@ -88,33 +57,44 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     packWidth += (4 - packWidth % 4);
     packHeight += (4 - packHeight % 4);
 
-    var rect = this.bin.packOne(packWidth, packHeight);
-    if (!rect) {
+    bin = this.binpacker.packOne(packWidth, packHeight, glyph.id);
+    if (!bin) {
         this.resize();
-        rect = this.bin.packOne(packWidth, packHeight);
+        bin = this.binpacker.packOne(packWidth, packHeight, glyph.id);
     }
-    if (!rect) {
-        util.warnOnce('glyph bitmap overflow');
+    if (!bin) {
+        util.warnOnce('GlyphAtlas out of space');
         return null;
     }
 
-    this.index[key] = rect;
-    this.ids[key] = [id];
+    this.tilebins[uid].push(bin);
+
 
     var target = this.data;
     var source = glyph.bitmap;
-    for (var y = 0; y < bufferedHeight; y++) {
-        var y1 = this.width * (rect.y + y + padding) + rect.x + padding;
+    for (var y = 0; y < bin.maxh; y++) {
+        var y1 = this.width * (bin.y + y + padding) + bin.x + padding;
         var y2 = bufferedWidth * y;
-        for (var x = 0; x < bufferedWidth; x++) {
-            target[y1 + x] = source[y2 + x];
+        for (var x = 0; x < bin.maxw; x++) {
+            target[y1 + x] = (y < bufferedHeight && x < bufferedWidth) ? source[y2 + x] : 0;
         }
     }
 
     this.dirty = true;
-
-    return rect;
+    return bin;
 };
+
+
+GlyphAtlas.prototype.removeTileGlyphs = function(uid) {
+    var bins = this.tilebins[uid];
+    if (!bins) return;
+
+    for (var i = 0; i < bins.length; i++) {
+        this.binpacker.unref(bins[i]);
+    }
+    delete this.tilebins[uid];
+};
+
 
 GlyphAtlas.prototype.resize = function() {
     var prevWidth = this.width;
@@ -131,7 +111,7 @@ GlyphAtlas.prototype.resize = function() {
 
     this.width *= SIZE_GROWTH_RATE;
     this.height *= SIZE_GROWTH_RATE;
-    this.bin.resize(this.width, this.height);
+    this.binpacker.resize(this.width, this.height);
 
     var buf = new ArrayBuffer(this.width * this.height);
     for (var i = 0; i < prevHeight; i++) {
@@ -139,8 +119,11 @@ GlyphAtlas.prototype.resize = function() {
         var dst = new Uint8Array(buf, prevHeight * i * SIZE_GROWTH_RATE, prevWidth);
         dst.set(src);
     }
+
     this.data = new Uint8Array(buf);
+    this.ditry = true;
 };
+
 
 GlyphAtlas.prototype.bind = function(gl) {
     this.gl = gl;
@@ -157,6 +140,7 @@ GlyphAtlas.prototype.bind = function(gl) {
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
     }
 };
+
 
 GlyphAtlas.prototype.updateTexture = function(gl) {
     this.bind(gl);

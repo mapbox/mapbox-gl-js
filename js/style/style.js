@@ -24,7 +24,7 @@ module.exports = Style;
 function Style(stylesheet, animationLoop, workerCount) {
     this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(workerCount || 1, this);
-    this.spriteAtlas = new SpriteAtlas(1024, 1024);
+    this.spriteAtlas = new SpriteAtlas();
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
@@ -762,7 +762,7 @@ Style.prototype = util.inherit(Evented, {
             allGlyphs = {};
 
         for (var fontName in stacks) {
-            this.glyphSource.getSimpleGlyphs(fontName, stacks[fontName], params.uid, done);
+            this.glyphSource.loadSimpleGlyphs(fontName, stacks[fontName], params.uid, done);
         }
 
         function done(err, glyphs, fontName) {

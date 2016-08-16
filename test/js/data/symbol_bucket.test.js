@@ -28,7 +28,7 @@ test('SymbolBucket', function(t) {
     var atlas = new GlyphAtlas();
     for (var id in glyphs) {
         glyphs[id].bitmap = true;
-        glyphs[id].rect = atlas.addGlyph(id, 'Test', glyphs[id], 3);
+        glyphs[id].rect = atlas.addGlyph(glyphs[id], 1, 3);
     }
 
     var stacks = { 'Test': glyphs };

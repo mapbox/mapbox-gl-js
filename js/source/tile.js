@@ -102,6 +102,10 @@ Tile.prototype = {
      * @private
      */
     unloadVectorData: function(painter) {
+        if (painter && painter.glyphSource) {
+            painter.glyphSource.unloadTileGlyphs(this.uid);
+        }
+
         for (var id in this.buckets) {
             var bucket = this.buckets[id];
             bucket.destroy(painter.gl);

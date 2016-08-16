@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mapbox GL JS debug page</title>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+
+<style>
+body { margin: 0; padding: 0; }
+html, body, #map { height: 100%; }
+#menu {
+    position: absolute;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.85);
+    top: 10px;
+    left: 10px;
+    padding: 10px;
+}
+#menu label {
+    padding-left: 5px;
+    font: 14px sans-serif;
+}
+#debugtexture {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    pointer-events: none;
+    opacity: 0.85;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+#debugsize {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    pointer-events: none;
+    font: 10px sans-serif;
+}
+</style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='menu'>
+  <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'>
+  <label for='show-tile-boundaries-checkbox'>tile debug</label><br/>
+  <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'>
+  <label for='show-symbol-collision-boxes-checkbox'>collision debug</label><br/>
+  <input id='show-atlases-checkbox' name='show-atlases' type='checkbox' checked='checked'>
+  <label for='show-atlases-checkbox'>atlas debug</label><br/>
+  <hr id='radios-hr'/>
+  <div id='radios'></div>
+</div>
+<div id='debugtexture'>
+    <canvas id='debugcanvas' width='0' height='0'/>
+</div>
+<div id='debugsize'>
+</div>
+
+<script src='dist/mapbox-gl-dev.js'></script>
+<script src='access-token.js'></script>
+
+<script>
+var map = window.map = new mapboxgl.Map({
+    container: 'map', zoom: 16, center: [-74.0447, 40.6892], hash: true,
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+
+map.addControl(new mapboxgl.Navigation());
+
+window.debug = {
+    enabled: true,
+    program: null,
+    atlases: {},
+    currAtlas: null
+};
+
+window.onload = initDebugCanvas;
+
+document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
+    map.showTileBoundaries = !!this.checked;
+};
+document.getElementById('show-symbol-collision-boxes-checkbox').onclick = function() {
+    map.showCollisionBoxes = !!this.checked;
+};
+document.getElementById('show-atlases-checkbox').onclick = function() {
+    window.debug.enabled = !!this.checked;
+    var disp = !!this.checked ? 'block' : 'none';
+    document.getElementById('debugcanvas').style.display = disp;
+    document.getElementById('radios-hr').style.display = disp;
+    document.getElementById('radios').style.display = disp;
+};
+
+map.on('render', function() {
+    if (window.debug.enabled && window.debug.program) {
+        renderAtlasTexture();
+    }
+});
+
+
+function initDebugCanvas() {
+    var canvas = document.getElementById('debugcanvas');
+    var gl = canvas.getContext('webgl');
+    if (!gl) { return; }
+
+    // setup GLSL program
+    var vertexShaderSource = document.getElementById('2d-vertex-shader').text;
+    var fragmentShaderSource = document.getElementById('2d-fragment-shader').text;
+
+    var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+    var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+    window.debug.program = createProgram(gl, vertexShader, fragmentShader);
+}
+
+
+function renderAtlasTexture() {
+    var program = window.debug.program;
+
+    var canvas = document.getElementById('debugcanvas');
+    var gl = canvas.getContext('webgl');
+    if (!gl) { return; }
+
+    // available atlases include 1 spriteAtlas + 1 lineAtlas + all atlases held by glyphSource
+    // this number can change as user moves around the map
+    var avail = 2 + Object.keys(map.painter.glyphSource.atlases).length;
+    if (window.debug.atlases.length !== avail) {
+        rebuildAtlasMenu();
+    }
+
+    var atlas = window.debug.atlases[window.debug.currAtlas];
+    if (!atlas) return;
+    if (atlas.dirty || !atlas.width || !atlas.height || !atlas.data) return;
+
+    document.getElementById('debugsize').textContent = '' + atlas.width + 'x' + atlas.height;
+
+    canvas.width = Math.min(400, atlas.width);
+    canvas.height = Math.min(400, atlas.height);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+    gl.useProgram(program);
+
+    // look up where the vertex data needs to go.
+    var positionLocation = gl.getAttribLocation(program, 'a_position');
+    var texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+
+    // Provide texture coordinates for the rectangle.
+    var texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        0.0, 0.0,   1.0, 0.0,   0.0, 1.0,   0.0, 1.0,   1.0, 0.0,   1.0, 1.0
+    ]), gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(texCoordLocation);
+    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Create a texture.
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // Upload the image into the texture.
+    var width, height;
+    if (window.debug.currAtlas === '__lineAtlas') {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            atlas.width,
+            atlas.height,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            atlas.data
+        );
+    } else if (window.debug.currAtlas === '__spriteAtlas') {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            atlas.width * atlas.pixelRatio,
+            atlas.height * atlas.pixelRatio,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            new Uint8Array(atlas.data.buffer)
+        );
+    } else {
+        gl.texImage2D(gl.TEXTURE_2D,
+            0,
+            gl.ALPHA,
+            atlas.width,
+            atlas.height,
+            0,
+            gl.ALPHA,
+            gl.UNSIGNED_BYTE,
+            atlas.data
+        );
+    }
+
+    // lookup uniforms
+    var resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+
+    // set the resolution
+    gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+
+    // Create a buffer for the position of the rectangle corners.
+    var buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    // Set a rectangle the same size as the image.
+    setRectangle(gl, 0, 0, canvas.width, canvas.height);
+
+    // Draw the rectangle.
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
+function setRectangle(gl, x, y, width, height) {
+    var x1 = x;
+    var x2 = x + width;
+    var y1 = y;
+    var y2 = y + height;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        x1, y1,   x2, y1,   x1, y2,   x1, y2,   x2, y1,   x2, y2
+    ]), gl.STATIC_DRAW);
+}
+
+function createShader(gl, type, source) {
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if (success) { return shader; }
+
+    console.log(gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+}
+
+function createProgram(gl, vertexShader, fragmentShader) {
+    var program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    if (success) { return program; }
+
+    console.log(gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+}
+
+function rebuildAtlasMenu() {
+    var radioContainer = document.querySelector('#radios');
+    radioContainer.innerHTML = '';
+
+    // Available atlases include 1 lineAtlas + 1 spriteAtlas + all glyph atlases held by glyphSource
+    // The number of glyph atlases can change as user moves around the map..
+    var keys = ['__spriteAtlas', '__lineAtlas']
+        .concat(Object.keys(map.painter.glyphSource.atlases));
+
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i],
+            atlas, prefix, text, id;
+
+        if (key === '__lineAtlas') {
+            atlas = map.painter.lineAtlas;
+            prefix = '&#x2652;';
+            text = 'Line Atlas';
+            id = key;
+        } else if (key === '__spriteAtlas') {
+            atlas = map.painter.spriteAtlas;
+            prefix = '&#x267F;';
+            text = 'Sprite Atlas';
+            id = key;
+        } else {
+            atlas = map.painter.glyphSource.atlases[key];
+            prefix = '&#x1F520;';
+            text = key.split(',')[0];
+            id = text.replace(/\s/g, '_');
+        }
+
+        window.debug.atlases[key] = atlas;
+
+        if (!window.debug.currAtlas) {
+            window.debug.currAtlas = key;
+        }
+
+        var input = document.createElement('input');
+        input.id = id;
+        input.value = key;
+        input.type = 'radio';
+        input.name = 'atlas';
+        input.onclick = function() {
+            window.debug.currAtlas = this.value;
+            renderAtlasTexture();
+        };
+        input.checked = (key === window.debug.currAtlas ? 'checked' : '');
+        radioContainer.appendChild(input);
+
+        var label = document.createElement('label');
+        label.for = id;
+        label.innerHTML = prefix + ' ' + text;
+        radioContainer.appendChild(label);
+
+        radioContainer.appendChild(document.createElement('br'));
+    }
+}
+
+</script>
+
+<script id='2d-vertex-shader' type='x-shader/x-vertex'>
+attribute vec2 a_position;
+attribute vec2 a_texCoord;
+uniform vec2 u_resolution;
+varying vec2 v_texCoord;
+
+void main() {
+    vec2 zeroToOne = a_position / u_resolution;
+    vec2 zeroToTwo = zeroToOne * 2.0;
+    vec2 clipSpace = zeroToTwo - 1.0;
+    gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+    v_texCoord = a_texCoord;
+}
+</script>
+
+<script id='2d-fragment-shader' type='x-shader/x-fragment'>
+precision mediump float;
+uniform sampler2D u_image;
+varying vec2 v_texCoord;
+
+void main() {
+    gl_FragColor = texture2D(u_image, v_texCoord);
+}
+</script>
+
+</body>
+</html>
