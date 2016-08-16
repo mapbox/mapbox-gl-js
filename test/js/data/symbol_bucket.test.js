@@ -84,10 +84,16 @@ test('SymbolBucket integer overflow', function(t) {
     sinon.stub(util, 'warnOnce', function(warning) {
         if (warning.includes('Too many symbols being rendered in a tile.') || warning.includes('Too many glyphs being rendered in a tile.')) numWarnings++;
     });
+    // save correct value of MAX_QUADS
+    var maxquads = SymbolBucket.MAX_QUADS;
 
-    bucket.MAX_QUADS = 5;
+    // reduce MAX_QUADS to test warning
+    SymbolBucket.MAX_QUADS = 5;
     bucket.populateArrays(collision, stacks);
     t.equal(numWarnings, 2);
+
+    // reset MAX_QUADS to its original value
+    SymbolBucket.MAX_QUADS = maxquads;
     t.end();
 });
 
