@@ -39,6 +39,11 @@ function SymbolBucket(options) {
     this.fontstack = options.fontstack;
 }
 
+// this constant is based on the size of the glyphQuadEndIndex and iconQuadEndIndex
+// in the symbol_instances StructArrayType
+// eg the max valid UInt16 is 65,535
+SymbolBucket.MAX_QUADS = 65535;
+
 SymbolBucket.prototype = util.inherit(Bucket, {});
 
 SymbolBucket.prototype.serialize = function() {
@@ -594,6 +599,8 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
 
     var iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
+    if (iconQuadEndIndex > SymbolBucket.MAX_QUADS) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+    if (glyphQuadEndIndex > SymbolBucket.MAX_QUADS) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
 
     return this.symbolInstancesArray.emplaceBack(
         textBoxStartIndex,
