@@ -1,11 +1,9 @@
 'use strict';
 
-var WorkerPool = require('./worker_pool');
 var util = require('./util');
 var Actor = require('./actor');
 
 module.exports = Dispatcher;
-Dispatcher.workerPool = new WorkerPool();
 
 /**
  * Responsible for sending messages from a {@link Source} to an associated
@@ -14,11 +12,12 @@ Dispatcher.workerPool = new WorkerPool();
  * @interface Dispatcher
  * @private
  */
-function Dispatcher(length, parent) {
+function Dispatcher(workerPool, length, parent) {
+    this.workerPool = workerPool;
     this.actors = [];
     this.currentActor = 0;
     this.id = util.uniqueId();
-    var workers = Dispatcher.workerPool.acquire(this.id, length);
+    var workers = this.workerPool.acquire(this.id, length);
     for (var i = 0; i < workers.length; i++) {
         var worker = workers[i];
         var actor = new Actor(worker, parent, this.id);
@@ -68,7 +67,7 @@ Dispatcher.prototype = {
     },
 
     remove: function() {
-        Dispatcher.workerPool.release(this.id);
+        this.workerPool.release(this.id);
         this.actors = [];
     }
 };
