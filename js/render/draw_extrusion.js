@@ -1,7 +1,5 @@
 'use strict';
 
-var util = require('../util/util');
-var browser = require('../util/browser');
 var mat3 = require('gl-matrix').mat3;
 var mat4 = require('gl-matrix').mat4;
 var vec3 = require('gl-matrix').vec3;
@@ -30,14 +28,12 @@ function draw(painter, source, layer, coords) {
     gl.stencilMask(0x00);
 
     for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
-        drawExtrusion(painter, source, layer, coord);
+        drawExtrusion(painter, source, layer, coords[i]);
     }
 
     if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
-        for (var i = 0; i < coords.length; i++) {
-            var coord = coords[i];
-            drawExtrusionStroke(painter, source, layer, coord);
+        for (var j = 0; j < coords.length; j++) {
+            drawExtrusionStroke(painter, source, layer, coords[j]);
         }
     }
 
@@ -96,7 +92,7 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     }
-}
+};
 
 PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
     this.painter.bindDefaultFramebuffer();
@@ -106,13 +102,13 @@ PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
         if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
         this.painter.preFbos[this.width][this.height] = [this.fbo];
     }
-}
+};
 
 PrerenderedExtrusionLayer.prototype.TextureBoundsArray = new StructArrayType({
     members: [
         { name: 'a_pos', type: 'Int16', components: 2 }
     ]
-})
+});
 
 PrerenderedExtrusionLayer.prototype.renderToMap = function() {
     var gl = this.gl;
@@ -152,7 +148,7 @@ PrerenderedExtrusionLayer.prototype.renderToMap = function() {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);
-}
+};
 
 function drawExtrusion(painter, source, layer, coord) {
     var tile = source.getTile(coord);
@@ -178,11 +174,11 @@ function drawExtrusion(painter, source, layer, coord) {
     );
 
     if (image) {
-        setPattern(image, tile, coord, painter, program, layer);
+        setPattern(image, tile, coord, painter, program);
     }
 
     setMatrix(program, painter, coord, tile, layer);
-    setLighting(program, painter, map);
+    setLighting(program, painter);
 
     bucket.setUniforms(gl, 'extrusion', program, layer, {zoom: painter.transform.zoom});
 
@@ -219,7 +215,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         programOptions.fragmentPragmas
     );
 
-    setLighting(outlineProgram, painter, map);
+    setLighting(outlineProgram, painter);
     setMatrix(outlineProgram, painter, coord, tile, layer);
 
     bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
@@ -250,17 +246,17 @@ function setMatrix(program, painter, coord, tile, layer) {
     );
 }
 
-function setLighting(program, painter, map) {
-    var _ld = map._light.lightDirection,
+function setLighting(program, painter) {
+    var _ld = painter.light.lightDirection,
         lightdir = [_ld.x, _ld.y, _ld.z];
     var lightMat = mat3.create();
-    if (map._light.lightAnchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
+    if (painter.light.lightAnchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
     vec3.transformMat3(lightdir, lightdir, lightMat);
     painter.gl.uniform3fv(program.u_lightdir, lightdir);
 }
 
 
-function setPattern(image, tile, coord, painter, program, layer) {
+function setPattern(image, tile, coord, painter, program) {
     var gl = painter.gl;
 
     var imagePosA = painter.spriteAtlas.getPosition(image.from, true);

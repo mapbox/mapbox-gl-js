@@ -124,7 +124,7 @@ FeatureIndex.prototype.query = function(args, styleLayers) {
         } else if (styleLayer.type === 'circle') {
             styleLayerDistance = paint['circle-radius'] + translateDistance(paint['circle-translate']);
         } else if (styleLayer.type === 'extrusion') {
-            // TODO
+            styleLayerDistance = translateDistance(paint['extrusion-translate']);
         }
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }

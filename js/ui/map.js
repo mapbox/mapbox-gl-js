@@ -197,9 +197,9 @@ var Map = module.exports = function(options) {
     if (options.style) this.setStyle(options.style);
 
     var _map = this;
-    this.style.on('load', function(e) {
+    this.style.on('load', function() {
         _map._setLightOptions(util.extend(options.light, _map.style._light));
-    })
+    });
 
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 

@@ -117,7 +117,6 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
         if (r > 0) holeIndices.push(flattened.length / 2);
 
         var edgeDistance = 0;
-        var lastIndex;
 
         // add vertices from the roof
         for (var v = 0; v < ring.length; v++) {
@@ -154,8 +153,6 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
             // convert to format used by earcut
             flattened.push(v1[0]);
             flattened.push(v1[1]);
-
-            lastIndex = topIndex;
         }
     }
 
@@ -163,8 +160,8 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
 
     for (var i = 0; i < triangleIndices.length - 2; i += 3) {
         group.layout.element.emplaceBack(indices[triangleIndices[i]],
-                indices[triangleIndices[i+1]],
-                indices[triangleIndices[i+2]]);
+                indices[triangleIndices[i + 1]],
+                indices[triangleIndices[i + 2]]);
     }
 
     this.populatePaintArrays('extrusion', {zoom: this.zoom}, feature.properties, group, startIndex);
@@ -176,5 +173,5 @@ function convertCoords(rings) {
 }
 
 function isBoundaryEdge(v1, v2) {
-    return v1.some((a, i) => (a === 0 - 64 || a === Bucket.EXTENT + 64) && v2[i] === a);
+    return v1.some(function(a, i) { return (a === 0 - 64 || a === Bucket.EXTENT + 64) && v2[i] === a; });
 }

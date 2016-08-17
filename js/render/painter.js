@@ -105,6 +105,13 @@ Painter.prototype.setup = function() {
 };
 
 /*
+ * Set the lighting properties (used for extrusions).
+ */
+Painter.prototype.setLighting = function(lightOptions) {
+    this.light = lightOptions;
+};
+
+/*
  * Reset the color buffers of the drawing canvas.
  */
 Painter.prototype.clearColor = function() {

@@ -90,9 +90,6 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
             var attribIndex = program[member.name];
 
             if (!gl.getVertexAttrib(j, gl.VERTEX_ATTRIB_ARRAY_ENABLED)) continue;
-            // TODO the above addition (disabling attribs undefined in the program) means
-            // the below assert will never trip -- is this okay? Do we remove it? Or are there
-            // cases that now will slip through? Should we be more explicit about allowed programs?
             assert(attribIndex !== undefined, 'array member "' + member.name + '" name does not match shader attribute name');
 
             gl.vertexAttribPointer(
