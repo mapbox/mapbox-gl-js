@@ -23,7 +23,7 @@ exports.rendered = function(sourceCache, styleLayers, queryGeometry, params, zoo
 };
 
 exports.source = function(sourceCache, params) {
-    var tiles = sourceCache.renderedIDs().map(function(id) {
+    var tiles = sourceCache.getRenderableIds().map(function(id) {
         return sourceCache.getTileByID(id);
     });
 
