@@ -100,6 +100,7 @@
     "watch-dev": "watchify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl -o dist/mapbox-gl-dev.js -v",
     "build-min": "browserify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "watch-min": "watchify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl -o dist/mapbox-gl.js -v",
+    "build-token": "browserify debug/access-token-src.js --debug --transform envify > debug/access-token.js",
     "build-docs": "documentation build --github --format html -c documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
     "lint": "eslint js test bench server.js docs/_posts/examples/*.html",
