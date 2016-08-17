@@ -65,8 +65,6 @@
     "minifyify": "^7.0.1",
     "nyc": "6.4.0",
     "proxyquire": "^1.7.9",
-    "react": "^15.3.0",
-    "react-dom": "^15.3.0",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
     "sinon": "^1.15.4",

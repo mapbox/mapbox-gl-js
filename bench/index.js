@@ -1,8 +1,6 @@
 'use strict';
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-var React = require('react');
-var ReactDOM = require('react-dom');
 var util = require('../js/util/util');
 var async = require('async');
 var mapboxgl = require('../js/mapbox-gl');
