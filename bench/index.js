@@ -5,7 +5,6 @@ var util = require('../js/util/util');
 var async = require('async');
 var mapboxgl = require('../js/mapbox-gl');
 var Clipboard = require('clipboard');
-var URL = require('url');
 
 var BenchmarksView = React.createClass({
 
