@@ -1004,6 +1004,68 @@ test('Map', function(t) {
         t.end();
     });
 
+    test('render stabilizes', function (t) {
+        var style = createStyle();
+        style.sources.mapbox = {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            tiles: ['http://example.com/{z}/{x}/{y}.png']
+        };
+        style.layers.push({
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        });
+
+        var timer;
+        var map = createMap({ style: style });
+        map.on('render', function () {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(function () {
+                map.off('render');
+                map.on('render', t.fail);
+                t.notOk(map._frameId, 'no rerender scheduled');
+                t.end();
+            }, 100);
+        });
+    });
+
+    test('#removeLayer restores Map#loaded() to true', function (t) {
+        var style = createStyle();
+        style.sources.mapbox = {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            tiles: ['http://example.com/{z}/{x}/{y}.png']
+        };
+        style.layers.push({
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        });
+
+        var timer;
+        var map = createMap({ style: style });
+        map.on('render', function () {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(function () {
+                map.off('render');
+                map.on('render', check);
+                map.removeLayer('layerId');
+            }, 100);
+        });
+
+        function check () {
+            if (map.loaded()) {
+                map.remove();
+                t.end();
+            }
+        }
+    });
+
     t.end();
 });
 
