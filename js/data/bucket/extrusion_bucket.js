@@ -86,25 +86,6 @@ ExtrusionBucket.prototype.programInterfaces = {
             },
             multiplier: 255,
             paintProperty: 'extrusion-color'
-        }, {
-            name: 'a_outline_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: function(layer, globalProperties, featureProperties) {
-                return layer.getPaintValue("extrusion-outline-color", globalProperties, featureProperties);
-            },
-            multiplier: 255,
-            paintProperty: 'extrusion-outline-color'
-        }, {
-            name: 'a_opacity',
-            components: 1,
-            type: 'Uint16',
-            isLayerConstant: false, // what is this
-            getValue: function(layer, globalProperties, featureProperties) {
-                return [layer.getPaintValue("extrusion-opacity", globalProperties, featureProperties)];
-            },
-            multiplier: 255,
-            paintProperty: 'extrusion-opacity'
         }]
     }
 };

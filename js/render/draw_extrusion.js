@@ -16,95 +16,72 @@ function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
 
-    if (true) {
-        painter.depthMask(true);
+    painter.depthMask(true);
 
-        var texture = new PrerenderedExtrusionLayer(gl, painter);
-        texture.bindFramebuffer();
+    var texture = new PrerenderedExtrusionLayer(gl, painter);
+    texture.bindFramebuffer();
 
-        gl.clearStencil(0x80);
-        gl.stencilMask(0xFF);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.stencilMask(0x00);
+    gl.clearStencil(0x80);
+    gl.stencilMask(0xFF);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.stencilMask(0x00);
 
-        // DRAW
-        for (var i = 0; i < coords.length; i++) {
-            var coord = coords[i];
-            drawExtrusion(painter, source, layer, coord);
-        }
-
-        if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
-            for (var i = 0; i < coords.length; i++) {
-                var coord = coords[i];
-                drawExtrusionStroke(painter, source, layer, coord);
-            }
-        }
-
-        texture.unbindFramebuffer();
-
-        var program = painter.useProgram('extrusiontexture');
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
-
-        gl.uniform1f(program.u_opacity, layer.paint['extrusion-layer-opacity'] || 1);
-        gl.uniform1i(program.u_texture, 1);
-        var zScale = Math.pow(2, painter.transform.zoom) / 50000;
-
-        gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
-            mat4.create(),
-            0,
-            painter.width,
-            painter.height,
-            0,
-            0,
-            1)
-        );
-
-        gl.disable(gl.DEPTH_TEST);
-
-        gl.uniform1i(program.u_xdim, painter.width);
-        gl.uniform1i(program.u_ydim, painter.height);
-
-        var maxInt16 = 32767;
-        var array = new RasterBoundsArray();
-        // TODO I don't think i need the second attribute here (0/maxInt16)...
-        array.emplaceBack(0, 0, 0, 0);
-        array.emplaceBack(painter.width, 0, maxInt16, 0);
-        array.emplaceBack(0, painter.height, maxInt16, maxInt16);
-        array.emplaceBack(painter.width, painter.height, 0, maxInt16);
-        var buffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
-
-        var vao = new VertexArrayObject();
-        vao.bind(gl, program, buffer);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
+        drawExtrusion(painter, source, layer, coord);
     }
 
-    else {
-
-
+    if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i];
-            drawExtrusion(painter, source, layer, coord);
+            drawExtrusionStroke(painter, source, layer, coord);
         }
-
-        if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
-            for (var i = 0; i < coords.length; i++) {
-                var coord = coords[i];
-                drawExtrusionStroke(painter, source, layer, coord);
-            }
-        }
-
-
     }
+
+    texture.unbindFramebuffer();
+
+    var program = painter.useProgram('extrusiontexture');
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+
+    gl.uniform1f(program.u_opacity, layer.paint['extrusion-layer-opacity'] || 1);
+    gl.uniform1i(program.u_texture, 1);
+    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+
+    gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
+        mat4.create(),
+        0,
+        painter.width,
+        painter.height,
+        0,
+        0,
+        1)
+    );
+
+    gl.disable(gl.DEPTH_TEST);
+
+    gl.uniform1i(program.u_xdim, painter.width);
+    gl.uniform1i(program.u_ydim, painter.height);
+
+    var maxInt16 = 32767;
+    var array = new RasterBoundsArray();
+    // TODO refactor: don't need the full RasterBoundsArray (attrib[2,3])
+    array.emplaceBack(0, 0, 0, 0);
+    array.emplaceBack(painter.width, 0, maxInt16, 0);
+    array.emplaceBack(0, painter.height, maxInt16, maxInt16);
+    array.emplaceBack(painter.width, painter.height, 0, maxInt16);
+    var buffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+
+    var vao = new VertexArrayObject();
+    vao.bind(gl, program, buffer);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     gl.enable(gl.DEPTH_TEST);
-    // gl.enable(gl.STENCIL_TEST);
 }
 
 function PrerenderedExtrusionLayer(gl, painter) {
     this.gl = gl;
-    // this.buffer = 1/32;
     this.width = painter.width;
     this.height = painter.height;
     this.painter = painter;
@@ -181,7 +158,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var shadowColor = layer.paint['extrusion-shadow-color'] || [0,0,1,1];
     shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
-    var rotateLight = map._lightingAnchor === 'viewport';
+    var rotateLight = map._light.lightAnchor === 'viewport';
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var program = painter.useProgram(
@@ -211,21 +188,11 @@ function drawExtrusion(painter, source, layer, coord) {
             ),
             [1, 1, zScale, 1])
         );
-
-        gl.uniform1f(program.u_opacity, 1);
     }
 
     gl.uniform4fv(program.u_shadow, shadowColor);
 
-    var lightdir = [-0.5, -0.6, 0.9];
-    // NOTES FOR MYSELF
-    // z: 0 is the minimum z; it clamps here. But
-    //    0.5 is the first one that makes sense after 0.0 --
-    //    in between are kind of ambient, but the first time
-    //    the roof becomes as light as the top of the wall is 0.5
-    //    The upper clamp is between 1.7 and 1.8
-    // x:
-
+    var lightdir = map._light.lightDirection;
     var lightMat = mat3.create();
     if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
     vec3.transformMat3(lightdir, lightdir, lightMat);
@@ -251,11 +218,16 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
+    var outlineDefines = ['OUTLINE'];
+
     var image = layer.paint['extrusion-pattern'];
+    var color = layer.paint['extrusion-outline-color'];
+    if (!color) outlineDefines.push('DEFAULT_COLOR');
+
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
         image ? 'extrusionpattern' : 'extrusion',
-        programOptions.defines.concat('OUTLINE'),
+        programOptions.defines.concat(outlineDefines),
         programOptions.vertexPragmas,
         programOptions.fragmentPragmas
     );
@@ -283,6 +255,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
 
     gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    if (color) gl.uniform4fv(outlineProgram.u_outline_color, color);
 
     painter.enableTileClippingMask(coord);
 

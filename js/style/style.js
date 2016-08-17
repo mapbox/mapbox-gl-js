@@ -34,6 +34,7 @@ function Style(stylesheet, map, options) {
     this._groups = [];
     this.sourceCaches = {};
     this.zoomHistory = {};
+    this._light = {};
 
     util.bindAll(['_redoPlacement'], this);
 
@@ -58,6 +59,18 @@ function Style(stylesheet, map, options) {
 
         for (var id in stylesheet.sources) {
             this.addSource(id, stylesheet.sources[id], options);
+        }
+
+        if (stylesheet.light) {
+            if (stylesheet.light['light-anchor']) {
+                this._light.lightAnchor = stylesheet.light['light-anchor'];
+            }
+            if (stylesheet.light['light-direction']) {
+                this._light.lightDirection = stylesheet.light['light-direction'];
+            }
+            if (stylesheet.light['light-color']) {
+                this._light.lightColor = stylesheet.light['light-color'];
+            }
         }
 
         if (stylesheet.sprite) {
@@ -582,6 +595,7 @@ Style.prototype = util.inherit(Evented, {
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
+            light: this.stylesheet.light,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,

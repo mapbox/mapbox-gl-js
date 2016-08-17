@@ -21,6 +21,7 @@ var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 var isSupported = require('mapbox-gl-supported');
+var parseColor = require('../style/parse_color');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
@@ -30,7 +31,11 @@ var defaultOptions = {
     bearing: 0,
     pitch: 0,
 
-    'lighting-anchor': 'viewport',
+    light: {
+        lightAnchor: 'viewport',
+        lightDirection: [-0.5, -0.3, 1.0],
+        lightColor: 'rgba(1,1,1,0.75)'
+    },
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -133,7 +138,6 @@ var Map = module.exports = function(options) {
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
     this._trackResize = options.trackResize;
     this._bearingSnap = options.bearingSnap;
-    this._lightingAnchor = options['lighting-anchor'];
 
     if (typeof options.container === 'string') {
         this._container = window.document.getElementById(options.container);
@@ -191,6 +195,12 @@ var Map = module.exports = function(options) {
 
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
+
+    var _map = this;
+    this.style.on('load', function(e) {
+        _map._setLightOptions(util.extend(options.light, _map.style._light));
+    })
+
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
     this.on('style.load', function() {
