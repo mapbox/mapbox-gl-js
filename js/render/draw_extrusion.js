@@ -8,7 +8,7 @@ var vec3 = require('gl-matrix').vec3;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 var Buffer = require('../data/buffer');
 var VertexArrayObject = require('./vertex_array_object');
-var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
+var StructArrayType = require('../util/struct_array');
 
 module.exports = draw;
 
@@ -18,7 +18,10 @@ function draw(painter, source, layer, coords) {
 
     painter.depthMask(true);
 
-    var texture = new PrerenderedExtrusionLayer(gl, painter);
+    // Create a new texture to which to render the extrusion layer. This approach
+    // allows us to adjust opacity on a per-layer basis (eliminating the interior
+    // walls per-feature opacity problem)
+    var texture = new PrerenderedExtrusionLayer(gl, painter, layer);
     texture.bindFramebuffer();
 
     gl.clearStencil(0x80);
@@ -38,57 +41,21 @@ function draw(painter, source, layer, coords) {
         }
     }
 
+    // Unbind the framebuffer as a render target and render it to the map
     texture.unbindFramebuffer();
-
-    var program = painter.useProgram('extrusiontexture');
-
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
-
-    gl.uniform1f(program.u_opacity, layer.paint['extrusion-layer-opacity'] || 1);
-    gl.uniform1i(program.u_texture, 1);
-    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
-
-    gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
-        mat4.create(),
-        0,
-        painter.width,
-        painter.height,
-        0,
-        0,
-        1)
-    );
-
-    gl.disable(gl.DEPTH_TEST);
-
-    gl.uniform1i(program.u_xdim, painter.width);
-    gl.uniform1i(program.u_ydim, painter.height);
-
-    var maxInt16 = 32767;
-    var array = new RasterBoundsArray();
-    // TODO refactor: don't need the full RasterBoundsArray (attrib[2,3])
-    array.emplaceBack(0, 0, 0, 0);
-    array.emplaceBack(painter.width, 0, maxInt16, 0);
-    array.emplaceBack(0, painter.height, maxInt16, maxInt16);
-    array.emplaceBack(painter.width, painter.height, 0, maxInt16);
-    var buffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
-
-    var vao = new VertexArrayObject();
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    gl.enable(gl.DEPTH_TEST);
+    texture.renderToMap();
 }
 
-function PrerenderedExtrusionLayer(gl, painter) {
+function PrerenderedExtrusionLayer(gl, painter, layer) {
     this.gl = gl;
     this.width = painter.width;
     this.height = painter.height;
     this.painter = painter;
+    this.layer = layer;
 
     this.texture = null;
     this.fbo = null;
-    this.fbos = this.painter.preFbos[this.width];
+    this.fbos = this.painter.preFbos[this.width] && this.painter.preFbos[this.width][this.height];
 }
 
 PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
@@ -136,8 +103,55 @@ PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
     if (this.fbos) {
         this.fbos.push(this.fbo);
     } else {
-        this.painter.preFbos[this.width] = [this.fbo];
+        if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
+        this.painter.preFbos[this.width][this.height] = [this.fbo];
     }
+}
+
+PrerenderedExtrusionLayer.prototype.TextureBoundsArray = new StructArrayType({
+    members: [
+        { name: 'a_pos', type: 'Int16', components: 2 }
+    ]
+})
+
+PrerenderedExtrusionLayer.prototype.renderToMap = function() {
+    var gl = this.gl;
+    var painter = this.painter;
+    var program = painter.useProgram('extrusiontexture');
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+    gl.uniform1f(program.u_opacity, this.layer.paint['extrusion-layer-opacity'] || 1);
+    gl.uniform1i(program.u_texture, 1);
+
+    gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
+        mat4.create(),
+        0,
+        painter.width,
+        painter.height,
+        0,
+        0,
+        1)
+    );
+
+    gl.disable(gl.DEPTH_TEST);
+
+    gl.uniform1i(program.u_xdim, painter.width);
+    gl.uniform1i(program.u_ydim, painter.height);
+
+    var array = new this.TextureBoundsArray();
+    array.emplaceBack(0, 0);
+    array.emplaceBack(painter.width, 0);
+    array.emplaceBack(0, painter.height);
+    array.emplaceBack(painter.width, painter.height);
+    var buffer = new Buffer(array.serialize(), this.TextureBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+
+    var vao = new VertexArrayObject();
+    vao.bind(gl, program, buffer);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    gl.enable(gl.DEPTH_TEST);
 }
 
 function drawExtrusion(painter, source, layer, coord) {
@@ -152,13 +166,8 @@ function drawExtrusion(painter, source, layer, coord) {
     painter.setDepthSublayer(2);
 
     var gl = painter.gl;
-    gl.enable(gl.DEPTH_TEST);
 
-    var color = layer.paint['extrusion-color'];
-    var shadowColor = layer.paint['extrusion-shadow-color'] || [0,0,1,1];
-    shadowColor[3] = 1;
     var image = layer.paint['extrusion-pattern'];
-    var rotateLight = map._light.lightAnchor === 'viewport';
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var program = painter.useProgram(
@@ -170,33 +179,10 @@ function drawExtrusion(painter, source, layer, coord) {
 
     if (image) {
         setPattern(image, tile, coord, painter, program, layer);
-
-        gl.activeTexture(gl.TEXTURE0);
-        painter.spriteAtlas.bind(gl, true);
-    } else {
-        // TODO I'm essentially copying all of this piecemeal for pattern; refactor later
-
-        // Draw extrusion rectangle.
-        var zScale = Math.pow(2, painter.transform.zoom) / 50000;
-        gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
-            mat4.create(),
-            painter.translatePosMatrix(
-                coord.posMatrix,
-                tile,
-                layer.paint['extrusion-translate'],
-                layer.paint['extrusion-translate-anchor']
-            ),
-            [1, 1, zScale, 1])
-        );
     }
 
-    gl.uniform4fv(program.u_shadow, shadowColor);
-
-    var lightdir = map._light.lightDirection;
-    var lightMat = mat3.create();
-    if (rotateLight) mat3.fromRotation(lightMat, -painter.transform.angle);
-    vec3.transformMat3(lightdir, lightdir, lightMat);
-    gl.uniform3fv(program.u_lightdir, lightdir);
+    setMatrix(program, painter, coord, tile, layer);
+    setLighting(program, painter, map);
 
     bucket.setUniforms(gl, 'extrusion', program, layer, {zoom: painter.transform.zoom});
 
@@ -226,35 +212,18 @@ function drawExtrusionStroke(painter, source, layer, coord) {
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
-        image ? 'extrusionpattern' : 'extrusion',
+        // TODO extrusion pattern with antialias & no color specified?
+        (image && !color) ? 'extrusionpattern' : 'extrusion',
         programOptions.defines.concat(outlineDefines),
         programOptions.vertexPragmas,
         programOptions.fragmentPragmas
     );
 
-    var lightdir = [-0.5, -0.6, 0.9];
-    var lightMat = mat3.create();
-    if (true) mat3.fromRotation(lightMat, -painter.transform.angle);
-    vec3.transformMat3(lightdir, lightdir, lightMat);
-    gl.uniform3fv(outlineProgram.u_lightdir, lightdir);
-
-    // Draw extrusion rectangle.
-    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
-
-    gl.uniformMatrix4fv(outlineProgram.u_matrix, false, mat4.scale(
-        mat4.create(),
-        painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['extrusion-translate'],
-            layer.paint['extrusion-translate-anchor']
-        ),
-        [1, 1, zScale, 1])
-    );
+    setLighting(outlineProgram, painter, map);
+    setMatrix(outlineProgram, painter, coord, tile, layer);
 
     bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
 
-    gl.uniform2f(outlineProgram.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
     if (color) gl.uniform4fv(outlineProgram.u_outline_color, color);
 
     painter.enableTileClippingMask(coord);
@@ -265,6 +234,31 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
+
+function setMatrix(program, painter, coord, tile, layer) {
+    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+
+    painter.gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
+        mat4.create(),
+        painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint['extrusion-translate'],
+            layer.paint['extrusion-translate-anchor']
+        ),
+        [1, 1, zScale, 1])
+    );
+}
+
+function setLighting(program, painter, map) {
+    var _ld = map._light.lightDirection,
+        lightdir = [_ld.x, _ld.y, _ld.z];
+    var lightMat = mat3.create();
+    if (map._light.lightAnchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
+    vec3.transformMat3(lightdir, lightdir, lightMat);
+    painter.gl.uniform3fv(program.u_lightdir, lightdir);
+}
+
 
 function setPattern(image, tile, coord, painter, program, layer) {
     var gl = painter.gl;
@@ -293,19 +287,6 @@ function setPattern(image, tile, coord, painter, program, layer) {
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
-
-    // Draw extrusion rectangle.
-    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
-    gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
-        mat4.create(),
-        painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['extrusion-translate'],
-            layer.paint['extrusion-translate-anchor']
-        ),
-        [1, 1, zScale, 1])
-    );
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);
