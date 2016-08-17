@@ -72,7 +72,7 @@
     "remark": "4.2.2",
     "remark-html": "3.0.0",
     "sinon": "^1.15.4",
-    "st": "^1.0.0",
+    "st": "^1.2.0",
     "tap": "^5.7.0",
     "through": "^2.3.7",
     "transform-loader": "^0.2.3",
@@ -101,12 +101,12 @@
     "build-min": "browserify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "watch-min": "watchify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl -o dist/mapbox-gl.js -v",
     "build-token": "browserify debug/access-token-src.js --debug --transform envify > debug/access-token.js",
+    "start": "npm run build-token && npm run watch-dev & st -nc -p 9966 -i index.html . & wait",
     "build-docs": "documentation build --github --format html -c documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
+    "start-docs": "npm run build-min && npm run build-docs && jekyll serve -w",
     "lint": "eslint js test bench server.js docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
-    "start-docs": "npm run build-min && npm run build-docs && jekyll serve -w",
-    "start": "node server.js",
     "test-suite": "node test/render.test.js && node test/query.test.js",
     "test": "npm run lint && tap --reporter dot test/js/*/*.js test/build/webpack.test.js"
   }
