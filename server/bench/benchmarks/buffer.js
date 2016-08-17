@@ -4,13 +4,13 @@ var VT = require('vector-tile');
 var Protobuf = require('pbf');
 var assert = require('assert');
 
-var WorkerTile = require('../../js/source/worker_tile');
-var Worker = require('../../js/source/worker');
-var ajax = require('../../js/util/ajax');
-var Style = require('../../js/style/style');
-var util = require('../../js/util/util');
-var Evented = require('../../js/util/evented');
-var config = require('../../js/util/config');
+var WorkerTile = require('../../../js/source/worker_tile');
+var Worker = require('../../../js/source/worker');
+var ajax = require('../../../js/util/ajax');
+var Style = require('../../../js/style/style');
+var util = require('../../../js/util/util');
+var Evented = require('../../../js/util/evented');
+var config = require('../../../js/util/config');
 var coordinates = require('../lib/coordinates');
 var formatNumber = require('../lib/format_number');
 

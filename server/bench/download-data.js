@@ -5,7 +5,7 @@
 var fs = require('fs');
 var http = require('http');
 
-var filePath = './bench/data/naturalearth-land.json';
+var filePath = './server/bench/data/naturalearth-land.json';
 
 fs.access(filePath, fs.F_OK, function(err) {
     if (!err) return; // the file exists
