@@ -94,7 +94,7 @@
     "build-token": "browserify debug/access-token-src.js --debug -t envify > debug/access-token.js",
     "watch-bench": "watchify bench/index.js --plugin [minifyify --no-map] -t [babelify --presets react] -t unassertify -t envify -o bench/bench.js -v",
     "download-bench-data": "node bench/download-data.js",
-    "start-server": "st -nc -p 9966 -i index.html .",
+    "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
     "start": "npm run build-token && npm run download-bench-data && npm run watch-dev & npm run watch-bench & npm run start-server & wait",
     "start-debug": "npm run build-token && npm run watch-dev & npm run start-server & wait",
     "start-bench": "npm run build-token && npm run download-bench-data && npm run watch-bench & npm run start-server & wait",
