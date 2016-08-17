@@ -1,9 +1,9 @@
 'use strict';
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-var util = require('../js/util/util');
+var util = require('../../js/util/util');
 var async = require('async');
-var mapboxgl = require('../js/mapbox-gl');
+var mapboxgl = require('../../js/mapbox-gl');
 var Clipboard = require('clipboard');
 
 var BenchmarksView = React.createClass({

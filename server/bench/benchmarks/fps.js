@@ -1,7 +1,7 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
+var Evented = require('../../../js/util/evented');
+var util = require('../../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var measureFramerate = require('../lib/measure_framerate');
 

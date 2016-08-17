@@ -1,22 +1,12 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
+var Evented = require('../../../js/util/evented');
+var util = require('../../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var setDataPerf = require('../lib/set_data_perf');
 var setupGeoJSONMap = require('../lib/setup_geojson_map');
 
-var featureCollection = {
-    'type': 'FeatureCollection',
-    'features': [{
-        'type': 'Feature',
-        'properties': {},
-        'geometry': {
-            'type': 'Point',
-            'coordinates': [ -77.032194, 38.912753 ]
-        }
-    }]
-};
+var featureCollection = require('../data/naturalearth-land.json');
 
 module.exports = function(options) {
     var evented = util.extend({}, Evented);
@@ -34,7 +24,7 @@ module.exports = function(options) {
 
         var source = map.getSource('geojson');
 
-        evented.fire('log', {message: 'loading small feature collection'});
+        evented.fire('log', {message: 'loading large feature collection'});
         setDataPerf(source, 50, featureCollection, function(err, ms) {
             if (err) return evented.fire('error', {error: err});
             evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});

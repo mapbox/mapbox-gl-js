@@ -25,41 +25,42 @@
 <body>
 <div id='map'></div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='mapbox-gl.js'></script>
 <script src='access-token.js'></script>
 
 <script>
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
-    center: [-77.01866, 38.888],
+    center: [-70.751953125, 43.38904828677382],
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
 });
 
-function addRandomMarker() {
-    var bounds = map.getBounds();
-    var s = bounds.getSouth();
-    var n = bounds.getNorth();
-    var w = bounds.getWest();
-    var e = bounds.getEast();
-
-    var lng = w + (e - w) * Math.random();
-    var lat = s + (n - s) * Math.random();
-
-    var marker = new mapboxgl.Marker()
-        .setLngLat([lng, lat])
-        .addTo(map);
-
-    marker.getElement().onclick = function(e) {
-        alert('Hello world');
-        e.stopPropagation();
-    };
-}
-
-for (var i = 0; i < 100; i++) addRandomMarker();
-
 map.addControl(new mapboxgl.Navigation());
+
+map.on('load', function () {
+    map.addSource("points", {
+        "type": "geojson",
+        "data": 'node_modules/mapbox-gl-test-suite/data/chinese.geojson'
+    });
+
+    map.addLayer({
+        "id": "points",
+        "type": "symbol",
+        "source": "points",
+        "layout": {
+            "icon-image": "{icon}-15",
+            "text-field": "{name}",
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top",
+            "text-allow-overlap": true,
+            "icon-allow-overlap": true
+        }
+    });
+});
+
 </script>
 
 </body>
