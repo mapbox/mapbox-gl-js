@@ -206,7 +206,7 @@ var benchmarks = {
 };
 
 var filteredBenchmarks = {};
-var benchmarkName = URL.parse(window.location.toString()).pathname.split('/')[2];
+var benchmarkName = window.location.hash.substr(1);
 if (!benchmarkName) {
     filteredBenchmarks = benchmarks;
 } else {
