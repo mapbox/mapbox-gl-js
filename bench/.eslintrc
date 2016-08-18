@@ -3,5 +3,9 @@
     "ecmaFeatures": {
       "jsx": true
     }
+  },
+  "globals": {
+    "React": false,
+    "ReactDOM": false
   }
 }
