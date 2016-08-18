@@ -87,19 +87,19 @@
   },
   "scripts": {
     "build-dev": "browserify js/mapbox-gl.js --debug --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
-    "watch-dev": "watchify js/mapbox-gl.js --debug --standalone mapboxgl -o dist/mapbox-gl-dev.js -v",
-    "build-min": "browserify js/mapbox-gl.js --debug -t unassertify --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
-    "build-token": "browserify debug/access-token-src.js --debug -t envify > debug/access-token.js",
-    "watch-bench": "node bench/download-data.js && watchify bench/index.js --plugin [minifyify --no-map] -t [babelify --presets react] -t unassertify -t envify -o bench/bench.js -v",
+    "watch-dev": "watchify js/mapbox-gl.js --debug --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
+    "build-min": "browserify js/mapbox-gl.js --debug --transform unassertify --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
+    "build-token": "browserify debug/access-token.js --debug --transform envify > debug/access-token-generated.js",
+    "watch-bench": "node bench/download-data.js && watchify bench/index.js --plugin [minifyify --no-map] --transform [babelify --presets react] --transform unassertify --transform envify --outfile bench/index-generated.js --verbose",
     "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
 
     "start": "run-p build-token watch-dev watch-bench start-server",
     "start-debug": "run-p build-token watch-dev start-server",
     "start-bench": "run-p build-token watch-bench start-server",
 
-    "build-docs": "documentation build --github --format html -c documentation.yml --theme ./docs/_theme --output docs/api/",
+    "build-docs": "documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
-    "start-docs": "npm run build-min && npm run build-docs && jekyll serve -w",
+    "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
 
     "lint": "eslint  --ignore-path .gitignore js test bench docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
