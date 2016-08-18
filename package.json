@@ -39,7 +39,6 @@
     "whoots-js": "^2.0.0"
   },
   "devDependencies": {
-    "async": "^2.0.1",
     "babel-preset-react": "^6.11.1",
     "babelify": "^7.3.0",
     "benchmark": "~2.1.0",
@@ -74,7 +73,6 @@
     "sinon": "^1.15.4",
     "st": "^1.0.0",
     "tap": "^5.7.0",
-    "through": "^2.3.7",
     "transform-loader": "^0.2.3",
     "unist-util-visit": "1.1.0",
     "vinyl": "1.1.1",
