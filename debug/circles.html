@@ -5,7 +5,7 @@
     <meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -49,7 +49,7 @@
     <em>Waiting for data...</em>
 </div>
 
-<script src='../dist/mapbox-gl-dev.js'></script>
+<script src='/dist/mapbox-gl-dev.js'></script>
 <script src='access-token.js'></script>
 
 <script>
@@ -68,7 +68,7 @@ map.on('load', function() {
 
     map.addSource('circles', {
         "type": "geojson",
-        "data": "../node_modules/mapbox-gl-test-suite/data/places.geojson"
+        "data": "/node_modules/mapbox-gl-test-suite/data/places.geojson"
     });
 
     map.addLayer({
