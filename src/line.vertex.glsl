@@ -31,7 +31,11 @@ varying vec2 v_normal;
 varying vec2 v_linewidth;
 varying float v_gamma_scale;
 
+#pragma mapbox: define lowp vec4 color
+
 void main() {
+    #pragma mapbox: initialize lowp vec4 color
+
     vec2 a_extrude = a_data.xy - 128.0;
     float a_direction = mod(a_data.z, 4.0) - 1.0;
 

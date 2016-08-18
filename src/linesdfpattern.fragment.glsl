@@ -6,7 +6,6 @@ precision mediump float;
 #define highp
 #endif
 
-uniform lowp vec4 u_color;
 uniform lowp float u_opacity;
 
 uniform float u_blur;
@@ -20,7 +19,11 @@ varying vec2 v_tex_a;
 varying vec2 v_tex_b;
 varying float v_gamma_scale;
 
+#pragma mapbox: define lowp vec4 color
+
 void main() {
+    #pragma mapbox: initialize lowp vec4 color
+
     // Calculate the distance of the pixel from the line in pixels.
     float dist = length(v_normal) * v_linewidth.s;
 
@@ -35,7 +38,7 @@ void main() {
     float sdfdist = mix(sdfdist_a, sdfdist_b, u_mix);
     alpha *= smoothstep(0.5 - u_sdfgamma, 0.5 + u_sdfgamma, sdfdist);
 
-    gl_FragColor = u_color * (alpha * u_opacity);
+    gl_FragColor = color * (alpha * u_opacity);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
