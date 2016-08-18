@@ -4,7 +4,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var util = require('../js/util/util');
-var async = require('async');
 var mapboxgl = require('../js/mapbox-gl');
 var Clipboard = require('clipboard');
 var URL = require('url');
@@ -116,15 +115,16 @@ var BenchmarksView = React.createClass({
 
     componentDidMount: function() {
         var that = this;
-        setTimeout(function() {
-            async.eachSeries(
-                Object.keys(that.props.benchmarks),
-                that.runBenchmark,
-                function() {
-                    that.setState({state: 'ended'});
-                    that.scrollToBenchmark(Object.keys(that.props.benchmarks)[0]);
-                }
-            );
+        var benchmarks = Object.keys(that.props.benchmarks);
+
+        setTimeout(function next() {
+            var bench = benchmarks.shift();
+            if (!bench) return;
+            that.scrollToBenchmark(bench);
+            that.runBenchmark(bench, function () {
+                that.setState({state: 'ended'});
+                next();
+            });
         }, 500);
     },
 
