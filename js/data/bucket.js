@@ -339,8 +339,11 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
         this._featureIndexToArrayRange[2 * featureIndex + 1] = endVertex;
     }
 
+    // handle edge case where there's nothing to do
+    if (endVertex <= startVertex) return;
+
     var startGroup = Math.floor(startVertex / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
-    var endGroup = Math.floor(endVertex / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
+    var endGroup = Math.floor((endVertex - 1) / ArrayGroup.MAX_VERTEX_ARRAY_LENGTH);
     for (var l = 0; l < this.childLayers.length; l++) {
         var layer = this.childLayers[l];
         var groups = this.arrayGroups[interfaceName];
@@ -350,8 +353,16 @@ Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties,
             var length = group.layoutVertexArray.length;
             var paintArray = group.paintVertexArrays[layer.id];
 
+            // start vertex index (inclusive)
             var start = g === startGroup ? startVertex % ArrayGroup.MAX_VERTEX_ARRAY_LENGTH : 0;
-            var end = g === endGroup ? endVertex % (1 + ArrayGroup.MAX_VERTEX_ARRAY_LENGTH) : length;
+            // end vertex index (exclusive)
+            var end;
+            if (g === endGroup) {
+                end = endVertex % ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
+                if (end === 0) end = ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
+            } else {
+                end = length;
+            }
             paintArray.resize(end);
 
             var attributes = this.paintAttributes[interfaceName][layer.id].attributes;
