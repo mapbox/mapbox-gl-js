@@ -37,14 +37,7 @@ ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, 
 
 ExtrusionBucket.prototype.programInterfaces = {
     extrusion: {
-        vertexBuffer: true,
-        elementBuffer: true,
-        elementBufferComponents: 3,
-        elementBuffer2: true,
-        elementBuffer2Components: 2,
-
-
-        layoutAttributes: [{
+        layoutVertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -56,7 +49,10 @@ ExtrusionBucket.prototype.programInterfaces = {
             name: 'a_edgedistance',
             components: 1,
             type: 'Int16'
-        }],
+        }]),
+        elementArrayType: new Bucket.ElementArrayType(3),
+        elementArrayType2: new Bucket.ElementArrayType(2),
+
         paintAttributes: [{
             name: 'a_minH',
             components: 1,
@@ -104,10 +100,10 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
         numVertices += polygon[k].length;
     }
 
-    var group = this.makeRoomFor('extrusion', numVertices);
+    var group = this.prepareArrayGroup('extrusion', numVertices);
     var flattened = [];
     var holeIndices = [];
-    var startIndex = group.layout.vertex.length;
+    var startIndex = group.layoutVertexArray.length;
 
     var indices = [];
 
@@ -122,13 +118,13 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
         for (var v = 0; v < ring.length; v++) {
             var v1 = ring[v];
 
-            var topIndex = this.addExtrusionVertex(group.layout.vertex, v1[0], v1[1], 0, 0, 1, 1, 0);
+            var topIndex = this.addExtrusionVertex(group.layoutVertexArray, v1[0], v1[1], 0, 0, 1, 1, 0);
             indices.push(topIndex);
 
             if (v >= 1) {
                 var v2 = ring[v - 1];
                 var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
-                var vertexArray = group.layout.vertex;
+                var vertexArray = group.layoutVertexArray;
 
                 var bottomRight = this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
                 this.addExtrusionVertex(vertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
@@ -139,14 +135,14 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
                 this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
                 this.addExtrusionVertex(vertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
 
-                group.layout.element.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                group.layout.element.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
                 if (!isBoundaryEdge(v1, ring[v - 1])) {
-                    group.layout.element2.emplaceBack(bottomRight, bottomRight + 1);  // "right"
-                    group.layout.element2.emplaceBack(bottomRight + 2, bottomRight + 3);  // "left"
-                    group.layout.element2.emplaceBack(bottomRight, bottomRight + 2);  // bottom
-                    group.layout.element2.emplaceBack(bottomRight + 1, bottomRight + 3);  // top
+                    group.elementArray2.emplaceBack(bottomRight, bottomRight + 1);  // "right"
+                    group.elementArray2.emplaceBack(bottomRight + 2, bottomRight + 3);  // "left"
+                    group.elementArray2.emplaceBack(bottomRight, bottomRight + 2);  // bottom
+                    group.elementArray2.emplaceBack(bottomRight + 1, bottomRight + 3);  // top
                 }
             }
 
@@ -159,7 +155,7 @@ ExtrusionBucket.prototype.addPolygon = function(polygon, feature) {
     var triangleIndices = earcut(flattened, holeIndices);
 
     for (var i = 0; i < triangleIndices.length - 2; i += 3) {
-        group.layout.element.emplaceBack(indices[triangleIndices[i]],
+        group.elementArray.emplaceBack(indices[triangleIndices[i]],
                 indices[triangleIndices[i + 1]],
                 indices[triangleIndices[i + 2]]);
     }

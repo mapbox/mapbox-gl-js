@@ -14,7 +14,7 @@ function StyleDeclaration(reference, value) {
     this.json = JSON.stringify(this.value);
 
     var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
-    this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
+    this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue, reference);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
     this.isZoomConstant = this.calculate.isZoomConstant;
 

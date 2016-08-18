@@ -314,18 +314,28 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
 };
 
 Painter.prototype.saveTexture = function(texture) {
-    var textures = this.reusableTextures[texture.size];
-    if (!textures) {
-        this.reusableTextures[texture.size] = [texture];
+    var width = texture.width ? texture.width : texture.size,
+        height = texture.height ? texture.height : texture.size;
+    var widthTextures = this.reusableTextures[width];
+    if (!widthTextures) {
+        this.reusableTextures[width] = {};
+        this.reusableTextures[width][height] = [texture];
     } else {
-        textures.push(texture);
+        var textures = widthTextures[height];
+        if (!textures) {
+            widthTextures[height] = [texture];
+        } else {
+            textures.push(texture);
+        }
     }
 };
 
-
-Painter.prototype.getTexture = function(size) {
-    var textures = this.reusableTextures[size];
-    return textures && textures.length > 0 ? textures.pop() : null;
+Painter.prototype.getTexture = function(width, height) {
+    var widthTextures = this.reusableTextures[width];
+    if (widthTextures) {
+        var textures = widthTextures[height || width];
+        return textures && textures.length > 0 ? textures.pop() : null;
+    }
 };
 
 Painter.prototype.lineWidth = function(width) {

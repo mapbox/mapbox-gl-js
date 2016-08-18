@@ -13,7 +13,6 @@ module.exports = draw;
 function draw(painter, source, layer, coords) {
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
-
     painter.depthMask(true);
 
     // Create a new texture to which to render the extrusion layer. This approach
@@ -57,7 +56,7 @@ function PrerenderedExtrusionLayer(gl, painter, layer) {
 PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     var gl = this.gl;
 
-    this.texture = this.painter.getTexture(this.width);
+    this.texture = this.painter.getTexture(this.width, this.height);
 
     gl.activeTexture(gl.TEXTURE1);
 
@@ -102,6 +101,7 @@ PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
         if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
         this.painter.preFbos[this.width][this.height] = [this.fbo];
     }
+    this.painter.saveTexture(this.texture);
 };
 
 PrerenderedExtrusionLayer.prototype.TextureBoundsArray = new StructArrayType({
@@ -184,8 +184,8 @@ function drawExtrusion(painter, source, layer, coord) {
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element, group.paint[layer.id]);
-        gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
+        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
+        gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
     }
 }
 
@@ -226,8 +226,8 @@ function drawExtrusionStroke(painter, source, layer, coord) {
 
     for (var k = 0; k < bufferGroups.length; k++) {
         var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layout.vertex, group.layout.element2, group.paint[layer.id]);
-        gl.drawElements(gl.LINES, group.layout.element2.length * 2, gl.UNSIGNED_SHORT, 0);
+        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
+        gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
 
