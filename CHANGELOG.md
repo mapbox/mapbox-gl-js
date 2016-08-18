@@ -1,3 +1,15 @@
+## 0.22.1 (August 18 2016)
+
+#### New Features & Improvements
+
+ * Reduce library size by using minified version of style specification #2998
+ * Add a warning when rendering artifacts occur due to too many symbols or glyphs being rendered in a tile #2966
+
+#### Bugfixes
+
+ * Fix bug causing exception to be thrown by `Map#querySourceFeatures` #3022
+ * Fix bug causing `Map#loaded` to return true while there are outstanding tile updates #2847
+
 ## 0.22.0 (August 11 2016)
 
 #### Breaking Changes
