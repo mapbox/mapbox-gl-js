@@ -373,14 +373,15 @@ test('Map', function(t) {
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
         t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-            [ -70.31249999999976, -57.32652122521695 ],
-            [ 70.31249999999977, 57.326521225216965 ] ]));
+            [ -70.31249999999976, 57.326521225216965 ],
+            [ 70.31249999999977, -57.32652122521695 ] ]));
 
         t.test('rotated bounds', function(t) {
             var map = createMap({ zoom: 1, bearing: 45 });
-            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-                [ -49.718445552178764, -44.44541580601936 ],
-                [ 49.71844555217925, 44.445415806019355 ] ]));
+            t.deepEqual(
+                toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
+                toFixed(map.getBounds().toArray())
+            );
             t.end();
         });
         t.end();
@@ -398,18 +399,20 @@ test('Map', function(t) {
         t.test('constrains map bounds', function (t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
-            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-                [-112.5000192114, 24.2068800000],
-                [-79.4531207886, 50.0642000000]]));
+            t.deepEqual(
+                toFixed([[-130.4297000000, 60.2398142283], [-61.5234400000, 7.0136641176]]),
+                toFixed(map.getBounds().toArray())
+            );
             t.end();
         });
 
         t.test('when no argument is passed, map bounds constraints are removed', function (t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
-            t.deepEqual(toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray()), toFixed([
-                [-166.28906999999964, -27.683527055417144],
-                [-25.664070000000066, 73.8248206696509]]));
+            t.deepEqual(
+                toFixed([[-166.28906999999964, 73.8248206697], [-25.664070000000066, -27.6835270554]]),
+                toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray())
+            );
             t.end();
         });
 
