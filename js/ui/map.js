@@ -52,8 +52,7 @@ var defaultOptions = {
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
 
-    trackResize: true,
-    workerCount: Math.max(browser.hardwareConcurrency - 1, 1)
+    trackResize: true
 };
 
 /**
@@ -114,7 +113,6 @@ var defaultOptions = {
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
- * @param {number} [options.workerCount=navigator.hardwareConcurrency - 1] The number of WebWorkers that Mapbox GL JS should use to process vector tile data.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -128,15 +126,10 @@ var Map = module.exports = function(options) {
 
     options = util.extend({}, defaultOptions, options);
 
-    if (options.workerCount < 1) {
-        throw new Error('workerCount must an integer greater than or equal to 1.');
-    }
-
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
     this._preserveDrawingBuffer = options.preserveDrawingBuffer;
     this._trackResize = options.trackResize;
-    this._workerCount = options.workerCount;
     this._bearingSnap = options.bearingSnap;
 
     if (typeof options.container === 'string') {
@@ -641,7 +634,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop, this._workerCount);
+            this.style = new Style(style, this.animationLoop);
         }
 
         this.style

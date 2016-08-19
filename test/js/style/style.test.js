@@ -1232,10 +1232,3 @@ test('Style#addSourceType', function (t) {
 
     t.end();
 });
-
-test('Style creates correct number of workers', function(t) {
-    var style = new Style(createStyleJSON(), null, 3);
-    t.equal(style.dispatcher.actors.length, 3);
-    t.ok(style);
-    t.end();
-});

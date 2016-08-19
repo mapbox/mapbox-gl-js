@@ -18,15 +18,13 @@ var QueryFeatures = require('../source/query_features');
 var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
-var WorkerPool = require('../util/worker_pool');
-
-var workerPool = new WorkerPool();
+var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, workerCount) {
+function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(workerPool, workerCount || 1, this);
+    this.dispatcher = new Dispatcher(getWorkerPool(), this);
     this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 

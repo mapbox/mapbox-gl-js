@@ -13,8 +13,7 @@ test('Dispatcher', function (t) {
 
         var releaseCalled = [];
         var workerPool = {
-            acquire: function (id, count) {
-                t.equal(count, 2);
+            acquire: function () {
                 return workers;
             },
             release: function (id) {
@@ -22,7 +21,7 @@ test('Dispatcher', function (t) {
             }
         };
 
-        dispatcher = new Dispatcher(workerPool, 2, {});
+        dispatcher = new Dispatcher(workerPool, {});
         t.same(dispatcher.actors.map(function (actor) { return actor.target; }), workers);
         dispatcher.remove();
         t.equal(dispatcher.actors.length, 0, 'actors discarded');
@@ -37,10 +36,14 @@ test('Dispatcher', function (t) {
         var ids = [];
         function Actor (target, parent, mapId) { ids.push(mapId); }
 
+        var previousWorkerCount = WorkerPool.WORKER_COUNT;
+        WorkerPool.WORKER_COUNT = 1;
+
         var workerPool = new WorkerPool();
-        var dispatchers = [new Dispatcher(workerPool, 1, {}), new Dispatcher(workerPool, 1, {})];
+        var dispatchers = [new Dispatcher(workerPool, {}), new Dispatcher(workerPool, {})];
         t.same(ids, dispatchers.map(function (d) { return d.id; }));
 
+        WorkerPool.WORKER_COUNT = previousWorkerCount;
         t.end();
     });
 
