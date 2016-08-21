@@ -1,9 +1,13 @@
 'use strict';
 
+var browser = require('./util/browser');
+
 // jshint -W079
 var mapboxgl = module.exports = {};
 
 mapboxgl.version = require('../package.json').version;
+mapboxgl.workerCount = Math.max(browser.hardwareConcurrency - 1, 1);
+
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Control = require('./ui/control/control');

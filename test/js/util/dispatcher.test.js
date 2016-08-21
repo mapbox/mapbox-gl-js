@@ -4,7 +4,6 @@ var test = require('tap').test;
 var proxyquire = require('proxyquire');
 var Dispatcher = require('../../../js/util/dispatcher');
 var WebWorker = require('../../../js/util/web_worker');
-var WorkerPool = require('../../../js/util/worker_pool');
 
 test('Dispatcher', function (t) {
     t.test('requests and releases workers from pool', function (t) {
@@ -31,19 +30,18 @@ test('Dispatcher', function (t) {
     });
 
     test('creates Actors with unique map id', function (t) {
-        var Dispatcher = proxyquire('../../../js/util/dispatcher', { './actor': Actor });
+        var Dispatcher = proxyquire('../../../js/util/dispatcher', {'./actor': Actor });
+        var WorkerPool = proxyquire('../../../js/util/worker_pool', {
+            '../mapbox-gl': { workerCount: 1 }
+        });
 
         var ids = [];
         function Actor (target, parent, mapId) { ids.push(mapId); }
-
-        var previousWorkerCount = WorkerPool.WORKER_COUNT;
-        WorkerPool.WORKER_COUNT = 1;
 
         var workerPool = new WorkerPool();
         var dispatchers = [new Dispatcher(workerPool, {}), new Dispatcher(workerPool, {})];
         t.same(ids, dispatchers.map(function (d) { return d.id; }));
 
-        WorkerPool.WORKER_COUNT = previousWorkerCount;
         t.end();
     });
 

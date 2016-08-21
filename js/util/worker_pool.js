@@ -2,23 +2,28 @@
 
 var assert = require('assert');
 var WebWorker = require('./web_worker');
-var browser = require('./browser');
 
 module.exports = WorkerPool;
 
-WorkerPool.WORKER_COUNT = Math.max(browser.hardwareConcurrency - 1, 1);
-
+/**
+ * Constructs a worker pool.
+ * @private
+ */
 function WorkerPool() {
-    this.workerCount = WorkerPool.WORKER_COUNT;
     this.active = {};
 }
 
 WorkerPool.prototype = {
     acquire: function (mapId) {
         if (!this.workers) {
-            assert(typeof this.workerCount === 'number');
+            // Lazily look up the value of mapboxgl.workerCount.  This allows
+            // client code a chance to set it while circumventing cyclic
+            // dependency problems
+            var workerCount = require('../mapbox-gl').workerCount;
+            assert(typeof workerCount === 'number' && workerCount < Infinity);
+
             this.workers = [];
-            while (this.workers.length < this.workerCount) {
+            while (this.workers.length < workerCount) {
                 this.workers.push(new WebWorker());
             }
         }
