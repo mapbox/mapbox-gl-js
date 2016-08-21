@@ -12,8 +12,10 @@
     </style>
 </head>
 
-<div class='map' id='map1'></div>
-<div class='map' id='map2'></div>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
+<div class='map'></div>
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access-token-generated.js'></script>
@@ -27,6 +29,10 @@ var style = {
             "url": "mapbox://mapbox.satellite",
             "tileSize": 256
         },
+        "streets": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v7"
+        }
     },
     "layers": [{
         "id": "background",
@@ -38,28 +44,32 @@ var style = {
         "id": "satellite",
         "type": "raster",
         "source": "satellite"
+    }, {
+        "id": "road",
+        "type": "line",
+        "source": "streets",
+        "source-layer": "road",
+        "paint": { "line-color": "rgb(55,89,144)",  "line-width": 4  }
     }]
 };
 
-var map1 = new mapboxgl.Map({
-  container: 'map1',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: style,
-  hash: false
-});
+function addMap (container) {
+  var map = new mapboxgl.Map({
+    container: container,
+    minZoom: 14,
+    zoom: 15.5,
+    center: [-122.514426, 37.562984],
+    bearing: -96,
+    style: style,
+    hash: false
+  });
+  map.on('click', popup.bind(map))
+}
 
-var map2 = new mapboxgl.Map({
-  container: 'map2',
-  minZoom: 14,
-  zoom: 17,
-  center: [-122.514426, 37.562984],
-  bearing: -96,
-  style: style,
-  hash: false
-});
+var containers = document.querySelectorAll('.map')
+for (var i = 0; i < containers.length; i++) {
+    addMap(containers[i]);
+}
 
 function popup(e) {
     if (e.originalEvent.shiftKey) return;
@@ -68,10 +78,6 @@ function popup(e) {
         .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
         .addTo(this);
 }
-
-map1.on('click', popup.bind(map1));
-map2.on('click', popup.bind(map2));
-
 </script>
 
 </body>
