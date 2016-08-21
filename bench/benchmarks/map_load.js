@@ -14,7 +14,13 @@ module.exports = function(options) {
     var loaded = 0;
     var start = Date.now();
     for (var i = 0; i < mapsOnPage; i++) {
-        var map = options.createMap({});
+        var map = options.createMap({
+            style: {
+                version: 8,
+                sources: {},
+                layers: []
+            }
+        });
         map.on('load', onload.bind(null, map));
         map.on('error', function (err) {
             evented.fire('error', err);
