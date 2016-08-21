@@ -11,7 +11,7 @@ test('mapboxgl', function(t) {
     });
 
     t.test('.workerCount defaults to hardwareConcurrency - 1', function (t) {
-        var mapboxgl = proxyquire('../../../js/mapbox-gl', {
+        var mapboxgl = proxyquire('../../js/mapbox-gl', {
             './util/browser': { hardwareConcurrency: 15 }
         });
         t.equal(mapboxgl.workerCount, 14);
