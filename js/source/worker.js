@@ -35,13 +35,13 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(mapId, layers) {
-        var styleLayers = this.layers[mapId] = {};
+    'set layers': function(mapId, layerDefinitions) {
+        var layers = this.layers[mapId] = {};
 
         // Filter layers and create an id -> layer map
         var childLayerIndicies = [];
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
+        for (var i = 0; i < layerDefinitions.length; i++) {
+            var layer = layerDefinitions[i];
             if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
                 if (layer.ref) {
                     childLayerIndicies.push(i);
@@ -53,47 +53,47 @@ util.extend(Worker.prototype, {
 
         // Create an instance of StyleLayer per layer
         for (var j = 0; j < childLayerIndicies.length; j++) {
-            setLayer(layers[childLayerIndicies[j]]);
+            setLayer(layerDefinitions[childLayerIndicies[j]]);
         }
 
         function setLayer(serializedLayer) {
             var styleLayer = StyleLayer.create(
                 serializedLayer,
-                serializedLayer.ref && styleLayers[serializedLayer.ref]
+                serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
-            styleLayers[styleLayer.id] = styleLayer;
+            layers[styleLayer.id] = styleLayer;
         }
 
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'update layers': function(mapId, layers) {
+    'update layers': function(mapId, layerDefinitions) {
         var id;
         var layer;
 
-        var styleLayers = this.layers[mapId];
+        var layers = this.layers[mapId];
 
         // Update ref parents
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (layer.ref) updateLayer(layer);
         }
 
         // Update ref children
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (!layer.ref) updateLayer(layer);
         }
 
         function updateLayer(layer) {
-            var refLayer = styleLayers[layer.ref];
-            if (styleLayers[layer.id]) {
-                styleLayers[layer.id].set(layer, refLayer);
+            var refLayer = layers[layer.ref];
+            if (layers[layer.id]) {
+                layers[layer.id].set(layer, refLayer);
             } else {
-                styleLayers[layer.id] = StyleLayer.create(layer, refLayer);
+                layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            styleLayers[layer.id].updatePaintTransitions({}, {transition: false});
+            layers[layer.id].updatePaintTransitions({}, {transition: false});
         }
 
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
@@ -144,11 +144,11 @@ util.extend(Worker.prototype, {
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type]) {
             // simple accessor object for passing to WorkerSources
-            var styleLayers = {
+            var layers = {
                 getLayers: function () { return this.layers[mapId]; }.bind(this),
                 getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
             };
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type](this.actor, styleLayers);
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type](this.actor, layers);
         }
 
         return this.workerSources[mapId][type];
