@@ -8,7 +8,7 @@ var util = require('../../js/util/util');
 test('builds with webpack', function(t) {
 
     var compiler = webpack(util.extend(require('../../webpack.config.example'), {
-        entry: './js/mapbox-gl.js',
+        entry: './test/fixtures/webpack-entry.js',
         output: {
             path: '/',
             filename: 'webpack.js'
