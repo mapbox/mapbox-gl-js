@@ -29,6 +29,7 @@ function Painter(gl, transform) {
     this.preFbos = {};
 
     this.frameHistory = new FrameHistory();
+    this.light = {};
 
     this.setup();
 
@@ -108,7 +109,9 @@ Painter.prototype.setup = function() {
  * Set the lighting properties (used for extrusions).
  */
 Painter.prototype.setLighting = function(lightOptions) {
-    this.light = lightOptions;
+    for (var key in lightOptions) {
+        this.light[key] = lightOptions[key];
+    }
 };
 
 /*
