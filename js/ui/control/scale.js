@@ -12,7 +12,7 @@ module.exports = Scale;
  * @class Scale
  * @param {Object} [options]
  * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
- * @param {integer} [options.maxWidth='150'] A number indicating the maximum length of the scale control in pixels.
+ * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
  * @example
  * map.addControl(new mapboxgl.Scale({position: 'top-left'})); // position is optional
  * map.addControl(new mapboxgl.Scale({maxWidth: 80})); //maxWidth is optional
@@ -45,10 +45,8 @@ function updateScale(map, scale, options) {
     // container with maximum length (Default) as 100px.
     // Using spherical law of cosines approximation, the real distance is
     // found between the two coordinates.
-    var maxWidth = 100;
-    if (options && options.maxWidth) {
-        maxWidth = options.maxWidth;
-    }
+    var maxWidth = options && options.maxWidth || 100;
+
     var y = map._container.clientHeight / 2;
     var maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
 
