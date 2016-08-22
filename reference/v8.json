@@ -157,17 +157,17 @@
     },
     "maxzoom": {
       "type": "number",
-      "default": 14,
+      "default": 18,
       "doc": "Maximum zoom level at which to create vector tiles (higher means greater detail at high zoom levels)."
     },
     "buffer": {
       "type": "number",
-      "default": 64,
-      "doc": "Tile buffer size on each side (higher means fewer rendering artifacts near tile edges but slower performance)."
+      "default": 128,
+      "doc": "Tile buffer size on each side (measured in 1/512ths of a tile; higher means fewer rendering artifacts near tile edges but slower performance)."
     },
     "tolerance": {
       "type": "number",
-      "default": 3,
+      "default": 0.375,
       "doc": "Douglas-Peucker simplification tolerance (higher means simpler geometries and faster performance)."
     },
     "cluster": {
@@ -177,8 +177,8 @@
     },
     "clusterRadius": {
       "type": "number",
-      "default": 400,
-      "doc": "Radius of each cluster when clustering points, relative to 4096 tile."
+      "default": 50,
+      "doc": "Radius of each cluster when clustering points, measured in 1/512ths of a tile."
     },
     "clusterMaxZoom": {
       "type": "number",
