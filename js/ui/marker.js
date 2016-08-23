@@ -5,7 +5,6 @@ module.exports = Marker;
 
 var DOM = require('../util/dom');
 var util = require('../util/util');
-var Evented = require('../util/evented');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
 var Popup = require('./popup');
@@ -33,7 +32,7 @@ function Marker(element, options) {
     this._update = this._update.bind(this);
 }
 
-Marker.prototype = util.inherit(Evented, {
+Marker.prototype = {
     /**
      * Attaches the marker to a map
      * @param {Map} map
@@ -151,7 +150,7 @@ Marker.prototype = util.inherit(Evented, {
 
     _openPopup: function(e) {
         // prevent event from bubbling up to the map canvas
-        // e.stopPropagation();
+        e.stopPropagation();
         if (!this._popup || !this._map) return;
 
         if (!this._popup._map) {
@@ -174,4 +173,4 @@ Marker.prototype = util.inherit(Evented, {
         var pos = this._map.project(this._lngLat)._add(this._offset);
         DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
-});
+};
