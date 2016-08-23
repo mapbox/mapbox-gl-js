@@ -32,28 +32,41 @@ var BenchmarksView = React.createClass({
         </div>;
     },
 
-    renderBenchmarkSummary: function(name) {
+    renderBenchmarkSummary: function(benchmarkName) {
         var results = this.state.results[name];
+        var that = this;
+
+        return <div key={benchmarkName}>
+            <h2>{benchmarkName}</h2>
+            {Object.keys(this.state.results[benchmarkName]).map(this.renderBenchmarkTargetSummary.bind(this, benchmarkName))}
+        </div>;
+    },
+
+    renderBenchmarkTargetSummary: function(benchmarkName, targetName) {
+        var results = this.state.results[benchmarkName][targetName];
         var that = this;
 
         return <div
                 onClick={function() {
-                    that.scrollToBenchmark(name);
+                    that.scrollToBenchmark(benchmakrName, targetName);
                 }}
                 style={{cursor: 'pointer'}}
-                key={name}
+                key={targetName}
                 className={[
                     results.state === 'waiting' ? 'quiet' : ''
                 ].join(' ')}>
-            <strong>{name}:</strong> {results.message || '...'}
+            <strong>{targetName}:</strong> {results.message || '...'}
         </div>;
     },
 
     renderBenchmarkTextSummaries: function() {
-        var output = '# Benchmarks\n\n';
-        for (var name in this.state.results) {
-            var result = this.state.results[name];
-            output += '**' + name + ':** ' + (result.message || '...') + '\n';
+        var output = '# Benchmarks\n';
+        for (var benchmarkName in this.state.results) {
+            output += '\n## ' + benchmarkName + '\n\n';
+            for (var targetName in this.state.results[benchmarkName]) {
+                var result = this.state.results[benchmarkName][targetName];
+                output += '**' + targetName + ':** ' + (result.message || '...') + '\n';
+            }
         }
         return output;
     },
@@ -64,16 +77,23 @@ var BenchmarksView = React.createClass({
         </div>;
     },
 
-    renderBenchmarkDetail: function(name) {
-        var results = this.state.results[name];
+    renderBenchmarkDetail: function(benchmarkName) {
+        return <div key={benchmarkName}>
+            <h2 className='space-bottom'>"{benchmarkName}" Benchmark</h2>
+            {Object.keys(this.state.results[benchmarkName]).map(this.renderBenchmarkTargetDetail.bind(this, benchmarkName))}
+        </div>;
+    },
+
+    renderBenchmarkTargetDetail: function(benchmarkName, targetName) {
+        var results = this.state.results[benchmarkName][targetName];
         return (
                 <div
-                    id={name}
-                    key={name}
+                    id={benchmarkName + targetName}
+                    key={targetName}
                     style={{paddingTop: 40}}
                     className={results.state === 'waiting' ? 'quiet' : ''}>
 
-                <h2 className='space-bottom'>"{name}" Benchmark</h2>
+                <h3 className='space-bottom'>{targetName}</h3>
                 {results.logs.map(function(log, index) {
                     return <div key={index} className={'pad1 dark fill-' + log.color}>{log.message}</div>;
                 })}
@@ -81,13 +101,13 @@ var BenchmarksView = React.createClass({
         );
     },
 
-    scrollToBenchmark: function(name) {
+    scrollToBenchmark: function(benchmarkName, targetName) {
         var duration = 300;
         var startTime = (new Date()).getTime();
         var startYOffset = window.pageYOffset;
 
         requestAnimationFrame(function frame() {
-            var endYOffset = document.getElementById(name).offsetTop;
+            var endYOffset = document.getElementById(benchmarkName + targetName).offsetTop;
             var time = (new Date()).getTime();
             var yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
             window.scrollTo(0, yOffset);
@@ -96,15 +116,17 @@ var BenchmarksView = React.createClass({
     },
 
     getInitialState: function() {
+        console.log(this.props.benchmarks);
+
         return {
             state: 'waiting',
-            runningBenchmark: Object.keys(this.props.benchmarks)[0],
-            results: util.mapObject(this.props.benchmarks, function(_, name) {
-                return {
-                    name: name,
-                    state: 'waiting',
-                    logs: []
-                };
+            results: util.mapObject(this.props.benchmarks, function(targetBenchmarks, benchmarkName) {
+                return util.mapObject(targetBenchmarks, function(benchmark, targetName) {
+                    return {
+                        state: 'waiting',
+                        logs: []
+                    };
+                });
             })
         };
     },
@@ -113,27 +135,25 @@ var BenchmarksView = React.createClass({
         var that = this;
         var benchmarks = Object.keys(that.props.benchmarks);
 
-        setTimeout(function next() {
-            var bench = benchmarks.shift();
-            if (!bench) return;
-            that.scrollToBenchmark(bench);
-            that.runBenchmark(bench, function () {
-                that.setState({state: 'ended'});
-                next();
-            });
-        }, 500);
+        asyncSeries(Object.keys(that.state.results), function(benchmarkName, callback) {
+            asyncSeries(Object.keys(that.state.results[benchmarkName]), function(targetName, callback) {
+                that.scrollToBenchmark(benchmarkName, targetName);
+                that.runBenchmark(benchmarkName, targetName, callback);
+            }, callback);
+        }, function() {
+            that.setState({state: 'ended'});
+        });
     },
 
-    runBenchmark: function(name, outerCallback) {
+    runBenchmark: function(benchmarkName, targetName, outerCallback) {
         var that = this;
-        var results = this.state.results[name];
+        var results = this.state.results[benchmarkName][targetName];
 
         results.state = 'running';
-        this.scrollToBenchmark(name);
-        this.setState({runningBenchmark: name});
+        this.scrollToBenchmark(benchmarkName, targetName);
         log('dark', 'starting');
 
-        this.props.benchmarks[name]({
+        this.props.benchmarks[benchmarkName][targetName]({
         }).on('log', function(event) {
             log(event.color, event.message);
 
@@ -158,23 +178,31 @@ var BenchmarksView = React.createClass({
         }
 
         function callback() {
-            setTimeout(function() {
-                that.setState({runningBenchmark: null});
-                outerCallback();
-            }, 500);
+            setTimeout(outerCallback, 500);
         }
     }
 });
 
 var clipboard = new Clipboard('.clipboard');
 
-var benchmarkName = window.location.hash.substr(1);
-var filteredBenchmarks;
-if (!benchmarkName) {
-    filteredBenchmarks = window.mapboxglBenchmarks;
-} else {
-    filteredBenchmarks = {};
-    filteredBenchmarks[benchmarkName] = window.mapboxglBenchmarks[benchmarkName];
-}
+ReactDOM.render(
+    <BenchmarksView
+        benchmarks={window.mapboxglBenchmarks}
+        benchmarkFilter={function(name) {
+            var filterName = window.location.hash.substr(1);
+            return !filterName || name === filterName;
+        }}
+    />,
+    document.getElementById('benchmarks')
+);
 
-ReactDOM.render(<BenchmarksView benchmarks={filteredBenchmarks} />, document.getElementById('benchmarks'));
+function asyncSeries(array, iterator, callback) {
+    if (array.length) {
+        iterator(array[0], function(err) {
+            if (err) callback(err);
+            else asyncSeries(array.slice(1), iterator, callback);
+        });
+    } else {
+        callback();
+    }
+}
