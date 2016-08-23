@@ -18,12 +18,13 @@ var QueryFeatures = require('../source/query_features');
 var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
+var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, workerCount) {
+function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(workerCount || 1, this);
+    this.dispatcher = new Dispatcher(getWorkerPool(), this);
     this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 
@@ -731,7 +732,7 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    'get sprite json': function(params, callback) {
+    'get sprite json': function(mapId, params, callback) {
         var sprite = this.sprite;
         if (sprite.loaded()) {
             callback(null, { sprite: sprite.data, retina: sprite.retina });
@@ -742,7 +743,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get icons': function(params, callback) {
+    'get icons': function(mapId, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
@@ -756,7 +757,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get glyphs': function(params, callback) {
+    'get glyphs': function(mapId, params, callback) {
         var stacks = params.stacks,
             remaining = Object.keys(stacks).length,
             allGlyphs = {};

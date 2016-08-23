@@ -6,7 +6,6 @@ var window = require('../../../js/util/browser').window;
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
-var browser = require('../../../js/util/browser');
 var sinon = require('sinon');
 
 var fixed = require('../../testutil/fixed');
@@ -990,17 +989,6 @@ test('Map', function(t) {
             map._render();
         });
 
-        t.end();
-    });
-
-    t.test('workerCount option', function(t) {
-        var map = createMap({ style: createStyle() });
-        t.equal(map.style.dispatcher.actors.length, browser.hardwareConcurrency - 1, 'workerCount defaults to hardwareConcurrency - 1');
-        map = createMap({ style: createStyle(), workerCount: 3 });
-        t.equal(map.style.dispatcher.actors.length, 3, 'workerCount option is used');
-        t.throws(function () {
-            createMap({ workerCount: 0 });
-        });
         t.end();
     });
 

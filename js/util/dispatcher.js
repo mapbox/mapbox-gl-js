@@ -2,7 +2,6 @@
 
 var util = require('./util');
 var Actor = require('./actor');
-var WebWorker = require('./web_worker');
 
 module.exports = Dispatcher;
 
@@ -13,12 +12,15 @@ module.exports = Dispatcher;
  * @interface Dispatcher
  * @private
  */
-function Dispatcher(length, parent) {
+function Dispatcher(workerPool, parent) {
+    this.workerPool = workerPool;
     this.actors = [];
     this.currentActor = 0;
-    for (var i = 0; i < length; i++) {
-        var worker = new WebWorker();
-        var actor = new Actor(worker, parent);
+    this.id = util.uniqueId();
+    var workers = this.workerPool.acquire(this.id);
+    for (var i = 0; i < workers.length; i++) {
+        var worker = workers[i];
+        var actor = new Actor(worker, parent, this.id);
         actor.name = "Worker " + i;
         this.actors.push(actor);
     }
@@ -65,9 +67,8 @@ Dispatcher.prototype = {
     },
 
     remove: function() {
-        for (var i = 0; i < this.actors.length; i++) {
-            this.actors[i].target.terminate();
-        }
+        this.workerPool.release(this.id);
         this.actors = [];
     }
 };
+

@@ -91,14 +91,14 @@ function preloadAssets(stylesheet, callback) {
 
     style.on('load', function() {
         function getGlyphs(params, callback) {
-            style['get glyphs'](params, function(err, glyphs) {
+            style['get glyphs'](0, params, function(err, glyphs) {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
                 callback(err, glyphs);
             });
         }
 
         function getIcons(params, callback) {
-            style['get icons'](params, function(err, icons) {
+            style['get icons'](0, params, function(err, icons) {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
@@ -185,10 +185,10 @@ var createLayerFamiliesCacheValue;
 function createLayerFamilies(layers) {
     if (layers !== createLayerFamiliesCacheKey) {
         var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](layers);
+        worker['set layers'](0, layers);
 
         createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies;
+        createLayerFamiliesCacheValue = worker.layerFamilies[0];
     }
     return createLayerFamiliesCacheValue;
 }

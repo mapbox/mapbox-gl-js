@@ -15,34 +15,33 @@ function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
 
-    // simple accessor object for passing to WorkerSources
-    var styleLayers = {
-        getLayers: function () { return this.layers; }.bind(this),
-        getLayerFamilies: function () { return this.layerFamilies; }.bind(this)
+    this.layers = {};
+    this.layerFamilies = {};
+
+    this.workerSourceTypes = {
+        vector: VectorTileWorkerSource,
+        geojson: GeoJSONWorkerSource
     };
 
-    this.workerSources = {
-        vector: new VectorTileWorkerSource(this.actor, styleLayers),
-        geojson: new GeoJSONWorkerSource(this.actor, styleLayers)
-    };
+    // [mapId][sourceType] => worker source instance
+    this.workerSources = {};
 
     this.self.registerWorkerSource = function (name, WorkerSource) {
-        if (this.workerSources[name]) {
+        if (this.workerSourceTypes[name]) {
             throw new Error('Worker source with name "' + name + '" already registered.');
         }
-        this.workerSources[name] = new WorkerSource(this.actor, styleLayers);
+        this.workerSourceTypes[name] = WorkerSource;
     }.bind(this);
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(layers) {
-        this.layers = {};
-        var that = this;
+    'set layers': function(mapId, layerDefinitions) {
+        var layers = this.layers[mapId] = {};
 
         // Filter layers and create an id -> layer map
         var childLayerIndicies = [];
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
+        for (var i = 0; i < layerDefinitions.length; i++) {
+            var layer = layerDefinitions[i];
             if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
                 if (layer.ref) {
                     childLayerIndicies.push(i);
@@ -54,74 +53,75 @@ util.extend(Worker.prototype, {
 
         // Create an instance of StyleLayer per layer
         for (var j = 0; j < childLayerIndicies.length; j++) {
-            setLayer(layers[childLayerIndicies[j]]);
+            setLayer(layerDefinitions[childLayerIndicies[j]]);
         }
 
         function setLayer(serializedLayer) {
             var styleLayer = StyleLayer.create(
                 serializedLayer,
-                serializedLayer.ref && that.layers[serializedLayer.ref]
+                serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
-            that.layers[styleLayer.id] = styleLayer;
+            layers[styleLayer.id] = styleLayer;
         }
 
-        this.layerFamilies = createLayerFamilies(this.layers);
+        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'update layers': function(layers) {
-        var that = this;
+    'update layers': function(mapId, layerDefinitions) {
         var id;
         var layer;
 
+        var layers = this.layers[mapId];
+
         // Update ref parents
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (layer.ref) updateLayer(layer);
         }
 
         // Update ref children
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (!layer.ref) updateLayer(layer);
         }
 
         function updateLayer(layer) {
-            var refLayer = that.layers[layer.ref];
-            if (that.layers[layer.id]) {
-                that.layers[layer.id].set(layer, refLayer);
+            var refLayer = layers[layer.ref];
+            if (layers[layer.id]) {
+                layers[layer.id].set(layer, refLayer);
             } else {
-                that.layers[layer.id] = StyleLayer.create(layer, refLayer);
+                layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            that.layers[layer.id].updatePaintTransitions({}, {transition: false});
+            layers[layer.id].updatePaintTransitions({}, {transition: false});
         }
 
-        this.layerFamilies = createLayerFamilies(this.layers);
+        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'load tile': function(params, callback) {
+    'load tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].loadTile(params, callback);
+        this.getWorkerSource(mapId, type).loadTile(params, callback);
     },
 
-    'reload tile': function(params, callback) {
+    'reload tile': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].reloadTile(params, callback);
+        this.getWorkerSource(mapId, type).reloadTile(params, callback);
     },
 
-    'abort tile': function(params) {
+    'abort tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].abortTile(params);
+        this.getWorkerSource(mapId, type).abortTile(params);
     },
 
-    'remove tile': function(params) {
+    'remove tile': function(mapId, params) {
         var type = params.type || 'vector';
-        this.workerSources[type].removeTile(params);
+        this.getWorkerSource(mapId, type).removeTile(params);
     },
 
-    'redo placement': function(params, callback) {
+    'redo placement': function(mapId, params, callback) {
         var type = params.type || 'vector';
-        this.workerSources[type].redoPlacement(params, callback);
+        this.getWorkerSource(mapId, type).redoPlacement(params, callback);
     },
 
     /**
@@ -130,13 +130,28 @@ util.extend(Worker.prototype, {
      * function taking `(name, workerSourceObject)`.
      *  @private
      */
-    'load worker source': function(params, callback) {
+    'load worker source': function(map, params, callback) {
         try {
             this.self.importScripts(params.url);
             callback();
         } catch (e) {
             callback(e);
         }
+    },
+
+    getWorkerSource: function(mapId, type) {
+        if (!this.workerSources[mapId])
+            this.workerSources[mapId] = {};
+        if (!this.workerSources[mapId][type]) {
+            // simple accessor object for passing to WorkerSources
+            var layers = {
+                getLayers: function () { return this.layers[mapId]; }.bind(this),
+                getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
+            };
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type](this.actor, layers);
+        }
+
+        return this.workerSources[mapId][type];
     }
 });
 
