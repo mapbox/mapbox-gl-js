@@ -10,7 +10,7 @@ module.exports = VectorTileSource;
 function VectorTileSource(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
-    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+    util.extend(this, util.pick(options, ['headers', 'url', 'scheme', 'tileSize']));
     this._options = util.extend({ type: 'vector' }, options);
 
     if (this.tileSize !== 512) {
@@ -55,7 +55,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
             overscaling: overscaling,
             angle: this.map.transform.angle,
             pitch: this.map.transform.pitch,
-            showCollisionBoxes: this.map.showCollisionBoxes
+            showCollisionBoxes: this.map.showCollisionBoxes,
+            headers: this.headers
         };
 
         if (tile.workerID) {

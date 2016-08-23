@@ -117,7 +117,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.url The URL of the tile PBF to load.
      */
     loadVectorData: function (params, callback) {
-        var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
+        var xhr = ajax.getArrayBuffer(params.url, params.headers, done.bind(this));
         return function abort () { xhr.abort(); };
         function done(err, data) {
             if (err) { return callback(err); }

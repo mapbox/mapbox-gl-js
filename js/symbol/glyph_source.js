@@ -105,7 +105,7 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
         var rangeName = (range * 256) + '-' + (range * 256 + 255);
         var url = glyphUrl(fontstack, rangeName, this.url);
 
-        getArrayBuffer(url, function(err, data) {
+        getArrayBuffer(url, null, function(err, data) {
             var glyphs = !err && new Glyphs(new Protobuf(new Uint8Array(data)));
             for (var i = 0; i < loading[range].length; i++) {
                 loading[range][i](err, range, glyphs);
