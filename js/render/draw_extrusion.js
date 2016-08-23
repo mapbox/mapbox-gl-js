@@ -284,6 +284,8 @@ function setPattern(image, tile, coord, painter, program) {
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
 
+    gl.uniform1f(program.u_height_factor, -Math.pow(2, painter.transform.tileZoom) / tileSizeAtNearestZoom >> 3);
+
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);
 }
