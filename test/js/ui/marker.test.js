@@ -75,14 +75,28 @@ test('Marker', function (t) {
         var marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
         marker.bindPopup(popup);
         t.ok(marker.getPopup() instanceof Popup, 'popup created with Popup instance');
+        marker.unbindPopup();
 
         marker.bindPopup('<h1>pop</h1>');
         t.ok(marker.getPopup() instanceof Popup, 'popup created with HTML string');
+        marker.unbindPopup();
 
         el.text = 'pop pop';
         marker.bindPopup(el);
         t.ok(marker.getPopup() instanceof Popup, 'popup created with HTMLElement');
 
+        t.end();
+    });
+
+    t.test('popups can be unbound from a marker instance', function (t) {
+        prepareDOM();
+        var map = createMap();
+        var el = document.createElement('div');
+        var marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
+        marker.bindPopup('<h1>pop</h1>');
+        t.ok(marker.getPopup() instanceof Popup);
+        t.deepEqual(marker.getPopup(), marker.unbindPopup(), 'Marker.unbindPopup returns previously bound popup');
+        t.ok(!marker.getPopup(), 'Marker.unbindPopup successfully removes Popup instance from Marker instance');
         t.end();
     });
 

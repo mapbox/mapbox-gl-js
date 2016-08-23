@@ -37,7 +37,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-function addRandomMarker() {
+function addRandomMarker(i) {
     var bounds = map.getBounds();
     var s = bounds.getSouth();
     var n = bounds.getNorth();
@@ -47,13 +47,14 @@ function addRandomMarker() {
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
 
+    var popupHtml = "<h1>hi html</h1>";
     var marker = new mapboxgl.Marker()
         .setLngLat([lng, lat])
+        .bindPopup(popupHtml)
         .addTo(map);
 
     marker.getElement().onclick = function(e) {
-        alert('Hello world');
-        e.stopPropagation();
+        alert('clicked me');
     };
 }
 

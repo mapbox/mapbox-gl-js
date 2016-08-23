@@ -148,6 +148,19 @@ Marker.prototype = {
         }
     },
 
+    /**
+     * Unbinds a Popup from the Marker instance
+     * Returns the Popup instance that was bound to the Marker
+     * @returns {Popup} popup
+     */
+    unbindPopup: function(){
+        this._closePopup();
+        var popup = this._popup;
+        delete this._popupHandlersAdded;
+        delete this._popup;
+        return popup;
+    },
+
     _openPopup: function(e) {
         // prevent event from bubbling up to the map canvas
         e.stopPropagation();
