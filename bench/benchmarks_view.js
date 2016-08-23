@@ -2,7 +2,6 @@
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
 var util = require('../js/util/util');
-var mapboxgl = require('../js/mapbox-gl');
 var Clipboard = require('clipboard');
 
 var BenchmarksView = React.createClass({
@@ -128,7 +127,6 @@ var BenchmarksView = React.createClass({
     runBenchmark: function(name, outerCallback) {
         var that = this;
         var results = this.state.results[name];
-        var maps = [];
 
         results.state = 'running';
         this.scrollToBenchmark(name);
@@ -136,9 +134,6 @@ var BenchmarksView = React.createClass({
         log('dark', 'starting');
 
         this.props.benchmarks[name]({
-            accessToken: getAccessToken(),
-            createMap: createMap
-
         }).on('log', function(event) {
             log(event.color, event.message);
 
@@ -163,75 +158,23 @@ var BenchmarksView = React.createClass({
         }
 
         function callback() {
-            for (var i = 0; i < maps.length; i++) {
-                maps[i].remove();
-                maps[i].getContainer().remove();
-            }
             setTimeout(function() {
                 that.setState({runningBenchmark: null});
                 outerCallback();
             }, 500);
         }
-
-        function createMap(options) {
-            options = util.extend({width: 512, height: 512}, options);
-
-            var element = document.createElement('div');
-            element.style.width = options.width + 'px';
-            element.style.height = options.height + 'px';
-            element.style.margin = '0 auto';
-            document.body.appendChild(element);
-
-            var map = new mapboxgl.Map(util.extend({
-                container: element,
-                style: 'mapbox://styles/mapbox/streets-v9',
-                interactive: false
-            }, options));
-            maps.push(map);
-
-            return map;
-        }
     }
 });
 
-var benchmarks = {
-    'load-multiple-maps': require('./benchmarks/map_load'),
-    buffer: require('./benchmarks/buffer'),
-    fps: require('./benchmarks/fps'),
-    'frame-duration': require('./benchmarks/frame_duration'),
-    'query-point': require('./benchmarks/query_point'),
-    'query-box': require('./benchmarks/query_box'),
-    'geojson-setdata-small': require('./benchmarks/geojson_setdata_small'),
-    'geojson-setdata-large': require('./benchmarks/geojson_setdata_large')
-};
+var clipboard = new Clipboard('.clipboard');
 
-var filteredBenchmarks = {};
 var benchmarkName = window.location.hash.substr(1);
+var filteredBenchmarks;
 if (!benchmarkName) {
-    filteredBenchmarks = benchmarks;
+    filteredBenchmarks = window.mapboxglBenchmarks;
 } else {
-    filteredBenchmarks[benchmarkName] = benchmarks[benchmarkName];
+    filteredBenchmarks = {};
+    filteredBenchmarks[benchmarkName] = window.mapboxglBenchmarks[benchmarkName];
 }
 
 ReactDOM.render(<BenchmarksView benchmarks={filteredBenchmarks} />, document.getElementById('benchmarks'));
-
-var clipboard = new Clipboard('.clipboard');
-
-mapboxgl.accessToken = getAccessToken();
-
-function getAccessToken() {
-    var accessToken = (
-        process.env.MapboxAccessToken ||
-        process.env.MAPBOX_ACCESS_TOKEN ||
-        getURLParameter('access_token') ||
-        localStorage.getItem('accessToken')
-    );
-    localStorage.setItem('accessToken', accessToken);
-    return accessToken;
-}
-
-function getURLParameter(name) {
-    var regexp = new RegExp('[?&]' + name + '=([^&#]*)', 'i');
-    var results = regexp.exec(window.location.href);
-    return results && results[1];
-}

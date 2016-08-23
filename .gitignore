@@ -10,4 +10,5 @@ coverage
 .DS_Store
 .nyc_output
 /debug/access_token_generated.js
-/bench/index_generated.js
+/bench/benchmarks_view_generated.js
+/bench/benchmarks/index_generated.js

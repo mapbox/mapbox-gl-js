@@ -3,6 +3,7 @@
 var Evented = require('../../js/util/evented');
 var util = require('../../js/util/util');
 var formatNumber = require('../lib/format_number');
+var createMap = require('../lib/create_map');
 
 var DURATION_MILLISECONDS = 1 * 5000;
 
@@ -58,7 +59,7 @@ module.exports = function(options) {
 
 function measureFrameTime(options, zoom, callback) {
 
-    var map = options.createMap({
+    var map = createMap({
         width: 1024,
         height: 768,
         zoom: zoom,

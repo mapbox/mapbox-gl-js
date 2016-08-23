@@ -5,13 +5,14 @@ var util = require('../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var setDataPerf = require('../lib/set_data_perf');
 var setupGeoJSONMap = require('../lib/setup_geojson_map');
+var createMap = require('../lib/create_map');
 
 var featureCollection = require('../data/naturalearth-land.json');
 
 module.exports = function(options) {
     var evented = util.extend({}, Evented);
 
-    var map = options.createMap({
+    var map = createMap({
         width: 1024,
         height: 768,
         zoom: 5,
@@ -27,6 +28,7 @@ module.exports = function(options) {
         evented.fire('log', {message: 'loading large feature collection'});
         setDataPerf(source, 50, featureCollection, function(err, ms) {
             if (err) return evented.fire('error', {error: err});
+            map.remove();
             evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
         });
     });
