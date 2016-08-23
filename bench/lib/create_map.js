@@ -10,7 +10,6 @@ module.exports = function createMap(options) {
     element.style.margin = '0 auto';
     document.body.appendChild(element);
 
-
     mapboxgl.accessToken = require('./access_token');
 
     var map = new mapboxgl.Map(util.extend({
@@ -18,6 +17,10 @@ module.exports = function createMap(options) {
         style: 'mapbox://styles/mapbox/streets-v9',
         interactive: false
     }, options));
+
+    map.on('remove', function() {
+        map.getContainer().remove();
+    });
 
     return map;
 }

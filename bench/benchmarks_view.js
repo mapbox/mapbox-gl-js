@@ -14,9 +14,9 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkSummaries: function() {
-        return <div className='col4 prose' style={{paddingTop: 40, width: 320, position: 'fixed'}}>
+        return <div className='col4' style={{paddingTop: 40, width: 320, position: 'fixed'}}>
             <h1 className="space-bottom">Benchmarks</h1>
-            <div className="space-bottom">
+            <div className="space-bottom small">
                 {Object.keys(this.state.results).map(this.renderBenchmarkSummary)}
             </div>
             <a
@@ -24,7 +24,7 @@ var BenchmarksView = React.createClass({
                         'icon',
                         'clipboard',
                         'button',
-                        (this.state.state === 'ended' ? '' : 'disabled')
+                        (this.getStatus() === 'ended' ? '' : 'disabled')
                     ].join(' ')}
                     data-clipboard-text={this.renderBenchmarkTextSummaries()}>
                 Copy Results
@@ -37,7 +37,9 @@ var BenchmarksView = React.createClass({
         var that = this;
 
         return <div key={benchmarkName}>
-            <h2>{benchmarkName}</h2>
+            <h3 className={[
+                this.getBenchmarkStatus(benchmarkName) === 'waiting' ? 'quiet' : ''
+            ].join(' ')}>{benchmarkName}</h3>
             {Object.keys(this.state.results[benchmarkName]).map(this.renderBenchmarkTargetSummary.bind(this, benchmarkName))}
         </div>;
     },
@@ -48,12 +50,13 @@ var BenchmarksView = React.createClass({
 
         return <div
                 onClick={function() {
-                    that.scrollToBenchmark(benchmakrName, targetName);
+                    that.scrollToBenchmark(benchmarkName, targetName);
                 }}
                 style={{cursor: 'pointer'}}
                 key={targetName}
                 className={[
-                    results.state === 'waiting' ? 'quiet' : ''
+                    'space-bottom',
+                    results.status === 'waiting' ? 'quiet' : ''
                 ].join(' ')}>
             <strong>{targetName}:</strong> {results.message || '...'}
         </div>;
@@ -79,7 +82,6 @@ var BenchmarksView = React.createClass({
 
     renderBenchmarkDetail: function(benchmarkName) {
         return <div key={benchmarkName}>
-            <h2 className='space-bottom'>"{benchmarkName}" Benchmark</h2>
             {Object.keys(this.state.results[benchmarkName]).map(this.renderBenchmarkTargetDetail.bind(this, benchmarkName))}
         </div>;
     },
@@ -88,12 +90,12 @@ var BenchmarksView = React.createClass({
         var results = this.state.results[benchmarkName][targetName];
         return (
                 <div
+                    style={{paddingTop: 40}}
                     id={benchmarkName + targetName}
                     key={targetName}
-                    style={{paddingTop: 40}}
-                    className={results.state === 'waiting' ? 'quiet' : ''}>
+                    className={results.status === 'waiting' ? 'quiet' : ''}>
 
-                <h3 className='space-bottom'>{targetName}</h3>
+                    <h2 className='space-bottom'>{benchmarkName} on {targetName}</h2>
                 {results.logs.map(function(log, index) {
                     return <div key={index} className={'pad1 dark fill-' + log.color}>{log.message}</div>;
                 })}
@@ -116,14 +118,11 @@ var BenchmarksView = React.createClass({
     },
 
     getInitialState: function() {
-        console.log(this.props.benchmarks);
-
         return {
-            state: 'waiting',
             results: util.mapObject(this.props.benchmarks, function(targetBenchmarks, benchmarkName) {
                 return util.mapObject(targetBenchmarks, function(benchmark, targetName) {
                     return {
-                        state: 'waiting',
+                        status: 'waiting',
                         logs: []
                     };
                 });
@@ -140,8 +139,6 @@ var BenchmarksView = React.createClass({
                 that.scrollToBenchmark(benchmarkName, targetName);
                 that.runBenchmark(benchmarkName, targetName, callback);
             }, callback);
-        }, function() {
-            that.setState({state: 'ended'});
         });
     },
 
@@ -149,22 +146,27 @@ var BenchmarksView = React.createClass({
         var that = this;
         var results = this.state.results[benchmarkName][targetName];
 
-        results.state = 'running';
+        results.status = 'running';
         this.scrollToBenchmark(benchmarkName, targetName);
         log('dark', 'starting');
 
-        this.props.benchmarks[benchmarkName][targetName]({
-        }).on('log', function(event) {
+        var emitter = this.props.benchmarks[benchmarkName][targetName]();
+
+        emitter.on('log', function(event) {
             log(event.color, event.message);
 
-        }).on('end', function(event) {
+        });
+
+        emitter.on('end', function(event) {
             results.message = event.message;
-            results.state = 'ended';
+            results.status = 'ended';
             log('green', event.message);
             callback();
 
-        }).on('error', function(event) {
-            results.state = 'errored';
+        });
+
+        emitter.on('error', function(event) {
+            results.status = 'errored';
             log('red', event.error);
             callback();
         });
@@ -180,8 +182,34 @@ var BenchmarksView = React.createClass({
         function callback() {
             setTimeout(outerCallback, 500);
         }
+    },
+
+    getBenchmarkTargetStatus: function(benchmarkName, targetName) {
+        return this.state.results[benchmarkName][targetName].status;
+    },
+
+    getBenchmarkStatus: function(benchmarkName) {
+        return reduceStatuses(Object.keys(this.state.results[benchmarkName]).map(function(targetName) {
+            return this.getBenchmarkTargetStatus(benchmarkName, targetName);
+        }, this));
+    },
+
+    getStatus() {
+        return reduceStatuses(Object.keys(this.state.results).map(function(benchmarkName) {
+            return this.getBenchmarkStatus(benchmarkName);
+        }, this));
     }
 });
+
+function reduceStatuses(statuses) {
+    if (statuses.indexOf('running') !== -1) {
+        return 'running';
+    } else if (statuses.indexOf('waiting') !== -1) {
+        return 'waiting';
+    } else {
+        return 'ended';
+    }
+}
 
 var clipboard = new Clipboard('.clipboard');
 
