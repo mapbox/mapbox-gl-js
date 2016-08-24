@@ -13,8 +13,6 @@ var sourceTypes = {
     'image': require('../source/image_source')
 };
 
-var coreTypes = ['vector', 'raster', 'geojson', 'video', 'image'];
-
 var Source = module.exports = util.extend({}, Evented);
 
 /*
@@ -43,16 +41,6 @@ Source.getType = function (name) {
 
 Source.setType = function (name, type) {
     sourceTypes[name] = type;
-};
-
-/**
- * Returns the names of any registered non-core source types.
- * @private
- */
-Source.getCustomTypeNames = function () {
-    return Object.keys(sourceTypes).filter(function (type) {
-        return coreTypes.indexOf(type) < 0;
-    });
 };
 
 /**
