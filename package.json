@@ -59,6 +59,7 @@
     "highlight.js": "9.3.0",
     "istanbul": "^0.4.2",
     "jsdom": "^9.4.2",
+    "jsdom-global": "^2.1.0",
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#3e36b193a0c442a3fd863119f101afa6db97b32d",
@@ -94,15 +95,12 @@
     "build-token": "browserify debug/access-token.js --debug --transform envify > debug/access-token-generated.js",
     "watch-bench": "node bench/download-data.js && watchify bench/index.js --plugin [minifyify --no-map] --transform [babelify --presets react] --transform unassertify --transform envify --outfile bench/index-generated.js --verbose",
     "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
-
     "start": "run-p build-token watch-dev watch-bench start-server",
     "start-debug": "run-p build-token watch-dev start-server",
     "start-bench": "run-p build-token watch-bench start-server",
-
     "build-docs": "documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
-    
     "lint": "eslint  --ignore-path .gitignore js test bench docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "test-suite": "node test/render.test.js && node test/query.test.js",

@@ -1,25 +1,19 @@
 'use strict';
 
 var test = require('tap').test;
-var jsdom = require('jsdom');
+var jsdomGlobal = require('jsdom-global');
 
 var extend = require('../../../js/util/util').extend;
 var Map = require('../../../js/ui/map');
 var Marker = require('../../../js/ui/marker');
 var Popup = require('../../../js/ui/popup');
 
-function prepareDOM(html) {
-    html = html || '<!doctype html><html><body><div id="map"></div></body></html>';
-    if (typeof document !== 'undefined') {
-        return;
-    }
-    global.document = jsdom.jsdom(html);
-    global.window = global.document.defaultView;
-    global.navigator = {
-        userAgent: 'JSDOM'
-    };
-    global.HTMLElement = global.window.HTMLElement;
-
+function prepareDOM() {
+    var cleanup = jsdomGlobal();
+    var mapdiv = document.createElement('div');
+    mapdiv.id = "map";
+    document.body.appendChild(mapdiv);
+    return cleanup;
 }
 
 function createMap(options, callback) {
@@ -45,59 +39,50 @@ function createMap(options, callback) {
 
 test('Marker', function (t) {
     t.test('constructor', function (t) {
-        prepareDOM();
+        var cleanup = prepareDOM();
         var el = document.createElement('div');
         var marker = new Marker(el);
         t.ok(marker.getElement(), 'marker element is created');
+        cleanup();
         t.end();
     });
 
     t.test('marker is added to map', function (t) {
-        prepareDOM();
+        var cleanup = prepareDOM();
         var map = createMap();
         var el = document.createElement('div');
-
         map.on('load', function () {
             var marker = new Marker(el).setLngLat([-77.01866, 38.888]);
             t.ok(marker.addTo(map) instanceof Marker, 'marker.addTo(map) returns Marker instance');
             t.ok(marker._map, 'marker instance is bound to map instance');
+            cleanup();
             t.end();
         });
-
-
     });
 
     t.test('popups can be bound to marker instance', function (t) {
-        prepareDOM();
+        var cleanup = prepareDOM();
         var map = createMap();
         var el = document.createElement('div');
         var popup = new Popup();
         var marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
-        marker.bindPopup(popup);
+        marker.setPopup(popup);
         t.ok(marker.getPopup() instanceof Popup, 'popup created with Popup instance');
-        marker.unbindPopup();
-
-        marker.bindPopup('<h1>pop</h1>');
-        t.ok(marker.getPopup() instanceof Popup, 'popup created with HTML string');
-        marker.unbindPopup();
-
-        el.text = 'pop pop';
-        marker.bindPopup(el);
-        t.ok(marker.getPopup() instanceof Popup, 'popup created with HTMLElement');
-
+        cleanup();
         t.end();
     });
 
     t.test('popups can be unbound from a marker instance', function (t) {
-        prepareDOM();
+        var cleanup = prepareDOM();
         var map = createMap();
         var el = document.createElement('div');
         var marker = new Marker(el).setLngLat([-77.01866, 38.888]).addTo(map);
-        marker.bindPopup('<h1>pop</h1>');
+        marker.setPopup(new Popup());
         t.ok(marker.getPopup() instanceof Popup);
-        t.deepEqual(marker.getPopup(), marker.unbindPopup(), 'Marker.unbindPopup returns previously bound popup');
-        t.ok(!marker.getPopup(), 'Marker.unbindPopup successfully removes Popup instance from Marker instance');
+        t.ok(marker.setPopup() instanceof Marker, 'passing no argument to Marker.setPopup() is valid');
+        t.ok(!marker.getPopup(), 'Calling setPopup with no argument successfully removes Popup instance from Marker instance');
         t.end();
+        cleanup();
     });
 
     t.end();

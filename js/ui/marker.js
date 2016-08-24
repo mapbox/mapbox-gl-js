@@ -38,7 +38,7 @@ Marker.prototype = {
      * @param {Map} map
      * @returns {Marker} `this`
      */
-    addTo: function(map) {
+    addTo: function (map) {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._el);
@@ -54,7 +54,7 @@ Marker.prototype = {
      * marker.remove();
      * @returns {Marker} `this`
      */
-    remove: function() {
+    remove: function () {
         if (this._map) {
             this._map.off('move', this._update);
             this._map = null;
@@ -69,7 +69,7 @@ Marker.prototype = {
      * Get the marker's geographical location
      * @returns {LngLat}
      */
-    getLngLat: function() {
+    getLngLat: function () {
         return this._lngLat;
     },
 
@@ -78,43 +78,35 @@ Marker.prototype = {
      * @param {LngLat} lnglat
      * @returns {Marker} `this`
      */
-    setLngLat: function(lnglat) {
+    setLngLat: function (lnglat) {
         this._lngLat = LngLat.convert(lnglat);
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;
     },
 
-    getElement: function() {
+    getElement: function () {
         return this._el;
     },
 
     /**
      * Binds a Popup to the Marker
-     * @param {HTMLElement|String|Popup} content the DOM content to appear in the popup, or 
-     *  an instance of the Popup class
-     * @param {Object} [options] options for the Popup class
-     * @param {boolean} [options.closeButton=true] If `true`, a close button will appear in the
-     *   top right corner of the popup.
-     * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
-     *   map is clicked.
-     * @param {string} options.anchor - A string indicating the popup's location relative to
-     *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
-     *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
-     * `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup 
+     * set on this `Marker` instance is unset
      * @returns {Marker} `this`
      */
 
-    bindPopup: function(content, options){
-        if (content instanceof Popup) {
-            this._popup = content;
+    setPopup: function (popup) {
+        if (popup == null) {
+            this._closePopup();
+            delete this._popupHandlersAdded;
+            delete this._popup;
+        } else if (popup instanceof Popup) {
+            this._popup = popup;
         } else {
-            if (!this._popup || options) {
-                this._popup = new Popup(options);
-            }
-            content instanceof HTMLElement ? this._popup.setDOMContent(content) : this._popup.setHTML(content);
+            util.warnOnce('Marker.setPopup only accepts an instance of the Popup class as an argument. If no argument is provided, the popup is unset from this Marker instance');
         }
-            
+
         if (this._popup && this._lngLat) this._popup.setLngLat(this._lngLat);
 
         if (!this._popupHandlersAdded) {
@@ -125,12 +117,20 @@ Marker.prototype = {
     },
 
     /**
+     * Returns the Popup instance that is bound to the Marker
+     * @returns {Popup} popup
+     */
+    getPopup: function () {
+        return this._popup;
+    },
+
+    /**
      * Opens or closes the bound popup, depending on the current state
      * @returns {Marker} `this`
      */
-    togglePopup: function(){
+    togglePopup: function () {
         if (this._popup) {
-            if (this._popup._map){
+            if (this._popup._map) {
                 this._closePopup();
             } else {
                 this._openPopup();
@@ -138,32 +138,10 @@ Marker.prototype = {
         }
     },
 
-    /**
-     * Returns the Popup instance that is bound to the Marker
-     * @returns {Popup} popup
-     */
-    getPopup: function(){
-        if (this._popup) {
-            return this._popup;
-        }
-    },
-
-    /**
-     * Unbinds a Popup from the Marker instance
-     * Returns the Popup instance that was bound to the Marker
-     * @returns {Popup} popup
-     */
-    unbindPopup: function(){
-        this._closePopup();
-        var popup = this._popup;
-        delete this._popupHandlersAdded;
-        delete this._popup;
-        return popup;
-    },
-
-    _openPopup: function(e) {
+    _openPopup: function (e) {
         // prevent event from bubbling up to the map canvas
         e.stopPropagation();
+
         if (!this._popup || !this._map) return;
 
         if (!this._popup._map) {
@@ -173,7 +151,7 @@ Marker.prototype = {
         return this;
     },
 
-    _closePopup: function(){
+    _closePopup: function () {
         if (this._popup) {
             this._popup.remove();
         }
@@ -181,9 +159,10 @@ Marker.prototype = {
         return this;
     },
 
-    _update: function() {
+    _update: function () {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
         DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
+
