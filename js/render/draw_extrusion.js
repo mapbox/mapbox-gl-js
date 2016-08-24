@@ -11,6 +11,7 @@ var StructArrayType = require('../util/struct_array');
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
+    if (layer.paint['extrusion-layer-opacity'] === 0) return;
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     painter.depthMask(true);
@@ -118,7 +119,7 @@ PrerenderedExtrusionLayer.prototype.renderToMap = function() {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.paint['extrusion-layer-opacity'] || 1);
+    gl.uniform1f(program.u_opacity, this.layer.paint['extrusion-layer-opacity']);
     gl.uniform1i(program.u_texture, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
