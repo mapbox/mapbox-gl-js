@@ -13,7 +13,6 @@ var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
-var Source = require('../source/source');
 var QueryFeatures = require('../source/query_features');
 var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
@@ -682,7 +681,6 @@ Style.prototype = util.inherit(Evented, {
 
     _remove: function() {
         this.dispatcher.remove();
-        Source.off('_add', this._handleAddSourceType);
     },
 
     _reloadSource: function(id) {
