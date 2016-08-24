@@ -28,6 +28,12 @@ Actor.prototype.receive = function(message) {
         id = data.id,
         callback;
 
+    // if we're on the main thread handling a message from the worker, make
+    // sure that we only handle messages directed at this actor's the map
+    // instance
+    if (data.targetMapId && this.mapId !== data.targetMapId)
+        return;
+
     if (data.type === '<response>') {
         callback = this.callbacks[data.id];
         delete this.callbacks[data.id];
@@ -55,10 +61,16 @@ Actor.prototype.receive = function(message) {
     }
 };
 
-Actor.prototype.send = function(type, data, callback, buffers) {
+Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
     var id = callback ? this.mapId + ':' + this.callbackID++ : null;
     if (callback) this.callbacks[id] = callback;
-    this.postMessage({ mapId: this.mapId, type: type, id: String(id), data: data }, buffers);
+    this.postMessage({
+        targetMapId: targetMapId,
+        mapId: this.mapId,
+        type: type,
+        id: String(id),
+        data: data
+    }, buffers);
 };
 
 /**
