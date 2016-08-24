@@ -70,13 +70,15 @@ Source.addType = function (name, SourceType, callback) {
     }
 };
 
-// A Dispatcher instance for use in registering custom worker sources.
-//
-// TODO: We need to hold on to this dispatcher rather than remove()'ing it,
-// because once we've used it to register worker sources, we don't want the
-// worker pool to destroy the workers.  However, that means that after a custom
-// source (which has a worker source) has been added, there's no way to clean
-// up the workers.
+/*
+ * A Dispatcher instance for use in registering custom WorkerSources.
+ *
+ * Note that it is created on demand, and once created, this dispatcher
+ * instance prevents the Workers in the global pool from being destroyed even
+ * when the the last map instance is destroyed.  This is intended behavior, as
+ * it ensures that any custom WorkerSources will be registered on the workers
+ * used by future map instances.
+ */
 var dispatcher;
 function getDispatcher () {
     if (!dispatcher) {
