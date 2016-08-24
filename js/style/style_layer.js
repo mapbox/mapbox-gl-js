@@ -283,7 +283,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         var spec = this._paintSpecifications[name];
 
         if (declaration === null || declaration === undefined) {
-            declaration = new StyleDeclaration(spec, spec.default);
+            declaration = new StyleDeclaration(name, spec, spec.default);
         }
 
         if (oldTransition && oldTransition.declaration.json === declaration.json) return;
