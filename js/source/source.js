@@ -1,6 +1,5 @@
 'use strict';
 
-var Evented = require('../util/evented');
 var util = require('../util/util');
 var Dispatcher = require('../util/dispatcher');
 var getWorkerPool = require('../global_worker_pool');
@@ -13,7 +12,7 @@ var sourceTypes = {
     'image': require('../source/image_source')
 };
 
-var Source = module.exports = util.extend({}, Evented);
+var Source = module.exports = {};
 
 /*
  * Creates a tiled data source instance given an options object.
