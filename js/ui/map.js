@@ -432,6 +432,16 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Similar to `project` but returns a raw 4d vector containing info about the transform
+     *
+     * @param {LngLatLike} lnglat The geographical location to project.
+     * @returns {Array} The 4d vector pertaining to this point's transform
+     */
+    project3d: function(lnglat) {
+        return this.transform.locationPoint3d(LngLat.convert(lnglat));
+    },
+
+    /**
      * Returns a [`LngLat`](#LngLat) representing geographical coordinates that correspond
      * to the specified pixel coordinates.
      *
