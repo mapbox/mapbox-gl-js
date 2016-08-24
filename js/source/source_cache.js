@@ -12,8 +12,8 @@ var EXTENT = require('../data/bucket').EXTENT;
 module.exports = SourceCache;
 
 /**
- * A `SourceCache` contains cached tiles for a source. It also determines when new tiles
- * should be loaded / unloaded based on the map position.
+ * A `SourceCache` caches tiles from a `Source`. It also determines when
+ * tiles should be loaded or unloaded.
  *
  * @param {Object} options
  * @private
