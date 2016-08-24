@@ -37,7 +37,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-function addRandomMarker(i) {
+function addRandomMarker() {
     var bounds = map.getBounds();
     var s = bounds.getSouth();
     var n = bounds.getNorth();
@@ -46,11 +46,11 @@ function addRandomMarker(i) {
 
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
+    var popup = new mapboxgl.Popup().setText('hello hi');
 
-    var popupHtml = "<h1>hi html</h1>";
     var marker = new mapboxgl.Marker()
         .setLngLat([lng, lat])
-        .bindPopup(popupHtml)
+        .setPopup(popup)
         .addTo(map);
 
     marker.getElement().onclick = function(e) {
@@ -61,6 +61,7 @@ function addRandomMarker(i) {
 for (var i = 0; i < 100; i++) addRandomMarker();
 
 map.addControl(new mapboxgl.Navigation());
+
 </script>
 
 </body>
