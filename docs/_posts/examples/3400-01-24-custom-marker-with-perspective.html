@@ -31,15 +31,15 @@ var radius = 0.4;
 
 var p = 0;
 
-var distanceX = radius/(111.320*Math.cos(c[1]*Math.PI/180));
-var distanceY = radius/110.574;
+var distanceX = radius / (111.320 * Math.cos(c[1] * Math.PI / 180));
+var distanceY = radius / 110.574;
 
 function addAnotherMarker() {
-    var theta = (p/points)*(2*Math.PI);
-    var x = distanceX*Math.cos(theta);
-    var y = distanceY*Math.sin(theta);
+    var theta = (p / points) * (2 * Math.PI);
+    var x = distanceX * Math.cos(theta);
+    var y = distanceY * Math.sin(theta);
 
-    var toSet = [c[0]+x, c[1]+y];
+    var toSet = [c[0] + x, c[1] + y];
 
     p++;
 
@@ -56,7 +56,7 @@ function addAnotherMarker() {
         e.stopPropagation();
     };
 
-    m.style.backgroundColor = 'rgb(' + [Math.floor(Math.random()*16)*16,Math.floor(Math.random()*16)*16,Math.floor(Math.random()*16)*16].join(',') + ')';
+    m.style.backgroundColor = 'rgb(' + [Math.floor(Math.random() * 16) * 16, Math.floor(Math.random() * 16) * 16, Math.floor(Math.random() * 16) * 16].join(',') + ')';
 }
 
 for (var i = 0; i < points; i++) addAnotherMarker();
@@ -70,6 +70,6 @@ map.on('load', function() {
     setInterval(function() {
         i += 1;
         map.setBearing(i);
-    }, 16*5);
+    }, 16 * 5);
 });
 </script>

@@ -93,9 +93,11 @@ Marker.prototype = {
 
         var projection = this._map.project3d(this._lngLat);
         var point = new Point(projection[0] / projection[3], projection[1] / projection[3]);
+
+        var z = point.y;
         var pos = point._add(this._offset);
 
-        var t = 'translate3d(' + pos.x + 'px,' + pos.y + 'px,' + pos.y + 'px)';
+        var t = 'translate3d(' + pos.x + 'px,' + pos.y + 'px,' + z + 'px)';
 
         var scale = 1;
         if(this._perspective) {
