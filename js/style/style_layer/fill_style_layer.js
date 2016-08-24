@@ -47,6 +47,24 @@ FillStyleLayer.prototype = util.inherit(StyleLayer, {
         } else {
             return StyleLayer.prototype.isPaintValueZoomConstant.call(this, name);
         }
+    },
+
+    isHidden: function(zoom) {
+        if (this.minzoom && zoom < this.minzoom) return true;
+        if (this.maxzoom && zoom >= this.maxzoom) return true;
+        if (this.layout['visibility'] === 'none') return true;
+
+        var isFillHidden = (
+            (this.isPaintValueFeatureConstant('fill-opacity') && this.paint['fill-opacity'] === 0) ||
+            (this.isPaintValueFeatureConstant('fill-color') && this.paint['fill-color'][3] === 0)
+        );
+
+        var isOutlineHidden = (
+            this.isPaintValueFeatureConstant('fill-outline-color') &&
+            this.paint['fill-outline-color'][3] === 0
+        );
+
+        return isFillHidden && isOutlineHidden;
     }
 
 });
