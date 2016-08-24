@@ -1,6 +1,5 @@
 'use strict';
 
-var assert = require('assert');
 var Evented = require('../util/evented');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
@@ -39,14 +38,10 @@ function Style(stylesheet, animationLoop) {
         '_forwardSourceEvent',
         '_forwardTileEvent',
         '_forwardLayerEvent',
-        '_redoPlacement',
-        '_handleAddSourceType',
-        '_registerCustomSource'
+        '_redoPlacement'
     ], this);
 
     this._resetUpdates();
-
-    Source.on('_add', this._handleAddSourceType);
 
     var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
@@ -76,19 +71,11 @@ function Style(stylesheet, animationLoop) {
         this.fire('load');
     }.bind(this);
 
-    // register any existing custom source types with the workers
-    util.asyncAll(Source.getCustomTypeNames(), this._registerCustomSource, function (err) {
-        if (err) {
-            this.fire('error', {error: err});
-            return;
-        }
-
-        if (typeof stylesheet === 'string') {
-            ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
-        } else {
-            browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
-        }
-    }.bind(this));
+    if (typeof stylesheet === 'string') {
+        ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
+    } else {
+        browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
+    }
 
     this.on('source.load', function(event) {
         var source = event.source;
@@ -691,29 +678,6 @@ Style.prototype = util.inherit(Evented, {
             styleSpec: styleSpec
         }, props));
         return action.call(validateStyle, this, result);
-    },
-
-    _handleAddSourceType: function (event) {
-        this._registerCustomSource(event.name, function (err) {
-            if (err) {
-                this.fire('error', {error: err});
-                return;
-            }
-            this.fire('source-type.add', event);
-        }.bind(this));
-    },
-
-    _registerCustomSource: function (name, callback) {
-        var SourceType = Source.getType(name);
-        assert(SourceType);
-        if (SourceType.workerSourceURL) {
-            this.dispatcher.broadcast('load worker source', {
-                name: name,
-                url: SourceType.workerSourceURL
-            }, callback);
-        } else {
-            callback();
-        }
     },
 
     _remove: function() {

@@ -27,7 +27,7 @@ function Worker(self) {
     this.workerSources = {};
 
     this.self.registerWorkerSource = function (name, WorkerSource) {
-        if (this.workerSources[name]) {
+        if (this.workerSourceTypes[name]) {
             util.warnOnce('Worker source named "' + name + '" already registered.');
         }
         this.workerSourceTypes[name] = WorkerSource;

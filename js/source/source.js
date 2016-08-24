@@ -2,6 +2,8 @@
 
 var Evented = require('../util/evented');
 var util = require('../util/util');
+var Dispatcher = require('../util/dispatcher');
+var getWorkerPool = require('../global_worker_pool');
 
 var sourceTypes = {
     'vector': require('../source/vector_tile_source'),
@@ -56,21 +58,39 @@ Source.getCustomTypeNames = function () {
 /**
  * Adds a [custom source type](#Custom Sources), making it available for use with
  * {@link Map#addSource}.
- * @private
+ *
  * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
  * @param {Function} SourceType A {@link Source} constructor.
+ * @param {Function} callback called after SourceType has been added and, if relevant, its worker code has been sent to the workers.
+ * @private
  */
-Source.addType = function (name, SourceType) {
+Source.addType = function (name, SourceType, callback) {
     if (Source.getType(name)) {
         throw new Error('A source type named ' + name + ' already exists.');
     }
 
     Source.setType(name, SourceType);
 
-    // an internal event, used to notify Style instances that there is a new
-    // custom source type.
-    Source.fire('_add', { name: name });
+    if (SourceType.workerSourceURL) {
+        getDispatcher().broadcast('load worker source', {
+            name: name,
+            url: SourceType.workerSourceURL
+        }, function (err) {
+            callback(err);
+        });
+    } else {
+        callback();
+    }
 };
+
+// A Dispatcher instance for use in registering custom worker sources.
+var dispatcher;
+function getDispatcher () {
+    if (!dispatcher) {
+        dispatcher = new Dispatcher(getWorkerPool(), {});
+    }
+    return dispatcher;
+}
 
 
 /**
