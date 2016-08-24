@@ -12,9 +12,8 @@ var EXTENT = require('../data/bucket').EXTENT;
 module.exports = SourceCache;
 
 /**
- * A tile pyramid is a specialized cache and datastructure
- * that contains tiles. It's used by sources to manage their
- * data.
+ * A `SourceCache` contains cached tiles for a source. It also determines when new tiles
+ * should be loaded / unloaded based on the map position.
  *
  * @param {Object} options
  * @private
