@@ -34,8 +34,8 @@ var defaultOptions = {
     light: {
         lightAnchor: 'viewport',
         lightDirection: [-0.5, -0.3, 1.0],
-        lightColor: 'rgba(1,1,1,1)',
-        lightIntensity: 0.75
+        lightColor: 'white',
+        lightIntensity: 0.5
     },
 
     minZoom: defaultMinZoom,
