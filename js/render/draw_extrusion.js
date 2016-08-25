@@ -31,7 +31,7 @@ function draw(painter, source, layer, coords) {
         drawExtrusion(painter, source, layer, coords[i]);
     }
 
-    if (!painter.isOpaquePass && layer.paint['extrusion-antialias']) {
+    if (!painter.isOpaquePass && layer.paint['extrusion-edge-color']) {
         for (var j = 0; j < coords.length; j++) {
             drawExtrusionStroke(painter, source, layer, coords[j]);
         }
@@ -201,17 +201,13 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var outlineDefines = ['OUTLINE'];
-
     var image = layer.paint['extrusion-pattern'];
-    var color = layer.paint['extrusion-outline-color'];
-    if (!color) outlineDefines.push('DEFAULT_COLOR');
+    var color = layer.paint['extrusion-edge-color'];
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
-        // TODO extrusion pattern with antialias & no color specified?
-        (image && !color) ? 'extrusionpattern' : 'extrusion',
-        programOptions.defines.concat(outlineDefines),
+        'extrusion',
+        programOptions.defines.concat('OUTLINE'),
         programOptions.vertexPragmas,
         programOptions.fragmentPragmas
     );
@@ -248,12 +244,17 @@ function setMatrix(program, painter, coord, tile, layer) {
 }
 
 function setLighting(program, painter) {
+    var gl = painter.gl;
+
     var _ld = painter.light.lightDirection,
         lightdir = [_ld.x, _ld.y, _ld.z];
     var lightMat = mat3.create();
     if (painter.light.lightAnchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
     vec3.transformMat3(lightdir, lightdir, lightMat);
-    painter.gl.uniform3fv(program.u_lightdir, lightdir);
+
+    gl.uniform3fv(program.u_lightdir, lightdir);
+    gl.uniform1f(program.u_lightintensity, painter.light.lightIntensity);
+    gl.uniform3fv(program.u_lightcolor,painter.light.lightColor.slice(0,3));
 }
 
 
