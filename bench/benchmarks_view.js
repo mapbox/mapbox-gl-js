@@ -36,7 +36,7 @@ var BenchmarksView = React.createClass({
         var results = this.state.results[name];
         var that = this;
 
-        return <div key={benchmarkName}>
+        return <div key={benchmarkName} className='space-bottom'>
             <h3 className={[
                 this.getBenchmarkStatus(benchmarkName) === 'waiting' ? 'quiet' : ''
             ].join(' ')}>{benchmarkName}</h3>
@@ -54,10 +54,7 @@ var BenchmarksView = React.createClass({
                 }}
                 style={{cursor: 'pointer'}}
                 key={targetName}
-                className={[
-                    'space-bottom',
-                    results.status === 'waiting' ? 'quiet' : ''
-                ].join(' ')}>
+                className={results.status === 'waiting' ? 'quiet' : ''}>
             <strong>{targetName}:</strong> {results.message || '...'}
         </div>;
     },
@@ -118,16 +115,21 @@ var BenchmarksView = React.createClass({
     },
 
     getInitialState: function() {
-        return {
-            results: util.mapObject(this.props.benchmarks, function(targetBenchmarks, benchmarkName) {
-                return util.mapObject(targetBenchmarks, function(benchmark, targetName) {
-                    return {
+        var results = {};
+
+        for (var benchmarkName in this.props.benchmarks) {
+            for (var targetName in this.props.benchmarks[benchmarkName]) {
+                if (!this.props.benchmarkFilter || this.props.benchmarkFilter(benchmarkName, targetName)) {
+                    results[benchmarkName] = results[benchmarkName] || {};
+                    results[benchmarkName][targetName] = {
                         status: 'waiting',
                         logs: []
                     };
-                });
-            })
-        };
+                }
+            }
+        }
+
+        return { results: results };
     },
 
     componentDidMount: function() {
@@ -216,9 +218,9 @@ var clipboard = new Clipboard('.clipboard');
 ReactDOM.render(
     <BenchmarksView
         benchmarks={window.mapboxglBenchmarks}
-        benchmarkFilter={function(name) {
-            var filterName = window.location.hash.substr(1);
-            return !filterName || name === filterName;
+        benchmarkFilter={function(benchmarkName, targetName) {
+            var benchmarkNameFilter = window.location.hash.substr(1);
+            return !benchmarkNameFilter || benchmarkName === benchmarkNameFilter;
         }}
     />,
     document.getElementById('benchmarks')
