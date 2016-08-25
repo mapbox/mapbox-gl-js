@@ -985,6 +985,24 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Returns a Boolean indicating whether the map currently in a "moving" state.
+     *
+     * Returns `false` if the style is not yet fully loaded,
+     * or if there has been a change to the sources or style that
+     * has not yet fully loaded.
+     *
+     * @returns {boolean} A Boolean indicating whether the map is fully loaded.
+     */
+    isMoving: function() {
+        if (this.zooming ||
+            this.rotating ||
+            this.pitching ||
+            map.dragPan._active ||
+            map.dragRotate._active) return true;
+        return false;
+    },
+
+    /**
      * Update this map's style and sources, and re-render the map.
      *
      * @param {boolean} updateStyle mark the map's style for reprocessing as
