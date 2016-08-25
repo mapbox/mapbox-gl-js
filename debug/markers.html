@@ -46,20 +46,22 @@ function addRandomMarker() {
 
     var lng = w + (e - w) * Math.random();
     var lat = s + (n - s) * Math.random();
+    var popup = new mapboxgl.Popup().setText('hello hi');
 
     var marker = new mapboxgl.Marker()
         .setLngLat([lng, lat])
+        .setPopup(popup)
         .addTo(map);
 
     marker.getElement().onclick = function(e) {
-        alert('Hello world');
-        e.stopPropagation();
+        alert('clicked me');
     };
 }
 
 for (var i = 0; i < 100; i++) addRandomMarker();
 
 map.addControl(new mapboxgl.Navigation());
+
 </script>
 
 </body>

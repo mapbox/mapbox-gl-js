@@ -4,8 +4,10 @@
 module.exports = Marker;
 
 var DOM = require('../util/dom');
+var util = require('../util/util');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
+var Popup = require('./popup');
 
 /**
  * Creates a marker component
@@ -36,7 +38,7 @@ Marker.prototype = {
      * @param {Map} map
      * @returns {Marker} `this`
      */
-    addTo: function(map) {
+    addTo: function (map) {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._el);
@@ -52,13 +54,14 @@ Marker.prototype = {
      * marker.remove();
      * @returns {Marker} `this`
      */
-    remove: function() {
+    remove: function () {
         if (this._map) {
             this._map.off('move', this._update);
             this._map = null;
         }
         var parent = this._el.parentNode;
         if (parent) parent.removeChild(this._el);
+        if (this._popup) this._closePopup();
         return this;
     },
 
@@ -66,7 +69,7 @@ Marker.prototype = {
      * Get the marker's geographical location
      * @returns {LngLat}
      */
-    getLngLat: function() {
+    getLngLat: function () {
         return this._lngLat;
     },
 
@@ -75,19 +78,91 @@ Marker.prototype = {
      * @param {LngLat} lnglat
      * @returns {Marker} `this`
      */
-    setLngLat: function(lnglat) {
+    setLngLat: function (lnglat) {
         this._lngLat = LngLat.convert(lnglat);
+        if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;
     },
 
-    getElement: function() {
+    getElement: function () {
         return this._el;
     },
 
-    _update: function() {
+    /**
+     * Binds a Popup to the Marker
+     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup 
+     * set on this `Marker` instance is unset
+     * @returns {Marker} `this`
+     */
+
+    setPopup: function (popup) {
+        if (popup == null) {
+            this._closePopup();
+            delete this._popupHandlersAdded;
+            delete this._popup;
+        } else if (popup instanceof Popup) {
+            this._popup = popup;
+        } else {
+            util.warnOnce('Marker.setPopup only accepts an instance of the Popup class as an argument. If no argument is provided, the popup is unset from this Marker instance');
+        }
+
+        if (this._popup && this._lngLat) this._popup.setLngLat(this._lngLat);
+
+        if (!this._popupHandlersAdded) {
+            this.getElement().addEventListener('click', this._openPopup.bind(this));
+            this._popupHandlersAdded = true;
+        }
+        return this;
+    },
+
+    /**
+     * Returns the Popup instance that is bound to the Marker
+     * @returns {Popup} popup
+     */
+    getPopup: function () {
+        return this._popup;
+    },
+
+    /**
+     * Opens or closes the bound popup, depending on the current state
+     * @returns {Marker} `this`
+     */
+    togglePopup: function () {
+        if (this._popup) {
+            if (this._popup._map) {
+                this._closePopup();
+            } else {
+                this._openPopup();
+            }
+        }
+    },
+
+    _openPopup: function (e) {
+        // prevent event from bubbling up to the map canvas
+        e.stopPropagation();
+
+        if (!this._popup || !this._map) return;
+
+        if (!this._popup._map) {
+            this._popup.addTo(this._map);
+        }
+
+        return this;
+    },
+
+    _closePopup: function () {
+        if (this._popup) {
+            this._popup.remove();
+        }
+
+        return this;
+    },
+
+    _update: function () {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
         DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
+
