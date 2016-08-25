@@ -2,7 +2,7 @@
 
 var Evented = require('../util/evented');
 var util = require('../util/util');
-var urlResolve = require('resolve-url');
+var window = require('../util/window');
 var EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = GeoJSONSource;
@@ -150,7 +150,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         var options = util.extend({}, this.workerOptions);
         var data = this._data;
         if (typeof data === 'string') {
-            options.url = typeof window != 'undefined' ? urlResolve(window.location.href, data) : data;
+            options.url = resolveURL(data);
         } else {
             options.data = JSON.stringify(data);
         }
@@ -220,3 +220,9 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         };
     }
 });
+
+function resolveURL(url) {
+    var a = window.document.createElement('a');
+    a.href = url;
+    return a.href;
+}

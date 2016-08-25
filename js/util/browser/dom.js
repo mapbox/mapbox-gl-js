@@ -1,15 +1,16 @@
 'use strict';
 
 var Point = require('point-geometry');
+var window = require('./window');
 
 exports.create = function (tagName, className, container) {
-    var el = document.createElement(tagName);
+    var el = window.document.createElement(tagName);
     if (className) el.className = className;
     if (container) container.appendChild(el);
     return el;
 };
 
-var docStyle = document.documentElement.style;
+var docStyle = window.document.documentElement.style;
 
 function testProp(props) {
     for (var i = 0; i < props.length; i++) {

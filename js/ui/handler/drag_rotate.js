@@ -1,8 +1,9 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    Point = require('point-geometry'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var Point = require('point-geometry');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = DragRotateHandler;
 
@@ -81,8 +82,8 @@ DragRotateHandler.prototype = {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
-        document.addEventListener('mousemove', this._onMove);
-        document.addEventListener('mouseup', this._onUp);
+        window.document.addEventListener('mousemove', this._onMove);
+        window.document.addEventListener('mouseup', this._onUp);
 
         this._active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
@@ -134,8 +135,8 @@ DragRotateHandler.prototype = {
 
     _onUp: function (e) {
         if (this._ignoreEvent(e)) return;
-        document.removeEventListener('mousemove', this._onMove);
-        document.removeEventListener('mouseup', this._onUp);
+        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mouseup', this._onUp);
 
         if (!this.isActive()) return;
 

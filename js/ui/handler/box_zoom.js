@@ -1,8 +1,9 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    LngLatBounds = require('../../geo/lng_lat_bounds'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var LngLatBounds = require('../../geo/lng_lat_bounds');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = BoxZoomHandler;
 
@@ -71,9 +72,9 @@ BoxZoomHandler.prototype = {
     _onMouseDown: function (e) {
         if (!(e.shiftKey && e.button === 0)) return;
 
-        document.addEventListener('mousemove', this._onMouseMove, false);
-        document.addEventListener('keydown', this._onKeyDown, false);
-        document.addEventListener('mouseup', this._onMouseUp, false);
+        window.document.addEventListener('mousemove', this._onMouseMove, false);
+        window.document.addEventListener('keydown', this._onKeyDown, false);
+        window.document.addEventListener('mouseup', this._onMouseUp, false);
 
         DOM.disableDrag();
         this._startPos = DOM.mousePos(this._el, e);
@@ -129,9 +130,9 @@ BoxZoomHandler.prototype = {
     _finish: function () {
         this._active = false;
 
-        document.removeEventListener('mousemove', this._onMouseMove, false);
-        document.removeEventListener('keydown', this._onKeyDown, false);
-        document.removeEventListener('mouseup', this._onMouseUp, false);
+        window.document.removeEventListener('mousemove', this._onMouseMove, false);
+        window.document.removeEventListener('keydown', this._onKeyDown, false);
+        window.document.removeEventListener('mouseup', this._onMouseUp, false);
 
         this._container.classList.remove('mapboxgl-crosshair');
 

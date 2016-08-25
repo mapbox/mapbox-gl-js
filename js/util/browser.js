@@ -1,5 +1,9 @@
 'use strict';
 
+var window = require('./window');
+
+exports.window = window;
+exports.document = window.document;
 /*
  * When browserify builds Mapbox GL JS, it redirects all require() statements
  * from this file, js/util/browser.js, to js/util/browser/browser.js.
@@ -8,13 +12,6 @@
  * is comfortable running under node.js, which is why it's the default require:
  * it's used for tests.
  */
-
-var window = {
-    addEventListener: function() {},
-    removeEventListener: function() {}
-};
-
-exports.window = window;
 
 exports.frame = function(fn) {
     return setImmediate(fn);

@@ -7,7 +7,10 @@
  * @private
  */
 
+var window = require('./window');
+
 exports.window = window;
+exports.document = window.document;
 
 /**
  * Provides a function that outputs milliseconds: either performance.now()
@@ -76,7 +79,7 @@ exports.timed = function (fn, dur, ctx) {
  */
 exports.supported = require('mapbox-gl-supported');
 
-exports.hardwareConcurrency = navigator.hardwareConcurrency || 4;
+exports.hardwareConcurrency = window.navigator.hardwareConcurrency || 4;
 
 Object.defineProperty(exports, 'devicePixelRatio', {
     get: function() { return window.devicePixelRatio; }
@@ -84,10 +87,10 @@ Object.defineProperty(exports, 'devicePixelRatio', {
 
 exports.supportsWebp = false;
 
-var webpImgTest = document.createElement('img');
+var webpImgTest = window.document.createElement('img');
 webpImgTest.onload = function() {
     exports.supportsWebp = true;
 };
 webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
 
-exports.supportsGeolocation = !!navigator.geolocation;
+exports.supportsGeolocation = !!window.navigator.geolocation;

@@ -1,13 +1,14 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    browser = require('../../util/browser'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
+var browser = require('../../util/browser');
+var window = require('../../util/window');
 
 module.exports = ScrollZoomHandler;
 
 
-var ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '',
+var ua = window.navigator.userAgent.toLowerCase(),
     firefox = ua.indexOf('firefox') !== -1,
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
 

@@ -3,6 +3,7 @@
 var Control = require('./control');
 var DOM = require('../../util/dom');
 var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = Navigation;
 
@@ -58,8 +59,8 @@ Navigation.prototype = util.inherit(Control, {
         if (e.button !== 0) return;
 
         DOM.disableDrag();
-        document.addEventListener('mousemove', this._onCompassMove);
-        document.addEventListener('mouseup', this._onCompassUp);
+        window.document.addEventListener('mousemove', this._onCompassMove);
+        window.document.addEventListener('mouseup', this._onCompassUp);
 
         this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
@@ -75,8 +76,8 @@ Navigation.prototype = util.inherit(Control, {
     _onCompassUp: function(e) {
         if (e.button !== 0) return;
 
-        document.removeEventListener('mousemove', this._onCompassMove);
-        document.removeEventListener('mouseup', this._onCompassUp);
+        window.document.removeEventListener('mousemove', this._onCompassMove);
+        window.document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
 
         this._el.dispatchEvent(copyMouseEvent(e));
@@ -98,7 +99,7 @@ Navigation.prototype = util.inherit(Control, {
 
 
 function copyMouseEvent(e) {
-    return new MouseEvent(e.type, {
+    return new window.MouseEvent(e.type, {
         button: 2,    // right click
         buttons: 2,   // right click
         bubbles: true,

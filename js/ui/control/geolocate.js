@@ -4,6 +4,7 @@ var Control = require('./control');
 var browser = require('../../util/browser');
 var DOM = require('../../util/dom');
 var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = Geolocate;
 
@@ -48,7 +49,7 @@ Geolocate.prototype = util.inherit(Control, {
     },
 
     _onClickGeolocate: function() {
-        navigator.geolocation.getCurrentPosition(this._success.bind(this), this._error.bind(this), geoOptions);
+        window.navigator.geolocation.getCurrentPosition(this._success.bind(this), this._error.bind(this), geoOptions);
 
         // This timeout ensures that we still call finish() even if
         // the user declines to share their location in Firefox
