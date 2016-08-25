@@ -6,6 +6,7 @@ var util = require('../util/util');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
+var Point = require('point-geometry');
 
 /**
  * A popup component.
@@ -16,10 +17,18 @@ var LngLat = require('../geo/lng_lat');
  *   top right corner of the popup.
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
- * @param {string} options.anchor - A string indicating the popup's location relative to
+ * @param {string} [options.anchor] - A string indicating the popup's location relative to
  *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
- * `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+ *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
+ *   dynamically set to ensure the popup falls within the map container with a preference
+ *   for `'bottom'`.
+ * @param {number|PointLike|{[position: string]: PointLike}} [options.offset] -
+ *  A pixel offset applied to the popup's location specified as:
+ *   - a single number specifying a distance from the popup's location
+ *   - a [`PointLike`](#PointLike) specifying a constant offset
+ *   - an object of [`PointLike`](#PointLike)s specifing an offset for each anchor position
+ *  Negative offsets indicate left and up.
  * @example
  * var popup = new mapboxgl.Popup()
  *   .setLngLat(e.lngLat)
@@ -198,16 +207,17 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             this._container.appendChild(this._content);
         }
 
-        var pos = this._map.project(this._lngLat).round(),
-            anchor = this.options.anchor;
+        var anchor = this.options.anchor;
+        var offset = normalizeOffset(this.options.offset);
+        var pos = this._map.project(this._lngLat).round();
 
         if (!anchor) {
             var width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (pos.y < height) {
+            if (pos.y + offset.bottom[1] - height < 0) {
                 anchor = ['top'];
-            } else if (pos.y > this._map.transform.height - height) {
+            } else if (pos.y + offset.top[1] + height > this._map.transform.height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
@@ -226,6 +236,8 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             }
         }
 
+        var offsetedPos = pos.add(offset[anchor]);
+
         var anchorTranslate = {
             'top': 'translate(-50%,0)',
             'top-left': 'translate(0,0)',
@@ -243,10 +255,62 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
         }
         classList.add('mapboxgl-popup-anchor-' + anchor);
 
-        DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + pos.x + 'px,' + pos.y + 'px)');
+        DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + offsetedPos.x + 'px,' + offsetedPos.y + 'px)');
     },
 
     _onClickClose: function() {
         this.remove();
     }
 });
+
+function normalizeOffset(offset) {
+
+    if (!offset) {
+        return normalizeOffset(new Point(0, 0));
+
+    } else if (typeof offset === 'number') {
+        // input specifies a radius from which to calculate offsets at all positions
+        var cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
+        return {
+            'top': new Point(0, offset),
+            'top-left': new Point(cornerOffset, cornerOffset),
+            'top-right': new Point(-cornerOffset, cornerOffset),
+            'bottom': new Point(0, -offset),
+            'bottom-left': new Point(cornerOffset, -cornerOffset),
+            'bottom-right': new Point(-cornerOffset, -cornerOffset),
+            'left': new Point(offset, 0),
+            'right': new Point(-offset, 0)
+        };
+
+    } else if (isPointLike(offset)) {
+        // input specifies a single offset to be applied to all positions
+        var convertedOffset = Point.convert(offset);
+        return {
+            'top': convertedOffset,
+            'top-left': convertedOffset,
+            'top-right': convertedOffset,
+            'bottom': convertedOffset,
+            'bottom-left': convertedOffset,
+            'bottom-right': convertedOffset,
+            'left': convertedOffset,
+            'right': convertedOffset
+        };
+
+    } else {
+        // input specifies an offset per position
+        return {
+            'top': Point.convert(offset['top']),
+            'top-left': Point.convert(offset['top-left']),
+            'top-right': Point.convert(offset['top-right']),
+            'bottom': Point.convert(offset['bottom']),
+            'bottom-left': Point.convert(offset['bottom-left']),
+            'bottom-right': Point.convert(offset['bottom-right']),
+            'left': Point.convert(offset['left']),
+            'right': Point.convert(offset['right'])
+        };
+    }
+}
+
+function isPointLike(input) {
+    return input instanceof Point || Array.isArray(input);
+}

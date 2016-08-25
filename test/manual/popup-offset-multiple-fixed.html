@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+
+    <link rel='stylesheet' href='../../dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<script src='../../dist/mapbox-gl-dev.js'></script>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamZpcmUiLCJhIjoiZTFlNmQ3N2MzYmM2YzVjMzhkOTM2NTRhYzNiNGZiNGYifQ.1W47kmoEUpTJa3YIFefxUQ';
+
+    /* map with grey background to increase legibility of white popups */
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: {
+            'version': 8,
+            'sources': {},
+            'layers': [
+                {
+                    'id': 'background',
+                    'type': 'background',
+                    'paint': {
+                        'background-color': '#999'
+                    }
+                }
+            ]
+        }
+    });
+
+    var width = map.getContainer().offsetWidth,
+        height = map.getContainer().offsetHeight;
+
+    /* create a set of LngLat locations for all parts of the map which relate to a popup anchor option */
+    var lngLatLocations = {
+        'top-left': map.unproject([10, 10]),
+        'top': map.unproject([width / 2, 10]),
+        'top-right': map.unproject([width - 10, 10]),
+        'right': map.unproject([width - 10, height / 2]),
+        'bottom-right': map.unproject([width - 10, height - 10]),
+        'bottom': map.unproject([width / 2, height - 10]),
+        'bottom-left': map.unproject([10, height - 10]),
+        'left': map.unproject([10, height / 2]),
+        'center': map.unproject([width / 2, height / 2])
+    };
+
+    /* we have a complex marker which we'll need to define popup offsets for each of the popup anchors */
+    var markerWidth = 76;
+    var markerHeight = 101;
+    var markerRadius = markerWidth / 2;
+    var linearOffset = Math.round(Math.sqrt(0.5 * Math.pow(markerRadius, 2)));
+
+    var popupOffsets = {
+        'top': [0, 0],
+        'top-left': [0,0],
+        'top-right': [0,0],
+        'bottom': [0, -markerHeight],
+        'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+        'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+        'left': [markerRadius, (markerHeight - markerRadius) * -1],
+        'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+    };
+
+    map.on('load', function () {
+        /* create the markers */
+        Object.keys(lngLatLocations).map(function(loc) {
+            var img = document.createElement('img');
+            img.src = 'marker.png';
+            img.style.width = markerWidth + 'px';
+            img.style.height = markerHeight + 'px';
+            var marker = new mapboxgl.Marker(img, {
+                offset: {
+                    x: Math.round(-markerWidth / 2),
+                    y: -markerHeight
+                }
+            })
+            .setLngLat(lngLatLocations[loc])
+            .addTo(map);
+        });
+    });
+
+    /* create the popups */
+    /* this is a complex marker, so the popup offset is an object of positions for each anchor */
+    Object.keys(lngLatLocations).map(function(loc) {
+        (new mapboxgl.Popup({ offset: popupOffsets }))
+            .setLngLat(lngLatLocations[loc])
+            .setText(loc)
+            .addTo(map);
+    });
+</script>
+</body>
+</html>
