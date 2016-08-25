@@ -34,7 +34,7 @@ test('basic', function(t) {
             })]
         };
 
-        tile.parse(new Wrapper(features), layerFamilies, {}, null, function(err, result) {
+        tile.parse(new Wrapper(features), layerFamilies, {}, function(err, result) {
             t.equal(err, null);
             t.ok(result.buckets[0]);
             t.end();
@@ -59,7 +59,7 @@ test('basic', function(t) {
             })]
         };
 
-        tile.parse(new Wrapper(features), layerFamilies, {}, null, function(err, result) {
+        tile.parse(new Wrapper(features), layerFamilies, {}, function(err, result) {
             t.equal(err, null);
             t.equal(Object.keys(result.buckets[0].arrays).length, 1, 'array groups exclude hidden layer');
             t.end();

@@ -3,6 +3,7 @@ var ajax = require('../util/ajax');
 var vt = require('vector-tile');
 var Protobuf = require('pbf');
 var WorkerTile = require('./worker_tile');
+var util = require('../util/util');
 
 module.exports = VectorTileWorkerSource;
 
@@ -58,7 +59,12 @@ VectorTileWorkerSource.prototype = {
             if (!data) return callback(null, null);
 
             tile.data = data.tile;
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, data.rawTileData, callback);
+            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, function (err, result, transferrables) {
+                if (err) return callback(err);
+                callback(null,
+                    util.extend({rawTileData: data.rawTileData}, result),
+                    transferrables.concat(data.rawTileData));
+            });
 
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = tile;
@@ -77,7 +83,7 @@ VectorTileWorkerSource.prototype = {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             var tile = loaded[uid];
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, params.rawTileData, callback);
+            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, callback);
         }
     },
 

@@ -23,7 +23,7 @@ function WorkerTile(params) {
     this.showCollisionBoxes = params.showCollisionBoxes;
 }
 
-WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, callback) {
+WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
 
     this.status = 'parsing';
     this.data = data;
@@ -208,7 +208,6 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
         var collisionBoxArray = tile.collisionBoxArray.serialize();
         var symbolInstancesArray = tile.symbolInstancesArray.serialize();
         var symbolQuadsArray = tile.symbolQuadsArray.serialize();
-        var transferables = [rawTileData].concat(featureIndex_.transferables).concat(collisionTile_.transferables);
         var nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
 
         callback(null, {
@@ -217,9 +216,10 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, rawTileData, c
             collisionTile: collisionTile_.data,
             collisionBoxArray: collisionBoxArray,
             symbolInstancesArray: symbolInstancesArray,
-            symbolQuadsArray: symbolQuadsArray,
-            rawTileData: rawTileData
-        }, getTransferables(nonEmptyBuckets).concat(transferables));
+            symbolQuadsArray: symbolQuadsArray
+        }, getTransferables(nonEmptyBuckets)
+            .concat(featureIndex_.transferables)
+            .concat(collisionTile_.transferables));
     }
 };
 

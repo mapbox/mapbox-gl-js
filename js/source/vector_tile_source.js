@@ -58,16 +58,13 @@ VectorTileSource.prototype = util.inherit(Evented, {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        if (tile.workerID) {
-            if (tile.state === 'loading') {
-                // schedule tile reloading after it has been loaded
-                tile.reloadCallback = callback;
-            } else {
-                params.rawTileData = tile.rawTileData;
-                this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
-            }
-        } else {
+        if (!tile.workerID) {
             tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
+        } else if (tile.state === 'loading') {
+            // schedule tile reloading after it has been loaded
+            tile.reloadCallback = callback;
+        } else {
+            this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
         }
 
         function done(err, data) {

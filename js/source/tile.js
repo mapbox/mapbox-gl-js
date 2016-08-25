@@ -57,12 +57,15 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
+        if (data.rawTileData) {
+            this.rawTileData = data.rawTileData;
+        }
+
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
-        this.rawTileData = data.rawTileData;
+        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = unserializeBuckets(data.buckets, style);
     },
 
