@@ -39,22 +39,24 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
         var source = params.source,
             coord = params.coord;
 
-        if (!this._geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
+        if (!this._geoJSONIndexes[source]) {
+            return callback(null, null);  // we couldn't load the file
+        }
 
         var geoJSONTile = this._geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
-        if (geoJSONTile) {
-            var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-            geojsonWrapper.name = '_geojsonTileLayer';
-            var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
-            if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-                // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-                pbf = new Uint8Array(pbf);
-            }
-            callback(null, { tile: geojsonWrapper, rawTileData: pbf.buffer });
-            // tile.parse(geojsonWrapper, this.layerFamilies, this.actor, rawTileData, callback);
-        } else {
+        if (!geoJSONTile) {
             return callback(null, null); // nothing in the given tile
         }
+
+        var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+        geojsonWrapper.name = '_geojsonTileLayer';
+        var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
+            // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
+            pbf = new Uint8Array(pbf);
+        }
+        geojsonWrapper.rawData = pbf.buffer;
+        callback(null, geojsonWrapper);
     },
 
     /**

@@ -49,27 +49,27 @@ VectorTileWorkerSource.prototype = {
         if (!this.loading[source])
             this.loading[source] = {};
 
-        var tile = this.loading[source][uid] = new WorkerTile(params);
-        tile.abort = this.loadVectorData(params, done.bind(this));
+        var workerTile = this.loading[source][uid] = new WorkerTile(params);
+        workerTile.abort = this.loadVectorData(params, done.bind(this));
 
-        function done(err, data) {
+        function done(err, vectorTile) {
             delete this.loading[source][uid];
 
             if (err) return callback(err);
-            if (!data) return callback(null, null);
+            if (!vectorTile) return callback(null, null);
 
-            tile.data = data.tile;
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, function (err, result, transferrables) {
+            workerTile.vectorTile = vectorTile;
+            workerTile.parse(vectorTile, this.styleLayers.getLayerFamilies(), this.actor, function (err, result, transferrables) {
                 if (err) return callback(err);
 
                 // Not transferring rawTileData because the worker needs to retain its copy.
                 callback(null,
-                    util.extend({rawTileData: data.rawTileData}, result),
+                    util.extend({rawTileData: vectorTile.rawData}, result),
                     transferrables);
             });
 
             this.loaded[source] = this.loaded[source] || {};
-            this.loaded[source][uid] = tile;
+            this.loaded[source][uid] = workerTile;
         }
     },
 
@@ -84,8 +84,8 @@ VectorTileWorkerSource.prototype = {
         var loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, callback);
+            var workerTile = loaded[uid];
+            workerTile.parse(workerTile.vectorTile, this.styleLayers.getLayerFamilies(), this.actor, callback);
         }
     },
 
@@ -121,16 +121,38 @@ VectorTileWorkerSource.prototype = {
     },
 
     /**
+     * @class VectorTile
+     *
+     * The result passed to the `loadVectorData` callback must conform to the interface established
+     * by the `VectorTile` class from the [vector-tile](https://www.npmjs.com/package/vector-tile)
+     * npm package. In addition, it must have a `rawData` property containing an `ArrayBuffer`
+     * with protobuf data conforming to the
+     * [Mapbox Vector Tile specification](https://github.com/mapbox/vector-tile-spec).
+     *
+     * @property {ArrayBuffer} rawData
+     * @private
+     */
+
+    /**
+     * @callback LoadVectorDataCallback
+     * @param {Error?} error
+     * @param {VectorTile?} vectorTile
+     * @private
+     */
+
+    /**
      * @param {object} params
      * @param {string} params.url The URL of the tile PBF to load.
+     * @param {LoadVectorDataCallback} callback
      */
     loadVectorData: function (params, callback) {
         var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
         return function abort () { xhr.abort(); };
-        function done(err, data) {
+        function done(err, arrayBuffer) {
             if (err) { return callback(err); }
-            var tile = new vt.VectorTile(new Protobuf(data));
-            callback(err, { tile: tile, rawTileData: data });
+            var vectorTile = new vt.VectorTile(new Protobuf(arrayBuffer));
+            vectorTile.rawData = arrayBuffer;
+            callback(err, vectorTile);
         }
     },
 
@@ -140,8 +162,8 @@ VectorTileWorkerSource.prototype = {
             uid = params.uid;
 
         if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            var result = tile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
+            var workerTile = loaded[uid];
+            var result = workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
 
             if (result.result) {
                 callback(null, result.result, result.transferables);
