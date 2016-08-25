@@ -12,8 +12,13 @@ var EXTENT = require('../data/bucket').EXTENT;
 module.exports = SourceCache;
 
 /**
- * A `SourceCache` caches tiles from a `Source`. It also determines when
- * tiles should be loaded or unloaded.
+ * `SourceCache` is responsible for 
+ * 
+ *  - creating an instance of `Source`
+ *  - forwarding events from `Source`
+ *  - caching tiles loaded from an instance of `Source`
+ *  - loading the tiles needed to render a given viewport
+ *  - unloading the cached tiles not needed to render a given viewport
  *
  * @param {Object} options
  * @private
