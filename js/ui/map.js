@@ -985,7 +985,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns a Boolean indicating whether the map is currently in a "moving" state. 
+     * Returns a Boolean indicating whether the map is currently in a "moving" state.
      * Returns `false` if zooming, rotating, pitching, and dragging are all inactive.
      *
      * @returns {boolean} A Boolean indicating whether the map is moving.
@@ -994,8 +994,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this.zooming ||
             this.rotating ||
             this.pitching ||
-            map.dragPan._active ||
-            map.dragRotate._active) return true;
+            this.dragPan._active ||
+            this.dragRotate._active) return true;
         return false;
     },
 
