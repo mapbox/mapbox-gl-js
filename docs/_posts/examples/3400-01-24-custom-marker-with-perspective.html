@@ -44,7 +44,10 @@ function addAnotherMarker() {
     p++;
 
     var marker = new mapboxgl.Marker(null, {
-        perspective: true,
+        pitchScale: true,
+        zoomScale: true,
+        nativeZoom: 15,
+        zoomFactor: 1.6,
         offset: [-25, -50]
     })
         .setLngLat(toSet)

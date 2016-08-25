@@ -42,7 +42,7 @@ npm run start-docs
 You can view the documentation at
 
 ```bash
-open http://127.0.0.1:4000/mapbox-gl-js
+open http://127.0.0.1:4000/mapbox-gl-js/
 ```
 
 ### Troubleshooting

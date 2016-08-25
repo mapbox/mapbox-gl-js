@@ -13,7 +13,10 @@ var Point = require('point-geometry');
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @param {Object=} options
  * @param {PointLike=} options.offset The offset in pixels as a [`PointLike`](#PointLike) object to apply relative to the element's top left corner. Negatives indicate left and up.
- * @param {boolean=} [options.perspective=false] Whether the marker should scale along with the map geometry.
+ * @param {boolean=} [options.pitchScale=false] Whether the marker should scale smaller into the background or larger into the foreground when the map is pitched and rotated
+ * @param {boolean=} [options.zoomScale=false] Whether the marker should scale with the map as you zoom in and out
+ * @param {number=} [options.nativeZoom=map.getZoom()] The native zoom level of the marker. If the map is at this zoom the marker will not be scaled. If zoom is greater the marker will be enlarged. If zoom is less the marker will be shrunk.
+ * @param {number=} [options.zoomFactor=1.6] The multiple by which to scale the size of the marker between each zoom level
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -27,7 +30,10 @@ function Marker(element, options) {
     this._el = element;
 
     this._offset = Point.convert(options && options.offset || [0, 0]);
-    this._perspective = options && options.perspective || false;
+    this._pitchScale = options && options.pitchScale || false;
+    this._zoomScale = options && options.zoomScale || false;
+    this._nativeZoom = options && options.nativeZoom || false;
+    this._zoomFactor = options && options.zoomFactor || 1.6;
 
     this._update = this._update.bind(this);
 }
@@ -41,7 +47,7 @@ Marker.prototype = {
     addTo: function(map) {
         this.remove();
         this._map = map;
-        this._startZoom = map.getZoom();
+        if(this._nativeZoom === false) this._nativeZoom = map.getZoom();
         map.getCanvasContainer().appendChild(this._el);
         map.on('move', this._update);
         this._update();
@@ -100,12 +106,9 @@ Marker.prototype = {
         var t = 'translate3d(' + pos.x + 'px,' + pos.y + 'px,' + z + 'px)';
 
         var scale = 1;
-        if(this._perspective) {
-            scale = this._map.transform._altitude/projection[3]; // adjust scale based on pitch+bearing
-            scale *= Math.pow(1.6, this._map.getZoom()-this._startZoom); // adjust scale based on map zoom
-
-             t += 'scale(' + scale + ',' + scale + ')';
-        }
+        if(this._pitchScale) scale = this._map.transform._altitude/projection[3]; // adjust scale based on pitch+bearing
+        if(this._zoomScale) scale *= Math.pow(this._zoomFactor, this._map.getZoom()-this._nativeZoom); // adjust scale based on map zoom
+        t += ' scale(' + scale + ',' + scale + ')';
 
         DOM.setTransform(this._el, t);
     },

@@ -31,7 +31,7 @@
 var c = [-103.3684, 43.9492];
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 15.5,
+    zoom: 15,
     center: c,
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: false
@@ -55,7 +55,10 @@ function addAnotherMarker() {
     p++;
 
     var marker = new mapboxgl.Marker(null, {
-        perspective: true,
+        pitchScale: true,
+        zoomScale: true,
+        nativeZoom: 15,
+        zoomFactor: 1.6,
         offset: [-25, -50]
     })
         .setLngLat(toSet)
