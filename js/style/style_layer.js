@@ -218,7 +218,9 @@ StyleLayer.prototype = util.inherit(Evented, {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;
         if (this.layout['visibility'] === 'none') return true;
-        if (this.paint[this.type + '-opacity'] === 0) return true;
+        if (this.isPaintValueFeatureConstant(this.type + '-opacity') && this.paint[this.type + '-opacity'] === 0) return true;
+        if (this.isPaintValueFeatureConstant(this.type + '-color') && this.paint[this.type + '-color'] && this.paint[this.type + '-color'][3] === 0) return true;
+
         return false;
     },
 
