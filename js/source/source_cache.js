@@ -12,8 +12,8 @@ var EXTENT = require('../data/bucket').EXTENT;
 module.exports = SourceCache;
 
 /**
- * `SourceCache` is responsible for 
- * 
+ * `SourceCache` is responsible for
+ *
  *  - creating an instance of `Source`
  *  - forwarding events from `Source`
  *  - caching tiles loaded from an instance of `Source`
