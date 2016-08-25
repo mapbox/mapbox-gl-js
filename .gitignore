@@ -9,6 +9,4 @@ npm-debug.log
 coverage
 .DS_Store
 .nyc_output
-/debug/access_token_generated.js
-/bench/benchmarks_view_generated.js
-/bench/benchmarks/index_generated.js
+*_generated.js
