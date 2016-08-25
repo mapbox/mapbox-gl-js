@@ -1,3 +1,22 @@
+## 0.23.0 (August 25 2016)
+
+#### New Features & Improvements
+
+* Add support for `line-color` property functions #2938
+* Add `Scale` control #2940 #3042
+* Improve polygon label placement by rendering labels at the pole of inaccessability #3038
+* Add `Popup` `offset` option #1962
+* Add `Marker#bindPopup` method #3056
+
+#### Performance Improvements
+
+* Improve performance of pages with multiple maps using a shared `WebWorker` pool #2952
+
+#### Bugfixes
+
+* Make `LatLngBounds` obey its documented argument order (`southwest`, `northeast`), allowing bounds across the dateline #2414 :warning: **BREAKING CHANGE** :warning:
+* Fix bug causing `fill-opacity` property functions to not render as expected #3061
+
 ## 0.22.1 (August 18 2016)
 
 #### New Features & Improvements
