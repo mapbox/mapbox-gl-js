@@ -18,7 +18,7 @@ var data = fs.readFileSync(process.argv[2]);
 zlib.inflate(data, function(err, data) {
     if (err) throw err;
 
-    var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
+    var tile = new VectorTile(new Protobuf(data));
 
     var stats = {};
     for (var layer_name in tile.layers) {

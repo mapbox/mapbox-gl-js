@@ -61,9 +61,11 @@ VectorTileWorkerSource.prototype = {
             tile.data = data.tile;
             tile.parse(tile.data, this.styleLayers.getLayerFamilies(), this.actor, function (err, result, transferrables) {
                 if (err) return callback(err);
+
+                // Not transferring rawTileData because the worker needs to retain its copy.
                 callback(null,
                     util.extend({rawTileData: data.rawTileData}, result),
-                    transferrables.concat(data.rawTileData));
+                    transferrables);
             });
 
             this.loaded[source] = this.loaded[source] || {};
@@ -127,7 +129,7 @@ VectorTileWorkerSource.prototype = {
         return function abort () { xhr.abort(); };
         function done(err, data) {
             if (err) { return callback(err); }
-            var tile =  new vt.VectorTile(new Protobuf(new Uint8Array(data)));
+            var tile = new vt.VectorTile(new Protobuf(data));
             callback(err, { tile: tile, rawTileData: data });
         }
     },

@@ -16,7 +16,7 @@ var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
 
 // Load a point feature from fixture tile.
-var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 var feature = vt.layers.place_label.feature(10);
 var glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')));
 

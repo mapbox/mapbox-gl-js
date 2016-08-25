@@ -10,7 +10,7 @@ var LineBucket = require('../../../js/data/bucket/line_bucket');
 var StyleLayer = require('../../../js/style/style_layer');
 
 // Load a line feature from fixture tile.
-var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 var feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {

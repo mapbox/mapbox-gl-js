@@ -19,7 +19,7 @@ var data = fs.readFileSync(process.argv[2]);
 zlib.inflate(data, function(err, data) {
     if (err) throw err;
 
-    var tile = new VectorTile(new Protobuf(new Uint8Array(data)));
+    var tile = new VectorTile(new Protobuf(data));
 
     var omit = ['osm_id', 'name', 'name_en', 'name_de', 'name_es', 'name_fr', 'maki', 'website', 'address', 'reflen', 'len', 'area'];
 
