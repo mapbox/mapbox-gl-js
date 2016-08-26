@@ -1,0 +1,80 @@
+---
+layout: example
+category: example
+title: Show drawn polygon area
+description: Use GL draw to draw a polygon and turf.js to calculate its area in square meters.
+---
+<link rel="stylesheet" type="text/css" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v0.11.15/mapbox-gl-draw.css" />
+<script type="text/javascript" src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v0.11.15/mapbox-gl-draw.js"></script>
+<script type="text/javascript" src="http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+
+<style>
+	.calculation-box {
+		height: 120px;
+		min-width: 150px;
+		position: absolute;
+		top: 230px;
+		left: 10px;
+		background-color: rgba(255, 255, 255, .9);
+		padding: 20px;
+		text-align: center;
+	}
+
+	#calculate {
+		min-height: 20px;
+		background-color: #3887be;
+		color: #fff;
+		font-family: 'Open Sans';
+		border-radius: 5px;
+		padding: 10px;
+		cursor: pointer;
+		margin: 15px 0;
+	}
+
+	p {
+		font-family: 'Open Sans';
+		margin: 0;
+		font-size: 13px;
+	}
+
+</style>
+
+<div id='map'></div>
+<div class='calculation-box'>
+	<p>Draw a polygon using the draw tools.</p>
+	<div id='calculate' class='button button'>Calculate area</div>
+	<div id='calculated-area'></div>
+</div>
+<script>
+
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/satellite-v9', //hosted style id
+    center: [-91.874,42.760], // starting position
+    zoom: 12 // starting zoom
+});
+
+var Draw = mapboxgl.Draw({ 
+	drawing: true,
+	displayControlsDefault: false,
+	controls: {
+		polygon: true,
+		trash: true
+	}
+});
+map.addControl(Draw);
+
+var calcButton = document.getElementById('calculate')
+calcButton.onclick = function(e) {
+    var data = Draw.getAll();
+    if (data.features.length > 0) {
+        var area = turf.area(data);
+        var answer = document.getElementById('calculated-area');
+        answer.innerHTML = '<p>' + area + '</p><p>square meters</p>';  
+    } else {
+        alert("Use the draw tools to draw a polygon!");
+    }
+    
+}
+
+</script>
