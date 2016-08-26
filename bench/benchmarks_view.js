@@ -14,7 +14,7 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkSummaries: function() {
-        return <div style={{paddingTop: 40, width: 370, position: 'fixed'}}>
+        return <div style={{paddingTop: 40, width: 280, position: 'fixed'}} className='text-right'>
             <h1 className="space-bottom">Benchmarks</h1>
             <div className="space-bottom small">
                 {Object.keys(this.state.results).map(this.renderBenchmarkSummary)}
@@ -36,10 +36,13 @@ var BenchmarksView = React.createClass({
         var results = this.state.results[name];
         var that = this;
 
-        return <div key={benchmarkName} className='space-bottom'>
-            <h3 className={[
-                this.getBenchmarkStatus(benchmarkName) === 'waiting' ? 'quiet' : ''
-            ].join(' ')}>{benchmarkName}</h3>
+        return <div
+                key={benchmarkName}
+                className={[
+                    'space-bottom',
+                    this.getBenchmarkStatus(benchmarkName) === 'waiting' ? 'quiet' : ''
+                ].join(' ')}>
+            <h3>{benchmarkName}</h3>
             {Object.keys(this.state.results[benchmarkName]).map(this.renderBenchmarkTargetSummary.bind(this, benchmarkName))}
         </div>;
     },
@@ -55,7 +58,7 @@ var BenchmarksView = React.createClass({
                 style={{cursor: 'pointer'}}
                 key={targetName}
                 className={results.status === 'waiting' ? 'quiet' : ''}>
-            <strong>{targetName}:</strong> {results.message || '...'}
+            <strong style={{display: 'inline-block', width: 200}}>{targetName}:</strong> {results.message || '...'}
         </div>;
     },
 
