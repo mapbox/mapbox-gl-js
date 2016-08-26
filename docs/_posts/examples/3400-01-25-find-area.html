@@ -50,11 +50,11 @@ description: Use GL draw to draw a polygon and turf.js to calculate its area in 
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/satellite-v9', //hosted style id
-    center: [-91.874,42.760], // starting position
+    center: [-91.874, 42.760], // starting position
     zoom: 12 // starting zoom
 });
 
-var Draw = mapboxgl.Draw({ 
+var draw = mapboxgl.Draw({
 	drawing: true,
 	displayControlsDefault: false,
 	controls: {
@@ -62,19 +62,18 @@ var Draw = mapboxgl.Draw({
 		trash: true
 	}
 });
-map.addControl(Draw);
+map.addControl(draw);
 
-var calcButton = document.getElementById('calculate')
-calcButton.onclick = function(e) {
-    var data = Draw.getAll();
+var calcButton = document.getElementById('calculate');
+calcButton.onclick = function() {
+    var data = draw.getAll();
     if (data.features.length > 0) {
         var area = turf.area(data);
         var answer = document.getElementById('calculated-area');
-        answer.innerHTML = '<p><strong>' + area + '</strong></p><p>square meters</p>';  
+        answer.innerHTML = '<p><strong>' + area + '</strong></p><p>square meters</p>';
     } else {
         alert("Use the draw tools to draw a polygon!");
     }
-    
-}
+};
 
 </script>
