@@ -10,13 +10,13 @@ description: Use GL draw to draw a polygon and turf.js to calculate its area in 
 
 <style>
 	.calculation-box {
-		height: 120px;
-		min-width: 150px;
+		height: 140px;
+		width: 150px;
 		position: absolute;
-		top: 230px;
+		top: 210px;
 		left: 10px;
 		background-color: rgba(255, 255, 255, .9);
-		padding: 20px;
+		padding: 15px;
 		text-align: center;
 	}
 
@@ -28,7 +28,7 @@ description: Use GL draw to draw a polygon and turf.js to calculate its area in 
 		border-radius: 5px;
 		padding: 10px;
 		cursor: pointer;
-		margin: 15px 0;
+		margin: 10px 0;
 	}
 
 	p {
@@ -70,7 +70,7 @@ calcButton.onclick = function(e) {
     if (data.features.length > 0) {
         var area = turf.area(data);
         var answer = document.getElementById('calculated-area');
-        answer.innerHTML = '<p>' + area + '</p><p>square meters</p>';  
+        answer.innerHTML = '<p><strong>' + area + '</strong></p><p>square meters</p>';  
     } else {
         alert("Use the draw tools to draw a polygon!");
     }
