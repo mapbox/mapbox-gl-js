@@ -16,3 +16,7 @@ registerBenchmark('query-point', require('./benchmarks/query_point'));
 registerBenchmark('query-box', require('./benchmarks/query_box'));
 registerBenchmark('geojson-setdata-small', require('./benchmarks/geojson_setdata_small'));
 registerBenchmark('geojson-setdata-large', require('./benchmarks/geojson_setdata_large'));
+
+// Ensure the global worker pool is never drained. Browsers have resource limits
+// on the max number of workers that can be created per page.
+require('../../util/global_worker_pool')().acquire(-1);
