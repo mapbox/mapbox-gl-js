@@ -9,6 +9,9 @@ set -o pipefail
 # add npm packages to $PATH
 PATH=$(pwd)/node_modules/.bin:$PATH
 
+# add python packages to $PATH
+PATH=$(python -m site --user-base)/bin:${PATH}
+
 # set up code coverage instrumentation
 rm -rf coverage .nyc_output
 
@@ -29,3 +32,9 @@ istanbul cover --dir .nyc_output --include-pid --report none --print none test/q
 # send coverage report to coveralls
 nyc report --reporter=lcov
 (node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
+
+# upload benchmark
+if [ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "benchmark-master" ]; then
+    npm run build-benchmarks
+    aws s3 cp --acl public-read --content-type  dist/benchmarks_generated.js s3://mapbox-gl-js/master/benchmarks.js
+fi

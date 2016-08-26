@@ -36,7 +36,7 @@ module.exports = function(options) {
                 maps[i].remove();
             }
             evented.fire('end', {
-                message: formatNumber(duration) + ' ms, loaded ' + mapsOnPage + ' maps.',
+                message: formatNumber(duration) + ' ms',
                 score: duration
             });
             done();
