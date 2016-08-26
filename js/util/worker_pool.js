@@ -16,7 +16,7 @@ function WorkerPool() {
 WorkerPool.prototype = {
     acquire: function (mapId) {
         if (!this.workers) {
-            cancelTimeout(this.timeoutId);
+            clearTimeout(this.timeoutId);
 
             // Lazily look up the value of mapboxgl.workerCount.  This allows
             // client code a chance to set it while circumventing cyclic
@@ -36,7 +36,7 @@ WorkerPool.prototype = {
 
     release: function (mapId) {
         delete this.active[mapId];
-        cancelTimeout(this.timeoutId);
+        clearTimeout(this.timeoutId);
         this.timeoutId = setTimeout(function() {
             if (Object.keys(this.active).length === 0) {
                 this.workers.forEach(function (w) { w.terminate(); });
