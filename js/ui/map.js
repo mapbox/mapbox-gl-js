@@ -133,6 +133,7 @@ var defaultOptions = {
 var Map = module.exports = function(options) {
 
     options = util.extend({}, defaultOptions, options);
+    options.light = util.extend({}, defaultOptions.light, options.light);
 
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
