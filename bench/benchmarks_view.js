@@ -54,7 +54,7 @@ var BenchmarksView = React.createClass({
                 style={{cursor: 'pointer'}}
                 key={targetName}
                 className={results.status === 'waiting' ? 'quiet' : ''}>
-            <strong style={{display: 'inline-block', width: 200}}>{targetName}:</strong> {results.message || '...'}
+            <strong>{targetName}:</strong> {results.message || '...'}
         </div>;
     },
 
