@@ -1,3 +1,5 @@
+'use strict';
+
 var accessToken = (
     process.env.MapboxAccessToken ||
     process.env.MAPBOX_ACCESS_TOKEN ||

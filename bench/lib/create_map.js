@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('../../js/util/util');
 var mapboxgl = require('../../js/mapbox-gl');
 
@@ -23,4 +25,4 @@ module.exports = function createMap(options) {
     });
 
     return map;
-}
+};

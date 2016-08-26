@@ -5,7 +5,7 @@ var util = require('../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var createMap = require('../lib/create_map');
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var mapsOnPage = 6;

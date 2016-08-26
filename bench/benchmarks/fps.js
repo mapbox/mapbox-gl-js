@@ -8,7 +8,7 @@ var createMap = require('../lib/create_map');
 
 var DURATION_MILLISECONDS = 5 * 1000;
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var map = createMap({

@@ -1,7 +1,6 @@
 'use strict';
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-var util = require('../js/util/util');
 var Clipboard = require('clipboard');
 
 var BenchmarksView = React.createClass({
@@ -33,9 +32,6 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkSummary: function(benchmarkName) {
-        var results = this.state.results[name];
-        var that = this;
-
         return <div
                 key={benchmarkName}
                 className={[
@@ -137,7 +133,6 @@ var BenchmarksView = React.createClass({
 
     componentDidMount: function() {
         var that = this;
-        var benchmarks = Object.keys(that.props.benchmarks);
 
         asyncSeries(Object.keys(that.state.results), function(benchmarkName, callback) {
             asyncSeries(Object.keys(that.state.results[benchmarkName]), function(targetName, callback) {
@@ -221,7 +216,7 @@ var clipboard = new Clipboard('.clipboard');
 ReactDOM.render(
     <BenchmarksView
         benchmarks={window.mapboxglBenchmarks}
-        benchmarkFilter={function(benchmarkName, targetName) {
+        benchmarkFilter={function(benchmarkName) {
             var benchmarkNameFilter = window.location.hash.substr(1);
             return !benchmarkNameFilter || benchmarkName === benchmarkNameFilter;
         }}

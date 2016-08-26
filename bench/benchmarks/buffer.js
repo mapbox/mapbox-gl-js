@@ -17,7 +17,7 @@ var accessToken = require('../lib/access_token');
 
 var SAMPLE_COUNT = 10;
 
-module.exports = function run(options) {
+module.exports = function run() {
     config.ACCESS_TOKEN = accessToken;
 
     var evented = util.extend({}, Evented);

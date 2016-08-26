@@ -14,7 +14,7 @@ for (var i = 4; i < 19; i++) {
     zoomLevels.push(i);
 }
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var sum = 0;

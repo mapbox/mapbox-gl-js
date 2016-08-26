@@ -1,3 +1,5 @@
+'use strict';
+
 window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
 
 var targetName = process.env.BENCHMARK_TARGET;

@@ -23,7 +23,7 @@ for (var x = 0; x < d; x++) {
     }
 }
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var sum = 0;

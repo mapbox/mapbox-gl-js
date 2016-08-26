@@ -9,7 +9,7 @@ var createMap = require('../lib/create_map');
 
 var featureCollection = require('../data/naturalearth-land.json');
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var map = createMap({

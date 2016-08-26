@@ -19,7 +19,7 @@ var featureCollection = {
     }]
 };
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var map = createMap({

@@ -1,3 +1,5 @@
+'use strict';
+
 mapboxgl.accessToken = getAccessToken();
 
 function getAccessToken() {
