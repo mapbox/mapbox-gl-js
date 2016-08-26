@@ -14,7 +14,7 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkSummaries: function() {
-        return <div className='col4' style={{paddingTop: 40, width: 320, position: 'fixed'}}>
+        return <div style={{paddingTop: 40, width: 370, position: 'fixed'}}>
             <h1 className="space-bottom">Benchmarks</h1>
             <div className="space-bottom small">
                 {Object.keys(this.state.results).map(this.renderBenchmarkSummary)}
@@ -72,7 +72,7 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkDetails: function() {
-        return <div style={{width: 640, marginLeft: 320, marginBottom: 60}}>
+        return <div style={{width: 590, marginLeft: 320, marginBottom: 60}}>
             {Object.keys(this.state.results).map(this.renderBenchmarkDetail)}
         </div>;
     },
