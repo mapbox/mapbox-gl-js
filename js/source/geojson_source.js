@@ -54,17 +54,15 @@ module.exports = GeoJSONSource;
  *
  * @example
  * map.getSource('some id').setData({
- *     data: {
- *        "type": "FeatureCollection",
- *        "features": [{
- *            "type": "Feature",
- *            "properties": { "name": "Null Island" },
- *            "geometry": {
- *                "type": "Point",
- *                "coordinates": [ 0, 0 ]
- *            }
- *        }]
- *     }
+ *   "type": "FeatureCollection",
+ *   "features": [{
+ *       "type": "Feature",
+ *       "properties": { "name": "Null Island" },
+ *       "geometry": {
+ *           "type": "Point",
+ *           "coordinates": [ 0, 0 ]
+ *       }
+ *   }]
  * });
  */
 function GeoJSONSource(id, options, dispatcher) {
