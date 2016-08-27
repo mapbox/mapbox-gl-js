@@ -210,6 +210,16 @@ navigation:
 }
 {% endhighlight %}
           </div>
+          <div class='space-bottom1 clearfix'>
+            <% _(ref.source_tile).each(function(prop, name) { %>
+              <%
+                // note that we omit 'tileSize' here, since VECTOR and raster
+                // both use source_tile, but tileSize is prohibited for vector sources
+              %>
+              <%  if (name === '*' || name === 'type' || name === 'tileSize') return %>
+              <%= item({prop: prop, id: "sources-vector-" + name, name: name}) %>
+            <% }); %>
+          </div>
           <table class="micro">
             <thead>
             <tr class='fill-light'>
@@ -243,6 +253,12 @@ navigation:
   "tileSize": 256
 }
 {% endhighlight %}
+          </div>
+          <div class='space-bottom1 clearfix'>
+            <% _(ref.source_tile).each(function(prop, name) { %>
+              <%  if (name === '*' || name === 'type') return %>
+              <%= item({prop: prop, id: "sources-raster-" + name, name: name}) %>
+            <% }); %>
           </div>
           <table class="micro">
             <thead>
@@ -300,6 +316,12 @@ navigation:
 }
 {% endhighlight %}
           </div>
+          <div class='space-bottom1 clearfix'>
+            <% _(ref.source_geojson).each(function(prop, name) { %>
+              <%  if (name === '*' || name === 'type') return %>
+              <%= item({prop: prop, id: "sources-geojson-" + name, name: name}) %>
+            <% }); %>
+          </div>
           <table class="micro">
             <thead>
             <tr class='fill-light'>
@@ -347,6 +369,12 @@ navigation:
 }
 {% endhighlight %}
           </div>
+          <div class='space-bottom1 clearfix'>
+            <% _(ref.source_image).each(function(prop, name) { %>
+              <%  if (name === '*' || name === 'type') return %>
+              <%= item({prop: prop, id: "sources-image-" + name, name: name}) %>
+            <% }); %>
+          </div>
           <table class="micro">
             <thead>
             <tr class='fill-light'>
@@ -393,6 +421,12 @@ navigation:
   ]
 }
 {% endhighlight %}
+          </div>
+          <div class='space-bottom1 clearfix'>
+            <% _(ref.source_video).each(function(prop, name) { %>
+              <%  if (name === '*' || name === 'type') return %>
+              <%= item({prop: prop, id: "sources-video-" + name, name: name}) %>
+            <% }); %>
           </div>
           <table class="micro">
             <thead>
