@@ -51,7 +51,11 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    loadVectorData: function(data, style) {
+    loadVectorData: function(data, painter) {
+        if (this.hasVectorData()) {
+            this.unloadVectorData(painter);
+        }
+
         this.state = 'loaded';
 
         // empty GeoJSON tile
@@ -65,8 +69,8 @@ Tile.prototype = {
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
-        this.buckets = unserializeBuckets(data.buckets, style);
+        this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
+        this.buckets = unserializeBuckets(data.buckets, painter.style);
     },
 
     /**
