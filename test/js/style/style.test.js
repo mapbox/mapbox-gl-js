@@ -801,6 +801,23 @@ test('Style#setFilter', function(t) {
         });
     });
 
+    t.test('gets a clone of the filter', function(t) {
+        var style = createStyle();
+
+        style.on('load', function() {
+            var filter1 = ['==', 'id', 1];
+            style.setFilter('symbol', filter1);
+            var filter2 = style.getFilter('symbol');
+            var filter3 = style.getLayer('symbol').filter;
+
+            t.notEqual(filter1, filter2);
+            t.notEqual(filter1, filter3);
+            t.notEqual(filter2, filter3);
+
+            t.end();
+        });
+    });
+
     t.test('sets again mutated filter', function(t) {
         var style = createStyle();
 

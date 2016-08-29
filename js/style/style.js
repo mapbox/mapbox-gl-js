@@ -525,7 +525,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getFilter: function(layer) {
-        return this.getReferentLayer(layer).filter;
+        return util.clone(this.getReferentLayer(layer).filter);
     },
 
     setLayoutProperty: function(layerId, name, value) {
@@ -777,4 +777,3 @@ Style.prototype = util.inherit(Evented, {
         }
     }
 });
-
