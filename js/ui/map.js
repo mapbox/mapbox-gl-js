@@ -189,7 +189,6 @@ var Map = module.exports = function(options) {
         });
     }
 
-    this.stacks = {};
     this._classes = [];
 
     this.resize();
