@@ -137,7 +137,7 @@ SourceCache.prototype = util.inherit(Evented, {
     },
 
     _isIdRenderable: function(id) {
-        return this._tiles[id].hasVectorData() && !this._coveredTiles[id];
+        return this._tiles[id].hasData() && !this._coveredTiles[id];
     },
 
     reload: function() {
@@ -218,7 +218,7 @@ SourceCache.prototype = util.inherit(Evented, {
             var tile = this._tiles[id];
 
             // only consider renderable tiles on higher zoom levels (up to maxCoveringZoom)
-            if (retain[id] || !tile.hasVectorData() || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
+            if (retain[id] || !tile.hasData() || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
 
             // disregard tiles that are not descendants of the given tile coordinate
             var z2 = Math.pow(2, Math.min(tile.coord.z, this.maxzoom) - Math.min(coord.z, this.maxzoom));
@@ -235,7 +235,7 @@ SourceCache.prototype = util.inherit(Evented, {
                 var parentId = tile.coord.parent(this.maxzoom).id;
                 tile = this._tiles[parentId];
 
-                if (tile && tile.hasVectorData()) {
+                if (tile && tile.hasData()) {
                     delete retain[id];
                     retain[parentId] = true;
                 }
@@ -258,7 +258,7 @@ SourceCache.prototype = util.inherit(Evented, {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
             coord = coord.parent(this.maxzoom);
             var tile = this._tiles[coord.id];
-            if (tile && tile.hasVectorData()) {
+            if (tile && tile.hasData()) {
                 retain[coord.id] = true;
                 return tile;
             }
@@ -322,7 +322,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
             retain[coord.id] = true;
 
-            if (tile.hasVectorData())
+            if (tile.hasData())
                 continue;
 
             // The tile we require is not yet loaded.
@@ -423,7 +423,7 @@ SourceCache.prototype = util.inherit(Evented, {
         if (tile.uses > 0)
             return;
 
-        if (tile.hasVectorData()) {
+        if (tile.hasData()) {
             this._cache.add(tile.coord.wrapped().id, tile);
         } else {
             tile.aborted = true;

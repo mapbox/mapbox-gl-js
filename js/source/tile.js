@@ -52,7 +52,7 @@ Tile.prototype = {
      * @private
      */
     loadVectorData: function(data, painter) {
-        if (this.hasVectorData()) {
+        if (this.hasData()) {
             this.unloadVectorData(painter);
         }
 
@@ -180,7 +180,7 @@ Tile.prototype = {
         }
     },
 
-    hasVectorData: function() {
+    hasData: function() {
         return this.state === 'loaded' || this.state === 'reloading';
     }
 };
