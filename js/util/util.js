@@ -396,11 +396,11 @@ exports.filterObject = function(input, iterator, context) {
  * @returns {boolean}
  * @private
  */
-exports.deepEqual = function deepEqual(a, b) {
+exports.deepEqual = function(a, b) {
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) return false;
         for (var i = 0; i < a.length; i++) {
-            if (!deepEqual(a[i], b[i])) return false;
+            if (!exports.deepEqual(a[i], b[i])) return false;
         }
         return true;
     }
@@ -409,7 +409,7 @@ exports.deepEqual = function deepEqual(a, b) {
         var keys = Object.keys(a);
         if (keys.length !== Object.keys(b).length) return false;
         for (var key in a) {
-            if (!deepEqual(a[key], b[key])) return false;
+            if (!exports.deepEqual(a[key], b[key])) return false;
         }
         return true;
     }
@@ -423,7 +423,7 @@ exports.deepEqual = function deepEqual(a, b) {
  * @returns {boolean}
  * @private
  */
-exports.clone = function deepEqual(input) {
+exports.clone = function(input) {
     if (Array.isArray(input)) {
         return input.map(exports.clone);
     } else if (typeof input === 'object') {
