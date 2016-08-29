@@ -696,7 +696,7 @@ test('SourceCache#findLoadedParent', function(t) {
 
         var tile = {
             coord: new TileCoord(1, 0, 0),
-            isRenderable: function() { return true; }
+            hasVectorData: function() { return true; }
         };
 
         sourceCache._tiles[tile.coord.id] = tile;

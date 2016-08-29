@@ -180,7 +180,7 @@ Tile.prototype = {
         }
     },
 
-    isRenderable: function() {
+    hasVectorData: function() {
         return this.state === 'loaded' || this.state === 'reloading';
     }
 };
