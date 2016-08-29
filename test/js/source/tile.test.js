@@ -7,6 +7,7 @@ var TileCoord = require('../../../js/source/tile_coord');
 var fs = require('fs');
 var path = require('path');
 var vtpbf = require('vt-pbf');
+var sinon = require('sinon');
 
 test('querySourceFeatures', function(t) {
     var features = [{
@@ -69,6 +70,17 @@ test('querySourceFeatures', function(t) {
         t.end();
     });
 
+    t.test('loadVectorData unloads existing data before overwriting it', function(t) {
+        var tile = new Tile(new TileCoord(1, 1, 1));
+        tile.state = 'loaded';
+        sinon.stub(tile, 'unloadVectorData');
+        var painter = {};
+
+        tile.loadVectorData(null, painter);
+
+        t.ok(tile.unloadVectorData.calledWith(painter));
+        t.end();
+    });
 
     t.end();
 });
