@@ -106,7 +106,9 @@ BoxZoomHandler.prototype = {
 
         var p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
-            bounds = new LngLatBounds(this._map.unproject(p0), this._map.unproject(p1));
+            bounds = new LngLatBounds()
+                .extend(this._map.unproject(p0))
+                .extend(this._map.unproject(p1));
 
         this._finish();
 
