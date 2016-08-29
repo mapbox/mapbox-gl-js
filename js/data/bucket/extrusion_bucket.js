@@ -18,7 +18,7 @@ ExtrusionBucket.prototype = util.inherit(Bucket, {});
 
 
 ExtrusionBucket.prototype.addExtrusionVertex = function(vertexBuffer, x, y, nx, ny, nz, t, e) {
-    const factor = Math.pow(2, 13);
+    var factor = Math.pow(2, 13);
 
     return vertexBuffer.emplaceBack(
             // a_pos
