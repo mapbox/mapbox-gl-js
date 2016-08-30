@@ -91,12 +91,14 @@ Marker.prototype = {
 
     /**
      * Binds a Popup to the Marker
-     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup 
+     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup
      * set on this `Marker` instance is unset
      * @returns {Marker} `this`
      */
 
     setPopup: function (popup) {
+        var this = that;
+
         if (popup == null) {
             this._closePopup();
             delete this._popupHandlersAdded;
@@ -110,7 +112,10 @@ Marker.prototype = {
         if (this._popup && this._lngLat) this._popup.setLngLat(this._lngLat);
 
         if (!this._popupHandlersAdded) {
-            this.getElement().addEventListener('click', this._openPopup.bind(this));
+            this.getElement().addEventListener('click', function(event) {
+                event.stopPropagation();
+                that._openPopup();
+            });
             this._popupHandlersAdded = true;
         }
         return this;
@@ -139,9 +144,6 @@ Marker.prototype = {
     },
 
     _openPopup: function (e) {
-        // prevent event from bubbling up to the map canvas
-        e.stopPropagation();
-
         if (!this._popup || !this._map) return;
 
         if (!this._popup._map) {
@@ -165,4 +167,3 @@ Marker.prototype = {
         DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
-
