@@ -156,10 +156,14 @@ We have divided our labels into categories to make them easier to use.
 - [Greggman's WebGL articles](http://webglfundamentals.org/)
 - [WebGL reference card](http://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf)
 
-### GL performance
+### GL Performance
 
 - [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
 - [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
+
+### Javascript Performance
+
+ - [JS MythBusters](http://mythbusters.js.org/)
 
 ### Misc
 
