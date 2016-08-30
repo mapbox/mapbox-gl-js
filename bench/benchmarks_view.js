@@ -3,6 +3,11 @@
 
 var Clipboard = require('clipboard');
 
+// Benchmark results seem to be more consistent with a warmup and cooldown
+// period. These values are measured in milliseconds. 
+var benchmarkCooldownTime = 250;
+var benchmarkWarmupTime  = 250;
+
 var BenchmarksView = React.createClass({
 
     render: function() {
@@ -146,31 +151,6 @@ var BenchmarksView = React.createClass({
         var that = this;
         var results = this.state.results[name][version];
 
-        results.status = 'running';
-        this.scrollToBenchmark(name, version);
-        log('dark', 'starting');
-
-        var emitter = this.props.benchmarks[name][version]();
-
-        emitter.on('log', function(event) {
-            log(event.color, event.message);
-
-        });
-
-        emitter.on('end', function(event) {
-            results.message = event.message;
-            results.status = 'ended';
-            log('green', event.message);
-            callback();
-
-        });
-
-        emitter.on('error', function(event) {
-            results.status = 'errored';
-            log('red', event.error);
-            callback();
-        });
-
         function log(color, message) {
             results.logs.push({
                 color: color || 'blue',
@@ -180,8 +160,36 @@ var BenchmarksView = React.createClass({
         }
 
         function callback() {
-            setTimeout(outerCallback, 500);
+            setTimeout(outerCallback, benchmarkCooldownTime);
         }
+
+        results.status = 'running';
+        this.scrollToBenchmark(name, version);
+        log('dark', 'starting');
+
+        setTimeout(function() {
+            var emitter = that.props.benchmarks[name][version]();
+
+            emitter.on('log', function(event) {
+                log(event.color, event.message);
+
+            });
+
+            emitter.on('end', function(event) {
+                results.message = event.message;
+                results.status = 'ended';
+                log('green', event.message);
+                callback();
+
+            });
+
+            emitter.on('error', function(event) {
+                results.status = 'errored';
+                log('red', event.error);
+                callback();
+            });
+
+        }, benchmarkWarmupTime);
     },
 
     getBenchmarkVersionStatus: function(name, version) {
