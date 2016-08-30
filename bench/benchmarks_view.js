@@ -4,7 +4,7 @@
 var Clipboard = require('clipboard');
 
 // Benchmark results seem to be more consistent with a warmup and cooldown
-// period. These values are measured in milliseconds. 
+// period. These values are measured in milliseconds.
 var benchmarkCooldownTime = 250;
 var benchmarkWarmupTime  = 250;
 
