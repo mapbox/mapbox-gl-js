@@ -1,7 +1,8 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = DragPanHandler;
 
@@ -79,11 +80,11 @@ DragPanHandler.prototype = {
         if (this.isActive()) return;
 
         if (e.touches) {
-            document.addEventListener('touchmove', this._onMove);
-            document.addEventListener('touchend', this._onTouchEnd);
+            window.document.addEventListener('touchmove', this._onMove);
+            window.document.addEventListener('touchend', this._onTouchEnd);
         } else {
-            document.addEventListener('mousemove', this._onMove);
-            document.addEventListener('mouseup', this._onMouseUp);
+            window.document.addEventListener('mousemove', this._onMove);
+            window.document.addEventListener('mouseup', this._onMouseUp);
         }
 
         this._active = false;
@@ -166,15 +167,15 @@ DragPanHandler.prototype = {
     _onMouseUp: function (e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
-        document.removeEventListener('mousemove', this._onMove);
-        document.removeEventListener('mouseup', this._onMouseUp);
+        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mouseup', this._onMouseUp);
     },
 
     _onTouchEnd: function (e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
-        document.removeEventListener('touchmove', this._onMove);
-        document.removeEventListener('touchend', this._onTouchEnd);
+        window.document.removeEventListener('touchmove', this._onMove);
+        window.document.removeEventListener('touchend', this._onTouchEnd);
     },
 
     _fireEvent: function (type, e) {

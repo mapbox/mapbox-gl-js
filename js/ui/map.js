@@ -133,7 +133,7 @@ var Map = module.exports = function(options) {
     this._bearingSnap = options.bearingSnap;
 
     if (typeof options.container === 'string') {
-        this._container = document.getElementById(options.container);
+        this._container = window.document.getElementById(options.container);
     } else {
         this._container = options.container;
     }

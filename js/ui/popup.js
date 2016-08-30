@@ -7,6 +7,7 @@ var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
+var window = require('../util/window');
 
 /**
  * A popup component.
@@ -140,7 +141,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      *   .addTo(map);
      */
     setText: function(text) {
-        return this.setDOMContent(document.createTextNode(text));
+        return this.setDOMContent(window.document.createTextNode(text));
     },
 
     /**
@@ -150,8 +151,8 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      */
     setHTML: function(html) {
-        var frag = document.createDocumentFragment();
-        var temp = document.createElement('body'), child;
+        var frag = window.document.createDocumentFragment();
+        var temp = window.document.createElement('body'), child;
         temp.innerHTML = html;
         while (true) {
             child = temp.firstChild;
@@ -169,7 +170,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      * @returns {Popup} `this`
      * @example
      * // create an element with the popup content
-     * var div = document.createElement('div');
+     * var div = window.document.createElement('div');
      * div.innerHTML = 'Hello, world!';
      * var popup = new mapboxgl.Popup()
      *   .setLngLat(e.lngLat)

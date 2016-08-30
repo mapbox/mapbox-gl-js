@@ -2,11 +2,12 @@
 
 var util = require('../util');
 var isSupported = require('mapbox-gl-supported');
+var window = require('./window');
 
 module.exports = Canvas;
 
 function Canvas(parent, container) {
-    this.canvas = document.createElement('canvas');
+    this.canvas = window.document.createElement('canvas');
 
     if (parent && container) {
         this.canvas.style.position = 'absolute';

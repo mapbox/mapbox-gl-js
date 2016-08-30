@@ -1,7 +1,9 @@
 'use strict';
 
+var window = require('./window');
+
 exports.getJSON = function(url, callback) {
-    var xhr = new XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
     xhr.onerror = function(e) {
@@ -25,7 +27,7 @@ exports.getJSON = function(url, callback) {
 };
 
 exports.getArrayBuffer = function(url, callback) {
-    var xhr = new XMLHttpRequest();
+    var xhr = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'arraybuffer';
     xhr.onerror = function(e) {
@@ -43,23 +45,23 @@ exports.getArrayBuffer = function(url, callback) {
 };
 
 function sameOrigin(url) {
-    var a = document.createElement('a');
+    var a = window.document.createElement('a');
     a.href = url;
-    return a.protocol === document.location.protocol && a.host === document.location.host;
+    return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
 }
 
 exports.getImage = function(url, callback) {
     return exports.getArrayBuffer(url, function(err, imgData) {
         if (err) return callback(err);
-        var img = new Image();
+        var img = new window.Image();
         img.onload = function() {
             callback(null, img);
             (window.URL || window.webkitURL).revokeObjectURL(img.src);
         };
-        var blob = new Blob([new Uint8Array(imgData)], { type: 'image/png' });
+        var blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
         img.src = (window.URL || window.webkitURL).createObjectURL(blob);
         img.getData = function() {
-            var canvas = document.createElement('canvas');
+            var canvas = window.document.createElement('canvas');
             var context = canvas.getContext('2d');
             canvas.width = img.width;
             canvas.height = img.height;
@@ -71,12 +73,12 @@ exports.getImage = function(url, callback) {
 };
 
 exports.getVideo = function(urls, callback) {
-    var video = document.createElement('video');
+    var video = window.document.createElement('video');
     video.onloadstart = function() {
         callback(null, video);
     };
     for (var i = 0; i < urls.length; i++) {
-        var s = document.createElement('source');
+        var s = window.document.createElement('source');
         if (!sameOrigin(urls[i])) {
             video.crossOrigin = 'Anonymous';
         }

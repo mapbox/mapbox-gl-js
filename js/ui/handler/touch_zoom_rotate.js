@@ -1,7 +1,8 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = TouchZoomRotateHandler;
 
@@ -98,8 +99,8 @@ TouchZoomRotateHandler.prototype = {
         this._gestureIntent = undefined;
         this._inertia = [];
 
-        document.addEventListener('touchmove', this._onMove, false);
-        document.addEventListener('touchend', this._onEnd, false);
+        window.document.addEventListener('touchmove', this._onMove, false);
+        window.document.addEventListener('touchend', this._onEnd, false);
     },
 
     _onMove: function (e) {
@@ -152,8 +153,8 @@ TouchZoomRotateHandler.prototype = {
     },
 
     _onEnd: function (e) {
-        document.removeEventListener('touchmove', this._onMove);
-        document.removeEventListener('touchend', this._onEnd);
+        window.document.removeEventListener('touchmove', this._onMove);
+        window.document.removeEventListener('touchend', this._onEnd);
         this._drainInertiaBuffer();
 
         var inertia = this._inertia,

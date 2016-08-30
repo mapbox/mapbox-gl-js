@@ -10,6 +10,7 @@
 module.exports = Hash;
 
 var util = require('../util/util');
+var window = require('../util/window');
 
 function Hash() {
     util.bindAll([
@@ -45,7 +46,7 @@ Hash.prototype = {
     },
 
     _onHashChange: function() {
-        var loc = location.hash.replace('#', '').split('/');
+        var loc = window.location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
