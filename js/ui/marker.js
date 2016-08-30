@@ -135,7 +135,7 @@ Marker.prototype = {
      */
     togglePopup: function () {
         if (this._popup) {
-            if (this._popup._map) {
+            if (this._popup.isOpen()) {
                 this._closePopup();
             } else {
                 this._openPopup();
@@ -146,7 +146,7 @@ Marker.prototype = {
     _openPopup: function (e) {
         if (!this._popup || !this._map) return;
 
-        if (!this._popup._map) {
+        if (!this._popup.isOpen()) {
             this._popup.addTo(this._map);
         }
 

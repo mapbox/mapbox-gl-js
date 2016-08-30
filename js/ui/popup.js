@@ -67,6 +67,13 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
     },
 
     /**
+     * @returns {boolean} `true` if the popup is open, `false` if it is closed.
+     */
+    isOpen: function() {
+        return !!this._map;
+    },
+
+    /**
      * Removes the popup from the map it has been added to.
      *
      * @example
