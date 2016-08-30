@@ -237,7 +237,6 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.z = z;
-        this.fire('zoom');
     },
 
     _updateZoomHistory: function(z) {
