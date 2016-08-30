@@ -35,7 +35,6 @@ module.exports = function() {
 
         var source = map.getSource('geojson');
 
-        evented.fire('log', {message: 'loading small feature collection'});
         setDataPerf(source, 50, featureCollection, function(err, ms) {
             map.remove();
             if (err) return evented.fire('error', {error: err});
