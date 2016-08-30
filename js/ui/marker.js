@@ -21,15 +21,16 @@ var Popup = require('./popup');
  *   .addTo(map);
  */
 function Marker(element, options) {
-    if (!element) {
-        element = DOM.create('div');
-    }
-    element.classList.add('mapboxgl-marker');
-    this._el = element;
-
     this._offset = Point.convert(options && options.offset || [0, 0]);
 
     this._update = this._update.bind(this);
+    this._onClick = this._onClick.bind(this);
+
+    if (!element) element = DOM.create('div');
+    element.classList.add('mapboxgl-marker');
+    this._element = element;
+
+    this._popup = null;
 }
 
 Marker.prototype = {
@@ -41,7 +42,8 @@ Marker.prototype = {
     addTo: function (map) {
         this.remove();
         this._map = map;
-        map.getCanvasContainer().appendChild(this._el);
+        map.getCanvasContainer().appendChild(this._element);
+        this._element.addEventListener('click', this._onClick);
         map.on('move', this._update);
         this._update();
         return this;
@@ -59,9 +61,9 @@ Marker.prototype = {
             this._map.off('move', this._update);
             this._map = null;
         }
-        var parent = this._el.parentNode;
-        if (parent) parent.removeChild(this._el);
-        this._closePopup();
+        DOM.remove(this._element);
+        this._element.removeEventListener('click', this._onClick);
+        if (this._popup) this._popup.remove();
         return this;
     },
 
@@ -86,7 +88,7 @@ Marker.prototype = {
     },
 
     getElement: function () {
-        return this._el;
+        return this._element;
     },
 
     /**
@@ -97,28 +99,24 @@ Marker.prototype = {
      */
 
     setPopup: function (popup) {
-        var this = that;
+        var that = this;
 
-        if (popup == null) {
-            this._closePopup();
-            delete this._popupHandlersAdded;
-            delete this._popup;
-        } else if (popup instanceof Popup) {
+        if (this._popup) {
+            this._popup.remove();
+            this._popup = null;
+        }
+
+        if (popup) {
             this._popup = popup;
-        } else {
-            util.warnOnce('Marker.setPopup only accepts an instance of the Popup class as an argument. If no argument is provided, the popup is unset from this Marker instance');
+            this._popup.setLngLat(this._lngLat);
         }
 
-        if (this._popup && this._lngLat) this._popup.setLngLat(this._lngLat);
-
-        if (!this._popupHandlersAdded) {
-            this.getElement().addEventListener('click', function(event) {
-                event.stopPropagation();
-                that._openPopup();
-            });
-            this._popupHandlersAdded = true;
-        }
         return this;
+    },
+
+    _onClick: function(event) {
+        event.stopPropagation();
+        if (this._popup) this.togglePopup();
     },
 
     /**
@@ -134,36 +132,16 @@ Marker.prototype = {
      * @returns {Marker} `this`
      */
     togglePopup: function () {
-        if (this._popup) {
-            if (this._popup.isOpen()) {
-                this._closePopup();
-            } else {
-                this._openPopup();
-            }
-        }
-    },
+        var popup = this._popup;
 
-    _openPopup: function (e) {
-        if (!this._popup || !this._map) return;
-
-        if (!this._popup.isOpen()) {
-            this._popup.addTo(this._map);
-        }
-
-        return this;
-    },
-
-    _closePopup: function () {
-        if (this._popup) {
-            this._popup.remove();
-        }
-
-        return this;
+        if (!popup) return;
+        else if (popup.isOpen()) popup.remove();
+        else popup.addTo(this._map);
     },
 
     _update: function () {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
-        DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
+        DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };

@@ -13,4 +13,6 @@ exports.create = function (tagName, className, container) {
     };
 };
 
+exports.remove = function() {};
+
 exports.setTransform = function() {};
