@@ -2,10 +2,10 @@
 
 window.mapboxglBenchmarks = window.mapboxglBenchmarks || {};
 
-var targetName = process.env.BENCHMARK_TARGET;
-function registerBenchmark(benchmarkName, benchmark) {
-    window.mapboxglBenchmarks[benchmarkName] = window.mapboxglBenchmarks[benchmarkName] || {};
-    window.mapboxglBenchmarks[benchmarkName][targetName] = benchmark;
+var version = process.env.BENCHMARK_VERSION;
+function registerBenchmark(name, benchmark) {
+    window.mapboxglBenchmarks[name] = window.mapboxglBenchmarks[name] || {};
+    window.mapboxglBenchmarks[name][version] = benchmark;
 }
 
 registerBenchmark('map-load', require('./benchmarks/map_load'));
