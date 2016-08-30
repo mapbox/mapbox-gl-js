@@ -13,6 +13,6 @@ else
     source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install
 fi
 
-if [ "$CIRCLE_BRANCH" == "master" || -z "$CIRCLE_TAG" ]; then
+if [ "$CIRCLE_BRANCH" == "master"] || [ "$CIRCLE_BRANCH" == "benchmark-master" ] || [ -z "$CIRCLE_TAG" ]; then
     pip install --user --upgrade awscli
 fi
