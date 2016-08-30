@@ -97,7 +97,7 @@ Marker.prototype = {
     _update: function() {
         if (!this._map) return;
 
-        var projection = this._map.project3d(this._lngLat);
+        var projection = this._map.project(this._lngLat, true);
         var point = new Point(projection[0] / projection[3], projection[1] / projection[3]);
 
         var z = point.y;
