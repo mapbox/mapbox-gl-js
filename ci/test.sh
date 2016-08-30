@@ -34,7 +34,7 @@ nyc report --reporter=lcov
 (node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
 
 # upload benchmarks
-if [ "$CIRCLE_BRANCH" == "master" ] || [ "$CIRCLE_BRANCH" == "benchmark-master" ]; then
+if [ "$CIRCLE_BRANCH" == "master" ]; then
     npm run build-benchmarks
     aws s3 cp --acl public-read --content-type application/javascript bench/benchmarks_generated.js s3://mapbox-gl-js/master/benchmarks.js
 fi
