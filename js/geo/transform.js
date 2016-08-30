@@ -345,7 +345,7 @@ Transform.prototype = {
         var p = [coord.column * scale, coord.row * scale, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
 
-        if(shouldReturnRawVector) return p;
+        if (shouldReturnRawVector) return p;
         return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
