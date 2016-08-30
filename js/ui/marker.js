@@ -61,7 +61,7 @@ Marker.prototype = {
         }
         var parent = this._el.parentNode;
         if (parent) parent.removeChild(this._el);
-        if (this._popup) this._closePopup();
+        this._closePopup();
         return this;
     },
 
