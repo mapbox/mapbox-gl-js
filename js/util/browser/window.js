@@ -1,4 +1,5 @@
 'use strict';
 
 /* eslint-env browser */
-module.exports = window;
+var isWorker = typeof window === 'undefined';
+module.exports = isWorker ? self : window;
