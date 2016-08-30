@@ -252,21 +252,12 @@ Transform.prototype = {
     /**
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location
-     * @returns {Point} screen point
+     * @param {boolean=false} shouldReturnRawVector
+     * @returns {Point} screen point (or 4d vector representing the transform if `shouldReturnRawVector` is true)
      * @private
      */
-    locationPoint: function(lnglat) {
-        return this.coordinatePoint(this.locationCoordinate(lnglat));
-    },
-
-    /**
-     * Like `locationPoint` but returns a raw 4d vector containing info about the transform
-     * @param {LngLat} lnglat location
-     * @returns {Array} The 4d vector pertaining to this point's transform
-     * @private
-     */
-    locationPoint3d: function(lnglat) {
-        return this.coordinatePoint3d(this.locationCoordinate(lnglat));
+    locationPoint: function(lnglat, shouldReturnRawVector) {
+        return this.coordinatePoint(this.locationCoordinate(lnglat), shouldReturnRawVector);
     },
 
     /**
@@ -345,27 +336,17 @@ Transform.prototype = {
     /**
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
-     * @returns {Point} screen point
+     * @param {boolean=false} shouldReturnRawVector
+     * @returns {Point} screen point (or 4d vector representing the transform if `shouldReturnRawVector` is true)
      * @private
      */
-    coordinatePoint: function(coord) {
+    coordinatePoint: function(coord, shouldReturnRawVector) {
         var scale = this.worldSize / this.zoomScale(coord.zoom);
         var p = [coord.column * scale, coord.row * scale, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
-        return new Point(p[0] / p[3], p[1] / p[3]);
-    },
 
-    /**
-     * Like `coordinatePoint` but returns the raw vector data instead of just the Point
-     * @param {Coordinate} coord
-     * @returns {Point} screen point
-     * @private
-     */
-    coordinatePoint3d: function(coord) {
-        var scale = this.worldSize / this.zoomScale(coord.zoom);
-        var p = [coord.column * scale, coord.row * scale, 0, 1];
-        vec4.transformMat4(p, p, this.pixelMatrix);
-        return p;
+        if(shouldReturnRawVector) return p;
+        return new Point(p[0] / p[3], p[1] / p[3]);
     },
 
     /**
