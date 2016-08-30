@@ -246,15 +246,15 @@ function setMatrix(program, painter, coord, tile, layer) {
 function setLighting(program, painter) {
     var gl = painter.gl;
 
-    var _ld = painter.light.lightDirection,
+    var _ld = painter.light.direction,
         lightdir = [_ld.x, _ld.y, _ld.z];
     var lightMat = mat3.create();
-    if (painter.light.lightAnchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
+    if (painter.light.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
     vec3.transformMat3(lightdir, lightdir, lightMat);
 
     gl.uniform3fv(program.u_lightdir, lightdir);
-    gl.uniform1f(program.u_lightintensity, painter.light.lightIntensity);
-    gl.uniform3fv(program.u_lightcolor,painter.light.lightColor.slice(0,3));
+    gl.uniform1f(program.u_lightintensity, painter.light.intensity);
+    gl.uniform3fv(program.u_lightcolor,painter.light.color.slice(0,3));
 }
 
 

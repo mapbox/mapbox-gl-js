@@ -62,17 +62,17 @@ function Style(stylesheet, map, options) {
         }
 
         if (stylesheet.light) {
-            if (stylesheet.light['light-anchor']) {
-                this._light.lightAnchor = stylesheet.light['light-anchor'];
+            if (stylesheet.light.anchor) {
+                this._light.anchor = stylesheet.light.anchor;
             }
-            if (stylesheet.light['light-direction']) {
-                this._light.lightDirection = stylesheet.light['light-direction'];
+            if (stylesheet.light.direction) {
+                this._light.direction = stylesheet.light.direction;
             }
-            if (stylesheet.light['light-color']) {
-                this._light.lightColor = stylesheet.light['light-color'];
+            if (stylesheet.light.color) {
+                this._light.color = stylesheet.light.color;
             }
-            if (!isNaN(stylesheet.light['light-intensity'])) {
-                this._light.lightIntensity = stylesheet.light['light-intensity']
+            if (!isNaN(stylesheet.light.intensity)) {
+                this._light.intensity = stylesheet.light.intensity;
             }
         }
 

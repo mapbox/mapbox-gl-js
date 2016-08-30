@@ -32,10 +32,10 @@ var defaultOptions = {
     pitch: 0,
 
     light: {
-        lightAnchor: 'viewport',
-        lightDirection: [-0.5, -0.3, 1.0],
-        lightColor: 'white',
-        lightIntensity: 0.5
+        anchor: 'viewport',
+        direction: [-0.5, -0.3, 1.0],
+        color: 'white',
+        intensity: 0.5
     },
 
     minZoom: defaultMinZoom,
@@ -131,7 +131,6 @@ var defaultOptions = {
  * });
  */
 var Map = module.exports = function(options) {
-
     options = util.extend({}, defaultOptions, options);
     options.light = util.extend({}, defaultOptions.light, options.light);
 
@@ -198,10 +197,11 @@ var Map = module.exports = function(options) {
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
 
-    var _map = this;
-    this.style.on('load', function() {
-        _map._setLightOptions(util.extend(options.light, _map.style._light));
-    });
+    if (options.style) {
+        this.style.on('load', this._setLightOptions.bind(this, options.light, this.style._light));
+    } else {
+        this.on('load', this._setLightOptions.bind(this, options.light));
+    }
 
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
