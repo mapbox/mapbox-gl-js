@@ -19,7 +19,7 @@ function draw(painter, source, layer, coords) {
     // Create a new texture to which to render the extrusion layer. This approach
     // allows us to adjust opacity on a per-layer basis (eliminating the interior
     // walls per-feature opacity problem)
-    var texture = new PrerenderedExtrusionLayer(gl, painter, layer);
+    var texture = new ExtrusionTexture(gl, painter, layer);
     texture.bindFramebuffer();
 
     gl.clearStencil(0x80);
@@ -42,7 +42,7 @@ function draw(painter, source, layer, coords) {
     texture.renderToMap();
 }
 
-function PrerenderedExtrusionLayer(gl, painter, layer) {
+function ExtrusionTexture(gl, painter, layer) {
     this.gl = gl;
     this.width = painter.width;
     this.height = painter.height;
@@ -54,7 +54,7 @@ function PrerenderedExtrusionLayer(gl, painter, layer) {
     this.fbos = this.painter.preFbos[this.width] && this.painter.preFbos[this.width][this.height];
 }
 
-PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
+ExtrusionTexture.prototype.bindFramebuffer = function() {
     var gl = this.gl;
 
     this.texture = this.painter.getTexture(this.width, this.height);
@@ -94,7 +94,7 @@ PrerenderedExtrusionLayer.prototype.bindFramebuffer = function() {
     }
 };
 
-PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
+ExtrusionTexture.prototype.unbindFramebuffer = function() {
     this.painter.bindDefaultFramebuffer();
     if (this.fbos) {
         this.fbos.push(this.fbo);
@@ -105,13 +105,13 @@ PrerenderedExtrusionLayer.prototype.unbindFramebuffer = function() {
     this.painter.saveTexture(this.texture);
 };
 
-PrerenderedExtrusionLayer.prototype.TextureBoundsArray = new StructArrayType({
+ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
     members: [
         { name: 'a_pos', type: 'Int16', components: 2 }
     ]
 });
 
-PrerenderedExtrusionLayer.prototype.renderToMap = function() {
+ExtrusionTexture.prototype.renderToMap = function() {
     var gl = this.gl;
     var painter = this.painter;
     var program = painter.useProgram('extrusiontexture');
