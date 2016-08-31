@@ -44,6 +44,11 @@ test("mapbox", function(t) {
             t.end();
         });
 
+        t.test('uses provided query parameters', function(t) {
+            t.equal(mapbox.normalizeSourceURL(mapboxSource + '?foo=bar', 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&access_token=token&secure');
+            t.end();
+        });
+
         t.test('works with composite sources', function(t) {
             t.equal(mapbox.normalizeSourceURL('mapbox://one.a,two.b,three.c'), 'https://api.mapbox.com/v4/one.a,two.b,three.c.json?access_token=key&secure');
             t.end();

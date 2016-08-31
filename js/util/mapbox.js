@@ -48,10 +48,14 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
     if (urlObject.protocol !== 'mapbox:') {
         return url;
     } else {
+        // We parse the URL with a regex because the URL module does not handle
+        // URLs with commas in the hostname
+        var sources = url.match(/mapbox:\/\/([^?]+)/)[1];
+
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
         return normalizeURL(
-            url + '.json',
+            'mapbox://' + sources + '.json' + formatQuery(urlObject.query),
             '/v4/',
             accessToken
         ) + '&secure';
