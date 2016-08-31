@@ -64,7 +64,12 @@ FillStyleLayer.prototype = util.inherit(StyleLayer, {
             this.paint['fill-outline-color'][3] === 0
         );
 
-        return isFillHidden && isOutlineHidden;
+        var isPatternHidden = (
+            this.isPaintValueFeatureConstant('fill-pattern') &&
+            !this.paint['fill-pattern']
+        );
+
+        return isFillHidden && isOutlineHidden && isPatternHidden;
     }
 
 });
