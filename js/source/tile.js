@@ -69,7 +69,7 @@ Tile.prototype = {
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
+        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = unserializeBuckets(data.buckets, painter.style);
     },
 
