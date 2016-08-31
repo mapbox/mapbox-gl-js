@@ -30,6 +30,7 @@ Buffer.prototype.bind = function(gl) {
     var type = gl[this.type];
 
     if (!this.buffer) {
+        this.gl = gl;
         this.buffer = gl.createBuffer();
         gl.bindBuffer(type, this.buffer);
         gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
@@ -82,9 +83,9 @@ Buffer.prototype.setVertexAttribPointers = function(gl, program) {
  * @private
  * @param gl The WebGL context
  */
-Buffer.prototype.destroy = function(gl) {
+Buffer.prototype.destroy = function() {
     if (this.buffer) {
-        gl.deleteBuffer(this.buffer);
+        this.gl.deleteBuffer(this.buffer);
     }
 };
 

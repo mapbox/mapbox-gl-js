@@ -100,7 +100,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     unloadTile: function(tile) {
-        tile.unloadVectorData(this.map.painter);
+        tile.unloadVectorData();
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
     }
 });
