@@ -1,8 +1,6 @@
 'use strict';
 
 /**
- * Unlike js/util/browser.js, this code is written with the expectation
- * of a browser environment with a global 'window' object
  * @module browser
  * @private
  */
