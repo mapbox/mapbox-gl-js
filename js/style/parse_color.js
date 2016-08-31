@@ -6,23 +6,22 @@ var StyleFunction = require('./style_function');
 
 var cache = {};
 
-module.exports = function parseColor(input, transformColor) {
+module.exports = function parseColor(input) {
 
     if (StyleFunction.isFunctionDefinition(input)) {
 
         if (!input.stops) return input;
         else return util.extend({}, input, {
             stops: input.stops.map(function(stop) {
-                return [stop[0], parseColor(stop[1], transformColor)];
+                return [stop[0], parseColor(stop[1])];
             })
         });
 
     } else if (typeof input === 'string') {
 
-        if (!cache[input] || transformColor) {
+        if (!cache[input]) {
             var rgba = parseColorString(input);
             if (!rgba) { throw new Error('Invalid color ' + input); }
-            if (transformColor) rgba = transformColor(rgba);
 
             // GL expects all components to be in the range [0, 1] and to be
             // multipled by the alpha value.

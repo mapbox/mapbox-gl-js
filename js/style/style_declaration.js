@@ -6,21 +6,14 @@ var util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
-function StyleDeclaration(propName, reference, value) {
+function StyleDeclaration(reference, value) {
     this.value = util.clone(value);
     this.isFunction = MapboxGLFunction.isFunctionDefinition(value);
 
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
-    var parsedValue;
-    if (propName === 'extrusion-color') {
-        parsedValue = this.value && parseColor(this.value, function(rgba) {
-            return rgba.slice(0,3).concat(1);
-        });
-    } else {
-        parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
-    }
+    var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
     var specDefault = reference.default;
     if (specDefault && reference.type === 'color') specDefault = parseColor(specDefault);
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue, specDefault);

@@ -201,7 +201,6 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var image = layer.paint['extrusion-pattern'];
     var color = layer.paint['extrusion-edge-color'];
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
@@ -254,7 +253,7 @@ function setLighting(program, painter) {
 
     gl.uniform3fv(program.u_lightdir, lightdir);
     gl.uniform1f(program.u_lightintensity, painter.light.intensity);
-    gl.uniform3fv(program.u_lightcolor,painter.light.color.slice(0,3));
+    gl.uniform3fv(program.u_lightcolor, painter.light.color.slice(0, 3));
 }
 
 

@@ -927,6 +927,96 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('#setLightProperty', function (t) {
+        t.test('sets anchor property', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.setLightProperty('anchor', 'map');
+            t.deepEqual(map.getLightProperty('anchor'), 'map');
+            t.end();
+        });
+
+        t.test('sets color property', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.setLightProperty('color', '#f00');
+            t.deepEqual(map.getLightProperty('color'), '#f00');
+            t.end();
+        });
+
+        t.test('sets direction property', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.setLightProperty('direction', [1, 1, 1]);
+            t.deepEqual(map.getLightProperty('direction'), [1, 1, 1]);
+            t.end();
+        });
+
+        t.test('sets intensity property', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.setLightProperty('intensity', 1);
+            t.deepEqual(map.getLightProperty('intensity'), 1);
+            t.end();
+        });
+
+        t.test('sets properties from style', function (t) {
+            var map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: [],
+                    light: {
+                        anchor: 'map',
+                        direction: [-1, -1, 1]
+                    }
+                }
+            });
+
+            map.on('load', function () {
+                t.deepEqual(map.getLightProperty('anchor'), 'map');
+                t.deepEqual(map.getLightProperty('direction'), [-1, -1, 1]);
+                t.end();
+            });
+        });
+
+        t.test('sets default properties', function (t) {
+            var map = createMap();
+
+            map.on('load', function () {
+                t.deepEqual(map.getLightProperty('anchor'), 'viewport');
+                t.deepEqual(map.getLightProperty('direction'), [-0.5, -0.3, 1]);
+                t.end();
+            });
+        });
+
+        t.end();
+    });
+
     t.test('error event', function (t) {
         t.test('logs errors to console when it has NO listeners', function (t) {
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });

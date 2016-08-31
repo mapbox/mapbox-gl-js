@@ -236,7 +236,11 @@ FeatureIndex.prototype.filterMatching = function(result, matching, array, queryG
                     var circleRadius = paint['circle-radius'] * pixelsToTileUnits;
                     if (!multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                 } else if (styleLayer.type === 'extrusion') {
-                    // TODO
+                    translatedPolygon = translate(queryGeometry,
+                            paint['extrusion-translate'], paint['extrusion-translate-anchor'],
+                            bearing, pixelsToTileUnits);
+                    if (!multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
+
                 }
             }
 
