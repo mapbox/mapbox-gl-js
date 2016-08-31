@@ -3,7 +3,7 @@
 var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
-var window = require('../util/browser').window;
+var window = require('../util/window');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 
@@ -1067,7 +1067,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             window.removeEventListener('resize', this._onWindowResize, false);
         }
         var extension = this.painter.gl.getExtension('WEBGL_lose_context');
-        if (extension) extension.loseContext();
+        if (extension && extension.loseContext) extension.loseContext();
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');

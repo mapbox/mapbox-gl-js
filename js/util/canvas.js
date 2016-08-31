@@ -1,34 +1,24 @@
 'use strict';
 
-// Stub implementation for headless rendering with node. The browser implementation
-// is in js/browser/ui/canvas.js.
+var WebGLRenderingContext = require('webgl-mock/src/WebGLRenderingContext');
 
-var gl = require('gl');
 var browser = require('./browser');
 
 module.exports = Canvas;
 
 function Canvas(parent, container) {
-    var requiredContextAttributes = {
-        antialias: false,
-        alpha: true,
-        stencil: true,
-        depth: true,
-        preserveDrawingBuffer: true
-    };
+    this.context = new WebGLRenderingContext({
+        width: ((container && container.offsetWidth) || 512) * browser.devicePixelRatio,
+        height: ((container && container.offsetHeight) || 512) * browser.devicePixelRatio
+    });
 
-    this.context = gl(
-        ((container && container.offsetWidth) || 512) * browser.devicePixelRatio,
-        ((container && container.offsetHeight) || 512) * browser.devicePixelRatio,
-        requiredContextAttributes);
+    setTimeout(parent._contextRestored.bind(parent), 0);
 }
 
-Canvas.prototype.resize = function() {
-};
+Canvas.prototype.resize = function() {};
 
 Canvas.prototype.getWebGLContext = function() {
     return this.context;
 };
 
-Canvas.prototype.getElement = function() {
-};
+Canvas.prototype.getElement = function() {};

@@ -4,11 +4,6 @@ var test = require('tap').test;
 var browser = require('../../../js/util/browser');
 
 test('browser', function(t) {
-    t.test('supported', function(t) {
-        t.equal(browser.supported(), true);
-        t.end();
-    });
-
     t.test('frame', function(t) {
         var id = browser.frame(function() {
             t.pass('called frame');

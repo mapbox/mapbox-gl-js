@@ -37,7 +37,7 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
     var numPrevAttributes;
     var numNextAttributes = program.numAttributes;
 
-    if (gl.extVertexArrayObject) {
+    if (gl.extVertexArrayObject && gl.extVertexArrayObject.createVertexArrayOES) {
         if (this.vao) this.destroy(gl);
         this.vao = gl.extVertexArrayObject.createVertexArrayOES();
         gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
