@@ -1,4 +1,4 @@
 'use strict';
 
 /* eslint-env browser */
-module.exports = window;
+module.exports = self;
