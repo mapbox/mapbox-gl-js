@@ -420,16 +420,26 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         } else throw new Error('maxZoom must be between the current minZoom and ' + defaultMaxZoom + ', inclusive');
     },
+
     /**
      * Returns a [`Point`](#Point) representing pixel coordinates, relative to the map's `container`,
      * that correspond to the specified geographical location.
      *
      * @param {LngLatLike} lnglat The geographical location to project.
-     * @param {boolean=false} shouldReturnRawVector
-     * @returns {Point} The [`Point`](#Point) corresponding to `lnglat`, relative to the map's `container` (or 4d vector representing the transform if `shouldReturnRawVector` is true)
+     * @returns {Point} The [`Point`](#Point) corresponding to `lnglat`, relative to the map's `container`.
      */
-    project: function(lnglat, shouldReturnRawVector) {
-        return this.transform.locationPoint(LngLat.convert(lnglat), shouldReturnRawVector);
+    project: function(lnglat) {
+        return this.transform.locationPoint(LngLat.convert(lnglat));
+    },
+
+    /**
+     * Similar to `project` but returns a raw 4d vector containing info about the transform
+     *
+     * @param {LngLatLike} lnglat The geographical location to project.
+     * @returns {Array} The 4d vector pertaining to this point's transform
+     */
+    project3d: function(lnglat) {
+        return this.transform.locationPoint3d(LngLat.convert(lnglat));
     },
 
     /**

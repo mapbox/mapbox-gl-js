@@ -59,7 +59,8 @@ function addAnotherMarker() {
         zoomScale: true,
         nativeZoom: 15,
         zoomFactor: 1.6,
-        offset: [-25, -50]
+        offset: [-25, -50],
+        setZIndex: false
     })
         .setLngLat(toSet)
         .addTo(map);
@@ -80,11 +81,11 @@ map.addControl(new mapboxgl.Navigation());
 map.on('load', function() {
     map.setPitch(60);
 
-    var i = 0;
-    setInterval(function() {
-        i += 1;
-        map.setBearing(i);
-    }, 16*5);
+    var frame = function(t) {
+        map.setBearing(t/100);
+        requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
 });
 </script>
 
