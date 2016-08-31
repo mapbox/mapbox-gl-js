@@ -76,7 +76,6 @@
     "vinyl": "1.1.1",
     "vinyl-fs": "2.4.3",
     "watchify": "^3.7.0",
-    "webgl-mock": "^0.1.6",
     "webpack": "^1.13.1",
     "webworkify-webpack": "^1.1.3"
   },

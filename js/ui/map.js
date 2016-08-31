@@ -1067,7 +1067,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             window.removeEventListener('resize', this._onWindowResize, false);
         }
         var extension = this.painter.gl.getExtension('WEBGL_lose_context');
-        if (extension && extension.loseContext) extension.loseContext();
+        if (extension) extension.loseContext();
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');

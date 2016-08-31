@@ -4,8 +4,8 @@ var jsdom = require('jsdom');
 
 var window = jsdom.jsdom().defaultView;
 
-window.requestAnimationFrame = function(callback) { return setTimeout(callback, 0); };
-window.cancelAnimationFrame = clearTimeout;
+window.requestAnimationFrame = function(callback) { return setImmediate(callback, 0); };
+window.cancelAnimationFrame = clearImmediate;
 
 window.devicePixelRatio = 1;
 

@@ -1,8 +1,7 @@
 'use strict';
 
 var Map = require('../js/ui/map');
-var browser = require('../js/util/browser');
-
+var window = require('../js/util/window');
 
 module.exports = function(style, options, _callback) {
     var wasCallbackCalled = false;
@@ -13,17 +12,14 @@ module.exports = function(style, options, _callback) {
         }
     }
 
-    browser.devicePixelRatio = options.pixelRatio;
+    window.devicePixelRatio = options.pixelRatio;
+
+    var container = window.document.createElement('div');
+    container.offsetHeight = options.height;
+    container.offsetWidth = options.width;
 
     var map = new Map({
-        container: {
-            offsetWidth: options.width,
-            offsetHeight: options.height,
-            classList: {
-                add: function() {},
-                remove: function() {}
-            }
-        },
+        container: container,
         style: style,
         classes: options.classes,
         interactive: false,
@@ -41,8 +37,8 @@ module.exports = function(style, options, _callback) {
 
     map.once('load', function() {
         applyOperations(map, options.operations, function() {
-            var w = options.width * browser.devicePixelRatio;
-            var h = options.height * browser.devicePixelRatio;
+            var w = options.width * window.devicePixelRatio;
+            var h = options.height * window.devicePixelRatio;
 
             var pixels = new Uint8Array(w * h * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);

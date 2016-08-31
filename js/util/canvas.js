@@ -1,18 +1,24 @@
 'use strict';
 
-var WebGLRenderingContext = require('webgl-mock/src/WebGLRenderingContext');
-
-var browser = require('./browser');
+var gl = require('gl');
+var window = require('./window');
 
 module.exports = Canvas;
 
 function Canvas(parent, container) {
-    this.context = new WebGLRenderingContext({
-        width: ((container && container.offsetWidth) || 512) * browser.devicePixelRatio,
-        height: ((container && container.offsetHeight) || 512) * browser.devicePixelRatio
-    });
+    var requiredContextAttributes = {
+        antialias: false,
+        alpha: true,
+        stencil: true,
+        depth: true,
+        preserveDrawingBuffer: true
+    };
 
-    setTimeout(parent._contextRestored.bind(parent), 0);
+    this.context = gl(
+        ((container && container.offsetWidth) || 512) * window.devicePixelRatio,
+        ((container && container.offsetHeight) || 512) * window.devicePixelRatio,
+        requiredContextAttributes
+    );
 }
 
 Canvas.prototype.resize = function() {};
