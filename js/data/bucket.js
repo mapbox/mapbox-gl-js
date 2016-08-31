@@ -172,11 +172,11 @@ Bucket.prototype.createArrays = function() {
     }
 };
 
-Bucket.prototype.destroy = function(gl) {
+Bucket.prototype.destroy = function() {
     for (var programName in this.bufferGroups) {
         var programBufferGroups = this.bufferGroups[programName];
         for (var i = 0; i < programBufferGroups.length; i++) {
-            programBufferGroups[i].destroy(gl);
+            programBufferGroups[i].destroy();
         }
     }
 };

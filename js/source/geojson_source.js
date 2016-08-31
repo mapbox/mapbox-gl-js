@@ -168,7 +168,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
         tile.workerID = this.dispatcher.send('load tile', params, function(err, data) {
 
-            tile.unloadVectorData(this.map.painter);
+            tile.unloadVectorData();
 
             if (tile.aborted)
                 return;
@@ -194,7 +194,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     unloadTile: function(tile) {
-        tile.unloadVectorData(this.map.painter);
+        tile.unloadVectorData();
         this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, function() {}, tile.workerID);
     },
 

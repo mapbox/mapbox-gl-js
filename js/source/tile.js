@@ -77,24 +77,22 @@ Tile.prototype = {
     },
 
     /**
-     * given a data object and a GL painter, destroy and re-create
-     * all of its buffers.
+     * Replace this tile's symbol buckets with fresh data.
      * @param {Object} data
-     * @param {Object} painter
+     * @param {Style} style
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData: function(data, painter, style) {
+    reloadSymbolData: function(data, style) {
         if (this.state === 'unloaded') return;
 
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.featureIndex.setCollisionTile(this.collisionTile);
 
-        // Destroy and delete existing symbol buckets
         for (var id in this.buckets) {
             var bucket = this.buckets[id];
             if (bucket.type === 'symbol') {
-                bucket.destroy(painter.gl);
+                bucket.destroy();
                 delete this.buckets[id];
             }
         }
@@ -104,17 +102,13 @@ Tile.prototype = {
     },
 
     /**
-     * Make sure that this tile doesn't own any data within a given
-     * painter, so that it doesn't consume any memory or maintain
-     * any references to the painter.
-     * @param {Object} painter gl painter object
+     * Release any data or WebGL resources referenced by this tile.
      * @returns {undefined}
      * @private
      */
-    unloadVectorData: function(painter) {
+    unloadVectorData: function() {
         for (var id in this.buckets) {
-            var bucket = this.buckets[id];
-            bucket.destroy(painter.gl);
+            this.buckets[id].destroy();
         }
 
         this.collisionBoxArray = null;
@@ -143,7 +137,7 @@ Tile.prototype = {
         }, done.bind(this), this.workerID);
 
         function done(_, data) {
-            this.reloadSymbolData(data, source.map.painter, source.map.style);
+            this.reloadSymbolData(data, source.map.style);
             source.fire('data', {tile: this, dataType: 'tile'});
 
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
