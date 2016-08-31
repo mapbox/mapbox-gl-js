@@ -42,7 +42,7 @@ Marker.prototype = {
     addTo: function (map) {
         this.remove();
         this._map = map;
-        map._controlContainer.appendChild(this._element);
+        map.getCanvasContainer().appendChild(this._element);
         this._element.addEventListener('click', this._onClick);
         map.on('move', this._update);
         this._update();
