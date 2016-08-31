@@ -8,6 +8,7 @@ npm-debug.log
 *.sublime-*
 coverage
 .DS_Store
+.mason
 .nyc_output
 /debug/access-token-generated.js
 /bench/index-generated.js
