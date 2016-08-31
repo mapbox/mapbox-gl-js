@@ -84,7 +84,6 @@
     "./js/util/browser.js": "./js/util/browser/browser.js",
     "./js/util/window.js": "./js/util/browser/window.js",
     "./js/util/canvas.js": "./js/util/browser/canvas.js",
-    "./js/util/dom.js": "./js/util/browser/dom.js",
     "./js/util/web_worker.js": "./js/util/browser/web_worker.js"
   },
   "scripts": {

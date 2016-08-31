@@ -2,7 +2,7 @@
 
 var test = require('tap').test;
 var extend = require('../../../js/util/util').extend;
-var window = require('../../../js/util/browser').window;
+var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
@@ -13,15 +13,12 @@ var fixedNum = fixed.Num;
 var fixedLngLat = fixed.LngLat;
 
 function createMap(options, callback) {
+    var container = window.document.createElement('div');
+    container.offsetWidth = 200;
+    container.offsetHeight = 200;
+
     var map = new Map(extend({
-        container: {
-            offsetWidth: 200,
-            offsetHeight: 200,
-            classList: {
-                add: function() {},
-                remove: function() {}
-            }
-        },
+        container: container,
         interactive: false,
         attributionControl: false,
         trackResize: true,
@@ -487,26 +484,10 @@ test('Map', function(t) {
     });
 
     t.test('#remove', function(t) {
-        var map = createMap(),
-            removedCanvas,
-            removedControls;
-
-        map._canvasContainer.parentNode = {
-            removeChild: function (child) {
-                t.equal(child, map._canvasContainer);
-                removedCanvas = true;
-            }
-        };
-        map._controlContainer.parentNode = {
-            removeChild: function (child) {
-                t.equal(child, map._controlContainer);
-                removedControls = true;
-            }
-        };
-
-        t.equal(map.remove(), undefined);
-        t.ok(removedCanvas);
-        t.ok(removedControls);
+        var map = createMap();
+        t.equal(map.getContainer().childNodes.length, 2);
+        map.remove();
+        t.equal(map.getContainer().childNodes.length, 0);
         t.end();
     });
 
