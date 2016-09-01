@@ -1,112 +1,90 @@
 'use strict';
 
-var request = require('request');
-var PNG = require('pngjs').PNG;
-
-/**
- * Get JSON data from URL
- *
- * @param {string} url the request URL
- * @param {getJSONCallback} callback function that returns the reponse
- *
- * @callback {getJSONCallback} `this`
- * @param {Object|null} err Error _If any_
- * @param {Array} features Displays a JSON array of features.
- *
- * @example
- * mapboxgl.util.getJSON('style.json', function (err, style) {
- *     if (err) throw err;
- *     map.setStyle(style);
- * });
- */
-
-var cache = {};
-
-function cached(data, callback) {
-    setImmediate(function () {
-        callback(null, data);
-    });
-}
+var window = require('./window');
 
 exports.getJSON = function(url, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request(url, function(error, response, body) {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+    var xhr = new window.XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.onerror = function(e) {
+        callback(e);
+    };
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             var data;
             try {
-                data = JSON.parse(body);
+                data = JSON.parse(xhr.response);
             } catch (err) {
                 return callback(err);
             }
-            cache[url] = data;
             callback(null, data);
         } else {
-            callback(error || new Error(response.statusCode));
+            callback(new Error(xhr.statusText));
         }
-    });
+    };
+    xhr.send();
+    return xhr;
 };
 
 exports.getArrayBuffer = function(url, callback) {
-    if (cache[url]) return cached(cache[url], callback);
-    return request({url: url, encoding: null}, function(error, response, body) {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            var ab = new ArrayBuffer(body.length);
-            var view = new Uint8Array(ab);
-            for (var i = 0; i < body.length; ++i) {
-                view[i] = body[i];
-            }
-            cache[url] = ab;
-            callback(null, ab);
+    var xhr = new window.XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'arraybuffer';
+    xhr.onerror = function(e) {
+        callback(e);
+    };
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+            callback(null, xhr.response);
         } else {
-            callback(error || new Error(response.statusCode));
+            callback(new Error(xhr.statusText));
         }
-    });
+    };
+    xhr.send();
+    return xhr;
 };
 
-function fakeImage(png) {
-    return {
-        width: png.width,
-        height: png.height,
-        data: png.data.slice(),
-        complete: true,
-        addEventListener: function() {},
-        getData: function() { return this.data; }
-    };
+function sameOrigin(url) {
+    var a = window.document.createElement('a');
+    a.href = url;
+    return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
 }
 
 exports.getImage = function(url, callback) {
-    if (cache[url]) return cached(fakeImage(cache[url]), callback);
-    return request({url: url, encoding: null}, function(error, response, body) {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, function(err, png) {
-                if (err) return callback(err);
-                cache[url] = png;
-                callback(null, fakeImage(png));
-            });
-        } else {
-            callback(error || new Error(response.statusCode));
-        }
+    return exports.getArrayBuffer(url, function(err, imgData) {
+        if (err) return callback(err);
+        var img = new window.Image();
+        img.onload = function() {
+            callback(null, img);
+            (window.URL || window.webkitURL).revokeObjectURL(img.src);
+        };
+        var blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
+        img.src = (window.URL || window.webkitURL).createObjectURL(blob);
+        img.getData = function() {
+            var canvas = window.document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            context.drawImage(img, 0, 0);
+            return context.getImageData(0, 0, img.width, img.height).data;
+        };
+        return img;
     });
 };
 
-// Hack: since node doesn't have any good video codec modules, just grab a png with
-// the first frame and fake the video API.
 exports.getVideo = function(urls, callback) {
-    return request({url: urls[0], encoding: null}, function(error, response, body) {
-        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, function(err, png) {
-                if (err) return callback(err);
-                callback(null, {
-                    readyState: 4, // HAVE_ENOUGH_DATA
-                    addEventListener: function() {},
-                    play: function() {},
-                    width: png.width,
-                    height: png.height,
-                    data: png.data
-                });
-            });
-        } else {
-            callback(error || new Error(response.statusCode));
+    var video = window.document.createElement('video');
+    video.onloadstart = function() {
+        callback(null, video);
+    };
+    for (var i = 0; i < urls.length; i++) {
+        var s = window.document.createElement('source');
+        if (!sameOrigin(urls[i])) {
+            video.crossOrigin = 'Anonymous';
         }
-    });
+        s.src = urls[i];
+        video.appendChild(s);
+    }
+    video.getData = function() { return video; };
+    return video;
 };

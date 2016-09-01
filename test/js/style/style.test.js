@@ -1,15 +1,13 @@
 'use strict';
 
 var test = require('tap').test;
-var st = require('st');
-var http = require('http');
-var path = require('path');
 var sinon = require('sinon');
 var proxyquire = require('proxyquire');
 var Style = require('../../../js/style/style');
 var SourceCache = require('../../../js/source/source_cache');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
+var window = require('../../../js/util/window');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -40,10 +38,9 @@ function createGeoJSONSource() {
 }
 
 test('Style', function(t) {
-    var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
-
-    t.test('before', function(t) {
-        server.listen(2900, t.end);
+    t.afterEach(function(callback) {
+        window.restore();
+        callback();
     });
 
     t.test('can be constructed from JSON', function(t) {
@@ -53,10 +50,12 @@ test('Style', function(t) {
     });
 
     t.test('can be constructed from a URL', function(t) {
-        var style = new Style("http://localhost:2900/style-basic.json");
+        window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
+        var style = new Style('/style.json');
         style.on('load', function() {
             t.end();
         });
+        window.server.respond();
     });
 
     t.test('creates sources', function(t) {
@@ -106,10 +105,6 @@ test('Style', function(t) {
 
             t.end();
         });
-    });
-
-    t.test('after', function(t) {
-        server.close(t.end);
     });
 
     t.test('sets up layer event forwarding', function(t) {
