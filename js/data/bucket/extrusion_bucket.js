@@ -78,7 +78,9 @@ ExtrusionBucket.prototype.programInterfaces = {
             components: 4,
             type: 'Uint8',
             getValue: function(layer, globalProperties, featureProperties) {
-                return layer.getPaintValue("extrusion-color", globalProperties, featureProperties);
+                var color = layer.getPaintValue("extrusion-color", globalProperties, featureProperties);
+                color[3] = 1.0;
+                return color;
             },
             multiplier: 255,
             paintProperty: 'extrusion-color'
