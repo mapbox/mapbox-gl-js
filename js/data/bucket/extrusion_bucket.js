@@ -59,10 +59,10 @@ ExtrusionBucket.prototype.programInterfaces = {
             type: 'Uint16',
             isLayerConstant: false, // what is this
             getValue: function(layer, globalProperties, featureProperties) {
-                return [layer.getPaintValue("extrusion-min-height", globalProperties, featureProperties)];
+                return [layer.getPaintValue("extrusion-base-height", globalProperties, featureProperties)];
             },
             multiplier: 1,
-            paintProperty: 'extrusion-min-height'
+            paintProperty: 'extrusion-base-height'
         }, {
             name: 'a_maxH',
             components: 1,
