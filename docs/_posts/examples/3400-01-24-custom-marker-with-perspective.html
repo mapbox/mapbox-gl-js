@@ -1,0 +1,78 @@
+---
+layout: example
+category: example
+title: Add Perspective to Markers
+description: 'Attach markers to your map with 3d Perspective.'
+---
+<style>
+.mapboxgl-marker {
+    width: 50px;
+    height: 50px;
+    background: red;
+    border-radius: 25px;
+    cursor: pointer;
+}
+</style>
+
+<div id='map'></div>
+
+<script>
+var c = [-103.3684, 43.9492];
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 15,
+    center: c,
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: false
+});
+
+var points = 50;
+var radius = 0.4;
+
+var p = 0;
+
+var distanceX = radius / (111.320 * Math.cos(c[1] * Math.PI / 180));
+var distanceY = radius / 110.574;
+
+function addAnotherMarker() {
+    var theta = (p / points) * (2 * Math.PI);
+    var x = distanceX * Math.cos(theta);
+    var y = distanceY * Math.sin(theta);
+
+    var toSet = [c[0] + x, c[1] + y];
+
+    p++;
+
+    var marker = new mapboxgl.Marker(null, {
+        pitchScale: true,
+        zoomScale: true,
+        nativeZoom: 15,
+        zoomFactor: 1.6,
+        offset: [-25, -50]
+    })
+        .setLngLat(toSet)
+        .addTo(map);
+
+    var m = marker.getElement();
+    m.onclick = function(e) {
+        alert('Hello world');
+        e.stopPropagation();
+    };
+
+    m.style.backgroundColor = 'rgb(' + [Math.floor(Math.random() * 16) * 16, Math.floor(Math.random() * 16) * 16, Math.floor(Math.random() * 16) * 16].join(',') + ')';
+}
+
+for (var i = 0; i < points; i++) addAnotherMarker();
+
+map.addControl(new mapboxgl.Navigation());
+
+map.on('load', function() {
+    map.setPitch(60);
+
+    var i = 0;
+    setInterval(function() {
+        i += 1;
+        map.setBearing(i);
+    }, 16 * 5);
+});
+</script>

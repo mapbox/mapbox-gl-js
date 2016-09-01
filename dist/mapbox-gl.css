@@ -5,6 +5,12 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
+.mapboxgl-canvas-container {
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+}
+
 .mapboxgl-canvas-container.mapboxgl-interactive,
 .mapboxgl-ctrl-nav-compass {
     cursor: -webkit-grab;

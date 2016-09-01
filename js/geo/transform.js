@@ -260,6 +260,16 @@ Transform.prototype = {
     },
 
     /**
+     * Like `locationPoint` but returns a raw 4d vector containing info about the transform
+     * @param {LngLat} lnglat location
+     * @returns {Array} The 4d vector pertaining to this point's transform
+     * @private
+     */
+    locationPoint3d: function(lnglat) {
+        return this.coordinatePoint3d(this.locationCoordinate(lnglat));
+    },
+
+    /**
      * Given a point on screen, return its lnglat
      * @param {Point} p screen point
      * @returns {LngLat} lnglat location
@@ -339,10 +349,21 @@ Transform.prototype = {
      * @private
      */
     coordinatePoint: function(coord) {
+        var p = this.coordinatePoint3d(coord);
+        return new Point(p[0] / p[3], p[1] / p[3]);
+    },
+
+    /**
+     * Like `coordinatePoint` but returns the raw vector data instead of just the Point
+     * @param {Coordinate} coord
+     * @returns {Point} screen point
+     * @private
+     */
+    coordinatePoint3d: function(coord) {
         var scale = this.worldSize / this.zoomScale(coord.zoom);
         var p = [coord.column * scale, coord.row * scale, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
-        return new Point(p[0] / p[3], p[1] / p[3]);
+        return p;
     },
 
     /**
