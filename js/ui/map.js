@@ -3,7 +3,7 @@
 var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
-var window = require('../util/browser').window;
+var window = require('../util/window');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
 

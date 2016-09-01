@@ -4,6 +4,7 @@ var test = require('tap').test;
 var mapbox = require('../../../js/util/mapbox');
 var config = require('../../../js/util/config');
 var browser = require('../../../js/util/browser');
+var window = require('../../../js/util/window');
 
 test("mapbox", function(t) {
     var mapboxSource = 'mapbox://user.map';
@@ -142,6 +143,8 @@ test("mapbox", function(t) {
     });
 
     t.test('.normalizeTileURL', function(t) {
+        browser.supportsWebp = false;
+
         t.test('does nothing on 1x devices', function(t) {
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile.png');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile.png32');
@@ -150,12 +153,12 @@ test("mapbox", function(t) {
         });
 
         t.test('inserts @2x on 2x devices', function(t) {
-            browser.devicePixelRatio = 2;
+            window.devicePixelRatio = 2;
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png', mapboxSource), 'http://path.png/tile@2x.png');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png32', mapboxSource), 'http://path.png/tile@2x.png32');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.jpg70', mapboxSource), 'http://path.png/tile@2x.jpg70');
             t.equal(mapbox.normalizeTileURL('http://path.png/tile.png?access_token=foo', mapboxSource), 'http://path.png/tile@2x.png?access_token=foo');
-            browser.devicePixelRatio = 1;
+            window.devicePixelRatio = 1;
             t.end();
         });
 
@@ -204,6 +207,8 @@ test("mapbox", function(t) {
             t.equal(mapbox.normalizeTileURL('http://example.com/tile.png?access_token=tkk.abc.123', mapboxSource), 'http://example.com/tile.png?access_token=tkk.abc.123');
             t.end();
         });
+
+        browser.supportsWebp = true;
 
         t.end();
     });

@@ -1,14 +1,11 @@
 'use strict';
 
-// Stub implementation for headless rendering with node. The browser implementation
-// is in js/browser/ui/canvas.js.
-
 var gl = require('gl');
-var browser = require('./browser');
+var window = require('./window');
 
 module.exports = Canvas;
 
-function Canvas(parent, container) {
+function Canvas(map) {
     var requiredContextAttributes = {
         antialias: false,
         alpha: true,
@@ -18,17 +15,16 @@ function Canvas(parent, container) {
     };
 
     this.context = gl(
-        ((container && container.offsetWidth) || 512) * browser.devicePixelRatio,
-        ((container && container.offsetHeight) || 512) * browser.devicePixelRatio,
-        requiredContextAttributes);
+        map.getContainer().offsetWidth * window.devicePixelRatio,
+        map.getContainer().offsetHeight * window.devicePixelRatio,
+        requiredContextAttributes
+    );
 }
 
-Canvas.prototype.resize = function() {
-};
+Canvas.prototype.resize = function() {};
 
 Canvas.prototype.getWebGLContext = function() {
     return this.context;
 };
 
-Canvas.prototype.getElement = function() {
-};
+Canvas.prototype.getElement = function() {};
