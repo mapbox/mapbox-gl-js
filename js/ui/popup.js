@@ -60,14 +60,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
         this._map = map;
         this._map.on('move', this._update);
         if (this.options.closeOnClick) {
-            // We attach the `Map#click` listener asynchronously so that it is
-            // possible to open a popup within a `click` event on a child of
-            // the map's container. If we attached the listener syncronously
-            // the popup would close when the click event propogated to `map`.
-            var that = this;
-            setTimeout(function() {
-                that._map.on('click', that._onClickClose);
-            }, 0);
+            this._map.on('click', this._onClickClose);
         }
         this._update();
         return this;

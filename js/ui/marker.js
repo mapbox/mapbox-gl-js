@@ -24,7 +24,7 @@ function Marker(element, options) {
     this._offset = Point.convert(options && options.offset || [0, 0]);
 
     this._update = this._update.bind(this);
-    this._onClick = this._onClick.bind(this);
+    this._onMapClick = this._onMapClick.bind(this);
 
     if (!element) element = DOM.create('div');
     element.classList.add('mapboxgl-marker');
@@ -43,9 +43,14 @@ Marker.prototype = {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
-        this._element.addEventListener('click', this._onClick);
         map.on('move', this._update);
         this._update();
+
+        // If we attached the `click` listener to the marker element, the popup
+        // would close once the event propogated to `map` due to the
+        // `Popup#_onClickClose` listener.
+        this._map.on('click', this._onMapClick);
+
         return this;
     },
 
@@ -58,11 +63,11 @@ Marker.prototype = {
      */
     remove: function () {
         if (this._map) {
+            this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map = null;
         }
         DOM.remove(this._element);
-        this._element.removeEventListener('click', this._onClick);
         if (this._popup) this._popup.remove();
         return this;
     },
@@ -114,8 +119,13 @@ Marker.prototype = {
         return this;
     },
 
-    _onClick: function(event) {
-        if (this._popup) this.togglePopup();
+    _onMapClick: function(event) {
+        var targetElement = event.originalEvent.target;
+        var element = this._element;
+
+        if (this._popup && (targetElement === element || element.contains(targetElement))) {
+            this.togglePopup();
+        }
     },
 
     /**
