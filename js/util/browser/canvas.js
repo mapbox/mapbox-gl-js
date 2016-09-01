@@ -6,14 +6,14 @@ var window = require('./window');
 
 module.exports = Canvas;
 
-function Canvas(parent, container) {
+function Canvas(map, container) {
     this.canvas = window.document.createElement('canvas');
 
-    if (parent && container) {
+    if (map && container) {
         this.canvas.style.position = 'absolute';
         this.canvas.classList.add('mapboxgl-canvas');
-        this.canvas.addEventListener('webglcontextlost', parent._contextLost.bind(parent), false);
-        this.canvas.addEventListener('webglcontextrestored', parent._contextRestored.bind(parent), false);
+        this.canvas.addEventListener('webglcontextlost', map._contextLost.bind(map), false);
+        this.canvas.addEventListener('webglcontextrestored', map._contextRestored.bind(map), false);
         this.canvas.setAttribute('tabindex', 0);
         container.appendChild(this.canvas);
     }

@@ -5,7 +5,7 @@ var window = require('./window');
 
 module.exports = Canvas;
 
-function Canvas(parent, container) {
+function Canvas(map) {
     var requiredContextAttributes = {
         antialias: false,
         alpha: true,
@@ -15,8 +15,8 @@ function Canvas(parent, container) {
     };
 
     this.context = gl(
-        ((container && container.offsetWidth) || 512) * window.devicePixelRatio,
-        ((container && container.offsetHeight) || 512) * window.devicePixelRatio,
+        map.getContainer().offsetWidth * window.devicePixelRatio,
+        map.getContainer().offsetHeight * window.devicePixelRatio,
         requiredContextAttributes
     );
 }
