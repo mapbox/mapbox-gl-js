@@ -72,3 +72,9 @@ exports.touchPos = function (el, e) {
     }
     return points;
 };
+
+exports.remove = function(node) {
+    if (node.parentNode) {
+        node.parentNode.removeChild(node);
+    }
+};

@@ -52,10 +52,6 @@ function addRandomMarker() {
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map);
-
-    marker.getElement().onclick = function(e) {
-        alert('clicked me');
-    };
 }
 
 for (var i = 0; i < 100; i++) addRandomMarker();

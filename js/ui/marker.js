@@ -21,15 +21,16 @@ var Popup = require('./popup');
  *   .addTo(map);
  */
 function Marker(element, options) {
-    if (!element) {
-        element = DOM.create('div');
-    }
-    element.classList.add('mapboxgl-marker');
-    this._el = element;
-
     this._offset = Point.convert(options && options.offset || [0, 0]);
 
     this._update = this._update.bind(this);
+    this._onMapClick = this._onMapClick.bind(this);
+
+    if (!element) element = DOM.create('div');
+    element.classList.add('mapboxgl-marker');
+    this._element = element;
+
+    this._popup = null;
 }
 
 Marker.prototype = {
@@ -41,9 +42,15 @@ Marker.prototype = {
     addTo: function (map) {
         this.remove();
         this._map = map;
-        map.getCanvasContainer().appendChild(this._el);
+        map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
         this._update();
+
+        // If we attached the `click` listener to the marker element, the popup
+        // would close once the event propogated to `map` due to the
+        // `Popup#_onClickClose` listener.
+        this._map.on('click', this._onMapClick);
+
         return this;
     },
 
@@ -56,12 +63,12 @@ Marker.prototype = {
      */
     remove: function () {
         if (this._map) {
+            this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
             this._map = null;
         }
-        var parent = this._el.parentNode;
-        if (parent) parent.removeChild(this._el);
-        if (this._popup) this._closePopup();
+        DOM.remove(this._element);
+        if (this._popup) this._popup.remove();
         return this;
     },
 
@@ -86,34 +93,39 @@ Marker.prototype = {
     },
 
     getElement: function () {
-        return this._el;
+        return this._element;
     },
 
     /**
      * Binds a Popup to the Marker
-     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup 
+     * @param {Popup=} popup an instance of the `Popup` class. If undefined or null, any popup
      * set on this `Marker` instance is unset
      * @returns {Marker} `this`
      */
 
     setPopup: function (popup) {
-        if (popup == null) {
-            this._closePopup();
-            delete this._popupHandlersAdded;
-            delete this._popup;
-        } else if (popup instanceof Popup) {
+        var that = this;
+
+        if (this._popup) {
+            this._popup.remove();
+            this._popup = null;
+        }
+
+        if (popup) {
             this._popup = popup;
-        } else {
-            util.warnOnce('Marker.setPopup only accepts an instance of the Popup class as an argument. If no argument is provided, the popup is unset from this Marker instance');
+            this._popup.setLngLat(this._lngLat);
         }
 
-        if (this._popup && this._lngLat) this._popup.setLngLat(this._lngLat);
-
-        if (!this._popupHandlersAdded) {
-            this.getElement().addEventListener('click', this._openPopup.bind(this));
-            this._popupHandlersAdded = true;
-        }
         return this;
+    },
+
+    _onMapClick: function(event) {
+        var targetElement = event.originalEvent.target;
+        var element = this._element;
+
+        if (this._popup && (targetElement === element || element.contains(targetElement))) {
+            this.togglePopup();
+        }
     },
 
     /**
@@ -129,40 +141,16 @@ Marker.prototype = {
      * @returns {Marker} `this`
      */
     togglePopup: function () {
-        if (this._popup) {
-            if (this._popup._map) {
-                this._closePopup();
-            } else {
-                this._openPopup();
-            }
-        }
-    },
+        var popup = this._popup;
 
-    _openPopup: function (e) {
-        // prevent event from bubbling up to the map canvas
-        e.stopPropagation();
-
-        if (!this._popup || !this._map) return;
-
-        if (!this._popup._map) {
-            this._popup.addTo(this._map);
-        }
-
-        return this;
-    },
-
-    _closePopup: function () {
-        if (this._popup) {
-            this._popup.remove();
-        }
-
-        return this;
+        if (!popup) return;
+        else if (popup.isOpen()) popup.remove();
+        else popup.addTo(this._map);
     },
 
     _update: function () {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
-        DOM.setTransform(this._el, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
+        DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
-
