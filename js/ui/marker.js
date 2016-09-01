@@ -17,7 +17,6 @@ var Point = require('point-geometry');
  * @param {boolean=} [options.zoomScale=false] Whether the marker should scale with the map as you zoom in and out
  * @param {number=} [options.nativeZoom=map.getZoom()] The native zoom level of the marker. If the map is at this zoom the marker will not be scaled. If zoom is greater the marker will be enlarged. If zoom is less the marker will be shrunk.
  * @param {number=} [options.zoomFactor=1.6] The multiple by which to scale the size of the marker between each zoom level
- * @param {boolean=} [options.setZIndex=true] Update the CSS `z-index` of markers as they move to the background (disable for performance increase if you do not need Internet Explorer support)
  * @example
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
@@ -35,7 +34,6 @@ function Marker(element, options) {
     this._zoomScale = options && options.zoomScale || false;
     this._nativeZoom = options && options.nativeZoom || false;
     this._zoomFactor = options && options.zoomFactor || 1.6;
-    this._setZIndex = (options && options.setZIndex) === false ? false : true;
 
     this._update = this._update.bind(this);
 }
@@ -102,10 +100,10 @@ Marker.prototype = {
         var projection = this._map.project3d(this._lngLat);
         var point = new Point(projection[0] / projection[3], projection[1] / projection[3]);
 
-        var z = Math.round(point.y);
+        var z = Math.round(point.y*10);
         var pos = point._add(this._offset);
 
-        var t = 'translate3d(' + pos.x + 'px,' + pos.y + 'px,' + z + 'px)';
+        var t = 'translate(' + pos.x + 'px,' + pos.y + 'px)';
 
         var scale = 1;
         if(this._pitchScale) scale = this._map.transform._altitude/projection[3]; // adjust scale based on pitch+bearing
@@ -113,6 +111,6 @@ Marker.prototype = {
         t += ' scale(' + scale + ',' + scale + ')';
 
         DOM.setTransform(this._el, t);
-        if(this._setZIndex) this._el.style.zIndex = z;
+        this._el.style.zIndex = z;
     },
 };
