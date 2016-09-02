@@ -78,20 +78,20 @@ function preloadAssets(stylesheet, perTileCallback, callback) {
     var style = new Style(stylesheet);
 
     var worker = new Worker({addEventListener: function() {} });
-    worker['set layers'](stylesheet.layers);
-    var layerFamilies = worker.layerFamilies;
+    worker['set layers'](0, stylesheet.layers);
+    var layerFamilies = worker.layerFamilies[0];
 
     style.once('load', function() {
         var assets = {
             getGlyphs: function (params, callback) {
-                style['get glyphs'](params, function(err, glyphs) {
+                style['get glyphs'](null, params, function(err, glyphs) {
                     cache.glyphs[JSON.stringify(params)] = glyphs;
                     callback(err, glyphs);
                 });
             },
 
             getIcons: function (params, callback) {
-                style['get icons'](params, function(err, icons) {
+                style['get icons'](null, params, function(err, icons) {
                     cache.icons[JSON.stringify(params)] = icons;
                     callback(err, icons);
                 });
