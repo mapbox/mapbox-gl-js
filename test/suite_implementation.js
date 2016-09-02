@@ -6,7 +6,7 @@ var request = require('request');
 var PNG = require('pngjs').PNG;
 var Map = require('../js/ui/map');
 var window = require('../js/util/window');
-var XMLHttpRequest = require('xhr2');
+var jsdom = require('jsdom');
 
 module.exports = function(style, options, _callback) {
     var wasCallbackCalled = false;
@@ -17,8 +17,10 @@ module.exports = function(style, options, _callback) {
         }
     }
 
-    window.XMLHttpRequest = XMLHttpRequest;
     window.devicePixelRatio = options.pixelRatio;
+
+    // Set window's URL to avoid cross origin requests to test-suite fixtures
+    jsdom.changeURL(window, 'http://localhost:2900');
 
     var container = window.document.createElement('div');
     container.offsetHeight = options.height;

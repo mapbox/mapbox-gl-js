@@ -8,6 +8,7 @@ var util = require('./util');
 var window = module.exports;
 
 function restore() {
+    window.close();
 
     var window = jsdom.jsdom(undefined, {
         // Send jsdom console output to the node console object.
