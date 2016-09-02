@@ -5,7 +5,6 @@ var browser = require('../util/browser');
 var window = require('../util/window');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
-var webGLContext = require('../util/webgl_context');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
@@ -952,10 +951,13 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupPainter: function() {
-        var gl = webGLContext(this._canvas, util.extend({
+        var attributes = util.extend({
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer
-        }, isSupported.webGLContextAttributes));
+        }, isSupported.webGLContextAttributes);
+
+        var gl = this._canvas.getContext('webgl', attributes) ||
+            this._canvas.getContext('experimental-webgl', attributes);
 
         if (!gl) {
             this.fire('error', { error: new Error('Failed to initialize WebGL') });
