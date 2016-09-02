@@ -69,7 +69,6 @@
     "remark": "4.2.2",
     "remark-html": "3.0.0",
     "sinon": "^1.15.4",
-    "st": "^1.2.0",
     "tap": "^5.7.0",
     "transform-loader": "^0.2.3",
     "unist-util-visit": "1.1.0",
