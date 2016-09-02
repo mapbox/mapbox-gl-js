@@ -90,7 +90,7 @@ test('WorkerTile', function(t) {
             tags: { x: 0 }
         }];
 
-        tile.parse({ layers: { test: new Wrapper(features) } }, layerFamilies, {}, null, function(err) {
+        tile.parse({ layers: { test: new Wrapper(features) } }, layerFamilies, {}, function(err) {
             t.error(err);
             t.ok(tile.buckets && tile.buckets[0]);
 
