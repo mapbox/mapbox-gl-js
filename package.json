@@ -77,7 +77,8 @@
     "vinyl-fs": "2.4.3",
     "watchify": "^3.7.0",
     "webpack": "^1.13.1",
-    "webworkify-webpack": "^1.1.3"
+    "webworkify-webpack": "^1.1.3",
+    "xhr2": "^0.1.3"
   },
   "browser": {
     "./js/util/window.js": "./js/util/browser/window.js",
