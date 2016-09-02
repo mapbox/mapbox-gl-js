@@ -223,9 +223,9 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             var width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (pos.y + offset.bottom[1] - height < 0) {
+            if (pos.y < height) {
                 anchor = ['top'];
-            } else if (pos.y + offset.top[1] + height > this._map.transform.height) {
+            } else if (pos.y > this._map.transform.height - height) {
                 anchor = ['bottom'];
             } else {
                 anchor = [];
