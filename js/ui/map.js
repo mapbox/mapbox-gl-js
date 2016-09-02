@@ -1,11 +1,11 @@
 'use strict';
 
-var Canvas = require('../util/canvas');
 var util = require('../util/util');
 var browser = require('../util/browser');
 var window = require('../util/window');
 var Evented = require('../util/evented');
 var DOM = require('../util/dom');
+var webGLContext = require('../util/webgl_context');
 
 var Style = require('../style/style');
 var AnimationLoop = require('../style/animation_loop');
@@ -21,6 +21,7 @@ var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
+var isSupported = require('mapbox-gl-supported');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
@@ -157,6 +158,8 @@ var Map = module.exports = function(options) {
         '_onSourceUpdate',
         '_onWindowOnline',
         '_onWindowResize',
+        '_contextLost',
+        '_contextRestored',
         '_update',
         '_render'
     ], this);
@@ -308,14 +311,11 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     resize: function() {
-        var width = 0, height = 0;
+        var dimensions = this._containerDimensions();
+        var width = dimensions[0];
+        var height = dimensions[1];
 
-        if (this._container) {
-            width = this._container.offsetWidth || 400;
-            height = this._container.offsetHeight || 300;
-        }
-
-        this._canvas.resize(width, height);
+        this._resizeCanvas(width, height);
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
@@ -899,7 +899,19 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {HTMLCanvasElement} The map's `<canvas>` element.
      */
     getCanvas: function() {
-        return this._canvas.getElement();
+        return this._canvas;
+    },
+
+    _containerDimensions: function() {
+        var width = 0;
+        var height = 0;
+
+        if (this._container) {
+            width = this._container.offsetWidth || 400;
+            height = this._container.offsetHeight || 300;
+        }
+
+        return [width, height];
     },
 
     _setupContainer: function() {
@@ -910,7 +922,15 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this._interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
         }
-        this._canvas = new Canvas(this, canvasContainer);
+
+        this._canvas = DOM.create('canvas', 'mapboxgl-canvas', canvasContainer);
+        this._canvas.style.position = 'absolute';
+        this._canvas.addEventListener('webglcontextlost', this._contextLost, false);
+        this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
+        this._canvas.setAttribute('tabindex', 0);
+
+        var dimensions = this._containerDimensions();
+        this._resizeCanvas(dimensions[0], dimensions[1]);
 
         var controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         var corners = this._controlCorners = {};
@@ -919,11 +939,23 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         });
     },
 
+    _resizeCanvas: function(width, height) {
+        var pixelRatio = window.devicePixelRatio || 1;
+
+        // Request the required canvas size taking the pixelratio into account.
+        this._canvas.width = pixelRatio * width;
+        this._canvas.height = pixelRatio * height;
+
+        // Maintain the same canvas size, potentially downscaling it for HiDPI displays
+        this._canvas.style.width = width + 'px';
+        this._canvas.style.height = height + 'px';
+    },
+
     _setupPainter: function() {
-        var gl = this._canvas.getWebGLContext({
+        var gl = webGLContext(this._canvas, util.extend({
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer
-        });
+        }, isSupported.webGLContextAttributes));
 
         if (!gl) {
             this.fire('error', { error: new Error('Failed to initialize WebGL') });

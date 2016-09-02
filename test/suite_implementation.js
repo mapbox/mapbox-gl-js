@@ -23,7 +23,8 @@ module.exports = function(style, options, _callback) {
         style: style,
         classes: options.classes,
         interactive: false,
-        attributionControl: false
+        attributionControl: false,
+        preserveDrawingBuffer: true
     });
 
     // Configure the map to never stop the render loop
