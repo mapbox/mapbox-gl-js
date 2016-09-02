@@ -12,6 +12,7 @@ var _self = {
 
 test('load tile', function(t) {
     t.test('calls callback on error', function(t) {
+        window.useFakeXMLHttpRequest();
         var worker = new Worker(_self);
         worker['load tile'](0, {
             source: 'source',
@@ -19,6 +20,7 @@ test('load tile', function(t) {
             url: '/error' // Sinon fake server gives 404 responses by default
         }, function(err) {
             t.ok(err);
+            window.restore();
             t.end();
         });
         window.server.respond();

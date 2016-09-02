@@ -20,6 +20,11 @@ function createSource(options) {
 }
 
 test('VectorTileSource', function(t) {
+    t.beforeEach(function(callback) {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
     t.afterEach(function(callback) {
         window.restore();
         callback();

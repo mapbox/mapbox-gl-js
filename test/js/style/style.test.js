@@ -50,9 +50,11 @@ test('Style', function(t) {
     });
 
     t.test('can be constructed from a URL', function(t) {
+        window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
         var style = new Style('/style.json');
         style.on('load', function() {
+            window.restore();
             t.end();
         });
         window.server.respond();

@@ -37,6 +37,16 @@ function createMap(options, callback) {
 }
 
 test('Map', function(t) {
+    t.beforeEach(function(callback) {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
+    t.afterEach(function(callback) {
+        window.restore();
+        callback();
+    });
+
     t.test('constructor', function(t) {
         var map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
