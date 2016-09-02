@@ -18,6 +18,7 @@ function testProp(props) {
             return props[i];
         }
     }
+    return props[0];
 }
 
 var selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']),
