@@ -123,8 +123,6 @@ FeatureIndex.prototype.query = function(args, styleLayers) {
             styleLayerDistance = translateDistance(paint['fill-translate']);
         } else if (styleLayer.type === 'circle') {
             styleLayerDistance = paint['circle-radius'] + translateDistance(paint['circle-translate']);
-        } else if (styleLayer.type === 'extrusion') {
-            styleLayerDistance = translateDistance(paint['extrusion-translate']);
         }
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }
@@ -235,12 +233,6 @@ FeatureIndex.prototype.filterMatching = function(result, matching, array, queryG
                             bearing, pixelsToTileUnits);
                     var circleRadius = paint['circle-radius'] * pixelsToTileUnits;
                     if (!multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
-                } else if (styleLayer.type === 'extrusion') {
-                    translatedPolygon = translate(queryGeometry,
-                            paint['extrusion-translate'], paint['extrusion-translate-anchor'],
-                            bearing, pixelsToTileUnits);
-                    if (!multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
-
                 }
             }
 

@@ -11,7 +11,7 @@ var StructArrayType = require('../util/struct_array');
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
-    if (layer.paint['extrusion-layer-opacity'] === 0) return;
+    if (layer.getPaintValue('fill-opacity') === 0) return;
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     painter.depthMask(true);
@@ -31,7 +31,7 @@ function draw(painter, source, layer, coords) {
         drawExtrusion(painter, source, layer, coords[i]);
     }
 
-    if (!painter.isOpaquePass && layer.paint['extrusion-edge-color']) {
+    if (!painter.isOpaquePass && layer.getPaintProperty('fill-outline-color')) {
         for (var j = 0; j < coords.length; j++) {
             drawExtrusionStroke(painter, source, layer, coords[j]);
         }
@@ -119,7 +119,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.paint['extrusion-layer-opacity']);
+    gl.uniform1f(program.u_opacity, this.layer.getPaintValue('fill-opacity'));
     gl.uniform1i(program.u_texture, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
@@ -164,7 +164,7 @@ function drawExtrusion(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var image = layer.paint['extrusion-pattern'];
+    var image = layer.getPaintValue('fill-pattern');
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var program = painter.useProgram(
@@ -201,7 +201,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var color = layer.paint['extrusion-edge-color'];
+    var color = layer.getPaintValue('fill-outline-color');
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
@@ -235,8 +235,8 @@ function setMatrix(program, painter, coord, tile, layer) {
         painter.translatePosMatrix(
             coord.posMatrix,
             tile,
-            layer.paint['extrusion-translate'],
-            layer.paint['extrusion-translate-anchor']
+            layer.getPaintValue('fill-translate'),
+            layer.getPaintValue('fill-translate-anchor')
         ),
         [1, 1, zScale, 1])
     );
