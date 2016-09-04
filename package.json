@@ -56,7 +56,6 @@
     "gl": "^4.0.1",
     "handlebars": "4.0.5",
     "highlight.js": "9.3.0",
-    "istanbul": "^0.4.2",
     "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
@@ -99,7 +98,10 @@
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
     "lint": "eslint  --ignore-path .gitignore js test bench docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
-    "test-suite": "node test/render.test.js && node test/query.test.js",
-    "test": "npm run lint && tap --reporter dot test/js test/build/webpack.test.js"
+    "test": "run-s lint test-unit",
+    "test-unit": "tap --reporter dot --no-coverage test/js test/build/webpack.test.js",
+    "test-render": "node test/render.test.js",
+    "test-query": "node test/query.test.js",
+    "test-cov": "nyc --reporter=text-summary run-s test-unit test-render test-query"
   }
 }

@@ -19,12 +19,8 @@ npm run lint
 npm run build-min
 npm run build-dev
 
-# run unit tests
-tap --reporter dot --coverage --no-coverage-report test/js test/build/webpack.test.js
-
-# run render tests
-istanbul cover --dir .nyc_output --include-pid --report none --print none test/render.test.js
-istanbul cover --dir .nyc_output --include-pid --report none --print none test/query.test.js
+# run unit, render & query tests with coverage
+npm run test-cov
 
 # send coverage report to coveralls
 nyc report --reporter=lcov
