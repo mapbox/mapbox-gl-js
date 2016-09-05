@@ -370,8 +370,8 @@ test('Map', function(t) {
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
         t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-            [ -70.31249999999976, 57.326521225216965 ],
-            [ 70.31249999999977, -57.32652122521695 ] ]));
+            [ -70.31249999999976, -57.326521225216965 ],
+            [ 70.31249999999977, 57.32652122521695 ] ]));
 
         t.test('rotated bounds', function(t) {
             var map = createMap({ zoom: 1, bearing: 45 });
@@ -397,7 +397,7 @@ test('Map', function(t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.deepEqual(
-                toFixed([[-130.4297000000, 60.2398142283], [-61.5234400000, 7.0136641176]]),
+                toFixed([[-130.4297000000, 7.0136641176], [-61.5234400000, 60.2398142283]]),
                 toFixed(map.getBounds().toArray())
             );
             t.end();
@@ -407,7 +407,7 @@ test('Map', function(t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.deepEqual(
-                toFixed([[-166.28906999999964, 73.8248206697], [-25.664070000000066, -27.6835270554]]),
+                toFixed([[-166.28906999999964, -27.6835270554], [-25.664070000000066, 73.8248206697]]),
                 toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray())
             );
             t.end();

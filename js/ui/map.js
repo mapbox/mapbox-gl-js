@@ -332,8 +332,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     getBounds: function() {
         var bounds = new LngLatBounds(
-            this.transform.pointLocation(new Point(0, 0)),
-            this.transform.pointLocation(this.transform.size));
+            this.transform.pointLocation(new Point(0, this.transform.height)),
+            this.transform.pointLocation(new Point(this.transform.width, 0)));
 
         if (this.transform.angle || this.transform.pitch) {
             bounds.extend(this.transform.pointLocation(new Point(this.transform.size.x, 0)));
