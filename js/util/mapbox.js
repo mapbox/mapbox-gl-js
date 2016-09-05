@@ -5,7 +5,7 @@ var browser = require('./browser');
 var URL = require('url');
 var util = require('./util');
 
-function normalizeURL(url, pathPrefix, accessToken) {
+function makeAPIURL(path, query, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
 
     if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
@@ -13,8 +13,7 @@ function normalizeURL(url, pathPrefix, accessToken) {
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
 
-    url = url.replace(/^mapbox:\/\//, config.API_URL + pathPrefix);
-    url += url.indexOf('?') !== -1 ? '&access_token=' : '?access_token=';
+    var url = config.API_URL + path + (query ? '?' + query : '');
 
     if (config.REQUIRE_ACCESS_TOKEN) {
         if (accessToken[0] === 's') {
@@ -22,7 +21,7 @@ function normalizeURL(url, pathPrefix, accessToken) {
                 'See https://www.mapbox.com/developers/api/#access-tokens');
         }
 
-        url += accessToken;
+        url += (query ? '&' : '?') + 'access_token=' + accessToken;
     }
 
     return url;
@@ -34,9 +33,9 @@ module.exports.normalizeStyleURL = function(url, accessToken) {
     if (urlObject.protocol !== 'mapbox:') {
         return url;
     } else {
-        return normalizeURL(
-            'mapbox:/' + urlObject.pathname + formatQuery(urlObject.query),
-            '/styles/v1/',
+        return makeAPIURL(
+            '/styles/v1' + urlObject.pathname,
+            urlObject.query,
             accessToken
         );
     }
@@ -54,9 +53,9 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
 
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
-        return normalizeURL(
-            'mapbox://' + sources + '.json' + formatQuery(urlObject.query),
-            '/v4/',
+        return makeAPIURL(
+            '/v4/' + sources + '.json',
+            urlObject.query,
             accessToken
         ) + '&secure';
     }
@@ -70,9 +69,9 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
         return url;
     } else {
         var user = urlObject.pathname.split('/')[1];
-        return normalizeURL(
-            'mapbox://' + user + '/{fontstack}/{range}.pbf' + formatQuery(urlObject.query),
-            '/fonts/v1/',
+        return makeAPIURL(
+            '/fonts/v1/' + user + '/{fontstack}/{range}.pbf',
+            urlObject.query,
             accessToken
         );
     }
@@ -85,9 +84,9 @@ module.exports.normalizeSpriteURL = function(url, format, extension, accessToken
         urlObject.pathname += format + extension;
         return URL.format(urlObject);
     } else {
-        return normalizeURL(
-            'mapbox:/' + urlObject.pathname + '/sprite' + format + extension + formatQuery(urlObject.query),
-            '/styles/v1/',
+        return makeAPIURL(
+            '/styles/v1' + urlObject.pathname + '/sprite' + format + extension,
+            urlObject.query,
             accessToken
         );
     }
@@ -114,10 +113,6 @@ module.exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
         query: replaceTempAccessToken(tileURLObject.query)
     });
 };
-
-function formatQuery(query) {
-    return (query ? '?' + query : '');
-}
 
 function replaceTempAccessToken(query) {
     if (query.access_token && query.access_token.slice(0, 3) === 'tk.') {
