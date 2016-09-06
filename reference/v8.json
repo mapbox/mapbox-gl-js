@@ -811,8 +811,7 @@
         "map",
         "viewport"
       ],
-      "default": "viewport",
-      "doc": "Orientation of text when map is rotated.",
+      "doc": "Orientation of text when map is rotated. Defaults to `map` for line symbol placement and `viewport` for point symbol placement.",
       "requires": [
         "text-field"
       ],
