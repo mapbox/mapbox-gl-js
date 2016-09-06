@@ -597,8 +597,7 @@
         "map",
         "viewport"
       ],
-      "default": "viewport",
-      "doc": "Orientation of icon when map is rotated.",
+      "doc": "Orientation of icon when map is rotated. Defaults to `map` for line symbol placement and `viewport` for point symbol placement.",
       "requires": [
         "icon-image"
       ],
