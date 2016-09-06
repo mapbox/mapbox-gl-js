@@ -288,6 +288,7 @@ Painter.prototype.renderLayer = function(painter, sourceCache, layer, coords) {
     var type = layer.type;
     if (type === 'fill' &&
         (!layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+        !layer.isPaintValueZoomConstant('fill-extrude-height') ||
         layer.getPaintValue('fill-extrude-height') != 0)) {
         type = 'extrusion';
     }

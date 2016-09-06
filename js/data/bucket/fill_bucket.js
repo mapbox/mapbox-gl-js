@@ -108,7 +108,11 @@ FillBucket.prototype.programInterfaces = {
 
 FillBucket.prototype.addVertex = function(vertexArray, x, y, nx, ny, nz, t, e) {
     if (this.fillType === 'fill') {
-        return vertexArray.emplaceBack(x, y);
+        return vertexArray.emplaceBack(
+            // a_pos
+            x,
+            y
+            );
     } else {
         return vertexArray.emplaceBack(
             // a_pos
@@ -129,7 +133,7 @@ FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
     var polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
 
-    if (this.layer.isPaintValueFeatureConstant('fill-extrude-height') && this.layer.getPaintValue('fill-extrude-height') === 0) {
+    if (this.layer.isPaintValueFeatureConstant('fill-extrude-height') && this.layer.isPaintValueZoomConstant('fill-extrude-height') && this.layer.getPaintValue('fill-extrude-height') === 0) {
         this.fillType = 'fill';
     } else {
         this.fillType = 'extrusion';
@@ -143,7 +147,6 @@ FillBucket.prototype.addFeature = function(feature) {
     for (var i = 0; i < polygons.length; i++) {
         this.addPolygon(polygons[i]);
     }
-
 
     this.populatePaintArrays(this.fillType, {zoom: this.zoom}, feature.properties, startGroup, startIndex);
 };
