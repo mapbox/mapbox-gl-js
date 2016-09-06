@@ -56,5 +56,18 @@ test('Actor', function (t) {
         workerActor.send('test', {}, function () {}, null, 'map-1');
     });
 
+    t.test('#remove unbinds event listener', function (t) {
+        var actor = new Actor({
+            addEventListener: function (type, callback, useCapture) {
+                this._addEventListenerArgs = [type, callback, useCapture];
+            },
+            removeEventListener: function (type, callback, useCapture) {
+                t.same([type, callback, useCapture], this._addEventListenerArgs, 'listener removed');
+                t.end();
+            }
+        }, {}, null);
+        actor.remove();
+    });
+
     t.end();
 });

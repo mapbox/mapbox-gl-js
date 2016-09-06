@@ -73,6 +73,10 @@ Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
     }, buffers);
 };
 
+Actor.prototype.remove = function () {
+    this.target.removeEventListener('message', this.receive, false);
+};
+
 /**
  * Wrapped postMessage API that abstracts around IE's lack of
  * `transferList` support.
