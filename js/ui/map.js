@@ -985,21 +985,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Returns a Boolean indicating whether the map is currently in a "moving" state.
-     * Returns `false` if zooming, rotating, pitching, and dragging are all inactive.
-     *
-     * @returns {boolean} A Boolean indicating whether the map is moving.
-     */
-    isMoving: function() {
-        if (this.zooming ||
-            this.rotating ||
-            this.pitching ||
-            this.dragPan._active ||
-            this.dragRotate._active) return true;
-        return false;
-    },
-
-    /**
      * Update this map's style and sources, and re-render the map.
      *
      * @param {boolean} updateStyle mark the map's style for reprocessing as

@@ -434,6 +434,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
+        this.easing = true;
 
         if (!options.noMoveStart) {
             this.fire('movestart', eventData);
@@ -485,6 +486,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.zooming = false;
         this.rotating = false;
         this.pitching = false;
+        this.easing = false;
 
         if (wasZooming) {
             this.fire('zoomend', eventData);
@@ -703,6 +705,22 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
     isEasing: function() {
         return !!this._abortFn;
+    },
+
+    /**
+     * Returns a Boolean indicating whether the map is currently in a "moving" state.
+     * Returns `false` if zooming, rotating, pitching, and dragging are all inactive.
+     *
+     * @returns {boolean} A Boolean indicating whether the map is moving.
+     */
+    isMoving: function() {
+        if (this.zooming ||
+            this.rotating ||
+            this.pitching ||
+            this.easing ||
+            this.dragPan.isActive() ||
+            this.dragRotate.isActive() ) return true;
+        return false;
     },
 
     /**
