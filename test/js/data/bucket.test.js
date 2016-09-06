@@ -38,11 +38,12 @@ test('Bucket', function(t) {
         Class.prototype.addFeature = function(feature) {
             var group = this.prepareArrayGroup('test', 1);
             var point = feature.loadGeometry()[0][0];
-            var startIndex = group.layoutVertexArray.length;
+            var startIndex = this.getVertexArrayLength('test');
             group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
             group.elementArray.emplaceBack(1, 2, 3);
             group.elementArray2.emplaceBack(point.x, point.y);
-            this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
+            var endIndex = this.getVertexArrayLength('test');
+            this.populatePaintArrays('test', {}, feature.properties, startIndex, endIndex, feature.index);
         };
 
         return Class;
@@ -315,6 +316,85 @@ test('Bucket', function(t) {
         var e2 = testElement2.get(0);
         t.equal(e2.vertices0, 17);
         t.equal(e2.vertices1, 42);
+
+        t.end();
+    });
+
+    t.test('Bucket#updatePaintVertexArrays', function(t) {
+        var bucket = create();
+
+        bucket.features = [createFeature(17, 42)];
+        // this represents the feature's original, pre-filtered index
+        bucket.features[0].index = 3;
+        bucket.populateArrays();
+
+
+        var testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
+        t.equal(testVertex.length, 1);
+        var v0 = testVertex.get(0);
+        t.equal(v0.a_box0, 34);
+        t.equal(v0.a_box1, 84);
+        var testPaintVertex = bucket.arrayGroups.test[0].paintVertexArrays.layerid;
+        t.equal(testPaintVertex.length, 1);
+        var p0 = testPaintVertex.get(0);
+        t.equal(p0.a_map, 17);
+
+        bucket.createArrays();
+        bucket.updatePaintVertexArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+
+        testPaintVertex = bucket.arrayGroups.test[0].paintVertexArrays.layerid;
+        p0 = testPaintVertex.get(0);
+        t.equal(p0.a_map, 3);
+
+        t.ok(!bucket.isEmpty());
+
+        t.end();
+    });
+
+    t.test('Bucket#updatePaintVertexBuffers', function(t) {
+        // Make a 'worker-side' bucket
+        var workerBucket = create();
+        workerBucket.features = [createFeature(17, 42)];
+        workerBucket.features[0].index = 3;
+        workerBucket.populateArrays();
+        var serialized = workerBucket.serialize();
+
+        // Now build a main-thread bucket, using the serialized arrays from
+        // the worker-side one
+        var Class = createClass({});
+        var serializedLayers = [{
+            id: 'layerid',
+            type: 'circle',
+            paint: dataDrivenPaint
+        }];
+        var layers = serializedLayers.map(function(serializedLayer) {
+            var styleLayer = new StyleLayer(serializedLayer);
+            styleLayer.updatePaintTransitions([], {}, {});
+            return styleLayer;
+        });
+        var paintData = serialized.arrays.test[0].paintVertexArrays.layerid;
+        // clone the arrayBuffer so that main thread bucket has a different one
+        // underlying its Buffers
+        paintData.arrayBuffer = paintData.arrayBuffer.slice();
+        var mainThreadBucket = new Class(util.extend({
+            layer: layers[0],
+            childLayers: layers
+        }, serialized));
+
+        var bufferGroup = mainThreadBucket.bufferGroups.test[0];
+        var arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
+
+        // update worker-side bucket, and make sure main-thread still has
+        // original paint data
+        workerBucket.updatePaintVertexArrays('test', [{ x: 0 }, { x: 1 }, { x: 2 }, { x: 3 }]);
+        arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [17, 0, 0, 0]);
+
+        // now update main-thread bucket's paint buffers
+        mainThreadBucket.updatePaintVertexBuffers(workerBucket.serialize().arrays);
+        arrayBuffer = bufferGroup.paintVertexBuffers.layerid.arrayBuffer;
+        t.same(new Uint8Array(arrayBuffer), [3, 0, 0, 0]);
 
         t.end();
     });

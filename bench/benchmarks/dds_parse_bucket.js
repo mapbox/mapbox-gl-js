@@ -19,8 +19,19 @@ module.exports = function run(options) {
     var evented = util.extend({}, Evented);
     ajax.getJSON(stylesheetURL, function(err, stylesheet) {
         if (err) return evented.fire('error', {error: err});
+
+        stylesheet.layers.forEach(function (layer) {
+            if (layer.type === 'fill' && layer.paint) {
+                layer.paint['fill-color'] = {
+                    property: 'level',
+                    stops: [[0, 'white'], [100, 'blue']]
+                };
+            }
+        });
+
         return runSeries(evented, stylesheet, SAMPLE_COUNT, runTile);
     });
+
     return evented;
 };
 

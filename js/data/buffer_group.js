@@ -15,23 +15,35 @@ function BufferGroup(arrayGroup, arrayTypes) {
             arrayTypes.elementArrayType, Buffer.BufferType.ELEMENT);
     }
 
-    var vaos = this.vaos = {};
-    var secondVaos;
+    this.vaos = {};
 
     if (arrayGroup.elementArray2) {
         this.elementBuffer2 = new Buffer(arrayGroup.elementArray2,
             arrayTypes.elementArrayType2, Buffer.BufferType.ELEMENT);
-        secondVaos = this.secondVaos = {};
+        this.secondVaos = {};
     }
 
-    this.paintVertexBuffers = util.mapObject(arrayGroup.paintVertexArrays, function(array, name) {
+    this.paintVertexArrayTypes = arrayTypes.paintVertexArrayTypes;
+    this.createPaintVertexBuffers(arrayGroup.paintVertexArrays);
+}
+
+/**
+ * Set up this buffer group's paint vertex buffers, given the (serialized)
+ * array group data from the worker.
+ * @private
+ */
+BufferGroup.prototype.createPaintVertexBuffers = function(paintVertexArrays) {
+    var vaos = this.vaos;
+    var secondVaos = this.secondVaos;
+    var paintVertexArrayTypes = this.paintVertexArrayTypes;
+    this.paintVertexBuffers = util.mapObject(paintVertexArrays, function(array, name) {
         vaos[name] = new VertexArrayObject();
-        if (arrayGroup.elementArray2) {
+        if (secondVaos) {
             secondVaos[name] = new VertexArrayObject();
         }
-        return new Buffer(array, arrayTypes.paintVertexArrayTypes[name], Buffer.BufferType.VERTEX);
+        return new Buffer(array, paintVertexArrayTypes[name], Buffer.BufferType.VERTEX);
     });
-}
+};
 
 BufferGroup.prototype.destroy = function(gl) {
     this.layoutVertexBuffer.destroy(gl);

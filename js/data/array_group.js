@@ -47,7 +47,21 @@ ArrayGroup.prototype.hasCapacityFor = function(numVertices) {
 };
 
 ArrayGroup.prototype.isEmpty = function() {
-    return this.layoutVertexArray.length === 0;
+    if (this.layoutVertexArray.length > 0) {
+        return false;
+    }
+
+    for (var layerName in this.paintVertexArrays) {
+        if (this.paintVertexArrays[layerName].length > 0) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+ArrayGroup.prototype.getVertexArrayLength = function() {
+    return this.layoutVertexArray.length;
 };
 
 ArrayGroup.prototype.trim = function() {

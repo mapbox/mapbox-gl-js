@@ -197,6 +197,8 @@ var BenchmarksView = React.createClass({
 var benchmarks = {
     'load-multiple-maps': require('./benchmarks/map_load'),
     buffer: require('./benchmarks/buffer'),
+    'dds-parse-bucket': require('./benchmarks/dds_parse_bucket'),
+    'dds-update-bucket': require('./benchmarks/dds_update_bucket'),
     fps: require('./benchmarks/fps'),
     'frame-duration': require('./benchmarks/frame_duration'),
     'query-point': require('./benchmarks/query_point'),
