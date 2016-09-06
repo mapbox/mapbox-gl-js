@@ -181,20 +181,20 @@ FillBucket.prototype.addPolygon = function(polygon) {
             if (v >= 1) {
                 if (this.fillType === 'extrusion') {
                     var v2 = ring[v - 1];
-                    var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
+                    if (!isBoundaryEdge(v1, v2)) {
+                        var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
 
-                    var bottomRight = this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
-                    this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
+                        var bottomRight = this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
+                        this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
 
-                    edgeDistance += Point.convert(v2).dist(Point.convert(v1));
+                        edgeDistance += Point.convert(v2).dist(Point.convert(v1));
 
-                    this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
-                    this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
+                        this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
+                        this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
 
-                    group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                    group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                        group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                        group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
-                    if (!isBoundaryEdge(v1, ring[v - 1])) {
                         group.elementArray2.emplaceBack(bottomRight, bottomRight + 1); // "right"
                         group.elementArray2.emplaceBack(bottomRight + 2, bottomRight + 3); // "left"
                         group.elementArray2.emplaceBack(bottomRight, bottomRight + 2); // bottom
@@ -232,5 +232,6 @@ function convertCoords(rings) {
 }
 
 function isBoundaryEdge(v1, v2) {
-    return v1.some(function(a, i) { return (a === 0 - 64 || a === Bucket.EXTENT + 64) && v2[i] === a; });
+    // TODO I'm not sure whether this extent/buffer math is actually always true?
+    return v1.some(function(a, i) { return (a === -0.25 * Bucket.EXTENT || a === 1.25 * Bucket.EXTENT) && v2[i] === a; });
 }
