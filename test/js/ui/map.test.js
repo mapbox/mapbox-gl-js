@@ -486,6 +486,23 @@ test('Map', function(t) {
         t.end();
     });
 
+    t.test('#isMoving', function(t) {
+        var map = createMap();
+
+        map.on('load', function() {
+            // map is not moving
+            t.notOk(map.isMoving());
+            map.flyTo({center: [1, 1], zoom: 8, duration: 10});
+            // synchronously check if map is moving, it should be!
+            t.ok(map.isMoving());
+            // wait 200 ms, assert the map is not moving after the 100ms flyTo
+            setTimeout(function() {
+                t.notOk(map.isMoving());
+                t.end();
+            }, 20);
+        });
+    });
+
     t.test('#remove', function(t) {
         var map = createMap(),
             removedCanvas,
