@@ -3,7 +3,7 @@
 var LngLat = require('./lng_lat'),
     Point = require('point-geometry'),
     Coordinate = require('./coordinate'),
-    wrap = require('../util/util').wrap,
+    util = require('../util/util'),
     interp = require('../util/interpolate'),
     TileCoord = require('../source/tile_coord'),
     EXTENT = require('../data/bucket').EXTENT,
@@ -72,7 +72,7 @@ Transform.prototype = {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
-        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+        var b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -87,7 +87,7 @@ Transform.prototype = {
         return this._pitch / Math.PI * 180;
     },
     set pitch(pitch) {
-        var p = Math.min(60, pitch) / 180 * Math.PI;
+        var p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;

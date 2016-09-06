@@ -194,6 +194,20 @@ test('transform', function(t) {
         t.end();
     });
 
+    t.test('clamps pitch', function(t) {
+        var transform = new Transform();
+
+        transform.pitch = 45;
+        t.equal(transform.pitch, 45);
+
+        transform.pitch = -10;
+        t.equal(transform.pitch, 0);
+
+        transform.pitch = 90;
+        t.equal(transform.pitch, 60);
+
+        t.end();
+    });
 
     t.end();
 });
