@@ -664,6 +664,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
         if (startPitch !== pitch) this.pitching = true;
+        this.easing = true;
 
         this.fire('movestart', eventData);
         this.fire('zoomstart', eventData);
@@ -695,6 +696,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
+            this.easing = false;
 
             this.fire('zoomend', eventData);
             this.fire('moveend', eventData);
