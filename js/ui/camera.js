@@ -721,7 +721,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             this.pitching ||
             this.easing ||
             this.dragPan.isActive() ||
-            this.dragRotate.isActive() ) return true;
+            this.dragRotate.isActive()) return true;
         return false;
     },
 
