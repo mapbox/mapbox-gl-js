@@ -43,6 +43,8 @@ function restore() {
         window.XMLHttpRequest = window.server.xhr;
     };
 
+    window.URL.revokeObjectURL = function () {};
+
     window.restore = restore;
 
     return window;
