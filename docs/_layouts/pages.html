@@ -2,6 +2,40 @@
 layout: default
 class: fill-light
 options: full
+examples: 
+  - id: get-started
+    level: h3
+    name: Getting started
+  - id: start-styles
+    level: h4
+    name: Add styles
+  - id: start-data
+    level: h4
+    name: Add data
+  - id: data-visualization
+    level: h3
+    name: Dynamic Styling
+  - id: points
+    level: h4
+    name: Point data
+  - id: lines
+    level: h4
+    name: Line data
+  - id: polygons
+    level: h4
+    name: Polygon data
+  - id: user-interaction
+    level: h3
+    name: User Interaction
+  - id: animation
+    level: h3
+    name: Move around the map
+  - id: set-view
+    level: h3
+    name: Set map view
+  - id: misc
+    level: h3
+    name: Misc
 ---
 
 <link href='{{site.url}}/css/docs.css' rel='stylesheet' />
@@ -17,10 +51,18 @@ options: full
           <div class='space-bottom'>
             <a class='block quiet active strong small truncate' href='{{site.baseurl}}/examples/'>Examples</a>
           </div>
-          {% for eg in site.categories.example reversed %}
-            <a href='{{site.baseurl}}{{eg.url}}' class='block small truncate {% if eg.title == page.title %} active{% endif %}'>{{eg.title}}</a>
-          {% endfor %}
-        {% endif %}
+          <div class='space-bottom'>
+            <input id='filter-input' type='text' name='filter' placeholder='Filter by name' />
+          </div>
+          {% for example in layout.examples %}
+          <div class='space-bottom1'>
+            <{{example.level}} class='block'>{{example.name}}</{{example.level}}>
+            {% for listing in site.tags[example.id] order:ascending %}
+              <a href='{{site.baseurl}}{{listing.url}}' class='block small truncate example-names {% if listing.title == page.title %} active{% endif %}'>{{listing.title}}</a>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      {% endif %}
         {% if page.url contains 'api' %}
           <div class='space-bottom1'>
             <span class='block truncate strong'>API</span>
@@ -70,3 +112,9 @@ options: full
     {{ content }}
   </div>
 </div>
+
+<script>
+  var allListItems = document.getElementsByClassName('example-names');
+  var filterInput = document.getElementById('filter-input');
+  
+</script>
