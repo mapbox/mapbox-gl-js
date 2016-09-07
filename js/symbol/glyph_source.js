@@ -1,7 +1,7 @@
 'use strict';
 
 var normalizeURL = require('../util/mapbox').normalizeGlyphsURL;
-var getArrayBuffer = require('../util/ajax').getArrayBuffer;
+var ajax = require('../util/ajax');
 var Glyphs = require('../util/glyphs');
 var GlyphAtlas = require('../symbol/glyph_atlas');
 var Protobuf = require('pbf');
@@ -105,7 +105,7 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
         var rangeName = (range * 256) + '-' + (range * 256 + 255);
         var url = glyphUrl(fontstack, rangeName, this.url);
 
-        getArrayBuffer(url, function(err, data) {
+        ajax.getArrayBuffer(url, function(err, data) {
             var glyphs = !err && new Glyphs(new Protobuf(data));
             for (var i = 0; i < loading[range].length; i++) {
                 loading[range][i](err, range, glyphs);

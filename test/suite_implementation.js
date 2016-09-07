@@ -6,7 +6,6 @@ var request = require('request');
 var PNG = require('pngjs').PNG;
 var Map = require('../js/ui/map');
 var window = require('../js/util/window');
-var jsdom = require('jsdom');
 
 module.exports = function(style, options, _callback) {
     var wasCallbackCalled = false;
@@ -18,9 +17,6 @@ module.exports = function(style, options, _callback) {
     }
 
     window.devicePixelRatio = options.pixelRatio;
-
-    // Set window's URL to avoid cross origin requests to test-suite fixtures
-    jsdom.changeURL(window, 'http://localhost:2900');
 
     var container = window.document.createElement('div');
     container.offsetHeight = options.height;
@@ -122,6 +118,41 @@ function cached(data, callback) {
         callback(null, data);
     });
 }
+
+sinon.stub(ajax, 'getJSON', function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
+    return request(url, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            var data;
+            try {
+                data = JSON.parse(body);
+            } catch (err) {
+                return callback(err);
+            }
+            cache[url] = data;
+            callback(null, data);
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});
+
+sinon.stub(ajax, 'getArrayBuffer', function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
+    return request({url: url, encoding: null}, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            var ab = new ArrayBuffer(body.length);
+            var view = new Uint8Array(ab);
+            for (var i = 0; i < body.length; ++i) {
+                view[i] = body[i];
+            }
+            cache[url] = ab;
+            callback(null, ab);
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});
 
 sinon.stub(ajax, 'getImage', function(url, callback) {
     if (cache[url]) return cached(fakeImage(cache[url]), callback);
