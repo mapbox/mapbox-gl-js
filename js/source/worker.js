@@ -6,6 +6,7 @@ var util = require('../util/util');
 
 var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
+var featureFilter = require('feature-filter');
 
 module.exports = function createWorker(self) {
     return new Worker(self);
@@ -62,6 +63,7 @@ util.extend(Worker.prototype, {
                 serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
             layers[styleLayer.id] = styleLayer;
         }
 

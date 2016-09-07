@@ -67,7 +67,6 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             symbolInstancesArray: this.symbolInstancesArray,
             sourceLayerIndex: sourceLayerCoder.encode(layer.sourceLayer || '_geojsonTileLayer')
         });
-        bucket.createFilter();
 
         bucketsById[layer.id] = bucket;
 
@@ -102,7 +101,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             var feature = layer.feature(i);
             feature.index = i;
             for (var id in buckets) {
-                if (buckets[id].filter(feature))
+                if (buckets[id].layer.filter(feature))
                     buckets[id].features.push(feature);
             }
         }

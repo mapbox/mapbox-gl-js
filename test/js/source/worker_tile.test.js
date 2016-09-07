@@ -5,6 +5,7 @@ var WorkerTile = require('../../../js/source/worker_tile');
 var Wrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');
 var StyleLayer = require('../../../js/style/style_layer');
+var featureFilter = require('feature-filter');
 
 test('basic', function(t) {
     var features = [{
@@ -30,7 +31,8 @@ test('basic', function(t) {
                 source: 'source',
                 type: 'circle',
                 layout: {},
-                compare: function () { return true; }
+                compare: function () { return true; },
+                filter: featureFilter()
             })]
         };
 
@@ -48,14 +50,16 @@ test('basic', function(t) {
                 source: 'source',
                 type: 'circle',
                 layout: {},
-                compare: function () { return true; }
+                compare: function () { return true; },
+                filter: featureFilter()
             })],
             'test-hidden': [new StyleLayer({
                 id: 'test-hidden',
                 source: 'source',
                 type: 'fill',
                 layout: { visibility: 'none' },
-                compare: function () { return true; }
+                compare: function () { return true; },
+                filter: featureFilter()
             })]
         };
 
