@@ -21,7 +21,7 @@ FillStyleLayer.prototype = util.inherit(StyleLayer, {
         if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
             return StyleLayer.prototype.getPaintValueStopZoomLevels.call(this, 'fill-color');
         } else {
-            return StyleLayer.prototype.getPaintValueStopZoomLevels.call(this, arguments);
+            return StyleLayer.prototype.getPaintValueStopZoomLevels.call(this, name);
         }
     },
 
