@@ -53,11 +53,11 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     }
 
     if (!positionedGlyphs.length) return false;
-    if (positionedGlyphs.length > 13) {
+    //if (positionedGlyphs.length > 13) {
         linewrapLong(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
-    } else {
-        linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
-    }
+    //} else {
+    //    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
+    //}
     return shaping;
 }
 
