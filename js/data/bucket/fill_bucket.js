@@ -174,6 +174,7 @@ FillBucket.prototype.addPolygon = function(polygon) {
 
         for (var v = 0; v < ring.length; v++) {
             var v1 = ring[v];
+            checkBoundaries(v1);
 
             var index = this.addVertex(group.layoutVertexArray, v1[0], v1[1], 0, 0, 1, 1, 0);
             indices.push(index);
@@ -181,6 +182,7 @@ FillBucket.prototype.addPolygon = function(polygon) {
             if (v >= 1) {
                 if (this.fillType === 'extrusion') {
                     var v2 = ring[v - 1];
+
                     if (!isBoundaryEdge(v1, v2)) {
                         var perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
 
@@ -195,8 +197,12 @@ FillBucket.prototype.addPolygon = function(polygon) {
                         group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
                         group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
 
-                        group.elementArray2.emplaceBack(bottomRight, bottomRight + 1); // "right"
-                        group.elementArray2.emplaceBack(bottomRight + 2, bottomRight + 3); // "left"
+                        if (!v1.isOutside) {
+                            group.elementArray2.emplaceBack(bottomRight, bottomRight + 1); // "right"
+                        }
+                        if (!v2.isOutside) {
+                            group.elementArray2.emplaceBack(bottomRight + 2, bottomRight + 3); // "left"
+                        }
                         group.elementArray2.emplaceBack(bottomRight, bottomRight + 2); // bottom
                         group.elementArray2.emplaceBack(bottomRight + 1, bottomRight + 3); // top
                     }
@@ -232,6 +238,10 @@ function convertCoords(rings) {
 }
 
 function isBoundaryEdge(v1, v2) {
-    // TODO I'm not sure whether this extent/buffer math is actually always true?
-    return v1.some(function(a, i) { return (a === -0.25 * Bucket.EXTENT || a === 1.25 * Bucket.EXTENT) && v2[i] === a; });
+    if (!v1.isOutside || !v2.isOutside) return false;
+    return v1.some(function(a, i) { return v2[i] === a; });
+}
+
+function checkBoundaries(point) {
+    point.isOutside = point.some(function(c) { return c < 0 || c > Bucket.EXTENT; });
 }
