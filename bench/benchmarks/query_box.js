@@ -2,6 +2,7 @@
 
 var Evented = require('../../js/util/evented');
 var util = require('../../js/util/util');
+var createMap = require('../lib/create_map');
 
 var width = 1024;
 var height = 768;
@@ -13,7 +14,7 @@ for (var i = 4; i < 19; i++) {
     zoomLevels.push(i);
 }
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var sum = 0;
@@ -21,7 +22,7 @@ module.exports = function(options) {
 
     asyncSeries(zoomLevels.length, function(n, callback) {
         var zoomLevel = zoomLevels[zoomLevels.length - n];
-        var map = options.createMap({
+        var map = createMap({
             width: width,
             height: height,
             zoom: zoomLevel,
@@ -47,6 +48,7 @@ module.exports = function(options) {
                 evented.fire('log', {
                     message: (zoomSum / zoomCount).toFixed(2) + ' ms at zoom ' + zoomLevel
                 });
+                map.remove();
                 callback();
             });
         });

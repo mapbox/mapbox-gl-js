@@ -1105,6 +1105,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);
         this._container.classList.remove('mapboxgl-map');
+        this.fire('remove');
     },
 
     _rerender: function() {

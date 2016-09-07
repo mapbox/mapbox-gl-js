@@ -17,7 +17,7 @@ function cn_upload {
     echo "upload: dist/$1 to s3://mapbox-gl-js-cn-north-1/$CIRCLE_TAG/$1"
 }
 
-pip install --user --upgrade awscli
+# add python packages to $PATH
 PATH=$(python -m site --user-base)/bin:${PATH}
 
 npm run build-dev
