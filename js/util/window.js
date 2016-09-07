@@ -2,32 +2,50 @@
 
 var jsdom = require('jsdom');
 var gl = require('gl');
+var sinon = require('sinon');
+var util = require('./util');
 
-var window = jsdom.jsdom(undefined, {
-    // Send jsdom console output to the node console object.
-    virtualConsole: jsdom.createVirtualConsole().sendTo(console)
-}).defaultView;
+function restore() {
 
-window.requestAnimationFrame = function(callback) { return setImmediate(callback, 0); };
-window.cancelAnimationFrame = clearImmediate;
+    // Remove previous window from module.exports
+    var previousWindow = module.exports;
+    if (previousWindow.close) previousWindow.close();
+    for (var key in previousWindow) if (previousWindow.hasOwnProperty(key)) delete previousWindow[key];
 
-window.devicePixelRatio = 1;
+    // Create new window and inject into module.exports
+    var window = jsdom.jsdom(undefined, {
+        // Send jsdom console output to the node console object.
+        virtualConsole: jsdom.createVirtualConsole().sendTo(console)
+    }).defaultView;
+    util.extend(module.exports, window);
 
-window.HTMLCanvasElement.prototype.getContext = function(type, attributes) {
-    if (!this._webGLContext) {
-        this._webGLContext = gl(this.width, this.height, attributes);
-    }
-    return this._webGLContext;
-};
+    window.devicePixelRatio = 1;
 
-// Stub some CSSOM-related properties that jsdom doesn't implement.
-Object.defineProperties(window.HTMLElement.prototype, {
-    clientLeft: {
-        get: function() { return 0; }
-    },
-    clientTop: {
-        get: function() { return 0; }
-    }
-});
+    window.requestAnimationFrame = function(callback) {
+        return setImmediate(callback, 0);
+    };
+    window.cancelAnimationFrame = clearImmediate;
 
-module.exports = window;
+    // Stub some CSSOM-related properties that jsdom doesn't implement.
+    window.HTMLElement.prototype.clientLeft = 0;
+    window.HTMLElement.prototype.clientTop = 0;
+
+    window.HTMLCanvasElement.prototype.getContext = function(type, attributes) {
+        if (!this._webGLContext) {
+            this._webGLContext = gl(this.width, this.height, attributes);
+        }
+        return this._webGLContext;
+    };
+
+    window.useFakeXMLHttpRequest = function() {
+        sinon.xhr.supportsCORS = true;
+        window.server = sinon.fakeServer.create();
+        window.XMLHttpRequest = window.server.xhr;
+    };
+
+    window.restore = restore;
+
+    return window;
+}
+
+module.exports = restore();

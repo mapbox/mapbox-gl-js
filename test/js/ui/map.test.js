@@ -37,6 +37,16 @@ function createMap(options, callback) {
 }
 
 test('Map', function(t) {
+    t.beforeEach(function(callback) {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
+    t.afterEach(function(callback) {
+        window.restore();
+        callback();
+    });
+
     t.test('constructor', function(t) {
         var map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
@@ -976,7 +986,7 @@ test('Map', function(t) {
         t.end();
     });
 
-    test('render stabilizes', function (t) {
+    t.test('render stabilizes', function (t) {
         var style = createStyle();
         style.sources.mapbox = {
             type: 'vector',
@@ -1004,7 +1014,7 @@ test('Map', function(t) {
         });
     });
 
-    test('#removeLayer restores Map#loaded() to true', function (t) {
+    t.test('#removeLayer restores Map#loaded() to true', function (t) {
         var style = createStyle();
         style.sources.mapbox = {
             type: 'vector',

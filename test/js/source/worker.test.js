@@ -3,37 +3,27 @@
 /* jshint -W079 */
 
 var test = require('tap').test;
-var http = require('http');
 var Worker = require('../../../js/source/worker');
+var window = require('../../../js/util/window');
 
 var _self = {
     addEventListener: function() {}
 };
 
-var server = http.createServer(function(request, response) {
-    switch (request.url) {
-    case "/error":
-        response.writeHead(404, {"Content-Type": "text/plain"});
-        response.end();
-        break;
-    }
-});
-
-test('before', function(t) {
-    server.listen(2900, t.end);
-});
-
 test('load tile', function(t) {
     t.test('calls callback on error', function(t) {
+        window.useFakeXMLHttpRequest();
         var worker = new Worker(_self);
         worker['load tile'](0, {
             source: 'source',
             uid: 0,
-            url: 'http://localhost:2900/error'
+            url: '/error' // Sinon fake server gives 404 responses by default
         }, function(err) {
             t.ok(err);
+            window.restore();
             t.end();
         });
+        window.server.respond();
     });
 
     t.end();
@@ -136,8 +126,4 @@ test('update layers isolates different instances\' data', function(t) {
 
 
     t.end();
-});
-
-test('after', function(t) {
-    server.close(t.end);
 });

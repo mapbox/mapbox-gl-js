@@ -1,13 +1,9 @@
 'use strict';
 
 var test = require('tap').test;
-var st = require('st');
-var http = require('http');
-var path = require('path');
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var TileCoord = require('../../../js/source/tile_coord');
-
-var server = http.createServer(st({path: path.join(__dirname, '/../../fixtures')}));
+var window = require('../../../js/util/window');
 
 function createSource(options) {
     var source = new VectorTileSource('id', options, { send: function() {} });
@@ -24,8 +20,14 @@ function createSource(options) {
 }
 
 test('VectorTileSource', function(t) {
-    t.test('before', function(t) {
-        server.listen(2900, t.end);
+    t.beforeEach(function(callback) {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
+    t.afterEach(function(callback) {
+        window.restore();
+        callback();
     });
 
     t.test('can be constructed from TileJSON', function(t) {
@@ -46,9 +48,9 @@ test('VectorTileSource', function(t) {
     });
 
     t.test('can be constructed from a TileJSON URL', function(t) {
-        var source = createSource({
-            url: "http://localhost:2900/source.json"
-        });
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+
+        var source = createSource({ url: "/source.json" });
 
         source.on('load', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
@@ -57,6 +59,8 @@ test('VectorTileSource', function(t) {
             t.deepEqual(source.attribution, "Mapbox");
             t.end();
         });
+
+        window.server.respond();
     });
 
     t.test('serialize URL', function(t) {
@@ -139,10 +143,6 @@ test('VectorTileSource', function(t) {
                 t.end();
             });
         });
-    });
-
-    t.test('after', function(t) {
-        server.close(t.end);
     });
 
     t.end();
