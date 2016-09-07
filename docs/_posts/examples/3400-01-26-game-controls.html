@@ -1,0 +1,166 @@
+---
+layout: example
+category: example
+title: Game-like controls
+description: Move around the map with game-like controls.
+---
+
+<link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
+<style>
+    .button-container {
+        height: 100px;
+        width: 130px;
+        position: absolute;
+        bottom: 0;
+        right: 0px;
+        padding: 0;
+        margin: 20px;
+    }
+
+    button {
+        margin: 2.5px;
+    }
+
+    button.round-top {
+        margin: 4px 44px;
+    }
+    
+    .dot {
+        display: block;
+        width: 20px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #3bb2d0;
+        opacity: .8;
+    }
+
+</style>
+
+<div id='map'></div>
+<div class='button-container'>
+    <button class='round-top button icon caret-up' id='up'></button>
+    <button class='round-left button icon caret-left' id='left'></button>
+    <button class='unround button icon caret-down' id='down'></button>
+    <button class='round-right button icon caret-right' id='right'></button>
+</div>
+
+<script>
+    //Initialize the map
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/dark-v9',
+      center: [-87.6298, 41.8781],
+      zoom: 17,
+      bearing: -12,
+      pitch: 60
+    });
+
+    var marker;
+    var delta = 100;
+
+    map.boxZoom.disable();
+    map.dragPan.disable();
+    map.doubleClickZoom.disable();
+    map.scrollZoom.disable();
+    map.keyboard.disable();
+    map.touchZoomRotate.disable();
+
+    function easeTo(t) {
+      if (marker && t === 1) marker.remove();
+      return t * (2 - t);
+    }
+
+    function move(pos, bearing) {
+      if (bearing) {
+        map.easeTo({
+          bearing: pos,
+          easing: easeTo
+        });
+      } else {
+        map.panBy(pos, {
+          easing: easeTo
+        });
+      }
+    }
+
+    function goDirection(dir) {
+      switch (dir) {
+        case 'left':
+          move(map.getBearing() - 25, true);
+          break;
+        case 'right':
+          move(map.getBearing() + 25, true);
+          break;
+        case 'up':
+          move([0, -delta]);
+          break;
+        case 'down':
+          move([0, delta]);
+          break;
+      }
+    }
+
+    document.body.addEventListener('keydown', function(e) {
+      switch (e.which) {
+        case 38: // up
+          goDirection('up');
+        break;
+        case 40: // down
+          goDirection('down');
+        break;
+        case 37: // left
+          goDirection('left');
+        break;
+        case 39: // right
+          goDirection('right');
+        break;
+      }
+
+    }, true);
+
+
+    var buttonLeft = ['left', document.getElementById('left')];
+    var buttonRight = ['right', document.getElementById('right')];
+    var buttonTop = ['up', document.getElementById('up')];
+    var buttonBottom = ['down', document.getElementById('down')];
+
+    var buttons = [buttonLeft, buttonRight, buttonTop, buttonBottom];
+    var persist;
+
+    function buttonStart(b) {
+      persist = setInterval(function() {
+        goDirection(b[0]);
+      }, 20);
+    }
+
+    function buttonEnd() {
+      clearInterval(persist);
+    }
+
+    buttons.forEach(function(b) {
+      b[1].addEventListener('mousedown', buttonStart.bind(this, b));
+      b[1].addEventListener('touchstart', buttonStart.bind(this, b));
+      b[1].addEventListener('mouseup', buttonEnd.bind(this, b));
+      b[1].addEventListener('touchend', buttonEnd.bind(this, b));
+    });
+
+    function createMarker(e) {
+      var markerEl = document.createElement('div');
+      var dot = document.createElement('div');
+      dot.className = 'dot';
+      markerEl.appendChild(dot);
+      marker = new mapboxgl.Marker(markerEl).setLngLat(e.lngLat).addTo(map);
+
+      window.setTimeout(function() {
+        map.flyTo({
+          center: e.lngLat,
+          easing: easeTo
+        });
+      }, 500);
+    }
+
+    map.on('click', createMarker);
+    map.on('touchstart', createMarker);
+
+
+</script>
