@@ -1,5 +1,11 @@
 ## master
 
+## 8.8.1
+
+v8.0.0 styles are fully compatible with v8.8.1.
+
+* Fixed style validation for layers with invalid types
+
 ## 8.8.0
 
 v8.0.0 styles are fully compatible with v8.8.0.
