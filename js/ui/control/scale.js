@@ -48,6 +48,7 @@ function updateScale(map, scale, options) {
     // Using spherical law of cosines approximation, the real distance is
     // found between the two coordinates.
     var maxWidth = options && options.maxWidth || 100;
+    var ratio;
 
     var y = map._container.clientHeight / 2;
     var maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
@@ -59,18 +60,18 @@ function updateScale(map, scale, options) {
         if (maxFeet > 5280) {
             var maxMiles = maxFeet / 5280;
             var miles = getRoundNum(maxMiles);
-            var ratio = miles / maxMiles;
+            ratio = miles / maxMiles;
             scale.style.width = maxWidth * ratio + 'px';
             scale.innerHTML = miles + ' mi';
         } else {
             var feet = getRoundNum(maxFeet);
-            var ratio = feet / maxFeet;
+            ratio = feet / maxFeet;
             scale.style.width = maxWidth * ratio + 'px';
             scale.innerHTML = feet + ' ft';
         }
     } else {
         var meters = getRoundNum(maxMeters);
-        var ratio = meters / maxMeters;
+        ratio = meters / maxMeters;
         scale.style.width = maxWidth * ratio + 'px';
         scale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
     }
