@@ -61,6 +61,6 @@
   },
   {
     "message": "layers[13]: layer \"missing-source-layer\" must specify a \"source-layer\"",
-    "line": 87
+    "line": 91
   }
 ]
