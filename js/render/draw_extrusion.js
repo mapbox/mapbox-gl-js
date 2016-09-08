@@ -164,7 +164,7 @@ function drawExtrusion(painter, source, layer, coord) {
 
     var gl = painter.gl;
 
-    var image = layer.getPaintValue('fill-pattern');
+    var image = layer.paint['fill-pattern'];
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var program = painter.useProgram(
