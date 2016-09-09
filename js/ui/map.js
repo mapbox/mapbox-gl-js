@@ -17,12 +17,12 @@ var Hash = require('./hash');
 var bindHandlers = require('./bind_handlers');
 
 var Camera = require('./camera');
+var Light = require('./light');
 var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
 var Attribution = require('./control/attribution');
 var isSupported = require('mapbox-gl-supported');
-var parseColor = require('../style/parse_color');
 
 var defaultMinZoom = 0;
 var defaultMaxZoom = 20;
@@ -34,7 +34,7 @@ var defaultOptions = {
 
     light: {
         anchor: 'viewport',
-        direction: [-0.5, -0.3, 1.0],
+        direction: [1.15, 210, 30],
         color: 'white',
         intensity: 0.5
     },
@@ -224,6 +224,7 @@ var Map = module.exports = function(options) {
 
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Camera.prototype);
+util.extend(Map.prototype, Light.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
