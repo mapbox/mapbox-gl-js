@@ -23,6 +23,7 @@
     "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#df162476980d9ee2ab6f8d0cf5a06e27aac60472",
     "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#83b1a3e5837d785af582efd5ed1a212f2df6a4ae",
     "mapbox-gl-supported": "^1.2.0",
+    "package-json-versionify": "^1.0.2",
     "pbf": "^1.3.2",
     "pngjs": "^2.2.0",
     "point-geometry": "^0.0.0",
@@ -64,7 +65,6 @@
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
     "nyc": "mourner/nyc#fast",
-    "package-json-versionify": "^1.0.2",
     "proxyquire": "^1.7.9",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
@@ -79,17 +79,23 @@
     "webpack": "^1.13.1",
     "webworkify-webpack": "^1.1.3"
   },
+  "browserify": {
+    "transform": [
+      "package-json-versionify",
+      "unassertify"
+    ]
+  },
   "browser": {
     "./js/util/window.js": "./js/util/browser/window.js",
     "./js/util/web_worker.js": "./js/util/browser/web_worker.js"
   },
   "scripts": {
-    "build-dev": "browserify js/mapbox-gl.js --debug --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
-    "watch-dev": "watchify js/mapbox-gl.js --debug --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
-    "build-min": "browserify js/mapbox-gl.js --debug --transform unassertify --transform package-json-versionify --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
+    "build-dev": "browserify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
+    "watch-dev": "watchify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
+    "build-min": "browserify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
-    "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform unassertify --transform envify --outfile bench/benchmarks_generated.js --verbose",
-    "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform unassertify --transform envify --outfile bench/benchmarks_generated.js --verbose",
+    "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
+    "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks-view": "watchify bench/benchmarks_view.js --debug --transform [babelify --presets react] --outfile bench/benchmarks_view_generated.js --verbose",
     "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
     "start": "run-p build-token watch-dev watch-benchmarks watch-benchmarks-view start-server",
