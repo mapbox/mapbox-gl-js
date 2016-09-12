@@ -127,3 +127,23 @@ test('update layers isolates different instances\' data', function(t) {
 
     t.end();
 });
+
+test('worker source messages dispatched to the correct map instance', function(t) {
+    var worker = new Worker(_self);
+
+    worker.actor.send = function (type, data, callback, buffers, mapId) {
+        t.equal(type, 'main thread task');
+        t.equal(mapId, 999);
+        t.end();
+    };
+
+    _self.registerWorkerSource('test', function(actor) {
+        this.loadTile = function() {
+            // we expect the map id to get appended in the call to the "real"
+            // actor.send()
+            actor.send('main thread task', {}, function () {}, null);
+        };
+    });
+
+    worker['load tile'](999, {type: 'test'});
+});

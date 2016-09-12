@@ -26,6 +26,12 @@ function MessageBus(addListeners, postListeners) {
                 addListeners.push(callback);
             }
         },
+        removeEventListener: function(event, callback) {
+            var i = addListeners.indexOf(callback);
+            if (i >= 0) {
+                addListeners.splice(i, 1);
+            }
+        },
         postMessage: function(data) {
             setImmediate(function() {
                 for (var i = 0; i < postListeners.length; i++) {

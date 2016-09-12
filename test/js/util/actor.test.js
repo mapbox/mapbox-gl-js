@@ -32,5 +32,42 @@ test('Actor', function (t) {
         });
     });
 
+    t.test('targets worker-initiated messages to correct map instance', function (t) {
+        var workerActor;
+
+        var WebWorker = proxyquire('../../../js/util/web_worker', {
+            '../source/worker': function Worker(self) {
+                this.self = self;
+                this.actor = workerActor = new Actor(self, this);
+            }
+        });
+        var worker = new WebWorker();
+
+        new Actor(worker, {
+            test: function () { t.end(); }
+        }, 'map-1');
+        new Actor(worker, {
+            test: function () {
+                t.fail();
+                t.end();
+            }
+        }, 'map-2');
+
+        workerActor.send('test', {}, function () {}, null, 'map-1');
+    });
+
+    t.test('#remove unbinds event listener', function (t) {
+        var actor = new Actor({
+            addEventListener: function (type, callback, useCapture) {
+                this._addEventListenerArgs = [type, callback, useCapture];
+            },
+            removeEventListener: function (type, callback, useCapture) {
+                t.same([type, callback, useCapture], this._addEventListenerArgs, 'listener removed');
+                t.end();
+            }
+        }, {}, null);
+        actor.remove();
+    });
+
     t.end();
 });
