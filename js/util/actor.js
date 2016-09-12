@@ -10,11 +10,13 @@ module.exports = Actor;
  *
  * @param {WebWorker} target
  * @param {WebWorker} parent
+ * @param {string|number} mapId A unique identifier for the Map instance using this Actor.
  * @private
  */
-function Actor(target, parent) {
+function Actor(target, parent, mapId) {
     this.target = target;
     this.parent = parent;
+    this.mapId = mapId;
     this.callbacks = {};
     this.callbackID = 0;
     this.receive = this.receive.bind(this);
@@ -23,31 +25,40 @@ function Actor(target, parent) {
 
 Actor.prototype.receive = function(message) {
     var data = message.data,
+        id = data.id,
         callback;
 
     if (data.type === '<response>') {
         callback = this.callbacks[data.id];
         delete this.callbacks[data.id];
-        callback(data.error || null, data.data);
-    } else if (typeof data.id !== 'undefined') {
-        var id = data.id;
-        this.parent[data.type](data.data, function(err, data, buffers) {
-            this.postMessage({
-                type: '<response>',
-                id: String(id),
-                error: err ? String(err) : null,
-                data: data
-            }, buffers);
-        }.bind(this));
+        if (callback) callback(data.error || null, data.data);
+    } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
+        // data.type == 'load tile', 'remove tile', etc.
+        this.parent[data.type](data.mapId, data.data, done.bind(this));
+    } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
+        // data.type == sourcetype.method
+        var keys = data.type.split('.');
+        var workerSource = this.parent.getWorkerSource(data.mapId, keys[0]);
+        workerSource[keys[1]](data.data, done.bind(this));
     } else {
         this.parent[data.type](data.data);
+    }
+
+    function done(err, data, buffers) {
+        this.postMessage({
+            mapId: this.mapId,
+            type: '<response>',
+            id: String(id),
+            error: err ? String(err) : null,
+            data: data
+        }, buffers);
     }
 };
 
 Actor.prototype.send = function(type, data, callback, buffers) {
-    var id = null;
-    if (callback) this.callbacks[id = this.callbackID++] = callback;
-    this.postMessage({ type: type, id: String(id), data: data }, buffers);
+    var id = callback ? this.mapId + ':' + this.callbackID++ : null;
+    if (callback) this.callbacks[id] = callback;
+    this.postMessage({ mapId: this.mapId, type: type, id: String(id), data: data }, buffers);
 };
 
 /**

@@ -5,7 +5,7 @@
     <meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <link rel='stylesheet' href='../dist/mapbox-gl.css' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
@@ -39,18 +39,19 @@
 <body>
 <div id='map'></div>
 <div id='checkboxes'>
-  <input id='show-tile-boundaries-checkbox' name='show-tile-boundaries' type='checkbox'> <label for='show-tile-boundaries'>tile debug</label><br />
-  <input id='show-symbol-collision-boxes-checkbox' name='show-symbol-collision-boxes' type='checkbox'> <label for='show-symbol-collision-boxes'>collision debug</label><br />
-  <input id='show-overdraw-checkbox' name='show-overdraw' type='checkbox'> <label for='show-overdraw'>overdraw debug</label><br />
-  <input id='buffer-checkbox' name='buffer' type='checkbox'> <label for='buffer'>buffer stats</label>
+  <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+  <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+  <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
+  <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+  <label><input id='buffer-checkbox' type='checkbox'> buffer stats</label>
 </div>
 
 <div id='buffer' style="display:none">
     <em>Waiting for data...</em>
 </div>
 
-<script src='mapbox-gl.js'></script>
-<script src='access-token.js'></script>
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 
 <script>
 var map = window.map = new mapboxgl.Map({
@@ -63,11 +64,12 @@ var map = window.map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.Navigation());
 map.addControl(new mapboxgl.Geolocate());
+map.addControl(new mapboxgl.Scale());
 
 map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
-        "data": "route.json"
+        "data": "/node_modules/mapbox-gl-test-suite/data/linestring.geojson"
     });
 
     map.addLayer({
@@ -134,6 +136,10 @@ document.getElementById('show-overdraw-checkbox').onclick = function() {
 
 document.getElementById('buffer-checkbox').onclick = function() {
     document.getElementById('buffer').style.display = this.checked ? 'block' : 'none';
+};
+
+document.getElementById('pitch-checkbox').onclick = function() {
+    map.dragRotate._pitchWithRotate = !!this.checked;
 };
 
 // keyboard shortcut for comparing rendering with Mapbox GL native

@@ -1,18 +1,24 @@
 machine:
-  node:
-    version: '4'
+  xcode:
+    version: 7.3
+  environment:
+    XCODE_SCHEME: "no"
+    XCODE_WORKSPACE: "no"
+    NODE_VERSION: 4
+
 dependencies:
+  cache_directories:
+    - './nvm'
   override:
-    - npm update
+    - ./ci/dependencies.sh
 test:
   override:
-    - ./ci.sh
+    - ./ci/test.sh
 deployment:
   release:
-    tag: /v[0-9]+\.[0-9]+\.[0-9]+/
+    tag: /v[0-9]+\.[0-9]+\.[0-9]+(\-dev)?/
     commands:
-      - pip install awscli
-      - ./deploy.sh
+      - ./ci/deploy.sh
 general:
   artifacts:
     - "node_modules/mapbox-gl-test-suite/render-tests/index.html"

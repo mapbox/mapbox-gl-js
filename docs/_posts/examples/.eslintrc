@@ -1,0 +1,16 @@
+{
+  "plugins": ["html"],
+  "globals": {
+    "mapboxgl": true,
+    "turf": true,
+    "d3": true
+  },
+  "rules": {
+    "strict": "off",
+    "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
+    "no-loop-func": "off"
+  },
+  "env": {
+    "browser": true
+  }
+}

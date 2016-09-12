@@ -16,7 +16,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
 
         if (!bufferGroups || !bufferGroups.length) continue;
         var group = bufferGroups[0];
-        if (group.layout.vertex.length === 0) continue;
+        if (group.layoutVertexBuffer.length === 0) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
@@ -27,7 +27,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
         gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
         gl.uniform1f(program.u_maxzoom, (tile.coord.z + 1) * 10);
 
-        group.vaos[layer.id].bind(gl, program, group.layout.vertex);
-        gl.drawArrays(gl.LINES, 0, group.layout.vertex.length);
+        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer);
+        gl.drawArrays(gl.LINES, 0, group.layoutVertexBuffer.length);
     }
 }

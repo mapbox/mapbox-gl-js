@@ -14,15 +14,18 @@ var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
+var QueryFeatures = require('../source/query_features');
+var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
+var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, workerCount) {
+function Style(stylesheet, animationLoop) {
     this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(workerCount || 1, this);
-    this.spriteAtlas = new SpriteAtlas(512, 512);
+    this.dispatcher = new Dispatcher(getWorkerPool(), this);
+    this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
@@ -40,7 +43,7 @@ function Style(stylesheet, animationLoop, workerCount) {
 
     this._resetUpdates();
 
-    var loaded = function(err, stylesheet) {
+    var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -69,9 +72,9 @@ function Style(stylesheet, animationLoop, workerCount) {
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
-        ajax.getJSON(normalizeURL(stylesheet), loaded);
+        ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
     this.on('source.load', function(event) {
@@ -110,6 +113,9 @@ Style.prototype = util.inherit(Evented, {
 
     loaded: function() {
         if (!this._loaded)
+            return false;
+
+        if (Object.keys(this._updates.sources).length)
             return false;
 
         for (var id in this.sources)
@@ -231,7 +237,6 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.z = z;
-        this.fire('zoom');
     },
 
     _updateZoomHistory: function(z) {
@@ -318,13 +323,16 @@ Style.prototype = util.inherit(Evented, {
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
-        if (!Source.is(source) && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
+        if (!source.type) {
+            throw new Error('The type property must be defined, but the only the following properties were given: ' + Object.keys(source) + '.');
+        }
+        var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
+        var shouldValidate = builtIns.indexOf(source.type) >= 0;
+        if (shouldValidate && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
-        source = Source.create(source);
+        source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
-        source.id = id;
         source.style = this;
-        source.dispatcher = this.dispatcher;
         source
             .on('load', this._forwardSourceEvent)
             .on('error', this._forwardSourceEvent)
@@ -356,6 +364,7 @@ Style.prototype = util.inherit(Evented, {
         }
         var source = this.sources[id];
         delete this.sources[id];
+        delete this._updates.sources[id];
         source
             .off('load', this._forwardSourceEvent)
             .off('error', this._forwardSourceEvent)
@@ -379,7 +388,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getSource: function(id) {
-        return this.sources[id];
+        return this.sources[id] && this.sources[id].getSource();
     },
 
     /**
@@ -441,6 +450,8 @@ Style.prototype = util.inherit(Evented, {
         layer.off('error', this._forwardLayerEvent);
 
         delete this._layers[id];
+        delete this._updates.layers[id];
+        delete this._updates.paintProps[id];
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
@@ -498,7 +509,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
+        if (filter !== null && this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = util.clone(filter);
@@ -513,7 +524,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getFilter: function(layer) {
-        return this.getReferentLayer(layer).filter;
+        return util.clone(this.getReferentLayer(layer).filter);
     },
 
     setLayoutProperty: function(layerId, name, value) {
@@ -632,12 +643,20 @@ Style.prototype = util.inherit(Evented, {
             this._handleErrors(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, true);
         }
 
+        var includedSources = {};
+        if (params && params.layers) {
+            for (var i = 0; i < params.layers.length; i++) {
+                var layerId = params.layers[i];
+                includedSources[this._layers[layerId].source] = true;
+            }
+        }
+
         var sourceResults = [];
         for (var id in this.sources) {
+            if (params.layers && !includedSources[id]) continue;
             var source = this.sources[id];
-            if (source.queryRenderedFeatures) {
-                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
-            }
+            var results = QueryFeatures.rendered(source, this._layers, queryGeometry, params, zoom, bearing);
+            sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
     },
@@ -646,8 +665,25 @@ Style.prototype = util.inherit(Evented, {
         if (params && params.filter) {
             this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
         }
-        var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+        var source = this.sources[sourceID];
+        return source ? QueryFeatures.source(source, params) : [];
+    },
+
+    addSourceType: function (name, SourceType, callback) {
+        if (Source.getType(name)) {
+            return callback(new Error('A source type called "' + name + '" already exists.'));
+        }
+
+        Source.setType(name, SourceType);
+
+        if (!SourceType.workerSourceURL) {
+            return callback(null, null);
+        }
+
+        this.dispatcher.broadcast('load worker source', {
+            name: name,
+            url: SourceType.workerSourceURL
+        }, callback);
     },
 
     _handleErrors: function(validate, key, value, throws, props) {
@@ -682,7 +718,7 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _forwardSourceEvent: function(e) {
-        this.fire('source.' + e.type, util.extend({source: e.target}, e));
+        this.fire('source.' + e.type, util.extend({source: e.target.getSource()}, e));
     },
 
     _forwardTileEvent: function(e) {
@@ -695,7 +731,7 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    'get sprite json': function(params, callback) {
+    'get sprite json': function(mapId, params, callback) {
         var sprite = this.sprite;
         if (sprite.loaded()) {
             callback(null, { sprite: sprite.data, retina: sprite.retina });
@@ -706,7 +742,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get icons': function(params, callback) {
+    'get icons': function(mapId, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
@@ -720,7 +756,7 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    'get glyphs': function(params, callback) {
+    'get glyphs': function(mapId, params, callback) {
         var stacks = params.stacks,
             remaining = Object.keys(stacks).length,
             allGlyphs = {};

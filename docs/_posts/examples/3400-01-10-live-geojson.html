@@ -2,33 +2,30 @@
 layout: example
 category: example
 title: Add live realtime data
-description: Use realtime GeoJSON data streams to move a marker on your map with Mapbox GL JS.
+description: Use realtime GeoJSON data streams to move a symbol on your map
 ---
 <div id='map'></div>
 
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     zoom: 0
 });
 
 var url = 'https://wanderdrone.appspot.com/';
-var source = new mapboxgl.GeoJSONSource({
-    data: url
-});
-window.setInterval(function() {
-    source.setData(url);
-}, 2000);
-
 map.on('load', function () {
-    map.addSource('drone', source);
+    window.setInterval(function() {
+        map.getSource('drone').setData(url);
+    }, 2000);
+
+    map.addSource('drone', { type: 'geojson', data: url });
     map.addLayer({
         "id": "drone",
         "type": "symbol",
         "source": "drone",
         "layout": {
-            "icon-image": "rocket-15",
+            "icon-image": "rocket-15"
         }
     });
 });

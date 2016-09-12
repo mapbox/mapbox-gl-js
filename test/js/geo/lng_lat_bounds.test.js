@@ -9,11 +9,36 @@ test('LngLatBounds', function(t) {
         var sw = new LngLat(0, 0);
         var ne = new LngLat(-10, 10);
         var bounds = new LngLatBounds(sw, ne);
-        t.ok(bounds instanceof LngLatBounds, 'creates an object');
+        t.equal(bounds.getSouth(), 0);
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), -10);
         t.end();
     });
 
-    t.test('#constructor-noargs', function(t) {
+    t.test('#constructor across dateline', function(t) {
+        var sw = new LngLat(170, 0);
+        var ne = new LngLat(-170, 10);
+        var bounds = new LngLatBounds(sw, ne);
+        t.equal(bounds.getSouth(), 0);
+        t.equal(bounds.getWest(), 170);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), -170);
+        t.end();
+    });
+
+    t.test('#constructor across pole', function(t) {
+        var sw = new LngLat(0, 85);
+        var ne = new LngLat(-10, -85);
+        var bounds = new LngLatBounds(sw, ne);
+        t.equal(bounds.getSouth(), 85);
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), -85);
+        t.equal(bounds.getEast(), -10);
+        t.end();
+    });
+
+    t.test('#constructor no args', function(t) {
         var bounds = new LngLatBounds();
         t.throws(function() {
             bounds.getCenter();
@@ -21,47 +46,48 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('extend', function(t) {
-        var sw = new LngLat(0, 0);
-        var ne = new LngLat(-10, 10);
-        var bounds = new LngLatBounds(sw, ne);
-        var outer = new LngLat(-20, 20);
-        var largerbounds = new LngLatBounds(sw, outer);
-        t.equal(bounds.extend(outer), bounds);
-        t.deepEqual(bounds.extend(outer), largerbounds);
+    t.test('#extend with coordinate', function(t) {
+        var bounds = new LngLatBounds([0, 0], [10, 10]);
+        bounds.extend([-10, -10]);
 
-        var tinybounds = new LngLatBounds(sw, sw);
-        t.equal(tinybounds.extend(largerbounds), tinybounds);
-        t.deepEqual(tinybounds, largerbounds);
+        t.equal(bounds.getSouth(), -10);
+        t.equal(bounds.getWest(), -10);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), 10);
 
-        tinybounds = new LngLatBounds(sw, sw);
-        tinybounds.extend([-10, 10]);
-        t.deepEqual(tinybounds.getNorthWest(), new LngLat(-10, 10));
+        t.end();
+    });
 
-        var emptybounds = new LngLatBounds();
-        tinybounds.extend(emptybounds);
-        t.deepEqual(tinybounds.getNorthWest(), new LngLat(-10, 10));
+    t.test('#extend with bounds', function(t) {
+        var bounds1 = new LngLatBounds([0, 0], [10, 10]);
+        var bounds2 = new LngLatBounds([-10, -10], [10, 10]);
+        bounds1.extend(bounds2);
+
+        t.equal(bounds1.getSouth(), -10);
+        t.equal(bounds1.getWest(), -10);
+        t.equal(bounds1.getNorth(), 10);
+        t.equal(bounds1.getEast(), 10);
 
         t.end();
     });
 
     t.test('accessors', function(t) {
         var sw = new LngLat(0, 0);
-        var ne = new LngLat(-10, 10);
+        var ne = new LngLat(-10, -20);
         var bounds = new LngLatBounds(sw, ne);
-        t.deepEqual(bounds.getCenter(), new LngLat(-5, 5));
-        t.equal(bounds.getWest(), -10);
-        t.equal(bounds.getEast(), 0);
-        t.equal(bounds.getNorth(), 10);
+        t.deepEqual(bounds.getCenter(), new LngLat(-5, -10));
         t.equal(bounds.getSouth(), 0);
-        t.deepEqual(bounds.getSouthWest(), new LngLat(-10, 0));
-        t.deepEqual(bounds.getSouthEast(), new LngLat(0, 0));
-        t.deepEqual(bounds.getNorthEast(), new LngLat(0, 10));
-        t.deepEqual(bounds.getNorthWest(), new LngLat(-10, 10));
+        t.equal(bounds.getWest(), 0);
+        t.equal(bounds.getNorth(), -20);
+        t.equal(bounds.getEast(), -10);
+        t.deepEqual(bounds.getSouthWest(), new LngLat(0, 0));
+        t.deepEqual(bounds.getSouthEast(), new LngLat(-10, 0));
+        t.deepEqual(bounds.getNorthEast(), new LngLat(-10, -20));
+        t.deepEqual(bounds.getNorthWest(), new LngLat(0, -20));
         t.end();
     });
 
-    t.test('.convert', function(t) {
+    t.test('#convert', function(t) {
         var sw = new LngLat(0, 0);
         var ne = new LngLat(-10, 10);
         var bounds = new LngLatBounds(sw, ne);

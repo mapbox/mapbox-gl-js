@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('../util/util');
-var Tile = require('./tile');
 var TileCoord = require('./tile_coord');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
@@ -15,31 +14,42 @@ var VertexArrayObject = require('../render/vertex_array_object');
 module.exports = ImageSource;
 
 /**
- * Create an Image source instance given an options object
- * @class ImageSource
- * @param {Object} options
- * @param {string} options.url A string URL of an image file
- * @param {Array} options.coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
+ * A data source containing an image.
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-image) for detailed documentation of options.)
+ *
+ * @interface ImageSource
  * @example
- * var sourceObj = new mapboxgl.ImageSource({
+ * // add to map
+ * map.addSource('some id', {
+ *    type: 'image',
  *    url: 'https://www.mapbox.com/images/foo.png',
  *    coordinates: [
- *        [-76.54335737228394, 39.18579907229748],
- *        [-76.52803659439087, 39.1838364847587],
- *        [-76.5295386314392, 39.17683392507606],
- *        [-76.54520273208618, 39.17876344106642]
+ *        [-76.54, 39.18],
+ *        [-76.52, 39.18],
+ *        [-76.52, 39.17],
+ *        [-76.54, 39.17]
  *    ]
  * });
- * map.addSource('some id', sourceObj); // add
+ *
+ * // update
+ * var mySource = map.getSource('some id');
+ * mySource.setCoordinates([
+ *     [-76.54335737228394, 39.18579907229748],
+ *     [-76.52803659439087, 39.1838364847587],
+ *     [-76.5295386314392, 39.17683392507606],
+ *     [-76.54520273208618, 39.17876344106642]
+ * ]);
+ *
  * map.removeSource('some id');  // remove
  */
-function ImageSource(options) {
+function ImageSource(id, options, dispatcher) {
+    this.id = id;
+    this.dispatcher = dispatcher;
     this.url = options.url;
     this.coordinates = options.coordinates;
 
     ajax.getImage(options.url, function(err, image) {
-        // @TODO handle errors via event.
-        if (err) return;
+        if (err) return this.fire('error', {error: err});
 
         this.image = image;
 
@@ -48,6 +58,7 @@ function ImageSource(options) {
         }.bind(this));
 
         this._loaded = true;
+        this.fire('load');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);
@@ -56,6 +67,9 @@ function ImageSource(options) {
 }
 
 ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype */ {
+    minzoom: 0,
+    maxzoom: 22,
+    tileSize: 512,
     onAdd: function(map) {
         this.map = map;
         if (this.image) {
@@ -64,15 +78,18 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     },
 
     /**
-     * Update image coordinates and rerender map
+     * Sets the image's coordinates and re-renders the map.
      *
-     * @param {Array} coordinates Four geographical [lng, lat] coordinates in clockwise order defining the corners (starting with top left) of the image. Does not have to be a rectangle.
+     * @param {Array<Array<number>>} coordinates Four geographical coordinates,
+     *   represented as arrays of longitude and latitude numbers, which define the corners of the image.
+     *   The coordinates start at the top left corner of the image and proceed in clockwise order.
+     *   They do not have to represent a rectangle.
      * @returns {ImageSource} this
      */
     setCoordinates: function(coordinates) {
         this.coordinates = coordinates;
 
-        // Calculate which mercator tile is suitable for rendering the image in
+        // Calculate which mercator tile is suitable for rendering the video in
         // and create a buffer with the corner coordinates. These coordinates
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
@@ -85,50 +102,44 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         centerCoord.column = Math.round(centerCoord.column);
         centerCoord.row = Math.round(centerCoord.row);
 
-        var tileCoords = cornerZ0Coords.map(function(coord) {
+        this.minzoom = this.maxzoom = centerCoord.zoom;
+        this._coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this._tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
+        this.fire('change');
+        return this;
+    },
+
+    _setTile: function (tile) {
+        this._prepared = false;
+        this.tile = tile;
         var maxInt16 = 32767;
         var array = new RasterBoundsArray();
-        array.emplaceBack(tileCoords[0].x, tileCoords[0].y, 0, 0);
-        array.emplaceBack(tileCoords[1].x, tileCoords[1].y, maxInt16, 0);
-        array.emplaceBack(tileCoords[3].x, tileCoords[3].y, 0, maxInt16);
-        array.emplaceBack(tileCoords[2].x, tileCoords[2].y, maxInt16, maxInt16);
+        array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
+        array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
+        array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);
+        array.emplaceBack(this._tileCoords[2].x, this._tileCoords[2].y, maxInt16, maxInt16);
 
-        this.tile = new Tile(new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row));
         this.tile.buckets = {};
 
         this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-
-        this.fire('change');
-
-        return this;
-    },
-
-    loaded: function() {
-        return this.image && this.image.complete;
-    },
-
-    update: function() {
-        // noop
-    },
-
-    reload: function() {
-        // noop
+        this.tile.state = 'loaded';
     },
 
     prepare: function() {
-        if (!this._loaded || !this.loaded()) return;
+        if (!this._loaded || !this.image || !this.image.complete) return;
+        if (!this.tile) return;
 
         var painter = this.map.painter;
         var gl = painter.gl;
 
-        if (!this.tile.texture) {
+        if (!this._prepared) {
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -142,13 +153,18 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         }
     },
 
-    getVisibleCoordinates: function() {
-        if (this.tile) return [this.tile.coord];
-        else return [];
-    },
-
-    getTile: function() {
-        return this.tile;
+    loadTile: function(tile, callback) {
+        // We have a single tile -- whoose coordinates are this._coord -- that
+        // covers the image we want to render.  If that's the one being
+        // requested, set it up with the image; otherwise, mark the tile as
+        // `errored` to indicate that we have no data for it.
+        if (this._coord && this._coord.toString() === tile.coord.toString()) {
+            this._setTile(tile);
+            callback(null);
+        } else {
+            tile.state = 'errored';
+            callback(null);
+        }
     },
 
     serialize: function() {

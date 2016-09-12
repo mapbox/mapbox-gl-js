@@ -10,8 +10,8 @@ function Feature(vectorTileFeature, z, x, y) {
 
     this.properties = vectorTileFeature.properties;
 
-    if (vectorTileFeature._id) {
-        this.id = vectorTileFeature._id;
+    if (vectorTileFeature.id != null) {
+        this.id = vectorTileFeature.id;
     }
 }
 

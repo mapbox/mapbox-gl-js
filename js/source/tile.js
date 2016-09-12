@@ -25,12 +25,19 @@ module.exports = Tile;
 function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
-    this.loaded = false;
-    this.isUnloaded = false;
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
     this.buckets = {};
+
+    // `this.state` must be one of
+    //
+    // - `loading`:   Tile data is in the process of loading.
+    // - `loaded`:    Tile data has been loaded. Tile can be rendered.
+    // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
+    // - `unloaded`:  Tile data has been deleted.
+    // - `errored`:   Tile data was not loaded because of an error.
+    this.state = 'loading';
 }
 
 Tile.prototype = {
@@ -44,19 +51,26 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    loadVectorData: function(data, style) {
-        this.loaded = true;
+    loadVectorData: function(data, painter) {
+        if (this.hasData()) {
+            this.unloadVectorData(painter);
+        }
+
+        this.state = 'loaded';
 
         // empty GeoJSON tile
         if (!data) return;
+
+        if (data.rawTileData) {
+            this.rawTileData = data.rawTileData;
+        }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
-        this.rawTileData = data.rawTileData;
-        this.buckets = unserializeBuckets(data.buckets, style);
+        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.buckets = unserializeBuckets(data.buckets, painter.style);
     },
 
     /**
@@ -68,7 +82,7 @@ Tile.prototype = {
      * @private
      */
     reloadSymbolData: function(data, painter, style) {
-        if (this.isUnloaded) return;
+        if (this.state === 'unloaded') return;
 
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.featureIndex.setCollisionTile(this.collisionTile);
@@ -107,17 +121,16 @@ Tile.prototype = {
         this.featureIndex = null;
         this.rawTileData = null;
         this.buckets = null;
-        this.loaded = false;
-        this.isUnloaded = true;
+        this.state = 'unloaded';
     },
 
     redoPlacement: function(source) {
-        if (!this.loaded || this.redoingPlacement) {
+        if (this.state !== 'loaded' || this.state === 'reloading') {
             this.redoWhenDone = true;
             return;
         }
 
-        this.redoingPlacement = true;
+        this.state = 'reloading';
 
         source.dispatcher.send('redo placement', {
             uid: this.uid,
@@ -131,7 +144,7 @@ Tile.prototype = {
             this.reloadSymbolData(data, source.map.painter, source.map.style);
             source.fire('tile.load', {tile: this});
 
-            this.redoingPlacement = false;
+            this.state = 'loaded';
             if (this.redoWhenDone) {
                 this.redoPlacement(source);
                 this.redoWhenDone = false;
@@ -147,7 +160,7 @@ Tile.prototype = {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
+            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
         var layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
@@ -165,6 +178,10 @@ Tile.prototype = {
                 result.push(geojsonFeature);
             }
         }
+    },
+
+    hasData: function() {
+        return this.state === 'loaded' || this.state === 'reloading';
     }
 };
 

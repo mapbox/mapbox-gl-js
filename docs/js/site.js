@@ -30,6 +30,10 @@ function load() {
         $('a.action.signup').trigger('click');
         return false;
     });
+
+    $('[data-href]').on('click', function() {
+        window.location = $(this).data('href');
+    });
 }
 
 $(load);

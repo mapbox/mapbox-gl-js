@@ -1,41 +1,47 @@
 'use strict';
 
 var Actor = require('../util/actor');
-var WorkerTile = require('./worker_tile');
 var StyleLayer = require('../style/style_layer');
 var util = require('../util/util');
-var ajax = require('../util/ajax');
-var vt = require('vector-tile');
-var Protobuf = require('pbf');
-var supercluster = require('supercluster');
 
-var geojsonvt = require('geojson-vt');
-var rewind = require('geojson-rewind');
-var GeoJSONWrapper = require('./geojson_wrapper');
-var vtpbf = require('vt-pbf');
+var VectorTileWorkerSource = require('./vector_tile_worker_source');
+var GeoJSONWorkerSource = require('./geojson_worker_source');
 
-module.exports = function(self) {
+module.exports = function createWorker(self) {
     return new Worker(self);
 };
 
 function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
-    this.loading = {};
 
-    this.loaded = {};
-    this.geoJSONIndexes = {};
+    this.layers = {};
+    this.layerFamilies = {};
+
+    this.workerSourceTypes = {
+        vector: VectorTileWorkerSource,
+        geojson: GeoJSONWorkerSource
+    };
+
+    // [mapId][sourceType] => worker source instance
+    this.workerSources = {};
+
+    this.self.registerWorkerSource = function (name, WorkerSource) {
+        if (this.workerSourceTypes[name]) {
+            throw new Error('Worker source with name "' + name + '" already registered.');
+        }
+        this.workerSourceTypes[name] = WorkerSource;
+    }.bind(this);
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(layers) {
-        this.layers = {};
-        var that = this;
+    'set layers': function(mapId, layerDefinitions) {
+        var layers = this.layers[mapId] = {};
 
         // Filter layers and create an id -> layer map
         var childLayerIndicies = [];
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
+        for (var i = 0; i < layerDefinitions.length; i++) {
+            var layer = layerDefinitions[i];
             if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
                 if (layer.ref) {
                     childLayerIndicies.push(i);
@@ -47,175 +53,105 @@ util.extend(Worker.prototype, {
 
         // Create an instance of StyleLayer per layer
         for (var j = 0; j < childLayerIndicies.length; j++) {
-            setLayer(layers[childLayerIndicies[j]]);
+            setLayer(layerDefinitions[childLayerIndicies[j]]);
         }
 
         function setLayer(serializedLayer) {
             var styleLayer = StyleLayer.create(
                 serializedLayer,
-                serializedLayer.ref && that.layers[serializedLayer.ref]
+                serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
-            that.layers[styleLayer.id] = styleLayer;
+            layers[styleLayer.id] = styleLayer;
         }
 
-        this.layerFamilies = createLayerFamilies(this.layers);
+        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'update layers': function(layers) {
-        var that = this;
+    'update layers': function(mapId, layerDefinitions) {
         var id;
         var layer;
 
+        var layers = this.layers[mapId];
+
         // Update ref parents
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (layer.ref) updateLayer(layer);
         }
 
         // Update ref children
-        for (id in layers) {
-            layer = layers[id];
+        for (id in layerDefinitions) {
+            layer = layerDefinitions[id];
             if (!layer.ref) updateLayer(layer);
         }
 
         function updateLayer(layer) {
-            var refLayer = that.layers[layer.ref];
-            if (that.layers[layer.id]) {
-                that.layers[layer.id].set(layer, refLayer);
+            var refLayer = layers[layer.ref];
+            if (layers[layer.id]) {
+                layers[layer.id].set(layer, refLayer);
             } else {
-                that.layers[layer.id] = StyleLayer.create(layer, refLayer);
+                layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            that.layers[layer.id].updatePaintTransitions({}, {transition: false});
+            layers[layer.id].updatePaintTransitions({}, {transition: false});
         }
 
-        this.layerFamilies = createLayerFamilies(this.layers);
+        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'load tile': function(params, callback) {
-        var source = params.source,
-            uid = params.uid;
-
-        if (!this.loading[source])
-            this.loading[source] = {};
-
-
-        var tile = this.loading[source][uid] = new WorkerTile(params);
-
-        tile.xhr = ajax.getArrayBuffer(params.url, done.bind(this));
-
-        function done(err, data) {
-            delete this.loading[source][uid];
-
-            if (err) return callback(err);
-
-            tile.data = new vt.VectorTile(new Protobuf(new Uint8Array(data)));
-            tile.parse(tile.data, this.layerFamilies, this.actor, data, callback);
-
-            this.loaded[source] = this.loaded[source] || {};
-            this.loaded[source][uid] = tile;
-        }
+    'load tile': function(mapId, params, callback) {
+        var type = params.type || 'vector';
+        this.getWorkerSource(mapId, type).loadTile(params, callback);
     },
 
-    'reload tile': function(params, callback) {
-        var loaded = this.loaded[params.source],
-            uid = params.uid;
-        if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            tile.parse(tile.data, this.layerFamilies, this.actor, params.rawTileData, callback);
-        }
+    'reload tile': function(mapId, params, callback) {
+        var type = params.type || 'vector';
+        this.getWorkerSource(mapId, type).reloadTile(params, callback);
     },
 
-    'abort tile': function(params) {
-        var loading = this.loading[params.source],
-            uid = params.uid;
-        if (loading && loading[uid]) {
-            loading[uid].xhr.abort();
-            delete loading[uid];
+    'abort tile': function(mapId, params) {
+        var type = params.type || 'vector';
+        this.getWorkerSource(mapId, type).abortTile(params);
+    },
+
+    'remove tile': function(mapId, params) {
+        var type = params.type || 'vector';
+        this.getWorkerSource(mapId, type).removeTile(params);
+    },
+
+    'redo placement': function(mapId, params, callback) {
+        var type = params.type || 'vector';
+        this.getWorkerSource(mapId, type).redoPlacement(params, callback);
+    },
+
+    /**
+     * Load a {@link WorkerSource} script at params.url.  The script is run
+     * (using importScripts) with `registerWorkerSource` in scope, which is a
+     * function taking `(name, workerSourceObject)`.
+     *  @private
+     */
+    'load worker source': function(map, params, callback) {
+        try {
+            this.self.importScripts(params.url);
+            callback();
+        } catch (e) {
+            callback(e);
         }
     },
 
-    'remove tile': function(params) {
-        var loaded = this.loaded[params.source],
-            uid = params.uid;
-        if (loaded && loaded[uid]) {
-            delete loaded[uid];
+    getWorkerSource: function(mapId, type) {
+        if (!this.workerSources[mapId])
+            this.workerSources[mapId] = {};
+        if (!this.workerSources[mapId][type]) {
+            // simple accessor object for passing to WorkerSources
+            var layers = {
+                getLayers: function () { return this.layers[mapId]; }.bind(this),
+                getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
+            };
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type](this.actor, layers);
         }
-    },
 
-    'redo placement': function(params, callback) {
-        var loaded = this.loaded[params.source],
-            loading = this.loading[params.source],
-            uid = params.uid;
-
-        if (loaded && loaded[uid]) {
-            var tile = loaded[uid];
-            var result = tile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
-
-            if (result.result) {
-                callback(null, result.result, result.transferables);
-            }
-
-        } else if (loading && loading[uid]) {
-            loading[uid].angle = params.angle;
-        }
-    },
-
-    'parse geojson': function(params, callback) {
-        var indexData = function(err, data) {
-            rewind(data, true);
-            if (err) return callback(err);
-            if (typeof data != 'object') {
-                return callback(new Error("Input data is not a valid GeoJSON object."));
-            }
-            try {
-                this.geoJSONIndexes[params.source] = params.cluster ?
-                    supercluster(params.superclusterOptions).load(data.features) :
-                    geojsonvt(data, params.geojsonVtOptions);
-            } catch (err) {
-                return callback(err);
-            }
-            callback(null);
-        }.bind(this);
-
-        // Not, because of same origin issues, urls must either include an
-        // explicit origin or absolute path.
-        // ie: /foo/bar.json or http://example.com/bar.json
-        // but not ../foo/bar.json
-        if (params.url) {
-            ajax.getJSON(params.url, indexData);
-        } else if (typeof params.data === 'string') {
-            indexData(null, JSON.parse(params.data));
-        } else {
-            return callback(new Error("Input data is not a valid GeoJSON object."));
-        }
-    },
-
-    'load geojson tile': function(params, callback) {
-        var source = params.source,
-            coord = params.coord;
-
-        if (!this.geoJSONIndexes[source]) return callback(null, null); // we couldn't load the file
-
-        var geoJSONTile = this.geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
-
-        var tile = geoJSONTile ? new WorkerTile(params) : undefined;
-
-        this.loaded[source] = this.loaded[source] || {};
-        this.loaded[source][params.uid] = tile;
-
-        if (geoJSONTile) {
-            var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
-            geojsonWrapper.name = '_geojsonTileLayer';
-            var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
-            if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
-                // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
-                pbf = new Uint8Array(pbf);
-            }
-            tile.parse(geojsonWrapper, this.layerFamilies, this.actor, pbf.buffer, callback);
-        } else {
-            return callback(null, null); // nothing in the given tile
-        }
+        return this.workerSources[mapId][type];
     }
 });
 

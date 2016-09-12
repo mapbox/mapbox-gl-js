@@ -13,15 +13,16 @@ var Evented = require('../../js/util/evented');
 var config = require('../../js/util/config');
 var coordinates = require('../lib/coordinates');
 var formatNumber = require('../lib/format_number');
+var accessToken = require('../lib/access_token');
 
 var SAMPLE_COUNT = 10;
 
-module.exports = function run(options) {
-    config.ACCESS_TOKEN = options.accessToken;
+module.exports = function run() {
+    config.ACCESS_TOKEN = accessToken;
 
     var evented = util.extend({}, Evented);
 
-    var stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + options.accessToken;
+    var stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
     ajax.getJSON(stylesheetURL, function(err, stylesheet) {
         if (err) return evented.fire('error', {error: err});
 
@@ -91,14 +92,14 @@ function preloadAssets(stylesheet, callback) {
 
     style.on('load', function() {
         function getGlyphs(params, callback) {
-            style['get glyphs'](params, function(err, glyphs) {
+            style['get glyphs'](0, params, function(err, glyphs) {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
                 callback(err, glyphs);
             });
         }
 
         function getIcons(params, callback) {
-            style['get icons'](params, function(err, icons) {
+            style['get icons'](0, params, function(err, icons) {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
@@ -157,8 +158,8 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
 
         getTile(url, function(err, response) {
             if (err) throw err;
-            var data = new VT.VectorTile(new Protobuf(new Uint8Array(response)));
-            workerTile.parse(data, layerFamilies, actor, null, function(err) {
+            var data = new VT.VectorTile(new Protobuf(response));
+            workerTile.parse(data, layerFamilies, actor, function(err) {
                 if (err) return callback(err);
                 eachCallback();
             });
@@ -185,10 +186,10 @@ var createLayerFamiliesCacheValue;
 function createLayerFamilies(layers) {
     if (layers !== createLayerFamiliesCacheKey) {
         var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](layers);
+        worker['set layers'](0, layers);
 
         createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies;
+        createLayerFamiliesCacheValue = worker.layerFamilies[0];
     }
     return createLayerFamiliesCacheValue;
 }

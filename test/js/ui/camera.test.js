@@ -627,7 +627,7 @@ test('camera', function(t) {
             var movestarted, moved, rotated, pitched, zoomstarted, zoomed,
                 eventData = { data: 'ok' };
 
-            t.plan(9);
+            t.plan(12);
 
             camera
                 .on('movestart', function(d) { movestarted = d.data; })
@@ -635,6 +635,10 @@ test('camera', function(t) {
                 .on('rotate', function(d) { rotated = d.data; })
                 .on('pitch', function(d) { pitched = d.data; })
                 .on('moveend', function(d) {
+                    t.notOk(camera.zooming);
+                    t.notOk(camera.panning);
+                    t.notOk(camera.rotating);
+
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.equal(zoomed, 'ok');
@@ -799,6 +803,10 @@ test('camera', function(t) {
                 .on('rotate', function(d) { rotated = d.data; })
                 .on('pitch', function(d) { pitched = d.data; })
                 .on('moveend', function(d) {
+                    t.notOk(this.zooming);
+                    t.notOk(this.panning);
+                    t.notOk(this.rotating);
+
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.equal(zoomed, 'ok');

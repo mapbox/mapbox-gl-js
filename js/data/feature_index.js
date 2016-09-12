@@ -98,7 +98,7 @@ function translateDistance(translate) {
 // Finds features in this tile at a particular position.
 FeatureIndex.prototype.query = function(args, styleLayers) {
     if (!this.vtLayers) {
-        this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
+        this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         this.sourceLayerCoder = new DictionaryCoder(this.vtLayers ? Object.keys(this.vtLayers).sort() : ['_geojsonTileLayer']);
     }
 

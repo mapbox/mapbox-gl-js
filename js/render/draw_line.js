@@ -25,6 +25,23 @@ module.exports = function drawLine(painter, source, layer, coords) {
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;
 
+    for (var k = 0; k < coords.length; k++) {
+        drawLineTile(painter, source, layer, coords[k]);
+    }
+
+};
+
+function drawLineTile(painter, source, layer, coord) {
+    var tile = source.getTile(coord);
+    var bucket = tile.getBucket(layer);
+    if (!bucket) return;
+    var bufferGroups = bucket.bufferGroups.line;
+    if (!bufferGroups) return;
+
+    var gl = painter.gl;
+
+    var programOptions = bucket.paintAttributes.line[layer.id];
+
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
     var antialiasing = 1 / browser.devicePixelRatio;
@@ -49,7 +66,12 @@ module.exports = function drawLine(painter, source, layer, coords) {
     var program, posA, posB, imagePosA, imagePosB;
 
     if (dasharray) {
-        program = painter.useProgram('linesdfpattern');
+        program = painter.useProgram(
+            'linesdfpattern',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
 
         gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
         gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
@@ -77,7 +99,12 @@ module.exports = function drawLine(painter, source, layer, coords) {
         imagePosB = painter.spriteAtlas.getPosition(image.to, true);
         if (!imagePosA || !imagePosB) return;
 
-        program = painter.useProgram('linepattern');
+        program = painter.useProgram(
+            'linepattern',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
 
         gl.uniform1i(program.u_image, 0);
         gl.activeTexture(gl.TEXTURE0);
@@ -98,7 +125,12 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.uniformMatrix2fv(program.u_antialiasingmatrix, false, antialiasingMatrix);
 
     } else {
-        program = painter.useProgram('line');
+        program = painter.useProgram(
+            'line',
+            programOptions.defines,
+            programOptions.vertexPragmas,
+            programOptions.fragmentPragmas
+        );
 
         gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
         gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
@@ -111,53 +143,45 @@ module.exports = function drawLine(painter, source, layer, coords) {
         gl.uniform1f(program.u_opacity, layer.paint['line-opacity']);
     }
 
-    for (var k = 0; k < coords.length; k++) {
-        var coord = coords[k];
-        var tile = source.getTile(coord);
-        var bucket = tile.getBucket(layer);
-        if (!bucket) continue;
-        var bufferGroups = bucket.bufferGroups.line;
-        if (!bufferGroups) continue;
+    painter.enableTileClippingMask(coord);
 
-        painter.enableTileClippingMask(coord);
+    // set uniforms that are different for each tile
+    var posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+    gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
-        // set uniforms that are different for each tile
-        var posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
-        gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
+    var ratio = 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom);
 
-        var ratio = 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom);
+    if (dasharray) {
+        var widthA = posA.width * dasharray.fromScale;
+        var widthB = posB.width * dasharray.toScale;
+        var scaleA = [1 / pixelsToTileUnits(tile, widthA, painter.transform.tileZoom), -posA.height / 2];
+        var scaleB = [1 / pixelsToTileUnits(tile, widthB, painter.transform.tileZoom), -posB.height / 2];
+        var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
+        gl.uniform1f(program.u_ratio, ratio);
+        gl.uniform2fv(program.u_patternscale_a, scaleA);
+        gl.uniform2fv(program.u_patternscale_b, scaleB);
+        gl.uniform1f(program.u_sdfgamma, gamma);
 
-        if (dasharray) {
-            var widthA = posA.width * dasharray.fromScale;
-            var widthB = posB.width * dasharray.toScale;
-            var scaleA = [1 / pixelsToTileUnits(tile, widthA, painter.transform.tileZoom), -posA.height / 2];
-            var scaleB = [1 / pixelsToTileUnits(tile, widthB, painter.transform.tileZoom), -posB.height / 2];
-            var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
-            gl.uniform1f(program.u_ratio, ratio);
-            gl.uniform2fv(program.u_patternscale_a, scaleA);
-            gl.uniform2fv(program.u_patternscale_b, scaleB);
-            gl.uniform1f(program.u_sdfgamma, gamma);
+    } else if (image) {
+        gl.uniform1f(program.u_ratio, ratio);
+        gl.uniform2fv(program.u_pattern_size_a, [
+            pixelsToTileUnits(tile, imagePosA.size[0] * image.fromScale, painter.transform.tileZoom),
+            imagePosB.size[1]
+        ]);
+        gl.uniform2fv(program.u_pattern_size_b, [
+            pixelsToTileUnits(tile, imagePosB.size[0] * image.toScale, painter.transform.tileZoom),
+            imagePosB.size[1]
+        ]);
 
-        } else if (image) {
-            gl.uniform1f(program.u_ratio, ratio);
-            gl.uniform2fv(program.u_pattern_size_a, [
-                pixelsToTileUnits(tile, imagePosA.size[0] * image.fromScale, painter.transform.tileZoom),
-                imagePosB.size[1]
-            ]);
-            gl.uniform2fv(program.u_pattern_size_b, [
-                pixelsToTileUnits(tile, imagePosB.size[0] * image.toScale, painter.transform.tileZoom),
-                imagePosB.size[1]
-            ]);
-
-        } else {
-            gl.uniform1f(program.u_ratio, ratio);
-        }
-
-        for (var i = 0; i < bufferGroups.length; i++) {
-            var group = bufferGroups[i];
-            group.vaos[layer.id].bind(gl, program, group.layout.vertex, group.layout.element);
-            gl.drawElements(gl.TRIANGLES, group.layout.element.length * 3, gl.UNSIGNED_SHORT, 0);
-        }
+    } else {
+        gl.uniform1f(program.u_ratio, ratio);
     }
 
-};
+    bucket.setUniforms(gl, 'line', program, layer, {zoom: painter.transform.zoom});
+
+    for (var i = 0; i < bufferGroups.length; i++) {
+        var group = bufferGroups[i];
+        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
+        gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
+    }
+}

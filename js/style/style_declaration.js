@@ -7,15 +7,13 @@ var util = require('../util/util');
 module.exports = StyleDeclaration;
 
 function StyleDeclaration(reference, value) {
-    this.type = reference.type;
-    this.transitionable = reference.transition;
     this.value = util.clone(value);
     this.isFunction = MapboxGLFunction.isFunctionDefinition(value);
 
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
-    var parsedValue = this.type === 'color' ? parseColor(this.value) : value;
+    var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
     this.isZoomConstant = this.calculate.isZoomConstant;

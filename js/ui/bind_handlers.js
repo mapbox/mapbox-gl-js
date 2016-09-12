@@ -26,6 +26,7 @@ module.exports = function bindHandlers(map, options) {
         }
     }
 
+    el.addEventListener('mouseout', onMouseOut, false);
     el.addEventListener('mousedown', onMouseDown, false);
     el.addEventListener('mouseup', onMouseUp, false);
     el.addEventListener('mousemove', onMouseMove, false);
@@ -36,6 +37,10 @@ module.exports = function bindHandlers(map, options) {
     el.addEventListener('click', onClick, false);
     el.addEventListener('dblclick', onDblClick, false);
     el.addEventListener('contextmenu', onContextMenu, false);
+
+    function onMouseOut(e) {
+        fireMouseEvent('mouseout', e);
+    }
 
     function onMouseDown(e) {
         map.stop();
@@ -140,3 +145,29 @@ module.exports = function bindHandlers(map, options) {
         });
     }
 };
+
+/**
+ * @typedef {Object} MapMouseEvent
+ * @property {string} type The event type.
+ * @property {Map} target The `Map` object that fired the event.
+ * @property {MouseEvent} originalEvent
+ * @property {Point} point The pixel coordinates of the mouse event target, relative to the map
+ *   and measured from the top left corner.
+ * @property {LngLat} lngLat The geographic location on the map of the mouse event target.
+ */
+
+/**
+ * @typedef {Object} MapTouchEvent
+ * @property {string} type The event type.
+ * @property {Map} target The `Map` object that fired the event.
+ * @property {TouchEvent} originalEvent
+ * @property {Point} point The pixel coordinates of the center of the touch event points, relative to the map
+ *   and measured from the top left corner.
+ * @property {LngLat} lngLat The geographic location on the map of the center of the touch event points.
+ * @property {Array<Point>} points The array of pixel coordinates corresponding to
+ *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
+ *   property.
+ * @property {Array<LngLat>} lngLats The geographical locations on the map corresponding to
+ *   a [touch event's `touches`](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/touches)
+ *   property.
+ */

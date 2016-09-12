@@ -3,16 +3,20 @@
 var Control = require('./control');
 var DOM = require('../../util/dom');
 var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = Navigation;
 
 /**
- * Creates a navigation control with zoom buttons and a compass
+ * A `Navigation` control contains zoom buttons and a compass.
+ * Extends [`Control`](#Control).
+ *
  * @class Navigation
  * @param {Object} [options]
- * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `top-right`, `top-left`, `bottom-right`, `bottom-left`
+ * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
- * map.addControl(new mapboxgl.Navigation({position: 'top-left'})); // position is optional
+ * var nav = new mapboxgl.Navigation({position: 'top-left'}); // position is optional
+ * map.addControl(nav);
  */
 function Navigation(options) {
     util.setOptions(this, options);
@@ -55,8 +59,8 @@ Navigation.prototype = util.inherit(Control, {
         if (e.button !== 0) return;
 
         DOM.disableDrag();
-        document.addEventListener('mousemove', this._onCompassMove);
-        document.addEventListener('mouseup', this._onCompassUp);
+        window.document.addEventListener('mousemove', this._onCompassMove);
+        window.document.addEventListener('mouseup', this._onCompassUp);
 
         this._el.dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
@@ -72,8 +76,8 @@ Navigation.prototype = util.inherit(Control, {
     _onCompassUp: function(e) {
         if (e.button !== 0) return;
 
-        document.removeEventListener('mousemove', this._onCompassMove);
-        document.removeEventListener('mouseup', this._onCompassUp);
+        window.document.removeEventListener('mousemove', this._onCompassMove);
+        window.document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
 
         this._el.dispatchEvent(copyMouseEvent(e));
@@ -82,6 +86,7 @@ Navigation.prototype = util.inherit(Control, {
 
     _createButton: function(className, fn) {
         var a = DOM.create('button', className, this._container);
+        a.type = 'button';
         a.addEventListener('click', function() { fn(); });
         return a;
     },
@@ -94,7 +99,7 @@ Navigation.prototype = util.inherit(Control, {
 
 
 function copyMouseEvent(e) {
-    return new MouseEvent(e.type, {
+    return new window.MouseEvent(e.type, {
         button: 2,    // right click
         buttons: 2,   // right click
         bubbles: true,
@@ -113,4 +118,3 @@ function copyMouseEvent(e) {
         metaKey: e.metaKey
     });
 }
-

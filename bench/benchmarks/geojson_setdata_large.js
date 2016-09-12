@@ -5,29 +5,38 @@ var util = require('../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var setDataPerf = require('../lib/set_data_perf');
 var setupGeoJSONMap = require('../lib/setup_geojson_map');
+var createMap = require('../lib/create_map');
+var ajax = require('../../js/util/ajax');
 
-var featureCollection = require('../data/naturalearth-land.json');
-
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
-    var map = options.createMap({
-        width: 1024,
-        height: 768,
-        zoom: 5,
-        center: [-77.032194, 38.912753],
-        style: 'mapbox://styles/mapbox/bright-v9'
-    });
+    setTimeout(function() {
+        evented.fire('log', {message: 'downloading large geojson'});
+    }, 0);
 
-    map.on('load', function() {
-        map = setupGeoJSONMap(map);
+    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', function(err, data) {
+        evented.fire('log', {message: 'starting test'});
 
-        var source = map.getSource('geojson');
+        if (err) return evented.fire('error', {error: err});
 
-        evented.fire('log', {message: 'loading large feature collection'});
-        setDataPerf(source, 50, featureCollection, function(err, ms) {
-            if (err) return evented.fire('error', {error: err});
-            evented.fire('end', {message: 'average load time: ' + formatNumber(ms) + ' ms', score: ms});
+        var map = createMap({
+            width: 1024,
+            height: 768,
+            zoom: 5,
+            center: [-77.032194, 38.912753],
+            style: 'mapbox://styles/mapbox/bright-v9'
+        });
+
+        map.on('load', function() {
+            map = setupGeoJSONMap(map);
+            var source = map.getSource('geojson');
+
+            setDataPerf(source, 50, data, function(err, ms) {
+                if (err) return evented.fire('error', {error: err});
+                map.remove();
+                evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
+            });
         });
     });
 

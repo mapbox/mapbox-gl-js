@@ -4,13 +4,14 @@ var Evented = require('../../js/util/evented');
 var util = require('../../js/util/util');
 var formatNumber = require('../lib/format_number');
 var measureFramerate = require('../lib/measure_framerate');
+var createMap = require('../lib/create_map');
 
 var DURATION_MILLISECONDS = 5 * 1000;
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
-    var map = options.createMap({
+    var map = createMap({
         width: 1024,
         height: 768,
         zoom: 5,
@@ -27,11 +28,12 @@ module.exports = function(options) {
         });
 
         measureFramerate(DURATION_MILLISECONDS, function(err, fps) {
+            map.remove();
             if (err) {
                 evented.fire('error', { error: err });
             } else {
                 evented.fire('end', {
-                    message: formatNumber(fps) + ' frames per second',
+                    message: formatNumber(fps) + ' fps',
                     score: 1 / fps
                 });
             }

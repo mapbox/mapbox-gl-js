@@ -8,35 +8,15 @@
 
     <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
     <link rel='stylesheet' href='/dist/mapbox-gl.css'/>
-
-    <style>
-        #benchmarks {
-            width: 100%;
-            margin: 25px auto;
-            text-align: center;
-        }
-        #benchmarks a {
-            margin: 5px;
-        }
-        #logs {
-            margin: 25px auto;
-            width: 600px;
-        }
-        .log {
-            padding: 15px 20px;
-        }
-        #map {
-            margin: 25px auto;
-            display: none;
-        }
-    </style>
 </head>
 
-<body class="prose">
+<body>
     <div id="benchmarks"></div>
-    <div id="logs"></div>
-    <div id="map"></div>
-    <script src="/bench/index.js"></script>
+    <script src="https://npmcdn.com/react@15.3.0/dist/react.js"></script>
+    <script src="https://npmcdn.com/react-dom@15.3.0/dist/react-dom.js"></script>
+    <script src="https://s3.amazonaws.com/mapbox-gl-js/master/benchmarks.js"></script>
+    <script src="/bench/benchmarks_generated.js"></script>
+    <script src="/bench/benchmarks_view_generated.js"></script>
 </body>
 
 </html>

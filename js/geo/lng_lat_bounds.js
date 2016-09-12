@@ -5,12 +5,18 @@ module.exports = LngLatBounds;
 var LngLat = require('./lng_lat');
 
 /**
- * Creates a bounding box from the given pair of points. If parameteres are omitted, a `null` bounding box is created.
+ * A `LngLatBounds` object represents a geographical bounding box,
+ * defined by its southwest and northeast points in longitude and latitude.
+ *
+ * If no arguments are provided to the constructor, a `null` bounding box is created.
+ *
+ * Note that any Mapbox GL method that accepts a `LngLatBounds` object as an argument or option
+ * can also accept an `Array` of two [`LngLatLike`](#LngLatLike) constructs and will perform an implicit conversion.
+ * This flexible type is documented as [`LngLatBoundsLike`](#LngLatBoundsLike).
  *
  * @class LngLatBounds
- * @classdesc A representation of rectangular box on the earth, defined by its southwest and northeast points in longitude and latitude.
- * @param {LngLat} sw southwest
- * @param {LngLat} ne northeast
+ * @param {LngLatLike} sw The southwest corner of the bounding box.
+ * @param {LngLatLike} ne The northeast corner of the bounding box.
  * @example
  * var sw = new mapboxgl.LngLat(-73.9876, 40.7661);
  * var ne = new mapboxgl.LngLat(-73.9397, 40.8002);
@@ -20,15 +26,37 @@ function LngLatBounds(sw, ne) {
     if (!sw) {
         return;
     } else if (ne) {
-        this.extend(sw).extend(ne);
+        this.setSouthWest(sw).setNorthEast(ne);
     } else if (sw.length === 4) {
-        this.extend([sw[0], sw[1]]).extend([sw[2], sw[3]]);
+        this.setSouthWest([sw[0], sw[1]]).setNorthEast([sw[2], sw[3]]);
     } else {
-        this.extend(sw[0]).extend(sw[1]);
+        this.setSouthWest(sw[0]).setNorthEast(sw[1]);
     }
 }
 
 LngLatBounds.prototype = {
+
+    /**
+     * Set the northeast corner of the bounding box
+     *
+     * @param {LngLatLike} ne
+     * @returns {LngLatBounds} `this`
+     */
+    setNorthEast: function(ne) {
+        this._ne = LngLat.convert(ne);
+        return this;
+    },
+
+    /**
+     * Set the southwest corner of the bounding box
+     *
+     * @param {LngLatLike} sw
+     * @returns {LngLatBounds} `this`
+     */
+    setSouthWest: function(sw) {
+        this._sw = LngLat.convert(sw);
+        return this;
+    },
 
     /**
      * Extend the bounds to include a given LngLat or LngLatBounds.
@@ -70,8 +98,9 @@ LngLatBounds.prototype = {
     },
 
     /**
-     * Get the point equidistant from this box's corners
-     * @returns {LngLat} centerpoint
+     * Returns the geographical coordinate equidistant from the bounding box's corners.
+     *
+     * @returns {LngLat} The bounding box's center.
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.getCenter(); // = LngLat {lng: -73.96365, lat: 40.78315}
@@ -81,57 +110,66 @@ LngLatBounds.prototype = {
     },
 
     /**
-     * Get southwest corner
-     * @returns {LngLat} southwest
+     * Returns the southwest corner of the bounding box.
+     *
+     * @returns {LngLat} The southwest corner of the bounding box.
      */
     getSouthWest: function() { return this._sw; },
 
     /**
-     * Get northeast corner
-     * @returns {LngLat} northeast
+    * Returns the northeast corner of the bounding box.
+    *
+    * @returns {LngLat} The northeast corner of the bounding box.
      */
     getNorthEast: function() { return this._ne; },
 
     /**
-     * Get northwest corner
-     * @returns {LngLat} northwest
+    * Returns the northwest corner of the bounding box.
+    *
+    * @returns {LngLat} The northwest corner of the bounding box.
      */
     getNorthWest: function() { return new LngLat(this.getWest(), this.getNorth()); },
 
     /**
-     * Get southeast corner
-     * @returns {LngLat} southeast
+    * Returns the southeast corner of the bounding box.
+    *
+    * @returns {LngLat} The southeast corner of the bounding box.
      */
     getSouthEast: function() { return new LngLat(this.getEast(), this.getSouth()); },
 
     /**
-     * Get west edge longitude
-     * @returns {number} west
+    * Returns the west edge of the bounding box.
+    *
+    * @returns {LngLat} The west edge of the bounding box.
      */
     getWest:  function() { return this._sw.lng; },
 
     /**
-     * Get south edge latitude
-     * @returns {number} south
+    * Returns the south edge of the bounding box.
+    *
+    * @returns {LngLat} The south edge of the bounding box.
      */
     getSouth: function() { return this._sw.lat; },
 
     /**
-     * Get east edge longitude
-     * @returns {number} east
+    * Returns the east edge of the bounding box.
+    *
+    * @returns {LngLat} The east edge of the bounding box.
      */
     getEast:  function() { return this._ne.lng; },
 
     /**
-     * Get north edge latitude
-     * @returns {number} north
+    * Returns the north edge of the bounding box.
+    *
+    * @returns {LngLat} The north edge of the bounding box.
      */
     getNorth: function() { return this._ne.lat; },
 
     /**
-     * Return a `LngLatBounds` as an array
+     * Returns the bounding box represented as an array.
      *
-     * @returns {array} [lng, lat]
+     * @returns {Array<Array<number>>} The bounding box represented as an array, consisting of the
+     *   southwest and northeast coordinates of the bounding represented as arrays of numbers.
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
@@ -141,9 +179,10 @@ LngLatBounds.prototype = {
     },
 
     /**
-     * Return a `LngLatBounds` as a string
+     * Return the bounding box represented as a string.
      *
-     * @returns {string} "LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))"
+     * @returns {string} The bounding box represents as a string of the format
+     *   `'LngLatBounds(LngLat(lng, lat), LngLat(lng, lat))'`.
      * @example
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
@@ -154,13 +193,14 @@ LngLatBounds.prototype = {
 };
 
 /**
- * Convert an array to a `LngLatBounds` object, or return an existing
- * `LngLatBounds` object unchanged.
+ * Converts an array to a `LngLatBounds` object.
  *
- * Calls `LngLat#convert` internally to convert arrays as `LngLat` values.
+ * If a `LngLatBounds` object is passed in, the function returns it unchanged.
  *
- * @param {LngLatBounds|Array<number>|Array<Array<number>>} input input to convert to a LngLatBounds
- * @returns {LngLatBounds} LngLatBounds object or original input
+ * Internally, the function calls `LngLat#convert` to convert arrays to `LngLat` values.
+ *
+ * @param {LngLatBoundsLike} input An array of two coordinates to convert, or a `LngLatBounds` object to return.
+ * @returns {LngLatBounds} A new `LngLatBounds` object, if a conversion occurred, or the original `LngLatBounds` object.
  * @example
  * var arr = [[-73.9876, 40.7661], [-73.9397, 40.8002]];
  * var llb = mapboxgl.LngLatBounds.convert(arr);

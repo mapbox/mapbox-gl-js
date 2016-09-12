@@ -2,6 +2,7 @@
 
 var Evented = require('../../js/util/evented');
 var util = require('../../js/util/util');
+var createMap = require('../lib/create_map');
 
 var width = 1024;
 var height = 768;
@@ -13,7 +14,7 @@ for (var i = 4; i < 19; i++) {
     zoomLevels.push(i);
 }
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var sum = 0;
@@ -21,14 +22,14 @@ module.exports = function(options) {
 
     asyncSeries(zoomLevels.length, function(n, callback) {
         var zoomLevel = zoomLevels[zoomLevels.length - n];
-        var map = options.createMap({
+        var map = createMap({
             width: width,
             height: height,
             zoom: zoomLevel,
             center: [-77.032194, 38.912753],
             style: 'mapbox://styles/mapbox/streets-v9'
         });
-        document.getElementById('map').style.display = 'none';
+        map.getContainer().style.display = 'none';
 
         map.on('load', function() {
 
@@ -36,7 +37,7 @@ module.exports = function(options) {
             var zoomCount = 0;
             asyncSeries(numSamples, function(n, callback) {
                 var start = performance.now();
-                map.queryRenderedFeatures();
+                map.queryRenderedFeatures({});
                 var duration = performance.now() - start;
                 sum += duration;
                 count++;
@@ -45,8 +46,9 @@ module.exports = function(options) {
                 callback();
             }, function() {
                 evented.fire('log', {
-                    message: 'zoom ' + zoomLevel + ' average: ' + (zoomSum / zoomCount).toFixed(2) + ' ms'
+                    message: (zoomSum / zoomCount).toFixed(2) + ' ms at zoom ' + zoomLevel
                 });
+                map.remove();
                 callback();
             });
         });
@@ -80,4 +82,3 @@ function asyncSeries(times, work, callback) {
         callback();
     }
 }
-

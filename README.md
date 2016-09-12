@@ -2,15 +2,14 @@
 
 # Mapbox GL JS
 
-Mapbox GL JS is a Javascript & WebGL library that renders interactive maps from [vector tiles](https://www.mapbox.com/blog/vector-tiles/) and the [Mapbox GL Style Specification]([Style Specification](https://www.mapbox.com/mapbox-gl-style-spec)).
+Mapbox GL JS is a Javascript & WebGL library that renders interactive maps from [vector tiles](https://www.mapbox.com/blog/vector-tiles/) and [Mapbox styles](https://www.mapbox.com/mapbox-gl-style-spec).
 
-It is part of the [Mapbox GL ecosystem](https://github.com/mapbox/mapbox-gl) which includes [Mapbox GL Native](https://www.mapbox.com/mapbox-gl-native), a suite of compatible SDKs for native desktop and mobile applications.
+It is part of the [Mapbox GL ecosystem](https://github.com/mapbox/mapbox-gl) which includes [Mapbox GL Native](https://github.com/mapbox/mapbox-gl-native), a suite of compatible SDKs for native desktop and mobile applications.
 
 - [API Documentation](https://www.mapbox.com/mapbox-gl-js/api)
 - [API Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec)
 - [Gallery](https://www.mapbox.com/gallery/)
-- [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
 
 [<img width="981" alt="Mapbox GL JS gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
@@ -22,8 +21,8 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on htt
 <!DOCTYPE html>
 <html>
 <head>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.23.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.23.0/mapbox-gl.css' rel='stylesheet' />
 </head>
 
 <body>
@@ -95,6 +94,32 @@ If you're using the ES6 module system, you can import `mapboxgl` like so:
 
 ```js
 import mapboxgl from 'mapbox-gl';
+```
+
+## Third Party Projects
+
+These projects are written and maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects!
+
+ - [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
+ - [Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
+
+## Using Mapbox GL JS with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
+
+You may use a Content Security Policy to restrict the resources your page has
+access to, as a way of guarding against Cross-Site Scripting and other types of
+attacks. If you do, Mapbox GL JS requires the following directives:
+
+```
+child-src blob: ;
+img-src data: blob: ;
+script-src 'unsafe-eval' ;
+```
+
+Requesting styles from Mapbox or other services will require additional
+directives. For Mapbox, you can use this `connect-src` setting:
+
+```
+connect-src https://*.tiles.mapbox.com https://api.mapbox.com
 ```
 
 ## Contributing to Mapbox GL JS
