@@ -672,7 +672,7 @@ test('Map', function(t) {
             map.on('style.load', function () {
                 map.style.dispatcher.broadcast = function(key, value) {
                     t.equal(key, 'update layers');
-                    t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                    t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['symbol']);
                 };
 
                 map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
@@ -712,7 +712,7 @@ test('Map', function(t) {
             map.on('style.load', function () {
                 map.style.dispatcher.broadcast = function(key, value) {
                     t.equal(key, 'update layers');
-                    t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                    t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['symbol']);
                 };
 
                 map.setLayoutProperty('symbol-ref', 'text-transform', 'lowercase');

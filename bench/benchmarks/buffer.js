@@ -186,7 +186,7 @@ var createLayerFamiliesCacheValue;
 function createLayerFamilies(layers) {
     if (layers !== createLayerFamiliesCacheKey) {
         var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](0, layers);
+        worker['set layers'](0, JSON.stringify(layers));
 
         createLayerFamiliesCacheKey = layers;
         createLayerFamiliesCacheValue = worker.layerFamilies[0];

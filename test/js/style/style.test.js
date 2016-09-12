@@ -155,7 +155,7 @@ test('Style#_updateWorkerLayers', function(t) {
 
         style.dispatcher.broadcast = function(key, value) {
             t.equal(key, 'set layers');
-            t.deepEqual(value.map(function(layer) { return layer.id; }), ['first', 'second', 'third']);
+            t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['first', 'second', 'third']);
             t.end();
         };
 
@@ -183,7 +183,7 @@ test('Style#_updateWorkerLayers with specific ids', function(t) {
     style.on('load', function() {
         style.dispatcher.broadcast = function(key, value) {
             t.equal(key, 'update layers');
-            t.deepEqual(value.map(function(layer) { return layer.id; }), ['second', 'third']);
+            t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['second', 'third']);
             t.end();
         };
 
@@ -785,7 +785,8 @@ test('Style#setFilter', function(t) {
         var style = createStyle();
 
         style.on('load', function() {
-            style.dispatcher.broadcast = function(key, value) {
+            style.dispatcher.broadcast = function(key, data) {
+                var value = JSON.parse(data);
                 t.equal(key, 'update layers');
                 t.deepEqual(value[0].id, 'symbol');
                 t.deepEqual(value[0].filter, ['==', 'id', 1]);
@@ -823,7 +824,8 @@ test('Style#setFilter', function(t) {
             style.setFilter('symbol', filter);
             style.update({}, {}); // flush pending operations
 
-            style.dispatcher.broadcast = function(key, value) {
+            style.dispatcher.broadcast = function(key, data) {
+                var value = JSON.parse(data);
                 t.equal(key, 'update layers');
                 t.deepEqual(value[0].id, 'symbol');
                 t.deepEqual(value[0].filter, ['==', 'id', 2]);
@@ -841,7 +843,7 @@ test('Style#setFilter', function(t) {
         style.on('load', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
-                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['symbol']);
             };
 
             style.setFilter('symbol-child', ['==', 'id', 1]);
@@ -899,7 +901,7 @@ test('Style#setLayerZoomRange', function(t) {
         style.on('load', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
-                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['symbol']);
             };
 
             style.setLayerZoomRange('symbol', 5, 12);
@@ -915,7 +917,7 @@ test('Style#setLayerZoomRange', function(t) {
         style.on('load', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
-                t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
+                t.deepEqual(JSON.parse(value).map(function(layer) { return layer.id; }), ['symbol']);
             };
 
             style.setLayerZoomRange('symbol-child', 5, 12);

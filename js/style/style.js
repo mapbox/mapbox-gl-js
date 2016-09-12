@@ -189,7 +189,7 @@ Style.prototype = util.inherit(Evented, {
         for (var i = 0; i < ids.length; i++) {
             serialized.push(this._layers[ids[i]].serialize(options));
         }
-        return serialized;
+        return JSON.stringify(serialized);
     },
 
     _applyClasses: function(classes, options) {
