@@ -7,7 +7,14 @@ var parseColor = require('../style/parse_color');
 /**
  * Controls the lighting used to light extruded features.
  *
- * TODO
+ * @typedef {Object} LightOptions
+ * @property {string} anchor Whether the light direction should be oriented based on the map or viewport. Options are `'map'`, `'viewport'`.
+ * @property {Color} color The color to tint the extrusion lighting.
+ * @property {Array<number>} direction The direction of the light source, in [r radial coordinate, θ azimuthal angle, φ polar angle], where r indicates the distance from the center of an object to its light, θ indicates the position of the light relative to 0º (like a clock), and φ indicates the height of the light source (from 0º, directly above, to 180º, directly below).
+ * @property {number} intensity The intensity with which to light extruded features.
+ * @property {number} duration The lighting animation's duration, measured in milliseconds.
+ * @property {Function} easing The lighting animation's easing function.
+ * @property {boolean} animate If `false`, no lighting animation will occur.
  */
 
 var Lighting = module.exports = function() {};
@@ -30,7 +37,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
     },
 
     /**
-     * Get a light property.
+     * Get a specific light property.
      *
      * @param {String} property Light property. One of `anchor`, `color`, `direction`, `intensity`.
      * @returns {Value} value Value for specified property. Type per property is denoted in the style spec.
@@ -69,6 +76,8 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
             duration: 500,
             easing: util.ease
         }, options);
+
+        if (options.animate === false) options.duration = 0;
 
         var startAnchor = this.getLightProperty('anchor'),
             startColor = this.painter.light.color,

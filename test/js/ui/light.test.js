@@ -52,9 +52,6 @@ test('light', function(t) {
 
             t.end();
         });
-
-        // light.on('load', function() {
-        // });
     });
 
     t.test('#setLighting', function(t) {
