@@ -595,17 +595,19 @@
       "property-function": true,
       "values": [
         "map",
-        "viewport"
+        "viewport",
+        "auto"
       ],
-      "doc": "Orientation of icon when map is rotated. Defaults to `map` for line symbol placement and `viewport` for point symbol placement.",
+      "default": "auto",
+      "doc": "Orientation of icon when map is rotated. Defaults to `map` for line placement and `viewport` for symbol placement",
       "requires": [
         "icon-image"
       ],
       "sdk-support": {
         "basic": {
           "js": "0.10.0",
-          "ios": "2.0.0",
-          "android": "2.0.1"
+          "ios": "3.4.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -789,15 +791,19 @@
       "property-function": true,
       "values": [
         "map",
-        "viewport"
+        "viewport",
+        "auto"
       ],
-      "doc": "Aligns text to the plane of the `viewport` or the `map` when the map is pitched. Matches `text-rotation-alignment` if unspecified.",
+      "default": "auto",
+      "doc": "Aligns text to the plane of the `viewport` or the `map` when the map is pitched. Matches `text-rotation-alignment` if auto.",
       "requires": [
         "text-field"
       ],
       "sdk-support": {
         "basic": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "ios": "3.4.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -808,17 +814,19 @@
       "property-function": true,
       "values": [
         "map",
-        "viewport"
+        "viewport",
+        "auto"
       ],
-      "doc": "Orientation of text when map is rotated. Defaults to `map` for line symbol placement and `viewport` for point symbol placement.",
+      "default": "auto",
+      "doc": "Orientation of text when map is rotated. Defaults to the plane of the `map` for line placement and the `viewport` for symbol placement.",
       "requires": [
         "text-field"
       ],
       "sdk-support": {
         "basic": {
           "js": "0.10.0",
-          "ios": "2.0.0",
-          "android": "2.0.1"
+          "ios": "3.4.0",
+          "android": "4.2.0"
         }
       }
     },
