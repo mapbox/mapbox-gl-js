@@ -4,7 +4,6 @@ var util = require('../util/util');
 var browser = require('../util/browser');
 var window = require('../util/window');
 var Evented = require('../util/evented');
-var interpolate = require('../util/interpolate');
 var DOM = require('../util/dom');
 
 var Style = require('../style/style');

@@ -127,7 +127,7 @@ FillBucket.prototype.addVertex = function(vertexArray, x, y, nx, ny, nz, t, e) {
             e
             );
     }
-}
+};
 
 FillBucket.prototype.addFeature = function(feature) {
     var lines = loadGeometry(feature);
@@ -221,13 +221,13 @@ FillBucket.prototype.addPolygon = function(polygon) {
 
     if (this.fillType === 'fill') {
         for (var i = 0; i < triangleIndices.length; i++) {
-                group.elementArray.emplaceBack(triangleIndices[i] + startIndex);
+            group.elementArray.emplaceBack(triangleIndices[i] + startIndex);
         }
     } else {
-        for (var i = 0; i < triangleIndices.length - 2; i += 3) {
-            group.elementArray.emplaceBack(indices[triangleIndices[i]],
-                indices[triangleIndices[i + 1]],
-                indices[triangleIndices[i + 2]]);
+        for (var j = 0; j < triangleIndices.length - 2; j += 3) {
+            group.elementArray.emplaceBack(indices[triangleIndices[j]],
+                indices[triangleIndices[j + 1]],
+                indices[triangleIndices[j + 2]]);
         }
     }
 };

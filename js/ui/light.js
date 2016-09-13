@@ -84,7 +84,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
         if (anchor !== startAnchor) this._setLightAnchor(anchor);
 
         this.activeLightTransitions.color = color !== startColor;
-        this.activeLightTransitions.direction = direction.some(function(c, i) { return c != startDirection[i]; });
+        this.activeLightTransitions.direction = direction.some(function(c, i) { return c !== startDirection[i]; });
         this.activeLightTransitions.intensity = intensity !== startIntensity;
 
         this.fire('lightstart', eventData);
@@ -135,7 +135,6 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
     },
 
     _lightEnd: function(eventData) {
-        var wasZooming = this.zooming;
         this.activeLightTransitions.color = false;
         this.activeLightTransitions.direction = false;
         this.activeLightTransitions.intensity = false;
