@@ -46,6 +46,9 @@ var window = require('../util/window');
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
+ * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+ * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  */
 function Popup(options) {
     util.setOptions(this, options);

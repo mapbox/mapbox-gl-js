@@ -142,4 +142,11 @@
     <div class='pad1y quiet space-top2 prose-big'>Events</div>
     <%= renderSectionList({ members: section.members.events, renderSection: renderSection, noun: 'Event' }) %>
   <% } %>
+
+  <% if (section.sees) { %>
+    <div class='pad1y quiet space-top2 prose-big'>Related</div>
+    <ul>
+      <% section.sees.forEach(function(see) { %><li><%= md(see) %></li><% }) %>
+    </ul>
+  <% } %>
 </section>

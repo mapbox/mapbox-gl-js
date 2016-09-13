@@ -41,6 +41,7 @@ module.exports = ImageSource;
  * ]);
  *
  * map.removeSource('some id');  // remove
+ * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
 function ImageSource(id, options, dispatcher) {
     this.id = id;
