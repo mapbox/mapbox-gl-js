@@ -43,12 +43,20 @@ examples:
   - name: Animations
     id: animation
     level: h3
+  - name: Plugins
+    level: h3
   - name: Geocoding
     id: mapbox-geocoding
-    level: h3
+    level: h4
+    class: icon search quiet
   - name: Directions
     id: mapbox-directions
-    level: h3
+    level: h4
+    class: icon street quiet
+  - name: GL Draw
+    id: gl-draw
+    level: h4
+    class: icon pencil quiet
   - name: Change map options
     id: change-option
     level: h3
@@ -82,9 +90,6 @@ examples:
     <div class='col3 contain'>
       <nav class='scroll-styled quiet-scroll small'>
         {% if page.url contains 'example' %}
-          <!-- <div class='space-bottom'>
-            <a class='block quiet active strong truncate' href='{{site.baseurl}}/examples/'>Examples</a>
-          </div> -->
           <div>
             <input id='filter-input' type='text' name='filter' placeholder='Filter examples' />
           </div>
