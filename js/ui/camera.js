@@ -429,7 +429,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         endTransform.resize(tr.width, tr.height);
         endTransform.zoom = zoom;
         endTransform.bearing = bearing;
-        endTransform.pitch = 0; // fixes #3119 by pretending the map is not pitched; use pitch = 0 to revert to the old behavior
+        endTransform.pitch = 0; // fixes #3119 by pretending the map is not pitched; use endTransform.pitch = pitch to revert to the old behavior
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
