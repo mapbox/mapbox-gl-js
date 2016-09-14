@@ -145,8 +145,9 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
     for (var k = 0; k < positionedGlyphs.length; k++) {
         var positionedGlyph = positionedGlyphs[k];
         var glyph = positionedGlyph.glyph;
-        var rect = glyph.rect;
+        if (!glyph) continue;
 
+        var rect = glyph.rect;
         if (!rect) continue;
 
         var centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
