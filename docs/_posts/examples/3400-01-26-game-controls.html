@@ -67,14 +67,12 @@ description: Move around the map with game-like controls.
         } else if (e.which === 37) { // left
             map.easeTo({
                 bearing: map.getBearing() - deltaDegrees,
-                easing: easeFunction,
-                animate: true
+                easing: easeFunction
             });
         } else if (e.which === 39) { // right
             map.easeTo({
                 bearing: map.getBearing() + deltaDegrees,
-                easing: easeFunction,
-                animate: true
+                easing: easeFunction
             });
         }
     }, true);
