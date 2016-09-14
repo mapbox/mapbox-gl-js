@@ -53,40 +53,28 @@ description: Move around the map with game-like controls.
         return t * (2 - t);
     }
 
-    function goDirection(dir) {
-        if (dir === 'left') {
+    document.body.addEventListener('keydown', function(e) {
+        e.preventDefault();
+        if (e.which === 38) { // up
+            map.panBy([0, -deltaDistance], {
+                easing: easeFunction
+            });
+        } else if (e.which === 40) { // down
+            map.panBy([0, deltaDistance], {
+                easing: easeFunction
+            });
+        } else if (e.which === 37) { // left
             map.easeTo({
                 bearing: map.getBearing() - deltaDegrees,
                 easing: easeFunction,
                 animate: true
             });
-        } else if (dir === 'right') {
+        } else if (e.which === 39) { // right
             map.easeTo({
                 bearing: map.getBearing() + deltaDegrees,
                 easing: easeFunction,
                 animate: true
             });
-        } else if (dir === 'up') {
-            map.panBy([0, -deltaDistance], {
-                easing: easeFunction
-            });
-        } else if (dir === 'down') {
-            map.panBy([0, deltaDistance], {
-                easing: easeFunction
-            });
-        }
-    }
-
-    document.body.addEventListener('keydown', function(e) {
-        e.preventDefault();
-        if (e.which === 38) { // up
-            goDirection('up');
-        } else if (e.which === 40) { // down
-            goDirection('down');
-        } else if (e.which === 37) { // left
-            goDirection('left');
-        } else if (e.which === 39) { // right
-            goDirection('right');
         }
     }, true);
 
