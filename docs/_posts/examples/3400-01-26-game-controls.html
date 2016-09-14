@@ -30,7 +30,6 @@ description: Move around the map with game-like controls.
 
 
 <script>
-    //Initialize the map
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/dark-v9',
@@ -41,8 +40,10 @@ description: Move around the map with game-like controls.
         interactive: false
     });
 
-    var deltaDistance = 100; // how far the map moves in pixels when the up or down arrow is clicked
-    var deltaDegrees = 25; // rotation of the map in degrees when the left or right arrow is clicked
+    // pixels the map pans when the up or down arrow is clicked
+    var deltaDistance = 100;
+    // degrees the map rotates when the left or right arrow is clicked
+    var deltaDegrees = 25;
 
     var instructions = document.getElementById('instructions');
     map.on('click', function() {
