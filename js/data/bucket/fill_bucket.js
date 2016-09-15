@@ -174,7 +174,6 @@ FillBucket.prototype.addPolygon = function(polygon) {
 
         for (var v = 0; v < ring.length; v++) {
             var v1 = ring[v];
-            checkBoundaries(v1);
 
             var index = this.addVertex(group.layoutVertexArray, v1[0], v1[1], 0, 0, 1, 1, 0);
             indices.push(index);
@@ -238,10 +237,11 @@ function convertCoords(rings) {
 }
 
 function isBoundaryEdge(v1, v2) {
-    if (!v1.isOutside || !v2.isOutside) return false;
-    return v1.some(function(a, i) { return v2[i] === a; });
+    return v1.some(function(a, i) {
+        return isOutside(v2[i]) && v2[i] === a;
+    });
 }
 
-function checkBoundaries(point) {
-    point.isOutside = point.some(function(c) { return c < 0 || c > Bucket.EXTENT; });
+function isOutside(coord) {
+    return coord < 0 || coord > Bucket.EXTENT;
 }
