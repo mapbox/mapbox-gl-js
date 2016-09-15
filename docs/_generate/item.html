@@ -57,6 +57,15 @@
       if (support === undefined) return 'Not yet supported';
       return '>= ' + support;
     }
+    var titleForSDKSupportKey = function(key) {
+      if (key === 'basic') {
+        return "Base";
+      }
+      return capitalizeFirstLetter(key);
+    }
+    var capitalizeFirstLetter = function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
   %>
   <div class='space-bottom2'>
     <table class='micro fixed'>
@@ -69,12 +78,16 @@
       </tr>
       </thead>
       <tbody>
+      <% _.each(Object.keys(prop['sdk-support']), function(key) { %>
+      <% if (key !== 'property-function') { %>
       <tr>
-        <td>Base support</td>
-        <td class='center'><%- support('basic', 'js') %></td>
-        <td class='center'><%- support('basic', 'ios') %></td>
-        <td class='center'><%- support('basic', 'android') %></td>
+        <td><%- titleForSDKSupportKey(key) %> support</td>
+        <td class='center'><%- support(key, 'js') %></td>
+        <td class='center'><%- support(key, 'ios') %></td>
+        <td class='center'><%- support(key, 'android') %></td>
       </tr>
+      <% } %>
+      <% }); %>
       <% if (prop['property-function']) { %>
       <tr>
         <td>Data-driven styling</td>

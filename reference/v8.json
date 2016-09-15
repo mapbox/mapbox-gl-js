@@ -606,6 +606,11 @@
       "sdk-support": {
         "basic": {
           "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "auto": {
+          "js": "TBD",
           "ios": "3.4.0",
           "android": "4.2.0"
         }
@@ -802,6 +807,11 @@
       "sdk-support": {
         "basic": {
           "js": "0.21.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "auto": {
+          "js": "TBD",
           "ios": "3.4.0",
           "android": "4.2.0"
         }
@@ -825,6 +835,11 @@
       "sdk-support": {
         "basic": {
           "js": "0.10.0",
+          "ios": "2.0.0",
+          "android": "2.0.1"
+        },
+        "auto": {
+          "js": "TBD",
           "ios": "3.4.0",
           "android": "4.2.0"
         }
