@@ -88,8 +88,6 @@ ScrollZoomHandler.prototype = {
         if (value !== 0 && (value % 4.000244140625) === 0) {
             // This one is definitely a mouse wheel event.
             this._type = 'wheel';
-            // Normalize this value to match trackpad.
-            value = Math.floor(value / 4);
 
         } else if (value !== 0 && Math.abs(value) < 4) {
             // This one is definitely a trackpad event because it is so small.
@@ -143,9 +141,10 @@ ScrollZoomHandler.prototype = {
             targetZoom = map.transform.scaleZoom(fromScale * scale);
 
         map.zoomTo(targetZoom, {
-            duration: 0,
+            duration: this._type === 'wheel' ? 200 : 0,
             around: map.unproject(this._pos),
-            delayEndEvents: 200
+            delayEndEvents: 200,
+            smoothEasing: true
         }, { originalEvent: e });
     }
 };
