@@ -31,6 +31,12 @@ function KeyboardHandler(map) {
     this._onKeyDown = this._onKeyDown.bind(this);
 }
 
+var options = {
+    duration: 80,
+    delayEndEvents: 200,
+    easing: function (t) { return t; }
+};
+
 KeyboardHandler.prototype = {
 
     _enabled: false,
@@ -74,55 +80,53 @@ KeyboardHandler.prototype = {
         var map = this._map,
             eventData = { originalEvent: e };
 
-        if (map.isEasing()) return;
-
         switch (e.keyCode) {
         case 61:
         case 107:
         case 171:
         case 187:
-            map.zoomTo(Math.round(map.getZoom()) + (e.shiftKey ? 2 : 1), eventData);
+            map.zoomTo(Math.round(map.getZoom()) + (e.shiftKey ? 2 : 1), options, eventData);
             break;
 
         case 189:
         case 109:
         case 173:
-            map.zoomTo(Math.round(map.getZoom()) - (e.shiftKey ? 2 : 1), eventData);
+            map.zoomTo(Math.round(map.getZoom()) - (e.shiftKey ? 2 : 1), options, eventData);
             break;
 
         case 37:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() - rotateDelta }, eventData);
+                map.easeTo({ bearing: map.getBearing() - rotateDelta }, options, eventData);
             } else {
                 e.preventDefault();
-                map.panBy([-panDelta, 0], eventData);
+                map.panBy([-panDelta, 0], options, eventData);
             }
             break;
 
         case 39:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() + rotateDelta }, eventData);
+                map.easeTo({ bearing: map.getBearing() + rotateDelta }, options, eventData);
             } else {
                 e.preventDefault();
-                map.panBy([panDelta, 0], eventData);
+                map.panBy([panDelta, 0], options, eventData);
             }
             break;
 
         case 38:
             if (e.shiftKey) {
-                map.easeTo({ pitch: map.getPitch() + pitchDelta }, eventData);
+                map.easeTo({ pitch: map.getPitch() + pitchDelta }, options, eventData);
             } else {
                 e.preventDefault();
-                map.panBy([0, -panDelta], eventData);
+                map.panBy([0, -panDelta], options, eventData);
             }
             break;
 
         case 40:
             if (e.shiftKey) {
-                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) }, eventData);
+                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) }, options, eventData);
             } else {
                 e.preventDefault();
-                map.panBy([0, panDelta], eventData);
+                map.panBy([0, panDelta], options, eventData);
             }
             break;
         }
