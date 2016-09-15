@@ -647,6 +647,11 @@ Style.prototype = util.inherit(Evented, {
         if (params && params.layers) {
             for (var i = 0; i < params.layers.length; i++) {
                 var layerId = params.layers[i];
+                if (!(this._layers[layerId] instanceof StyleLayer)) {
+                    // this layer is not in the style.layers array, so we pass an impossible array index
+                    this._handleErrors(validateStyle.layer, 'layers.' + layer.id, layer, false, {arrayIndex: -1});
+                    return;
+                }
                 includedSources[this._layers[layerId].source] = true;
             }
         }
@@ -685,7 +690,6 @@ Style.prototype = util.inherit(Evented, {
             url: SourceType.workerSourceURL
         }, callback);
     },
-
     _handleErrors: function(validate, key, value, throws, props) {
         var action = throws ? validateStyle.throwErrors : validateStyle.emitErrors;
         var result = validate.call(validateStyle, util.extend({
