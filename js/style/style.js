@@ -731,17 +731,6 @@ Style.prototype = util.inherit(Evented, {
 
     // Callbacks from web workers
 
-    'get sprite json': function(mapId, params, callback) {
-        var sprite = this.sprite;
-        if (sprite.loaded()) {
-            callback(null, { sprite: sprite.data, retina: sprite.retina });
-        } else {
-            sprite.on('load', function() {
-                callback(null, { sprite: sprite.data, retina: sprite.retina });
-            });
-        }
-    },
-
     'get icons': function(mapId, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
