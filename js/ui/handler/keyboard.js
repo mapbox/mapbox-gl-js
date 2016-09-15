@@ -3,9 +3,9 @@
 module.exports = KeyboardHandler;
 
 
-var panDelta = 80,
-    rotateDelta = 2,
-    pitchDelta = 5;
+var panStep = 100,
+    bearingStep = 15,
+    pitchStep = 10;
 
 /**
  * The `KeyboardHandler` allows the user to zoom, rotate, and pan the map using
@@ -15,11 +15,11 @@ var panDelta = 80,
  * - `Shift-=` / `Shift-+`: Increase the zoom level by 2.
  * - `-`: Decrease the zoom level by 1.
  * - `Shift--`: Decrease the zoom level by 2.
- * - Arrow keys: Pan by 80 pixels.
- * - `Shift+⇢`: Increase the rotation by 2 degrees.
- * - `Shift+⇠`: Decrease the rotation by 2 degrees.
- * - `Shift+⇡`: Increase the pitch by 5 degrees.
- * - `Shift+⇣`: Decrease the pitch by 5 degrees.
+ * - Arrow keys: Pan by 100 pixels.
+ * - `Shift+⇢`: Increase the rotation by 15 degrees.
+ * - `Shift+⇠`: Decrease the rotation by 15 degrees.
+ * - `Shift+⇡`: Increase the pitch by 10 degrees.
+ * - `Shift+⇣`: Decrease the pitch by 10 degrees.
  *
  * @class KeyboardHandler
  * @param {Map} map The Mapbox GL JS map to add the handler to.
@@ -31,11 +31,9 @@ function KeyboardHandler(map) {
     this._onKeyDown = this._onKeyDown.bind(this);
 }
 
-var options = {
-    duration: 80,
-    delayEndEvents: 200,
-    easing: function (t) { return t; }
-};
+function easeOut(t) {
+    return t * (2 - t);
+}
 
 KeyboardHandler.prototype = {
 
@@ -77,58 +75,78 @@ KeyboardHandler.prototype = {
     _onKeyDown: function (e) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-        var map = this._map,
-            eventData = { originalEvent: e };
+        var zoomDir = 0;
+        var bearingDir = 0;
+        var pitchDir = 0;
+        var xDir = 0;
+        var yDir = 0;
 
         switch (e.keyCode) {
         case 61:
         case 107:
         case 171:
         case 187:
-            map.zoomTo(Math.round(map.getZoom()) + (e.shiftKey ? 2 : 1), options, eventData);
+            zoomDir = 1;
             break;
 
         case 189:
         case 109:
         case 173:
-            map.zoomTo(Math.round(map.getZoom()) - (e.shiftKey ? 2 : 1), options, eventData);
+            zoomDir = -1;
             break;
 
         case 37:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() - rotateDelta }, options, eventData);
+                bearingDir = -1;
             } else {
                 e.preventDefault();
-                map.panBy([-panDelta, 0], options, eventData);
+                xDir = -1;
             }
             break;
 
         case 39:
             if (e.shiftKey) {
-                map.easeTo({ bearing: map.getBearing() + rotateDelta }, options, eventData);
+                bearingDir = 1;
             } else {
                 e.preventDefault();
-                map.panBy([panDelta, 0], options, eventData);
+                xDir = 1;
             }
             break;
 
         case 38:
             if (e.shiftKey) {
-                map.easeTo({ pitch: map.getPitch() + pitchDelta }, options, eventData);
+                pitchDir = 1;
             } else {
                 e.preventDefault();
-                map.panBy([0, -panDelta], options, eventData);
+                yDir = -1;
             }
             break;
 
         case 40:
             if (e.shiftKey) {
-                map.easeTo({ pitch: Math.max(map.getPitch() - pitchDelta, 0) }, options, eventData);
+                pitchDir = -1;
             } else {
+                yDir = 1;
                 e.preventDefault();
-                map.panBy([0, panDelta], options, eventData);
             }
             break;
         }
+
+        var map = this._map;
+        var zoom = map.getZoom();
+
+        var easeOptions = {
+            duration: 300,
+            delayEndEvents: 500,
+            easing: easeOut,
+
+            zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
+            bearing: map.getBearing() + bearingDir * bearingStep,
+            pitch: map.getPitch() + pitchDir * pitchStep,
+            offset: [-xDir * panStep, -yDir * panStep],
+            center: map.getCenter()
+        };
+
+        map.easeTo(easeOptions, {originalEvent: e});
     }
 };
