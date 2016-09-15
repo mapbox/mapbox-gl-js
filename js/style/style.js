@@ -649,7 +649,7 @@ Style.prototype = util.inherit(Evented, {
                 var layerId = params.layers[i];
                 if (!(this._layers[layerId] instanceof StyleLayer)) {
                     // this layer is not in the style.layers array
-                    return this.fire('error', {error: 'The layer \'' + layerId + '\' does not exist in the map\'s style and cannot be queried for features'});
+                    return this.fire('error', {error: 'The layer \'' + layerId + '\' does not exist in the map\'s style and cannot be queried for features.'});
                 }
                 includedSources[this._layers[layerId].source] = true;
             }
