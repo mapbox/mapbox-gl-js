@@ -5,27 +5,27 @@
 ``` javascript
 var glfun = require('mapbox-gl-function');
 
-var identity = glfun({type: 'identity'});
-identity({ $zoom: 0 }); // => '0'
-identity({ $zoom: 'A' }); // => 'A'
-identity({ $zoom: ['A'] }); // => ['A']
+var identity = glfun.interpolated({type: 'identity'});
+identity(0); // => '0'
+identity('A'); // => 'A'
+identity(['A']); // => ['A']
 
-var exponential = glfun({type: 'exponential', stops: [[1, 1], [5, 10]]});
-exponential({ $zoom: 0 });  // => 1
-exponential({ $zoom: 1 });  // => 1
-exponential({ $zoom: 3 });  // => 5.5
-exponential({ $zoom: 5 });  // => 10
-exponential({ $zoom: 11 }); // => 10
+var exponential = glfun.interpolated({type: 'exponential', stops: [[1, 1], [5, 10]]});
+exponential(0);  // => 1
+exponential(1);  // => 1
+exponential(3);  // => 5.5
+exponential(5);  // => 10
+exponential(11); // => 10
 
-var interval = glfun({type: 'interval', stops: [[1, 'a'], [3, 'b'], [4, 'c']]});
-interval({ $zoom: 0 }); // => 'a'
-interval({ $zoom: 1 }); // => 'a'
-interval({ $zoom: 2 }); // => 'a'
-interval({ $zoom: 3 }); // => 'b'
-interval({ $zoom: 4 }); // => 'c'
+var interval = glfun.interpolated({type: 'interval', stops: [[1, 'a'], [3, 'b'], [4, 'c']]});
+interval(0); // => 'a'
+interval(1); // => 'a'
+interval(2); // => 'a'
+interval(3); // => 'b'
+interval(4); // => 'c'
 
-var categorical = glfun({type: 'categorical', stops: [['A', 'a'], ['B', 'b'], ['C', 'c']]});
-categorical({ $zoom: 'A' }); // => 'a'
-categorical({ $zoom: 'B' }); // => 'b'
-categorical({ $zoom: 'C' }); // => 'c'
+var categorical = glfun.interpolated({type: 'categorical', stops: [['A', 'a'], ['B', 'b'], ['C', 'c']]});
+categorical('A'); // => 'a'
+categorical('B'); // => 'b'
+categorical('C'); // => 'c'
 ```
