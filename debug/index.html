@@ -115,7 +115,6 @@ map.on('load', function() {
 });
 
 map.on('click', function(e) {
-    var features = map.queryRenderedFeatures(e.point, {layers:['derp']});
     if (e.originalEvent.shiftKey) return;
     (new mapboxgl.Popup())
         .setLngLat(map.unproject(e.point))
