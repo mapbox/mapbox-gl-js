@@ -64,7 +64,7 @@
     "memory-fs": "^0.3.0",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
-    "nyc": "mourner/nyc#fast",
+    "nyc": "^8.3.0",
     "proxyquire": "^1.7.9",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
