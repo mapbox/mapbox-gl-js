@@ -144,6 +144,9 @@ Tile.prototype = {
             this.reloadSymbolData(data, source.map.painter, source.map.style);
             source.fire('tile.load', {tile: this});
 
+            // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+            if (source.map) source.map.painter.tileExtentVAO.vao = null;
+
             this.state = 'loaded';
             if (this.redoWhenDone) {
                 this.redoPlacement(source);
