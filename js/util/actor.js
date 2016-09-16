@@ -37,7 +37,7 @@ function Actor(target, parent, mapId) {
 Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
     var id = callback ? this.mapId + ':' + this.callbackID++ : null;
     if (callback) this.callbacks[id] = callback;
-    this.postMessage({
+    this.target.postMessage({
         targetMapId: targetMapId,
         sourceMapId: this.mapId,
         type: type,
@@ -71,7 +71,7 @@ Actor.prototype.receive = function(message) {
     }
 
     function done(err, data, buffers) {
-        this.postMessage({
+        this.target.postMessage({
             sourceMapId: this.mapId,
             type: '<response>',
             id: String(id),
@@ -83,16 +83,4 @@ Actor.prototype.receive = function(message) {
 
 Actor.prototype.remove = function () {
     this.target.removeEventListener('message', this.receive, false);
-};
-
-/**
- * Wrapped postMessage API that abstracts around IE's lack of
- * `transferList` support.
- *
- * @param {Object} message
- * @param {Object} transferList
- * @private
- */
-Actor.prototype.postMessage = function(message, transferList) {
-    this.target.postMessage(message, transferList);
 };
