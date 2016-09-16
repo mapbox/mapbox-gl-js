@@ -1093,6 +1093,16 @@ test('Style#queryRenderedFeatures', function(t) {
             t.end();
         });
 
+        t.test('fires an error if layer included in params does not exist on the style', function(t) {
+            var errors = 0;
+            sinon.stub(style, 'fire', function(type, data) {
+                if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
+            });
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
+            t.equals(errors, 1);
+            t.end();
+        });
+
         t.end();
     });
 });
