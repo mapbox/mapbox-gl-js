@@ -800,7 +800,7 @@
         "auto"
       ],
       "default": "auto",
-      "doc": "Aligns text to the plane of the `viewport` or the `map` when the map is pitched. Matches `text-rotation-alignment` if `auto`.",
+      "doc": "Orientation of text when map is pitched. Aligns text to the plane of the viewport when set to `viewport` or the plane of the map when set to `map`. Matches `text-rotation-alignment` if `auto`.",
       "requires": [
         "text-field"
       ],
