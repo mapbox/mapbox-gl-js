@@ -12,18 +12,6 @@ module.exports = StyleLayer;
 
 var TRANSITION_SUFFIX = '-transition';
 
-StyleLayer.create = function(layer, refLayer) {
-    var Classes = {
-        background: require('./style_layer/background_style_layer'),
-        circle: require('./style_layer/circle_style_layer'),
-        fill: require('./style_layer/fill_style_layer'),
-        line: require('./style_layer/line_style_layer'),
-        raster: require('./style_layer/raster_style_layer'),
-        symbol: require('./style_layer/symbol_style_layer')
-    };
-    return new Classes[(refLayer || layer).type](layer, refLayer);
-};
-
 function StyleLayer(layer, refLayer) {
     this.set(layer, refLayer);
 }
@@ -343,3 +331,16 @@ StyleLayer.prototype = util.inherit(Evented, {
 function getDeclarationValue(declaration) {
     return declaration.value;
 }
+
+var Classes = {
+    background: require('./style_layer/background_style_layer'),
+    circle: require('./style_layer/circle_style_layer'),
+    fill: require('./style_layer/fill_style_layer'),
+    line: require('./style_layer/line_style_layer'),
+    raster: require('./style_layer/raster_style_layer'),
+    symbol: require('./style_layer/symbol_style_layer')
+};
+
+StyleLayer.create = function(layer, refLayer) {
+    return new Classes[(refLayer || layer).type](layer, refLayer);
+};
