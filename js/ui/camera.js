@@ -435,6 +435,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
 
+        if (options.smoothEasing && options.duration !== 0) {
+            options.easing = this._smoothOutEasing(options.duration);
+        }
+
         if (!options.noMoveStart) {
             this.fire('movestart', eventData);
         }
@@ -746,11 +750,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         return bearing;
     },
 
-    _updateEasing: function(duration, zoom, bezier) {
-        var easing;
+    // only used on mouse-wheel zoom to smooth out animation
+    _smoothOutEasing: function(duration) {
+        var easing = util.ease;
 
-        if (this.ease) {
-            var ease = this.ease,
+        if (this._prevEase) {
+            var ease = this._prevEase,
                 t = (Date.now() - ease.start) / ease.duration,
                 speed = ease.easing(t + 0.01) - ease.easing(t),
 
@@ -759,14 +764,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 y = Math.sqrt(0.27 * 0.27 - x * x);
 
             easing = util.bezier(x, y, 0.25, 1);
-        } else {
-            easing = bezier ? util.bezier.apply(util, bezier) : util.ease;
         }
 
-        // store information on current easing
-        this.ease = {
+        this._prevEase = {
             start: (new Date()).getTime(),
-            to: Math.pow(2, zoom),
             duration: duration,
             easing: easing
         };
