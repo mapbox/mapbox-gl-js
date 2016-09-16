@@ -90,12 +90,14 @@ util.extend(Worker.prototype, {
 
         function updateLayer(layer) {
             var refLayer = layers[layer.ref];
-            if (layers[layer.id]) {
-                layers[layer.id].set(layer, refLayer);
+            var styleLayer = layers[layer.id];
+            if (styleLayer) {
+                styleLayer.set(layer, refLayer);
             } else {
-                layers[layer.id] = StyleLayer.create(layer, refLayer);
+                styleLayer = layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            layers[layer.id].updatePaintTransitions({}, {transition: false});
+            styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
         }
 
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
