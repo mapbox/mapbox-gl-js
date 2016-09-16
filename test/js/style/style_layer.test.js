@@ -604,6 +604,18 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(assert) {
         assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'viewport');
         assert.end();
     });
+    assert.test('text-pitch-alignment:auto defaults to text-rotation-alignment', function(assert) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "text-rotation-alignment": "map",
+                "text-pitch-alignment": "auto"
+            }
+        });
+        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
+        assert.end();
+    });
     assert.test('text-pitch-alignment respected when set', function(assert) {
         var layer = StyleLayer.create({
             "type": "symbol",
@@ -614,6 +626,50 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(assert) {
         });
         assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
         assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
+        assert.end();
+    });
+    assert.test('symbol-placement:point and text-rotation-alignment:auto  => text-rotation-alignment:viewport ', function(assert) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "point",
+                "text-rotation-alignment": "auto"
+            }
+        });
+        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
+        assert.end();
+    });
+    assert.test('symbol-placement:line and text-rotation-alignment:auto  => text-rotation-alignment:map ', function(assert) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "line",
+                "text-rotation-alignment": "auto"
+            }
+        });
+        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        assert.end();
+    });
+    assert.test('symbol-placement:point and icon-rotation-alignment:auto  => icon-rotation-alignment:viewport ', function(assert) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-rotation-alignment": "auto"
+            }
+        });
+        assert.equal(layer.getLayoutValue('icon-rotation-alignment'), 'viewport');
+        assert.end();
+    });
+    assert.test('symbol-placement:line and icon-rotation-alignment:auto  => icon-rotation-alignment:map ', function(assert) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "line",
+                "icon-rotation-alignment": "auto"
+            }
+        });
+        assert.equal(layer.getLayoutValue('icon-rotation-alignment'), 'map');
         assert.end();
     });
     assert.end();
