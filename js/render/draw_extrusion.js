@@ -11,7 +11,7 @@ var StructArrayType = require('../util/struct_array');
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
-    if (layer.getPaintValue('fill-opacity') === 0) return;
+    if (layer.paint['fill-opacity'] === 0) return;
     var gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     painter.depthMask(true);
@@ -119,7 +119,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.getPaintValue('fill-opacity'));
+    gl.uniform1f(program.u_opacity, this.layer.paint['fill-opacity']);
     gl.uniform1i(program.u_texture, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
@@ -201,7 +201,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
-    var color = layer.getPaintValue('fill-outline-color');
+    var color = layer.paint['fill-outline-color'];
 
     var programOptions = bucket.paintAttributes.extrusion[layer.id];
     var outlineProgram = painter.useProgram(
@@ -235,8 +235,8 @@ function setMatrix(program, painter, coord, tile, layer) {
         painter.translatePosMatrix(
             coord.posMatrix,
             tile,
-            layer.getPaintValue('fill-translate'),
-            layer.getPaintValue('fill-translate-anchor')
+            layer.paint['fill-translate'],
+            layer.paint['fill-translate-anchor']
         ),
         [1, 1, zScale, 1])
     );
