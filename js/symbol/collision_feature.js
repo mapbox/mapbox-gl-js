@@ -20,7 +20,7 @@ module.exports = CollisionFeature;
  *
  * @private
  */
-function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight) {
+function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight, verticalOrientation) {
 
     var y1 = shaped.top * boxScale - padding;
     var y2 = shaped.bottom * boxScale + padding;
@@ -31,8 +31,10 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
 
     if (alignLine) {
 
-        var height = y2 - y1;
-        var length = x2 - x1;
+        var height = verticalOrientation ? x2 - x1 : y2 - y1;
+        var length = verticalOrientation ? y2 - y1 : x2 - x1;
+
+        if (verticalOrientation) { console.log("length: " + length + ", boxScale: " + boxScale); }
 
         if (height > 0) {
             // set minimum box height to avoid very many small labels
@@ -70,6 +72,8 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
  * @private
  */
 CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
+    console.log("label length: " + labelLength);
+
     var step = boxSize / 2;
     var nBoxes = Math.floor(labelLength / step);
 

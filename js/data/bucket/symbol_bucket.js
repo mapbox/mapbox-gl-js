@@ -223,9 +223,12 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
 
+        var verticalOrientation = false;
+
         if (textFeatures[k]) {
+            
             shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
-                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
+                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, verticalOrientation);
         } else {
             shapedText = null;
         }
@@ -252,8 +255,18 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         }
 
         if (shapedText || shapedIcon) {
-            this.addFeature(geometries[k], shapedText, shapedIcon, features[k]);
+            this.addFeature(geometries[k], shapedText, shapedIcon, features[k], verticalOrientation);
         }
+
+        // create another shapedText for vertical orientation if needed
+        if (shapedText && layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line') {
+            verticalOrientation = true;
+            //console.log("vertical orientation from populate arrays: " + verticalOrientation);
+            shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
+                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, verticalOrientation);
+            this.addFeature(geometries[k], shapedText, shapedIcon, features[k], verticalOrientation);
+        }
+
     }
     this.symbolInstancesEndIndex = this.symbolInstancesArray.length;
     this.placeFeatures(collisionTile, this.showCollisionBoxes);
@@ -261,7 +274,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
     this.trimArrays();
 };
 
-SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feature) {
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feature, verticalOrientation) {
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -324,11 +337,15 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
 
-            if (shapedText && isLine) {
+            if (shapedText && isLine && verticalOrientation===false) {
+            // ^ for now don't include vertical labels in this check  
                 if (this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
                     continue;
+                 // ^^^ this check is where all the vertical labels are being skipped    
                 }
             }
+
+            //console.log("vertical orientation from addFeature: " + verticalOrientation);
 
             var inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
@@ -344,10 +361,11 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
             // be drawn across tile boundaries. Instead they need to be included in
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
+
             this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layer,
                 addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, this.sourceLayerIndex, this.index,
                 textBoxScale, textPadding, textAlongLine,
-                iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
+                iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties, verticalOrientation);
         }
     }
 };
@@ -507,6 +525,9 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
         var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
         if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
+        // drop vertical or horizontal orientation of labels
+        //if (alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+
         var tl = symbol.tl,
             tr = symbol.tr,
             bl = symbol.bl,
@@ -598,12 +619,13 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
 
 SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
     textBoxScale, textPadding, textAlongLine,
-    iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
+    iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties, verticalOrientation) {
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
     if (shapedText) {
-        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine) : [];
-        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false);
+        //console.log("vertical orientation from addSymbolInstance: " + verticalOrientation);
+        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine, verticalOrientation) : [];
+        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false, verticalOrientation);
     }
 
     glyphQuadStartIndex = this.symbolQuadsArray.length;
@@ -619,7 +641,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
 
     if (shapedIcon) {
         iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText, globalProperties, featureProperties) : [];
-        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
+        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true, false);
     }
 
     iconQuadStartIndex = this.symbolQuadsArray.length;

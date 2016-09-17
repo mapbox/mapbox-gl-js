@@ -134,7 +134,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, verticalOrientation) {
 
     var textRotate = layer.layout['text-rotate'] * Math.PI / 180;
     var keepUpright = layer.layout['text-keep-upright'];
@@ -188,6 +188,19 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
                 tr = otr,
                 bl = obl,
                 br = obr;
+
+            // vertical orientation
+            console.log("vertical orientation from getGlyphQuads: " + verticalOrientation);
+            if (verticalOrientation) {
+                var sin = Math.sin(-Math.PI / 2),
+                    cos = Math.cos(-Math.PI / 2),
+                    matrix = [cos, -sin, sin, cos];
+
+                tl = tl.matMult(matrix);
+                tr = tr.matMult(matrix);
+                bl = bl.matMult(matrix);
+                br = br.matMult(matrix);
+            }
 
             if (textRotate) {
                 var sin = Math.sin(textRotate),

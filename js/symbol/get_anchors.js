@@ -17,19 +17,19 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
         0;
 
     //commenting out horizontal orientation for now
-    var labelLength = Math.max(
-        shapedText ? shapedText.right - shapedText.left : 0,
-        shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
+    //var labelLength = Math.max(
+        //shapedText ? shapedText.right - shapedText.left : 0,
+        //shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     // This is probably wrong
-    //var labelLength = Math.max(
-        //shapedText ? shapedText.bottom - shapedText.top : 0,
-        //shapedIcon ? shapedIcon.bottom - shapedIcon.top : 0);
+    var labelLength = Math.max(
+        shapedText ? shapedText.bottom - shapedText.top : 0,
+        shapedIcon ? shapedIcon.bottom - shapedIcon.top : 0);
     
-    if (shapedText) {
+    //if (shapedText) {
         //console.log("labelLength: " + labelLength + " , bottom: " + shapedText.bottom + " , top: " + shapedText.top);
-        console.log("labelLength: " + labelLength + " , right: " + shapedText.right + " , left: " + shapedText.left);
-    }
+        //console.log("labelLength: " + labelLength + " , right: " + shapedText.right + " , left: " + shapedText.left);
+    //}
 
     // Is the line continued from outside the tile boundary?
     var isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;

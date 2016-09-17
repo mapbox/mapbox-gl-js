@@ -8282,7 +8282,8 @@
         "text-padding": 1,
         "text-rotation-alignment": "map",
         "text-field": "{name}",
-        "text-letter-spacing": 0.01
+        "text-letter-spacing": 0.01,
+        "text-rotate": 0
       },
       "paint": {
         "text-color": "hsl(0, 0%, 0%)",
