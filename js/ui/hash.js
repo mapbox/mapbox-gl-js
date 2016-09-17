@@ -51,7 +51,8 @@ Hash.prototype = {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
-                bearing: +(loc[3] || 0)
+                bearing: +(loc[3] || 0),
+                pitch: +(loc[4] || 0)
             });
             return true;
         }
@@ -62,12 +63,15 @@ Hash.prototype = {
         var center = this._map.getCenter(),
             zoom = this._map.getZoom(),
             bearing = this._map.getBearing(),
+            pitch = this._map.getPitch(),
             precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
 
             hash = '#' + (Math.round(zoom * 100) / 100) +
                 '/' + center.lat.toFixed(precision) +
-                '/' + center.lng.toFixed(precision) +
-                (bearing ? '/' + (Math.round(bearing * 10) / 10) : '');
+                '/' + center.lng.toFixed(precision);
+
+        if (bearing || pitch) hash += ('/' + (Math.round(bearing * 10) / 10));
+        if (pitch) hash += ('/' + Math.round(pitch));
 
         window.history.replaceState('', '', hash);
     }
