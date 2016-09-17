@@ -599,7 +599,7 @@
         "auto"
       ],
       "default": "auto",
-      "doc": "Orientation of icon when map is rotated. Defaults to `map` for line placement and `viewport` for symbol placement",
+      "doc": "Orientation of icon when map is rotated. Aligns icon to the plane of the viewport when set to `viewport` or the plane of the map when set to `map`. Selecting `auto` defaults to `map` for line placement and `viewport` for symbol placement",
       "requires": [
         "icon-image"
       ],
@@ -609,11 +609,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {
-          "js": "TBD",
-          "ios": "3.4.0",
-          "android": "4.2.0"
-        }
+        "auto": {}
       }
     },
     "icon-size": {
@@ -810,11 +806,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {
-          "js": "TBD",
-          "ios": "3.4.0",
-          "android": "4.2.0"
-        }
+        "auto": {}
       }
     },
     "text-rotation-alignment": {
@@ -828,7 +820,7 @@
         "auto"
       ],
       "default": "auto",
-      "doc": "Orientation of text when map is rotated. Defaults to the plane of the `map` for line placement and the `viewport` for symbol placement.",
+      "doc": "Orientation of text when map is rotated. Aligns text to the plane of the viewport when set to `viewport` or the plane of the map when set to `map`. Selecting `auto` defaults to the plane of the `map` for line placement and the `viewport` for symbol placement.",
       "requires": [
         "text-field"
       ],
@@ -838,11 +830,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {
-          "js": "TBD",
-          "ios": "3.4.0",
-          "android": "4.2.0"
-        }
+        "auto": {}
       }
     },
     "text-field": {
