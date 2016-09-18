@@ -14,10 +14,10 @@ function GeoJSONWrapper(features) {
 }
 
 GeoJSONWrapper.prototype.feature = function(i) {
-    return new FeatureWrapper(this.features[i]);
+    return new FeatureWrapper(this.features[i], i);
 };
 
-function FeatureWrapper(feature) {
+function FeatureWrapper(feature, id) {
     this.type = feature.type;
     if (feature.type === 1) {
         this.rawGeometry = [];
@@ -27,6 +27,8 @@ function FeatureWrapper(feature) {
     } else {
         this.rawGeometry = feature.geometry;
     }
+
+    this.id = id;
     this.properties = feature.tags;
     this.extent = EXTENT;
 }

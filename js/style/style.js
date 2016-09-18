@@ -19,6 +19,7 @@ var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
 var getWorkerPool = require('../global_worker_pool');
+var GeoJSONSource = require('../source/geojson_source');
 
 module.exports = Style;
 
@@ -626,11 +627,18 @@ Style.prototype = util.inherit(Evented, {
         var features = [];
         for (var l = this._order.length - 1; l >= 0; l--) {
             var layerID = this._order[l];
+            var source = this.sources[this._layers[layerID].source];
             for (var s = 0; s < sourceResults.length; s++) {
                 var layerFeatures = sourceResults[s][layerID];
                 if (layerFeatures) {
                     for (var f = 0; f < layerFeatures.length; f++) {
-                        features.push(layerFeatures[f]);
+                        if (source && source._source instanceof GeoJSONSource) {
+                            features.push(Object.create(layerFeatures[f], {
+                                id: {value: source._source._data.features[layerFeatures[f].id].id || null}
+                            }));
+                        } else {
+                            features.push(layerFeatures[f]);
+                        }
                     }
                 }
             }

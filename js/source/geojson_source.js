@@ -56,6 +56,7 @@ module.exports = GeoJSONSource;
  *     data: {
  *        "type": "FeatureCollection",
  *        "features": [{
+ *            "id": 65342,
  *            "type": "Feature",
  *            "properties": { "name": "Null Island" },
  *            "geometry": {
