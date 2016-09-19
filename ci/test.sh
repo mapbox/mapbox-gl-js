@@ -27,7 +27,7 @@ npm run test-cov
 
 # send coverage report to coveralls
 nyc report --reporter=lcov
-# there is a Coveralls / Circle bug triggered by tagged builds
+# this code works around a Coveralls / CircleCI bug triggered by tagged builds
 if [ -z "$CIRCLE_TAG" ]; then
     (node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
 fi
