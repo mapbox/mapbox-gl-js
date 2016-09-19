@@ -153,13 +153,11 @@ map.on('load', function() {
         },
         "filter": ["in", "abbrev", ""]
     });
-
     map.on('moveend', function() {
-        var features = map.querySourceFeatures('airports', {
-            sourceLayer: 'ne_10m_airports'
-        });
+        var features = map.queryRenderedFeatures({layers:['airport']});
 
         if (features) {
+            console.log(features);
             // Populate features for the listing overlay.
             renderListings(features);
 
