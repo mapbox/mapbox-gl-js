@@ -459,6 +459,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Array<Object>} An array of [GeoJSON](http://geojson.org/)
      * [feature objects](http://geojson.org/geojson-spec.html#feature-objects).
      *
+     * The `id` value of each returned feature object contains the `id` specified on its source feature, or `null` if no id was specified.
+     *
      * The `properties` value of each returned feature object contains the properties of its source feature. For GeoJSON sources, only
      * string and numeric property values are supported (i.e. `null`, `Array`, and `Object` values are not supported).
      *
