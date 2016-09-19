@@ -1163,8 +1163,11 @@ test('Style#query*Features', function(t) {
     // These tests only cover filter validation. Most tests for these methods
     // live in mapbox-gl-test-suite.
 
-    function createStyle() {
-        return new Style({
+    var style;
+    var onError;
+
+    t.beforeEach(function (callback) {
+        style = new Style({
             "version": 8,
             "sources": {
                 "geojson": createGeoJSONSource()
@@ -1178,26 +1181,25 @@ test('Style#query*Features', function(t) {
                 "ref": "symbol"
             }]
         });
-    }
+
+        onError = sinon.spy();
+
+        style.on('error', onError)
+            .on('load', function() {
+                callback();
+            });
+    });
 
     t.test('querySourceFeatures emits an error on incorrect filter', function(t) {
-        var style = createStyle();
-        style.on('load', function() {
-            t.throws(function() {
-                t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
-            }, /querySourceFeatures\.filter/);
-            t.end();
-        });
+        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
+        t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
+        t.end();
     });
 
     t.test('queryRenderedFeatures emits an error on incorrect filter', function(t) {
-        var style = createStyle();
-        style.on('load', function() {
-            t.throws(function() {
-                t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
-            }, /queryRenderedFeatures\.filter/);
-            t.end();
-        });
+        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
+        t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
+        t.end();
     });
 
     t.end();
