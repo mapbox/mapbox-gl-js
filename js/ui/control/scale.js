@@ -48,7 +48,6 @@ function updateScale(map, scale, options) {
     // Using spherical law of cosines approximation, the real distance is
     // found between the two coordinates.
     var maxWidth = options && options.maxWidth || 100;
-    var ratio;
 
     var y = map._container.clientHeight / 2;
     var maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
@@ -59,22 +58,26 @@ function updateScale(map, scale, options) {
         var maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
             var maxMiles = maxFeet / 5280;
-            var miles = getRoundNum(maxMiles);
-            ratio = miles / maxMiles;
-            scale.style.width = maxWidth * ratio + 'px';
-            scale.innerHTML = miles + ' mi';
+            setScale(scale, maxWidth, maxMiles, 'mi');
         } else {
-            var feet = getRoundNum(maxFeet);
-            ratio = feet / maxFeet;
-            scale.style.width = maxWidth * ratio + 'px';
-            scale.innerHTML = feet + ' ft';
+            setScale(scale, maxWidth, maxFeet, 'ft');
         }
     } else {
-        var meters = getRoundNum(maxMeters);
-        ratio = meters / maxMeters;
-        scale.style.width = maxWidth * ratio + 'px';
-        scale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
+        setScale(scale, maxWidth, maxMeters, 'm');
     }
+}
+
+function setScale(scale, maxWidth, maxDistance, unit) {
+    var distance = getRoundNum(maxDistance);
+    var ratio = distance / maxDistance;
+
+    if (unit === 'm' && distance >= 1000) {
+        distance = distance / 1000;
+        unit = 'km';
+    }
+
+    scale.style.width = maxWidth * ratio + 'px';
+    scale.innerHTML = distance + unit;
 }
 
 function getDistance(latlng1, latlng2) {
