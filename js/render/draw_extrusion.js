@@ -179,7 +179,7 @@ function drawExtrusion(painter, source, layer, coord) {
     }
 
     setMatrix(program, painter, coord, tile, layer);
-    setLighting(program, painter);
+    setLight(program, painter);
 
     bucket.setUniforms(gl, 'extrusion', program, layer, {zoom: painter.transform.zoom});
 
@@ -211,7 +211,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
         programOptions.fragmentPragmas
     );
 
-    setLighting(outlineProgram, painter);
+    setLight(outlineProgram, painter);
     setMatrix(outlineProgram, painter, coord, tile, layer);
 
     bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
@@ -242,7 +242,7 @@ function setMatrix(program, painter, coord, tile, layer) {
     );
 }
 
-function setLighting(program, painter) {
+function setLight(program, painter) {
     var gl = painter.gl;
 
     var _ld = painter.light.direction,

@@ -3,7 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
@@ -56,14 +56,10 @@
 <script>
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 15.9,
-    // center: [2.34485,48.85640],
-    center: [-73.97313,40.76261],
-    pitch: 80,
-    bearing: 180,
-    style: 'mapbox-streets-v8.json',
-    // style: 'paris.json',
-    hash: false
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: true
 });
 
 map.addControl(new mapboxgl.Navigation());
@@ -118,13 +114,13 @@ map.on('load', function() {
     });
 });
 
-// map.on('click', function(e) {
-//     if (e.originalEvent.shiftKey) return;
-//     (new mapboxgl.Popup())
-//         .setLngLat(map.unproject(e.point))
-//         .setHTML("<h1>Hello World!</h1>")
-//         .addTo(map);
-// });
+map.on('click', function(e) {
+    if (e.originalEvent.shiftKey) return;
+    (new mapboxgl.Popup())
+        .setLngLat(map.unproject(e.point))
+        .setHTML("<h1>Hello World!</h1>")
+        .addTo(map);
+});
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;

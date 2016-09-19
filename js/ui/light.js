@@ -10,7 +10,7 @@ var parseColor = require('../style/parse_color');
  * @typedef {Object} LightOptions
  * @property {string} anchor Whether the light direction should be oriented based on the map or viewport. Options are `'map'`, `'viewport'`.
  * @property {Color} color The color to tint the extrusion lighting.
- * @property {Array<number>} direction The direction of the light source, in [r radial coordinate, θ azimuthal angle, φ polar angle], where r indicates the distance from the center of an object to its light, θ indicates the position of the light relative to 0º (like a clock), and φ indicates the height of the light source (from 0º, directly above, to 180º, directly below).
+ * @property {Array<number>} direction The direction of the light source, in [r radial coordinate, θ azimuthal angle, φ polar angle], where r indicates the distance from the center of an object to its light, θ indicates the position of the light relative to 0° (like a clock), and φ indicates the height of the light source (from 0°, directly above, to 180°, directly below).
  * @property {number} intensity The intensity with which to light extruded features.
  * @property {number} duration The lighting animation's duration, measured in milliseconds.
  * @property {Function} easing The lighting animation's easing function.
@@ -27,7 +27,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
      *
      * @returns {Object} light Light object as denoted in the style spec.
      */
-    getLighting: function() {
+    getLight: function() {
         return {
             anchor: this.getLightProperty('anchor'),
             color: this.getLightProperty('color'),
@@ -69,7 +69,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
      * @fires lightend
      * @returns {Map} `this`
      */
-    setLighting: function(options, eventData) {
+    setLight: function(options, eventData) {
         this.stop();
 
         options = util.extend({
@@ -153,7 +153,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
 
     _setLightAnchor: function(anchor) {
         if (anchor === 'map' || anchor === 'viewport') {
-            this.painter.setLighting({
+            this.painter.setLight({
                 anchor: anchor
             });
         } else throw new Error('light.anchor must be one of: `map`, `viewport`');
@@ -174,7 +174,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
                 throw new Error('light.color must be a valid premultiplied color array.');
         }
 
-        this.painter.setLighting(colorOpts);
+        this.painter.setLight(colorOpts);
 
         return this;
     },
@@ -189,7 +189,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
     },
 
     _sphericalToCartesian: function(r, azimuthal, polar) {
-        // We abstract "north"/"up" to be 0º when really this is 90º (π/2):
+        // We abstract "north"/"up" to be 0° when really this is 90° (π/2):
         // correct for that here
         azimuthal += 90;
 
@@ -216,7 +216,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
         // We persist both spherical and cartesian coordinates: cartesian for
         // the painter, spherical for the light APIs (since calculating in
         // reverse is more difficult)
-        this.painter.setLighting({
+        this.painter.setLight({
             direction: {
                 r: r,
                 a: a,
@@ -233,7 +233,7 @@ util.extend(Lighting.prototype, /** @lends Map.prototype */{
     _setLightIntensity: function(intensity) {
         var value = +intensity;
         if (!isNaN(value) && value >= 0 && value <= 1) {
-            this.painter.setLighting({
+            this.painter.setLight({
                 intensity: value
             });
         } else throw new Error('light.intensity must be a number between 0 and 1.');

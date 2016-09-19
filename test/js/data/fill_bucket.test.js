@@ -109,7 +109,7 @@ test('FillBucket - feature split across array groups', function (t) {
     t.equal(groups[1].layoutVertexArray.length, expectedLengths[1], 'group 1 length, layout');
 
     // check that every vertex's color values match the first vertex
-    var expected = [0, 0, 0, 255];
+    var expected = [0, 0, 255, 255];
     t.same(getVertexColor(0, 0), expected, 'first vertex');
     t.same(getVertexColor(0, expectedLengths[0] - 1), expected, 'last vertex of first group');
     t.same(getVertexColor(1, 0), expected, 'first vertex of second group');

@@ -32,7 +32,7 @@ test('light', function(t) {
         return map;
     }
 
-    t.test('#getLighting', function(t) {
+    t.test('#getLight', function(t) {
         var light = createLight({
             color: 'red',
             intensity: 0.5,
@@ -40,7 +40,7 @@ test('light', function(t) {
             anchor: 'map'
         }, function() {
             t.test('gets all light options', function(t) {
-                var currentLighting = light.getLighting();
+                var currentLighting = light.getLight();
 
                 t.deepEqual(currentLighting.color, 'red');
                 t.deepEqual(currentLighting.intensity, 0.5);
@@ -54,10 +54,10 @@ test('light', function(t) {
         });
     });
 
-    t.test('#setLighting', function(t) {
+    t.test('#setLight', function(t) {
         var lightA = createLight({}, function() {
             t.test('sets default options with no initialization arguments', function(t) {
-                var currentLighting = lightA.getLighting();
+                var currentLighting = lightA.getLight();
 
                 t.deepEqual(currentLighting.color, 'white');
                 t.deepEqual(currentLighting.intensity, 0.5);
@@ -77,7 +77,7 @@ test('light', function(t) {
                     lightB.off('lightend');
                 });
 
-                lightB.setLighting({ anchor: 'map' });
+                lightB.setLight({ anchor: 'map' });
             });
         });
 
@@ -90,7 +90,7 @@ test('light', function(t) {
                     lightC.off('lightend');
                 });
 
-                lightC.setLighting({ color: '#badbad', animate: false });
+                lightC.setLight({ color: '#badbad', animate: false });
             });
         });
 
@@ -103,7 +103,7 @@ test('light', function(t) {
                     lightD.off('lightend');
                 });
 
-                lightD.setLighting({ direction: [2, 45, 45], animate: false });
+                lightD.setLight({ direction: [2, 45, 45], animate: false });
             });
         });
 
@@ -116,7 +116,7 @@ test('light', function(t) {
                     lightE.off('lightend');
                 });
 
-                lightE.setLighting({ intensity: 0.2, animate: false });
+                lightE.setLight({ intensity: 0.2, animate: false });
             });
         });
 
@@ -128,7 +128,7 @@ test('light', function(t) {
                 lightF.on('lightstart', function(d) { started = d.data; })
                     .on('lightend', function(d) { ended = d.data; });
 
-                lightF.setLighting({ color: '#fabfab', animate: false }, eventData);
+                lightF.setLight({ color: '#fabfab', animate: false }, eventData);
                 t.equal(started, 'ok');
                 t.equal(ended, 'ok');
                 t.end();

@@ -108,7 +108,7 @@ Painter.prototype.setup = function() {
 /*
  * Set the lighting properties (used for extruded geometries).
  */
-Painter.prototype.setLighting = function(lightOptions) {
+Painter.prototype.setLight = function(lightOptions) {
     for (var key in lightOptions) {
         this.light[key] = lightOptions[key];
     }
