@@ -18,18 +18,13 @@ description: "Move the map to query viewable features in a vector tile layer and
     top: 0;
     bottom: 0;
     left: 0;
-}
-
-.map-overlay-inner {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     background-color: #fff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
-    border-radius: 3px;
     max-height: 100%;
     overflow: hidden;
 }
 
-.map-overlay-inner fieldset {
+.map-overlay fieldset {
     display: none;
     background: #ddd;
     border: none;
@@ -37,7 +32,7 @@ description: "Move the map to query viewable features in a vector tile layer and
     margin: 0;
 }
 
-.map-overlay-inner input {
+.map-overlay input {
     display: block;
     border: none;
     width: 100%;
@@ -46,28 +41,28 @@ description: "Move the map to query viewable features in a vector tile layer and
     margin: 0;
 }
 
-.map-overlay-inner .listing {
+.map-overlay .listing {
     overflow: auto;
     max-height: 100%;
 }
 
-.map-overlay-inner .listing > * {
+.map-overlay .listing > * {
     display: block;
     padding: 5px 10px;
     margin: 0;
 }
 
-.map-overlay-inner .listing a {
+.map-overlay .listing a {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     color: #404;
     text-decoration: none;
 }
 
-.map-overlay-inner .listing a:last-child {
+.map-overlay .listing a:last-child {
     border: none;
 }
 
-.map-overlay-inner .listing a:hover {
+.map-overlay .listing a:hover {
     background: #f0f0f0;
 }
 </style>
@@ -75,12 +70,10 @@ description: "Move the map to query viewable features in a vector tile layer and
 <div id='map'></div>
 
 <div class='map-overlay'>
-    <div class='map-overlay-inner'>
-        <fieldset>
-            <input id='feature-filter' type='text' placeholder='Filter results by name' />
-        </fieldset>
-        <div id='feature-listing' class='listing'></div>
-    </div>
+    <fieldset>
+        <input id='feature-filter' type='text' placeholder='Filter results by name' />
+    </fieldset>
+    <div id='feature-listing' class='listing'></div>
 </div>
 
 <script>
@@ -183,8 +176,7 @@ map.on('load', function() {
         var features = map.queryRenderedFeatures({layers:['airport']});
 
         if (features) {
-            var uniqueFeatures = getUniqueFeatures(features, "abbrev");
-
+            var uniqueFeatures = getUniqueFeatures(features, "iata_code");
             // Populate features for the listing overlay.
             renderListings(uniqueFeatures);
 
