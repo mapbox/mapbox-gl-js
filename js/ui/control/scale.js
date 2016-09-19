@@ -13,11 +13,13 @@ module.exports = Scale;
  * @param {Object} [options]
  * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
- * @param {string} [option.unit='Imperial'] Unit of the distance (Imperial / Metric).
+ * @param {string} [option.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
  * @example
- * map.addControl(new mapboxgl.Scale({position: 'top-left'})); // position is optional
- * map.addControl(new mapboxgl.Scale({maxWidth: 80})); //maxWidth is optional
- * map.addControl(new mapboxgl.Scale({unit:'Imperial'})); //unit is optional
+ * map.addControl(new mapboxgl.Scale({
+ *     position: 'top-left',
+ *     maxWidth: 80,
+ *     unit: 'imperial'
+ * }));
  */
 function Scale(options) {
     util.setOptions(this, options);
@@ -54,7 +56,7 @@ function updateScale(map, scale, options) {
     // The real distance corresponding to 100px scale length is rounded off to
     // near pretty number and the scale length for the same is found out.
     // Default unit of the scale is based on User's locale.
-    if (options && options.unit === 'Imperial' || (!options.unit && window.navigator.language === 'en-US')) {
+    if (options && options.unit === 'imperial') {
         var maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
             var maxMiles = maxFeet / 5280;
