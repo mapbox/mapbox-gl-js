@@ -32,15 +32,14 @@
             if (req['!']) {
               return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
             } else {
-              return '<em>Requires</em> <var>' + _.pairs(req)[0][0] + ' = ' + _.pairs(req)[0][1] + '</var>.';
+              return '<em>Requires</em> <var>' + _.toPairs(req)[0][0] + ' = ' + _.toPairs(req)[0][1] + '</var>.';
             }
           }
         }).join(' ') %>
     </span><% } %>
   </div>
   <% if (prop.doc) { %>
-  {% capture prop_doc %}<%= prop.doc %>{% endcapture %}
-  <div class='space-bottom1'>{{prop_doc | markdownify}}</div>
+  <div class='space-bottom1'><%= md(prop.doc) %></div>
   <% } %>
   <% if (prop.example) { %>
   <div class='space-bottom1 clearfix'>
