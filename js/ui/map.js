@@ -471,11 +471,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * across the antimeridian at low zoom levels) are returned only once (though subject to the following caveat).
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
-     * results when they span multiple tiles. For example, suppose
-     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
-     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
-     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
+     * geometries may be split or duplicated across tile boundaries and, as a result, features may appear multiple
+     * times in query results. For example, suppose there is a highway running through the bounding rectangle of a query.
+     * The results of the query will be those parts of the highway that lie within the map tiles covering the bounding
+     * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
+     * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
+     * tiles due to tile buffering.
      *
      * @example
      * // Find all features at a point
@@ -584,11 +585,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * visible viewport.
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
-     * results when they span multiple tiles. For example, suppose
-     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
-     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
-     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
+     * geometries may be split or duplicated across tile boundaries and, as a result, features may appear multiple
+     * times in query results. For example, suppose there is a highway running through the bounding rectangle of a query.
+     * The results of the query will be those parts of the highway that lie within the map tiles covering the bounding
+     * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
+     * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
+     * tiles due to tile buffering.
      */
     querySourceFeatures: function(sourceID, params) {
         return this.style.querySourceFeatures(sourceID, params);
