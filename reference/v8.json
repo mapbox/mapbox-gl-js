@@ -609,7 +609,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {}
+        "`auto` value": {}
       }
     },
     "icon-size": {
@@ -806,7 +806,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {}
+        "`auto` value": {}
       }
     },
     "text-rotation-alignment": {
@@ -830,7 +830,7 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "auto": {}
+        "`auto` value": {}
       }
     },
     "text-field": {
