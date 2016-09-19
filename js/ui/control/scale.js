@@ -13,9 +13,11 @@ module.exports = Scale;
  * @param {Object} [options]
  * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
+ * @param {string} [option.unit='Imperial'] Unit of the distance (Imperial / Metric).
  * @example
  * map.addControl(new mapboxgl.Scale({position: 'top-left'})); // position is optional
  * map.addControl(new mapboxgl.Scale({maxWidth: 80})); //maxWidth is optional
+ * map.addControl(new mapboxgl.Scale({unit:'Imperial'})); //unit is optional
  */
 function Scale(options) {
     util.setOptions(this, options);
@@ -49,14 +51,33 @@ function updateScale(map, scale, options) {
 
     var y = map._container.clientHeight / 2;
     var maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
-
     // The real distance corresponding to 100px scale length is rounded off to
     // near pretty number and the scale length for the same is found out.
-    var meters = getRoundNum(maxMeters);
-    var ratio = meters / maxMeters;
-    scale.style.width = maxWidth * ratio + 'px';
-    scale.innerHTML = meters < 1000 ? meters + ' m' : (meters / 1000) + ' km';
+    // Default unit of the scale is based on User's locale.
+    if (options && options.unit === 'Imperial' || (!options.unit && window.navigator.language === 'en-US')) {
+        var maxFeet = 3.2808 * maxMeters;
+        if (maxFeet > 5280) {
+            var maxMiles = maxFeet / 5280;
+            setScale(scale, maxWidth, maxMiles, 'mi');
+        } else {
+            setScale(scale, maxWidth, maxFeet, 'ft');
+        }
+    } else {
+        setScale(scale, maxWidth, maxMeters, 'm');
+    }
+}
 
+function setScale(scale, maxWidth, maxDistance, unit) {
+    var distance = getRoundNum(maxDistance);
+    var ratio = distance / maxDistance;
+
+    if (unit === 'm' && distance >= 1000) {
+        distance = distance / 1000;
+        unit = 'km';
+    }
+
+    scale.style.width = maxWidth * ratio + 'px';
+    scale.innerHTML = distance + unit;
 }
 
 function getDistance(latlng1, latlng2) {
