@@ -318,9 +318,17 @@ SourceCache.prototype = util.inherit(Evented, {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = this.used ? transform.coveringTiles(this._source) : [];
-        for (i = 0; i < required.length; i++) {
-            coord = required[i];
+        var visibleCoords;
+        if (!this.used) {
+            visibleCoords = [];
+        } else if (this._source.coord) {
+            visibleCoords = [this._source.coord];
+        } else {
+            visibleCoords = transform.coveringTiles(this._source);
+        }
+
+        for (i = 0; i < visibleCoords.length; i++) {
+            coord = visibleCoords[i];
             tile = this.addTile(coord);
 
             retain[coord.id] = true;
