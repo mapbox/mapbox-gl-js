@@ -5,13 +5,19 @@ title: "Filter features within map view"
 description: "Move the map to query viewable features in a vector tile layer and filter by typing in an input"
 ---
 <style>
+#map {
+    position:absolute;
+    left:25%;
+    top:0;
+    bottom:0;
+    width: 75%;
+}
 .map-overlay {
     position: absolute;
     width: 25%;
     top: 0;
     bottom: 0;
     left: 0;
-    padding: 10px;
 }
 
 .map-overlay-inner {
@@ -149,29 +155,35 @@ map.on('load', function() {
         "type": "symbol",
         "layout": {
             "icon-image": "airport-15",
-            "icon-padding": 0
-        },
-        "filter": ["in", "abbrev", ""]
+            "icon-padding": 0,
+            "icon-allow-overlap":true
+        }
     });
     map.on('moveend', function() {
         var features = map.queryRenderedFeatures({layers:['airport']});
 
         if (features) {
-            console.log(features);
+            var renderedAbbrevs = {};
+            // It is possible for the same feature to be included twice in the output of
+            // `map.queryRenderedFeatures()` if features span tile boundaries, so we
+            // filter them out by a unique key
+            var uniqueFeatures = features.filter(function(f) {
+                if (renderedAbbrevs[f.properties.abbrev]) {
+                    return false;
+                } else {
+                    renderedAbbrevs[f.properties.abbrev] = true;
+                    return true;
+                }
+            });
             // Populate features for the listing overlay.
-            renderListings(features);
+            renderListings(uniqueFeatures);
 
             // Clear the input container
             filterEl.value = '';
 
             // Store the current features in sn `airports` variable to
             // later use for filtering on `keyup`.
-            airports = features;
-
-            // Set the filter to populate features into the layer.
-            map.setFilter('airport', ['in', 'abbrev'].concat(features.map(function(feature) {
-                return feature.properties.abbrev;
-            })));
+            airports = uniqueFeatures;
         }
     });
 
