@@ -1,3 +1,32 @@
+## 0.24.0 (September 19 2016)
+
+#### New Features & Improvements
+
+ * Allow querystrings in `mapbox://` URLs #3113
+ * Allow "drag rotate" interaction to control pitch #3105
+ * Improve performance by decreasing `Worker` script `Blob` size #3158
+ * Improve vector tile performance #3067
+ * Decrease size of distributed library by removing `package.json` #3174
+ * Add support for new lines in `text-field` #3179
+ * Make keyboard navigation smoother #3190
+ * Make mouse wheel zooming smoother #3189
+ * Add better error message when calling `Map#queryRenderedFeatures` on non-existant layer #3196
+ * Add support for imperial units on `Scale` control #3160
+ * Add map's pitch to URL hash #3218
+
+#### Bugfixes
+
+ * Fix exception thrown when using box zoom handler #3078
+ * Ensure style filters cannot be mutated by reference #3093
+ * Fix exceptions thrown when opening marker-bound popup by click #3104
+ * Fix bug causing fills with transparent colors and patterns to not render #3107
+ * Fix order of latitudes in `Map#getBounds` #3081
+ * Fix incorrect evaluation of zoom-and-property functions #2827 #3155
+ * Fix incorrect evaluation of property functions #2828 #3155
+ * Fix bug causing garbled text rendering when multiple maps are rendered on the page #3086
+ * Fix rendering defects caused by `Map#setFilter` and map rotation on iOS 10 #3207
+ * Fix bug causing image and video sources to dissapear when zooming in #3010
+
 ## 0.23.0 (August 25 2016)
 
 #### New Features & Improvements
