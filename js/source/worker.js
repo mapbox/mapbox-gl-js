@@ -6,6 +6,7 @@ var util = require('../util/util');
 
 var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
+var featureFilter = require('feature-filter');
 
 module.exports = function createWorker(self) {
     return new Worker(self);
@@ -62,6 +63,7 @@ util.extend(Worker.prototype, {
                 serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
             layers[styleLayer.id] = styleLayer;
         }
 
@@ -88,12 +90,14 @@ util.extend(Worker.prototype, {
 
         function updateLayer(layer) {
             var refLayer = layers[layer.ref];
-            if (layers[layer.id]) {
-                layers[layer.id].set(layer, refLayer);
+            var styleLayer = layers[layer.id];
+            if (styleLayer) {
+                styleLayer.set(layer, refLayer);
             } else {
-                layers[layer.id] = StyleLayer.create(layer, refLayer);
+                styleLayer = layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            layers[layer.id].updatePaintTransitions({}, {transition: false});
+            styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
         }
 
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);

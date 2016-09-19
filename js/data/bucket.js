@@ -1,6 +1,5 @@
 'use strict';
 
-var featureFilter = require('feature-filter');
 var ArrayGroup = require('./array_group');
 var BufferGroup = require('./buffer_group');
 var util = require('../util/util');
@@ -231,12 +230,6 @@ Bucket.prototype.serialize = function() {
             return layer.id;
         })
     };
-};
-
-Bucket.prototype.createFilter = function() {
-    if (!this.filter) {
-        this.filter = featureFilter(this.layer.filter);
-    }
 };
 
 var FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
