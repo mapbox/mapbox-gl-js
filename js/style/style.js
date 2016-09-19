@@ -8,7 +8,7 @@ var SpriteAtlas = require('../symbol/sprite_atlas');
 var LineAtlas = require('../render/line_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
-var normalizeURL = require('../util/mapbox').normalizeStyleURL;
+var mapbox = require('../util/mapbox');
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
@@ -22,7 +22,7 @@ var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop) {
+function Style(stylesheet, animationLoop, options) {
     this.animationLoop = animationLoop || new AnimationLoop();
     this.dispatcher = new Dispatcher(getWorkerPool(), this);
     this.spriteAtlas = new SpriteAtlas(1024, 1024);
@@ -43,13 +43,17 @@ function Style(stylesheet, animationLoop) {
 
     this._resetUpdates();
 
+    options = util.extend({
+        validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
+    }, options);
+
     var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
         }
 
-        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
+        if (options.validate && validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
 
         this._loaded = true;
         this.stylesheet = stylesheet;
@@ -58,7 +62,7 @@ function Style(stylesheet, animationLoop) {
 
         var sources = stylesheet.sources;
         for (var id in sources) {
-            this.addSource(id, sources[id]);
+            this.addSource(id, sources[id], options);
         }
 
         if (stylesheet.sprite) {
@@ -72,7 +76,7 @@ function Style(stylesheet, animationLoop) {
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
-        ajax.getJSON(normalizeURL(stylesheet), stylesheetLoaded);
+        ajax.getJSON(mapbox.normalizeStyleURL(stylesheet), stylesheetLoaded);
     } else {
         browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
@@ -318,17 +322,20 @@ Style.prototype = util.inherit(Evented, {
         };
     },
 
-    addSource: function(id, source) {
+    addSource: function(id, source, options) {
         this._checkLoaded();
+
         if (this.sources[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
+
         if (!source.type) {
             throw new Error('The type property must be defined, but the only the following properties were given: ' + Object.keys(source) + '.');
         }
+
         var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
         var shouldValidate = builtIns.indexOf(source.type) >= 0;
-        if (shouldValidate && this._validate(validateStyle.source, 'sources.' + id, source)) return this;
+        if (shouldValidate && this._validate(validateStyle.source, 'sources.' + id, source, null, options)) return this;
 
         source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
@@ -400,13 +407,13 @@ Style.prototype = util.inherit(Evented, {
      * @returns {Style} `this`
      * @private
      */
-    addLayer: function(layer, before) {
+    addLayer: function(layer, before, options) {
         this._checkLoaded();
 
         if (!(layer instanceof StyleLayer)) {
             // this layer is not in the style.layers array, so we pass an impossible array index
             if (this._validate(validateStyle.layer,
-                    'layers.' + layer.id, layer, {arrayIndex: -1})) return this;
+                    'layers.' + layer.id, layer, {arrayIndex: -1}, options)) return this;
 
             var refLayer = layer.ref && this.getLayer(layer.ref);
             layer = StyleLayer.create(layer, refLayer);
@@ -691,7 +698,10 @@ Style.prototype = util.inherit(Evented, {
         }, callback);
     },
 
-    _validate: function(validate, key, value, props) {
+    _validate: function(validate, key, value, props, options) {
+        if (options && options.validate === false) {
+            return false;
+        }
         return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
             key: key,
             style: this.serialize(),

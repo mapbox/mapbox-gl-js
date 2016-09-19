@@ -42,6 +42,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         this._layoutFunctions = {}; // {[propertyName]: Boolean}
 
         var paintName, layoutName;
+        var options = {validate: false};
 
         // Resolve paint declarations
         for (var key in layer) {
@@ -49,7 +50,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (match) {
                 var klass = match[1] || '';
                 for (paintName in layer[key]) {
-                    this.setPaintProperty(paintName, layer[key][paintName], klass);
+                    this.setPaintProperty(paintName, layer[key][paintName], klass, options);
                 }
             }
         }
@@ -59,7 +60,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             this._layoutDeclarations = refLayer._layoutDeclarations;
         } else {
             for (layoutName in layer.layout) {
-                this.setLayoutProperty(layoutName, layer.layout[layoutName]);
+                this.setLayoutProperty(layoutName, layer.layout[layoutName], options);
             }
         }
 
@@ -72,13 +73,13 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
-    setLayoutProperty: function(name, value) {
+    setLayoutProperty: function(name, value, options) {
 
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
             var key = 'layers.' + this.id + '.layout.' + name;
-            if (this._handleErrors(validateStyle.layoutProperty, key, name, value)) return;
+            if (this._validate(validateStyle.layoutProperty, key, name, value, options)) return;
             this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
         this._updateLayoutValue(name);
@@ -102,7 +103,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
-    setPaintProperty: function(name, value, klass) {
+    setPaintProperty: function(name, value, klass, options) {
         var validateStyleKey = 'layers.' + this.id + (klass ? '["paint.' + klass + '"].' : '.paint.') + name;
 
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
@@ -112,7 +113,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (value === null || value === undefined) {
                 delete this._paintTransitionOptions[klass || ''][name];
             } else {
-                if (this._handleErrors(validateStyle.paintProperty, validateStyleKey, name, value)) return;
+                if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
                 this._paintTransitionOptions[klass || ''][name] = value;
             }
         } else {
@@ -122,7 +123,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             if (value === null || value === undefined) {
                 delete this._paintDeclarations[klass || ''][name];
             } else {
-                if (this._handleErrors(validateStyle.paintProperty, validateStyleKey, name, value)) return;
+                if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
                 this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value);
             }
         }
@@ -315,7 +316,10 @@ StyleLayer.prototype = util.inherit(Evented, {
         }
     },
 
-    _handleErrors: function(validate, key, name, value) {
+    _validate: function(validate, key, name, value, options) {
+        if (options && options.validate === false) {
+            return false;
+        }
         return validateStyle.emitErrors(this, validate.call(validateStyle, {
             key: key,
             layerType: this.type,
