@@ -82,9 +82,11 @@ LngLat.prototype.toString = function () {
 LngLat.convert = function (input) {
     if (input instanceof LngLat) {
         return input;
-    }
-    if (Array.isArray(input)) {
+    } else if (input && input.lng && input.lat) {
+        return input;
+    } else if (Array.isArray(input) && input.length === 2) {
         return new LngLat(input[0], input[1]);
+    } else {
+        throw new Error("`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]");
     }
-    return input;
 };
