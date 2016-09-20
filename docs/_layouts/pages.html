@@ -11,37 +11,32 @@ examples:
     level: h4
     class: icon paint quiet
   - name: Add a layer
-    id: start-data
+    id: start-layer
     level: h4
-    class: icon tileset quiet
-  - name: Dynamic Styling
-    id: data-visualization
+    class: icon layers quiet
+  - name: Sources
+    id: source
     level: h3
-  - name: Style points
-    id: point
-    level: h4
-    class: icon marker quiet
-  - name: Style lines
-    id: line
-    level: h4
-    class: icon line quiet
-  - name: Style polygons
-    id: polygon
-    level: h4
-    class: icon polygon quiet 
-  - name: User Interaction
+  - name: Layers
+    id: layer
+    level: h3
+  - name: Interaction handlers
     id: user-interaction
     level: h3
   - name: Popups
     id: popup
     level: h4
-    class: icon contact quiet
+    class: icon tooltip quiet
   - name: Filter
     id: filter
     level: h4
-    class: icon layers quiet
-  - name: Animations
+    class: icon inspect quiet
+  - name: Move around the map
     id: animation
+    level: h4
+    class: icon position quiet
+  - name: Controls and overlays
+    id: controls-and-overlays
     level: h3
   - name: Plugins
     level: h3
@@ -57,17 +52,11 @@ examples:
     id: gl-draw
     level: h4
     class: icon pencil quiet
-  - name: Change map options
-    id: change-option
-    level: h3
-  - name: Misc
-    id: misc
-    level: h3
 ---
 
 <link href='{{site.url}}/css/docs.css' rel='stylesheet' />
 <link href='{{site.baseurl}}/site.css' rel='stylesheet' />
-<script src='{{site.baseurl}}/js/site.js'></script>
+
 
 <style>
   h3 {
@@ -96,7 +85,7 @@ examples:
           {% for example in layout.examples %}
           <div class='space-bottom1'>
             <{{example.level}} class='heading {{example.class}}'>{{example.name}}</{{example.level}}>
-            {% for listing in site.tags[example.id] order:ascending %}
+            {% for listing in site.tags[example.id] %}
               <a href='{{site.baseurl}}{{listing.url}}' class='block small truncate example-names {% if listing.title == page.title %} active{% endif %}'>{{listing.title}}</a>
             {% endfor %}
           </div>
@@ -152,53 +141,4 @@ examples:
   </div>
 </div>
 
-<script>
-
-  var filterInput = document.getElementById('filter-input');
-  var headings = document.getElementsByClassName('heading');
-  var tocElements = document.getElementsByClassName('example-names');
-  
-
-  filterInput.addEventListener('keyup', function (e) {
-    var value = this.value.toLowerCase();
-    var element;
-
-    for (i=0; i < headings.length; i++) {
-      if (!value || value == undefined || value == "" || value.length == 0) {
-        headings[i].classList.remove('display-none');
-      } else { 
-        headings[i].classList.add('display-none');
-      }
-    }
-
-
- 
-    for (i=0; i < tocElements.length; i++) {
-      element = tocElements[i];
-    }
-
-    var match = function () {
-      return true;
-    };
-
-    var value = this.value.toLowerCase();
-
-    if (!value.match(/^\s*$/)) {
-      match = function (element) {
-        return element.innerHTML.toLowerCase().indexOf(value) !== -1;
-      };
-    }
-
-    for (i = 0; i < tocElements.length; i++) {
-      element = tocElements[i];
-      children = Array.from(element.getElementsByTagName('li'));
-      if (match(element) || children.some(match)) {
-        element.classList.remove('display-none');
-      } else {
-        element.classList.add('display-none');
-      }
-    }
-    
-
-  }); 
-</script>
+<script src='{{site.baseurl}}/js/site.js'></script>
