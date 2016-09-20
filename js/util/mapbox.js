@@ -27,6 +27,10 @@ function makeAPIURL(path, query, accessToken) {
     return url;
 }
 
+module.exports.isMapboxURL = function(url) {
+    return URL.parse(url).protocol === 'mapbox:';
+};
+
 module.exports.normalizeStyleURL = function(url, accessToken) {
     var urlObject = URL.parse(url);
 

@@ -75,7 +75,46 @@ test('Style', function(t) {
         });
     });
 
-    t.test('throws on non-existant vector source layer', function(t) {
+    t.test('validates the style by default', function(t) {
+        var style = new Style(createStyleJSON({version: 'invalid'}));
+
+        style.on('error', function(event) {
+            t.ok(event.error);
+            t.match(event.error.message, /version/);
+            t.end();
+        });
+    });
+
+    t.test('skips validation for mapbox:// styles', function(t) {
+        var Style = proxyquire('../../../js/style/style', {
+            '../util/mapbox': {
+                isMapboxURL: function(url) {
+                    t.equal(url, 'mapbox://styles/test/test');
+                    return true;
+                },
+                normalizeStyleURL: function(url) {
+                    t.equal(url, 'mapbox://styles/test/test');
+                    return url;
+                }
+            }
+        });
+
+        window.useFakeXMLHttpRequest();
+
+        new Style('mapbox://styles/test/test')
+            .on('error', function() {
+                t.fail();
+            })
+            .on('load', function() {
+                window.restore();
+                t.end();
+            });
+
+        window.server.respondWith('mapbox://styles/test/test', JSON.stringify(createStyleJSON({version: 'invalid'})));
+        window.server.respond();
+    });
+
+    t.test('emits an error on non-existant vector source layer', function(t) {
         var style = new Style(createStyleJSON({
             sources: {
                 '-source-id-': { type: "vector", tiles: [] }
