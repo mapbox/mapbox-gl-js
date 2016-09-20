@@ -823,7 +823,7 @@
         "auto"
       ],
       "default": "auto",
-      "doc": "Orientation of text when map is rotated. Aligns text to the plane of the viewport when set to `viewport` or the plane of the map when set to `map`. Selecting `auto` defaults to the plane of the `map` for line placement and the `viewport` for symbol placement.",
+      "doc": "In combination with `symbol-placement`, determines the rotation behavior of the individual glyphs forming the text. The value `viewport` produces glyphs whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`. When `symbol-placement` is set to `point`, the value `map` produces glyphs whose x-axes are aligned east-west, and the value `auto` is equivalent to `viewport`. When `symbol-placement` is set to `line`, the value `map` produces glyphs whose x-axes are aligned with the line at the point where each glyph is placed, and the value `auto` is equivalent to `map`.",
       "requires": [
         "text-field"
       ],
