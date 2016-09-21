@@ -19,9 +19,9 @@ var Evented = {
      * @returns {Object} `this`
      */
     on: function(type, listener) {
-        this._events = this._events || {};
-        this._events[type] = this._events[type] || [];
-        this._events[type].push(listener);
+        this._listeners = this._listeners || {};
+        this._listeners[type] = this._listeners[type] || [];
+        this._listeners[type].push(listener);
 
         return this;
     },
@@ -38,22 +38,22 @@ var Evented = {
     off: function(type, listener) {
         if (!type) {
             // clear all listeners if no arguments specified
-            delete this._events;
+            delete this._listeners;
             return this;
         }
 
         if (!this.listens(type)) return this;
 
         if (listener) {
-            var idx = this._events[type].indexOf(listener);
-            if (idx >= 0) {
-                this._events[type].splice(idx, 1);
+            var index = this._listeners[type].indexOf(listener);
+            if (index >= 0) {
+                this._listeners[type].splice(index, 1);
             }
-            if (!this._events[type].length) {
-                delete this._events[type];
+            if (!this._listeners[type].length) {
+                delete this._listeners[type];
             }
         } else {
-            delete this._events[type];
+            delete this._listeners[type];
         }
 
         return this;
@@ -69,11 +69,11 @@ var Evented = {
      * @returns {Object} `this`
      */
     once: function(type, listener) {
-        var wrapper = function(data) {
-            this.off(type, wrapper);
+        var wrappedListener = function(data) {
+            this.off(type, wrappedListener);
             listener.call(this, data);
         }.bind(this);
-        this.on(type, wrapper);
+        this.on(type, wrappedListener);
         return this;
     },
 
@@ -98,7 +98,7 @@ var Evented = {
         util.extend(data, {type: type, target: this});
 
         // make sure adding/removing listeners inside other listeners won't cause infinite loop
-        var listeners = this._events[type].slice();
+        var listeners = this._listeners[type].slice();
 
         for (var i = 0; i < listeners.length; i++) {
             listeners[i].call(this, data);
@@ -114,7 +114,7 @@ var Evented = {
      * @returns {boolean} `true` if there is at least one registered listener for specified event type.
      */
     listens: function(type) {
-        return !!(this._events && this._events[type]);
+        return !!(this._listeners && this._listeners[type]);
     }
 };
 
