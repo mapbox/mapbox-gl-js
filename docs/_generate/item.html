@@ -68,29 +68,13 @@
       </tr>
       </thead>
       <tbody>
-      <tr>
-        <td>Base support</td>
-        <td class='center'><%- support('basic', 'js') %></td>
-        <td class='center'><%- support('basic', 'ios') %></td>
-        <td class='center'><%- support('basic', 'android') %></td>
-      </tr>
-      <% if (prop['property-function']) { %>
-      <tr>
-        <td>Data-driven styling</td>
-        <td class='center'><%- support('property-function', 'js') %></td>
-        <td class='center'><%- support('property-function', 'ios') %></td>
-        <td class='center'><%- support('property-function', 'android') %></td>
-      </tr>
-      <% } %>
       <% _.each(Object.keys(prop['sdk-support']), function(key) { %>
-      <% if (['basic', 'property-function'].indexOf(key) < 0) { %>
       <tr>
         <td><%= md(key) %></td>
         <td class='center'><%- support(key, 'js') %></td>
         <td class='center'><%- support(key, 'ios') %></td>
         <td class='center'><%- support(key, 'android') %></td>
       </tr>
-      <% } %>
       <% }); %>
       </tbody>
     </table>

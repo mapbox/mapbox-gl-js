@@ -331,7 +331,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -351,7 +351,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -371,7 +371,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -393,7 +393,7 @@
       "default": "butt",
       "doc": "The display of line endings.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -413,7 +413,7 @@
       "default": "miter",
       "doc": "The display of lines when joining.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -433,7 +433,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -453,7 +453,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -471,7 +471,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -492,7 +492,7 @@
       "default": "point",
       "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -514,7 +514,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -529,7 +529,7 @@
       "default": false,
       "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -547,7 +547,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -565,7 +565,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -584,7 +584,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -607,7 +607,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -627,7 +627,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -652,7 +652,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.21.0"
         }
       }
@@ -678,7 +678,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.21.0"
         }
       }
@@ -691,7 +691,7 @@
       "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -711,12 +711,12 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.21.0"
         }
       }
@@ -734,7 +734,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -758,7 +758,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -781,7 +781,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -804,7 +804,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.21.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -828,7 +828,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -845,7 +845,7 @@
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -864,7 +864,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -884,7 +884,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -904,7 +904,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -923,7 +923,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -942,7 +942,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -965,7 +965,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -994,7 +994,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1016,7 +1016,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1036,7 +1036,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1056,7 +1056,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1080,7 +1080,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1103,7 +1103,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1127,7 +1127,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1145,7 +1145,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1163,7 +1163,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1182,7 +1182,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1200,7 +1200,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1220,7 +1220,7 @@
       "default": "visible",
       "doc": "The display of this layer. `none` hides this layer.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1329,7 +1329,7 @@
       "default": true,
       "doc": "Whether or not the fill should be antialiased.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1347,12 +1347,12 @@
       "doc": "The opacity of the entire fill layer. In contrast to the fill-color, this value will also affect the 1px stroke around the fill, if the stroke is used.",
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.21.0"
         }
       }
@@ -1371,12 +1371,12 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.19.0"
         }
       }
@@ -1397,12 +1397,12 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.19.0"
         }
       }
@@ -1422,7 +1422,7 @@
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1444,7 +1444,7 @@
         "fill-translate"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1459,7 +1459,7 @@
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1479,7 +1479,7 @@
       "maximum": 1,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1500,12 +1500,12 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.23.0"
         }
       }
@@ -1525,7 +1525,7 @@
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1547,7 +1547,7 @@
         "line-translate"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1565,7 +1565,7 @@
       "units": "pixels",
       "doc": "Stroke thickness.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1583,7 +1583,7 @@
       "transition": true,
       "units": "pixels",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1600,7 +1600,7 @@
       "transition": true,
       "units": "pixels",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.12.1",
           "ios": "3.1.0",
           "android": "3.0.0"
@@ -1618,7 +1618,7 @@
       "units": "pixels",
       "doc": "Blur applied to the line, in pixels.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1641,7 +1641,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1656,7 +1656,7 @@
       "transition": true,
       "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512).",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1676,12 +1676,12 @@
       "units": "pixels",
       "doc": "Circle radius.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.18.0"
         }
       }
@@ -1695,12 +1695,12 @@
       "property-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.18.0"
         }
       }
@@ -1714,12 +1714,12 @@
       "property-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.20.0"
         }
       }
@@ -1735,12 +1735,12 @@
       "property-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "property-function": {
+        "data-driven styling": {
           "js": "0.20.0"
         }
       }
@@ -1757,7 +1757,7 @@
       "units": "pixels",
       "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1779,7 +1779,7 @@
         "circle-translate"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1798,7 +1798,7 @@
       "default": "map",
       "doc": "Controls the scaling behavior of the circle when the map is pitched. The value `map` scales circles according to their apparent distance to the camera. The value `viewport` results in no pitch-related scaling.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.21.0"
         }
       }
@@ -1819,7 +1819,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1838,7 +1838,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1857,7 +1857,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1878,7 +1878,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1899,7 +1899,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1924,7 +1924,7 @@
         "icon-image"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1947,7 +1947,7 @@
         "icon-translate"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1968,7 +1968,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -1987,7 +1987,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2006,7 +2006,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2027,7 +2027,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2048,7 +2048,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2073,7 +2073,7 @@
         "text-field"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2096,7 +2096,7 @@
         "text-translate"
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2115,7 +2115,7 @@
       "zoom-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2132,7 +2132,7 @@
       "units": "degrees",
       "doc": "Rotates hues around the color wheel.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2149,7 +2149,7 @@
       "maximum": 1,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2166,7 +2166,7 @@
       "maximum": 1,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2183,7 +2183,7 @@
       "zoom-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2200,7 +2200,7 @@
       "zoom-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2217,7 +2217,7 @@
       "units": "milliseconds",
       "doc": "Fade duration when a new tile is added.",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2239,7 +2239,7 @@
         }
       ],
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2253,7 +2253,7 @@
       "transition": true,
       "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
@@ -2270,7 +2270,7 @@
       "zoom-function": true,
       "transition": true,
       "sdk-support": {
-        "basic": {
+        "basic functionality": {
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
