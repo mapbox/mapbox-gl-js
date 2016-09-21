@@ -23,6 +23,8 @@ test('LngLat', function(t) {
 
     t.test('#convert', function(t) {
         t.ok(LngLat.convert([0, 10]) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lng: 0, lat: 10}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lng: 0, lat: 0}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert(new LngLat(0, 0)) instanceof LngLat, 'convert creates a LngLat instance');
         t.throws(function() {
             LngLat.convert(0, 10);
