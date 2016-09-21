@@ -2,56 +2,28 @@
 layout: default
 class: fill-light
 options: full
-examples: 
-  - name: Getting started
-    id: get-started
-    level: h3
-  - name: Add a style
-    id: start-styles
-    level: h4
-    class: icon paint quiet
-  - name: Add a layer
-    id: start-layer
-    level: h4
-    class: icon layers quiet
-  - name: Sources
-    id: source
+examples:
+  - name: Styles
+    id: styles
     level: h3
   - name: Layers
-    id: layer
+    id: layers
     level: h3
-  - name: Interaction handlers
+  - name: Sources
+    id: sources
+    level: h3
+  - name: User interaction
     id: user-interaction
     level: h3
-  - name: Popups
-    id: popup
-    level: h4
-    class: icon tooltip quiet
-  - name: Filter
-    id: filter
-    level: h4
-    class: icon inspect quiet
-  - name: Move around the map
-    id: animation
-    level: h4
-    class: icon position quiet
+  - name: Camera
+    id: camera
+    level: h3
   - name: Controls and overlays
     id: controls-and-overlays
     level: h3
-  - name: Plugins
+  - name: Browser support
     level: h3
-  - name: Geocoding
-    id: mapbox-geocoding
-    level: h4
-    class: icon search quiet
-  - name: Directions
-    id: mapbox-directions
-    level: h4
-    class: icon street quiet
-  - name: GL Draw
-    id: gl-draw
-    level: h4
-    class: icon pencil quiet
+    id: browser-support
 ---
 
 <link href='{{site.url}}/css/docs.css' rel='stylesheet' />
@@ -85,7 +57,7 @@ examples:
           {% for example in layout.examples %}
           <div class='space-bottom1'>
             <{{example.level}} class='heading {{example.class}}'>{{example.name}}</{{example.level}}>
-            {% for listing in site.tags[example.id] %}
+            {% for listing in site.tags[example.id] reversed %}
               <a href='{{site.baseurl}}{{listing.url}}' class='block small truncate example-names {% if listing.title == page.title %} active{% endif %}'>{{listing.title}}</a>
             {% endfor %}
           </div>
