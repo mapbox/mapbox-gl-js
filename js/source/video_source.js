@@ -50,7 +50,7 @@ function VideoSource(id, options) {
     this.coordinates = options.coordinates;
 
     ajax.getVideo(options.urls, function(err, video) {
-        if (err) return this.fire('error', {error: err});
+        if (err) return this.fire('source.error', {error: err});
 
         this.video = video;
         this.video.loop = true;
@@ -73,7 +73,7 @@ function VideoSource(id, options) {
             this.setCoordinates(options.coordinates);
         }
 
-        this.fire('load');
+        this.fire('source.load');
     }.bind(this));
 }
 
@@ -135,7 +135,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('change');
+        this.fire('source.change');
         return this;
     },
 

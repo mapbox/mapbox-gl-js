@@ -30,7 +30,7 @@ function SourceCache(id, options, dispatcher) {
     var source = this._source = Source.create(id, options, dispatcher);
     source.forwardEvents(this);
 
-    this.on('load', function() {
+    this.on('source.load', function() {
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
 
         this._sourceLoaded = true;
@@ -46,11 +46,11 @@ function SourceCache(id, options, dispatcher) {
         this.vectorLayerIds = source.vectorLayerIds;
     });
 
-    this.on('error', function() {
+    this.on('source.error', function() {
         this._sourceErrored = true;
     });
 
-    this.on('change', function() {
+    this.on('source.change', function() {
         this.reload();
         if (this.transform) {
             this.update(this.transform, this.map && this.map.style.rasterFadeDuration);

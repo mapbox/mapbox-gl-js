@@ -19,11 +19,11 @@ function VectorTileSource(id, options, dispatcher) {
 
     loadTileJSON(options, function (err, tileJSON) {
         if (err) {
-            this.fire('error', err);
+            this.fire('source.error', err);
             return;
         }
         util.extend(this, tileJSON);
-        this.fire('load');
+        this.fire('source.load');
     }.bind(this));
 }
 

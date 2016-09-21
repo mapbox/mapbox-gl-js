@@ -49,7 +49,7 @@ function ImageSource(id, options, dispatcher) {
     this.coordinates = options.coordinates;
 
     ajax.getImage(options.url, function(err, image) {
-        if (err) return this.fire('error', {error: err});
+        if (err) return this.fire('source.error', {error: err});
 
         this.image = image;
 
@@ -58,7 +58,7 @@ function ImageSource(id, options, dispatcher) {
         }.bind(this));
 
         this._loaded = true;
-        this.fire('load');
+        this.fire('source.load');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);
@@ -111,7 +111,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('change');
+        this.fire('source.change');
         return this;
     },
 

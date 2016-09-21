@@ -8,7 +8,7 @@ var window = require('../../../js/util/window');
 function createSource(options) {
     var source = new VectorTileSource('id', options, { send: function() {} });
 
-    source.on('error', function(e) {
+    source.on('source.error', function(e) {
         throw e.error;
     });
 
@@ -38,7 +38,7 @@ test('VectorTileSource', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        source.on('load', function() {
+        source.on('source.load', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
@@ -52,7 +52,7 @@ test('VectorTileSource', function(t) {
 
         var source = createSource({ url: "/source.json" });
 
-        source.on('load', function() {
+        source.on('source.load', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
@@ -107,7 +107,7 @@ test('VectorTileSource', function(t) {
                 t.end();
             };
 
-            source.on('load', function() {
+            source.on('source.load', function() {
                 source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, function () {});
             });
         });
@@ -127,7 +127,7 @@ test('VectorTileSource', function(t) {
             return 1;
         };
 
-        source.on('load', function () {
+        source.on('source.load', function () {
             var tile = {
                 coord: new TileCoord(10, 5, 5, 0),
                 state: 'loading',

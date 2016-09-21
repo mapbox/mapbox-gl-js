@@ -394,8 +394,8 @@ test('Style#addSource', function(t) {
         style.on('load', function () {
             t.plan(7);
             style.addSource('source-id', source); // Fires load
-            style.sources['source-id'].fire('error');
-            style.sources['source-id'].fire('change');
+            style.sources['source-id'].fire('source.error');
+            style.sources['source-id'].fire('source.change');
             style.sources['source-id'].fire('tile.add');
             style.sources['source-id'].fire('tile.load');
             style.sources['source-id'].fire('tile.error');
@@ -487,12 +487,12 @@ test('Style#removeSource', function(t) {
             style.removeSource('source-id');
 
             // Bind a listener to prevent fallback Evented error reporting.
-            source.on('error',  function() {});
+            source.on('source.error',  function() {});
             source.on('tile.error',  function() {});
 
-            source.fire('load');
-            source.fire('error');
-            source.fire('change');
+            source.fire('source.load');
+            source.fire('source.error');
+            source.fire('source.change');
             source.fire('tile.add');
             source.fire('tile.load');
             source.fire('tile.error');

@@ -340,15 +340,7 @@ Style.prototype = util.inherit(Evented, {
         source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
         source.style = this;
-        source
-            .on('load', this._forwardSourceEvent)
-            .on('error', this._forwardSourceEvent)
-            .on('change', this._forwardSourceEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.load', this._forwardTileEvent)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent)
-            .on('tile.stats', this._forwardTileEvent);
+        source.forwardEvents(this, {source: source});
 
         this._updates.events.push(['source.add', {source: source}]);
         this._updates.changed = true;
@@ -372,15 +364,7 @@ Style.prototype = util.inherit(Evented, {
         var source = this.sources[id];
         delete this.sources[id];
         delete this._updates.sources[id];
-        source
-            .off('load', this._forwardSourceEvent)
-            .off('error', this._forwardSourceEvent)
-            .off('change', this._forwardSourceEvent)
-            .off('tile.add', this._forwardTileEvent)
-            .off('tile.load', this._forwardTileEvent)
-            .off('tile.error', this._forwardTileEvent)
-            .off('tile.remove', this._forwardTileEvent)
-            .off('tile.stats', this._forwardTileEvent);
+        source.unforwardEvents(this);
 
         this._updates.events.push(['source.remove', {source: source}]);
         this._updates.changed = true;
@@ -728,14 +712,6 @@ Style.prototype = util.inherit(Evented, {
         for (var id in this.sources) {
             if (this.sources[id].redoPlacement) this.sources[id].redoPlacement();
         }
-    },
-
-    _forwardSourceEvent: function(e) {
-        this.fire('source.' + e.type, util.extend({source: e.target.getSource()}, e));
-    },
-
-    _forwardTileEvent: function(e) {
-        this.fire(e.type, util.extend({source: e.target}, e));
     },
 
     _forwardLayerEvent: function(e) {

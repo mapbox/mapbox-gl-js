@@ -74,16 +74,17 @@ var Evented = {
 
             data = util.extend({}, data, {type: type, target: this});
 
-            // make sure adding listeners / forwardees inside other listeners won't cause an infinite loop
+            // make sure adding or removing listeners or forwardees inside other listeners won't cause an infinite loop
             var listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
             var forwardees = this._forwardees ? this._forwardees.slice() : [];
+            var forwardeeData = this._forwardees ? this._forwardeeData.slice() : [];
 
             for (var i = 0; i < listeners.length; i++) {
                 listeners[i].call(this, data);
             }
 
             for (var j = 0; j < forwardees.length; j++) {
-                forwardees[j].fire(type, data);
+                forwardees[j].fire(type, util.extend({}, data, forwardeeData[j]));
             }
 
         // To ensure that no error events are dropped, print them to the
@@ -119,9 +120,11 @@ var Evented = {
      * @param {forwardee}
      * @returns {Object} `this`
      */
-    forwardEvents: function(forwardee) {
+    forwardEvents: function(forwardee, data) {
         this._forwardees = this._forwardees || [];
+        this._forwardeeData = this._forwardeeData || [];
         this._forwardees.push(forwardee);
+        this._forwardeeData.push(data);
 
         return this;
     },
@@ -137,6 +140,7 @@ var Evented = {
             var index = this._forwardees.indexOf(forwardee);
             if (index !== -1) {
                 this._forwardees.splice(index, 1);
+                this._forwardeeData.splice(index, 1);
             }
         }
 
