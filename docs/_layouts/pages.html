@@ -5,24 +5,17 @@ options: full
 examples:
   - name: Styles
     id: styles
-    level: h3
   - name: Layers
     id: layers
-    level: h3
   - name: Sources
     id: sources
-    level: h3
   - name: User interaction
     id: user-interaction
-    level: h3
   - name: Camera
     id: camera
-    level: h3
   - name: Controls and overlays
     id: controls-and-overlays
-    level: h3
   - name: Browser support
-    level: h3
     id: browser-support
 ---
 
@@ -56,7 +49,7 @@ examples:
           </div>
           {% for example in layout.examples %}
           <div class='space-bottom1'>
-            <{{example.level}} class='heading {{example.class}}'>{{example.name}}</{{example.level}}>
+            <h3 class='heading'>{{example.name}}</h3>
             {% for listing in site.tags[example.id] reversed %}
               <a href='{{site.baseurl}}{{listing.url}}' class='block small truncate example-names {% if listing.title == page.title %} active{% endif %}'>{{listing.title}}</a>
             {% endfor %}
