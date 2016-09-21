@@ -56,6 +56,18 @@ test('Evented', function(t) {
         t.end();
     });
 
+    t.test('passes original "target" to forwarded listeners', function(t) {
+        var eventedSource = Object.create(Evented);
+        var eventedSink = Object.create(Evented);
+        eventedSource.forwardEvents(eventedSink);
+        eventedSource.unforwardEvents(eventedSink);
+        eventedSink.on('a', function(data) {
+            t.equal(data.target, eventedSource);
+        });
+        eventedSource.fire('a');
+        t.end();
+    });
+
     t.test('passes "type" to listeners', function(t) {
         var evented = Object.create(Evented);
         evented.on('a', function(data) {
