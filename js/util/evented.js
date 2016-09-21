@@ -29,31 +29,16 @@ var Evented = {
     /**
      * Removes a previously registered event listener.
      *
-     * @param {string} [type] The event type to remove listeners for.
-     *   If none is specified, listeners will be removed for all event types.
-     * @param {Function} [listener] The listener function to remove.
-     *   If none is specified, all listeners will be removed for the event type.
+     * @param {string} type The event type to remove listeners for.
+     * @param {Function} listener The listener function to remove.
      * @returns {Object} `this`
      */
     off: function(type, listener) {
-        if (!type) {
-            // clear all listeners if no arguments specified
-            delete this._listeners;
-            return this;
-        }
-
-        if (!this.listens(type)) return this;
-
-        if (listener) {
+        if (this._listeners && this._listeners[type]) {
             var index = this._listeners[type].indexOf(listener);
-            if (index >= 0) {
+            if (index !== -1) {
                 this._listeners[type].splice(index, 1);
             }
-            if (!this._listeners[type].length) {
-                delete this._listeners[type];
-            }
-        } else {
-            delete this._listeners[type];
         }
 
         return this;
@@ -85,36 +70,78 @@ var Evented = {
      * @returns {Object} `this`
      */
     fire: function(type, data) {
-        if (!this.listens(type)) {
-            // To ensure that no error events are dropped, print them to the
-            // console if they have no listeners.
-            if (util.endsWith(type, 'error')) {
-                console.error((data && data.error) || data || 'Empty error event');
+        if (this.listens(type)) {
+
+            data = util.extend({}, data, {type: type, target: this});
+
+            // make sure adding listeners / pipes inside other listeners won't cause an infinite loop
+            var listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
+            var pipes = this._pipes ? this._pipes.slice() : [];
+
+            for (var i = 0; i < listeners.length; i++) {
+                listeners[i].call(this, data);
             }
-            return this;
-        }
 
-        data = util.extend({}, data);
-        util.extend(data, {type: type, target: this});
+            for (var j = 0; j < pipes.length; j++) {
+                pipes[j].fire(type, data);
+            }
 
-        // make sure adding/removing listeners inside other listeners won't cause infinite loop
-        var listeners = this._listeners[type].slice();
-
-        for (var i = 0; i < listeners.length; i++) {
-            listeners[i].call(this, data);
+        // To ensure that no error events are dropped, print them to the
+        // console if they have no listeners.
+        } else if (util.endsWith(type, 'error')) {
+            console.error((data && data.error) || data || 'Empty error event');
         }
 
         return this;
     },
 
     /**
-     * Returns a Boolean indicating whether any listeners are registered for a specified event type.
+     * Returns a true if this instance of Evented or any piped instances of Evented have a listener for the specified type.
      *
-     * @param {string} type The event type to check.
-     * @returns {boolean} `true` if there is at least one registered listener for specified event type.
+     * @param {string} type The event type
+     * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
      */
     listens: function(type) {
-        return !!(this._listeners && this._listeners[type]);
+        if (this._listeners && this._listeners[type]) return true;
+
+        if (this._pipes) {
+            for (var i = 0; i < this._pipes.length; i++) {
+                if (this._pipes[i].listens(type)) return true;
+            }
+        }
+
+        return false;
+    },
+
+    /**
+     * Pipes (forwards) all events fired by this instance of Evented to
+     * another instance of Evented.
+     *
+     * @param {pipe}
+     * @returns {Object} `this`
+     */
+    pipe: function(pipe) {
+        this._pipes = this._pipes || [];
+        this._pipes.push(pipe);
+
+        return this;
+    },
+
+    /**
+     * Removes a previously registered pipe.
+     *
+     * @param {pipe}
+     * @returns {Object} `this`
+     */
+    unpipe: function(pipe) {
+        if (this._pipes) {
+            var index = this._pipes.indexOf(pipe);
+            if (index !== -1) {
+                this._pipes.splice(index, 1);
+            }
+        }
+
+        return this;
     }
 };
 
