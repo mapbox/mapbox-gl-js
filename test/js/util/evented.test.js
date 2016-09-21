@@ -2,69 +2,87 @@
 
 var test = require('tap').test;
 var Evented = require('../../../js/util/evented');
+var sinon = require('sinon');
 
-test('evented', function(t) {
-    var evented = Object.create(Evented);
-    var report = function(data) {
-        t.deepEqual(data, { a: 'a', type: 'a', target: evented });
-    };
-    t.equal(evented.on('a', report), evented);
-    t.equal(evented.listens('a'), true);
-    t.equal(evented.fire('a', { a: 'a' }), evented);
-    t.equal(evented.off('a', report), evented);
-    t.equal(evented.off('a', report), evented);
-    t.equal(evented.listens('a'), false);
-    t.end();
-});
+test('Evented', function(t) {
 
-test('evented-all', function(t) {
-    var report = function() {
-        t.fail();
-    };
-    var evented = Object.create(Evented);
-    t.equal(evented.on('a', report), evented);
-    t.equal(evented.on('b', report), evented);
-    t.equal(evented.on('c', report), evented);
-    t.equal(evented.off(), evented);
-    ['a', 'b', 'c'].forEach(function(e) {
-        t.equal(evented.fire(e, { a: 'a' }), evented);
-    });
-    t.end();
-});
-
-test('evented-one', function(t) {
-    var report1 = function() { t.fail(); };
-    var report2 = function() { t.fail(); };
-    var report3 = function() { t.fail(); };
-    var evented = Object.create(Evented);
-    t.equal(evented.on('a', report1), evented);
-    t.equal(evented.on('a', report2), evented);
-    t.equal(evented.on('a', report3), evented);
-    t.equal(evented.off('a'), evented);
-    t.equal(evented.fire('a', { a: 'a' }), evented);
-    t.end();
-});
-
-test('evented-once', function(t) {
-    var evented = Object.create(Evented);
-
-    function report(data) {
-        t.equal(data.type, 'a');
-        t.equal(data.n, 1);
+    t.test('calls listeners added with "on" when their event is fired', function(t) {
+        var evented = Object.create(Evented);
+        var listener = sinon.spy();
+        evented.on('a', listener);
+        evented.fire('a');
+        evented.fire('a');
+        evented.fire('b');
+        t.ok(listener.calledTwice);
         t.end();
-    }
+    });
 
-    t.equal(evented.once('a', report), evented);
+    t.test('calls listeners added with "once" once', function(t) {
+        var evented = Object.create(Evented);
+        var listener = sinon.spy();
+        evented.once('a', listener);
+        evented.fire('a');
+        evented.fire('a');
+        t.ok(listener.calledOnce);
+        t.end();
+    });
 
-    evented.fire('a', {n: 1});
-    evented.fire('a', {n: 2});
-});
+    t.test('passes data to listeners', function(t) {
+        var evented = Object.create(Evented);
+        evented.on('a', function(data) {
+            t.equal(data.foo, 'bar');
+        });
+        evented.fire('a', {foo: 'bar'});
+        t.end();
+    });
 
-test('evented-not-found', function(t) {
-    var report1 = function() { t.pass(); };
-    var evented = Object.create(Evented);
-    t.equal(evented.on('a', report1), evented);
-    t.equal(evented.off('a', function() {}), evented);
-    t.equal(evented.fire('a', { a: 'a' }), evented);
+    t.test('passes "target" to listeners', function(t) {
+        var evented = Object.create(Evented);
+        evented.on('a', function(data) {
+            t.equal(data.target, evented);
+        });
+        evented.fire('a');
+        t.end();
+    });
+
+    t.test('passes "type" to listeners', function(t) {
+        var evented = Object.create(Evented);
+        evented.on('a', function(data) {
+            t.deepEqual(data.type, 'a');
+        });
+        evented.fire('a');
+        t.end();
+    });
+
+    t.test('removes listeners with "off"', function(t) {
+        var evented = Object.create(Evented);
+        var listener = sinon.spy();
+        evented.on('a', listener);
+        evented.off('a', listener);
+        evented.fire('a');
+        t.ok(listener.notCalled);
+        t.end();
+    });
+
+    t.test('reports if an event has listeners with "listens"', function(t) {
+        var evented = Object.create(Evented);
+        evented.on('a', function() {});
+        t.ok(evented.listens('a'));
+        t.notOk(evented.listens('b'));
+        t.end();
+    });
+
+    t.test('does not immediately call listeners added within another listener', function(t) {
+        var evented = Object.create(Evented);
+        evented.on('a', function() {
+            evented.on('a', function() {
+                assert.fail();
+            })
+        });
+        evented.fire('a');
+        t.end();
+    });
+
     t.end();
+
 });
