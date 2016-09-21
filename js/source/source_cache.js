@@ -28,7 +28,7 @@ function SourceCache(id, options, dispatcher) {
     this.dispatcher = dispatcher;
 
     var source = this._source = Source.create(id, options, dispatcher);
-    source.pipe(this);
+    source.forwardEvents(this);
 
     this.on('load', function() {
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }

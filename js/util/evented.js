@@ -74,16 +74,16 @@ var Evented = {
 
             data = util.extend({}, data, {type: type, target: this});
 
-            // make sure adding listeners / pipes inside other listeners won't cause an infinite loop
+            // make sure adding listeners / forwardees inside other listeners won't cause an infinite loop
             var listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
-            var pipes = this._pipes ? this._pipes.slice() : [];
+            var forwardees = this._forwardees ? this._forwardees.slice() : [];
 
             for (var i = 0; i < listeners.length; i++) {
                 listeners[i].call(this, data);
             }
 
-            for (var j = 0; j < pipes.length; j++) {
-                pipes[j].fire(type, data);
+            for (var j = 0; j < forwardees.length; j++) {
+                forwardees[j].fire(type, data);
             }
 
         // To ensure that no error events are dropped, print them to the
@@ -96,7 +96,7 @@ var Evented = {
     },
 
     /**
-     * Returns a true if this instance of Evented or any piped instances of Evented have a listener for the specified type.
+     * Returns a true if this instance of Evented or any forwardeed instances of Evented have a listener for the specified type.
      *
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
@@ -104,9 +104,9 @@ var Evented = {
     listens: function(type) {
         if (this._listeners && this._listeners[type]) return true;
 
-        if (this._pipes) {
-            for (var i = 0; i < this._pipes.length; i++) {
-                if (this._pipes[i].listens(type)) return true;
+        if (this._forwardees) {
+            for (var i = 0; i < this._forwardees.length; i++) {
+                if (this._forwardees[i].listens(type)) return true;
             }
         }
 
@@ -114,30 +114,29 @@ var Evented = {
     },
 
     /**
-     * Pipes (forwards) all events fired by this instance of Evented to
-     * another instance of Evented.
+     * Forward all events fired by this instance of Evented to another instance of Evented.
      *
-     * @param {pipe}
+     * @param {forwardee}
      * @returns {Object} `this`
      */
-    pipe: function(pipe) {
-        this._pipes = this._pipes || [];
-        this._pipes.push(pipe);
+    forwardEvents: function(forwardee) {
+        this._forwardees = this._forwardees || [];
+        this._forwardees.push(forwardee);
 
         return this;
     },
 
     /**
-     * Removes a previously registered pipe.
+     * Removes a previously registered forwardee.
      *
-     * @param {pipe}
+     * @param {forwardee}
      * @returns {Object} `this`
      */
-    unpipe: function(pipe) {
-        if (this._pipes) {
-            var index = this._pipes.indexOf(pipe);
+    unforwardEvents: function(forwardee) {
+        if (this._forwardees) {
+            var index = this._forwardees.indexOf(forwardee);
             if (index !== -1) {
-                this._pipes.splice(index, 1);
+                this._forwardees.splice(index, 1);
             }
         }
 
