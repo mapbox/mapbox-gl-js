@@ -1,7 +1,7 @@
 'use strict';
 
 var test = require('tap').test;
-var extend = require('../../../js/util/util').extend;
+var util = require('../../../js/util/util');
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var Style = require('../../../js/style/style');
@@ -17,7 +17,7 @@ function createMap(options, callback) {
     container.offsetWidth = 200;
     container.offsetHeight = 200;
 
-    var map = new Map(extend({
+    var map = new Map(util.extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -271,7 +271,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     sources: {geojson: createStyleSource()}
                 }));
                 t.end();
@@ -284,7 +284,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addLayer(createStyleLayer());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     layers: [createStyleLayer()]
                 }));
                 t.end();
@@ -1015,37 +1015,34 @@ test('Map', function(t) {
     });
 
     t.test('#removeLayer restores Map#loaded() to true', function (t) {
-        var style = createStyle();
-        style.sources.mapbox = {
-            type: 'vector',
-            minzoom: 1,
-            maxzoom: 10,
-            tiles: ['http://example.com/{z}/{x}/{y}.png']
-        };
-        style.layers.push({
-            id: 'layerId',
-            type: 'circle',
-            source: 'mapbox',
-            'source-layer': 'sourceLayer'
+        var map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
         });
 
-        var timer;
-        var map = createMap({ style: style });
-        map.on('render', function () {
-            if (timer) clearTimeout(timer);
-            timer = setTimeout(function () {
-                map.off('render');
-                map.on('render', check);
-                map.removeLayer('layerId');
-            }, 100);
+        map.once('render', function() {
+            map.removeLayer('layerId');
+            map.on('render', function() {
+                if (map.loaded()) {
+                    map.remove();
+                    t.end();
+                }
+            });
         });
-
-        function check () {
-            if (map.loaded()) {
-                map.remove();
-                t.end();
-            }
-        }
     });
 
     t.end();
