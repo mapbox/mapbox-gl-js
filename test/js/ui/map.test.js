@@ -430,6 +430,17 @@ test('Map', function(t) {
             t.end();
         });
 
+        t.test('throws on invalid bounds', function(t) {
+            var map = createMap({zoom:0});
+            t.throws(function() {
+                map.setMaxBounds([-130.4297, 50.0642], [-61.52344, 24.20688]);
+            }, Error, 'throws on two decoupled array coordinate arguments');
+            t.throws(function() {
+                map.setMaxBounds(-130.4297, 50.0642, -61.52344, 24.20688);
+            }, Error, 'throws on individual coordinate arguments');
+            t.end();
+        });
+
         function toFixed(bounds) {
             var n = 10;
             return [

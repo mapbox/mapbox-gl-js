@@ -80,7 +80,14 @@ LngLatBounds.prototype = {
             if (!sw2 || !ne2) return this;
 
         } else {
-            return obj ? this.extend(LngLat.convert(obj) || LngLatBounds.convert(obj)) : this;
+            if (Array.isArray(obj)) {
+                if (obj.every(Array.isArray)) {
+                    return this.extend(LngLatBounds.convert(obj));
+                } else {
+                    return this.extend(LngLat.convert(obj));
+                }
+            }
+            return this;
         }
 
         if (!sw && !ne) {

@@ -35,6 +35,13 @@ test('camera', function(t) {
             t.end();
         });
 
+        t.test('throws on invalid center argument', function(t) {
+            t.throws(function() {
+                camera.jumpTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
+            t.end();
+        });
+
         t.test('keeps current center if not specified', function(t) {
             camera.jumpTo({});
             t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
@@ -141,6 +148,13 @@ test('camera', function(t) {
         t.test('sets center', function(t) {
             camera.setCenter([1, 2]);
             t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            t.throws(function() {
+                camera.jumpTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
@@ -302,6 +316,14 @@ test('camera', function(t) {
             var camera = createCamera();
             camera.panTo([100, 0], { duration: 0 });
             t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            var camera = createCamera();
+            t.throws(function() {
+                camera.panTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
@@ -703,6 +725,14 @@ test('camera', function(t) {
             var camera = createCamera();
             camera.flyTo({ center: [100, 0], animate: false });
             t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 100, lat: 0 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            var camera = createCamera();
+            t.throws(function() {
+                camera.flyTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
