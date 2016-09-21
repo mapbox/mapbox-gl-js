@@ -82,7 +82,7 @@ LngLat.prototype.toString = function () {
 LngLat.convert = function (input) {
     if (input instanceof LngLat) {
         return input;
-    } else if (typeof input !== 'undefined' && input.hasOwnProperty('lng') && input.hasOwnProperty('lat')) {
+    } else if (input && input.hasOwnProperty('lng') && input.hasOwnProperty('lat')) {
         return new LngLat(input.lng, input.lat);
     } else if (Array.isArray(input) && input.length === 2) {
         return new LngLat(input[0], input[1]);

@@ -81,9 +81,9 @@ LngLatBounds.prototype = {
 
         } else {
             if (Array.isArray(obj)) {
-                if (obj.every(function(i) { return Array.isArray(i); })) {
+                if (obj.every(Array.isArray)) {
                     return this.extend(LngLatBounds.convert(obj));
-                } else if (obj.every(function(i) { return !isNaN(i); })) {
+                } else {
                     return this.extend(LngLat.convert(obj));
                 }
             }
