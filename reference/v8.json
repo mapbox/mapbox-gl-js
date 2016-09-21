@@ -163,7 +163,9 @@
     "buffer": {
       "type": "number",
       "default": 128,
-      "doc": "Tile buffer size on each side (measured in 1/512ths of a tile; higher means fewer rendering artifacts near tile edges but slower performance)."
+      "maximum": 512,
+      "minimum": 0,
+      "doc": "Size of the tile buffer on each side. A value of 0 produces no buffer. A value of 512 produces a buffer as wide as the tile itself. Larger values produce fewer rendering artifacts near tile edges and slower performance."
     },
     "tolerance": {
       "type": "number",
@@ -178,11 +180,12 @@
     "clusterRadius": {
       "type": "number",
       "default": 50,
-      "doc": "Radius of each cluster when clustering points, measured in 1/512ths of a tile."
+      "minimum": 0,
+      "doc": "Radius of each cluster if clustering is enabled. A value of 512 indicates a radius equal to the width of a tile."
     },
     "clusterMaxZoom": {
       "type": "number",
-      "doc": "Max zoom to cluster points on. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+      "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
     }
   },
   "source_video": {
