@@ -61,6 +61,9 @@ Tile.prototype = {
         // empty GeoJSON tile
         if (!data) return;
 
+        // If we are redoing placement for the same tile, we will not recieve
+        // a new "rawTileData" object. If we are loading a new tile, we will
+        // recieve a new "rawTileData" object.
         if (data.rawTileData) {
             this.rawTileData = data.rawTileData;
         }
@@ -119,7 +122,6 @@ Tile.prototype = {
         this.symbolInstancesArray = null;
         this.collisionTile = null;
         this.featureIndex = null;
-        this.rawTileData = null;
         this.buckets = null;
         this.state = 'unloaded';
     },
