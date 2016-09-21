@@ -75,9 +75,7 @@
     "unist-util-visit": "1.1.0",
     "vinyl": "1.1.1",
     "vinyl-fs": "2.4.3",
-    "watchify": "^3.7.0",
-    "webpack": "^1.13.1",
-    "webworkify-webpack": "^1.1.3"
+    "watchify": "^3.7.0"
   },
   "browserify": {
     "transform": [
@@ -108,7 +106,7 @@
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "test": "run-s lint test-unit",
     "test-suite": "run-s test-render test-query",
-    "test-unit": "tap --reporter dot --no-coverage test/js test/build/webpack.test.js",
+    "test-unit": "tap --reporter dot --no-coverage test/js",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query"

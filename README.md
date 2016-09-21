@@ -64,23 +64,16 @@ var map = new mapboxgl.Map({
 
 To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on http://mapbox.com, you must [create an account](https://www.mapbox.com/studio/signup/) and then [obtain an access token](https://www.mapbox.com/studio/account/tokens/). You may learn more about access tokens [here](https://www.mapbox.com/help/define-access-token/).
 
-Install the [`mapbox-gl` npm package](https://www.npmjs.com/package/mapbox-gl)
-and the required loaders.
+Install the [`mapbox-gl` npm package](https://www.npmjs.com/package/mapbox-gl):
 
 ```bash
 npm install --save mapbox-gl
-npm install --save transform-loader
-npm install --save json-loader
-npm install --save webworkify-webpack
 ```
 
-Add the [required additional options from webpack.config.example.js](webpack.config.example.js)
-to your webpack configuration.
-
-Instantiate `mapboxgl.Map`
+Require the distribution build of mapbox-gl and instantiate `mapboxgl.Map`:
 
 ```js
-var mapboxgl = require('mapbox-gl');
+var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 mapboxgl.accessToken = '<your access token here>';
 var map = new mapboxgl.Map({
     container: '<your HTML element id>',
