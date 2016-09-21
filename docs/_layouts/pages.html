@@ -22,30 +22,14 @@ examples:
 <link href='{{site.url}}/css/docs.css' rel='stylesheet' />
 <link href='{{site.baseurl}}/site.css' rel='stylesheet' />
 
-
-<style>
-  h3 {
-    padding-top:15px;
-  }
-
-  h4 {
-    font-weight: normal;
-  }
-
-  .display-none {
-    display: none;
-  }
-
-</style>
-
 <!--Fixed sidebar navigation-->
 <div class='docnav hide-mobile'>
   <div class='limiter'>
     <div class='col3 contain'>
       <nav class='scroll-styled quiet-scroll small'>
         {% if page.url contains 'example' %}
-          <div>
-            <input id='filter-input' type='text' name='filter' placeholder='Filter examples' />
+          <div class="space-bottom">
+            <input id='filter-input' type='text' class='space-bottom' name='filter' placeholder='Filter examples' />
           </div>
           {% for example in layout.examples %}
           <div class='space-bottom1'>
