@@ -646,7 +646,7 @@
         "height"
       ],
       "default": "none",
-      "doc": "Position and scale an icon by the its corresponding text.",
+      "doc": "Position and scale of an icon relative to the dimensions of text in `text-field`.",
       "requires": [
         "icon-image",
         "text-field"
@@ -671,7 +671,7 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Size of padding area around the text-fit size in clockwise order: top, right, bottom, left.",
+      "doc": "Size of the additional area added to dimensions determined by `icon-text-fix`, in clockwise order: top, right, bottom, left.",
       "requires": [
         "icon-image",
         "icon-text-fit",
