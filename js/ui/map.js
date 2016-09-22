@@ -190,10 +190,6 @@ var Map = module.exports = function(options) {
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
-    var fireError = this.fire.bind(this, 'error');
-    this.on('source.error', fireError);
-    this.on('tile.error', fireError);
-
     this.on('style.load', function() {
         if (this.transform.unmodified) {
             this.jumpTo(this.style.stylesheet);

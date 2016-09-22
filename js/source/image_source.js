@@ -49,7 +49,7 @@ function ImageSource(id, options, dispatcher) {
     this.coordinates = options.coordinates;
 
     ajax.getImage(options.url, function(err, image) {
-        if (err) return this.fire('source.error', {error: err});
+        if (err) return this.fire('error', {error: err});
 
         this.image = image;
 

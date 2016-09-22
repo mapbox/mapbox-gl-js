@@ -8,7 +8,7 @@ var window = require('../../../js/util/window');
 function createSource(options) {
     var source = new VectorTileSource('id', options, { send: function() {} });
 
-    source.on('source.error', function(e) {
+    source.on('error', function(e) {
         throw e.error;
     });
 

@@ -50,7 +50,7 @@ function VideoSource(id, options) {
     this.coordinates = options.coordinates;
 
     ajax.getVideo(options.urls, function(err, video) {
-        if (err) return this.fire('source.error', {error: err});
+        if (err) return this.fire('error', {error: err});
 
         this.video = video;
         this.video.loop = true;

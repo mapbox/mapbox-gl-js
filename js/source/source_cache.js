@@ -46,7 +46,7 @@ function SourceCache(id, options, dispatcher) {
         this.vectorLayerIds = source.vectorLayerIds;
     });
 
-    this.on('source.error', function() {
+    this.on('error', function() {
         this._sourceErrored = true;
     });
 
@@ -160,7 +160,7 @@ SourceCache.prototype = util.inherit(Evented, {
     _tileLoaded: function (tile, err) {
         if (err) {
             tile.state = 'errored';
-            this._source.fire('tile.error', {tile: tile, error: err});
+            this._source.fire('error', {tile: tile, error: err});
             return;
         }
 

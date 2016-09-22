@@ -375,30 +375,24 @@ test('Style#addSource', function(t) {
         }));
         var source = createSource();
 
-        function sourceEvent(e) {
+        function checkEvent(e) {
             t.same(e.source.serialize(), source);
         }
 
-        function tileEvent(e) {
-            t.same(e.source.serialize(), source);
-        }
-
-        style.on('source.load',   sourceEvent);
-        style.on('source.error',  sourceEvent);
-        style.on('source.change', sourceEvent);
-        style.on('tile.add',      tileEvent);
-        style.on('tile.load',     tileEvent);
-        style.on('tile.error',    tileEvent);
-        style.on('tile.remove',   tileEvent);
+        style.on('error',         checkEvent);
+        style.on('source.load',   checkEvent);
+        style.on('source.change', checkEvent);
+        style.on('tile.add',      checkEvent);
+        style.on('tile.load',     checkEvent);
+        style.on('tile.remove',   checkEvent);
 
         style.on('style.load', function () {
-            t.plan(7);
+            t.plan(6);
             style.addSource('source-id', source); // Fires load
-            style.sources['source-id'].fire('source.error');
+            style.sources['source-id'].fire('error');
             style.sources['source-id'].fire('source.change');
             style.sources['source-id'].fire('tile.add');
             style.sources['source-id'].fire('tile.load');
-            style.sources['source-id'].fire('tile.error');
             style.sources['source-id'].fire('tile.remove');
         });
     });
@@ -473,11 +467,11 @@ test('Style#removeSource', function(t) {
             source = createSource();
 
         style.on('source.load',   t.fail);
-        style.on('source.error',  t.fail);
+        style.on('error',  t.fail);
         style.on('source.change', t.fail);
         style.on('tile.add',      t.fail);
         style.on('tile.load',     t.fail);
-        style.on('tile.error',    t.fail);
+        style.on('error',    t.fail);
         style.on('tile.remove',   t.fail);
 
         style.on('style.load', function () {
@@ -487,15 +481,15 @@ test('Style#removeSource', function(t) {
             style.removeSource('source-id');
 
             // Bind a listener to prevent fallback Evented error reporting.
-            source.on('source.error',  function() {});
-            source.on('tile.error',  function() {});
+            source.on('error',  function() {});
+            source.on('error',  function() {});
 
             source.fire('source.load');
-            source.fire('source.error');
+            source.fire('error');
             source.fire('source.change');
             source.fire('tile.add');
             source.fire('tile.load');
-            source.fire('tile.error');
+            source.fire('error');
             source.fire('tile.remove');
             t.end();
         });

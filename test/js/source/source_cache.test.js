@@ -30,7 +30,7 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
     if (sourceOptions.noLoad) { return source; }
     setTimeout(function () {
         if (sourceOptions.error) {
-            source.fire('source.error', { error: sourceOptions.error });
+            source.fire('error', { error: sourceOptions.error });
         } else {
             source.fire('source.load');
         }
@@ -221,7 +221,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
     t.test('forward error event', function (t) {
         createSourceCache({ error: 'Error loading source' })
-        .on('source.error', function (err) {
+        .on('error', function (err) {
             t.equal(err.error, 'Error loading source');
             t.end();
         });
@@ -229,7 +229,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
     t.test('loaded() true after error', function (t) {
         var sourceCache = createSourceCache({ error: 'Error loading source' })
-        .on('source.error', function () {
+        .on('error', function () {
             t.ok(sourceCache.loaded());
             t.end();
         });

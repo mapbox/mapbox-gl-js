@@ -130,37 +130,31 @@ test('Map', function(t) {
             createMap({}, function(error, map) {
                 t.error(error);
 
-                // Suppress error messages
-                map.on('error', function() {});
-
                 var events = [];
                 function recordEvent(event) {
                     events.push(event.type);
                 }
 
+                map.on('error',         recordEvent);
                 map.on('style.change',  recordEvent);
                 map.on('source.load',   recordEvent);
-                map.on('source.error',  recordEvent);
                 map.on('source.change', recordEvent);
                 map.on('tile.add',      recordEvent);
-                map.on('tile.error',    recordEvent);
                 map.on('tile.remove',   recordEvent);
 
+                map.style.fire('error');
                 map.style.fire('style.change');
                 map.style.fire('source.load');
-                map.style.fire('source.error');
                 map.style.fire('source.change');
                 map.style.fire('tile.add');
-                map.style.fire('tile.error');
                 map.style.fire('tile.remove');
 
                 t.deepEqual(events, [
+                    'error',
                     'style.change',
                     'source.load',
-                    'source.error',
                     'source.change',
                     'tile.add',
-                    'tile.error',
                     'tile.remove'
                 ]);
 

@@ -133,7 +133,7 @@ test('GeoJSONSource#update', function(t) {
 
         var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('source.error', function(err) {
+        source.on('error', function(err) {
             t.equal(err.error, 'error');
             t.end();
         });

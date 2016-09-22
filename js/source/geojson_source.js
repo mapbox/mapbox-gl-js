@@ -85,7 +85,7 @@ function GeoJSONSource(id, options, dispatcher) {
 
     this._updateWorkerData(function done(err) {
         if (err) {
-            this.fire('source.error', {error: err});
+            this.fire('error', {error: err});
             return;
         }
         this.fire('source.load');
@@ -117,7 +117,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
         this._updateWorkerData(function (err) {
             if (err) {
-                return this.fire('source.error', { error: err });
+                return this.fire('error', { error: err });
             }
             this.fire('source.change');
         }.bind(this));
