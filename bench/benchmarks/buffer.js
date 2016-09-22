@@ -90,7 +90,7 @@ function preloadAssets(stylesheet, callback) {
 
     var style = new Style(stylesheet);
 
-    style.on('load', function() {
+    style.on('style.load', function() {
         function getGlyphs(params, callback) {
             style['get glyphs'](0, params, function(err, glyphs) {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
