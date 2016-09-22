@@ -110,6 +110,7 @@ var Evented = {
     /**
      * Bubble all events fired by this instance of Evented to this parent instance of Evented.
      *
+     * @private
      * @param {parent}
      * @param {data}
      * @returns {Object} `this`
