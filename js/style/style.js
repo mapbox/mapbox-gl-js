@@ -34,12 +34,7 @@ function Style(stylesheet, animationLoop, options) {
     this.sources = {};
     this.zoomHistory = {};
 
-    util.bindAll([
-        '_forwardSourceEvent',
-        '_forwardTileEvent',
-        '_forwardLayerEvent',
-        '_redoPlacement'
-    ], this);
+    util.bindAll(['_redoPlacement'], this);
 
     this._resetUpdates();
 
@@ -146,7 +141,7 @@ Style.prototype = util.inherit(Evented, {
             if (layerJSON.ref) continue;
             layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.forwardEvents(this, {layer: {id: layer.id}});
         }
 
         // resolve all layers WITH a ref
@@ -156,7 +151,7 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.forwardEvents(this, {layer: {id: layer.id}});
         }
 
         this._groupLayers();
@@ -404,7 +399,7 @@ Style.prototype = util.inherit(Evented, {
         }
         this._validateLayer(layer);
 
-        layer.on('error', this._forwardLayerEvent);
+        layer.forwardEvents(this, {layer: {id: layer.id}});
 
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
@@ -438,7 +433,7 @@ Style.prototype = util.inherit(Evented, {
             }
         }
 
-        layer.off('error', this._forwardLayerEvent);
+        layer.unforwardEvents(this);
 
         delete this._layers[id];
         delete this._updates.layers[id];
@@ -712,10 +707,6 @@ Style.prototype = util.inherit(Evented, {
         for (var id in this.sources) {
             if (this.sources[id].redoPlacement) this.sources[id].redoPlacement();
         }
-    },
-
-    _forwardLayerEvent: function(e) {
-        this.fire('layer.' + e.type, util.extend({layer: {id: e.target.id}}, e));
     },
 
     // Callbacks from web workers

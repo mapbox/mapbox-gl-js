@@ -156,7 +156,7 @@ test('Style', function(t) {
             }]
         }));
 
-        style.on('layer.error', function(e) {
+        style.on('error', function(e) {
             t.deepEqual(e.layer, {id: 'background'});
             t.ok(e.mapbox);
             t.end();
@@ -529,7 +529,7 @@ test('Style#addLayer', function(t) {
     t.test('sets up layer event forwarding', function(t) {
         var style = new Style(createStyleJSON());
 
-        style.on('layer.error', function(e) {
+        style.on('error', function(e) {
             t.deepEqual(e.layer, {id: 'background'});
             t.ok(e.mapbox);
             t.end();
@@ -637,7 +637,7 @@ test('Style#addLayer', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('layer.error', function(e) {
+        style.on('error', function(e) {
             t.deepEqual(e.layer, {id: 'background'});
             t.notOk(/duplicate/.match(e.error.message));
             t.end();
@@ -739,7 +739,7 @@ test('Style#removeLayer', function(t) {
             }]
         }));
 
-        style.on('layer.error', function() {
+        style.on('error', function() {
             t.fail();
         });
 

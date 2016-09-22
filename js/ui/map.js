@@ -203,7 +203,6 @@ var Map = module.exports = function(options) {
     this.on('style.error', fireError);
     this.on('source.error', fireError);
     this.on('tile.error', fireError);
-    this.on('layer.error', fireError);
 };
 
 util.extend(Map.prototype, Evented);
@@ -616,7 +615,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
                 .off('source.change', this._onSourceUpdate)
                 .off('layer.add', this._forwardLayerEvent)
                 .off('layer.remove', this._forwardLayerEvent)
-                .off('layer.error', this._forwardLayerEvent)
                 .off('tile.add', this._forwardTileEvent)
                 .off('tile.remove', this._forwardTileEvent)
                 .off('tile.load', this._update)
@@ -648,7 +646,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             .on('source.change', this._onSourceUpdate)
             .on('layer.add', this._forwardLayerEvent)
             .on('layer.remove', this._forwardLayerEvent)
-            .on('layer.error', this._forwardLayerEvent)
             .on('tile.add', this._forwardTileEvent)
             .on('tile.remove', this._forwardTileEvent)
             .on('tile.load', this._update)
