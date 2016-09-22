@@ -2,7 +2,6 @@
 
 var assert = require('assert');
 var WebWorker = require('./web_worker');
-var URL = require('./window').URL;
 
 module.exports = WorkerPool;
 
@@ -37,7 +36,6 @@ WorkerPool.prototype = {
         delete this.active[mapId];
         if (Object.keys(this.active).length === 0) {
             this.workers.forEach(function (w) {
-                URL.revokeObjectURL(w.objectURL);
                 w.terminate();
             });
             this.workers = null;
