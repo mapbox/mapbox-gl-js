@@ -42,7 +42,8 @@ function StyleDeclaration(reference, value) {
 
         this.calculateInterpolationT = MapboxGLFunction.interpolated({
             stops: interpolationAmountStops,
-            base: value.base
+            base: value.base,
+            colorSpace: value.colorSpace
         });
     }
 }
