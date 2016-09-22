@@ -4,7 +4,6 @@ var test = require('tap').test;
 var util = require('../../../js/util/util');
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
-var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 var sinon = require('sinon');
 
@@ -128,43 +127,45 @@ test('Map', function(t) {
         });
 
         t.test('sets up event forwarding', function(t) {
-            var map = createMap(),
-                style = new Style({
-                    version: 8,
-                    sources: {},
-                    layers: []
-                });
+            createMap({}, function(error, map) {
+                t.error(error);
 
-            var events = [];
+                // Suppress error messages
+                map.on('error', function() {});
 
-            function checkEvent(e) {
-                t.equal(e.style, style);
-                events.push(e.type);
-            }
+                var events = [];
+                function recordEvent(event) {
+                    events.push(event.type);
+                }
 
-            map.on('style.load',    checkEvent);
-            map.on('style.error',   checkEvent);
-            map.on('style.change',  checkEvent);
-            map.on('source.load',   checkEvent);
-            map.on('source.error',  checkEvent);
-            map.on('source.change', checkEvent);
-            map.on('tile.add',      checkEvent);
-            map.on('tile.error',    checkEvent);
-            map.on('tile.remove',   checkEvent);
+                map.on('style.change',  recordEvent);
+                map.on('source.load',   recordEvent);
+                map.on('source.error',  recordEvent);
+                map.on('source.change', recordEvent);
+                map.on('tile.add',      recordEvent);
+                map.on('tile.error',    recordEvent);
+                map.on('tile.remove',   recordEvent);
 
-            // Suppress error messages
-            map.on('error', function() {});
+                map.style.fire('style.change');
+                map.style.fire('source.load');
+                map.style.fire('source.error');
+                map.style.fire('source.change');
+                map.style.fire('tile.add');
+                map.style.fire('tile.error');
+                map.style.fire('tile.remove');
 
-            t.plan(10);
-            map.setStyle(style); // Fires load
-            style.fire('error');
-            style.fire('change');
-            style.fire('source.load');
-            style.fire('source.error');
-            style.fire('source.change');
-            style.fire('tile.add');
-            style.fire('tile.error');
-            style.fire('tile.remove');
+                t.deepEqual(events, [
+                    'style.change',
+                    'source.load',
+                    'source.error',
+                    'source.change',
+                    'tile.add',
+                    'tile.error',
+                    'tile.remove'
+                ]);
+
+                t.end();
+            });
         });
 
         t.test('can be called more than once', function(t) {

@@ -146,15 +146,6 @@ var Map = module.exports = function(options) {
     }
 
     util.bindAll([
-        '_forwardStyleEvent',
-        '_forwardSourceEvent',
-        '_forwardLayerEvent',
-        '_forwardTileEvent',
-        '_onStyleLoad',
-        '_onStyleChange',
-        '_onSourceAdd',
-        '_onSourceRemove',
-        '_onSourceUpdate',
         '_onWindowOnline',
         '_onWindowResize',
         '_contextLost',
@@ -166,8 +157,8 @@ var Map = module.exports = function(options) {
     this._setupContainer();
     this._setupPainter();
 
-    this.on('move', this._update.bind(this, false));
-    this.on('zoom', this._update.bind(this, true));
+    this.on('move', this._update);
+    this.on('zoom', this._update);
     this.on('moveend', function() {
         this.animationLoop.set(300); // text fading
         this._rerender();
@@ -200,9 +191,33 @@ var Map = module.exports = function(options) {
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
     var fireError = this.fire.bind(this, 'error');
-    this.on('style.error', fireError);
     this.on('source.error', fireError);
     this.on('tile.error', fireError);
+
+    this.on('style.load', function() {
+        if (this.transform.unmodified) {
+            this.jumpTo(this.style.stylesheet);
+        }
+        this.style.update(this._classes, {transition: false});
+    });
+
+    this.on('style.change', function() {
+        this._update(true);
+    });
+
+    this.on('source.add', function(event) {
+        var source = event.source;
+        if (source.onAdd) source.onAdd(this);
+    });
+
+    this.on('source.remove', function(event) {
+        var source = event.source;
+        if (source.onRemove) source.onRemove(this);
+    });
+
+    this.on('source.load', this._update);
+    this.on('source.change', this._update);
+    this.on('tile.load', this._update);
 };
 
 util.extend(Map.prototype, Evented);
@@ -604,23 +619,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setStyle: function(style) {
         if (this.style) {
-            this.style
-                .off('load', this._onStyleLoad)
-                .off('error', this._forwardStyleEvent)
-                .off('change', this._onStyleChange)
-                .off('source.add', this._onSourceAdd)
-                .off('source.remove', this._onSourceRemove)
-                .off('source.load', this._onSourceUpdate)
-                .off('source.error', this._forwardSourceEvent)
-                .off('source.change', this._onSourceUpdate)
-                .off('layer.add', this._forwardLayerEvent)
-                .off('layer.remove', this._forwardLayerEvent)
-                .off('tile.add', this._forwardTileEvent)
-                .off('tile.remove', this._forwardTileEvent)
-                .off('tile.load', this._update)
-                .off('tile.error', this._forwardTileEvent)
-                .off('tile.stats', this._forwardTileEvent)
-                ._remove();
+            this.style.unforwardEvents(this);
+            this.style._remove();
 
             this.off('rotate', this.style._redoPlacement);
             this.off('pitch', this.style._redoPlacement);
@@ -635,22 +635,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             this.style = new Style(style, this.animationLoop);
         }
 
-        this.style
-            .on('load', this._onStyleLoad)
-            .on('error', this._forwardStyleEvent)
-            .on('change', this._onStyleChange)
-            .on('source.add', this._onSourceAdd)
-            .on('source.remove', this._onSourceRemove)
-            .on('source.load', this._onSourceUpdate)
-            .on('source.error', this._forwardSourceEvent)
-            .on('source.change', this._onSourceUpdate)
-            .on('layer.add', this._forwardLayerEvent)
-            .on('layer.remove', this._forwardLayerEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent)
-            .on('tile.load', this._update)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.stats', this._forwardTileEvent);
+        this.style.forwardEvents(this, {style: this.style});
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
@@ -1111,54 +1096,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this._render);
         }
-    },
-
-    _forwardStyleEvent: function(e) {
-        this.fire('style.' + e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardSourceEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardLayerEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardTileEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _onStyleLoad: function(e) {
-        if (this.transform.unmodified) {
-            this.jumpTo(this.style.stylesheet);
-        }
-        this.style.update(this._classes, {transition: false});
-        this._forwardStyleEvent(e);
-    },
-
-    _onStyleChange: function(e) {
-        this._update(true);
-        this._forwardStyleEvent(e);
-    },
-
-    _onSourceAdd: function(e) {
-        var source = e.source;
-        if (source.onAdd)
-            source.onAdd(this);
-        this._forwardSourceEvent(e);
-    },
-
-    _onSourceRemove: function(e) {
-        var source = e.source;
-        if (source.onRemove)
-            source.onRemove(this);
-        this._forwardSourceEvent(e);
-    },
-
-    _onSourceUpdate: function(e) {
-        this._update();
-        this._forwardSourceEvent(e);
     },
 
     _onWindowOnline: function() {

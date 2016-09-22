@@ -67,7 +67,7 @@ function Style(stylesheet, animationLoop, options) {
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('load');
+        this.fire('style.load');
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
@@ -300,7 +300,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('change');
+            this.fire('style.change');
         }
 
         this._resetUpdates();
@@ -337,7 +337,7 @@ Style.prototype = util.inherit(Evented, {
         source.style = this;
         source.forwardEvents(this, {source: source});
 
-        this._updates.events.push(['source.add', {source: source}]);
+        this._updates.events.push(['source.add', {source: source, style: this}]);
         this._updates.changed = true;
 
         return this;
@@ -361,7 +361,7 @@ Style.prototype = util.inherit(Evented, {
         delete this._updates.sources[id];
         source.unforwardEvents(this);
 
-        this._updates.events.push(['source.remove', {source: source}]);
+        this._updates.events.push(['source.remove', {source: source, style: this}]);
         this._updates.changed = true;
 
         return this;
@@ -408,7 +408,7 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
-        this._updates.events.push(['layer.add', {layer: layer}]);
+        this._updates.events.push(['layer.add', {layer: layer, style: this}]);
 
         return this.updateClasses(layer.id);
     },
@@ -441,7 +441,7 @@ Style.prototype = util.inherit(Evented, {
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
-        this._updates.events.push(['layer.remove', {layer: layer}]);
+        this._updates.events.push(['layer.remove', {layer: layer, style: this}]);
         this._updates.changed = true;
 
         return this;
