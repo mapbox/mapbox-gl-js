@@ -54,11 +54,11 @@ var Evented = {
      * @returns {Object} `this`
      */
     once: function(type, listener) {
-        var wrappedListener = function(data) {
-            this.off(type, wrappedListener);
+        var wrapper = function(data) {
+            this.off(type, wrapper);
             listener.call(this, data);
         }.bind(this);
-        this.on(type, wrappedListener);
+        this.on(type, wrapper);
         return this;
     },
 

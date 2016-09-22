@@ -16,18 +16,6 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('calls parent listeners added with "on"', function(t) {
-        var listener = sinon.spy();
-        var eventedSource = Object.create(Evented);
-        var eventedSink = Object.create(Evented);
-        eventedSource.setEventedParent(eventedSink);
-        eventedSink.on('a', listener);
-        eventedSource.fire('a');
-        eventedSource.fire('a');
-        t.ok(listener.calledTwice);
-        t.end();
-    });
-
     t.test('calls listeners added with "once" once', function(t) {
         var evented = Object.create(Evented);
         var listener = sinon.spy();
@@ -56,18 +44,6 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('passes original "target" to parent listeners', function(t) {
-        var eventedSource = Object.create(Evented);
-        var eventedSink = Object.create(Evented);
-        eventedSource.setEventedParent(eventedSink);
-        eventedSource.setEventedParent(null);
-        eventedSink.on('a', function(data) {
-            t.equal(data.target, eventedSource);
-        });
-        eventedSource.fire('a');
-        t.end();
-    });
-
     t.test('passes "type" to listeners', function(t) {
         var evented = Object.create(Evented);
         evented.on('a', function(data) {
@@ -87,32 +63,11 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('removes parents', function(t) {
-        var listener = sinon.spy();
-        var eventedSource = Object.create(Evented);
-        var eventedSink = Object.create(Evented);
-        eventedSink.on('a', listener);
-        eventedSource.setEventedParent(eventedSink);
-        eventedSource.setEventedParent(null);
-        eventedSource.fire('a');
-        t.ok(listener.notCalled);
-        t.end();
-    });
-
     t.test('reports if an event has listeners with "listens"', function(t) {
         var evented = Object.create(Evented);
         evented.on('a', function() {});
         t.ok(evented.listens('a'));
         t.notOk(evented.listens('b'));
-        t.end();
-    });
-
-    t.test('reports if an event has parent listeners with "listens"', function(t) {
-        var eventedSource = Object.create(Evented);
-        var eventedSink = Object.create(Evented);
-        eventedSink.on('a', function() {});
-        eventedSource.setEventedParent(eventedSink);
-        t.ok(eventedSink.listens('a'));
         t.end();
     });
 
@@ -125,6 +80,78 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.end();
+    t.test('evented parents', function(t) {
 
+        t.test('adds parents with "setEventedParent"', function(t) {
+            var listener = sinon.spy();
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSource.setEventedParent(eventedSink);
+            eventedSink.on('a', listener);
+            eventedSource.fire('a');
+            eventedSource.fire('a');
+            t.ok(listener.calledTwice);
+            t.end();
+        });
+
+        t.test('passes original data to parent listeners', function(t) {
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSource.setEventedParent(eventedSink);
+            eventedSink.on('a', function(data) {
+                t.equal(data.foo, 'bar');
+            });
+            eventedSource.fire('a', {foo: 'bar'});
+            t.end();
+        });
+
+        t.test('attaches parent data to parent listeners', function(t) {
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSource.setEventedParent(eventedSink, {foz: 'baz'});
+            eventedSink.on('a', function(data) {
+                t.equal(data.foz, 'baz');
+            });
+            eventedSource.fire('a', {foo: 'bar'});
+            t.end();
+        });
+
+        t.test('passes original "target" to parent listeners', function(t) {
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSource.setEventedParent(eventedSink);
+            eventedSource.setEventedParent(null);
+            eventedSink.on('a', function(data) {
+                t.equal(data.target, eventedSource);
+            });
+            eventedSource.fire('a');
+            t.end();
+        });
+
+        t.test('removes parents with "setEventedParent(null)"', function(t) {
+            var listener = sinon.spy();
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSink.on('a', listener);
+            eventedSource.setEventedParent(eventedSink);
+            eventedSource.setEventedParent(null);
+            eventedSource.fire('a');
+            t.ok(listener.notCalled);
+            t.end();
+        });
+
+        t.test('reports if an event has parent listeners with "listens"', function(t) {
+            var eventedSource = Object.create(Evented);
+            var eventedSink = Object.create(Evented);
+            eventedSink.on('a', function() {});
+            eventedSource.setEventedParent(eventedSink);
+            t.ok(eventedSink.listens('a'));
+            t.end();
+        });
+
+        t.end();
+
+    });
+
+    t.end();
 });
