@@ -62,7 +62,7 @@ function Style(stylesheet, animationLoop, options) {
 
         if (stylesheet.sprite) {
             this.sprite = new ImageSprite(stylesheet.sprite);
-            this.sprite.on('load', this.fire.bind(this, 'change'));
+            this.sprite.forwardEvents(this, {style: this});
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
@@ -718,7 +718,7 @@ Style.prototype = util.inherit(Evented, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('load', function() {
+            sprite.on('style.change', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });

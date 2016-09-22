@@ -41,7 +41,7 @@ function ImageSprite(base) {
         }
 
         this.img = img;
-        if (this.data) this.fire('load');
+        if (this.data) this.fire('style.change');
     }.bind(this));
 }
 
