@@ -26,37 +26,33 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         gl.enable(gl.STENCIL_TEST);
     }
 
-    painter.setDepthSublayer(0);
-    painter.depthMask(false);
-    gl.disable(gl.DEPTH_TEST);
-
     drawLayerSymbols(painter, sourceCache, layer, coords, false,
-            layer.paint['icon-translate'],
-            layer.paint['icon-translate-anchor'],
-            layer.layout['icon-rotation-alignment'],
-            // icon-pitch-alignment is not yet implemented
-            // and we simply inherit the rotation alignment
-            layer.layout['icon-rotation-alignment'],
-            layer.layout['icon-size'],
-            layer.paint['icon-halo-width'],
-            layer.paint['icon-halo-color'],
-            layer.paint['icon-halo-blur'],
-            layer.paint['icon-opacity'],
-            layer.paint['icon-color']);
+        layer.paint['icon-translate'],
+        layer.paint['icon-translate-anchor'],
+        layer.layout['icon-rotation-alignment'],
+        // icon-pitch-alignment is not yet implemented
+        // and we simply inherit the rotation alignment
+        layer.layout['icon-rotation-alignment'],
+        layer.layout['icon-size'],
+        layer.paint['icon-halo-width'],
+        layer.paint['icon-halo-color'],
+        layer.paint['icon-halo-blur'],
+        layer.paint['icon-opacity'],
+        layer.paint['icon-color']
+    );
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
-            layer.paint['text-translate'],
-            layer.paint['text-translate-anchor'],
-            layer.layout['text-rotation-alignment'],
-            layer.layout['text-pitch-alignment'],
-            layer.layout['text-size'],
-            layer.paint['text-halo-width'],
-            layer.paint['text-halo-color'],
-            layer.paint['text-halo-blur'],
-            layer.paint['text-opacity'],
-            layer.paint['text-color']);
-
-    gl.enable(gl.DEPTH_TEST);
+        layer.paint['text-translate'],
+        layer.paint['text-translate-anchor'],
+        layer.layout['text-rotation-alignment'],
+        layer.layout['text-pitch-alignment'],
+        layer.layout['text-size'],
+        layer.paint['text-halo-width'],
+        layer.paint['text-halo-color'],
+        layer.paint['text-halo-blur'],
+        layer.paint['text-opacity'],
+        layer.paint['text-color']
+    );
 
     if (sourceCache.map.showCollisionBoxes) {
         drawCollisionDebug(painter, sourceCache, layer, coords);
@@ -74,6 +70,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
         haloBlur,
         opacity,
         color) {
+
+    var gl = painter.gl;
+    painter.depthMask(false);
+    if (pitchAlignment === 'map') {
+        gl.enable(gl.DEPTH_TEST);
+    } else {
+        gl.disable(gl.DEPTH_TEST);
+    }
 
     for (var j = 0; j < coords.length; j++) {
         var tile = sourceCache.getTile(coords[j]);
@@ -98,6 +102,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
                 opacity,
                 color);
     }
+
+    gl.enable(gl.DEPTH_TEST);
 }
 
 function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isText, sdf, iconsNeedLinear, adjustedSize, fontstack,
@@ -177,6 +183,8 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
 
         if (haloWidth) {
             // Draw halo underneath the text.
+            painter.setDepthSublayer(0);
+
             gl.uniform1f(program.u_gamma, (haloBlur * blurOffset / fontScale / sdfPx + gamma) * gammaScale);
             gl.uniform4fv(program.u_color, haloColor);
             gl.uniform1f(program.u_opacity, opacity);
@@ -197,6 +205,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
         gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
 
+        painter.setDepthSublayer(1);
         for (var i = 0; i < bufferGroups.length; i++) {
             group = bufferGroups[i];
             group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer);
@@ -204,6 +213,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
         }
 
     } else {
+        painter.setDepthSublayer(0);
         gl.uniform1f(program.u_opacity, opacity);
         for (var k = 0; k < bufferGroups.length; k++) {
             group = bufferGroups[k];
