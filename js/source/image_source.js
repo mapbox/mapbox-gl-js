@@ -52,11 +52,6 @@ function ImageSource(id, options, dispatcher) {
         if (err) return this.fire('error', {error: err});
 
         this.image = image;
-
-        this.image.addEventListener('load', function() {
-            this.map._rerender();
-        }.bind(this));
-
         this._loaded = true;
         this.fire('load');
 

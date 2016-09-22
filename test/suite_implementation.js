@@ -106,7 +106,6 @@ function fakeImage(png) {
         height: png.height,
         data: png.data.slice(),
         complete: true,
-        addEventListener: function() {},
         getData: function() { return this.data; }
     };
 }
