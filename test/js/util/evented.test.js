@@ -16,11 +16,11 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('calls forwarded listeners added with "on"', function(t) {
+    t.test('calls parent listeners added with "on"', function(t) {
         var listener = sinon.spy();
         var eventedSource = Object.create(Evented);
         var eventedSink = Object.create(Evented);
-        eventedSource.forwardEvents(eventedSink);
+        eventedSource.setEventedParent(eventedSink);
         eventedSink.on('a', listener);
         eventedSource.fire('a');
         eventedSource.fire('a');
@@ -56,11 +56,11 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('passes original "target" to forwarded listeners', function(t) {
+    t.test('passes original "target" to parent listeners', function(t) {
         var eventedSource = Object.create(Evented);
         var eventedSink = Object.create(Evented);
-        eventedSource.forwardEvents(eventedSink);
-        eventedSource.unforwardEvents(eventedSink);
+        eventedSource.setEventedParent(eventedSink);
+        eventedSource.setEventedParent(null);
         eventedSink.on('a', function(data) {
             t.equal(data.target, eventedSource);
         });
@@ -87,13 +87,13 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('removes forwardees with "unforwardEvents"', function(t) {
+    t.test('removes parents', function(t) {
         var listener = sinon.spy();
         var eventedSource = Object.create(Evented);
         var eventedSink = Object.create(Evented);
         eventedSink.on('a', listener);
-        eventedSource.forwardEvents(eventedSink);
-        eventedSource.unforwardEvents(eventedSink);
+        eventedSource.setEventedParent(eventedSink);
+        eventedSource.setEventedParent(null);
         eventedSource.fire('a');
         t.ok(listener.notCalled);
         t.end();
@@ -107,11 +107,11 @@ test('Evented', function(t) {
         t.end();
     });
 
-    t.test('reports if an event has forwarded listeners with "listens"', function(t) {
+    t.test('reports if an event has parent listeners with "listens"', function(t) {
         var eventedSource = Object.create(Evented);
         var eventedSink = Object.create(Evented);
         eventedSink.on('a', function() {});
-        eventedSource.forwardEvents(eventedSink);
+        eventedSource.setEventedParent(eventedSink);
         t.ok(eventedSink.listens('a'));
         t.end();
     });

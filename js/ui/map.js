@@ -615,7 +615,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setStyle: function(style) {
         if (this.style) {
-            this.style.unforwardEvents(this);
+            this.style.setEventedParent(null);
             this.style._remove();
 
             this.off('rotate', this.style._redoPlacement);
@@ -631,7 +631,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             this.style = new Style(style, this.animationLoop);
         }
 
-        this.style.forwardEvents(this, {style: this.style});
+        this.style.setEventedParent(this, {style: this.style});
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);

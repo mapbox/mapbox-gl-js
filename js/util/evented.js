@@ -74,17 +74,15 @@ var Evented = {
 
             data = util.extend({}, data, {type: type, target: this});
 
-            // make sure adding or removing listeners or forwardees inside other listeners won't cause an infinite loop
+            // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             var listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
-            var forwardees = this._forwardees ? this._forwardees.slice() : [];
-            var forwardeeData = this._forwardees ? this._forwardeeData.slice() : [];
 
             for (var i = 0; i < listeners.length; i++) {
                 listeners[i].call(this, data);
             }
 
-            for (var j = 0; j < forwardees.length; j++) {
-                forwardees[j].fire(type, util.extend({}, data, forwardeeData[j]));
+            if (this._eventedParent) {
+                this._eventedParent.fire(type, util.extend({}, data, this._eventedParentData));
             }
 
         // To ensure that no error events are dropped, print them to the
@@ -103,46 +101,22 @@ var Evented = {
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
      */
     listens: function(type) {
-        if (this._listeners && this._listeners[type]) return true;
-
-        if (this._forwardees) {
-            for (var i = 0; i < this._forwardees.length; i++) {
-                if (this._forwardees[i].listens(type)) return true;
-            }
-        }
-
-        return false;
+        return (
+            (this._listeners && this._listeners[type]) ||
+            (this._eventedParent && this._eventedParent.listens(type))
+        );
     },
 
     /**
-     * Forward all events fired by this instance of Evented to another instance of Evented.
+     * Bubble all events fired by this instance of Evented to this parent instance of Evented.
      *
-     * @param {forwardee}
+     * @param {parent}
+     * @param {data}
      * @returns {Object} `this`
      */
-    forwardEvents: function(forwardee, data) {
-        this._forwardees = this._forwardees || [];
-        this._forwardeeData = this._forwardeeData || [];
-        this._forwardees.push(forwardee);
-        this._forwardeeData.push(data);
-
-        return this;
-    },
-
-    /**
-     * Removes a previously registered forwardee.
-     *
-     * @param {forwardee}
-     * @returns {Object} `this`
-     */
-    unforwardEvents: function(forwardee) {
-        if (this._forwardees) {
-            var index = this._forwardees.indexOf(forwardee);
-            if (index !== -1) {
-                this._forwardees.splice(index, 1);
-                this._forwardeeData.splice(index, 1);
-            }
-        }
+    setEventedParent: function(parent, data) {
+        this._eventedParent = parent;
+        this._eventedParentData = data;
 
         return this;
     }
