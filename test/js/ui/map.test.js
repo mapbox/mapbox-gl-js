@@ -137,14 +137,14 @@ test('Map', function(t) {
 
                 map.on('error',         recordEvent);
                 map.on('style.change',  recordEvent);
-                map.on('source.load',   recordEvent);
+                map.on('sourceload',   recordEvent);
                 map.on('data', recordEvent);
                 map.on('tile.add',      recordEvent);
                 map.on('tile.remove',   recordEvent);
 
                 map.style.fire('error');
                 map.style.fire('style.change');
-                map.style.fire('source.load');
+                map.style.fire('sourceload');
                 map.style.fire('data');
                 map.style.fire('tile.add');
                 map.style.fire('tile.remove');
@@ -152,7 +152,7 @@ test('Map', function(t) {
                 t.deepEqual(events, [
                     'error',
                     'style.change',
-                    'source.load',
+                    'sourceload',
                     'data',
                     'tile.add',
                     'tile.remove'

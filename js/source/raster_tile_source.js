@@ -17,7 +17,8 @@ function RasterTileSource(id, options, dispatcher) {
             return this.fire('error', err);
         }
         util.extend(this, tileJSON);
-        this.fire('source.load');
+        this.fire('data', {type: 'tileJSON'});
+        this.fire('sourceload');
     }.bind(this));
 }
 

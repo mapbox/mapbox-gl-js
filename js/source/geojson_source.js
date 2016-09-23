@@ -88,7 +88,8 @@ function GeoJSONSource(id, options, dispatcher) {
             this.fire('error', {error: err});
             return;
         }
-        this.fire('source.load');
+        this.fire('data', {dataType: 'geojson'});
+        this.fire('sourceload');
     }.bind(this));
 }
 

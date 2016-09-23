@@ -211,7 +211,6 @@ var Map = module.exports = function(options) {
         if (source.onRemove) source.onRemove(this);
     });
 
-    this.on('source.load', this._update);
     this.on('data', this._update);
     this.on('tile.load', this._update);
 };

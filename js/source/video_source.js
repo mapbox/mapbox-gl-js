@@ -73,7 +73,8 @@ function VideoSource(id, options) {
             this.setCoordinates(options.coordinates);
         }
 
-        this.fire('source.load');
+        this.fire('data', {dataType: 'video'});
+        this.fire('sourceload');
     }.bind(this));
 }
 

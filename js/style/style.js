@@ -76,7 +76,7 @@ function Style(stylesheet, animationLoop, options) {
         browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
-    this.on('source.load', function(event) {
+    this.on('sourceload', function(event) {
         var source = event.source;
         if (source && source.vectorLayerIds) {
             for (var layerId in this._layers) {

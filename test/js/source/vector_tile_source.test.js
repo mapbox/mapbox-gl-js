@@ -38,7 +38,7 @@ test('VectorTileSource', function(t) {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        source.on('source.load', function() {
+        source.on('sourceload', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
@@ -52,7 +52,7 @@ test('VectorTileSource', function(t) {
 
         var source = createSource({ url: "/source.json" });
 
-        source.on('source.load', function() {
+        source.on('sourceload', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
             t.deepEqual(source.minzoom, 1);
             t.deepEqual(source.maxzoom, 10);
@@ -107,7 +107,7 @@ test('VectorTileSource', function(t) {
                 t.end();
             };
 
-            source.on('source.load', function() {
+            source.on('sourceload', function() {
                 source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, function () {});
             });
         });
@@ -127,7 +127,7 @@ test('VectorTileSource', function(t) {
             return 1;
         };
 
-        source.on('source.load', function () {
+        source.on('sourceload', function () {
             var tile = {
                 coord: new TileCoord(10, 5, 5, 0),
                 state: 'loading',

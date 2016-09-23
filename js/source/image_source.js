@@ -53,7 +53,8 @@ function ImageSource(id, options, dispatcher) {
 
         this.image = image;
         this._loaded = true;
-        this.fire('source.load');
+        this.fire('data', {type: 'image'});
+        this.fire('sourceload');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);

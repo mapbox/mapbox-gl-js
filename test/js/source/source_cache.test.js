@@ -32,7 +32,7 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
         if (sourceOptions.error) {
             source.fire('error', { error: sourceOptions.error });
         } else {
-            source.fire('source.load');
+            source.fire('sourceload');
         }
     }, 0);
     return source;
@@ -53,7 +53,7 @@ test('SourceCache#attribution is set', function(t) {
     var sourceCache = createSourceCache({
         attribution: 'Mapbox Heavy Industries'
     });
-    sourceCache.on('source.load', function() {
+    sourceCache.on('sourceload', function() {
         t.equal(sourceCache.attribution, 'Mapbox Heavy Industries');
         t.end();
     });
@@ -205,13 +205,13 @@ test('SourceCache#removeTile', function(t) {
 test('SourceCache / Source lifecycle', function (t) {
     t.test('does not fire load or change before source load event', function (t) {
         createSourceCache({noLoad: true})
-            .on('source.load', t.fail)
+            .on('sourceload', t.fail)
             .on('data', t.fail);
         setTimeout(t.end, 1);
     });
 
     t.test('forward load event', function (t) {
-        createSourceCache({}).on('source.load', t.end);
+        createSourceCache({}).on('sourceload', t.end);
     });
 
     t.test('forward change event', function (t) {
@@ -251,7 +251,7 @@ test('SourceCache / Source lifecycle', function (t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
             sourceCache.getSource().fire('data', {dataType: 'geoJSON'});
         });
@@ -267,7 +267,7 @@ test('SourceCache#update', function(t) {
         transform.zoom = 0;
 
         var sourceCache = createSourceCache({}, false);
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
 
             t.deepEqual(sourceCache.getIds(), []);
@@ -281,7 +281,7 @@ test('SourceCache#update', function(t) {
         transform.zoom = 0;
 
         var sourceCache = createSourceCache({});
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
             t.end();
@@ -299,7 +299,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
@@ -330,7 +330,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
@@ -361,7 +361,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
 
@@ -392,7 +392,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform, 100);
             t.deepEqual(sourceCache.getIds(), [
                 new TileCoord(2, 1, 1).id,
@@ -422,7 +422,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform, 100);
 
             transform.zoom = 2;
@@ -452,7 +452,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             t.equal(sourceCache.maxzoom, 14);
 
             sourceCache.update(transform);
@@ -531,7 +531,7 @@ test('SourceCache#tilesIn', function (t) {
             }
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             sourceCache.update(transform);
 
             t.deepEqual(sourceCache.getIds(), [
@@ -572,7 +572,7 @@ test('SourceCache#tilesIn', function (t) {
             tileSize: 512
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             var transform = new Transform();
             transform.resize(512, 512);
             transform.zoom = 2.0;
@@ -616,7 +616,7 @@ test('SourceCache#tilesIn', function (t) {
             tileSize: 512
         });
 
-        sourceCache.on('source.load', function () {
+        sourceCache.on('sourceload', function () {
             var transform = new Transform();
             transform.resize(512, 512);
             transform.zoom = 2.0;
@@ -638,7 +638,7 @@ test('SourceCache#loaded (no errors)', function (t) {
         }
     });
 
-    sourceCache.on('source.load', function () {
+    sourceCache.on('sourceload', function () {
         var coord = new TileCoord(0, 0, 0);
         sourceCache.addTile(coord);
 
@@ -654,7 +654,7 @@ test('SourceCache#loaded (with errors)', function (t) {
         }
     });
 
-    sourceCache.on('source.load', function () {
+    sourceCache.on('sourceload', function () {
         var coord = new TileCoord(0, 0, 0);
         sourceCache.addTile(coord);
 
