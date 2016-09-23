@@ -88,7 +88,7 @@ function GeoJSONSource(id, options, dispatcher) {
             this.fire('error', {error: err});
             return;
         }
-        this.fire('load');
+        this.fire('source.load');
     }.bind(this));
 }
 
@@ -119,7 +119,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('change');
+            this.fire('source.change');
         }.bind(this));
 
         return this;

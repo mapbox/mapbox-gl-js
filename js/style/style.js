@@ -34,12 +34,7 @@ function Style(stylesheet, animationLoop, options) {
     this.sources = {};
     this.zoomHistory = {};
 
-    util.bindAll([
-        '_forwardSourceEvent',
-        '_forwardTileEvent',
-        '_forwardLayerEvent',
-        '_redoPlacement'
-    ], this);
+    util.bindAll(['_redoPlacement'], this);
 
     this._resetUpdates();
 
@@ -67,12 +62,12 @@ function Style(stylesheet, animationLoop, options) {
 
         if (stylesheet.sprite) {
             this.sprite = new ImageSprite(stylesheet.sprite);
-            this.sprite.on('load', this.fire.bind(this, 'change'));
+            this.sprite.setEventedParent(this);
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('load');
+        this.fire('style.load');
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
@@ -146,7 +141,7 @@ Style.prototype = util.inherit(Evented, {
             if (layerJSON.ref) continue;
             layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.setEventedParent(this, {layer: {id: layer.id}});
         }
 
         // resolve all layers WITH a ref
@@ -156,7 +151,7 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.setEventedParent(this, {layer: {id: layer.id}});
         }
 
         this._groupLayers();
@@ -305,7 +300,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('change');
+            this.fire('style.change');
         }
 
         this._resetUpdates();
@@ -340,15 +335,7 @@ Style.prototype = util.inherit(Evented, {
         source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
         source.style = this;
-        source
-            .on('load', this._forwardSourceEvent)
-            .on('error', this._forwardSourceEvent)
-            .on('change', this._forwardSourceEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.load', this._forwardTileEvent)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent)
-            .on('tile.stats', this._forwardTileEvent);
+        source.setEventedParent(this, {source: source});
 
         this._updates.events.push(['source.add', {source: source}]);
         this._updates.changed = true;
@@ -372,15 +359,7 @@ Style.prototype = util.inherit(Evented, {
         var source = this.sources[id];
         delete this.sources[id];
         delete this._updates.sources[id];
-        source
-            .off('load', this._forwardSourceEvent)
-            .off('error', this._forwardSourceEvent)
-            .off('change', this._forwardSourceEvent)
-            .off('tile.add', this._forwardTileEvent)
-            .off('tile.load', this._forwardTileEvent)
-            .off('tile.error', this._forwardTileEvent)
-            .off('tile.remove', this._forwardTileEvent)
-            .off('tile.stats', this._forwardTileEvent);
+        source.setEventedParent(null);
 
         this._updates.events.push(['source.remove', {source: source}]);
         this._updates.changed = true;
@@ -420,7 +399,7 @@ Style.prototype = util.inherit(Evented, {
         }
         this._validateLayer(layer);
 
-        layer.on('error', this._forwardLayerEvent);
+        layer.setEventedParent(this, {layer: {id: layer.id}});
 
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
@@ -454,7 +433,7 @@ Style.prototype = util.inherit(Evented, {
             }
         }
 
-        layer.off('error', this._forwardLayerEvent);
+        layer.setEventedParent(null);
 
         delete this._layers[id];
         delete this._updates.layers[id];
@@ -730,18 +709,6 @@ Style.prototype = util.inherit(Evented, {
         }
     },
 
-    _forwardSourceEvent: function(e) {
-        this.fire('source.' + e.type, util.extend({source: e.target.getSource()}, e));
-    },
-
-    _forwardTileEvent: function(e) {
-        this.fire(e.type, util.extend({source: e.target}, e));
-    },
-
-    _forwardLayerEvent: function(e) {
-        this.fire('layer.' + e.type, util.extend({layer: {id: e.target.id}}, e));
-    },
-
     // Callbacks from web workers
 
     'get icons': function(mapId, params, callback) {
@@ -751,7 +718,7 @@ Style.prototype = util.inherit(Evented, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('load', function() {
+            sprite.on('style.change', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });

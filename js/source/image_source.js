@@ -53,7 +53,7 @@ function ImageSource(id, options, dispatcher) {
 
         this.image = image;
         this._loaded = true;
-        this.fire('load');
+        this.fire('source.load');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);
@@ -106,7 +106,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('change');
+        this.fire('source.change');
         return this;
     },
 

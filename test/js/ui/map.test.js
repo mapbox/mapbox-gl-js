@@ -1,10 +1,9 @@
 'use strict';
 
 var test = require('tap').test;
-var extend = require('../../../js/util/util').extend;
+var util = require('../../../js/util/util');
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
-var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
 var sinon = require('sinon');
 
@@ -17,7 +16,7 @@ function createMap(options, callback) {
     container.offsetWidth = 200;
     container.offsetHeight = 200;
 
-    var map = new Map(extend({
+    var map = new Map(util.extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -128,43 +127,39 @@ test('Map', function(t) {
         });
 
         t.test('sets up event forwarding', function(t) {
-            var map = createMap(),
-                style = new Style({
-                    version: 8,
-                    sources: {},
-                    layers: []
-                });
+            createMap({}, function(error, map) {
+                t.error(error);
 
-            var events = [];
+                var events = [];
+                function recordEvent(event) {
+                    events.push(event.type);
+                }
 
-            function checkEvent(e) {
-                t.equal(e.style, style);
-                events.push(e.type);
-            }
+                map.on('error',         recordEvent);
+                map.on('style.change',  recordEvent);
+                map.on('source.load',   recordEvent);
+                map.on('source.change', recordEvent);
+                map.on('tile.add',      recordEvent);
+                map.on('tile.remove',   recordEvent);
 
-            map.on('style.load',    checkEvent);
-            map.on('style.error',   checkEvent);
-            map.on('style.change',  checkEvent);
-            map.on('source.load',   checkEvent);
-            map.on('source.error',  checkEvent);
-            map.on('source.change', checkEvent);
-            map.on('tile.add',      checkEvent);
-            map.on('tile.error',    checkEvent);
-            map.on('tile.remove',   checkEvent);
+                map.style.fire('error');
+                map.style.fire('style.change');
+                map.style.fire('source.load');
+                map.style.fire('source.change');
+                map.style.fire('tile.add');
+                map.style.fire('tile.remove');
 
-            // Suppress error messages
-            map.on('error', function() {});
+                t.deepEqual(events, [
+                    'error',
+                    'style.change',
+                    'source.load',
+                    'source.change',
+                    'tile.add',
+                    'tile.remove'
+                ]);
 
-            t.plan(10);
-            map.setStyle(style); // Fires load
-            style.fire('error');
-            style.fire('change');
-            style.fire('source.load');
-            style.fire('source.error');
-            style.fire('source.change');
-            style.fire('tile.add');
-            style.fire('tile.error');
-            style.fire('tile.remove');
+                t.end();
+            });
         });
 
         t.test('can be called more than once', function(t) {
@@ -271,7 +266,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     sources: {geojson: createStyleSource()}
                 }));
                 t.end();
@@ -284,7 +279,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addLayer(createStyleLayer());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     layers: [createStyleLayer()]
                 }));
                 t.end();
@@ -1026,37 +1021,34 @@ test('Map', function(t) {
     });
 
     t.test('#removeLayer restores Map#loaded() to true', function (t) {
-        var style = createStyle();
-        style.sources.mapbox = {
-            type: 'vector',
-            minzoom: 1,
-            maxzoom: 10,
-            tiles: ['http://example.com/{z}/{x}/{y}.png']
-        };
-        style.layers.push({
-            id: 'layerId',
-            type: 'circle',
-            source: 'mapbox',
-            'source-layer': 'sourceLayer'
+        var map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
         });
 
-        var timer;
-        var map = createMap({ style: style });
-        map.on('render', function () {
-            if (timer) clearTimeout(timer);
-            timer = setTimeout(function () {
-                map.off('render');
-                map.on('render', check);
-                map.removeLayer('layerId');
-            }, 100);
+        map.once('render', function() {
+            map.removeLayer('layerId');
+            map.on('render', function() {
+                if (map.loaded()) {
+                    map.remove();
+                    t.end();
+                }
+            });
         });
-
-        function check () {
-            if (map.loaded()) {
-                map.remove();
-                t.end();
-            }
-        }
     });
 
     t.end();

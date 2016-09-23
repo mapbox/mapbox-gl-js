@@ -27,8 +27,10 @@ function SourceCache(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
 
-    var source = this._source = Source.create(id, options, dispatcher)
-    .on('load', function () {
+    var source = this._source = Source.create(id, options, dispatcher);
+    source.setEventedParent(this);
+
+    this.on('source.load', function() {
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
 
         this._sourceLoaded = true;
@@ -42,20 +44,18 @@ function SourceCache(id, options, dispatcher) {
         this.attribution = source.attribution;
 
         this.vectorLayerIds = source.vectorLayerIds;
+    });
 
-        this.fire('load');
-    }.bind(this))
-    .on('error', function (e) {
+    this.on('error', function() {
         this._sourceErrored = true;
-        this.fire('error', e);
-    }.bind(this))
-    .on('change', function () {
+    });
+
+    this.on('source.change', function() {
         this.reload();
         if (this.transform) {
             this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
         }
-        this.fire('change');
-    }.bind(this));
+    });
 
     this._tiles = {};
     this._cache = new Cache(0, this.unloadTile.bind(this));
@@ -160,14 +160,12 @@ SourceCache.prototype = util.inherit(Evented, {
     _tileLoaded: function (tile, err) {
         if (err) {
             tile.state = 'errored';
-            this.fire('tile.error', {tile: tile, error: err});
-            this._source.fire('tile.error', {tile: tile, error: err});
+            this._source.fire('error', {tile: tile, error: err});
             return;
         }
 
         tile.source = this;
         tile.timeAdded = new Date().getTime();
-        this.fire('tile.load', {tile: tile});
         this._source.fire('tile.load', {tile: tile});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -409,7 +407,6 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this.fire('tile.add', {tile: tile});
         this._source.fire('tile.add', {tile: tile});
 
         return tile;
@@ -428,7 +425,6 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses--;
         delete this._tiles[id];
-        this.fire('tile.remove', {tile: tile});
         this._source.fire('tile.remove', {tile: tile});
 
         if (tile.uses > 0)
