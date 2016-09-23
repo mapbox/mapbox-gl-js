@@ -32,7 +32,11 @@
             if (req['!']) {
               return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
             } else {
-              return '<em>Requires</em> <var>' + _.toPairs(req)[0][0] + ' = ' + _.toPairs(req)[0][1] + '</var>.';
+              var requiredValue = _.toPairs(req)[0][1];
+              var requiredDisplay = _.isArray(requiredValue)
+                ? '</var>one of<var> ' + requiredValue.join('</var>,<var> ')
+                : requiredValue;
+              return '<em>Requires</em> <var>' + _.toPairs(req)[0][0] + ' = ' + requiredDisplay + '</var>.';
             }
           }
         }).join(' ') %>

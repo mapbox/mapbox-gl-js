@@ -674,8 +674,14 @@
       "doc": "Size of the additional area added to dimensions determined by `icon-text-fix`, in clockwise order: top, right, bottom, left.",
       "requires": [
         "icon-image",
-        "icon-text-fit",
-        "text-field"
+        "text-field",
+        {
+          "icon-text-fit": [
+            "both",
+            "width",
+            "height"
+          ]
+        }
       ],
       "sdk-support": {
         "basic functionality": {
