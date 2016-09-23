@@ -197,7 +197,7 @@ var Map = module.exports = function(options) {
         this.style.update(this._classes, {transition: false});
     });
 
-    this.on('style.change', function() {
+    this.on('data', function() {
         this._update(true);
     });
 

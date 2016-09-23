@@ -300,7 +300,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('style.change');
+            this.fire('data', {dataType: 'style'});
         }
 
         this._resetUpdates();
@@ -718,7 +718,7 @@ Style.prototype = util.inherit(Evented, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('style.change', function() {
+            sprite.on('data', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });

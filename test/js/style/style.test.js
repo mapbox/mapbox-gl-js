@@ -1171,12 +1171,7 @@ test('Style defers expensive methods', function(t) {
 
         style.update();
 
-        // called per added layer, conflating 'change' events
-        t.equal(style.fire.callCount, 4, 'fire is called per action');
-        t.equal(style.fire.args[0][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[1][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[2][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[3][0], 'style.change', 'fire was called with style.change');
+        t.ok(style.fire.calledWith('data'), 'a data event was fired');
 
         // called per source
         t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');

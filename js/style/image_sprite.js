@@ -20,7 +20,7 @@ function ImageSprite(base) {
         }
 
         this.data = data;
-        if (this.img) this.fire('style.change');
+        if (this.img) this.fire('data', {dataType: 'sprite'});
     }.bind(this));
 
     ajax.getImage(normalizeURL(base, format, '.png'), function(err, img) {
@@ -41,7 +41,7 @@ function ImageSprite(base) {
         }
 
         this.img = img;
-        if (this.data) this.fire('style.change');
+        if (this.data) this.fire('data', {dataType: 'sprite'});
     }.bind(this));
 }
 
@@ -58,7 +58,7 @@ ImageSprite.prototype.loaded = function() {
 ImageSprite.prototype.resize = function(/*gl*/) {
     if (browser.devicePixelRatio > 1 !== this.retina) {
         var newSprite = new ImageSprite(this.base);
-        newSprite.on('style.change', function() {
+        newSprite.on('data', function() {
             this.img = newSprite.img;
             this.data = newSprite.data;
             this.retina = newSprite.retina;
