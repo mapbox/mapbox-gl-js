@@ -67,7 +67,8 @@ function Style(stylesheet, animationLoop, options) {
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('style.load');
+        this.fire('data', {dataType: 'style'});
+        this.fire('styleload');
     }.bind(this);
 
     if (typeof stylesheet === 'string') {

@@ -176,7 +176,7 @@ test('Map', function(t) {
             t.equal(map.transform.zoom, 0.6983039737971012, 'map transform is constrained');
             t.ok(map.transform.unmodified, 'map transform is not modified');
             map.setStyle(createStyle());
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -73.9749, lat: 40.7736 }));
                 t.equal(fixedNum(map.transform.zoom), 12.5);
                 t.equal(fixedNum(map.transform.bearing), 29);
@@ -189,7 +189,7 @@ test('Map', function(t) {
             var map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
                 t.equal(fixedNum(map.transform.zoom), 10);
                 t.equal(fixedNum(map.transform.bearing), 0);
@@ -205,7 +205,7 @@ test('Map', function(t) {
             map.setCenter([-77.0186, 38.8888]);
             t.notOk(map.transform.unmodified, 'map transform is modified via setters');
             map.setStyle(createStyle());
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 t.deepEqual(fixedLngLat(map.transform.center), fixedLngLat({ lng: -77.0186, lat: 38.8888 }));
                 t.equal(fixedNum(map.transform.zoom), 10);
                 t.equal(fixedNum(map.transform.bearing), 0);
@@ -672,7 +672,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.style.dispatcher.broadcast = function(key, value) {
                     t.equal(key, 'update layers');
                     t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
@@ -712,7 +712,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.style.dispatcher.broadcast = function(key, value) {
                     t.equal(key, 'update layers');
                     t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
@@ -757,7 +757,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.once('style.load', function () {
+            map.once('styleload', function () {
                 map.once('data', function (e) {
                     if (e.dataType === 'style') {
                         t.end();
@@ -784,7 +784,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.setLayoutProperty('background', 'visibility', 'visible');
                 t.deepEqual(map.getLayoutProperty('background', 'visibility'), 'visible');
                 t.end();
@@ -815,7 +815,7 @@ test('Map', function(t) {
             // Suppress errors because we're not loading tiles from a real URL.
             map.on('error', function() {});
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.setLayoutProperty('satellite', 'visibility', 'visible');
                 t.deepEqual(map.getLayoutProperty('satellite', 'visibility'), 'visible');
                 t.end();
@@ -849,7 +849,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.setLayoutProperty('shore', 'visibility', 'visible');
                 t.deepEqual(map.getLayoutProperty('shore', 'visibility'), 'visible');
                 t.end();
@@ -883,7 +883,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.setLayoutProperty('image', 'visibility', 'visible');
                 t.deepEqual(map.getLayoutProperty('image', 'visibility'), 'visible');
                 t.end();
@@ -906,7 +906,7 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
+            map.on('styleload', function () {
                 map.setPaintProperty('background', 'background-color', 'red');
                 t.deepEqual(map.getPaintProperty('background', 'background-color'), 'red');
                 t.end();

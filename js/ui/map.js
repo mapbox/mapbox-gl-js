@@ -190,7 +190,7 @@ var Map = module.exports = function(options) {
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
-    this.on('style.load', function() {
+    this.on('styleload', function() {
         if (this.transform.unmodified) {
             this.jumpTo(this.style.stylesheet);
         }

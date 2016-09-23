@@ -53,7 +53,7 @@ test('Style', function(t) {
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
         var style = new Style('/style.json');
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             window.restore();
             t.end();
         });
@@ -69,7 +69,7 @@ test('Style', function(t) {
                 }
             }
         }));
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.ok(style.sources['mapbox'] instanceof SourceCache);
             t.end();
         });
@@ -105,7 +105,7 @@ test('Style', function(t) {
             .on('error', function() {
                 t.fail();
             })
-            .on('style.load', function() {
+            .on('styleload', function() {
                 window.restore();
                 t.end();
             });
@@ -127,7 +127,7 @@ test('Style', function(t) {
             }]
         }));
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.removeSource('-source-id-');
 
             var source = createSource();
@@ -162,7 +162,7 @@ test('Style', function(t) {
             t.end();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style._layers.background.fire('error', {mapbox: true});
         });
     });
@@ -188,7 +188,7 @@ test('Style#_updateWorkerLayers', function(t) {
 
     style.on('error', function(error) { t.error(error); });
 
-    style.on('style.load', function() {
+    style.on('styleload', function() {
         style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer' }, 'second');
         style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer' });
 
@@ -219,7 +219,7 @@ test('Style#_updateWorkerLayers with specific ids', function(t) {
 
     style.on('error', function(error) { t.error(error); });
 
-    style.on('style.load', function() {
+    style.on('styleload', function() {
         style.dispatcher.broadcast = function(key, value) {
             t.equal(key, 'update layers');
             t.deepEqual(value.map(function(layer) { return layer.id; }), ['second', 'third']);
@@ -249,7 +249,7 @@ test('Style#_resolve', function(t) {
 
         style.on('error', function(error) { t.error(error); });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.ok(style.getLayer('fill') instanceof StyleLayer);
             t.end();
         });
@@ -277,7 +277,7 @@ test('Style#_resolve', function(t) {
 
         style.on('error', function(event) { t.error(event.error); });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             var ref = style.getLayer('ref'),
                 referent = style.getLayer('referent');
             t.equal(ref.type, 'fill');
@@ -293,7 +293,7 @@ test('Style#addSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             t.equal(style.addSource('source-id', source), style);
             t.end();
         });
@@ -305,7 +305,7 @@ test('Style#addSource', function(t) {
         t.throws(function () {
             style.addSource('source-id', source);
         }, Error, /load/i);
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.end();
         });
     });
@@ -316,7 +316,7 @@ test('Style#addSource', function(t) {
 
         delete source.type;
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.throws(function () {
                 style.addSource('source-id', source);
             }, Error, /type/i);
@@ -331,7 +331,7 @@ test('Style#addSource', function(t) {
             t.same(e.source.serialize(), source);
             t.end();
         });
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             style.addSource('source-id', source);
             style.update();
         });
@@ -340,7 +340,7 @@ test('Style#addSource', function(t) {
     t.test('throws on duplicates', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             style.addSource('source-id', source);
             t.throws(function() {
                 style.addSource('source-id', source);
@@ -351,7 +351,7 @@ test('Style#addSource', function(t) {
 
     t.test('emits on invalid source', function(t) {
         var style = new Style(createStyleJSON());
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.on('error', function() {
                 t.notOk(style.sources['source-id']);
                 t.end();
@@ -375,25 +375,16 @@ test('Style#addSource', function(t) {
         }));
         var source = createSource();
 
-        function checkEvent(e) {
-            t.same(e.source.serialize(), source);
-        }
+        style.on('styleload', function () {
+            t.plan(4);
 
-        style.on('error',         checkEvent);
-        style.on('sourceload',    checkEvent);
-        style.on('data',          checkEvent);
-        style.on('tile.add',      checkEvent);
-        style.on('tile.load',     checkEvent);
-        style.on('tile.remove',   checkEvent);
+            style.on('error', function() { t.ok(true); });
+            style.on('data', function() { t.ok(true); });
+            style.on('sourceload', function() { t.ok(true); });
 
-        style.on('style.load', function () {
-            t.plan(7);
-            style.addSource('source-id', source); // Fires load
+            style.addSource('source-id', source); // Fires 'sourceload' and 'data'
             style.sources['source-id'].fire('error');
             style.sources['source-id'].fire('data');
-            style.sources['source-id'].fire('tile.add');
-            style.sources['source-id'].fire('tile.load');
-            style.sources['source-id'].fire('tile.remove');
         });
     });
 
@@ -404,7 +395,7 @@ test('Style#removeSource', function(t) {
     t.test('returns self', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             style.addSource('source-id', source);
             t.equal(style.removeSource('source-id'), style);
             t.end();
@@ -423,7 +414,7 @@ test('Style#removeSource', function(t) {
         t.throws(function () {
             style.removeSource('source-id');
         }, Error, /load/i);
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.end();
         });
     });
@@ -435,7 +426,7 @@ test('Style#removeSource', function(t) {
             t.same(e.source.serialize(), source);
             t.end();
         });
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             style.addSource('source-id', source);
             style.removeSource('source-id');
             style.update();
@@ -454,7 +445,7 @@ test('Style#removeSource', function(t) {
 
     t.test('throws on non-existence', function(t) {
         var style = new Style(createStyleJSON());
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             t.throws(function() {
                 style.removeSource('source-id');
             }, /There is no source with this ID/);
@@ -466,31 +457,20 @@ test('Style#removeSource', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
 
-        style.on('sourceload',   t.fail);
-        style.on('error',  t.fail);
-        style.on('data', t.fail);
-        style.on('tile.add',      t.fail);
-        style.on('tile.load',     t.fail);
-        style.on('error',    t.fail);
-        style.on('tile.remove',   t.fail);
-
-        style.on('style.load', function () {
+        style.on('styleload', function () {
             style.addSource('source-id', source);
             source = style.sources['source-id'];
 
             style.removeSource('source-id');
 
-            // Bind a listener to prevent fallback Evented error reporting.
-            source.on('error',  function() {});
-            source.on('error',  function() {});
+            // Suppress error reporting
+            source.on('error', function() {});
 
-            source.fire('sourceload');
-            source.fire('error');
+            style.on('data', function() { t.ok(false); });
+            style.on('error', function() { t.ok(false); });
             source.fire('data');
-            source.fire('tile.add');
-            source.fire('tile.load');
             source.fire('error');
-            source.fire('tile.remove');
+
             t.end();
         });
     });
@@ -503,7 +483,7 @@ test('Style#addLayer', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.equal(style.addLayer(layer), style);
             t.end();
         });
@@ -515,7 +495,7 @@ test('Style#addLayer', function(t) {
         t.throws(function () {
             style.addLayer(layer);
         }, Error, /load/i);
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.end();
         });
     });
@@ -529,7 +509,7 @@ test('Style#addLayer', function(t) {
             t.end();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer({
                 id: 'background',
                 type: 'background'
@@ -546,7 +526,7 @@ test('Style#addLayer', function(t) {
             }
         }));
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             var source = createSource();
             source['vector_layers'] = [{id: 'green'}];
             style.addSource('-source-id-', source);
@@ -572,7 +552,7 @@ test('Style#addLayer', function(t) {
 
     t.test('emits error on invalid layer', function(t) {
         var style = new Style(createStyleJSON());
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.on('error', function() {
                 t.notOk(style.getLayer('background'));
                 t.end();
@@ -604,7 +584,7 @@ test('Style#addLayer', function(t) {
             "filter": ["==", "id", 0]
         };
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.sources['mapbox'].reload = t.end;
 
             style.addLayer(layer);
@@ -621,7 +601,7 @@ test('Style#addLayer', function(t) {
             t.end();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer);
             style.update();
         });
@@ -637,7 +617,7 @@ test('Style#addLayer', function(t) {
             t.end();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer);
             style.addLayer(layer);
             t.end();
@@ -656,7 +636,7 @@ test('Style#addLayer', function(t) {
             })),
             layer = {id: 'c', type: 'background'};
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer);
             t.deepEqual(style._order, ['a', 'b', 'c']);
             t.end();
@@ -675,7 +655,7 @@ test('Style#addLayer', function(t) {
             })),
             layer = {id: 'c', type: 'background'};
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer, 'a');
             t.deepEqual(style._order, ['c', 'a', 'b']);
             t.end();
@@ -690,7 +670,7 @@ test('Style#removeLayer', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer);
             t.equal(style.removeLayer('background'), style);
             t.end();
@@ -704,7 +684,7 @@ test('Style#removeLayer', function(t) {
         t.throws(function () {
             style.removeLayer('background');
         }, Error, /load/i);
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.end();
         });
     });
@@ -718,7 +698,7 @@ test('Style#removeLayer', function(t) {
             t.end();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.addLayer(layer);
             style.removeLayer('background');
             style.update();
@@ -737,7 +717,7 @@ test('Style#removeLayer', function(t) {
             t.fail();
         });
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             var layer = style._layers.background;
             style.removeLayer('background');
 
@@ -752,7 +732,7 @@ test('Style#removeLayer', function(t) {
     t.test('throws on non-existence', function(t) {
         var style = new Style(createStyleJSON());
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.throws(function () {
                 style.removeLayer('background');
             }, /There is no layer with this ID/);
@@ -771,7 +751,7 @@ test('Style#removeLayer', function(t) {
             }]
         }));
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.removeLayer('a');
             t.deepEqual(style._order, ['b']);
             t.end();
@@ -789,7 +769,7 @@ test('Style#removeLayer', function(t) {
             }]
         }));
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.removeLayer('a');
             t.deepEqual(style.getLayer('a'), undefined);
             t.deepEqual(style.getLayer('b'), undefined);
@@ -817,7 +797,7 @@ test('Style#setFilter', function(t) {
     t.test('sets filter', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
                 t.deepEqual(value[0].id, 'symbol');
@@ -834,7 +814,7 @@ test('Style#setFilter', function(t) {
     t.test('gets a clone of the filter', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             var filter1 = ['==', 'id', 1];
             style.setFilter('symbol', filter1);
             var filter2 = style.getFilter('symbol');
@@ -851,7 +831,7 @@ test('Style#setFilter', function(t) {
     t.test('sets again mutated filter', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             var filter = ['==', 'id', 1];
             style.setFilter('symbol', filter);
             style.update({}, {}); // flush pending operations
@@ -871,7 +851,7 @@ test('Style#setFilter', function(t) {
     t.test('sets filter on parent', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
                 t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
@@ -896,7 +876,7 @@ test('Style#setFilter', function(t) {
 
     t.test('emits if invalid', function(t) {
         var style = createStyle();
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.on('error', function() {
                 t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
                 t.end();
@@ -929,7 +909,7 @@ test('Style#setLayerZoomRange', function(t) {
     t.test('sets zoom range', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
                 t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
@@ -945,7 +925,7 @@ test('Style#setLayerZoomRange', function(t) {
     t.test('sets zoom range on parent layer', function(t) {
         var style = createStyle();
 
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'update layers');
                 t.deepEqual(value.map(function(layer) { return layer.id; }), ['symbol']);
@@ -963,7 +943,7 @@ test('Style#setLayerZoomRange', function(t) {
         t.throws(function () {
             style.setLayerZoomRange('symbol', 5, 12);
         }, Error, /load/i);
-        style.on('style.load', function() {
+        style.on('styleload', function() {
             t.end();
         });
     });
@@ -1065,7 +1045,7 @@ test('Style#queryRenderedFeatures', function(t) {
         }]
     });
 
-    style.on('style.load', function() {
+    style.on('styleload', function() {
         style._applyClasses([]);
         style._recalculate(0);
 
@@ -1148,7 +1128,7 @@ test('Style defers expensive methods', function(t) {
         }
     }));
 
-    style.on('style.load', function() {
+    style.on('styleload', function() {
         style.update();
 
         // spies to track defered methods
@@ -1213,7 +1193,7 @@ test('Style#query*Features', function(t) {
         onError = sinon.spy();
 
         style.on('error', onError)
-            .on('style.load', function() {
+            .on('styleload', function() {
                 callback();
             });
     });
