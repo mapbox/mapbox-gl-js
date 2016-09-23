@@ -409,7 +409,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._source.fire('tile.add', {tile: tile});
+        this._source.fire('dataloading', {tile: tile, dataType: 'tile'});
 
         return tile;
     },

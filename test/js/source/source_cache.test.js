@@ -75,7 +75,7 @@ test('SourceCache#addTile', function(t) {
     t.test('adds tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
         var sourceCache = createSourceCache({})
-        .on('tile.add', function (data) {
+        .on('dataloading', function (data) {
             t.deepEqual(data.tile.coord, coord);
             t.equal(data.tile.uses, 1);
             t.end();
@@ -95,7 +95,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var tr = new Transform();
         tr.width = 512;
@@ -123,7 +123,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var t1 = sourceCache.addTile(coord);
         var t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
