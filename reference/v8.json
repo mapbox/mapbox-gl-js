@@ -1689,7 +1689,7 @@
     "circle-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color of the circle.",
+      "doc": "The fill color of the circle.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
