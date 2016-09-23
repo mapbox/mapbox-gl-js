@@ -135,7 +135,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('source.change');
+        this.fire('data', {dataType: 'video'});
         return this;
     },
 

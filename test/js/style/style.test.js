@@ -381,7 +381,7 @@ test('Style#addSource', function(t) {
 
         style.on('error',         checkEvent);
         style.on('source.load',   checkEvent);
-        style.on('source.change', checkEvent);
+        style.on('data', checkEvent);
         style.on('tile.add',      checkEvent);
         style.on('tile.load',     checkEvent);
         style.on('tile.remove',   checkEvent);
@@ -390,7 +390,7 @@ test('Style#addSource', function(t) {
             t.plan(6);
             style.addSource('source-id', source); // Fires load
             style.sources['source-id'].fire('error');
-            style.sources['source-id'].fire('source.change');
+            style.sources['source-id'].fire('data');
             style.sources['source-id'].fire('tile.add');
             style.sources['source-id'].fire('tile.load');
             style.sources['source-id'].fire('tile.remove');
@@ -468,7 +468,7 @@ test('Style#removeSource', function(t) {
 
         style.on('source.load',   t.fail);
         style.on('error',  t.fail);
-        style.on('source.change', t.fail);
+        style.on('data', t.fail);
         style.on('tile.add',      t.fail);
         style.on('tile.load',     t.fail);
         style.on('error',    t.fail);
@@ -486,7 +486,7 @@ test('Style#removeSource', function(t) {
 
             source.fire('source.load');
             source.fire('error');
-            source.fire('source.change');
+            source.fire('data');
             source.fire('tile.add');
             source.fire('tile.load');
             source.fire('error');

@@ -212,7 +212,7 @@ var Map = module.exports = function(options) {
     });
 
     this.on('source.load', this._update);
-    this.on('source.change', this._update);
+    this.on('data', this._update);
     this.on('tile.load', this._update);
 };
 

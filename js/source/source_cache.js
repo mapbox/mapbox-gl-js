@@ -50,10 +50,12 @@ function SourceCache(id, options, dispatcher) {
         this._sourceErrored = true;
     });
 
-    this.on('source.change', function() {
-        this.reload();
-        if (this.transform) {
-            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+    this.on('data', function(event) {
+        if (this._sourceLoaded && ['image', 'video', 'geoJSON'].indexOf(event.dataType) !== -1) {
+            this.reload();
+            if (this.transform) {
+                this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+            }
         }
     });
 

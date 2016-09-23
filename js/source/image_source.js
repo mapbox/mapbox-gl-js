@@ -106,7 +106,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('source.change');
+        this.fire('data', {dataType: 'image'});
         return this;
     },
 

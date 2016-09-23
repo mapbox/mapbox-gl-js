@@ -206,7 +206,7 @@ test('SourceCache / Source lifecycle', function (t) {
     t.test('does not fire load or change before source load event', function (t) {
         createSourceCache({noLoad: true})
             .on('source.load', t.fail)
-            .on('source.change', t.fail);
+            .on('data', t.fail);
         setTimeout(t.end, 1);
     });
 
@@ -215,8 +215,8 @@ test('SourceCache / Source lifecycle', function (t) {
     });
 
     t.test('forward change event', function (t) {
-        var sourceCache = createSourceCache().on('source.change', t.end);
-        sourceCache.getSource().fire('source.change');
+        var sourceCache = createSourceCache().on('data', t.end);
+        sourceCache.getSource().fire('data');
     });
 
     t.test('forward error event', function (t) {
@@ -235,7 +235,7 @@ test('SourceCache / Source lifecycle', function (t) {
         });
     });
 
-    t.test('reloads tiles after source change event', function (t) {
+    t.test('reloads tiles after a geoJSON data event', function (t) {
         var transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -253,7 +253,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
         sourceCache.on('source.load', function () {
             sourceCache.update(transform);
-            sourceCache.getSource().fire('source.change');
+            sourceCache.getSource().fire('data', {dataType: 'geoJSON'});
         });
     });
 

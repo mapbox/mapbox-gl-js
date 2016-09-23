@@ -119,7 +119,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('source.change');
+            this.fire('data', {dataType: 'geoJSON'});
         }.bind(this));
 
         return this;
