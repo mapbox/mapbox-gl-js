@@ -36,8 +36,9 @@ function Worker(self) {
 }
 
 util.extend(Worker.prototype, {
-    'set layers': function(mapId, layerDefinitions) {
+    'set layers': function(mapId, data) {
         var layers = this.layers[mapId] = {};
+        var layerDefinitions = JSON.parse(data);
 
         // Filter layers and create an id -> layer map
         var childLayerIndicies = [];
@@ -70,11 +71,12 @@ util.extend(Worker.prototype, {
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
-    'update layers': function(mapId, layerDefinitions) {
+    'update layers': function(mapId, data) {
         var id;
         var layer;
 
         var layers = this.layers[mapId];
+        var layerDefinitions = JSON.parse(data);
 
         // Update ref parents
         for (id in layerDefinitions) {

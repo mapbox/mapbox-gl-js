@@ -32,11 +32,11 @@ test('load tile', function(t) {
 test('set layers', function(t) {
     var worker = new Worker(_self);
 
-    worker['set layers'](0, [
+    worker['set layers'](0, JSON.stringify([
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
         { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
+    ]));
 
     t.equal(worker.layers[0].one.id, 'one');
     t.equal(worker.layers[0].two.id, 'two');
@@ -58,17 +58,17 @@ test('set layers', function(t) {
 test('update layers', function(t) {
     var worker = new Worker(_self);
 
-    worker['set layers'](0, [
+    worker['set layers'](0, JSON.stringify([
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
         { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
+    ]));
 
-    worker['update layers'](0, {
+    worker['update layers'](0, JSON.stringify({
         one: { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
         two: { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
         three: { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    });
+    }));
 
     t.equal(worker.layers[0].one.getPaintProperty('circle-color'), 'cyan');
     t.equal(worker.layers[0].two.getPaintProperty('circle-color'), 'magenta');
@@ -92,23 +92,23 @@ test('redo placement', function(t) {
 test('update layers isolates different instances\' data', function(t) {
     var worker = new Worker(_self);
 
-    worker['set layers'](0, [
+    worker['set layers'](0, JSON.stringify([
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
         { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
+    ]));
 
-    worker['set layers'](1, [
+    worker['set layers'](1, JSON.stringify([
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
         { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
+    ]));
 
-    worker['update layers'](1, {
+    worker['update layers'](1, JSON.stringify({
         one: { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
         two: { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
         three: { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    });
+    }));
 
     t.equal(worker.layers[0].one.id, 'one');
     t.equal(worker.layers[0].two.id, 'two');
