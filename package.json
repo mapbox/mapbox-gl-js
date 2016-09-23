@@ -1,7 +1,7 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "main": "js/mapbox-gl.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -21,7 +21,7 @@
     "grid-index": "^1.0.0",
     "mapbox-gl-function": "^1.2.1",
     "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#df162476980d9ee2ab6f8d0cf5a06e27aac60472",
-    "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#83b1a3e5837d785af582efd5ed1a212f2df6a4ae",
+    "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#a6c95d33ff5ced2c0d7df995fd89eb557c0a353c",
     "mapbox-gl-supported": "^1.2.0",
     "package-json-versionify": "^1.0.2",
     "pbf": "^1.3.2",
@@ -60,11 +60,11 @@
     "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#f6746fe4a0cafe5a6276f9455187b87c8263e3e4",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#c736ea5acc1094488394f3fc5e5c1f6f94279c71",
     "memory-fs": "^0.3.0",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
-    "nyc": "mourner/nyc#fast",
+    "nyc": "^8.3.0",
     "proxyquire": "^1.7.9",
     "remark": "4.2.2",
     "remark-html": "3.0.0",
@@ -75,9 +75,7 @@
     "unist-util-visit": "1.1.0",
     "vinyl": "1.1.1",
     "vinyl-fs": "2.4.3",
-    "watchify": "^3.7.0",
-    "webpack": "^1.13.1",
-    "webworkify-webpack": "^1.1.3"
+    "watchify": "^3.7.0"
   },
   "browserify": {
     "transform": [
@@ -107,7 +105,8 @@
     "lint": "eslint  --ignore-path .gitignore js test bench docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "test": "run-s lint test-unit",
-    "test-unit": "tap --reporter dot --no-coverage test/js test/build/webpack.test.js",
+    "test-suite": "run-s test-render test-query",
+    "test-unit": "tap --reporter dot --no-coverage test/js",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query"

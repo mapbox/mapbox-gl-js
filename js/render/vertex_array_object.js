@@ -80,13 +80,6 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
     gl.currentNumAttributes = numNextAttributes;
 };
 
-VertexArrayObject.prototype.unbind = function(gl) {
-    var ext = gl.extVertexArrayObject;
-    if (ext) {
-        ext.bindVertexArrayOES(null);
-    }
-};
-
 VertexArrayObject.prototype.destroy = function(gl) {
     var ext = gl.extVertexArrayObject;
     if (ext && this.vao) {

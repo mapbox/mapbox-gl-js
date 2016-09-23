@@ -9,6 +9,7 @@ function registerBenchmark(name, benchmark) {
 }
 
 registerBenchmark('map-load', require('./benchmarks/map_load'));
+registerBenchmark('style-load', require('./benchmarks/style_load'));
 registerBenchmark('buffer', require('./benchmarks/buffer'));
 registerBenchmark('fps', require('./benchmarks/fps'));
 registerBenchmark('frame-duration', require('./benchmarks/frame_duration'));

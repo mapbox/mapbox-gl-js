@@ -12,6 +12,7 @@ var distToSegmentSquared = require('./intersection_tests').distToSegmentSquared;
  * @param {bool} [debug=false] Print some statistics to the console during execution
  *
  * @returns {Point} Pole of Inaccessibiliy.
+ * @private
  */
 module.exports = function (polygonRings, precision, debug) {
     precision = precision || 1.0;

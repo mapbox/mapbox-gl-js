@@ -24,22 +24,15 @@ test('WorkerPool', function (t) {
 
     t.test('#release', function (t) {
         var workersTerminated = 0;
-        var objectUrlsRevoked = {};
         var WorkerPool = proxyquire('../../../js/util/worker_pool', {
-            '../mapbox-gl': { workerCount: 4 },
-            './window': {
-                URL: {
-                    revokeObjectURL: function (url) { objectUrlsRevoked[url] = true; }
-                }
-            }
+            '../mapbox-gl': { workerCount: 4 }
         });
 
         var pool = new WorkerPool();
         pool.acquire('map-1');
         var workers = pool.acquire('map-2');
-        workers.forEach(function (w, i) {
+        workers.forEach(function (w) {
             w.terminate = function () { workersTerminated += 1; };
-            w.objectURL = 'blob:worker-' + i;
         });
 
         pool.release('map-2');
@@ -50,7 +43,6 @@ test('WorkerPool', function (t) {
         t.comment('terminates workers if no dispatchers are active');
         pool.release('map-1');
         t.equal(workersTerminated, 4);
-        t.equal(Object.keys(objectUrlsRevoked).length, 4);
         t.notOk(pool.workers);
 
         t.end();

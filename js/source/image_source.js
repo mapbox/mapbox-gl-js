@@ -52,13 +52,8 @@ function ImageSource(id, options, dispatcher) {
         if (err) return this.fire('error', {error: err});
 
         this.image = image;
-
-        this.image.addEventListener('load', function() {
-            this.map._rerender();
-        }.bind(this));
-
         this._loaded = true;
-        this.fire('load');
+        this.fire('source.load');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);
@@ -103,7 +98,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         centerCoord.row = Math.round(centerCoord.row);
 
         this.minzoom = this.maxzoom = centerCoord.zoom;
-        this._coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
         this._tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
@@ -111,7 +106,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('change');
+        this.fire('source.change');
         return this;
     },
 
@@ -154,11 +149,11 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     },
 
     loadTile: function(tile, callback) {
-        // We have a single tile -- whoose coordinates are this._coord -- that
+        // We have a single tile -- whoose coordinates are this.coord -- that
         // covers the image we want to render.  If that's the one being
         // requested, set it up with the image; otherwise, mark the tile as
         // `errored` to indicate that we have no data for it.
-        if (this._coord && this._coord.toString() === tile.coord.toString()) {
+        if (this.coord && this.coord.toString() === tile.coord.toString()) {
             this._setTile(tile);
             callback(null);
         } else {

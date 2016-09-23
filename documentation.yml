@@ -16,6 +16,7 @@ toc:
   - Navigation
   - Geolocate
   - Attribution
+  - Scale
   - Control
   - name: Handlers
     description: |

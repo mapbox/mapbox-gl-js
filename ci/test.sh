@@ -3,7 +3,7 @@
 source ./nvm/nvm.sh
 nvm use ${NODE_VERSION}
 
-set -eu
+set -e
 set -o pipefail
 
 # add npm packages to $PATH
@@ -27,7 +27,10 @@ npm run test-cov
 
 # send coverage report to coveralls
 nyc report --reporter=lcov
-(node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
+# this code works around a Coveralls / CircleCI bug triggered by tagged builds
+if [ -z "$CIRCLE_TAG" ]; then
+    (node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info) || true
+fi
 
 # upload benchmarks
 if [ "$CIRCLE_BRANCH" == "master" ]; then

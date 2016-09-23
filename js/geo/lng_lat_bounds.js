@@ -80,7 +80,14 @@ LngLatBounds.prototype = {
             if (!sw2 || !ne2) return this;
 
         } else {
-            return obj ? this.extend(LngLat.convert(obj) || LngLatBounds.convert(obj)) : this;
+            if (Array.isArray(obj)) {
+                if (obj.every(Array.isArray)) {
+                    return this.extend(LngLatBounds.convert(obj));
+                } else {
+                    return this.extend(LngLat.convert(obj));
+                }
+            }
+            return this;
         }
 
         if (!sw && !ne) {
@@ -140,28 +147,28 @@ LngLatBounds.prototype = {
     /**
     * Returns the west edge of the bounding box.
     *
-    * @returns {LngLat} The west edge of the bounding box.
+    * @returns {number} The west edge of the bounding box.
      */
     getWest:  function() { return this._sw.lng; },
 
     /**
     * Returns the south edge of the bounding box.
     *
-    * @returns {LngLat} The south edge of the bounding box.
+    * @returns {number} The south edge of the bounding box.
      */
     getSouth: function() { return this._sw.lat; },
 
     /**
     * Returns the east edge of the bounding box.
     *
-    * @returns {LngLat} The east edge of the bounding box.
+    * @returns {number} The east edge of the bounding box.
      */
     getEast:  function() { return this._ne.lng; },
 
     /**
     * Returns the north edge of the bounding box.
     *
-    * @returns {LngLat} The north edge of the bounding box.
+    * @returns {number} The north edge of the bounding box.
      */
     getNorth: function() { return this._ne.lat; },
 

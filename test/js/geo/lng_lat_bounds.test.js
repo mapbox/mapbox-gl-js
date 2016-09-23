@@ -55,6 +55,13 @@ test('LngLatBounds', function(t) {
         t.equal(bounds.getNorth(), 10);
         t.equal(bounds.getEast(), 10);
 
+        bounds.extend(new LngLat(-15, -15));
+
+        t.equal(bounds.getSouth(), -15);
+        t.equal(bounds.getWest(), -15);
+        t.equal(bounds.getNorth(), 10);
+        t.equal(bounds.getEast(), 10);
+
         t.end();
     });
 
@@ -67,6 +74,14 @@ test('LngLatBounds', function(t) {
         t.equal(bounds1.getWest(), -10);
         t.equal(bounds1.getNorth(), 10);
         t.equal(bounds1.getEast(), 10);
+
+        var bounds3 = [[-15, -15], [15, 15]];
+        bounds1.extend(bounds3);
+
+        t.equal(bounds1.getSouth(), -15);
+        t.equal(bounds1.getWest(), -15);
+        t.equal(bounds1.getNorth(), 15);
+        t.equal(bounds1.getEast(), 15);
 
         t.end();
     });

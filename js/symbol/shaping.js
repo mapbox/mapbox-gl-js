@@ -11,7 +11,7 @@ function PositionedGlyph(codePoint, x, y, glyph) {
     this.codePoint = codePoint;
     this.x = x;
     this.y = y;
-    this.glyph = glyph;
+    this.glyph = glyph || null;
 }
 
 // A collection of positioned glyphs and some metadata
@@ -23,6 +23,8 @@ function Shaping(positionedGlyphs, text, top, bottom, left, right) {
     this.left = left;
     this.right = right;
 }
+
+var newLine = 0x0a;
 
 function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
 
@@ -39,10 +41,13 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
         var codePoint = text.charCodeAt(i);
         var glyph = glyphs[codePoint];
 
-        if (!glyph) continue;
+        if (!glyph && codePoint !== newLine) continue;
 
         positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, glyph));
-        x += glyph.advance + spacing;
+
+        if (glyph) {
+            x += glyph.advance + spacing;
+        }
     }
 
     if (!positionedGlyphs.length) return false;
@@ -70,9 +75,10 @@ var breakable = {
     0x2013: true  // en dash
 };
 
+invisible[newLine] = breakable[newLine] = true;
+
 function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
     var lastSafeBreak = null;
-
     var lengthBeforeCurrentLine = 0;
     var lineStartIndex = 0;
     var line = 0;
@@ -88,7 +94,8 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
             positionedGlyph.x -= lengthBeforeCurrentLine;
             positionedGlyph.y += lineHeight * line;
 
-            if (positionedGlyph.x > maxWidth && lastSafeBreak !== null) {
+            if (lastSafeBreak !== null && (positionedGlyph.x > maxWidth ||
+                    positionedGlyphs[lastSafeBreak].codePoint === newLine)) {
 
                 var lineLength = positionedGlyphs[lastSafeBreak + 1].x;
                 maxLineLength = Math.max(lineLength, maxLineLength);
