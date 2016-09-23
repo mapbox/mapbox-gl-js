@@ -131,28 +131,23 @@ test('Map', function(t) {
                 t.error(error);
 
                 var events = [];
-                function recordEvent(event) {
-                    events.push(event.type);
-                }
+                function recordEvent(event) { events.push(event.type); }
 
-                map.on('error',         recordEvent);
-                map.on('sourceload',   recordEvent);
+                map.on('error', recordEvent);
+                map.on('sourceload', recordEvent);
                 map.on('data', recordEvent);
-                map.on('dataloading',      recordEvent);
-                map.on('tile.remove',   recordEvent);
+                map.on('dataloading', recordEvent);
 
                 map.style.fire('error');
                 map.style.fire('sourceload');
                 map.style.fire('data');
                 map.style.fire('dataloading');
-                map.style.fire('tile.remove');
 
                 t.deepEqual(events, [
                     'error',
                     'sourceload',
                     'data',
                     'dataloading',
-                    'tile.remove'
                 ]);
 
                 t.end();

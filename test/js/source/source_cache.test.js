@@ -141,12 +141,14 @@ test('SourceCache#addTile', function(t) {
 test('SourceCache#removeTile', function(t) {
     t.test('removes tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createSourceCache({})
-        .on('tile.remove', function (data) {
-            var tile = data.tile;
-            t.deepEqual(tile.coord, coord);
-            t.equal(tile.uses, 0);
-            t.end();
+        var sourceCache = createSourceCache({});
+        sourceCache.on('data', function (event) {
+            if (event.isDataRemoved) {
+                var tile = event.tile;
+                t.deepEqual(tile.coord, coord);
+                t.equal(tile.uses, 0);
+                t.end();
+            }
         });
         sourceCache.addTile(coord);
         sourceCache.removeTile(coord.id);
