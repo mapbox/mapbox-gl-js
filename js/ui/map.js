@@ -212,7 +212,6 @@ var Map = module.exports = function(options) {
     });
 
     this.on('data', this._update);
-    this.on('tile.load', this._update);
 };
 
 util.extend(Map.prototype, Evented);
