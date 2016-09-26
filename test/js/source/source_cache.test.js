@@ -142,11 +142,8 @@ test('SourceCache#removeTile', function(t) {
     t.test('removes tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
         var sourceCache = createSourceCache({});
-        sourceCache.on('data', function (event) {
-            if (event.isDataRemoved) {
-                var tile = event.tile;
-                t.deepEqual(tile.coord, coord);
-                t.equal(tile.uses, 0);
+        sourceCache.once('data', function (event) {
+            if (event.dataType === 'tile') {
                 t.end();
             }
         });
