@@ -78,7 +78,16 @@ import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 
 These projects are written and maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects!
 
- - [Typescript Interface Definition](https://github.com/Smartrak/mapbox-gl-js-typescript)
+- [Typescript Definitions are available through DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/mapbox-gl)
+   
+   - Install using `typings`:
+
+         typings install dt~geojson dt~mapbox-gl --save --global
+
+   - Install using `@types` for Typescript v2 or later: 
+
+         npm install @types/geojson @types/mapbox-gl --save
+
  - [Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
 
 ## Using Mapbox GL JS with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
