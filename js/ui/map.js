@@ -1396,8 +1396,8 @@ function removeNode(node) {
   * The `Map#data` event is fired when any map data loads or changes. The types
   * of map data are:
   *
-  * - `'GeoJSON'`: [GeoJSON](http://geojson.org/) data associated with a `geojson` source.
-  * - `'TileJSON'`: [TileJSON](https://github.com/mapbox/tilejson-spec) metadata associated with a `vector` or `raster` source.
+  * - `'geoJSON'`: [GeoJSON](http://geojson.org/) data associated with a `geojson` source.
+  * - `'tileJSON'`: [TileJSON](https://github.com/mapbox/tilejson-spec) metadata associated with a `vector` or `raster` source.
   * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
   * - `'sprite'`: The icons and patterns used by the style
   * - `'image'`: A `image` source's image and coordinates
