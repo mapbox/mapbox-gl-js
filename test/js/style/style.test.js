@@ -586,14 +586,11 @@ test('Style#addLayer', function(t) {
         });
     });
 
-    t.test('fires layer.add', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('layer.add', function (e) {
-            t.equal(e.layer.id, 'background');
-            t.end();
-        });
+        style.once('data', t.end);
 
         style.on('style.load', function() {
             style.addLayer(layer);
@@ -683,14 +680,11 @@ test('Style#removeLayer', function(t) {
         });
     });
 
-    t.test('fires layer.remove', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('layer.remove', function(e) {
-            t.equal(e.layer.id, 'background');
-            t.end();
-        });
+        style.once('data', t.end);
 
         style.on('style.load', function() {
             style.addLayer(layer);

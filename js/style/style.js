@@ -384,7 +384,6 @@ Style.prototype = util.inherit(Evented, {
      * ID `before`, or appended if `before` is omitted.
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
-     * @fires layer.add
      * @returns {Style} `this`
      * @private
      */
@@ -410,7 +409,6 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
-        this._updates.events.push(['layer.add', {layer: layer}]);
 
         return this.updateClasses(layer.id);
     },
@@ -443,7 +441,6 @@ Style.prototype = util.inherit(Evented, {
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
-        this._updates.events.push(['layer.remove', {layer: layer}]);
         this._updates.changed = true;
 
         return this;

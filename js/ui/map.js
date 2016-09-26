@@ -699,7 +699,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
-     * @fires layer.add
      * @returns {Map} `this`
      */
     addLayer: function(layer, before) {
@@ -716,7 +715,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} id The ID of the layer to remove.
      * @throws {Error} if no layer with the specified `id` exists.
-     * @fires layer.remove
      * @returns {Map} `this`
      */
     removeLayer: function(id) {
