@@ -22,8 +22,9 @@ var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, options) {
-    this.animationLoop = animationLoop || new AnimationLoop();
+function Style(stylesheet, map, options) {
+    this.map = map;
+    this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
     this.dispatcher = new Dispatcher(getWorkerPool(), this);
     this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
@@ -338,7 +339,7 @@ Style.prototype = util.inherit(Evented, {
         source.style = this;
         source.setEventedParent(this, {source: source});
 
-        this._updates.events.push(['source.add', {source: source}]);
+        if (source.onAdd) source.onAdd(this.map);
         this._updates.changed = true;
 
         return this;
@@ -362,7 +363,7 @@ Style.prototype = util.inherit(Evented, {
         delete this._updates.sources[id];
         source.setEventedParent(null);
 
-        this._updates.events.push(['source.remove', {source: source}]);
+        if (source.onRemove) source.onRemove(this.map);
         this._updates.changed = true;
 
         return this;

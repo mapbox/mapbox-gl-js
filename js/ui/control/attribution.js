@@ -55,7 +55,6 @@ Attribution.prototype = util.inherit(Control, {
 
         this._update();
         map.on('data', this._update.bind(this));
-        map.on('source.remove', this._update.bind(this));
         map.on('moveend', this._updateEditLink.bind(this));
 
         return container;

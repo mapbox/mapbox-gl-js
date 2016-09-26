@@ -201,16 +201,6 @@ var Map = module.exports = function(options) {
         this._update(true);
     });
 
-    this.on('source.add', function(event) {
-        var source = event.source;
-        if (source.onAdd) source.onAdd(this);
-    });
-
-    this.on('source.remove', function(event) {
-        var source = event.source;
-        if (source.onRemove) source.onRemove(this);
-    });
-
     this.on('data', this._update);
 };
 
@@ -626,7 +616,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop);
+            this.style = new Style(style, this);
         }
 
         this.style.setEventedParent(this, {style: this.style});
@@ -680,7 +670,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Removes a source from the map's style.
      *
      * @param {string} id The ID of the source to remove.
-     * @fires source.remove
      * @returns {Map} `this`
      */
     removeSource: function(id) {

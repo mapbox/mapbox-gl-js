@@ -324,13 +324,10 @@ test('Style#addSource', function(t) {
         });
     });
 
-    t.test('fires source.add', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('source.add', function(e) {
-            t.same(e.source.serialize(), source);
-            t.end();
-        });
+        style.once('data', t.end);
         style.on('style.load', function () {
             style.addSource('source-id', source);
             style.update();
@@ -419,13 +416,10 @@ test('Style#removeSource', function(t) {
         });
     });
 
-    t.test('fires source.remove', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('source.remove', function(e) {
-            t.same(e.source.serialize(), source);
-            t.end();
-        });
+        style.once('data', t.end);
         style.on('style.load', function () {
             style.addSource('source-id', source);
             style.removeSource('source-id');
