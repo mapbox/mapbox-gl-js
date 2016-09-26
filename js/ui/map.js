@@ -1370,7 +1370,7 @@ function removeNode(node) {
  */
 
  /**
-  * Fired if any error occurs. This is GL JS's primary error reporting
+  * Fired when an error occurs. This is GL JS's primary error reporting
   * mechanism. We use an event instead of `throw` to better accommodate
   * asyncronous operations. If no listeners are bound to the `error` event, the
   * error will be printed to the console.
@@ -1379,4 +1379,32 @@ function removeNode(node) {
   * @memberof Map
   * @instance
   * @property {{error: {message: string}}} data
+  */
+
+/**
+ * Fired when any map data (style, source, tile, etc) loads or changes. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event data
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+ /**
+  * A `MapDataEvent` object is attached to the [`Map#data`](#Map.event:data) event.
+  * The `Map#data` event is fired when any map data loads or changes. The types
+  * of map data are:
+  *
+  * - `'GeoJSON'`: [GeoJSON](http://geojson.org/) data associated with a `geojson` source.
+  * - `'TileJSON'`: [TileJSON](https://github.com/mapbox/tilejson-spec) metadata associated with a `vector` or `raster` source.
+  * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
+  * - `'sprite'`: The icons and patterns used by the style
+  * - `'image'`: A `image` source's image and coordinates
+  * - `'video'`: A `video` source's video and coordinates
+  * - `'tile'`: A vector or raster tile
+  *
+  * @typedef {Object} MapDataEvent
+  * @property {string} type The event type.
+  * @property {string} dataType The type of data that has changed. One of `'geoJSON'`, `'tileJSON'`, `'style'`, `'sprite'`, `'image'`, `'video'`, or `'tile'`.
   */
