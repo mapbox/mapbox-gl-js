@@ -89,7 +89,7 @@ function GeoJSONSource(id, options, dispatcher) {
             return;
         }
         this.fire('data', {dataType: 'geojson'});
-        this.fire('sourceload');
+        this.fire('source.load');
     }.bind(this));
 }
 

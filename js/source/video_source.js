@@ -74,7 +74,7 @@ function VideoSource(id, options) {
         }
 
         this.fire('data', {dataType: 'video'});
-        this.fire('sourceload');
+        this.fire('source.load');
     }.bind(this));
 }
 

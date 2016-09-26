@@ -68,7 +68,7 @@ function Style(stylesheet, animationLoop, options) {
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
         this.fire('data', {dataType: 'style'});
-        this.fire('styleload');
+        this.fire('style.load');
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
@@ -77,7 +77,7 @@ function Style(stylesheet, animationLoop, options) {
         browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
-    this.on('sourceload', function(event) {
+    this.on('source.load', function(event) {
         var source = event.source;
         if (source && source.vectorLayerIds) {
             for (var layerId in this._layers) {
