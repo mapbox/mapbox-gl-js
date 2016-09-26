@@ -7,7 +7,9 @@ module.exports = function(source, numCalls, geojson, cb) {
     var startTime = null;
     var times = [];
 
-    source.on('tile.load', function tileCounter() {
+    source.on('data', function tileCounter(event) {
+        if (event.dataType !== 'tile') return;
+
         tileCount++;
         if (tileCount === NUM_TILES) {
             tileCount = 0;
@@ -20,7 +22,7 @@ module.exports = function(source, numCalls, geojson, cb) {
                 var avgTileTime = times.reduce(function (v, t) {
                     return v + t;
                 }, 0) / times.length;
-                source.off('tile.load', tileCounter);
+                source.off('data', tileCounter);
                 cb(null, avgTileTime);
             }
         }
