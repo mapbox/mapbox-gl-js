@@ -901,7 +901,7 @@
       "type": "number",
       "default": 10,
       "minimum": 0,
-      "units": "em",
+      "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
@@ -920,7 +920,7 @@
     "text-line-height": {
       "type": "number",
       "default": 1.2,
-      "units": "em",
+      "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
@@ -939,7 +939,7 @@
     "text-letter-spacing": {
       "type": "number",
       "default": 0,
-      "units": "em",
+      "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
