@@ -51,7 +51,7 @@ function SourceCache(id, options, dispatcher) {
     });
 
     this.on('data', function(event) {
-        if (this._sourceLoaded && ['image', 'video', 'geoJSON'].indexOf(event.dataType) !== -1) {
+        if (this._sourceLoaded && event.dataType === 'source') {
             this.reload();
             if (this.transform) {
                 this.update(this.transform, this.map && this.map.style.rasterFadeDuration);

@@ -234,7 +234,7 @@ test('SourceCache / Source lifecycle', function (t) {
         });
     });
 
-    t.test('reloads tiles after a geoJSON data event', function (t) {
+    t.test('reloads tiles after a "source" data event', function (t) {
         var transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -252,7 +252,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
         sourceCache.on('source.load', function () {
             sourceCache.update(transform);
-            sourceCache.getSource().fire('data', {dataType: 'geoJSON'});
+            sourceCache.getSource().fire('data', {dataType: 'source'});
         });
     });
 
