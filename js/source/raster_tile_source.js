@@ -42,7 +42,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
     },
 
     loadTile: function(tile, callback) {
-        var url = normalizeURL(tile.coord.url(this.tiles, tile.sourceMaxZoom, this.scheme), this.url, this.tileSize);
+        var url = normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
 
