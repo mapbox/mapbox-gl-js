@@ -66,6 +66,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
             } else {
                 tile.texture = gl.createTexture();
+                if (!tile.texture) {
+                    return callback(null);
+                }
                 gl.bindTexture(gl.TEXTURE_2D, tile.texture);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -78,7 +81,9 @@ RasterTileSource.prototype = util.inherit(Evented, {
             gl.generateMipmap(gl.TEXTURE_2D);
 
             tile.timeAdded = new Date().getTime();
-            this.map.animationLoop.set(this.style.rasterFadeDuration);
+            if (this.map.style != null) {
+                this.map.animationLoop.set(this.map.style.rasterFadeDuration);
+            }
 
             tile.source = this;
             tile.loaded = true;
