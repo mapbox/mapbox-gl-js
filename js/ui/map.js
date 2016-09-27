@@ -1392,9 +1392,20 @@ function removeNode(node) {
  */
 
  /**
-  * A `MapDataEvent` object is attached to the [`Map#data`](#Map.event:data) event.
-  * The `Map#data` event is fired when any map data loads or changes. The types
-  * of map data are:
+  * Fired when any map data (style, source, tile, etc) begins loading or
+  * changing asyncronously. All `dataloading` events are followed by a `data`
+  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+  *
+  * @event dataloading
+  * @memberof Map
+  * @instance
+  * @property {MapDataEvent} data
+  */
+
+ /**
+  * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
+  * and [`Map#data`](#Map.event:dataloading) events. Possible values for
+  * `dataType`s are:
   *
   * - `'geoJSON'`: [GeoJSON](http://geojson.org/) data associated with a `geojson` source.
   * - `'tileJSON'`: [TileJSON](https://github.com/mapbox/tilejson-spec) metadata associated with a `vector` or `raster` source.
