@@ -37,7 +37,8 @@ RasterTileSource.prototype = util.inherit(Evented, {
         return {
             type: 'raster',
             url: this.url,
-            tileSize: this.tileSize
+            tileSize: this.tileSize,
+            tiles: this.tiles
         };
     },
 
