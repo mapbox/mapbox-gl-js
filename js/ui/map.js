@@ -197,11 +197,13 @@ var Map = module.exports = function(options) {
         this.style.update(this._classes, {transition: false});
     });
 
-    this.on('data', function() {
-        this._update(true);
+    this.on('data', function(event) {
+        if (event.dataType === 'style') {
+            this._update(true);
+        } else {
+            this._update();
+        }
     });
-
-    this.on('data', this._update);
 };
 
 util.extend(Map.prototype, Evented);
