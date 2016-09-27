@@ -1407,15 +1407,11 @@ function removeNode(node) {
   * and [`Map#data`](#Map.event:dataloading) events. Possible values for
   * `dataType`s are:
   *
-  * - `'geoJSON'`: [GeoJSON](http://geojson.org/) data associated with a `geojson` source.
-  * - `'tileJSON'`: [TileJSON](https://github.com/mapbox/tilejson-spec) metadata associated with a `vector` or `raster` source.
+  * - `'source'`: The non-tile data associated with any source
   * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
-  * - `'sprite'`: The icons and patterns used by the style
-  * - `'image'`: A `image` source's image and coordinates
-  * - `'video'`: A `video` source's video and coordinates
   * - `'tile'`: A vector or raster tile
   *
   * @typedef {Object} MapDataEvent
   * @property {string} type The event type.
-  * @property {string} dataType The type of data that has changed. One of `'geoJSON'`, `'tileJSON'`, `'style'`, `'sprite'`, `'image'`, `'video'`, or `'tile'`.
+  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
   */

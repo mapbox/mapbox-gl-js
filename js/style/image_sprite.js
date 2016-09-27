@@ -20,7 +20,7 @@ function ImageSprite(base) {
         }
 
         this.data = data;
-        if (this.img) this.fire('data', {dataType: 'sprite'});
+        if (this.img) this.fire('data', {dataType: 'style'});
     }.bind(this));
 
     ajax.getImage(normalizeURL(base, format, '.png'), function(err, img) {
@@ -41,7 +41,7 @@ function ImageSprite(base) {
         }
 
         this.img = img;
-        if (this.data) this.fire('data', {dataType: 'sprite'});
+        if (this.data) this.fire('data', {dataType: 'style'});
     }.bind(this));
 }
 
