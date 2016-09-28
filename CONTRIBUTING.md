@@ -90,48 +90,37 @@ Once that command finishes, you will have a standalone build at `dist/mapbox-gl.
 There are two test suites associated with Mapbox GL JS
 
  - `npm test` runs quick unit tests
- - `npm run test-suite` runs slower rendering tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+ - `npm run test-suite` runs integration tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
 
 ## Running Benchmarks
 
 See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
 
+## Code Conventions
+
+* We use [`error` events](https://www.mapbox.com/mapbox-gl-js/api/#Map.event:error) to report user errors.
+* We use [`assert`](https://nodejs.org/api/assert.html) to check invariants that are not likely to be caused by user error. These `assert` statements are stripped out of production builds.
+
+### Version Control Conventions
+
+* We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches 
+
+## Documentation Conventions
+
+See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
+
 ## Sprint Planning
 
-* We will use Github milestones to schedule tasks into two week sprints
-* We will end each sprint and publish a release every other Wednesday unless there is an outstanding “release blocker” issue.
+* We use Github milestones to schedule tasks into two week sprints
+* We end each sprint and publish a release every other Wednesday unless there is an outstanding “release blocker” issue.
     * If there is a "release blocker" issue, we fix it as soon as possible and do the release
 * We will prioritize feature work as follows:
     1. “release blocker” bugs
     3. in-progress things
     2. things needed by customers
     4. new things
-* We will try to include one "testing and release process", one "refactoring", and one "bug" issue in each release.
-* We will name releases alphabetically after [cities](https://en.wikipedia.org/wiki/List_of_towns_and_cities_with_100,000_or_more_inhabitants/cityname:_A). (Fun facts are encouraged!)
-
-## Code Conventions
-
-* Our code conventions are mostly enforced with eslint, which will be run as part of `npm test`.
-* In internal / private methods, we check preconditions with `assert`, helping us catch mistakes within the library. For performance, these checks are removed from the production build with [unassertify](https://www.npmjs.com/package/unassertify).
-* In external / public methods, we check preconditions where appropriate and emit an error. "Emit" can mean throwing an `Error`, passing an `Error` as a first callback argument, or emitting an `error` event, as appropriate for the context. These checks remain present in production builds, helping downstream authors avoid common mistakes.
-
-## Git Conventions
-
- - If you have commit access to the repository, please be aware that we strive to maintain a clean, mostly-linear history.
- - You may use the GitHub merge button to squash and merge a branch. If you do not want to squash the branch into a single commit, see "Manually Merging a Branch" below.
- - Never merge a branch that is failing CI.
-
-### Manually Merging a Branch
-
-Before manually merging a branch, please
-
- - rebase the branch onto the current tip of the target branch (`master` or `mb-pages`).
- - squash commits until they are self-contained, potentially down to a single commit if appropriate.
- - perform a fast-forward merge into the target branch and push the result
-
-## Documentation Conventions
-
-See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
+* We try to include one "testing and release process", one "refactoring", and one "bug" issue in each release.
+* We name releases alphabetically after [cities](https://en.wikipedia.org/wiki/List_of_towns_and_cities_with_100,000_or_more_inhabitants/cityname:_A). (Fun facts are encouraged!)
 
 ### Github Issue Labels
 
@@ -160,10 +149,6 @@ We have divided our labels into categories to make them easier to use.
 
 - [Debugging and Optimizing WebGL applications](https://docs.google.com/presentation/d/12AGAUmElB0oOBgbEEBfhABkIMCL3CUX7kdAPLuwZ964)
 - [Graphics Pipeline Performance](http://http.developer.nvidia.com/GPUGems/gpugems_ch28.html)
-
-### Javascript Performance
-
- - [JS MythBusters](http://mythbusters.js.org/)
 
 ### Misc
 
