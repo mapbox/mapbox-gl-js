@@ -37,8 +37,7 @@ Navigation.prototype = util.inherit(Control, {
         this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
         this._compass = this._createButton(className + '-icon ' + className + '-compass', map.resetNorth.bind(map));
 
-        this._compassArrow = DOM.create('img', 'arrow', this._compass);
-        this._compassArrow.src = 'data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2020%2020%27%3E%0A%09%3Cpolygon%20fill%3D%27%23333333%27%20points%3D%276%2C9%2010%2C1%2014%2C9%27%2F%3E%0A%09%3Cpolygon%20fill%3D%27%23CCCCCC%27%20points%3D%276%2C11%2010%2C19%2014%2C11%20%27%2F%3E%0A%3C%2Fsvg%3E';
+        this._compassArrow = DOM.create('span', 'arrow', this._compass);
 
         this._compass.addEventListener('mousedown', this._onCompassDown.bind(this));
         this._onCompassMove = this._onCompassMove.bind(this);
