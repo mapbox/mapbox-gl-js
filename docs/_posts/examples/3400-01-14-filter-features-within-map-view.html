@@ -3,27 +3,30 @@ layout: example
 category: example
 title: "Filter features within map view"
 description: "Move the map to query viewable features in a vector tile layer and filter by typing in an input"
+tags:
+  - user-interaction
 ---
 <style>
+#map {
+    position:absolute;
+    left:25%;
+    top:0;
+    bottom:0;
+    width: 75%;
+}
 .map-overlay {
     position: absolute;
     width: 25%;
     top: 0;
     bottom: 0;
     left: 0;
-    padding: 10px;
-}
-
-.map-overlay-inner {
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
     background-color: #fff;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.10);
-    border-radius: 3px;
     max-height: 100%;
     overflow: hidden;
 }
 
-.map-overlay-inner fieldset {
+.map-overlay fieldset {
     display: none;
     background: #ddd;
     border: none;
@@ -31,7 +34,7 @@ description: "Move the map to query viewable features in a vector tile layer and
     margin: 0;
 }
 
-.map-overlay-inner input {
+.map-overlay input {
     display: block;
     border: none;
     width: 100%;
@@ -40,28 +43,28 @@ description: "Move the map to query viewable features in a vector tile layer and
     margin: 0;
 }
 
-.map-overlay-inner .listing {
+.map-overlay .listing {
     overflow: auto;
     max-height: 100%;
 }
 
-.map-overlay-inner .listing > * {
+.map-overlay .listing > * {
     display: block;
     padding: 5px 10px;
     margin: 0;
 }
 
-.map-overlay-inner .listing a {
+.map-overlay .listing a {
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     color: #404;
     text-decoration: none;
 }
 
-.map-overlay-inner .listing a:last-child {
+.map-overlay .listing a:last-child {
     border: none;
 }
 
-.map-overlay-inner .listing a:hover {
+.map-overlay .listing a:hover {
     background: #f0f0f0;
 }
 </style>
@@ -69,12 +72,10 @@ description: "Move the map to query viewable features in a vector tile layer and
 <div id='map'></div>
 
 <div class='map-overlay'>
-    <div class='map-overlay-inner'>
-        <fieldset>
-            <input id='feature-filter' type='text' placeholder='Filter results by name' />
-        </fieldset>
-        <div id='feature-listing' class='listing'></div>
-    </div>
+    <fieldset>
+        <input id='feature-filter' type='text' placeholder='Filter results by name' />
+    </fieldset>
+    <div id='feature-listing' class='listing'></div>
 </div>
 
 <script>
@@ -126,11 +127,31 @@ function renderListings(features) {
 
         // Hide the filter input
         filterEl.parentNode.style.display = 'none';
+
+        // remove features filter
+        map.setFilter('airport', ['has', 'abbrev']);
     }
 }
 
 function normalize(string) {
     return string.trim().toLowerCase();
+}
+
+function getUniqueFeatures(array, comparatorProperty) {
+    var existingFeatureKeys = {};
+    // Because features come from tiled vector data, feature geometries may be split
+    // or duplicated across tile boundaries and, as a result, features may appear
+    // multiple times in query results.
+    var uniqueFeatures = array.filter(function(el) {
+        if (existingFeatureKeys[el.properties[comparatorProperty]]) {
+            return false;
+        } else {
+            existingFeatureKeys[el.properties[comparatorProperty]] = true;
+            return true;
+        }
+    });
+
+    return uniqueFeatures;
 }
 
 map.on('load', function() {
@@ -149,31 +170,24 @@ map.on('load', function() {
         "type": "symbol",
         "layout": {
             "icon-image": "airport-15",
-            "icon-padding": 0
-        },
-        "filter": ["in", "abbrev", ""]
+            "icon-padding": 0,
+            "icon-allow-overlap":true
+        }
     });
-
     map.on('moveend', function() {
-        var features = map.querySourceFeatures('airports', {
-            sourceLayer: 'ne_10m_airports'
-        });
+        var features = map.queryRenderedFeatures({layers:['airport']});
 
         if (features) {
+            var uniqueFeatures = getUniqueFeatures(features, "iata_code");
             // Populate features for the listing overlay.
-            renderListings(features);
+            renderListings(uniqueFeatures);
 
             // Clear the input container
             filterEl.value = '';
 
             // Store the current features in sn `airports` variable to
             // later use for filtering on `keyup`.
-            airports = features;
-
-            // Set the filter to populate features into the layer.
-            map.setFilter('airport', ['in', 'abbrev'].concat(features.map(function(feature) {
-                return feature.properties.abbrev;
-            })));
+            airports = uniqueFeatures;
         }
     });
 
@@ -191,7 +205,6 @@ map.on('load', function() {
         }
 
         var feature = features[0];
-
         // Populate the popup and set its coordinates
         // based on the feature found.
         popup.setLngLat(feature.geometry.coordinates)
