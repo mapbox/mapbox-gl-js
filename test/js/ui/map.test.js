@@ -131,31 +131,23 @@ test('Map', function(t) {
                 t.error(error);
 
                 var events = [];
-                function recordEvent(event) {
-                    events.push(event.type);
-                }
+                function recordEvent(event) { events.push(event.type); }
 
-                map.on('error',         recordEvent);
-                map.on('style.change',  recordEvent);
-                map.on('source.load',   recordEvent);
-                map.on('source.change', recordEvent);
-                map.on('tile.add',      recordEvent);
-                map.on('tile.remove',   recordEvent);
+                map.on('error', recordEvent);
+                map.on('source.load', recordEvent);
+                map.on('data', recordEvent);
+                map.on('dataloading', recordEvent);
 
                 map.style.fire('error');
-                map.style.fire('style.change');
                 map.style.fire('source.load');
-                map.style.fire('source.change');
-                map.style.fire('tile.add');
-                map.style.fire('tile.remove');
+                map.style.fire('data');
+                map.style.fire('dataloading');
 
                 t.deepEqual(events, [
                     'error',
-                    'style.change',
                     'source.load',
-                    'source.change',
-                    'tile.add',
-                    'tile.remove'
+                    'data',
+                    'dataloading',
                 ]);
 
                 t.end();
@@ -744,7 +736,7 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('fires a style.change event', function (t) {
+        t.test('fires a data event', function (t) {
             // background layers do not have a source
             var map = createMap({
                 style: {
@@ -760,10 +752,11 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
-                map.once('style.change', function (e) {
-                    t.ok(e, 'change event');
-                    t.end();
+            map.once('style.load', function () {
+                map.once('data', function (e) {
+                    if (e.dataType === 'style') {
+                        t.end();
+                    }
                 });
 
                 map.setLayoutProperty('background', 'visibility', 'visible');

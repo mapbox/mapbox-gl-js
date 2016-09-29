@@ -59,7 +59,7 @@ test('GeoJSONSource#setData', function(t) {
             }
         };
         var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-        source.on('source.change', function() {
+        source.on('data', function() {
             t.end();
         });
         source.setData({});
@@ -152,7 +152,7 @@ test('GeoJSONSource#update', function(t) {
             // Note: we register this before calling setData because `change`
             // is fired synchronously within that method.  It may be worth
             // considering dezalgoing there.
-            source.on('source.change', function () {
+            source.on('data', function () {
                 t.end();
             });
             source.setData({});

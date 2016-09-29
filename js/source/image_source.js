@@ -53,6 +53,7 @@ function ImageSource(id, options, dispatcher) {
 
         this.image = image;
         this._loaded = true;
+        this.fire('data', {dataType: 'source'});
         this.fire('source.load');
 
         if (this.map) {
@@ -106,7 +107,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('source.change');
+        this.fire('data', {dataType: 'source'});
         return this;
     },
 

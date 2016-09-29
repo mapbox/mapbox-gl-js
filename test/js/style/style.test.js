@@ -324,13 +324,10 @@ test('Style#addSource', function(t) {
         });
     });
 
-    t.test('fires source.add', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('source.add', function(e) {
-            t.same(e.source.serialize(), source);
-            t.end();
-        });
+        style.once('data', t.end);
         style.on('style.load', function () {
             style.addSource('source-id', source);
             style.update();
@@ -375,25 +372,16 @@ test('Style#addSource', function(t) {
         }));
         var source = createSource();
 
-        function checkEvent(e) {
-            t.same(e.source.serialize(), source);
-        }
-
-        style.on('error',         checkEvent);
-        style.on('source.load',   checkEvent);
-        style.on('source.change', checkEvent);
-        style.on('tile.add',      checkEvent);
-        style.on('tile.load',     checkEvent);
-        style.on('tile.remove',   checkEvent);
-
         style.on('style.load', function () {
-            t.plan(6);
-            style.addSource('source-id', source); // Fires load
+            t.plan(4);
+
+            style.on('error', function() { t.ok(true); });
+            style.on('data', function() { t.ok(true); });
+            style.on('source.load', function() { t.ok(true); });
+
+            style.addSource('source-id', source); // Fires 'source.load' and 'data'
             style.sources['source-id'].fire('error');
-            style.sources['source-id'].fire('source.change');
-            style.sources['source-id'].fire('tile.add');
-            style.sources['source-id'].fire('tile.load');
-            style.sources['source-id'].fire('tile.remove');
+            style.sources['source-id'].fire('data');
         });
     });
 
@@ -428,13 +416,10 @@ test('Style#removeSource', function(t) {
         });
     });
 
-    t.test('fires source.remove', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
-        style.on('source.remove', function(e) {
-            t.same(e.source.serialize(), source);
-            t.end();
-        });
+        style.once('data', t.end);
         style.on('style.load', function () {
             style.addSource('source-id', source);
             style.removeSource('source-id');
@@ -466,31 +451,20 @@ test('Style#removeSource', function(t) {
         var style = new Style(createStyleJSON()),
             source = createSource();
 
-        style.on('source.load',   t.fail);
-        style.on('error',  t.fail);
-        style.on('source.change', t.fail);
-        style.on('tile.add',      t.fail);
-        style.on('tile.load',     t.fail);
-        style.on('error',    t.fail);
-        style.on('tile.remove',   t.fail);
-
         style.on('style.load', function () {
             style.addSource('source-id', source);
             source = style.sources['source-id'];
 
             style.removeSource('source-id');
 
-            // Bind a listener to prevent fallback Evented error reporting.
-            source.on('error',  function() {});
-            source.on('error',  function() {});
+            // Suppress error reporting
+            source.on('error', function() {});
 
-            source.fire('source.load');
+            style.on('data', function() { t.ok(false); });
+            style.on('error', function() { t.ok(false); });
+            source.fire('data');
             source.fire('error');
-            source.fire('source.change');
-            source.fire('tile.add');
-            source.fire('tile.load');
-            source.fire('error');
-            source.fire('tile.remove');
+
             t.end();
         });
     });
@@ -612,14 +586,11 @@ test('Style#addLayer', function(t) {
         });
     });
 
-    t.test('fires layer.add', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('layer.add', function (e) {
-            t.equal(e.layer.id, 'background');
-            t.end();
-        });
+        style.once('data', t.end);
 
         style.on('style.load', function() {
             style.addLayer(layer);
@@ -709,14 +680,11 @@ test('Style#removeLayer', function(t) {
         });
     });
 
-    t.test('fires layer.remove', function(t) {
+    t.test('fires "data" event', function(t) {
         var style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
-        style.on('layer.remove', function(e) {
-            t.equal(e.layer.id, 'background');
-            t.end();
-        });
+        style.once('data', t.end);
 
         style.on('style.load', function() {
             style.addLayer(layer);
@@ -1171,12 +1139,7 @@ test('Style defers expensive methods', function(t) {
 
         style.update();
 
-        // called per added layer, conflating 'change' events
-        t.equal(style.fire.callCount, 4, 'fire is called per action');
-        t.equal(style.fire.args[0][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[1][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[2][0], 'layer.add', 'fire was called with layer.add');
-        t.equal(style.fire.args[3][0], 'style.change', 'fire was called with style.change');
+        t.ok(style.fire.calledWith('data'), 'a data event was fired');
 
         // called per source
         t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');

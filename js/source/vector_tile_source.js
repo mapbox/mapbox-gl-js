@@ -23,6 +23,7 @@ function VectorTileSource(id, options, dispatcher) {
             return;
         }
         util.extend(this, tileJSON);
+        this.fire('data', {dataType: 'source'});
         this.fire('source.load');
     }.bind(this));
 }

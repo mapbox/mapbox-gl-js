@@ -75,7 +75,7 @@ test('SourceCache#addTile', function(t) {
     t.test('adds tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
         var sourceCache = createSourceCache({})
-        .on('tile.add', function (data) {
+        .on('dataloading', function (data) {
             t.deepEqual(data.tile.coord, coord);
             t.equal(data.tile.uses, 1);
             t.end();
@@ -95,7 +95,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var tr = new Transform();
         tr.width = 512;
@@ -123,7 +123,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var t1 = sourceCache.addTile(coord);
         var t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
@@ -141,12 +141,11 @@ test('SourceCache#addTile', function(t) {
 test('SourceCache#removeTile', function(t) {
     t.test('removes tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createSourceCache({})
-        .on('tile.remove', function (data) {
-            var tile = data.tile;
-            t.deepEqual(tile.coord, coord);
-            t.equal(tile.uses, 0);
-            t.end();
+        var sourceCache = createSourceCache({});
+        sourceCache.once('data', function (event) {
+            if (event.dataType === 'tile') {
+                t.end();
+            }
         });
         sourceCache.addTile(coord);
         sourceCache.removeTile(coord.id);
@@ -206,7 +205,7 @@ test('SourceCache / Source lifecycle', function (t) {
     t.test('does not fire load or change before source load event', function (t) {
         createSourceCache({noLoad: true})
             .on('source.load', t.fail)
-            .on('source.change', t.fail);
+            .on('data', t.fail);
         setTimeout(t.end, 1);
     });
 
@@ -215,8 +214,8 @@ test('SourceCache / Source lifecycle', function (t) {
     });
 
     t.test('forward change event', function (t) {
-        var sourceCache = createSourceCache().on('source.change', t.end);
-        sourceCache.getSource().fire('source.change');
+        var sourceCache = createSourceCache().on('data', t.end);
+        sourceCache.getSource().fire('data');
     });
 
     t.test('forward error event', function (t) {
@@ -235,7 +234,7 @@ test('SourceCache / Source lifecycle', function (t) {
         });
     });
 
-    t.test('reloads tiles after source change event', function (t) {
+    t.test('reloads tiles after a "source" data event', function (t) {
         var transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -253,7 +252,7 @@ test('SourceCache / Source lifecycle', function (t) {
 
         sourceCache.on('source.load', function () {
             sourceCache.update(transform);
-            sourceCache.getSource().fire('source.change');
+            sourceCache.getSource().fire('data', {dataType: 'source'});
         });
     });
 

@@ -50,10 +50,12 @@ function SourceCache(id, options, dispatcher) {
         this._sourceErrored = true;
     });
 
-    this.on('source.change', function() {
-        this.reload();
-        if (this.transform) {
-            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+    this.on('data', function(event) {
+        if (this._sourceLoaded && event.dataType === 'source') {
+            this.reload();
+            if (this.transform) {
+                this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+            }
         }
     });
 
@@ -166,7 +168,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.source = this;
         tile.timeAdded = new Date().getTime();
-        this._source.fire('tile.load', {tile: tile});
+        this._source.fire('data', {tile: tile, dataType: 'tile'});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -407,7 +409,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._source.fire('tile.add', {tile: tile});
+        this._source.fire('dataloading', {tile: tile, dataType: 'tile'});
 
         return tile;
     },
@@ -425,7 +427,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses--;
         delete this._tiles[id];
-        this._source.fire('tile.remove', {tile: tile});
+        this._source.fire('data', {dataType: 'tile'});
 
         if (tile.uses > 0)
             return;

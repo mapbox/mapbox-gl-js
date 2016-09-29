@@ -73,6 +73,7 @@ function VideoSource(id, options) {
             this.setCoordinates(options.coordinates);
         }
 
+        this.fire('data', {dataType: 'source'});
         this.fire('source.load');
     }.bind(this));
 }
@@ -135,7 +136,7 @@ VideoSource.prototype = util.inherit(Evented, /** @lends VideoSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('source.change');
+        this.fire('data', {dataType: 'source'});
         return this;
     },
 

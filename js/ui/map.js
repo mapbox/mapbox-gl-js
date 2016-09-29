@@ -197,23 +197,13 @@ var Map = module.exports = function(options) {
         this.style.update(this._classes, {transition: false});
     });
 
-    this.on('style.change', function() {
-        this._update(true);
+    this.on('data', function(event) {
+        if (event.dataType === 'style') {
+            this._update(true);
+        } else {
+            this._update();
+        }
     });
-
-    this.on('source.add', function(event) {
-        var source = event.source;
-        if (source.onAdd) source.onAdd(this);
-    });
-
-    this.on('source.remove', function(event) {
-        var source = event.source;
-        if (source.onRemove) source.onRemove(this);
-    });
-
-    this.on('source.load', this._update);
-    this.on('source.change', this._update);
-    this.on('tile.load', this._update);
 };
 
 util.extend(Map.prototype, Evented);
@@ -628,7 +618,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop);
+            this.style = new Style(style, this);
         }
 
         this.style.setEventedParent(this, {style: this.style});
@@ -682,7 +672,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Removes a source from the map's style.
      *
      * @param {string} id The ID of the source to remove.
-     * @fires source.remove
      * @returns {Map} `this`
      */
     removeSource: function(id) {
@@ -712,7 +701,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
-     * @fires layer.add
      * @returns {Map} `this`
      */
     addLayer: function(layer, before) {
@@ -729,7 +717,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} id The ID of the layer to remove.
      * @throws {Error} if no layer with the specified `id` exists.
-     * @fires layer.remove
      * @returns {Map} `this`
      */
     removeLayer: function(id) {
@@ -1385,7 +1372,7 @@ function removeNode(node) {
  */
 
  /**
-  * Fired if any error occurs. This is GL JS's primary error reporting
+  * Fired when an error occurs. This is GL JS's primary error reporting
   * mechanism. We use an event instead of `throw` to better accommodate
   * asyncronous operations. If no listeners are bound to the `error` event, the
   * error will be printed to the console.
@@ -1394,4 +1381,39 @@ function removeNode(node) {
   * @memberof Map
   * @instance
   * @property {{error: {message: string}}} data
+  */
+
+/**
+ * Fired when any map data (style, source, tile, etc) loads or changes. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event data
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+ /**
+  * Fired when any map data (style, source, tile, etc) begins loading or
+  * changing asyncronously. All `dataloading` events are followed by a `data`
+  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+  *
+  * @event dataloading
+  * @memberof Map
+  * @instance
+  * @property {MapDataEvent} data
+  */
+
+ /**
+  * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
+  * and [`Map#data`](#Map.event:dataloading) events. Possible values for
+  * `dataType`s are:
+  *
+  * - `'source'`: The non-tile data associated with any source
+  * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
+  * - `'tile'`: A vector or raster tile
+  *
+  * @typedef {Object} MapDataEvent
+  * @property {string} type The event type.
+  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
   */

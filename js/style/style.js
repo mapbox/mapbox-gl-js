@@ -22,8 +22,9 @@ var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, options) {
-    this.animationLoop = animationLoop || new AnimationLoop();
+function Style(stylesheet, map, options) {
+    this.map = map;
+    this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
     this.dispatcher = new Dispatcher(getWorkerPool(), this);
     this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
@@ -67,6 +68,7 @@ function Style(stylesheet, animationLoop, options) {
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
+        this.fire('data', {dataType: 'style'});
         this.fire('style.load');
     }.bind(this);
 
@@ -300,7 +302,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('style.change');
+            this.fire('data', {dataType: 'style'});
         }
 
         this._resetUpdates();
@@ -335,9 +337,9 @@ Style.prototype = util.inherit(Evented, {
         source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
         source.style = this;
-        source.setEventedParent(this, {source: source});
+        source.setEventedParent(this, {source: source.getSource()});
 
-        this._updates.events.push(['source.add', {source: source}]);
+        if (source.onAdd) source.onAdd(this.map);
         this._updates.changed = true;
 
         return this;
@@ -361,7 +363,7 @@ Style.prototype = util.inherit(Evented, {
         delete this._updates.sources[id];
         source.setEventedParent(null);
 
-        this._updates.events.push(['source.remove', {source: source}]);
+        if (source.onRemove) source.onRemove(this.map);
         this._updates.changed = true;
 
         return this;
@@ -382,7 +384,6 @@ Style.prototype = util.inherit(Evented, {
      * ID `before`, or appended if `before` is omitted.
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
-     * @fires layer.add
      * @returns {Style} `this`
      * @private
      */
@@ -408,7 +409,6 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
-        this._updates.events.push(['layer.add', {layer: layer}]);
 
         return this.updateClasses(layer.id);
     },
@@ -441,7 +441,6 @@ Style.prototype = util.inherit(Evented, {
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
-        this._updates.events.push(['layer.remove', {layer: layer}]);
         this._updates.changed = true;
 
         return this;
@@ -718,7 +717,7 @@ Style.prototype = util.inherit(Evented, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('style.change', function() {
+            sprite.on('data', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });
