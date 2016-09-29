@@ -22,8 +22,8 @@ module.exports = VideoSource;
  * map.addSource('some id', {
  *    type: 'video',
  *    url: [
- *        'https://www.mapbox.com/videos/baltimore-smoke.mp4',
- *        'https://www.mapbox.com/videos/baltimore-smoke.webm'
+ *        'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
+ *        'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
  *    ],
  *    coordinates: [
  *        [-76.54, 39.18],
