@@ -254,7 +254,6 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
                 anchor = anchor.join('-');
             }
         }
-
         var offsetedPos = pos.add(offset[anchor]);
 
         var anchorTranslate = {
@@ -274,7 +273,12 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
         }
         classList.add('mapboxgl-popup-anchor-' + anchor);
 
+
+
         DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + offsetedPos.x + 'px,' + offsetedPos.y + 'px)');
+        if (this._container.offsetWidth % 2 !== 0) {
+            this._container.style.width = this._container.offsetWidth + 1 + "px";
+        }
     },
 
     _onClickClose: function() {
