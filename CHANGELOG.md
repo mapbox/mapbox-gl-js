@@ -1,3 +1,25 @@
+## 0.25.0 (September 29 2016)
+
+#### New Features & Improvements
+
+  * Add event propagation system to Evented (#3244)
+  * Consolidate undocumented data lifecycle events into `data` and `dataloading` events (#3255)
+
+#### Bugfixes
+
+  * Use `auto` value for undefined style spec properties with calculated defaults (#3203)
+  * Ensure `Tile#loadVectorData` preserves the most recent `rawTileData` (#3233)
+  * Change webpack build process (#3235)
+  * Enforce `LngLatLike` param in `LngLat#convert` (#3232)
+  * Fix bug where the `tiles` field is omitted from the `RasterTileSource#serialize` method (#3259)
+  * Comply with HTML spec by replacing the `div` within the `Navigation` control `<button>` with a `span` element (#3268)
+  * Fix bug causing `Marker` instances to be translated to non-whole pixel coordinates that caused blurriness (#3270)
+
+#### Performance Improvements
+
+  * Avoid unnecessary style validation (#3224)
+  * Share a single blob URL between all workers (#3239)
+
 ## 0.24.0 (September 19 2016)
 
 #### New Features & Improvements
