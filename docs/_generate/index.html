@@ -134,7 +134,7 @@ navigation:
       <h2><a href='#sources' title='link to sources'>Sources</a></h2>
       <p>
         Sources supply data to be shown on the map. The type of source is specified by the <code>"type"</code> property,
-        and must be one of <var><%= source_types.join(', ') %></var>. Adding a source
+        and must be one of <var><%= source_types.join('</var>, <var>') %></var>. Adding a source
         won't immediately make data appear on the map because sources don't contain
         styling details like color or width. Layers refer
         to a source and give it a visual representation. This makes it possible
