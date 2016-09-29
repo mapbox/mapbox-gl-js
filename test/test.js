@@ -364,6 +364,40 @@ test('isConstant', function(t) {
         t.end();
     });
 
+    t.test('identity', function(t) {
+
+        t.test('array', function(t) {
+            var f = MapboxGLFunction({type: 'identity'});
+
+            t.deepEqual(f([]), []);
+            t.deepEqual(f([1]), [1]);
+            t.deepEqual(f([1, 2]), [1, 2]);
+
+            t.end();
+        });
+
+        t.test('number', function(t) {
+            var f = MapboxGLFunction({type: 'identity'});
+
+            t.equal(f(0), 0);
+            t.equal(f(1), 1);
+            t.equal(f(2), 2);
+
+            t.end();
+        });
+
+        t.test('string', function(t) {
+            var f = MapboxGLFunction({type: 'identity'});
+
+            t.equal(f(''), '');
+            t.equal(f('0'), '0');
+            t.equal(f('mapbox'), 'mapbox');
+
+            t.end();
+        });
+
+    });
+
     t.end();
 
 });

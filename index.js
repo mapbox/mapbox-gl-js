@@ -9,7 +9,7 @@ function createFunction(parameters, defaultType) {
         fun.isZoomConstant = true;
 
     } else {
-        var zoomAndFeatureDependent = typeof parameters.stops[0][0] === 'object';
+        var zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
         var featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
         var zoomDependent = zoomAndFeatureDependent || !featureDependent;
         var type = parameters.type || defaultType || 'exponential';
@@ -21,6 +21,8 @@ function createFunction(parameters, defaultType) {
             innerFun = evaluateIntervalFunction;
         } else if (type === 'categorical') {
             innerFun = evaluateCategoricalFunction;
+        } else if (type === 'identity') {
+            innerFun = evaluateIdentityFunction;
         } else {
             throw new Error('Unknown function type "' + type + '"');
         }
@@ -112,6 +114,10 @@ function evaluateExponentialFunction(parameters, input) {
     }
 }
 
+function evaluateIdentityFunction(parameters, input) {
+    return input;
+}
+
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (typeof outputLower === 'function') {
@@ -150,7 +156,7 @@ function interpolateArray(input, base, inputLower, inputUpper, outputLower, outp
 }
 
 function isFunctionDefinition(value) {
-    return typeof value === 'object' && value.stops;
+    return typeof value === 'object' && (value.stops || value.type === 'identity');
 }
 
 
