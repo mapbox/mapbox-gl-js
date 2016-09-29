@@ -150,7 +150,7 @@ Marker.prototype = {
 
     _update: function () {
         if (!this._map) return;
-        var pos = this._map.project(this._lngLat)._add(this._offset);
+        var pos = this._map.project(this._lngLat)._add(this._offset).round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
