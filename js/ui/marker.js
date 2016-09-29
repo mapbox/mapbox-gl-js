@@ -43,8 +43,9 @@ Marker.prototype = {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
-        map.on('move', this._update);
-        this._update();
+        map.on('move', this._update.bind(this));
+        map.on('moveend', this._update.bind(this, {roundPos: true}));
+        this._update({roundPos: true});
 
         // If we attached the `click` listener to the marker element, the popup
         // would close once the event propogated to `map` due to the
@@ -148,9 +149,10 @@ Marker.prototype = {
         else popup.addTo(this._map);
     },
 
-    _update: function () {
+    _update: function (options) {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
+        if (options.roundPos) pos = pos.round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
