@@ -44,6 +44,7 @@ Marker.prototype = {
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
+        map.on('moveend', this._update);
         this._update();
 
         // If we attached the `click` listener to the marker element, the popup
@@ -148,9 +149,9 @@ Marker.prototype = {
         else popup.addTo(this._map);
     },
 
-    _update: function () {
+    _update: function (e) {
         if (!this._map) return;
-        var pos = this._map.project(this._lngLat)._add(this._offset).round();
+        var pos =  (e && e.type === "move") ? this._map.project(this._lngLat)._add(this._offset) : this._map.project(this._lngLat)._add(this._offset).round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
