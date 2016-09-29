@@ -2,15 +2,14 @@
 
 #### New Features & Improvements
 
-  * Add event propagation system to Evented (#3244)
   * Consolidate undocumented data lifecycle events into `data` and `dataloading` events (#3255)
+  * Add `auto` value for style spec properties (#3203)
 
 #### Bugfixes
 
-  * Use `auto` value for undefined style spec properties with calculated defaults (#3203)
-  * Ensure `Tile#loadVectorData` preserves the most recent `rawTileData` (#3233)
-  * Change webpack build process (#3235)
-  * Enforce `LngLatLike` param in `LngLat#convert` (#3232)
+  * Fix bug causing "Map#queryRenderedFeatures" to return no features after map rotation or filter change (#3233)
+  * Change webpack build process (#3235) :warning: BREAKING CHANGE :warning:
+  * Improved error messages for `LngLat#convert` (#3232)
   * Fix bug where the `tiles` field is omitted from the `RasterTileSource#serialize` method (#3259)
   * Comply with HTML spec by replacing the `div` within the `Navigation` control `<button>` with a `span` element (#3268)
   * Fix bug causing `Marker` instances to be translated to non-whole pixel coordinates that caused blurriness (#3270)
