@@ -5,6 +5,11 @@
 ``` javascript
 var glfun = require('mapbox-gl-function');
 
+var identity = glfun({type: 'identity'});
+categorical({ $zoom: 0 }); // => '0'
+categorical({ $zoom: 'A' }); // => 'A'
+categorical({ $zoom: ['A'] }); // => ['A']
+
 var exponential = glfun({type: 'exponential', stops: [[1, 1], [5, 10]]});
 exponential({ $zoom: 0 });  // => 1
 exponential({ $zoom: 1 });  // => 1
