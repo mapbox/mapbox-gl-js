@@ -337,7 +337,7 @@ Style.prototype = util.inherit(Evented, {
         source = new SourceCache(id, source, this.dispatcher);
         this.sources[id] = source;
         source.style = this;
-        source.setEventedParent(this, {source: source});
+        source.setEventedParent(this, {source: source.getSource()});
 
         if (source.onAdd) source.onAdd(this.map);
         this._updates.changed = true;
