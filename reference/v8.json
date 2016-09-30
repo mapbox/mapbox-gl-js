@@ -106,10 +106,14 @@
     "type": {
       "required": true,
       "type": "enum",
-      "values": [
-        "vector",
-        "raster"
-      ],
+      "values": {
+        "vector": {
+            "doc": "A vector tile source."
+        },
+        "raster": {
+            "doc": "A raster tile source."
+        }
+      },
       "doc": "The data type of the tile source."
     },
     "url": {
@@ -146,9 +150,11 @@
     "type": {
       "required": true,
       "type": "enum",
-      "values": [
-        "geojson"
-      ],
+      "values": {
+        "geojson": {
+            "doc": "A GeoJSON data source."
+        }
+      },
       "doc": "The data type of the GeoJSON source."
     },
     "data": {
@@ -192,9 +198,11 @@
     "type": {
       "required": true,
       "type": "enum",
-      "values": [
-        "video"
-      ],
+      "values": {
+        "video": {
+            "doc": "A video data source."
+        }
+      },
       "doc": "The data type of the video source."
     },
     "urls": {
@@ -220,9 +228,11 @@
     "type": {
       "required": true,
       "type": "enum",
-      "values": [
-        "image"
-      ],
+      "values": {
+        "image": {
+            "doc": "An image data source."
+        }
+      },
       "doc": "The data type of the image source."
     },
     "url": {
@@ -251,14 +261,26 @@
     },
     "type": {
       "type": "enum",
-      "values": [
-        "fill",
-        "line",
-        "symbol",
-        "circle",
-        "raster",
-        "background"
-      ],
+      "values": {
+        "fill": {
+            "doc": "A filled polygon with an optional stroked border."
+        },
+        "line": {
+            "doc": "A stroked line."
+        },
+        "symbol": {
+            "doc": "An icon or a text label."
+        },
+        "circle": {
+            "doc": "A filled circle."
+        },
+        "raster": {
+            "doc": "Raster map textures such as satellite imagery."
+        },
+        "background": {
+            "doc": "The background color or pattern of the map."
+        }
+      },
       "doc": "Rendering type of this layer."
     },
     "metadata": {
@@ -324,12 +346,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -344,12 +370,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -364,12 +394,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -385,11 +419,17 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "butt",
-        "round",
-        "square"
-      ],
+      "values": {
+        "butt": {
+            "doc": "A cap with a squared-off end which is drawn to the exact endpoint of the line."
+        },
+        "round": {
+            "doc": "A cap with a rounded end which is drawn beyond the endpoint of the line at a radius of one-half of the line's width and centered on the endpoint of the line."
+        },
+        "square": {
+            "doc": "A cap with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
+        }
+      },
       "default": "butt",
       "doc": "The display of line endings.",
       "sdk-support": {
@@ -405,11 +445,17 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "bevel",
-        "round",
-        "miter"
-      ],
+      "values": {
+        "bevel": {
+            "doc": "A join with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
+        },
+        "round": {
+            "doc": "A join with a rounded end which is drawn beyond the endpoint of the line at a radius of one-half of the line's width and centered on the endpoint of the line."
+        },
+        "miter": {
+            "doc": "A join with a sharp, angled corner which is drawn with the outer sides beyond the endpoint of the path until they meet."
+        }
+      },
       "default": "miter",
       "doc": "The display of lines when joining.",
       "sdk-support": {
@@ -464,12 +510,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -485,12 +535,16 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-          "point",
-          "line"
-      ],
+      "values": {
+          "point": {
+              "doc": "The label is placed at the point where the geometry is located."
+          },
+          "line": {
+              "doc": "The label is placed along the line of the geometry. Can only be used on `LineString` and `Polygon` geometries."
+          }
+      },
       "default": "point",
-      "doc": "Label placement relative to its geometry. `line` can only be used on LineStrings and Polygons.",
+      "doc": "Label placement relative to its geometry.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -596,13 +650,19 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport",
-        "auto"
-      ],
+      "values": {
+        "map": {
+            "doc": "When `symbol-placement` is set to `point`, aligns icons east-west. When `symbol-placement` is set to `line`, aligns icon x-axes with the line."
+        },
+        "viewport": {
+            "doc": "Produces icons whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`."
+        },
+        "auto": {
+            "doc": "When `symbol-placement` is set to `point`, this is equivalent to `viewport`. When `symbol-placement` is set to `line`, this is equivalent to `map`."
+        }
+      },
       "default": "auto",
-      "doc": "In combination with `symbol-placement`, determines the rotation behavior of icons. The value `viewport` produces icons whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`. When `symbol-placement` is set to `point`, the value `map` produces icons whose x-axes are aligned east-west, and the value `auto` is equivalent to `viewport`. When `symbol-placement` is set to `line`, the value `map` produces icons whose x-axes are aligned with the line, and the value `auto` is equivalent to `map`.",
+      "doc": "In combination with `symbol-placement`, determines the rotation behavior of icons.",
       "requires": [
         "icon-image"
       ],
@@ -639,14 +699,22 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": false,
-      "values": [
-        "none",
-        "both",
-        "width",
-        "height"
-      ],
+      "values": {
+        "none": {
+            "doc": "The icon is displayed at its intrinsic aspect ratio."
+        },
+        "width": {
+            "doc": "The icon is scaled in the x-dimension to fit the width of the text."
+        },
+        "height": {
+            "doc": "The icon is scaled in the y-dimension to fit the height of the text."
+        },
+        "both": {
+            "doc": "The icon is scaled in both x- and y-dimensions."
+        }
+      },
       "default": "none",
-      "doc": "Scales the icon to fit around the associated text. The value `none` performs no scaling. The values `width` and `height` scale the x- or y-dimension, respectively, to fit the text's dimensions. The value `both` scales in both dimensions.",
+      "doc": "Scales the icon to fit around the associated text.",
       "requires": [
         "icon-image",
         "text-field"
@@ -671,7 +739,7 @@
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
-      "doc": "Size of the additional area added to dimensions determined by `icon-text-fix`, in clockwise order: top, right, bottom, left.",
+      "doc": "Size of the additional area added to dimensions determined by `icon-text-fit`, in clockwise order: top, right, bottom, left.",
       "requires": [
         "icon-image",
         "text-field",
@@ -799,13 +867,19 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport",
-        "auto"
-      ],
+      "values": {
+        "map": {
+            "doc": "The text is aligned to the plane of the map."
+        },
+        "viewport": {
+            "doc": "The text is aligned to the plane of the viewport."
+        },
+        "auto": {
+            "doc": "Automatically matches the value of `text-rotation-alignment`."
+        }
+      },
       "default": "auto",
-      "doc": "Orientation of text when map is pitched. Aligns text to the plane of the viewport when set to `viewport` or the plane of the map when set to `map`. Matches `text-rotation-alignment` if `auto`.",
+      "doc": "Orientation of text when map is pitched.",
       "requires": [
         "text-field"
       ],
@@ -823,13 +897,19 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport",
-        "auto"
-      ],
+      "values": {
+        "map": {
+            "doc": "When `symbol-placement` is set to `point`, aligns text east-west. When `symbol-placement` is set to `line`, aligns text x-axes with the line."
+        },
+        "viewport": {
+            "doc": "Produces glyphs whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`."
+        },
+        "auto": {
+            "doc": "When `symbol-placement` is set to `point`, this is equivalent to `viewport`. When `symbol-placement` is set to `line`, this is equivalent to `map`."
+        }
+      },
       "default": "auto",
-      "doc": "In combination with `symbol-placement`, determines the rotation behavior of the individual glyphs forming the text. The value `viewport` produces glyphs whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`. When `symbol-placement` is set to `point`, the value `map` produces glyphs whose x-axes are aligned east-west, and the value `auto` is equivalent to `viewport`. When `symbol-placement` is set to `line`, the value `map` produces glyphs whose x-axes are aligned with the line at the point where each glyph is placed, and the value `auto` is equivalent to `map`.",
+      "doc": "In combination with `symbol-placement`, determines the rotation behavior of the individual glyphs forming the text.",
       "requires": [
         "text-field"
       ],
@@ -960,11 +1040,17 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "left",
-        "center",
-        "right"
-      ],
+      "values": {
+        "left": {
+            "doc": "The text is aligned to the left."
+        },
+        "center": {
+            "doc": "The text is centered."
+        },
+        "right": {
+            "doc": "The text is aligned to the right."
+        }
+      },
       "default": "center",
       "doc": "Text justification options.",
       "requires": [
@@ -983,17 +1069,35 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "center",
-        "left",
-        "right",
-        "top",
-        "bottom",
-        "top-left",
-        "top-right",
-        "bottom-left",
-        "bottom-right"
-      ],
+      "values": {
+        "center": {
+            "doc": "The center of the text is placed closest to the anchor."
+        },
+        "left": {
+            "doc": "The left side of the text is placed closest to the anchor."
+        },
+        "right": {
+            "doc": "The right side of the text is placed closest to the anchor."
+        },
+        "top": {
+            "doc": "The top of the text is placed closest to the anchor."
+        },
+        "bottom": {
+            "doc": "The bottom of the text is placed closest to the anchor."
+        },
+        "top-left": {
+            "doc": "The top left corner of the text is placed closest to the anchor."
+        },
+        "top-right": {
+            "doc": "The top right corner of the text is placed closest to the anchor."
+        },
+        "bottom-left": {
+            "doc": "The bottom left corner of the text is placed closest to the anchor."
+        },
+        "bottom-right": {
+            "doc": "The bottom right corner of the text is placed closest to the anchor."
+        }
+      },
       "default": "center",
       "doc": "Part of the text placed closest to the anchor.",
       "requires": [
@@ -1098,11 +1202,17 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "none",
-        "uppercase",
-        "lowercase"
-      ],
+      "values": {
+        "none": {
+            "doc": "The text is not altered."
+        },
+        "uppercase": {
+            "doc": "Forces all letters to be displayed in uppercase."
+        },
+        "lowercase": {
+            "doc": "Forces all letters to be displayed in lowercase."
+        }
+      },
       "default": "none",
       "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property.",
       "requires": [
@@ -1199,12 +1309,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -1219,12 +1333,16 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "values": [
-        "visible",
-        "none"
-      ],
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
       "default": "visible",
-      "doc": "The display of this layer. `none` hides this layer.",
+      "doc": "Whether this layer is displayed.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
@@ -1241,42 +1359,63 @@
   },
   "filter_operator": {
     "type": "enum",
-    "values": [
-      "==",
-      "!=",
-      ">",
-      ">=",
-      "<",
-      "<=",
-      "in",
-      "!in",
-      "all",
-      "any",
-      "none",
-      "has",
-      "!has"
-    ],
+    "values": {
+      "==": {
+          "doc": "`[\"==\", key, value]` equality: `feature[key] = value`"
+      },
+      "!=": {
+          "doc": "`[\"!=\", key, value]` inequality: `feature[key] ≠ value`"
+      },
+      ">": {
+          "doc": "`[\">\", key, value]` greater than: `feature[key] > value`"
+      },
+      ">=": {
+          "doc": "`[\">=\", key, value]` greater than or equal: `feature[key] ≥ value`"
+      },
+      "<": {
+          "doc": "`[\"<\", key, value]` less than: `feature[key] < value`"
+      },
+      "<=": {
+          "doc": "`[\"<=\", key, value]` less than or equal: `feature[key] ≤ value`"
+      },
+      "in": {
+          "doc": "`[\"in\", key, v0, ..., vn]` set inclusion: `feature[key] ∈ {v0, ..., vn}`"
+      },
+      "!in": {
+          "doc": "`[\"!in\", key, v0, ..., vn]` set exclusion: `feature[key] ∉ {v0, ..., vn}`"
+      },
+      "all": {
+          "doc": "`[\"all\", f0, ..., fn]` logical `AND`: `f0 ∧ ... ∧ fn`"
+      },
+      "any": {
+          "doc": "`[\"any\", f0, ..., fn]` logical `OR`: `f0 ∨ ... ∨ fn`"
+      },
+      "none": {
+          "doc": "`[\"none\", f0, ..., fn]` logical `NOR`: `¬f0 ∧ ... ∧ ¬fn`"
+      },
+      "has": {
+          "doc": "`[\"has\", key]` `feature[key]` exists"
+      },
+      "!has": {
+          "doc": "`[\"!has\", key]` `feature[key]` does not exist"
+      }
+    },
     "doc": "The filter operator."
   },
   "geometry_type": {
     "type": "enum",
-    "values": [
-      "Point",
-      "LineString",
-      "Polygon"
-    ],
+    "values": {
+      "Point": {
+          "doc": "Filter to point geometries."
+      },
+      "LineString": {
+          "doc": "Filter to line geometries."
+      },
+      "Polygon": {
+          "doc": "Filter to polygon geometries."
+      }
+    },
     "doc": "The geometry type for the filter to select."
-  },
-  "color_operation": {
-    "type": "enum",
-    "values": [
-      "lighten",
-      "saturate",
-      "spin",
-      "fade",
-      "mix"
-    ],
-    "doc": "A color operation to apply."
   },
   "function": {
     "stops": {
@@ -1298,11 +1437,17 @@
     },
     "type": {
       "type": "enum",
-      "values": [
-          "exponential",
-          "interval",
-          "categorical"
-      ],
+      "values": {
+          "exponential": {
+              "doc": "Use exponential interpolation."
+          },
+          "interval": {
+              "doc": "Use interval interpolation."
+          },
+          "categorical": {
+              "doc": "Use categorical interpolation."
+          }
+      },
       "doc": "The interpolation strategy to use in function evaluation.",
       "default": "exponential"
     }
@@ -1350,7 +1495,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the entire fill layer. In contrast to the fill-color, this value will also affect the 1px stroke around the fill, if the stroke is used.",
+      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -1366,7 +1511,7 @@
     "fill-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color of the filled part of this layer. This color can be specified as rgba with an alpha component and the color's opacity will not affect the opacity of the 1px stroke, if it is used.",
+      "doc": "The color of the filled part of this layer. This color can be specified as `rgba` with an alpha component and the color's opacity will not affect the opacity of the 1px stroke, if it is used.",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
@@ -1440,11 +1585,15 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "values": {
+        "map": {
+            "doc": "The fill is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The fill is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
       "default": "map",
       "requires": [
         "fill-translate"
@@ -1543,11 +1692,15 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "values": {
+        "map": {
+            "doc": "The line is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The line is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
       "default": "map",
       "requires": [
         "line-translate"
@@ -1775,11 +1928,15 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen)",
+      "values": {
+        "map": {
+            "doc": "The circle is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The circle is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
       "default": "map",
       "requires": [
         "circle-translate"
@@ -1797,12 +1954,16 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
+      "values": {
+        "map": {
+            "doc": "Circles are scaled according to their apparent distance to the camera."
+        },
+        "viewport": {
+            "doc": "Circles are not scaled."
+        }
+      },
       "default": "map",
-      "doc": "Controls the scaling behavior of the circle when the map is pitched. The value `map` scales circles according to their apparent distance to the camera. The value `viewport` results in no pitch-related scaling.",
+      "doc": "Controls the scaling behavior of the circle when the map is pitched.",
       "sdk-support": {
         "basic functionality": {
           "js": "0.21.0"
@@ -1858,7 +2019,7 @@
       "zoom-function": true,
       "property-function": true,
       "transition": true,
-      "doc": "The color of the icon's halo. Icon halos can only be used with sdf icons.",
+      "doc": "The color of the icon's halo. Icon halos can only be used with SDF icons.",
       "requires": [
         "icon-image"
       ],
@@ -1942,11 +2103,15 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen).",
+      "values": {
+        "map": {
+            "doc": "Icons are translated relative to the map."
+        },
+        "viewport": {
+            "doc": "Icons are translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
       "default": "map",
       "requires": [
         "icon-image",
@@ -2091,11 +2256,15 @@
       "function": "piecewise-constant",
       "zoom-function": true,
       "property-function": true,
-      "values": [
-        "map",
-        "viewport"
-      ],
-      "doc": "Control whether the translation is relative to the map (north) or viewport (screen).",
+      "values": {
+        "map": {
+            "doc": "The text is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The text is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
       "default": "map",
       "requires": [
         "text-field",

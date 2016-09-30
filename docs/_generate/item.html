@@ -10,8 +10,8 @@
       <%= prop.required ? 'Required' : 'Optional' %>
       <% if (prop.type && prop.type !== '*') { %><a href='#types-<%= prop.type %>'><%= prop.type %></a>.<% } %>
     </em>
-    <% if (prop.values) { %><span class='space-right quiet'>
-      <em>One of</em> <%= _(prop.values).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
+    <% if (prop.values && Array.isArray(prop.values) === false) { // skips $root.version %><span class='space-right quiet'>
+      <em>One of</em> <%= _(Object.keys(prop.values)).map(function(opt) { return '<var>' + opt + '</var>' }).join(', ') %>.
     </span><% } %>
     <% if (prop.units) { %><span class='space-right quiet'>
       <em>Units in</em>
@@ -45,6 +45,12 @@
   <% if (prop.doc) { %>
   <div class='space-bottom1'><%= md(prop.doc) %></div>
   <% } %>
+  <% if (prop.values && Array.isArray(prop.values) === false) { // skips $root.version %><div class='space-bottom1'><dl>
+    <% for (var v in prop.values) { %>
+      <dt><var><%= v %></var></dt>
+      <dd><%= md(prop.values[v].doc) %></dd>
+    <% } %>
+  </dl></div><% } %>
   <% if (prop.example) { %>
   <div class='space-bottom1 clearfix'>
 {% highlight json %}
