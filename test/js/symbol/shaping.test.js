@@ -58,8 +58,9 @@ test('shaping', function(t) {
     t.equal(false, shaped);
 
     // https://github.com/mapbox/mapbox-gl-js/issues/3254
-    shaped = shaping.shapeText('foo bar\n', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
-    t.ok(shaped);
+    shaped = shaping.shapeText('   foo bar\n', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    var shaped2 = shaping.shapeText('foo bar', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    t.same(shaped.positionedGlyphs, shaped2.positionedGlyphs);
 
     t.end();
 });
