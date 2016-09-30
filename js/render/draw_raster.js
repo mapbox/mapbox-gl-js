@@ -54,7 +54,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform1f(program.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    var parentTile = tile.source && tile.source.findLoadedParent(coord, 0, {}),
+    var parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
         opacities = getOpacities(tile, parentTile, layer, painter.transform);
 
     var parentScaleBy, parentTL;
@@ -116,15 +116,15 @@ function getOpacities(tile, parentTile, layer, transform) {
     var opacity = [1, 0];
     var fadeDuration = layer.paint['raster-fade-duration'];
 
-    if (tile.source && fadeDuration > 0) {
+    if (tile.sourceCache && fadeDuration > 0) {
         var now = new Date().getTime();
 
         var sinceTile = (now - tile.timeAdded) / fadeDuration;
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
         var idealZ = transform.coveringZoomLevel({
-            tileSize: this.tile.source.getSource().tileSize,
-            roundZoom: this.tile.source.getSource().roundZoom
+            tileSize: this.tile.sourceCache.getSource().tileSize,
+            roundZoom: this.tile.sourceCache.getSource().roundZoom
         });
         var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
