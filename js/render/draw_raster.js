@@ -123,8 +123,8 @@ function getOpacities(tile, parentTile, layer, transform) {
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
         var idealZ = transform.coveringZoomLevel({
-            tileSize: this.tile.sourceCache.getSource().tileSize,
-            roundZoom: this.tile.sourceCache.getSource().roundZoom
+            tileSize: tile.sourceCache.getSource().tileSize,
+            roundZoom: tile.sourceCache.getSource().roundZoom
         });
         var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
