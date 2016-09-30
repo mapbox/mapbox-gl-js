@@ -32,7 +32,7 @@ function Style(stylesheet, map, options) {
     this._layers = {};
     this._order  = [];
     this._groups = [];
-    this.sources = {};
+    this.sourceCaches = {};
     this.zoomHistory = {};
 
     util.bindAll(['_redoPlacement'], this);
@@ -56,9 +56,8 @@ function Style(stylesheet, map, options) {
 
         this.updateClasses();
 
-        var sources = stylesheet.sources;
-        for (var id in sources) {
-            this.addSource(id, sources[id], options);
+        for (var id in stylesheet.sources) {
+            this.addSource(id, stylesheet.sources[id], options);
         }
 
         if (stylesheet.sprite) {
@@ -95,7 +94,7 @@ Style.prototype = util.inherit(Evented, {
     _loaded: false,
 
     _validateLayer: function(layer) {
-        var source = this.sources[layer.source];
+        var source = this.sourceCaches[layer.source];
 
         if (!layer.sourceLayer) return;
         if (!source) return;
@@ -119,8 +118,8 @@ Style.prototype = util.inherit(Evented, {
         if (Object.keys(this._updates.sources).length)
             return false;
 
-        for (var id in this.sources)
-            if (!this.sources[id].loaded())
+        for (var id in this.sourceCaches)
+            if (!this.sourceCaches[id].loaded())
                 return false;
 
         if (this.sprite && !this.sprite.loaded())
@@ -217,8 +216,8 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _recalculate: function(z) {
-        for (var sourceId in this.sources)
-            this.sources[sourceId].used = false;
+        for (var sourceId in this.sourceCaches)
+            this.sourceCaches[sourceId].used = false;
 
         this._updateZoomHistory(z);
 
@@ -228,7 +227,7 @@ Style.prototype = util.inherit(Evented, {
 
             layer.recalculate(z, this.zoomHistory);
             if (!layer.isHidden(z) && layer.source) {
-                this.sources[layer.source].used = true;
+                this.sourceCaches[layer.source].used = true;
             }
         }
 
@@ -322,7 +321,7 @@ Style.prototype = util.inherit(Evented, {
     addSource: function(id, source, options) {
         this._checkLoaded();
 
-        if (this.sources[id] !== undefined) {
+        if (this.sourceCaches[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
 
@@ -335,7 +334,7 @@ Style.prototype = util.inherit(Evented, {
         if (shouldValidate && this._validate(validateStyle.source, 'sources.' + id, source, null, options)) return this;
 
         source = new SourceCache(id, source, this.dispatcher);
-        this.sources[id] = source;
+        this.sourceCaches[id] = source;
         source.style = this;
         source.setEventedParent(this, {source: source.getSource()});
 
@@ -355,11 +354,11 @@ Style.prototype = util.inherit(Evented, {
     removeSource: function(id) {
         this._checkLoaded();
 
-        if (this.sources[id] === undefined) {
+        if (this.sourceCaches[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
-        var source = this.sources[id];
-        delete this.sources[id];
+        var source = this.sourceCaches[id];
+        delete this.sourceCaches[id];
         delete this._updates.sources[id];
         source.setEventedParent(null);
 
@@ -376,7 +375,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getSource: function(id) {
-        return this.sources[id] && this.sources[id].getSource();
+        return this.sourceCaches[id] && this.sourceCaches[id].getSource();
     },
 
     /**
@@ -589,7 +588,7 @@ Style.prototype = util.inherit(Evented, {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: util.mapObject(this.sources, function(source) {
+            sources: util.mapObject(this.sourceCaches, function(source) {
                 return source.serialize();
             }),
             layers: this._order.map(function(id) {
@@ -642,9 +641,9 @@ Style.prototype = util.inherit(Evented, {
         }
 
         var sourceResults = [];
-        for (var id in this.sources) {
+        for (var id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            var source = this.sources[id];
+            var source = this.sourceCaches[id];
             var results = QueryFeatures.rendered(source, this._layers, queryGeometry, params, zoom, bearing);
             sourceResults.push(results);
         }
@@ -655,7 +654,7 @@ Style.prototype = util.inherit(Evented, {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
         }
-        var source = this.sources[sourceID];
+        var source = this.sourceCaches[sourceID];
         return source ? QueryFeatures.source(source, params) : [];
     },
 
@@ -693,18 +692,18 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _reloadSource: function(id) {
-        this.sources[id].reload();
+        this.sourceCaches[id].reload();
     },
 
     _updateSources: function(transform) {
-        for (var id in this.sources) {
-            this.sources[id].update(transform);
+        for (var id in this.sourceCaches) {
+            this.sourceCaches[id].update(transform);
         }
     },
 
     _redoPlacement: function() {
-        for (var id in this.sources) {
-            if (this.sources[id].redoPlacement) this.sources[id].redoPlacement();
+        for (var id in this.sourceCaches) {
+            if (this.sourceCaches[id].redoPlacement) this.sourceCaches[id].redoPlacement();
         }
     },
 

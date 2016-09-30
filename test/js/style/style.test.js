@@ -70,7 +70,7 @@ test('Style', function(t) {
             }
         }));
         style.on('style.load', function() {
-            t.ok(style.sources['mapbox'] instanceof SourceCache);
+            t.ok(style.sourceCaches['mapbox'] instanceof SourceCache);
             t.end();
         });
     });
@@ -350,7 +350,7 @@ test('Style#addSource', function(t) {
         var style = new Style(createStyleJSON());
         style.on('style.load', function() {
             style.on('error', function() {
-                t.notOk(style.sources['source-id']);
+                t.notOk(style.sourceCaches['source-id']);
                 t.end();
             });
             style.addSource('source-id', {
@@ -380,8 +380,8 @@ test('Style#addSource', function(t) {
             style.on('source.load', function() { t.ok(true); });
 
             style.addSource('source-id', source); // Fires 'source.load' and 'data'
-            style.sources['source-id'].fire('error');
-            style.sources['source-id'].fire('data');
+            style.sourceCaches['source-id'].fire('error');
+            style.sourceCaches['source-id'].fire('data');
         });
     });
 
@@ -453,7 +453,7 @@ test('Style#removeSource', function(t) {
 
         style.on('style.load', function () {
             style.addSource('source-id', source);
-            source = style.sources['source-id'];
+            source = style.sourceCaches['source-id'];
 
             style.removeSource('source-id');
 
@@ -579,7 +579,7 @@ test('Style#addLayer', function(t) {
         };
 
         style.on('style.load', function() {
-            style.sources['mapbox'].reload = t.end;
+            style.sourceCaches['mapbox'].reload = t.end;
 
             style.addLayer(layer);
             style.update();
@@ -1089,7 +1089,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('does not query sources not implicated by `layers` parameter', function (t) {
-            style.sources.mapbox.queryRenderedFeatures = function() { t.fail(); };
+            style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']});
             t.end();
         });
