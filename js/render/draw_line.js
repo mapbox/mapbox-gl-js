@@ -14,7 +14,7 @@ var pixelsToTileUnits = require('../source/pixels_to_tile_units');
  * @returns {undefined} draws with the painter
  * @private
  */
-module.exports = function drawLine(painter, source, layer, coords) {
+module.exports = function drawLine(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -26,13 +26,13 @@ module.exports = function drawLine(painter, source, layer, coords) {
     if (layer.paint['line-width'] <= 0) return;
 
     for (var k = 0; k < coords.length; k++) {
-        drawLineTile(painter, source, layer, coords[k]);
+        drawLineTile(painter, sourceCache, layer, coords[k]);
     }
 
 };
 
-function drawLineTile(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
+function drawLineTile(painter, sourceCache, layer, coord) {
+    var tile = sourceCache.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
     var bufferGroups = bucket.bufferGroups.line;

@@ -7,7 +7,7 @@ var tileSize = 512;
 
 module.exports = drawBackground;
 
-function drawBackground(painter, source, layer) {
+function drawBackground(painter, sourceCache, layer) {
     var gl = painter.gl;
     var transform = painter.transform;
     var color = layer.paint['background-color'];

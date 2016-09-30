@@ -9,16 +9,16 @@ var VertexArrayObject = require('./vertex_array_object');
 
 module.exports = drawDebug;
 
-function drawDebug(painter, source, coords) {
+function drawDebug(painter, sourceCache, coords) {
     if (painter.isOpaquePass) return;
     if (!painter.options.debug) return;
 
     for (var i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, source, coords[i]);
+        drawDebugTile(painter, sourceCache, coords[i]);
     }
 }
 
-function drawDebugTile(painter, source, coord) {
+function drawDebugTile(painter, sourceCache, coord) {
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);
@@ -44,7 +44,7 @@ function drawDebugTile(painter, source, coord) {
 
     // Draw the halo with multiple 1px lines instead of one wider line because
     // the gl spec doesn't guarantee support for lines with width > 1.
-    var tileSize = source.getTile(coord).tileSize;
+    var tileSize = sourceCache.getTile(coord).tileSize;
     var onePixel = EXTENT / (Math.pow(2, painter.transform.zoom - coord.z) * tileSize);
     var translations = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (var i = 0; i < translations.length; i++) {

@@ -4,7 +4,7 @@ var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = draw;
 
-function draw(painter, source, layer, coords) {
+function draw(painter, sourceCache, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
@@ -26,7 +26,7 @@ function draw(painter, source, layer, coords) {
         // outside of this coords loop.
         painter.setDepthSublayer(1);
         for (var i = 0; i < coords.length; i++) {
-            drawFill(painter, source, layer, coords[i]);
+            drawFill(painter, sourceCache, layer, coords[i]);
         }
     }
 
@@ -59,13 +59,13 @@ function draw(painter, source, layer, coords) {
         }
 
         for (var j = 0; j < coords.length; j++) {
-            drawStroke(painter, source, layer, coords[j]);
+            drawStroke(painter, sourceCache, layer, coords[j]);
         }
     }
 }
 
-function drawFill(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
+function drawFill(painter, sourceCache, layer, coord) {
+    var tile = sourceCache.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
     var bufferGroups = bucket.bufferGroups.fill;
@@ -112,8 +112,8 @@ function drawFill(painter, source, layer, coord) {
     }
 }
 
-function drawStroke(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
+function drawStroke(painter, sourceCache, layer, coord) {
+    var tile = sourceCache.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
 
