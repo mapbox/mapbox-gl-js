@@ -223,18 +223,18 @@ Painter.prototype.renderPass = function(options) {
 
     for (var i = 0; i < groups.length; i++) {
         var group = groups[isOpaquePass ? groups.length - 1 - i : i];
-        var source = this.style.sources[group.source];
+        var sourceCache = this.style.sourceCaches[group.source];
 
         var j;
         var coords = [];
-        if (source) {
-            coords = source.getVisibleCoordinates();
+        if (sourceCache) {
+            coords = sourceCache.getVisibleCoordinates();
             for (j = 0; j < coords.length; j++) {
-                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], source.maxzoom);
+                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.maxzoom);
             }
             this.clearStencil();
-            if (source.prepare) source.prepare();
-            if (source.isTileClipped) {
+            if (sourceCache.prepare) sourceCache.prepare();
+            if (sourceCache.isTileClipped) {
                 this._renderTileClippingMasks(coords);
             }
         }
@@ -253,11 +253,11 @@ Painter.prototype.renderPass = function(options) {
         for (j = 0; j < group.length; j++) {
             var layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
-            this.renderLayer(this, source, layer, coords);
+            this.renderLayer(this, sourceCache, layer, coords);
         }
 
-        if (source) {
-            draw.debug(this, source, coords);
+        if (sourceCache) {
+            draw.debug(this, sourceCache, coords);
         }
     }
 };

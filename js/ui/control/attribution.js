@@ -50,7 +50,7 @@ Attribution.prototype = util.inherit(Control, {
 
         var attributions = [];
 
-        for (var id in this._map.style.sources) {
+        for (var id in this._map.style.sourceCaches) {
             var source = this._map.getSource(id);
             if (source.attribution && attributions.indexOf(source.attribution) < 0) {
                 attributions.push(source.attribution);
