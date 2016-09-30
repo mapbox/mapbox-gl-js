@@ -37,6 +37,8 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     var x = 0;
     var y = yOffset;
 
+    text = text.trim();
+
     for (var i = 0; i < text.length; i++) {
         var codePoint = text.charCodeAt(i);
         var glyph = glyphs[codePoint];
