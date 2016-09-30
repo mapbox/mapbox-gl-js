@@ -5,7 +5,7 @@ var StructArrayType = require('../util/struct_array');
 
 module.exports = drawRaster;
 
-function drawRaster(painter, source, layer, coords) {
+function drawRaster(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
     var gl = painter.gl;
@@ -22,7 +22,7 @@ function drawRaster(painter, source, layer, coords) {
         var coord = coords[i];
         // set the lower zoom level to sublayer 0, and higher zoom levels to higher sublayers
         painter.setDepthSublayer(coord.z - minTileZ);
-        drawRasterTile(painter, source, layer, coord);
+        drawRasterTile(painter, sourceCache, layer, coord);
     }
 
     gl.depthFunc(gl.LEQUAL);

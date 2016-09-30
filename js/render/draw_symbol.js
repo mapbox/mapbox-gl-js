@@ -7,7 +7,7 @@ var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = drawSymbols;
 
-function drawSymbols(painter, source, layer, coords) {
+function drawSymbols(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
     var drawAcrossEdges = !(layer.layout['text-allow-overlap'] || layer.layout['icon-allow-overlap'] ||
@@ -30,7 +30,7 @@ function drawSymbols(painter, source, layer, coords) {
     painter.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
 
-    drawLayerSymbols(painter, source, layer, coords, false,
+    drawLayerSymbols(painter, sourceCache, layer, coords, false,
             layer.paint['icon-translate'],
             layer.paint['icon-translate-anchor'],
             layer.layout['icon-rotation-alignment'],
@@ -44,7 +44,7 @@ function drawSymbols(painter, source, layer, coords) {
             layer.paint['icon-opacity'],
             layer.paint['icon-color']);
 
-    drawLayerSymbols(painter, source, layer, coords, true,
+    drawLayerSymbols(painter, sourceCache, layer, coords, true,
             layer.paint['text-translate'],
             layer.paint['text-translate-anchor'],
             layer.layout['text-rotation-alignment'],
@@ -58,12 +58,12 @@ function drawSymbols(painter, source, layer, coords) {
 
     gl.enable(gl.DEPTH_TEST);
 
-    if (source.map.showCollisionBoxes) {
-        drawCollisionDebug(painter, source, layer, coords);
+    if (sourceCache.map.showCollisionBoxes) {
+        drawCollisionDebug(painter, sourceCache, layer, coords);
     }
 }
 
-function drawLayerSymbols(painter, source, layer, coords, isText,
+function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
         translate,
         translateAnchor,
         rotationAlignment,
@@ -76,7 +76,7 @@ function drawLayerSymbols(painter, source, layer, coords, isText,
         color) {
 
     for (var j = 0; j < coords.length; j++) {
-        var tile = source.getTile(coords[j]);
+        var tile = sourceCache.getTile(coords[j]);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
         var bothBufferGroups = bucket.bufferGroups;

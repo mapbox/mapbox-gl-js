@@ -358,12 +358,12 @@ Style.prototype = util.inherit(Evented, {
         if (this.sourceCaches[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
-        var source = this.sourceCaches[id];
+        var sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
         delete this._updates.sources[id];
-        source.setEventedParent(null);
+        sourceCache.setEventedParent(null);
 
-        if (source.onRemove) source.onRemove(this.map);
+        if (sourceCache.onRemove) sourceCache.onRemove(this.map);
         this._updates.changed = true;
 
         return this;
@@ -644,8 +644,8 @@ Style.prototype = util.inherit(Evented, {
         var sourceResults = [];
         for (var id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            var source = this.sourceCaches[id];
-            var results = QueryFeatures.rendered(source, this._layers, queryGeometry, params, zoom, bearing);
+            var sourceCache = this.sourceCaches[id];
+            var results = QueryFeatures.rendered(sourceCache, this._layers, queryGeometry, params, zoom, bearing);
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
@@ -655,8 +655,8 @@ Style.prototype = util.inherit(Evented, {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
         }
-        var source = this.sourceCaches[sourceID];
-        return source ? QueryFeatures.source(source, params) : [];
+        var sourceCache = this.sourceCaches[sourceID];
+        return sourceCache ? QueryFeatures.source(sourceCache, params) : [];
     },
 
     addSourceType: function (name, SourceType, callback) {
