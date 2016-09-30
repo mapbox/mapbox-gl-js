@@ -230,11 +230,11 @@ Painter.prototype.renderPass = function(options) {
         if (sourceCache) {
             coords = sourceCache.getVisibleCoordinates();
             for (j = 0; j < coords.length; j++) {
-                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.maxzoom);
+                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.getSource().maxzoom);
             }
             this.clearStencil();
             if (sourceCache.prepare) sourceCache.prepare();
-            if (sourceCache.isTileClipped) {
+            if (sourceCache.getSource().isTileClipped) {
                 this._renderTileClippingMasks(coords);
             }
         }
@@ -269,11 +269,11 @@ Painter.prototype.depthMask = function(mask) {
     }
 };
 
-Painter.prototype.renderLayer = function(painter, source, layer, coords) {
+Painter.prototype.renderLayer = function(painter, sourceCache, layer, coords) {
     if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
     this.id = layer.id;
-    draw[layer.type](painter, source, layer, coords);
+    draw[layer.type](painter, sourceCache, layer, coords);
 };
 
 Painter.prototype.setDepthSublayer = function(n) {

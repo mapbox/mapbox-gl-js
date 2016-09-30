@@ -49,16 +49,6 @@ function createSourceCache(options, used) {
     return sc;
 }
 
-test('SourceCache#attribution is set', function(t) {
-    var sourceCache = createSourceCache({
-        attribution: 'Mapbox Heavy Industries'
-    });
-    sourceCache.on('source.load', function() {
-        t.equal(sourceCache.attribution, 'Mapbox Heavy Industries');
-        t.end();
-    });
-});
-
 test('SourceCache#addTile', function(t) {
     t.test('loads tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
@@ -452,8 +442,6 @@ test('SourceCache#update', function(t) {
         });
 
         sourceCache.on('source.load', function () {
-            t.equal(sourceCache.maxzoom, 14);
-
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getRenderableIds(), [
                 new TileCoord(16, 8191, 8191, 0).id,

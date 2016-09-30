@@ -35,14 +35,14 @@ drawRaster.RasterBoundsArray = new StructArrayType({
     ]
 });
 
-function drawRasterTile(painter, source, layer, coord) {
+function drawRasterTile(painter, sourceCache, layer, coord) {
 
     var gl = painter.gl;
 
     gl.disable(gl.STENCIL_TEST);
 
-    var tile = source.getTile(coord);
-    var posMatrix = painter.transform.calculatePosMatrix(coord, source.maxzoom);
+    var tile = sourceCache.getTile(coord);
+    var posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
     var program = painter.useProgram('raster');
     gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
@@ -122,7 +122,10 @@ function getOpacities(tile, parentTile, layer, transform) {
         var sinceTile = (now - tile.timeAdded) / fadeDuration;
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
-        var idealZ = transform.coveringZoomLevel(tile.source);
+        var idealZ = transform.coveringZoomLevel({
+            tileSize: this.tile.source.getSource().tileSize,
+            roundZoom: this.tile.source.getSource().roundZoom
+        });
         var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
         if (!parentTile || parentFurther) {
