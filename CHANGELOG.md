@@ -1,3 +1,10 @@
+## 0.25.1 (September 29 2016)
+
+#### Bugfixes
+
+  * Fix bug causing attribution to not be shown #3278
+  * Fix bug causing exceptions when symbol text has a trailing newline #3281
+
 ## 0.25.0 (September 29 2016)
 
 #### New Features & Improvements
@@ -47,7 +54,7 @@
  * Fix bug causing garbled text rendering when multiple maps are rendered on the page #3086
  * Fix rendering defects caused by `Map#setFilter` and map rotation on iOS 10 #3207
  * Fix bug causing image and video sources to disappear when zooming in #3010
- 
+
 
 ## 0.23.0 (August 25 2016)
 
