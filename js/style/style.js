@@ -94,10 +94,11 @@ Style.prototype = util.inherit(Evented, {
     _loaded: false,
 
     _validateLayer: function(layer) {
-        var source = this.sourceCaches[layer.source];
+        var sourceCache = this.sourceCaches[layer.source];
 
         if (!layer.sourceLayer) return;
-        if (!source) return;
+        if (!sourceCache) return;
+        var source = sourceCache.getSource();
         if (!source.vectorLayerIds) return;
 
         if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
