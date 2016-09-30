@@ -21,29 +21,6 @@ function Attribution(options) {
     util.setOptions(this, options);
 }
 
-Attribution.createAttributionString = function(sources) {
-    var attributions = [];
-
-    for (var id in sources) {
-        var source = sources[id].getSource();
-        if (source.attribution && attributions.indexOf(source.attribution) < 0) {
-            attributions.push(source.attribution);
-        }
-    }
-
-    // remove any entries that are substrings of another entry.
-    // first sort by length so that substrings come first
-    attributions.sort(function (a, b) { return a.length - b.length; });
-    attributions = attributions.filter(function (attrib, i) {
-        for (var j = i + 1; j < attributions.length; j++) {
-            if (attributions[j].indexOf(attrib) >= 0) { return false; }
-        }
-        return true;
-    });
-
-    return attributions.join(' | ');
-};
-
 Attribution.prototype = util.inherit(Control, {
     options: {
         position: 'bottom-right'
@@ -53,24 +30,44 @@ Attribution.prototype = util.inherit(Control, {
         var className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());
 
-        this._update();
+        this._updateAttributions();
+        this._updateEditLink();
+
         map.on('data', function(event) {
             if (event.dataType === 'source') {
-                this._update();
+                this._updateAttributions();
+                this._updateEditLink();
             }
         }.bind(this));
+
         map.on('moveend', this._updateEditLink.bind(this));
 
         return container;
     },
 
-    _update: function() {
-        if (this._map.style) {
-            this._container.innerHTML = Attribution.createAttributionString(this._map.style.sources);
+    _updateAttributions: function() {
+        if (!this._map.style) return;
+
+        var attributions = [];
+
+        for (var id in this._map.style.sources) {
+            var source = this._map.getSource(id);
+            if (source.attribution && attributions.indexOf(source.attribution) < 0) {
+                attributions.push(source.attribution);
+            }
         }
 
-        this._editLink = this._container.getElementsByClassName('mapbox-improve-map')[0];
-        this._updateEditLink();
+        // remove any entries that are substrings of another entry.
+        // first sort by length so that substrings come first
+        attributions.sort(function (a, b) { return a.length - b.length; });
+        attributions = attributions.filter(function (attrib, i) {
+            for (var j = i + 1; j < attributions.length; j++) {
+                if (attributions[j].indexOf(attrib) >= 0) { return false; }
+            }
+            return true;
+        });
+
+        this._container.innerHTML = attributions.join(' | ');
     },
 
     _updateEditLink: function() {
