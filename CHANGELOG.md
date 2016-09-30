@@ -1,4 +1,4 @@
-## 0.25.1 (September 29 2016)
+## 0.25.1 (September 30 2016)
 
 #### Bugfixes
 
