@@ -25,7 +25,7 @@ Attribution.createAttributionString = function(sources) {
     var attributions = [];
 
     for (var id in sources) {
-        var source = sources[id];
+        var source = sources[id].getSource();
         if (source.attribution && attributions.indexOf(source.attribution) < 0) {
             attributions.push(source.attribution);
         }
