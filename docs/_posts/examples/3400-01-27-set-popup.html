@@ -31,7 +31,7 @@ var el = document.createElement('div');
 el.id = 'marker';
 
 // create the marker
-var marker = new mapboxgl.Marker(el)
+new mapboxgl.Marker(el)
     .setLngLat(monument)
     .setPopup(popup) // sets a popup on this marker
     .addTo(map);
