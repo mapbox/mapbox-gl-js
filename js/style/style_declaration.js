@@ -49,7 +49,7 @@ function wrapColorCalculate(calculate) {
     return function(globalProperties, featureProperties) {
         var color = calculate(globalProperties, featureProperties);
         return color && parseColor(color);
-    }
+    };
 }
 
 // This function is used to smoothly transition between discrete values, such
