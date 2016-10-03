@@ -14,7 +14,7 @@ tags:
 
 <script>
 
-var monument = [-77.0353, 38.8895]
+var monument = [-77.0353, 38.8895];
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v9',
@@ -23,8 +23,8 @@ var map = new mapboxgl.Map({
 });
 
 // create the popup
-var popup = new mapboxgl.Popup({offset:[10,10]}) // offset to center popup on marker
-    .setText('The Washington Monument')
+var popup = new mapboxgl.Popup({offset:[10, 10]}) // offset to center popup on marker
+    .setText('The Washington Monument');
 
 // create DOM element for the marker
 var el = document.createElement('div');
