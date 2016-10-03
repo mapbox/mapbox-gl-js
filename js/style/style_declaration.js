@@ -18,8 +18,12 @@ function StyleDeclaration(reference, value) {
     this.isFeatureConstant = this.calculate.isFeatureConstant;
     this.isZoomConstant = this.calculate.isZoomConstant;
 
+    if (reference.type === 'color') {
+        this.calculate = wrapColorCalculate(this.calculate);
+    }
+
     if (reference.function === 'piecewise-constant' && reference.transition) {
-        this.calculate = transitioned(this.calculate);
+        this.calculate = wrapTransitionedCalculate(this.calculate);
     }
 
     if (!this.isFeatureConstant && !this.isZoomConstant) {
@@ -41,9 +45,16 @@ function StyleDeclaration(reference, value) {
     }
 }
 
+function wrapColorCalculate(calculate) {
+    return function(globalProperties, featureProperties) {
+        var color = calculate(globalProperties, featureProperties);
+        return color && parseColor(color);
+    }
+}
+
 // This function is used to smoothly transition between discrete values, such
 // as images and dasharrays.
-function transitioned(calculate) {
+function wrapTransitionedCalculate(calculate) {
     return function(globalProperties, featureProperties) {
         var z = globalProperties.zoom;
         var zh = globalProperties.zoomHistory;
