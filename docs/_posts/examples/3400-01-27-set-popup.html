@@ -1,0 +1,39 @@
+---
+layout: example
+category: example
+title: Set a popup to a marker
+description: Set a popup to a marker and display it on click.
+tags:
+  - controls-and-overlays
+---
+<style>
+#marker { background: #007cbf; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; }
+</style>
+
+<div id='map'></div>
+
+<script>
+
+var monument = [-77.0353, 38.8895]
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: monument,
+    zoom: 15
+});
+
+// create the popup
+var popup = new mapboxgl.Popup({offset:[10,10]}) // offset to center popup on marker
+    .setText('The Washington Monument')
+
+// create DOM element for the marker
+var el = document.createElement('div');
+el.id = 'marker';
+
+// create the marker
+var marker = new mapboxgl.Marker(el)
+    .setLngLat(monument)
+    .setPopup(popup) // sets a popup on this marker
+    .addTo(map);
+
+</script>
