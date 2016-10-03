@@ -152,7 +152,7 @@ Marker.prototype = {
     _update: function (options) {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
-        if (options.roundPos) pos = pos.round();
+        if (options && options.roundPos) pos = pos.round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };
