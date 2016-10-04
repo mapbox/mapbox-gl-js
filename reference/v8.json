@@ -1420,7 +1420,6 @@
   "function": {
     "stops": {
       "type": "array",
-      "required": true,
       "doc": "An array of stops.",
       "value": "function_stop"
     },
@@ -1438,14 +1437,17 @@
     "type": {
       "type": "enum",
       "values": {
+          "identity": {
+              "doc": "Return the input value as the output value."
+          },
           "exponential": {
-              "doc": "Use exponential interpolation."
+              "doc": "Generate an output by interpolating between stops just less than and just greater than the function input."
           },
           "interval": {
-              "doc": "Use interval interpolation."
+              "doc": "Return the output value of the stop just less than the function input."
           },
           "categorical": {
-              "doc": "Use categorical interpolation."
+              "doc": "Return the output value of the stop equal to the function input."
           }
       },
       "doc": "The interpolation strategy to use in function evaluation.",
