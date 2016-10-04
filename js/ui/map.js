@@ -1417,3 +1417,19 @@ function removeNode(node) {
   * @property {string} type The event type.
   * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
   */
+
+ /**
+ * Fired immediately after the map container has been removed with [`Map#remove`](#Map#remove).
+ *
+ * @event remove
+ * @memberof Map
+ * @instance
+ */
+
+  /**
+ * Fired immediately after the map container has been resized.
+ *
+ * @event resize
+ * @memberof Map
+ * @instance
+ */
