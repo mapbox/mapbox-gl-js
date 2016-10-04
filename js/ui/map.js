@@ -1419,7 +1419,7 @@ function removeNode(node) {
   */
 
  /**
- * Fired immediately after the map container has been removed with [`Map#remove`](#Map#remove).
+ * Fired immediately after the map has been removed with [`Map#remove`](#Map#remove).
  *
  * @event remove
  * @memberof Map
@@ -1427,7 +1427,7 @@ function removeNode(node) {
  */
 
   /**
- * Fired immediately after the map container has been resized.
+ * Fired immediately after the map has been resized.
  *
  * @event resize
  * @memberof Map
