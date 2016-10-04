@@ -66,7 +66,7 @@ Marker.prototype = {
         if (this._map) {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
-            this._map.on('moveend', this._update);
+            this._map.off('moveend', this._update);
             this._map = null;
         }
         DOM.remove(this._element);

@@ -32,10 +32,11 @@ test('Marker', function (t) {
     t.test('marker\'s lngLat can be changed', function (t) {
         var map = createMap();
         var marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
-        t.ok(marker.setLngLat([-76,39]) instanceof Marker, 'marker.setLngLat() returns Marker instance');
-        t.ok(marker._lngLat.lng === -76 &&  marker._lngLat.lat === 39, 'marker\'s position can be updated');
+        t.ok(marker.setLngLat([-76, 39]) instanceof Marker, 'marker.setLngLat() returns Marker instance');
+        var markerLngLat = marker.getLngLat();
+        t.ok(markerLngLat.lng === -76 &&  markerLngLat.lat === 39, 'marker\'s position can be updated');
         t.end();
-    })
+    });
 
     t.test('popups can be bound to marker instance', function (t) {
         var map = createMap();
