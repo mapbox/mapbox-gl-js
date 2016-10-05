@@ -1462,7 +1462,7 @@
           "lab": {
               "doc": "Use the LAB color space to interpolate color values."
           },
-          "interval": {
+          "hcl": {
               "doc": "Use the HCL color space to interpolate color values, interpolating the Hue, Chroma, and Luminance channels individually."
           }
       },
