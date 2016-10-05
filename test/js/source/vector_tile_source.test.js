@@ -63,6 +63,20 @@ test('VectorTileSource', function(t) {
         window.server.respond();
     });
 
+    t.test('fires "data" event', function(t) {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        var source = createSource({ url: "/source.json" });
+        source.on('data', t.end);
+        window.server.respond();
+    });
+
+    t.test('fires "dataloading" event', function(t) {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        var source = createSource({ url: "/source.json" });
+        source.on('dataloading', t.end);
+        window.server.respond();
+    });
+
     t.test('serialize URL', function(t) {
         var source = createSource({
             url: "http://localhost:2900/source.json"

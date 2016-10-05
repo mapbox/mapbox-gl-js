@@ -17,6 +17,8 @@ function VectorTileSource(id, options, dispatcher) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
 
+    this.asyncFire('dataloading', {dataType: 'source'});
+
     loadTileJSON(options, function (err, tileJSON) {
         if (err) {
             this.fire('error', err);

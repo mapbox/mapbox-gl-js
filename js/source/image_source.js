@@ -48,6 +48,7 @@ function ImageSource(id, options, dispatcher) {
     this.url = options.url;
     this.coordinates = options.coordinates;
 
+    this.asyncFire('dataloading', {dataType: 'source'});
     ajax.getImage(options.url, function(err, image) {
         if (err) return this.fire('error', {error: err});
 

@@ -49,6 +49,7 @@ function VideoSource(id, options) {
     this.urls = options.urls;
     this.coordinates = options.coordinates;
 
+    this.asyncFire('dataloading', {dataType: 'source'});
     ajax.getVideo(options.urls, function(err, video) {
         if (err) return this.fire('error', {error: err});
 
