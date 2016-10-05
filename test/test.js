@@ -5,7 +5,7 @@ var MapboxGLFunction = require('../').interpolated;
 
 test('function types', function(t) {
 
-    t.test('contant', function(t) {
+    t.test('constant', function(t) {
 
         t.test('range types', function(t) {
 
@@ -104,6 +104,59 @@ test('function types', function(t) {
                 t.equal(f(5), 10);
                 t.equal(f(6), 10);
 
+                t.end();
+            });
+
+            t.test('three elements', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    colorSpace: 'lab',
+                    stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
+                });
+
+                t.deepEqual(f(0), [0, 0, 0, 1]);
+                t.deepEqual(f(5).map(function (n) {
+                    return parseFloat(n.toFixed(3));
+                }), [0, 0.444, 0.444, 1]);
+
+                t.end();
+            });
+
+            t.test('rgb colorspace', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'exponential',
+                    colorSpace: 'rgb',
+                    stops: [[0, [0, 0, 0, 1]], [10, [1, 1, 1, 1]]]
+                });
+
+                t.deepEqual(f(5).map(function (n) {
+                    return parseFloat(n.toFixed(3));
+                }), [0.5, 0.5, 0.5, 1]);
+
+                t.end();
+            });
+
+            t.test('unknown color spaces', function(t) {
+                t.throws(function () {
+                    MapboxGLFunction({
+                        type: 'exponential',
+                        colorSpace: 'unknown',
+                        stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
+                    });
+                }, 'Unknown color space: unknown');
+
+                t.end();
+            });
+
+            t.test('interpolation mutation avoidance', function(t) {
+                var params = {
+                    type: 'exponential',
+                    colorSpace: 'lab',
+                    stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
+                };
+                var paramsCopy = JSON.parse(JSON.stringify(params));
+                MapboxGLFunction(params);
+                t.deepEqual(params, paramsCopy);
                 t.end();
             });
 

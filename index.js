@@ -1,5 +1,11 @@
 'use strict';
 
+var colorSpaces = require('./color_spaces');
+
+function identityFunction(x) {
+    return x;
+}
+
 function createFunction(parameters, defaultType) {
     var fun;
 
@@ -27,10 +33,35 @@ function createFunction(parameters, defaultType) {
             throw new Error('Unknown function type "' + type + '"');
         }
 
+        var outputFunction;
+
+        // If we're interpolating colors in a color system other than RGBA,
+        // first translate all stop values to that color system, then interpolate
+        // arrays as usual. The `outputFunction` option lets us then translate
+        // the result of that interpolation back into RGBA.
+        if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
+            if (colorSpaces[parameters.colorSpace]) {
+                var colorspace = colorSpaces[parameters.colorSpace];
+                // Avoid mutating the parameters value
+                parameters = JSON.parse(JSON.stringify(parameters));
+                for (var s = 0; s < parameters.stops.length; s++) {
+                    parameters.stops[s] = [
+                        parameters.stops[s][0],
+                        colorspace.forward(parameters.stops[s][1])
+                    ];
+                }
+                outputFunction = colorspace.reverse;
+            } else {
+                throw new Error('Unknown color space: ' + parameters.colorSpace);
+            }
+        } else {
+            outputFunction = identityFunction;
+        }
+
         if (zoomAndFeatureDependent) {
             var featureFunctions = {};
             var featureFunctionStops = [];
-            for (var s = 0; s < parameters.stops.length; s++) {
+            for (s = 0; s < parameters.stops.length; s++) {
                 var stop = parameters.stops[s];
                 if (featureFunctions[stop[0].zoom] === undefined) {
                     featureFunctions[stop[0].zoom] = {
@@ -47,20 +78,24 @@ function createFunction(parameters, defaultType) {
                 featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
             }
             fun = function(zoom, feature) {
-                return evaluateExponentialFunction({ stops: featureFunctionStops, base: parameters.base }, zoom)(zoom, feature);
+                return outputFunction(evaluateExponentialFunction({
+                  stops: featureFunctionStops,
+                  base: parameters.base
+                }, zoom)(zoom, feature));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = false;
 
         } else if (zoomDependent) {
             fun = function(zoom) {
-                return innerFun(parameters, zoom);
+                return outputFunction(innerFun(parameters, zoom));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                return innerFun(parameters, feature[parameters.property]);
+                return outputFunction(
+                  innerFun(parameters, feature[parameters.property]));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
