@@ -30,7 +30,7 @@ map.addControl(new mapboxgl.Navigation());
 
 var emptyFc = { type: 'FeatureCollection', features: [] }
 
-map.on('style.load', function() {
+map.on('load', function() {
     map.addSource('queried', { type: 'geojson', data: emptyFc });
     map.addLayer({
         "id": "query",
