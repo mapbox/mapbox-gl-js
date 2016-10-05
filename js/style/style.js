@@ -3,6 +3,7 @@
 var Evented = require('../util/evented');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
+var Light = require('./light');
 var GlyphSource = require('../symbol/glyph_source');
 var SpriteAtlas = require('../symbol/sprite_atlas');
 var LineAtlas = require('../render/line_atlas');
@@ -34,7 +35,6 @@ function Style(stylesheet, map, options) {
     this._groups = [];
     this.sourceCaches = {};
     this.zoomHistory = {};
-    this._light = {};
 
     util.bindAll(['_redoPlacement'], this);
 
@@ -59,21 +59,6 @@ function Style(stylesheet, map, options) {
 
         for (var id in stylesheet.sources) {
             this.addSource(id, stylesheet.sources[id], options);
-        }
-
-        if (stylesheet.light) {
-            if (stylesheet.light.anchor) {
-                this._light.anchor = stylesheet.light.anchor;
-            }
-            if (stylesheet.light.direction) {
-                this._light.direction = stylesheet.light.direction;
-            }
-            if (stylesheet.light.color) {
-                this._light.color = stylesheet.light.color;
-            }
-            if (!isNaN(stylesheet.light.intensity)) {
-                this._light.intensity = stylesheet.light.intensity;
-            }
         }
 
         if (stylesheet.sprite) {
@@ -174,6 +159,8 @@ Style.prototype = util.inherit(Evented, {
 
         this._groupLayers();
         this._updateWorkerLayers();
+
+        this.light = new Light(this.stylesheet.light);
     },
 
     _groupLayers: function() {
@@ -230,6 +217,8 @@ Style.prototype = util.inherit(Evented, {
                 }
             }
         }
+
+        this.light.updateLightTransitions(options, transition, this.animationLoop);
     },
 
     _recalculate: function(z) {
@@ -247,6 +236,8 @@ Style.prototype = util.inherit(Evented, {
                 this.sourceCaches[layer.source].used = true;
             }
         }
+
+        this.light.recalculate(z, this.zoomHistory);
 
         var maxZoomTransitionDuration = 300;
         if (Math.floor(this.z) !== Math.floor(z)) {
@@ -693,7 +684,30 @@ Style.prototype = util.inherit(Evented, {
         }, callback);
     },
 
-    _validate: function(validate, key, value, props, options) {
+    getLight: function() {
+        return this.light.getLight();
+    },
+
+    setLight: function(lightOptions, transitionOptions) {
+        this._checkLoaded();
+
+        var light = this.light.getLight();
+        var _update = false;
+        for (var key in lightOptions) {
+            if (!util.deepEqual(lightOptions[key], light[key])) {
+                _update = true;
+                break;
+            }
+        }
+        if (!_update) return this;
+
+        var transition = this.stylesheet.transition || {};
+
+        this.light.setLight(lightOptions);
+        return this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
+    },
+
+    _validate: function(validate, key, value, props) {
         if (options && options.validate === false) {
             return false;
         }

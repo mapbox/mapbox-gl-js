@@ -29,7 +29,6 @@ function Painter(gl, transform) {
     this.preFbos = {};
 
     this.frameHistory = new FrameHistory();
-    this.light = {};
 
     this.setup();
 
@@ -103,15 +102,6 @@ Painter.prototype.setup = function() {
     rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
     this.rasterBoundsBuffer = new Buffer(rasterBoundsArray.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
     this.rasterBoundsVAO = new VertexArrayObject();
-};
-
-/*
- * Set the lighting properties (used for extruded geometries).
- */
-Painter.prototype.setLight = function(lightOptions) {
-    for (var key in lightOptions) {
-        this.light[key] = lightOptions[key];
-    }
 };
 
 /*

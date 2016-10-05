@@ -16,7 +16,6 @@ var Hash = require('./hash');
 var bindHandlers = require('./bind_handlers');
 
 var Camera = require('./camera');
-var Light = require('./light');
 var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
@@ -30,13 +29,6 @@ var defaultOptions = {
     zoom: 0,
     bearing: 0,
     pitch: 0,
-
-    light: {
-        anchor: 'viewport',
-        direction: [1.15, 210, 30],
-        color: 'white',
-        intensity: 0.5
-    },
 
     minZoom: defaultMinZoom,
     maxZoom: defaultMaxZoom,
@@ -132,7 +124,6 @@ var defaultOptions = {
  */
 var Map = module.exports = function(options) {
     options = util.extend({}, defaultOptions, options);
-    options.light = util.extend({}, defaultOptions.light, options.light);
 
     this._interactive = options.interactive;
     this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
@@ -197,12 +188,6 @@ var Map = module.exports = function(options) {
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
 
-    if (options.style) {
-        this.style.on('load', this._setLightOptions.bind(this, options.light, this.style._light));
-    } else {
-        this.on('load', this._setLightOptions.bind(this, options.light));
-    }
-
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
     this.on('style.load', function() {
@@ -223,7 +208,6 @@ var Map = module.exports = function(options) {
 
 util.extend(Map.prototype, Evented);
 util.extend(Map.prototype, Camera.prototype);
-util.extend(Map.prototype, Light.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 
     /**
@@ -849,6 +833,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     getLayoutProperty: function(layer, name) {
         return this.style.getLayoutProperty(layer, name);
+    },
+
+    /**
+     * Sets the any combination of light values.
+     *
+     * @param {Object} options Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @returns {Map} `this`
+     */
+    setLight: function(lightOptions) {
+        this.style.setLight(lightOptions);
+        this._update(true);
+        return this;
+    },
+
+    /**
+     * Returns the value of the light object.
+     *
+     * @returns {Object} light Light properties of the style.
+     */
+    getLight: function() {
+        return this.style.getLight();
     },
 
     /**
