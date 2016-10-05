@@ -1033,8 +1033,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
             this.fire('render');
 
-            if (this.loaded() && !this._loaded) {
-                this._loaded = true;
+            if (this.loaded() && !this._firedLoadEvent) {
+                this._firedLoadEvent = true;
                 this.fire('load');
             }
 
