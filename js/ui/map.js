@@ -121,6 +121,7 @@ var defaultOptions = {
  *   style: style_object,
  *   hash: true
  * });
+ * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 var Map = module.exports = function(options) {
 
@@ -215,6 +216,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Control} control The [`Control`](#Control) to add.
      * @returns {Map} `this`
+     * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
     addControl: function(control) {
         control.addTo(this);
@@ -435,6 +437,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {PointLike} point The pixel coordinates to unproject.
      * @returns {LngLat} The [`LngLat`](#LngLat) corresponding to `point`.
+     * @see [Show polygon information on click](https://www.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
@@ -504,6 +507,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @example
      * // Query all rendered features from a single layer
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
+     * @see [Get features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures/)
+     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     queryRenderedFeatures: function() {
         var params = {};
@@ -591,6 +597,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
      * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
      * tiles due to tile buffering.
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures: function(sourceID, params) {
         return this.style.querySourceFeatures(sourceID, params);
@@ -602,6 +610,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object|string} style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @returns {Map} `this`
+     * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle: function(style) {
         if (this.style) {
@@ -649,6 +658,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} source.type The source type, which must be either one of the core Mapbox GL source types defined in the style specification or a custom type that has been added to the map with {@link Map#addSourceType}.
      * @fires source.add
      * @returns {Map} `this`
+     * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+     * @see [Style circles using data-driven styling](https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
+     * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
      */
     addSource: function(id, source) {
         this.style.addSource(id, source);
@@ -686,6 +698,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} id The ID of the source to get.
      * @returns {?Object} The style source with the specified ID, or `undefined`
      *   if the ID corresponds to no existing sources.
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
+     * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource: function(id) {
         return this.style.getSource(id);
@@ -702,6 +717,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
+     * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
+     * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
+     * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
     addLayer: function(layer, before) {
         this.style.addLayer(layer, before);
@@ -731,6 +749,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} id The ID of the layer to get.
      * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
+     * @see [Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
+     * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer: function(id) {
         return this.style.getLayer(id);
@@ -745,6 +765,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Highlight features under the mouse pointer](calendar.google.com/calendar/render#main_7)
+     * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
@@ -789,6 +812,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setPaintProperty('my-layer', 'fill-color', '#faafee');
+     * @see [Change a layer's color with buttons](https://www.mapbox.com/mapbox-gl-js/example/color-switcher/)
+     * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     setPaintProperty: function(layer, name, value, klass) {
         this.style.setPaintProperty(layer, name, value, klass);
@@ -854,6 +880,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * map controls.
      *
      * @returns {HTMLElement} The container of the map's `<canvas>`.
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
     getCanvasContainer: function() {
         return this._canvasContainer;
@@ -863,6 +891,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Returns the map's `<canvas>` element.
      *
      * @returns {HTMLCanvasElement} The map's `<canvas>` element.
+     * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+     * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     getCanvas: function() {
         return this._canvas;
@@ -1239,6 +1270,7 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
  */
 
 /**
@@ -1248,6 +1280,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
 
 /**
@@ -1257,6 +1291,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
 
 /**
@@ -1266,6 +1302,9 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+ * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+ * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  */
 
 /**
@@ -1311,6 +1350,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+ * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
  */
 
 /**
@@ -1339,6 +1380,9 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @type {Object}
+ * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
+ * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
  */
 
 /**
@@ -1369,6 +1413,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent | MapTouchEvent} data
+ * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
+ * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
  */
 
  /**

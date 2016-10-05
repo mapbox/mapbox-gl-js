@@ -168,6 +168,7 @@ ScrollZoomHandler.prototype = {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent | MapTouchEvent} data
+ * @see [Update a choropleth layer by zoom level](https://www.mapbox.com/mapbox-gl-js/example/updating-choropleth/)
  */
 
 /**
