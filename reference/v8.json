@@ -1452,6 +1452,22 @@
       },
       "doc": "The interpolation strategy to use in function evaluation.",
       "default": "exponential"
+    },
+    "colorSpace": {
+      "type": "enum",
+      "values": {
+          "rgb": {
+              "doc": "Use the RGB color space to interpolate color values"
+          },
+          "lab": {
+              "doc": "Use the LAB color space to interpolate color values."
+          },
+          "interval": {
+              "doc": "Use the HCL color space to interpolate color values, interpolating the Hue, Chroma, and Luminance channels individually."
+          }
+      },
+      "doc": "The color space in which colors interpolated. Interpolating colors in perceptual color spaces like LAB and HCL tend to produce color ramps that look more consistent and produce colors that can be differentiated more easily than those interpolated in RGB space.",
+      "default": "rgb"
     }
   },
   "function_stop": {
