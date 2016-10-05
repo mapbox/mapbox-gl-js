@@ -49,6 +49,11 @@ test('Style', function(t) {
         t.end();
     });
 
+    t.test('fires "dataloading"', function(t) {
+        var style = new Style(createStyleJSON());
+        style.on('dataloading', t.end);
+    });
+
     t.test('can be constructed from a URL', function(t) {
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
