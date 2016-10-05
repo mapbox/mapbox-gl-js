@@ -845,10 +845,12 @@ test('Map', function(t) {
             });
 
             // The first 'data' event is always from the style
-            map.once('data', function () {
-                map.setLayoutProperty('shore', 'visibility', 'visible');
-                t.deepEqual(map.getLayoutProperty('shore', 'visibility'), 'visible');
-                t.end();
+            map.on('data', function (event) {
+                if (event.dataType === 'style' && event.isFirst) {
+                    map.setLayoutProperty('shore', 'visibility', 'visible');
+                    t.deepEqual(map.getLayoutProperty('shore', 'visibility'), 'visible');
+                    t.end();
+                }
             });
         });
 
@@ -880,10 +882,12 @@ test('Map', function(t) {
             });
 
             // The first 'data' event is always from the style
-            map.once('data', function () {
-                map.setLayoutProperty('image', 'visibility', 'visible');
-                t.deepEqual(map.getLayoutProperty('image', 'visibility'), 'visible');
-                t.end();
+            map.on('data', function (event) {
+                if (event.dataType === 'style' && event.isFirst) {
+                    map.setLayoutProperty('image', 'visibility', 'visible');
+                    t.deepEqual(map.getLayoutProperty('image', 'visibility'), 'visible');
+                    t.end();
+                }
             });
         });
 

@@ -67,8 +67,7 @@ function Style(stylesheet, map, options) {
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('data', {dataType: 'style'});
-        this.fire('style.load');
+        this.fire('data', {dataType: 'style', isFirst: true});
     }.bind(this);
 
     if (typeof stylesheet === 'string') {

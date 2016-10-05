@@ -190,15 +190,14 @@ var Map = module.exports = function(options) {
     if (options.style) this.setStyle(options.style);
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
-    this.on('style.load', function() {
-        if (this.transform.unmodified) {
-            this.jumpTo(this.style.stylesheet);
-        }
-        this.style.update(this._classes, {transition: false});
-    });
-
     this.on('data', function(event) {
         if (event.dataType === 'style') {
+            if (event.isFirst) {
+                if (this.transform.unmodified) {
+                    this.jumpTo(this.style.stylesheet);
+                }
+                this.style.update(this._classes, {transition: false});
+            }
             this._update(true);
         } else {
             this._update();
@@ -1416,4 +1415,5 @@ function removeNode(node) {
   * @typedef {Object} MapDataEvent
   * @property {string} type The event type.
   * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
+  * @property {boolean} isFirst `true` if this is the first `data` event for this resource, `false` otherwise. Always `false` for `dataloading` events.
   */
