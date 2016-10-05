@@ -1,0 +1,7 @@
+{
+  "draw": "v0.12.0",
+  "geocoder": "v1.3.1",
+  "directions": "v2.2.0",
+  "supported": "v1.2.0",
+  "compare": "v0.0.1"
+}
