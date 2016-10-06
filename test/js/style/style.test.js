@@ -576,11 +576,12 @@ test('Style#addLayer', function(t) {
             "filter": ["==", "id", 0]
         };
 
-        style.on('style.load', function() {
-            style.sourceCaches['mapbox'].reload = t.end;
-
+        style.once('style.load', function() {
+            sinon.spy(style.sourceCaches['mapbox'], 'reload');
             style.addLayer(layer);
             style.update();
+            t.ok(style.sourceCaches['mapbox'].reload.calledOnce);
+            t.end();
         });
     });
 

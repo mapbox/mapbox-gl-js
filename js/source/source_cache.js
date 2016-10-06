@@ -29,10 +29,12 @@ function SourceCache(id, options, dispatcher) {
 
     var source = this._source = Source.create(id, options, dispatcher);
     source.setEventedParent(this);
-    
-    this.once('data', function() {
-        if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
-        this._sourceLoaded = true;
+
+    this.on('data', function(event) {
+        if (event.dataType === 'source' && event.isFirst) {
+            if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
+            this._sourceLoaded = true;
+        }
     });
 
     this.on('error', function() {
