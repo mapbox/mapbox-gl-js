@@ -844,7 +844,6 @@ test('Map', function(t) {
                 }
             });
 
-            // The first 'data' event is always from the style
             map.on('data', function (event) {
                 if (event.dataType === 'style' && event.isFirst) {
                     map.setLayoutProperty('shore', 'visibility', 'visible');
@@ -881,7 +880,6 @@ test('Map', function(t) {
                 }
             });
 
-            // The first 'data' event is always from the style
             map.on('data', function (event) {
                 if (event.dataType === 'style' && event.isFirst) {
                     map.setLayoutProperty('image', 'visibility', 'visible');
