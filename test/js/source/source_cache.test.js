@@ -32,7 +32,7 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
         if (sourceOptions.error) {
             source.fire('error', { error: sourceOptions.error });
         } else {
-            source.fire('data');
+            source.fire('data', {dataType: 'source', isFirst: true});
         }
     }, 0);
     return source;

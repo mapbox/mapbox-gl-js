@@ -30,19 +30,16 @@ function SourceCache(id, options, dispatcher) {
     var source = this._source = Source.create(id, options, dispatcher);
     source.setEventedParent(this);
 
-    this.on('data', function(event) {
-        if (event.dataType === 'source' && event.isFirst) {
-            if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
-            this._sourceLoaded = true;
-        }
-    });
-
     this.on('error', function() {
         this._sourceErrored = true;
     });
 
     this.on('data', function(event) {
-        if (this._sourceLoaded && event.dataType === 'source') {
+        if (event.dataType === 'source' && event.isFirst) {
+            if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
+            this._sourceLoaded = true;
+
+        } else if (this._sourceLoaded && event.dataType === 'source') {
             this.reload();
             if (this.transform) {
                 this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
