@@ -34,6 +34,9 @@ exports.getArrayBuffer = function(url, callback) {
         callback(e);
     };
     xhr.onload = function() {
+        if (xhr.response.byteLength === 0 && xhr.status === 200) {
+            return callback(new Error('http status 200 returned without content.'));
+        }
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, xhr.response);
         } else {
@@ -50,6 +53,8 @@ function sameOrigin(url) {
     return a.protocol === window.document.location.protocol && a.host === window.document.location.host;
 }
 
+const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
+
 exports.getImage = function(url, callback) {
     return exports.getArrayBuffer(url, (err, imgData) => {
         if (err) return callback(err);
@@ -59,7 +64,11 @@ exports.getImage = function(url, callback) {
             (window.URL || window.webkitURL).revokeObjectURL(img.src);
         };
         const blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
-        img.src = (window.URL || window.webkitURL).createObjectURL(blob);
+        if (imgData.byteLength) {
+            img.src = (window.URL || window.webkitURL).createObjectURL(blob);
+        } else {
+            img.src = transparentPngUrl;
+        }
         img.getData = function() {
             const canvas = window.document.createElement('canvas');
             const context = canvas.getContext('2d');
@@ -68,7 +77,6 @@ exports.getImage = function(url, callback) {
             context.drawImage(img, 0, 0);
             return context.getImageData(0, 0, img.width, img.height).data;
         };
-        return img;
     });
 };
 
