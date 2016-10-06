@@ -67,7 +67,7 @@ function Style(stylesheet, map, options) {
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('data', {dataType: 'style', isFirst: true});
+        this.update(map && map.getClasses(), {transition: false, isFirstData: true});
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
@@ -301,7 +301,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('data', {dataType: 'style'});
+            this.fire('data', {dataType: 'style', isFirst: options && options.isFirstData});
         }
 
         this._resetUpdates();

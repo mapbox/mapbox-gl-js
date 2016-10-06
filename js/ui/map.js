@@ -196,7 +196,6 @@ var Map = module.exports = function(options) {
                 if (this.transform.unmodified) {
                     this.jumpTo(this.style.stylesheet);
                 }
-                this.style.update(this._classes, {transition: false});
             }
             this._update(true);
         } else {
