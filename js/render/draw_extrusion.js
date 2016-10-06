@@ -22,10 +22,7 @@ function draw(painter, source, layer, coords) {
     var texture = new ExtrusionTexture(gl, painter, layer);
     texture.bindFramebuffer();
 
-    gl.clearStencil(0x80);
-    gl.stencilMask(0xFF);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.stencilMask(0x00);
 
     for (var i = 0; i < coords.length; i++) {
         drawExtrusion(painter, source, layer, coords[i]);
@@ -40,6 +37,7 @@ function draw(painter, source, layer, coords) {
     // Unbind the framebuffer as a render target and render it to the map
     texture.unbindFramebuffer();
     texture.renderToMap();
+    painter.depthMask(false);
 }
 
 function ExtrusionTexture(gl, painter, layer) {
