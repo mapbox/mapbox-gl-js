@@ -373,15 +373,13 @@ test('Style#addSource', function(t) {
         var source = createSource();
 
         style.on('style.load', function () {
-            t.plan(4);
+            t.plan(2);
 
             style.on('error', function() { t.ok(true); });
             style.on('data', function() { t.ok(true); });
-            style.on('source.load', function() { t.ok(true); });
 
-            style.addSource('source-id', source); // Fires 'source.load' and 'data'
+            style.addSource('source-id', source); // Fires 'data'
             style.sourceCaches['source-id'].fire('error');
-            style.sourceCaches['source-id'].fire('data');
         });
     });
 

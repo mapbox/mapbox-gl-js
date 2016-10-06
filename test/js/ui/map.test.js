@@ -134,18 +134,15 @@ test('Map', function(t) {
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('error', recordEvent);
-                map.on('source.load', recordEvent);
                 map.on('data', recordEvent);
                 map.on('dataloading', recordEvent);
 
                 map.style.fire('error');
-                map.style.fire('source.load');
                 map.style.fire('data');
                 map.style.fire('dataloading');
 
                 t.deepEqual(events, [
                     'error',
-                    'source.load',
                     'data',
                     'dataloading',
                 ]);
