@@ -42,10 +42,10 @@ tags:
         interactive: false
     });
 
-    // pixels the map pans when the up or down arrow is clicked
-    var deltaDistance = 100;
-    // degrees the map rotates when the left or right arrow is clicked
-    var deltaDegrees = 25;
+    // pixels the map pans each second a key is pressed
+    var DELTA_DISTANCE = 2000;
+    // degrees the map rotates each second a key is pressed
+    var DELTA_DEGREES = 250;
 
     var instructions = document.getElementById('instructions');
     map.on('click', function() {
@@ -56,27 +56,60 @@ tags:
         return t * (2 - t);
     }
 
-    document.body.addEventListener('keydown', function(e) {
-        e.preventDefault();
-        if (e.which === 38) { // up
-            map.panBy([0, -deltaDistance], {
-                easing: easeFunction
-            });
-        } else if (e.which === 40) { // down
-            map.panBy([0, deltaDistance], {
-                easing: easeFunction
-            });
-        } else if (e.which === 37) { // left
-            map.easeTo({
-                bearing: map.getBearing() - deltaDegrees,
-                easing: easeFunction
-            });
-        } else if (e.which === 39) { // right
-            map.easeTo({
-                bearing: map.getBearing() + deltaDegrees,
-                easing: easeFunction
-            });
-        }
-    }, true);
+    var keysDown = {};
+    var lastUpdate = undefined;
 
+    function update() {
+        var now = new Date().getTime();
+        var dt = (now - (lastUpdate || now)) / 1000;
+
+        var deltaDistance = DELTA_DISTANCE * dt;
+        var deltaDegrees = DELTA_DEGREES * dt;
+
+        var newBearing = map.getBearing();
+        var offsetY = 0;
+
+        if (keysDown[38] || keysDown[87]) { // up or W
+            offsetY += deltaDistance;
+        }
+        if (keysDown[40] || keysDown[83]) { // down or S
+            offsetY -= deltaDistance;
+        }
+        if (keysDown[37] || keysDown[65]) { // left or A
+            newBearing -= deltaDegrees
+        }
+        if (keysDown[39] || keysDown[68]) { // right or D
+            newBearing += deltaDegrees;
+        }
+
+        map.easeTo({
+            bearing: newBearing,
+            center: map.getCenter(),
+            offset: [0, offsetY],
+            easing: easeFunction,
+        });
+
+        lastUpdate = now;
+        requestAnimationFrame(update);
+    }
+
+    map.on('load', function() {
+        map.getCanvas().addEventListener('keydown', function(e) {
+            e.preventDefault();
+            keysDown[e.which] = true;
+        }, true);
+
+        map.getCanvas().addEventListener('keyup', function(e) {
+            e.preventDefault();
+            if (keysDown[e.which]) {
+              delete keysDown[e.which];
+            }
+        }, true);
+
+        map.getCanvas().addEventListener('blur', function(e) {
+            keysDown = {};
+        });
+
+        requestAnimationFrame(update);
+    });
 </script>
