@@ -59,7 +59,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
             }
 
             var gl = this.map.painter.gl;
-            tile.texture = this.map.painter.getTexture(img.width);
+            tile.texture = this.map.painter.getTileTexture(img.width);
             if (tile.texture) {
                 gl.bindTexture(gl.TEXTURE_2D, tile.texture);
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
@@ -92,6 +92,6 @@ RasterTileSource.prototype = util.inherit(Evented, {
     },
 
     unloadTile: function(tile) {
-        if (tile.texture) this.map.painter.saveTexture(tile.texture);
+        if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
     }
 });

@@ -57,10 +57,9 @@ function ExtrusionTexture(gl, painter, layer) {
 ExtrusionTexture.prototype.bindFramebuffer = function() {
     var gl = this.gl;
 
-    this.texture = this.painter.getTexture(this.width, this.height);
+    this.texture = this.painter.getViewportTexture(this.width, this.height);
 
     gl.activeTexture(gl.TEXTURE1);
-
     if (!this.texture) {
         this.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -102,7 +101,7 @@ ExtrusionTexture.prototype.unbindFramebuffer = function() {
         if (!this.painter.preFbos[this.width]) this.painter.preFbos[this.width] = {};
         this.painter.preFbos[this.width][this.height] = [this.fbo];
     }
-    this.painter.saveTexture(this.texture);
+    this.painter.saveViewportTexture(this.texture);
 };
 
 ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({

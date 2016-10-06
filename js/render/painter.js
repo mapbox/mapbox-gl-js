@@ -315,28 +315,39 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     return translatedMatrix;
 };
 
-Painter.prototype.saveTexture = function(texture) {
-    var width = texture.width ? texture.width : texture.size,
-        height = texture.height ? texture.height : texture.size;
-    var widthTextures = this.reusableTextures[width];
-    if (!widthTextures) {
-        this.reusableTextures[width] = {};
-        this.reusableTextures[width][height] = [texture];
+Painter.prototype.saveTileTexture = function(texture) {
+    var textures = this.reusableTextures[texture.size];
+    if (!textures) {
+        this.reusableTextures[texture.size] = [texture];
     } else {
-        var textures = widthTextures[height];
-        if (!textures) {
-            widthTextures[height] = [texture];
-        } else {
-            textures.push(texture);
-        }
+        textures.push(texture);
     }
 };
 
-Painter.prototype.getTexture = function(width, height) {
+Painter.prototype.saveViewportTexture = function(texture) {
+    if (!this.reusableTextures.viewport) this.reusableTextures.viewport = {};
+    this.reusableTextures.viewport.texture = texture;
+};
+
+Painter.prototype.getTileTexture = function(width, height) {
     var widthTextures = this.reusableTextures[width];
     if (widthTextures) {
         var textures = widthTextures[height || width];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+};
+
+Painter.prototype.getViewportTexture = function(width, height) {
+    if (!this.reusableTextures.viewport) return;
+
+    var texture = this.reusableTextures.viewport.texture;
+
+    if (texture.width === width && texture.height === height) {
+        return texture;
+    } else {
+        this.gl.deleteTexture(texture);
+        this.reusableTextures.viewport.texture = null;
+        return;
     }
 };
 
