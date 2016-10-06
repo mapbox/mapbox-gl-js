@@ -538,4 +538,4 @@ exports.sphericalToCartesian = function(spherical) {
         r * Math.sin(azimuthal) * Math.sin(polar),
         r * Math.cos(polar)
     ];
-}
+};

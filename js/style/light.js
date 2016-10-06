@@ -68,18 +68,18 @@ Light.prototype = util.inherit(Evented, {
         }
     },
 
-    getLightValue: function(property, globalProperties, featureProperties) {
+    getLightValue: function(property, globalProperties) {
         if (property === 'direction') {
-            var calculated = this._transitions[property].calculate(globalProperties, featureProperties),
+            var calculated = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
             return {
                 x: cartesian[0],
                 y: cartesian[1],
                 z: cartesian[2]
-            }
+            };
         }
 
-        return this._transitions[property].calculate(globalProperties, featureProperties);
+        return this._transitions[property].calculate(globalProperties);
     },
 
     setLight: function(options) {
@@ -90,12 +90,10 @@ Light.prototype = util.inherit(Evented, {
 
             if (util.endsWith(key, TRANSITION_SUFFIX)) {
                 this._transitionOptions[key] = value;
+            } else if (value === null || value === undefined) {
+                delete this._declarations[key];
             } else {
-                if (value === null || value === undefined) {
-                    delete this._declarations[key];
-                } else {
-                    this._declarations[key] = new StyleDeclaration(this._specifications[key], value);
-                }
+                this._declarations[key] = new StyleDeclaration(this._specifications[key], value);
             }
         }
     },

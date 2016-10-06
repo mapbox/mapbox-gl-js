@@ -17,11 +17,20 @@ module.exports = Bucket;
 Bucket.create = function(options) {
     var Classes = {
         fill: require('./bucket/fill_bucket'),
+        fillextrusion: require('./bucket/fill_extrusion_bucket'),
         line: require('./bucket/line_bucket'),
         circle: require('./bucket/circle_bucket'),
         symbol: require('./bucket/symbol_bucket')
     };
-    return new Classes[options.layer.type](options);
+
+    var type = options.layer.type;
+    if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+        !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
+        options.layer.getPaintValue('fill-extrude-height') !== 0)) {
+        type = 'fillextrusion';
+    }
+
+    return new Classes[type](options);
 };
 
 

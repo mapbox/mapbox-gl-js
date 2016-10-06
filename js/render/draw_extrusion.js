@@ -155,7 +155,7 @@ function drawExtrusion(painter, source, layer, coord) {
     var tile = source.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.extrusion;
+    var bufferGroups = bucket.bufferGroups.fillextrusion;
     if (!bufferGroups) return;
 
     if (painter.isOpaquePass) return;
@@ -166,7 +166,7 @@ function drawExtrusion(painter, source, layer, coord) {
 
     var image = layer.paint['fill-pattern'];
 
-    var programOptions = bucket.paintAttributes.extrusion[layer.id];
+    var programOptions = bucket.paintAttributes.fillextrusion[layer.id];
     var program = painter.useProgram(
         image ? 'extrusionpattern' : 'extrusion',
         programOptions.defines,
@@ -181,7 +181,7 @@ function drawExtrusion(painter, source, layer, coord) {
     setMatrix(program, painter, coord, tile, layer);
     setLight(program, painter);
 
-    bucket.setUniforms(gl, 'extrusion', program, layer, {zoom: painter.transform.zoom});
+    bucket.setUniforms(gl, 'fillextrusion', program, layer, {zoom: painter.transform.zoom});
 
     for (var i = 0; i < bufferGroups.length; i++) {
         var group = bufferGroups[i];
@@ -196,14 +196,14 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     if (!bucket) return;
 
     var gl = painter.gl;
-    var bufferGroups = bucket.bufferGroups.extrusion;
+    var bufferGroups = bucket.bufferGroups.fillextrusion;
 
     painter.setDepthSublayer(1);
     painter.lineWidth(2);
 
     var color = layer.paint['fill-outline-color'];
 
-    var programOptions = bucket.paintAttributes.extrusion[layer.id];
+    var programOptions = bucket.paintAttributes.fillextrusion[layer.id];
     var outlineProgram = painter.useProgram(
         'extrusion',
         programOptions.defines.concat('OUTLINE'),
@@ -214,7 +214,7 @@ function drawExtrusionStroke(painter, source, layer, coord) {
     setLight(outlineProgram, painter);
     setMatrix(outlineProgram, painter, coord, tile, layer);
 
-    bucket.setUniforms(gl, 'extrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
+    bucket.setUniforms(gl, 'fillextrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
 
     if (color) gl.uniform4fv(outlineProgram.u_outline_color, color);
 
