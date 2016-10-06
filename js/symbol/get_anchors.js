@@ -6,7 +6,7 @@ var checkMaxAngle = require('./check_max_angle');
 
 module.exports = getAnchors;
 
-function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, boxScale, overscaling, tileExtent) {
+function getAnchors(line, spacing, maxAngle, shapedText, shapedTextVertical, shapedIcon, glyphSize, boxScale, overscaling, tileExtent) {
 
     // Resample a line to get anchor points for labels and check that each
     // potential label passes text-max-angle check and has enough froom to fit
@@ -16,21 +16,17 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
         3 / 5 * glyphSize * boxScale :
         0;
 
-    //commenting out horizontal orientation for now
-    //var labelLength = Math.max(
-        //shapedText ? shapedText.right - shapedText.left : 0,
-        //shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
+    //label length is the biggest of text, vertical text, or icon shaping
+    var labelLength = Math.max(
+        shapedText ? shapedText.right - shapedText.left : 0,
+        shapedTextVertical ? shapedTextVertical.bottom - shapedTextVertical.top : 0,
+        shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     // This is probably wrong
-    var labelLength = Math.max(
-        shapedText ? shapedText.bottom - shapedText.top : 0,
-        shapedIcon ? shapedIcon.bottom - shapedIcon.top : 0);
-    
-    //if (shapedText) {
-        //console.log("labelLength: " + labelLength + " , bottom: " + shapedText.bottom + " , top: " + shapedText.top);
-        //console.log("labelLength: " + labelLength + " , right: " + shapedText.right + " , left: " + shapedText.left);
-    //}
-
+    //var labelLength = Math.max(
+    //    shapedText ? shapedText.bottom - shapedText.top : 0,
+    //    shapedIcon ? shapedIcon.bottom - shapedIcon.top : 0);
+     
     // Is the line continued from outside the tile boundary?
     var isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
 

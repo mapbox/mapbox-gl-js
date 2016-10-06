@@ -190,10 +190,9 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, vertic
                 br = obr;
 
             // vertical orientation
-            console.log("vertical orientation from getGlyphQuads: " + verticalOrientation);
             if (verticalOrientation) {
-                var sin = Math.sin(-Math.PI / 2),
-                    cos = Math.cos(-Math.PI / 2),
+                var sin = Math.sin(Math.PI / 2),
+                    cos = Math.cos(Math.PI / 2),
                     matrix = [cos, -sin, sin, cos];
 
                 tl = tl.matMult(matrix);

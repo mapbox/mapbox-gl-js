@@ -20,21 +20,50 @@ module.exports = CollisionFeature;
  *
  * @private
  */
-function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight, verticalOrientation) {
+function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, shapedVertical, boxScale, padding, alignLine, straight) {
 
-    var y1 = shaped.top * boxScale - padding;
-    var y2 = shaped.bottom * boxScale + padding;
-    var x1 = shaped.left * boxScale - padding;
-    var x2 = shaped.right * boxScale + padding;
+    if (shapedVertical === null) {
+        shapedVertical = {
+            text: "",
+            left: 0,
+            right:0,
+            top: 0,
+            bottom: 0
+        };
+    }
+
+    var y1 = Math.max(shaped.top * boxScale - padding, shapedVertical.left * boxScale - padding);
+    var y2 = Math.max(shaped.bottom * boxScale + padding, shapedVertical.right * boxScale + padding);
+    var x1 = Math.max(shaped.left * boxScale - padding, shapedVertical.top * boxScale - padding);
+    var x2 = Math.max(shaped.right * boxScale + padding, shapedVertical.bottom * boxScale + padding);
+
+/*
+
+// Alternative way of writing the same thing as ^. Which is better??
+    var y1, y2, x1, x2;
+
+    if (shapedVertical) {
+        y1 = Math.max(shaped.top * boxScale - padding, shapedVertical.left * boxScale - padding);
+        y2 = Math.max(shaped.bottom * boxScale + padding, shapedVertical.right * boxScale + padding);
+        x1 = Math.max(shaped.left * boxScale - padding, shapedVertical.top * boxScale - padding);
+        x2 = Math.max(shaped.right * boxScale + padding, shapedVertical.bottom * boxScale + padding);
+    } else {
+        y1 = shaped.top * boxScale - padding;
+        y2 = shaped.bottom * boxScale + padding;
+        x1 = shaped.left * boxScale - padding;
+        x2 = shaped.right * boxScale + padding;
+    }
+*/
 
     this.boxStartIndex = collisionBoxArray.length;
 
     if (alignLine) {
 
-        var height = verticalOrientation ? x2 - x1 : y2 - y1;
-        var length = verticalOrientation ? y2 - y1 : x2 - x1;
+        //var height = verticalOrientation ? x2 - x1 : y2 - y1;
+        //var length = verticalOrientation ? y2 - y1 : x2 - x1;
 
-        if (verticalOrientation) { console.log("length: " + length + ", boxScale: " + boxScale); }
+        var height = y2 - y1;
+        var length = x2 - x1;
 
         if (height > 0) {
             // set minimum box height to avoid very many small labels
@@ -72,7 +101,6 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
  * @private
  */
 CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
-    console.log("label length: " + labelLength);
 
     var step = boxSize / 2;
     var nBoxes = Math.floor(labelLength / step);
