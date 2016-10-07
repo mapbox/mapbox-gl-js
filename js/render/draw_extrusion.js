@@ -28,12 +28,6 @@ function draw(painter, source, layer, coords) {
         drawExtrusion(painter, source, layer, coords[i]);
     }
 
-    if (!painter.isOpaquePass && layer.getPaintProperty('fill-outline-color')) {
-        for (var j = 0; j < coords.length; j++) {
-            drawExtrusionStroke(painter, source, layer, coords[j]);
-        }
-    }
-
     // Unbind the framebuffer as a render target and render it to the map
     texture.unbindFramebuffer();
     texture.renderToMap();
@@ -184,43 +178,6 @@ function drawExtrusion(painter, source, layer, coord) {
         var group = bufferGroups[i];
         group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
-    }
-}
-
-function drawExtrusionStroke(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
-    var bucket = tile.getBucket(layer);
-    if (!bucket) return;
-
-    var gl = painter.gl;
-    var bufferGroups = bucket.bufferGroups.fillextrusion;
-
-    painter.setDepthSublayer(1);
-    painter.lineWidth(2);
-
-    var color = layer.paint['fill-outline-color'];
-
-    var programOptions = bucket.paintAttributes.fillextrusion[layer.id];
-    var outlineProgram = painter.useProgram(
-        'extrusion',
-        programOptions.defines.concat('OUTLINE'),
-        programOptions.vertexPragmas,
-        programOptions.fragmentPragmas
-    );
-
-    setLight(outlineProgram, painter);
-    setMatrix(outlineProgram, painter, coord, tile, layer);
-
-    bucket.setUniforms(gl, 'fillextrusion', outlineProgram, layer, {zoom: painter.transform.zoom});
-
-    if (color) gl.uniform4fv(outlineProgram.u_outline_color, color);
-
-    painter.enableTileClippingMask(coord);
-
-    for (var k = 0; k < bufferGroups.length; k++) {
-        var group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, outlineProgram, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
-        gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
 }
 

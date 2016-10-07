@@ -32,7 +32,6 @@ FillExtrusionBucket.prototype.programInterfaces = {
             type: 'Int16'
         }]),
         elementArrayType: new Bucket.ElementArrayType(3),
-        elementArrayType2: new Bucket.ElementArrayType(2),
 
         paintAttributes: [{
             name: 'a_minH',
@@ -140,15 +139,6 @@ FillExtrusionBucket.prototype.addPolygon = function(polygon) {
 
                     group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
                     group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
-
-                    if (!v1.isOutside) {
-                        group.elementArray2.emplaceBack(bottomRight, bottomRight + 1); // "right"
-                    }
-                    if (!v2.isOutside) {
-                        group.elementArray2.emplaceBack(bottomRight + 2, bottomRight + 3); // "left"
-                    }
-                    group.elementArray2.emplaceBack(bottomRight, bottomRight + 2); // bottom
-                    group.elementArray2.emplaceBack(bottomRight + 1, bottomRight + 3); // top
                 }
             }
 
