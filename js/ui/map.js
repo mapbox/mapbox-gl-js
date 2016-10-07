@@ -1395,7 +1395,7 @@ function removeNode(node) {
  * @event movestart
  * @memberof Map
  * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
+ * @property {{originalEvent: DragEvent}} data
  */
 
 /**
@@ -1415,7 +1415,7 @@ function removeNode(node) {
  * @event moveend
  * @memberof Map
  * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
+ * @property {{originalEvent: DragEvent}} data
  * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
  * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
  */
