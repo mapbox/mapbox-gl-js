@@ -707,7 +707,7 @@ Style.prototype = util.inherit(Evented, {
         return this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
     },
 
-    _validate: function(validate, key, value, props) {
+    _validate: function(validate, key, value, props, options) {
         if (options && options.validate === false) {
             return false;
         }

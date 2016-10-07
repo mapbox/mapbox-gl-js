@@ -104,7 +104,7 @@ ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
 ExtrusionTexture.prototype.renderToMap = function() {
     var gl = this.gl;
     var painter = this.painter;
-    var program = painter.useProgram('extrusiontexture');
+    var program = painter.useProgram('fillExtrudeTexture');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -156,7 +156,7 @@ function drawExtrusion(painter, source, layer, coord) {
 
     var programOptions = bucket.paintAttributes.fillextrusion[layer.id];
     var program = painter.useProgram(
-        image ? 'extrusionpattern' : 'extrusion',
+        image ? 'fillExtrudePattern' : 'fillExtrude',
         programOptions.defines,
         programOptions.vertexPragmas,
         programOptions.fragmentPragmas
