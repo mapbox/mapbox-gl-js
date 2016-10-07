@@ -1,5 +1,12 @@
 ## master
 
+## 8.9.0
+
+v8.0.0 styles are fully compatible with v8.9.0.
+
+* Added identity functions
+* Added `auto` value which represents the calculated default value
+
 ## 8.8.1
 
 v8.0.0 styles are fully compatible with v8.8.1.
