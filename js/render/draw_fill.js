@@ -89,7 +89,7 @@ function drawFill(painter, sourceCache, layer, coord) {
 
     } else {
         // Draw texture fill
-        program = painter.useProgram('pattern');
+        program = painter.useProgram('fillPattern');
         setPattern(image, layer.paint['fill-opacity'], tile, coord, painter, program);
 
         gl.activeTexture(gl.TEXTURE0);
@@ -126,13 +126,13 @@ function drawStroke(painter, sourceCache, layer, coord) {
 
     var program;
     if (image && !isOutlineColorDefined) {
-        program = painter.useProgram('outlinepattern');
+        program = painter.useProgram('fillOutlinePattern');
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     } else {
         var programOptions = bucket.paintAttributes.fill[layer.id];
         program = painter.useProgram(
-            'outline',
+            'fillOutline',
             programOptions.defines,
             programOptions.vertexPragmas,
             programOptions.fragmentPragmas
