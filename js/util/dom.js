@@ -65,10 +65,11 @@ exports.mousePos = function (el, e) {
 exports.touchPos = function (el, e) {
     var rect = el.getBoundingClientRect(),
         points = [];
-    for (var i = 0; i < e.touches.length; i++) {
+    var touches = e.type === 'touchend'?e.changedTouches:e.touches;
+    for (var i = 0; i < touches.length; i++) {
         points.push(new Point(
-            e.touches[i].clientX - rect.left - el.clientLeft,
-            e.touches[i].clientY - rect.top - el.clientTop
+            touches[i].clientX - rect.left - el.clientLeft,
+            touches[i].clientY - rect.top - el.clientTop
         ));
     }
     return points;
