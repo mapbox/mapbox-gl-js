@@ -197,13 +197,13 @@ function setLight(program, painter) {
     var gl = painter.gl;
     var light = painter.style.light;
 
-    var _ld = light.calculated.direction,
-        lightdir = [_ld.x, _ld.y, _ld.z];
+    var _lp = light.calculated.position,
+        lightPos = [_lp.x, _lp.y, _lp.z];
     var lightMat = mat3.create();
     if (light.calculated.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
-    vec3.transformMat3(lightdir, lightdir, lightMat);
+    vec3.transformMat3(lightPos, lightPos, lightMat);
 
-    gl.uniform3fv(program.u_lightdir, lightdir);
+    gl.uniform3fv(program.u_lightpos, lightPos);
     gl.uniform1f(program.u_lightintensity, light.calculated.intensity);
     gl.uniform3fv(program.u_lightcolor, light.calculated.color.slice(0, 3));
 }

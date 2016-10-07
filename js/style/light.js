@@ -19,7 +19,7 @@ function Light(lightOptions) {
 }
 
 Light.prototype = util.inherit(Evented, {
-    properties: ['anchor', 'color', 'direction', 'intensity'],
+    properties: ['anchor', 'color', 'position', 'intensity'],
 
     _specifications: styleSpec.$root.light,
 
@@ -33,7 +33,7 @@ Light.prototype = util.inherit(Evented, {
         lightOpts = util.extend({
             anchor: this._specifications.anchor.default,
             color: this._specifications.color.default,
-            direction: this._specifications.direction.default,
+            position: this._specifications.position.default,
             intensity: this._specifications.intensity.default
         }, lightOpts);
 
@@ -50,7 +50,7 @@ Light.prototype = util.inherit(Evented, {
         return {
             anchor: this.getLightProperty('anchor'),
             color: this.getLightProperty('color'),
-            direction: this.getLightProperty('direction'),
+            position: this.getLightProperty('position'),
             intensity: this.getLightProperty('intensity')
         };
     },
@@ -69,7 +69,7 @@ Light.prototype = util.inherit(Evented, {
     },
 
     getLightValue: function(property, globalProperties) {
-        if (property === 'direction') {
+        if (property === 'position') {
             var calculated = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
             return {

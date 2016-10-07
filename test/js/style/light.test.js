@@ -18,12 +18,12 @@ test('Light', function(t) {
     t.test('instantiates light correctly with options', function(t) {
         var light = new Light({
             anchor: 'map',
-            direction: [2, 30, 30],
+            position: [2, 30, 30],
             intensity: 1
         });
 
         t.equal(light.getLightProperty('anchor'), 'map');
-        t.deepEqual(light.getLightProperty('direction'), [2, 30, 30]);
+        t.deepEqual(light.getLightProperty('position'), [2, 30, 30]);
         t.equal(light.getLightProperty('intensity'), 1);
         t.equal(light.getLightProperty('color'), '#ffffff');
 
@@ -68,7 +68,7 @@ test('Light#getLightProperty', function(t) {
 
     t.deepEqual(light.getLightProperty('intensity'), { stops: [[16, 0.2], [17, 0.8]] });
     t.equal(light.getLightProperty('color'), 'red');
-    t.deepEqual(light.getLightProperty('direction', { zoom: 16.5 }), [1.15, 210, 30]);
+    t.deepEqual(light.getLightProperty('position', { zoom: 16.5 }), [1.15, 210, 30]);
 
     t.end();
 });
@@ -84,7 +84,7 @@ test('Light#getLightValue', function(t) {
 
     t.equal(light.getLightValue('intensity', { zoom: 16.5 }), 0.5);
     t.deepEqual(light.getLightValue('color', { zoom: 16.5 }), [1, 0, 0, 1]);
-    t.deepEqual(light.getLightValue('direction', { zoom: 16.5 }), { x: 0.2875, y: -0.4979646071760521, z: 0.9959292143521045 });
+    t.deepEqual(light.getLightValue('position', { zoom: 16.5 }), { x: 0.2875, y: -0.4979646071760521, z: 0.9959292143521045 });
 
     t.end();
 });
