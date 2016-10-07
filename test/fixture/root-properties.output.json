@@ -14,5 +14,9 @@
   {
     "message": "layers: array expected, object found",
     "line": 5
+  },
+  {
+    "message": "light: object expected, boolean found",
+    "line": 11
   }
 ]

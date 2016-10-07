@@ -31,6 +31,8 @@
           } else {
             if (req['!']) {
               return '<em>Disabled by</em> <var>' + req['!'] + '</var>.';
+            } else if (req['<=']) {
+              return '<em>Must be less than or equal to</em> <var>' + req['<='] + '</var>.';
             } else {
               var requiredValue = _.toPairs(req)[0][1];
               var requiredDisplay = _.isArray(requiredValue)

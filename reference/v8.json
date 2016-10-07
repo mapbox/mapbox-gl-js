@@ -43,6 +43,55 @@
       "doc": "Default pitch, in degrees. Zero is perpendicular to the surface, for a look straight down at the map, while a greater value like 60 looks ahead towards the horizon. The style pitch will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
       "example": 50
     },
+    "light": {
+      "anchor": {
+        "type": "enum",
+        "default": "viewport",
+        "values": {
+          "map": {
+            "doc": "The position of the light source is aligned to the rotation of the map."
+          },
+          "viewport": {
+            "doc": "The position of the light source is aligned to the rotation of the viewport."
+          }
+        },
+        "transition": false,
+        "doc": "Whether extruded geometries are lit relative to the map or viewport.",
+        "example": "map"
+      },
+      "position": {
+        "type": "array",
+        "default": [1.15, 210, 30],
+        "length": 3,
+        "value": "number",
+        "transition": true,
+        "function": "interpolated",
+        "zoom-function": true,
+        "property-function": false,
+        "doc": "Position of the light source relative to lit (extruded) geometries, in [r radial coordinate, a azimuthal angle, p polar angle] where r indicates the distance from the center of the base of an object to its light, a indicates the position of the light relative to 0° (0° when `light.anchor` is set to `viewport` corresponds to the top of the viewport, or 0° when `light.anchor` is set to `map` corresponds to due north, and degrees proceed clockwise), and p indicates the height of the light (from 0°, directly above, to 180°, directly below).",
+        "example": [1.5, 90, 80]
+      },
+      "color": {
+        "type": "color",
+        "default": "#ffffff",
+        "function": "interpolated",
+        "zoom-function": true,
+        "property-function": false,
+        "transition": true,
+        "doc": "Color tint for lighting extruded geometries."
+      },
+      "intensity": {
+        "type": "number",
+        "default": 0.5,
+        "minimum": 0,
+        "maximum": 1,
+        "function": "interpolated",
+        "zoom-function": true,
+        "property-function": false,
+        "transition": true,
+        "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast."
+      }
+    },
     "sources": {
       "required": true,
       "type": "sources",
@@ -1513,7 +1562,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used.",
+      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used. If a fill layer is extruded, opacity will be per-layer rather than per-feature (and will thus not support property functions).",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -1638,6 +1687,31 @@
           "android": "2.0.1"
         }
       }
+    },
+    "fill-extrude-height": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 0,
+      "minimum": 0,
+      "doc": "The height with which to extrude this fill layer.",
+      "transition": true
+    },
+    "fill-extrude-base": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 0,
+      "minimum": 0,
+      "doc": "The height with which to extrude the base of this layer.",
+      "transition": true,
+      "requires": [
+        {
+          "<=": "fill-extrude-height"
+        }
+      ]
     }
   },
   "paint_line": {

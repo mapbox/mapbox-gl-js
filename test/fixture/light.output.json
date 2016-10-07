@@ -1,0 +1,18 @@
+[
+  {
+    "message": "light.anchor: expected one of [map, viewport], true found",
+    "line": 10
+  },
+  {
+    "message": "light.position: array length 3 expected, length 2 found",
+    "line": 11
+  },
+  {
+    "message": "light.color: color expected, array found",
+    "line": 12
+  },
+  {
+    "message": "light.intensity: 1.5 is greater than the maximum value 1",
+    "line": 13
+  }
+]

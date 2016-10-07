@@ -153,5 +153,77 @@ t('diff', function (t) {
       { command: 'setPitch', args: [1] }
     ], 'pitch change');
 
+    t.deepEqual(diffStyles({
+        light: {
+            anchor: 'map',
+            color: 'white',
+            position: [0, 1, 0],
+            intensity: 1
+        }
+    }, {
+        light: {
+            anchor: 'map',
+            color: 'white',
+            position: [0, 1, 0],
+            intensity: 1
+        }
+    }), [
+    ], 'light no change');
+
+    t.deepEqual(diffStyles({
+        light: { anchor: 'map' }
+    }, {
+        light: { anchor: 'viewport' }
+    }), [
+      { command: 'setLight', args: [{'anchor': 'viewport'}] }
+    ], 'light anchor change');
+
+    t.deepEqual(diffStyles({
+        light: { color: 'white' }
+    }, {
+        light: { color: 'red' }
+    }), [
+      { command: 'setLight', args: [{'color': 'red'}] }
+    ], 'light color change');
+
+    t.deepEqual(diffStyles({
+        light: { position: [0, 1, 0] }
+    }, {
+        light: { position: [1, 0, 0] }
+    }), [
+      { command: 'setLight', args: [{'position': [1, 0, 0]}] }
+    ], 'light position change');
+
+    t.deepEqual(diffStyles({
+        light: { intensity: 1 }
+    }, {
+        light: { intensity: 10 }
+    }), [
+      { command: 'setLight', args: [{'intensity': 10}] }
+    ], 'light intensity change');
+
+    t.deepEqual(diffStyles({
+        light: {
+            anchor: 'map',
+            color: 'orange',
+            position: [2, 80, 30],
+            intensity: 1.0
+        }
+    }, {
+        light: {
+            anchor: 'map',
+            color: 'red',
+            position: [1, 40, 30],
+            intensity: 1.0
+        }
+    }), [
+      { command: 'setLight', args: [{
+            anchor: 'map',
+            color: 'red',
+            position: [1, 40, 30],
+            intensity: 1.0
+      }] }
+    ], 'multiple light properties change');
+
     t.end();
 });
