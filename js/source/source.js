@@ -1,6 +1,8 @@
 'use strict';
 
 var util = require('../util/util');
+var Dispatcher = require('../util/dispatcher');
+var getWorkerPool = require('../global_worker_pool');
 
 var sourceTypes = {
     'vector': require('../source/vector_tile_source'),
@@ -9,6 +11,8 @@ var sourceTypes = {
     'video': require('../source/video_source'),
     'image': require('../source/image_source')
 };
+
+var Source = module.exports = {};
 
 /*
  * Creates a tiled data source instance given an options object.
@@ -19,7 +23,7 @@ var sourceTypes = {
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id, source, dispatcher) {
+Source.create = function(id, source, dispatcher) {
     source = new sourceTypes[source.type](id, source, dispatcher);
 
     if (source.id !== id) {
@@ -30,13 +34,59 @@ exports.create = function(id, source, dispatcher) {
     return source;
 };
 
-exports.getType = function (name) {
+Source.getType = function (name) {
     return sourceTypes[name];
 };
 
-exports.setType = function (name, type) {
+Source.setType = function (name, type) {
     sourceTypes[name] = type;
 };
+
+/**
+ * Adds a [custom source type](#Custom Sources), making it available for use with
+ * {@link Map#addSource}.
+ *
+ * @param {string} name The name of the source type; source definition objects use this name in the `{type: ...}` field.
+ * @param {Function} SourceType A {@link Source} constructor.
+ * @param {Function} callback called after SourceType has been added and, if relevant, its worker code has been sent to the workers.
+ * @private
+ */
+Source.addType = function (name, SourceType, callback) {
+    if (Source.getType(name)) {
+        throw new Error('A source type named ' + name + ' already exists.');
+    }
+
+    Source.setType(name, SourceType);
+
+    if (SourceType.workerSourceURL) {
+        getDispatcher().broadcast('load worker source', {
+            name: name,
+            url: SourceType.workerSourceURL
+        }, function (err) {
+            callback(err);
+        });
+    } else {
+        callback();
+    }
+};
+
+/*
+ * A Dispatcher instance for use in registering custom WorkerSources.
+ *
+ * Note that it is created on demand, and once created, this dispatcher
+ * instance prevents the Workers in the global pool from being destroyed even
+ * when the the last map instance is destroyed.  This is intended behavior, as
+ * it ensures that any custom WorkerSources will be registered on the workers
+ * used by future map instances.
+ */
+var dispatcher;
+function getDispatcher () {
+    if (!dispatcher) {
+        dispatcher = new Dispatcher(getWorkerPool(), {});
+    }
+    return dispatcher;
+}
+
 
 /**
  * The `Source` interface must be implemented by each source type, including "core" types (`vector`, `raster`, `video`, etc.) and all custom, third-party types.
@@ -46,7 +96,7 @@ exports.setType = function (name, type) {
  *
  * @param {string} id The id for the source. Must not be used by any existing source.
  * @param {Object} options Source options, specific to the source type (except for `options.type`, which is always required).
- * @param {string} options.type The source type, matching the value of `name` used in {@link Style#addSourceType}.
+ * @param {string} options.type The source type, matching the value of `name` used in {@link Source.addType}.
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  *
  * @fires load to indicate source data has been loaded, so that it's okay to call `loadTile`
@@ -116,7 +166,7 @@ exports.setType = function (name, type) {
  * implementation may also be targeted by the {@link Source} via
  * `dispatcher.send('source-type.methodname', params, callback)`.
  *
- * @see {@link Map#addSourceType}
+ * @see {@link Source.addType}
  * @private
  *
  * @class WorkerSource
