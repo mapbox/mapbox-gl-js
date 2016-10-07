@@ -15,8 +15,8 @@ var LngLat = require('./lng_lat');
  * This flexible type is documented as [`LngLatBoundsLike`](#LngLatBoundsLike).
  *
  * @class LngLatBounds
- * @param {LngLatLike} sw The southwest corner of the bounding box.
- * @param {LngLatLike} ne The northeast corner of the bounding box.
+ * @param {LngLatLike} [sw] The southwest corner of the bounding box.
+ * @param {LngLatLike} [ne] The northeast corner of the bounding box.
  * @example
  * var sw = new mapboxgl.LngLat(-73.9876, 40.7661);
  * var ne = new mapboxgl.LngLat(-73.9397, 40.8002);
