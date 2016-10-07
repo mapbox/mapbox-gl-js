@@ -31,6 +31,18 @@ module.exports = {
     fragmentSource: fs.readFileSync(path.join(__dirname, 'src/fill_pattern.fragment.glsl'), 'utf8'),
     vertexSource: fs.readFileSync(path.join(__dirname, 'src/fill_pattern.vertex.glsl'), 'utf8')
   },
+  fillExtrude: {
+      fragmentSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude.fragment.glsl'), 'utf8'),
+      vertexSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude.vertex.glsl'), 'utf8')
+  },
+  fillExtrudePattern: {
+      fragmentSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude_pattern.fragment.glsl'), 'utf8'),
+      vertexSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude_pattern.vertex.glsl'), 'utf8')
+  },
+  fillExtrudeTexture: {
+      fragmentSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude_texture.fragment.glsl'), 'utf8'),
+      vertexSource: fs.readFileSync(path.join(__dirname, 'src/fill_extrude_texture.vertex.glsl'), 'utf8')
+  },
   line: {
     fragmentSource: fs.readFileSync(path.join(__dirname, 'src/line.fragment.glsl'), 'utf8'),
     vertexSource: fs.readFileSync(path.join(__dirname, 'src/line.vertex.glsl'), 'utf8')
