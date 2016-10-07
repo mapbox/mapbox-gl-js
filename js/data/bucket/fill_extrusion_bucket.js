@@ -77,7 +77,7 @@ FillExtrusionBucket.prototype.addVertex = function(vertexArray, x, y, nx, ny, nz
         nz * this.factor * 2,
 
         // a_edgedistance
-        e
+        Math.round(e)
         );
 };
 
