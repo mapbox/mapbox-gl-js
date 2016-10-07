@@ -67,7 +67,7 @@ function drawLineTile(painter, sourceCache, layer, coord) {
 
     if (dasharray) {
         program = painter.useProgram(
-            'linesdfpattern',
+            'lineSDF',
             programOptions.defines,
             programOptions.vertexPragmas,
             programOptions.fragmentPragmas
@@ -100,7 +100,7 @@ function drawLineTile(painter, sourceCache, layer, coord) {
         if (!imagePosA || !imagePosB) return;
 
         program = painter.useProgram(
-            'linepattern',
+            'linePattern',
             programOptions.defines,
             programOptions.vertexPragmas,
             programOptions.fragmentPragmas

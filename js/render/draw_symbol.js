@@ -141,7 +141,7 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
     if (!isText && !painter.style.sprite.loaded())
         return;
 
-    var program = painter.useProgram(sdf ? 'sdf' : 'icon');
+    var program = painter.useProgram(sdf ? 'symbolSDF' : 'symbolIcon');
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(posMatrix, tile, translate, translateAnchor));
     gl.uniform1i(program.u_rotate_with_map, rotateWithMap);
     gl.uniform1i(program.u_pitch_with_map, pitchWithMap);
