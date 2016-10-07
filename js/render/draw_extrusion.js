@@ -31,7 +31,6 @@ function draw(painter, source, layer, coords) {
     // Unbind the framebuffer as a render target and render it to the map
     texture.unbindFramebuffer();
     texture.renderToMap();
-    painter.depthMask(false);
 }
 
 function ExtrusionTexture(gl, painter, layer) {
@@ -150,8 +149,6 @@ function drawExtrusion(painter, source, layer, coord) {
     if (!bufferGroups) return;
 
     if (painter.isOpaquePass) return;
-
-    painter.setDepthSublayer(2);
 
     var gl = painter.gl;
 
