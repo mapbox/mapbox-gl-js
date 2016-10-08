@@ -2,8 +2,8 @@
 
 var MapboxGLFunction = require('mapbox-gl-function');
 
-exports.interpolated = function(parameters) {
-    var inner = MapboxGLFunction.interpolated(parameters);
+exports.interpolated = function(parameters, specDefault) {
+    var inner = MapboxGLFunction.interpolated(parameters, specDefault);
     var outer = function(globalProperties, featureProperties) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };
@@ -12,8 +12,8 @@ exports.interpolated = function(parameters) {
     return outer;
 };
 
-exports['piecewise-constant'] = function(parameters) {
-    var inner = MapboxGLFunction['piecewise-constant'](parameters);
+exports['piecewise-constant'] = function(parameters, specDefault) {
+    var inner = MapboxGLFunction['piecewise-constant'](parameters, specDefault);
     var outer = function(globalProperties, featureProperties) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };

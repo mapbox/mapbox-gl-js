@@ -123,7 +123,6 @@ var defaultOptions = {
  * });
  */
 var Map = module.exports = function(options) {
-
     options = util.extend({}, defaultOptions, options);
 
     this._interactive = options.interactive;
@@ -188,6 +187,7 @@ var Map = module.exports = function(options) {
 
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
+
     if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
     this.on('style.load', function() {
@@ -833,6 +833,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     getLayoutProperty: function(layer, name) {
         return this.style.getLayoutProperty(layer, name);
+    },
+
+    /**
+     * Sets the any combination of light values.
+     *
+     * @param {Object} options Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @returns {Map} `this`
+     */
+    setLight: function(lightOptions) {
+        this.style.setLight(lightOptions);
+        this._update(true);
+        return this;
+    },
+
+    /**
+     * Returns the value of the light object.
+     *
+     * @returns {Object} light Light properties of the style.
+     */
+    getLight: function() {
+        return this.style.getLight();
     },
 
     /**
