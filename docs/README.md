@@ -1,4 +1,4 @@
-Mapbox GL JS has [API documentation](#api-documentation) and [examples](#examples).
+Mapbox GL JS has [API documentation](#writing-api-documentation) and [examples](#writing-examples).
 
 ## Writing API Documentation
 
