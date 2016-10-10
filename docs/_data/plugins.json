@@ -20,6 +20,12 @@
           "mapbox-gl-draw.js",
           "mapbox-gl-draw.css"
         ]
+      },
+      "0.12.1":{
+        "files":[
+          "mapbox-gl-draw.js",
+          "mapbox-gl-draw.css"
+        ]
       }
     }
   },
