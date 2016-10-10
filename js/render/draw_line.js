@@ -27,22 +27,12 @@ module.exports = function drawLine(painter, sourceCache, layer, coords) {
 
     var tr = painter.transform;
 
-    var antialiasingMatrix = mat2.create();
-    mat2.scale(antialiasingMatrix, antialiasingMatrix, [1, Math.cos(tr._pitch)]);
-    mat2.rotate(antialiasingMatrix, antialiasingMatrix, tr.angle);
-
-    // calculate how much longer the real world distance is at the top of the screen
-    // than at the middle of the screen.
-    var topedgelength = Math.sqrt(tr.height * tr.height / 4  * (1 + tr.altitude * tr.altitude));
-    var x = tr.height / 2 * Math.tan(tr._pitch);
-    var extra = (topedgelength + x) / topedgelength - 1;
-
     for (var k = 0; k < coords.length; k++) {
-        drawLineTile(painter, sourceCache, layer, coords[k], antialiasingMatrix, extra);
+        drawLineTile(painter, sourceCache, layer, coords[k]);
     }
 };
 
-function drawLineTile(painter, sourceCache, layer, coord, antialiasingMatrix, extra) {
+function drawLineTile(painter, sourceCache, layer, coord) {
     var tile = sourceCache.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
@@ -99,9 +89,9 @@ function drawLineTile(painter, sourceCache, layer, coord, antialiasingMatrix, ex
     gl.uniform1f(program.u_antialiasing, antialiasing / 2);
     gl.uniform1f(program.u_blur, layer.paint['line-blur'] + antialiasing);
     gl.uniform1f(program.u_opacity, layer.paint['line-opacity']);
-    gl.uniformMatrix2fv(program.u_antialiasingmatrix, false, antialiasingMatrix);
+    gl.uniformMatrix2fv(program.u_antialiasingmatrix, false, painter.transform.lineAntialiasingMatrix);
     gl.uniform1f(program.u_offset, -layer.paint['line-offset']);
-    gl.uniform1f(program.u_extra, extra);
+    gl.uniform1f(program.u_extra, painter.transform.lineStretch);
 
     painter.enableTileClippingMask(coord);
 
