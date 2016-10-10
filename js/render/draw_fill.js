@@ -8,17 +8,13 @@ function draw(painter, sourceCache, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    var isOpaque;
-    if (layer.paint['fill-pattern']) {
-        isOpaque = false;
-    } else {
-        isOpaque = (
-            layer.isPaintValueFeatureConstant('fill-color') &&
-            layer.isPaintValueFeatureConstant('fill-opacity') &&
-            layer.paint['fill-color'][3] === 1 &&
-            layer.paint['fill-opacity'] === 1
-        );
-    }
+    var isOpaque = (
+        !layer.paint['fill-pattern'] &&
+        layer.isPaintValueFeatureConstant('fill-color') &&
+        layer.isPaintValueFeatureConstant('fill-opacity') &&
+        layer.paint['fill-color'][3] === 1 &&
+        layer.paint['fill-opacity'] === 1
+    );
 
     // Draw fill
     if (painter.isOpaquePass === isOpaque) {
@@ -34,29 +30,15 @@ function draw(painter, sourceCache, layer, coords) {
         painter.lineWidth(2);
         painter.depthMask(false);
 
-        var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
-        if (isOutlineColorDefined || !layer.paint['fill-pattern']) {
-            if (isOutlineColorDefined) {
-                // If we defined a different color for the fill outline, we are
-                // going to ignore the bits in 0x07 and just care about the global
-                // clipping mask.
-                painter.setDepthSublayer(2);
-            } else {
-                // Otherwise, we only want to drawFill the antialiased parts that are
-                // *outside* the current shape. This is important in case the fill
-                // or stroke color is translucent. If we wouldn't clip to outside
-                // the current shape, some pixels from the outline stroke overlapped
-                // the (non-antialiased) fill.
-                painter.setDepthSublayer(0);
-            }
-        } else {
-            // Otherwise, we only want to drawFill the antialiased parts that are
-            // *outside* the current shape. This is important in case the fill
-            // or stroke color is translucent. If we wouldn't clip to outside
-            // the current shape, some pixels from the outline stroke overlapped
-            // the (non-antialiased) fill.
-            painter.setDepthSublayer(0);
-        }
+        // If we defined a different color for the fill outline, we are
+        // going to ignore the bits in 0x07 and just care about the global
+        // clipping mask.
+        // Otherwise, we only want to drawFill the antialiased parts that are
+        // *outside* the current shape. This is important in case the fill
+        // or stroke color is translucent. If we wouldn't clip to outside
+        // the current shape, some pixels from the outline stroke overlapped
+        // the (non-antialiased) fill.
+        painter.setDepthSublayer(layer.getPaintProperty('fill-outline-color') ? 2 : 0);
 
         for (var j = 0; j < coords.length; j++) {
             drawStroke(painter, sourceCache, layer, coords[j]);
