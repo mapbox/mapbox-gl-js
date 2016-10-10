@@ -112,7 +112,7 @@ function saturationFactor(saturation) {
 }
 
 function getOpacities(tile, parentTile, layer, transform) {
-    var opacity = [1, 0];
+    var opacities = [1, 0];
     var fadeDuration = layer.paint['raster-fade-duration'];
 
     if (tile.sourceCache && fadeDuration > 0) {
@@ -126,16 +126,16 @@ function getOpacities(tile, parentTile, layer, transform) {
             roundZoom: source.roundZoom
         });
 
-        var parentFurther = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
-
         // if no parent or parent is older, fade in; if parent is younger, fade out
-        opacity[0] = util.clamp(parentFurther ? sinceTile : 1 - sinceParent, 0, 1);
-        opacity[1] = parentTile ? 1 - opacity[0] : 0;
+        var fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
+
+        opacities[0] = util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+        opacities[1] = parentTile ? 1 - opacities[0] : 0;
     }
 
-    var op = layer.paint['raster-opacity'];
-    opacity[0] *= op;
-    opacity[1] *= op;
+    var opacity = layer.paint['raster-opacity'];
+    opacities[0] *= opacity;
+    opacities[1] *= opacity;
 
-    return opacity;
+    return opacities;
 }
