@@ -5,7 +5,7 @@
 
 ## Testing
 
-- `npm run plugin-test`
+- `npm run test-plugin`
 
 ## Deploying
 
