@@ -1,7 +1,6 @@
 'use strict';
 
 var browser = require('../util/browser');
-var mat2 = require('gl-matrix').mat2;
 var pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 /**
@@ -24,8 +23,6 @@ module.exports = function drawLine(painter, sourceCache, layer, coords) {
 
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;
-
-    var tr = painter.transform;
 
     for (var k = 0; k < coords.length; k++) {
         drawLineTile(painter, sourceCache, layer, coords[k]);
