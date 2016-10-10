@@ -1,6 +1,6 @@
 'use strict';
 
-var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+var setPattern = require('./set_pattern');
 
 module.exports = draw;
 
@@ -72,7 +72,8 @@ function drawFill(painter, sourceCache, layer, coord) {
     } else {
         // Draw texture fill
         program = painter.useProgram('fillPattern');
-        setPattern(image, layer.paint['fill-opacity'], tile, coord, painter, program);
+        setPattern(image, tile, coord, painter, program, false);
+        gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
 
         gl.activeTexture(gl.TEXTURE0);
         painter.spriteAtlas.bind(gl, true);
@@ -98,15 +99,15 @@ function drawStroke(painter, sourceCache, layer, coord) {
     var tile = sourceCache.getTile(coord);
     var bucket = tile.getBucket(layer);
     if (!bucket) return;
+    var bufferGroups = bucket.bufferGroups.fill;
+    if (!bufferGroups) return;
 
     var gl = painter.gl;
-    var bufferGroups = bucket.bufferGroups.fill;
 
     var image = layer.paint['fill-pattern'];
-    var opacity = layer.paint['fill-opacity'];
     var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
-
     var program;
+
     if (image && !isOutlineColorDefined) {
         program = painter.useProgram('fillOutlinePattern');
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -120,9 +121,10 @@ function drawStroke(painter, sourceCache, layer, coord) {
             programOptions.fragmentPragmas
         );
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        gl.uniform1f(program.u_opacity, opacity);
         bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
     }
+
+    gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
 
     gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix,
@@ -131,7 +133,9 @@ function drawStroke(painter, sourceCache, layer, coord) {
         layer.paint['fill-translate-anchor']
     ));
 
-    if (image) { setPattern(image, opacity, tile, coord, painter, program); }
+    if (image) {
+        setPattern(image, tile, coord, painter, program, false);
+    }
 
     painter.enableTileClippingMask(coord);
 
@@ -140,38 +144,4 @@ function drawStroke(painter, sourceCache, layer, coord) {
         group.secondVaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
     }
-}
-
-
-function setPattern(image, opacity, tile, coord, painter, program) {
-    var gl = painter.gl;
-
-    var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
-    var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
-    if (!imagePosA || !imagePosB) return;
-
-    gl.uniform1i(program.u_image, 0);
-    gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
-    gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
-    gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
-    gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
-    gl.uniform1f(program.u_opacity, opacity);
-    gl.uniform1f(program.u_mix, image.t);
-
-    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
-    gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
-    gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
-    gl.uniform1f(program.u_scale_a, image.fromScale);
-    gl.uniform1f(program.u_scale_b, image.toScale);
-
-    var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
-
-    var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var pixelY = tileSizeAtNearestZoom * tile.coord.y;
-    // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
-    gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
-    gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
-
-    gl.activeTexture(gl.TEXTURE0);
-    painter.spriteAtlas.bind(gl, true);
 }
