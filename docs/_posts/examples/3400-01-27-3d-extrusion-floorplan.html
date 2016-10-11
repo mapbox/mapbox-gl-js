@@ -14,23 +14,23 @@ var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v9',
     center: [-87.61694, 41.86625],
-    zoom: 17.2,
+    zoom: 15.99,
     pitch: 40,
-    bearing: -45
+    bearing: 20
 });
 
 map.on('load', function() {
 
     map.addSource("museumData", {
         'type': 'vector',
-        'url': 'mapbox://examples.ciu5u9ge70ib62zqt844cu2al-61kzz'
+        'url': 'mapbox://examples.ciu5u9ge70ib62zqt844cu2al-5h6xr'
     });
 
     map.addLayer({
         'id': 'room-extrude',
         'type': 'fill',
         'source': 'museumData',
-        'source-layer' : 'gljs_indoor_3d_example',
+        'source-layer': 'gljs_indoor_3d_example-2',
         'paint': {
             'fill-color': {
                 'property': 'color',
@@ -48,15 +48,19 @@ map.on('load', function() {
         }
     });
 
-    map.addLayer({
-        'id' : 'room-layer',
-        'type' : 'symbol',
+    /*map.addLayer({
+        'id': 'room-layer',
+        'type': 'symbol',
         'source': 'museumData',
-        'source-layer' : 'gljs_indoor_3d_example',
-        'layout' : {
-            'text-field' : '{name}'
+        'source-layer': 'gljs_indoor_3d_example',
+        'layout': {
+            'text-field': '{name}'
         },
-        'filter' : ['==', 'height', 0]
-    })
+        'filter': ['all', ['==', 'height', 0],
+            ['==', '$type', 'Point']
+        ]
+    })*/
 });
 </script>
+
+
