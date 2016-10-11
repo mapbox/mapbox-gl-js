@@ -109,9 +109,15 @@
   },
   "mapbox-gl-compare": {
     "prefix": "mapbox-gl-compare",
-    "latest": "0.0.1",
+    "latest": "0.0.2",
     "v": {
       "0.0.1": {
+        "files": [
+          "mapbox-gl-compare.js",
+          "mapbox-gl-compare.css"
+        ]
+      },
+      "0.0.2": {
         "files": [
           "mapbox-gl-compare.js",
           "mapbox-gl-compare.css"
