@@ -1,0 +1,50 @@
+--- 
+layout: example 
+category: example 
+title: Extrude and style a 3D road profile.
+description: Create a 3D road profile using fill-extrude-height and data-driven styles.
+tags: 
+  - layers 
+---
+
+<div id='map'>
+</div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: [-122.4662, 37.7989], 
+    zoom: 14,
+    pitch: 50,
+    bearing: 0
+});
+
+map.on('load', function() {
+
+    // Geojson Data source used in vector tiles
+    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+    map.addSource("roadProfile", {
+        'type': 'vector',
+        'url': 'mapbox://examples.ciu640p5o0ifh2pjwzwd6ga98-0h1qy'
+    });
+
+    map.addLayer({
+        'id': 'roadextrude',
+        'type': 'fill',
+        'source': 'roadProfile',
+        'source-layer': 'road_profile_data',
+        'paint': {
+            'fill-color': {
+                'property': 'g',
+                'type': 'exponential',
+                'stops' : [[-10, '#E4855C'], [10, '#97EA8B']]
+            },
+            'fill-extrude-height': {
+                'property': 'e',
+                'type': 'identity'
+            },
+            'fill-opacity': 0.5
+        }
+    });
+});
+</script>
