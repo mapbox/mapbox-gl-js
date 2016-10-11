@@ -78,9 +78,9 @@ function Style(stylesheet, map, options) {
         browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
-    this.on('source.load', function(event) {
+    this.on('data', function(event) {
         var source = event.source;
-        if (source && source.vectorLayerIds) {
+        if (event.isFirst && source && source.vectorLayerIds) {
             for (var layerId in this._layers) {
                 var layer = this._layers[layerId];
                 if (layer.source === source.id) {
