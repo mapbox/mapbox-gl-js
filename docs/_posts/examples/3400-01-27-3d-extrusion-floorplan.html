@@ -1,0 +1,50 @@
+--- 
+layout: example 
+category: example 
+title: Create a 3D indoor map using fill-extrude-height.
+description: Create a 3D indoor map using fill-extrude-height.
+tags: 
+  - layers 
+---
+
+<div id='map'></div>
+<script>
+
+var map = new mapboxgl.Map({
+        container: 'map', 
+        style: 'mapbox://styles/mapbox/streets-v9', 
+        center: [-87.61694, 41.86625], 
+        zoom: 17.2,
+        pitch: 40
+    });
+
+map.on('load', function() {
+
+    map.addSource("museumData", {
+        'type': 'geojson',
+        'data': geojsonData
+    });
+
+    map.addLayer({
+        'id': 'room-extrude',
+        'type': 'fill',
+        'source': 'museumData',
+        'paint': {
+            'fill-color': {
+                'property': 'color',
+                'type': 'identity'
+            },
+            'fill-extrude-height' : {
+                'property' : 'height',
+                'type' : 'identity'
+            },
+            'fill-extrude-base' : {
+                'property' : 'base_height',
+                'type' : 'identity'
+            },
+            'fill-opacity' : 0.5
+        }
+    });
+});
+var geojsonData = {"features":[{"type":"Feature","properties":{"level":1,"name":"Kids Zone","height":0,"base_height":40,"color":"grey"},"geometry":{"coordinates":[[[-87.615719,41.866354],[-87.615718,41.866381],[-87.616074,41.866375],[-87.616075,41.866347],[-87.615719,41.866354]]],"type":"Polygon"},"id":"03d7b9a435fa383e28a4af50fdc9c245"},{"type":"Feature","properties":{"level":1,"name":"Under the Earth","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.616086,41.866149],[-87.616086,41.866122],[-87.615715,41.866124],[-87.615715,41.866146],[-87.616086,41.866149]]],"type":"Polygon"},"id":"07625ebae67c492be1a15ac2e7d286e5"},{"type":"Feature","properties":{"level":1,"name":"West Arch","height":40,"base_height":30,"color":"grey"},"geometry":{"coordinates":[[[-87.617384,41.866669],[-87.617332,41.86667],[-87.617315,41.865802],[-87.617357,41.865801],[-87.617384,41.866669]]],"type":"Polygon"},"id":"1225d54f794f0a6624f4903269ee6ec1"},{"type":"Feature","properties":{"level":1,"name":"South Entrance","height":0,"base_height":0,"color":"teal"},"geometry":{"coordinates":[[[-87.617359,41.865801],[-87.617355,41.865674],[-87.617221,41.865677],[-87.617219,41.86559],[-87.616824,41.865595],[-87.616826,41.86568],[-87.616695,41.865683],[-87.6167,41.865813],[-87.617359,41.865801]]],"type":"Polygon"},"id":"12cb7fb91f030eaca4188ba72b9b01a7"},{"type":"Feature","properties":{"level":1,"name":"Bird Exhibit","height":0,"base_height":0,"color":"orange"},"geometry":{"coordinates":[[[-87.618307,41.866283],[-87.618313,41.866676],[-87.618087,41.866676],[-87.618087,41.866661],[-87.617427,41.866669],[-87.617416,41.8663],[-87.618307,41.866283]]],"type":"Polygon"},"id":"243af731c5cce44cccaeba5f885892c3"},{"type":"Feature","properties":{"name":"West Hallway","level":1,"base_height":0,"height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.618307,41.866163],[-87.618307,41.86626],[-87.617371,41.866273],[-87.617371,41.866172],[-87.618307,41.866163]]],"type":"Polygon"},"id":"278911437bf9e8d33d16e41eb569bda3"},{"type":"Feature","properties":{"level":1,"name":"","base_height":0,"height":0,"color":"yellow"},"geometry":{"coordinates":[[[-87.617313,41.865802],[-87.61674,41.865815],[-87.61675,41.866672],[-87.617328,41.866669],[-87.617313,41.865802]]],"type":"Polygon"},"id":"472979c88ab8d6a3ed5f3246c72a343f"},{"type":"Feature","properties":{"height":0,"base_height":0,"level":1,"name":"Under the Earth","color":"red"},"geometry":{"coordinates":[[[-87.616701,41.865816],[-87.616705,41.866115],[-87.615712,41.866125],[-87.615712,41.865807],[-87.615936,41.865801],[-87.615938,41.865824],[-87.616701,41.865816]]],"type":"Polygon"},"id":"4aa86e2fb3cd705d83cf223c079d45d7"},{"type":"Feature","properties":{"level":1,"name":"Bird Exhibit","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.617808,41.866266],[-87.617806,41.866293],[-87.617415,41.866298],[-87.617424,41.866671],[-87.617382,41.866669],[-87.617371,41.866274],[-87.617808,41.866266]]],"type":"Polygon"},"id":"4b22ba6752c9e2e7f5a8a5b72dfdc28f"},{"type":"Feature","properties":{"level":1,"name":"East Hallway","base_height":0,"height":0,"color":"indigo"},"geometry":{"coordinates":[[[-87.616704,41.866146],[-87.616707,41.866338],[-87.61572,41.866353],[-87.61572,41.866148],[-87.616704,41.866146]]],"type":"Polygon"},"id":"730b880f7a6ac3537294928f14b62c70"},{"type":"Feature","properties":{"level":1,"name":"North Entrance","height":0,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.617386,41.86667],[-87.617388,41.866786],[-87.617228,41.866786],[-87.617226,41.866848],[-87.616867,41.866849],[-87.616868,41.866791],[-87.616718,41.866791],[-87.616718,41.866672],[-87.617386,41.86667]]],"type":"Polygon"},"id":"9d846854dfe9edff880862ec69a1b929"},{"type":"Feature","properties":{"level":1,"name":"outer-walls","base_height":0,"height":40,"color":"grey"},"geometry":{"coordinates":[[[-87.618087,41.86666],[-87.618087,41.866674],[-87.618319,41.866674],[-87.618298,41.865759],[-87.618326,41.865759],[-87.618347,41.866693],[-87.618068,41.866696],[-87.618067,41.866675],[-87.61741,41.866684],[-87.617416,41.866802],[-87.617247,41.866803],[-87.617246,41.866866],[-87.616846,41.866868],[-87.616848,41.866807],[-87.61669,41.866811],[-87.616693,41.866693],[-87.615992,41.866701],[-87.615992,41.866729],[-87.615703,41.866733],[-87.615689,41.866377],[-87.615412,41.866382],[-87.615411,41.866122],[-87.615689,41.866119],[-87.615682,41.865781],[-87.615966,41.865779],[-87.615969,41.865798],[-87.616669,41.865794],[-87.616663,41.865662],[-87.6168,41.865661],[-87.616796,41.865571],[-87.61726,41.865559],[-87.617258,41.865654],[-87.617388,41.865652],[-87.617395,41.865778],[-87.618045,41.865773],[-87.618044,41.865742],[-87.618325,41.865739],[-87.618326,41.865758],[-87.61807,41.865761],[-87.61807,41.865789],[-87.617356,41.8658],[-87.617356,41.865672],[-87.617218,41.865677],[-87.617215,41.86559],[-87.616822,41.865595],[-87.616827,41.86568],[-87.616694,41.865681],[-87.616697,41.865813],[-87.615939,41.865824],[-87.615937,41.8658],[-87.615706,41.865802],[-87.615713,41.866143],[-87.615441,41.86615],[-87.61545,41.866357],[-87.615715,41.866354],[-87.615733,41.866712],[-87.615959,41.86671],[-87.615959,41.866688],[-87.616716,41.866674],[-87.616715,41.86679],[-87.616869,41.86679],[-87.616868,41.86685],[-87.617223,41.866847],[-87.617227,41.866786],[-87.617387,41.866785],[-87.617383,41.86667],[-87.618087,41.86666]]],"type":"Polygon"},"id":"a186bcd8c9b43aad567bfe6fc401a991"},{"type":"Feature","properties":{"base_height":0,"height":30,"level":1,"name":"Atrium East Arch 1","color":"grey"},"geometry":{"coordinates":[[[-87.617365,41.86607],[-87.617365,41.865928],[-87.617317,41.865931],[-87.617317,41.866074],[-87.617365,41.86607]]],"type":"Polygon"},"id":"a7862e65f6459d77f9b1d9ef93e5b501"},{"type":"Feature","properties":{"level":1,"name":"East Entrance","base_height":0,"height":0,"color":"violet"},"geometry":{"coordinates":[[[-87.615447,41.866149],[-87.615449,41.866356],[-87.615719,41.866352],[-87.615719,41.866145],[-87.615447,41.866149]]],"type":"Polygon"},"id":"aa0d13ebf27e98774171037af12af627"},{"type":"Feature","properties":{"level":1,"name":"Under the Earth","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.616707,41.866115],[-87.616286,41.866119],[-87.616285,41.866144],[-87.616705,41.866141],[-87.616707,41.866115]]],"type":"Polygon"},"id":"aee41337dcfd81b98e0649e2ae08086f"},{"type":"Feature","properties":{"level":1,"name":"Ancient Egypt","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.617976,41.866166],[-87.617976,41.866143],[-87.618309,41.866139],[-87.618309,41.866161],[-87.617976,41.866166]]],"type":"Polygon"},"id":"b3270fc110fe9ea49c830a3d08e0c91b"},{"type":"Feature","properties":{"level":1,"name":"Bird Exhibit","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.618308,41.866284],[-87.61797,41.866288],[-87.617972,41.866265],[-87.618309,41.86626],[-87.618308,41.866284]]],"type":"Polygon"},"id":"b75114f4b5157b78b7a7905c3bedb899"},{"type":"Feature","properties":{"level":1,"name":"Kids Zone","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.616286,41.866343],[-87.616286,41.866374],[-87.616718,41.866371],[-87.616718,41.866338],[-87.616286,41.866343]]],"type":"Polygon"},"id":"bf06a0f9c080ce0ca35956c95e4acb2b"},{"type":"Feature","properties":{"level":1,"name":"East Arch","height":40,"base_height":30,"color":"grey"},"geometry":{"coordinates":[[[-87.616719,41.866672],[-87.616749,41.866672],[-87.616735,41.865812],[-87.6167,41.865813],[-87.616719,41.866672]]],"type":"Polygon"},"id":"c386f27c0a5eac6ae5ee4ce14d713daf"},{"type":"Feature","properties":{"level":1,"name":"Ancient Egypt","height":40,"base_height":0,"color":"grey"},"geometry":{"coordinates":[[[-87.617393,41.865797],[-87.617405,41.86615],[-87.617802,41.866147],[-87.6178,41.866167],[-87.617369,41.866172],[-87.617359,41.865799],[-87.617393,41.865797]]],"type":"Polygon"},"id":"c48595ac8d5b06cdd0c0b99f7f85c29b"},{"type":"Feature","properties":{"name":"Kids Zone","level":1,"base_height":0,"height":0,"color":"green"},"geometry":{"coordinates":[[[-87.616718,41.866675],[-87.616709,41.866371],[-87.615725,41.866381],[-87.615732,41.866711],[-87.61596,41.866711],[-87.61596,41.866688],[-87.616718,41.866675]]],"type":"Polygon"},"id":"f4f6ef505a914b8b87090ff4247379b2"},{"type":"Feature","properties":{"level":1,"name":"Ancient Egypt","height":0,"base_height":0,"color":"blue"},"geometry":{"coordinates":[[[-87.618072,41.865762],[-87.618298,41.865762],[-87.618307,41.866139],[-87.617407,41.86615],[-87.617399,41.865799],[-87.618077,41.865791],[-87.618072,41.865762]]],"type":"Polygon"},"id":"ff4753fbfb4e27d99eac41639fea63d4"}],"type":"FeatureCollection"}
+    </script>
