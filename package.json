@@ -60,7 +60,7 @@
     "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
     "lodash": "^4.13.1",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#8f818dbc3fa37d2fd1ef93597b605b7a4aeb6482",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#ceba0a2e2e8e5860aa2550c53bb6083387d053d3",
     "memory-fs": "^0.3.0",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
