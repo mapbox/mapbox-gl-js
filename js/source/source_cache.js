@@ -157,7 +157,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
-        this._source.fire('data', {tile: tile, dataType: 'tile'});
+        this._source.fire('data', {tile: tile, dataType: 'tile', isFirst: true});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;

@@ -28,7 +28,7 @@ module.exports = function() {
                 .on('error', function(err) {
                     evented.fire('error', { error: err });
                 })
-                .on('style.load', function() {
+                .once('data', function() {
                     var time = performance.now() - timeStart;
                     timeSum += time;
                     timeCount++;
