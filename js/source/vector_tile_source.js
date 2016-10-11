@@ -7,7 +7,7 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = VectorTileSource;
 
-function VectorTileSource(id, options, dispatcher) {
+function VectorTileSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
@@ -16,6 +16,9 @@ function VectorTileSource(id, options, dispatcher) {
     if (this.tileSize !== 512) {
         throw new Error('vector tile sources must have a tileSize of 512');
     }
+
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
 
     loadTileJSON(options, function (err, tileJSON) {
         if (err) {

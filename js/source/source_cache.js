@@ -27,8 +27,7 @@ function SourceCache(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
 
-    var source = this._source = Source.create(id, options, dispatcher);
-    source.setEventedParent(this);
+    this._source = Source.create(id, options, dispatcher, this);
 
     this.on('source.load', function() {
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }

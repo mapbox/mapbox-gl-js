@@ -19,8 +19,9 @@ var sourceTypes = {
  * @param {Dispatcher} dispatcher
  * @returns {Source}
  */
-exports.create = function(id, source, dispatcher) {
-    source = new sourceTypes[source.type](id, source, dispatcher);
+exports.create = function(id, source, dispatcher, eventedParent) {
+    source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
+    source.setEventedParent(eventedParent);
 
     if (source.id !== id) {
         throw new Error('Expected Source id to be ' + id + ' instead of ' + source.id);

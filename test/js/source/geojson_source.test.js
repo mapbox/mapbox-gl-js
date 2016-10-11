@@ -46,23 +46,34 @@ var hawkHill = {
 };
 
 test('GeoJSONSource#setData', function(t) {
+    function createSource() {
+        return new GeoJSONSource('id', {data: {}}, {
+            send: function (type, data, callback) {
+                return setTimeout(callback, 0);
+            }
+        });
+    }
+
     t.test('returns self', function(t) {
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        var source = createSource();
         t.equal(source.setData({}), source);
         t.end();
     });
 
-    t.test('fires change', function(t) {
-        var mockDispatcher = {
-            send: function (type, data, callback) {
-                return callback();
-            }
-        };
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-        source.on('data', function() {
-            t.end();
+    t.test('fires "data" event', function(t) {
+        var source = createSource();
+        source.once('data', function() {
+            source.on('data', t.end);
+            source.setData({});
         });
-        source.setData({});
+    });
+
+    t.test('fires "dataloading" event', function(t) {
+        var source = createSource();
+        source.once('data', function() {
+            source.on('dataloading', t.end);
+            source.setData({});
+        });
     });
 
     t.end();
@@ -110,7 +121,7 @@ test('GeoJSONSource#update', function(t) {
         }, mockDispatcher);
     });
 
-    t.test('emits load on success', function(t) {
+    t.test('fires "source.load"', function(t) {
         var mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback, 0);
@@ -124,7 +135,7 @@ test('GeoJSONSource#update', function(t) {
         });
     });
 
-    t.test('emits error on failure', function(t) {
+    t.test('fires "error"', function(t) {
         var mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback.bind(null, 'error'), 0);
@@ -136,26 +147,6 @@ test('GeoJSONSource#update', function(t) {
         source.on('error', function(err) {
             t.equal(err.error, 'error');
             t.end();
-        });
-    });
-
-    t.test('emits change on data update', function(t) {
-        var mockDispatcher = {
-            send: function(message, args, callback) {
-                setTimeout(callback, 0);
-            }
-        };
-
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
-
-        source.on('source.load', function() {
-            // Note: we register this before calling setData because `change`
-            // is fired synchronously within that method.  It may be worth
-            // considering dezalgoing there.
-            source.on('data', function () {
-                t.end();
-            });
-            source.setData({});
         });
     });
 

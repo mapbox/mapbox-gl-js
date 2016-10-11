@@ -4,9 +4,10 @@ var test = require('tap').test;
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var TileCoord = require('../../../js/source/tile_coord');
 var window = require('../../../js/util/window');
+var Evented = require('../../../js/util/evented');
 
 function createSource(options) {
-    var source = new VectorTileSource('id', options, { send: function() {} });
+    var source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
 
     source.on('error', function(e) {
         throw e.error;
@@ -60,6 +61,21 @@ test('VectorTileSource', function(t) {
             t.end();
         });
 
+        window.server.respond();
+    });
+
+    t.test('fires "data" event', function(t) {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        var source = createSource({ url: "/source.json" });
+        source.on('data', t.end);
+        window.server.respond();
+    });
+
+    t.test('fires "dataloading" event', function(t) {
+        window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
+        var evented = Object.create(Evented);
+        evented.on('dataloading', t.end);
+        createSource({ url: "/source.json", eventedParent: evented });
         window.server.respond();
     });
 
