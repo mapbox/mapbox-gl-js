@@ -85,14 +85,11 @@ npm run build-min
 
 Once that command finishes, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
 
-## Running Tests
+## Writing & Running Tests
 
-There are two test suites associated with Mapbox GL JS
+See [`test/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/test/README.md).
 
- - `npm test` runs quick unit tests
- - `npm run test-suite` runs integration tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
-
-## Running Benchmarks
+## Writing & Running Benchmarks
 
 See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench/README.md).
 
@@ -103,7 +100,7 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
 
 ### Version Control Conventions
 
-* We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches 
+* We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches
 
 ## Documentation Conventions
 
