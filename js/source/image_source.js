@@ -42,13 +42,14 @@ module.exports = ImageSource;
  *
  * map.removeSource('some id');  // remove
  */
-function ImageSource(id, options, dispatcher) {
+function ImageSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.dispatcher = dispatcher;
     this.url = options.url;
     this.coordinates = options.coordinates;
 
-    this.asyncFire('dataloading', {dataType: 'source'});
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     ajax.getImage(options.url, function(err, image) {
         if (err) return this.fire('error', {error: err});
 

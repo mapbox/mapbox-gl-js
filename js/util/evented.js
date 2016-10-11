@@ -1,7 +1,6 @@
 'use strict';
 
 var util = require('./util');
-var window = require('./window');
 
 /**
  * Methods mixed in to other classes for event capabilities.
@@ -93,18 +92,6 @@ var Evented = {
         }
 
         return this;
-    },
-
-    /**
-     * Asyncronously fires an event of the specified type. The event will be
-     * fired within a "setTimeout(..., 0)" callback.
-     *
-     * @param {string} type The type of event to fire.
-     * @param {Object} [data] Data to be passed to any listeners.
-     * @returns {Object} `this`
-     */
-    asyncFire: function(type, data) {
-        window.setTimeout(this.fire.bind(this, type, data), 0);
     },
 
     /**

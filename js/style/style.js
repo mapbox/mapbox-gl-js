@@ -43,7 +43,8 @@ function Style(stylesheet, map, options) {
         validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
     }, options);
 
-    this.asyncFire('dataloading', {dataType: 'style'});
+    this.setEventedParent(map);
+    this.fire('dataloading', {dataType: 'style'});
 
     var stylesheetLoaded = function(err, stylesheet) {
         if (err) {

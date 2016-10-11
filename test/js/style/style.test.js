@@ -7,6 +7,7 @@ var Style = require('../../../js/style/style');
 var SourceCache = require('../../../js/source/source_cache');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
+var Evented = require('../../../js/util/evented');
 var window = require('../../../js/util/window');
 
 function createStyleJSON(properties) {
@@ -50,8 +51,9 @@ test('Style', function(t) {
     });
 
     t.test('fires "dataloading"', function(t) {
-        var style = new Style(createStyleJSON());
-        style.on('dataloading', t.end);
+        var eventedParent = Object.create(Evented);
+        eventedParent.on('dataloading', t.end);
+        new Style(createStyleJSON(), eventedParent);
     });
 
     t.test('can be constructed from a URL', function(t) {

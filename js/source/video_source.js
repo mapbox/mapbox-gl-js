@@ -44,12 +44,13 @@ module.exports = VideoSource;
  *
  * map.removeSource('some id');  // remove
  */
-function VideoSource(id, options) {
+function VideoSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.urls = options.urls;
     this.coordinates = options.coordinates;
 
-    this.asyncFire('dataloading', {dataType: 'source'});
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     ajax.getVideo(options.urls, function(err, video) {
         if (err) return this.fire('error', {error: err});
 

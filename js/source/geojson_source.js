@@ -50,7 +50,7 @@ module.exports = GeoJSONSource;
  *   }]
  * });
  */
-function GeoJSONSource(id, options, dispatcher) {
+function GeoJSONSource(id, options, dispatcher, eventedParent) {
     options = options || {};
     this.id = id;
     this.dispatcher = dispatcher;
@@ -83,7 +83,8 @@ function GeoJSONSource(id, options, dispatcher) {
         }
     }, options.workerOptions);
 
-    this.asyncFire('dataloading', {dataType: 'source'});
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     this._updateWorkerData(function done(err) {
         if (err) {
             this.fire('error', {error: err});
@@ -117,7 +118,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     setData: function(data) {
         this._data = data;
 
-        this.asyncFire('dataloading', {dataType: 'source'});
+        this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData(function (err) {
             if (err) {
                 return this.fire('error', { error: err });

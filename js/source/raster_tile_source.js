@@ -8,11 +8,13 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = RasterTileSource;
 
-function RasterTileSource(id, options, dispatcher) {
+function RasterTileSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-    this.asyncFire('dataloading', {dataType: 'source'});
+
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     loadTileJSON(options, function (err, tileJSON) {
         if (err) {
             return this.fire('error', err);
