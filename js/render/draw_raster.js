@@ -71,7 +71,6 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
 
     } else {
         gl.bindTexture(gl.TEXTURE_2D, tile.texture);
-        opacities[1] = 0;
     }
 
     // cross-fade parameters
@@ -113,35 +112,30 @@ function saturationFactor(saturation) {
 }
 
 function getOpacities(tile, parentTile, layer, transform) {
-    var opacity = [1, 0];
+    var opacities = [1, 0];
     var fadeDuration = layer.paint['raster-fade-duration'];
 
     if (tile.sourceCache && fadeDuration > 0) {
-        var now = new Date().getTime();
-
+        var now = Date.now();
         var sinceTile = (now - tile.timeAdded) / fadeDuration;
         var sinceParent = parentTile ? (now - parentTile.timeAdded) / fadeDuration : -1;
 
+        var source = tile.sourceCache.getSource();
         var idealZ = transform.coveringZoomLevel({
-            tileSize: tile.sourceCache.getSource().tileSize,
-            roundZoom: tile.sourceCache.getSource().roundZoom
+            tileSize: source.tileSize,
+            roundZoom: source.roundZoom
         });
-        var parentFurther = parentTile ? Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ) : false;
 
-        if (!parentTile || parentFurther) {
-            // if no parent or parent is older
-            opacity[0] = util.clamp(sinceTile, 0, 1);
-            opacity[1] = 1 - opacity[0];
-        } else {
-            // parent is younger, zooming out
-            opacity[0] = util.clamp(1 - sinceParent, 0, 1);
-            opacity[1] = 1 - opacity[0];
-        }
+        // if no parent or parent is older, fade in; if parent is younger, fade out
+        var fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
+
+        opacities[0] = util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+        opacities[1] = parentTile ? 1 - opacities[0] : 0;
     }
 
-    var op = layer.paint['raster-opacity'];
-    opacity[0] *= op;
-    opacity[1] *= op;
+    var opacity = layer.paint['raster-opacity'];
+    opacities[0] *= opacity;
+    opacities[1] *= opacity;
 
-    return opacity;
+    return opacities;
 }
