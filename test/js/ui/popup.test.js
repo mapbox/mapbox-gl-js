@@ -234,6 +234,28 @@ test('Popup anchors as specified by the anchor option', function (t) {
     });
 });
 
+test('Popup automatically anchors to top if its bottom offset would push it off-screen', function (t) {
+    var map = createMap();
+    var point = new Point(containerWidth / 2, containerHeight / 2);
+    var options = { offset: {
+        'bottom': [0, -25],
+        'top': [0, 0]
+    }};
+    var popup = new Popup(options)
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    popup._container.offsetWidth = (containerWidth / 2);
+    popup._container.offsetHeight = (containerHeight / 2);
+
+    sinon.stub(map, 'project', function () { return point; });
+    popup.setLngLat([0, 0]);
+
+    t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top'));
+    t.end();
+});
+
 test('Popup is offset via a PointLike offset option', function (t) {
     var map = createMap();
     sinon.stub(map, 'project', function () { return new Point(0, 0); });
