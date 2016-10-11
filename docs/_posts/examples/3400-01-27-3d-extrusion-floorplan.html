@@ -21,6 +21,8 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
+    // Geojson Data source used in vector tiles
+    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
     map.addSource("museumData", {
         'type': 'vector',
         'url': 'mapbox://examples.ciu5u9ge70ib62zqt844cu2al-5h6xr'
@@ -62,5 +64,3 @@ map.on('load', function() {
     })*/
 });
 </script>
-
-
