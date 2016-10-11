@@ -21,15 +21,15 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
-    // Geojson Data source used in vector tiles
-    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+    // source GeoJSON data for visual is at
+    // https://gist.github.com/ryanbaumann/f196a84c4c5728d860db0fc7a19d0c9b
     map.addSource("roadProfile", {
         'type': 'vector',
         'url': 'mapbox://examples.ciu640p5o0ifh2pjwzwd6ga98-0h1qy'
     });
 
     map.addLayer({
-        'id': 'roadextrude',
+        'id': 'roadExtrude',
         'type': 'fill',
         'source': 'roadProfile',
         'source-layer': 'road_profile_data',
@@ -46,5 +46,7 @@ map.on('load', function() {
             'fill-opacity': 0.5
         }
     });
+
+    
 });
 </script>
