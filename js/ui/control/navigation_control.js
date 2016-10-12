@@ -5,24 +5,24 @@ var DOM = require('../../util/dom');
 var util = require('../../util/util');
 var window = require('../../util/window');
 
-module.exports = Navigation;
+module.exports = NavigationControl;
 
 /**
- * A `Navigation` control contains zoom buttons and a compass.
+ * A `NavigationControl` control contains zoom buttons and a compass.
  * Extends [`Control`](#Control).
  *
- * @class Navigation
+ * @class NavigationControl
  * @param {Object} [options]
  * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
- * var nav = new mapboxgl.Navigation({position: 'top-left'}); // position is optional
+ * var nav = new mapboxgl.NavigationControl({position: 'top-left'}); // position is optional
  * map.addControl(nav);
  */
-function Navigation(options) {
+function NavigationControl(options) {
     util.setOptions(this, options);
 }
 
-Navigation.prototype = util.inherit(Control, {
+NavigationControl.prototype = util.inherit(Control, {
     options: {
         position: 'top-right'
     },

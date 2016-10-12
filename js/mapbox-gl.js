@@ -11,10 +11,10 @@ mapboxgl.workerCount = Math.max(browser.hardwareConcurrency - 1, 1);
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Control = require('./ui/control/control');
-mapboxgl.Navigation = require('./ui/control/navigation');
-mapboxgl.Geolocate = require('./ui/control/geolocate');
-mapboxgl.Attribution = require('./ui/control/attribution');
-mapboxgl.Scale = require('./ui/control/scale');
+mapboxgl.NavigationControl = require('./ui/control/navigation_control');
+mapboxgl.GeolocateControl = require('./ui/control/geolocate_control');
+mapboxgl.AttributionControl = require('./ui/control/attribution_control');
+mapboxgl.ScaleControl = require('./ui/control/scale_control');
 mapboxgl.Popup = require('./ui/popup');
 mapboxgl.Marker = require('./ui/marker');
 
