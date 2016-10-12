@@ -68,13 +68,7 @@ AttributionControl.prototype = util.inherit(Control, {
             return true;
         });
         this._container.innerHTML = attributions.join(' | ');
-
-        var attributionNodes = this._container.childNodes;
-        for (var i = 0; i < attributionNodes.length; i++) {
-            if (attributionNodes[i].classList && attributionNodes[i].classList.contains('mapbox-improve-map')) {
-                this._editLink = attributionNodes[i];
-            }
-        }
+        this._editLink = this._container.querySelector('.mapbox-improve-map')
     },
 
     _updateEditLink: function() {
