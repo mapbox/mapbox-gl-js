@@ -13,10 +13,10 @@ toc:
     description: |
       Controls add new functionality and user interface
       elements to the map.
-  - Navigation
-  - Geolocate
-  - Attribution
-  - Scale
+  - NavigationControl
+  - GeolocateControl
+  - AttributionControl
+  - ScaleControl
   - Control
   - name: Handlers
     description: |

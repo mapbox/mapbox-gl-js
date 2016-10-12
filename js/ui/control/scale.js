@@ -3,29 +3,29 @@ var util = require('../../util/util');
 var Control = require('./control');
 var DOM = require('../../util/dom');
 
-module.exports = Scale;
+module.exports = ScaleControl;
 
 /**
- * A `Scale` control displays the ratio of a distance on the map to the corresponding distance on the ground.
+ * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
  * Extends [`Control`](#Control).
  *
- * @class Scale
+ * @class ScaleControl
  * @param {Object} [options]
  * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
  * @param {string} [option.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
  * @example
- * map.addControl(new mapboxgl.Scale({
+ * map.addControl(new mapboxgl.ScaleControl({
  *     position: 'top-left',
  *     maxWidth: 80,
  *     unit: 'imperial'
  * }));
  */
-function Scale(options) {
+function ScaleControl(options) {
     util.setOptions(this, options);
 }
 
-Scale.prototype = util.inherit(Control, {
+ScaleControl.prototype = util.inherit(Control, {
     options: {
         position: 'bottom-left'
     },

@@ -3,7 +3,7 @@
 var test = require('tap').test;
 var window = require('../../../../js/util/window');
 var Map = require('../../../../js/ui/map');
-var Attribution = require('../../../../js/ui/control/attribution');
+var AttributionControl = require('../../../../js/ui/control/attribution');
 
 function createMap() {
     return new Map({
@@ -17,27 +17,27 @@ function createMap() {
     });
 }
 
-test('Attribution appears in bottom-right by default', function (t) {
+test('AttributionControl appears in bottom-right by default', function (t) {
     var map = createMap();
-    new Attribution()
+    new AttributionControl()
         .addTo(map);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-attrib').length, 1);
     t.end();
 });
 
-test('Attribution appears in the position specified by the position option', function (t) {
+test('AttributionControl appears in the position specified by the position option', function (t) {
     var map = createMap();
-    new Attribution({position: 'top-left'})
+    new AttributionControl({position: 'top-left'})
         .addTo(map);
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib').length, 1);
     t.end();
 });
 
-test('Attribution dedupes attributions that are substrings of others', function (t) {
+test('AttributionControl dedupes attributions that are substrings of others', function (t) {
     var map = createMap();
-    var attribution = new Attribution({position: 'top-left'}).addTo(map);
+    var attribution = new AttributionControl({position: 'top-left'}).addTo(map);
 
     map.on('load', function() {
         map.addSource('1', { type: 'vector', attribution: 'World' });

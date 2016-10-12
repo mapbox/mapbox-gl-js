@@ -19,7 +19,7 @@ var Camera = require('./camera');
 var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
-var Attribution = require('./control/attribution');
+var AttributionControl = require('./control/attribution');
 var isSupported = require('mapbox-gl-supported');
 
 var defaultMinZoom = 0;
@@ -96,7 +96,7 @@ var defaultOptions = {
  *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
- * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
+ * @param {boolean} [options.attributionControl=true] If `true`, an [AttributionControl](#AttributionControl) will be added to the map.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
@@ -188,7 +188,7 @@ var Map = module.exports = function(options) {
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
 
-    if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
+    if (options.attributionControl) this.addControl(new AttributionControl(options.attributionControl));
 
     this.on('style.load', function() {
         if (this.transform.unmodified) {
