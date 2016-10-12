@@ -177,6 +177,26 @@ test('Style', function(t) {
     t.end();
 });
 
+test('Style#_remove', function(t) {
+
+    t.test('clears tiles', function(t) {
+        var style = new Style(createStyleJSON({
+            sources: {'source-id': createGeoJSONSource()}
+        }));
+
+        style.on('style.load', function () {
+            var sourceCache = style.sourceCaches['source-id'];
+            sinon.spy(sourceCache, 'clearTiles');
+            style._remove();
+            t.ok(sourceCache.clearTiles.calledOnce);
+            t.end();
+        });
+    });
+
+    t.end();
+
+});
+
 test('Style#_updateWorkerLayers', function(t) {
     var style = new Style({
         'version': 8,
@@ -431,6 +451,20 @@ test('Style#removeSource', function(t) {
             style.addSource('source-id', source);
             style.removeSource('source-id');
             style.update();
+        });
+    });
+
+    t.test('clears tiles', function(t) {
+        var style = new Style(createStyleJSON({
+            sources: {'source-id': createGeoJSONSource()}
+        }));
+
+        style.on('style.load', function () {
+            var sourceCache = style.sourceCaches['source-id'];
+            sinon.spy(sourceCache, 'clearTiles');
+            style.removeSource('source-id');
+            t.ok(sourceCache.clearTiles.calledOnce);
+            t.end();
         });
     });
 

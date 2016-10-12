@@ -372,6 +372,7 @@ Style.prototype = util.inherit(Evented, {
         delete this.sourceCaches[id];
         delete this._updates.sources[id];
         sourceCache.setEventedParent(null);
+        sourceCache.clearTiles();
 
         if (sourceCache.onRemove) sourceCache.onRemove(this.map);
         this._updates.changed = true;
@@ -724,6 +725,9 @@ Style.prototype = util.inherit(Evented, {
 
     _remove: function() {
         this.dispatcher.remove();
+        for (var id in this.sourceCaches) {
+            this.sourceCaches[id].clearTiles();
+        }
     },
 
     _reloadSource: function(id) {
