@@ -422,7 +422,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses--;
         delete this._tiles[id];
-        this._source.fire('data', { tile: tile, dataType: 'tile', tileRemoved: true });
+        this._source.fire('data', { tile: tile, dataType: 'tile' });
 
         if (tile.uses > 0)
             return;
