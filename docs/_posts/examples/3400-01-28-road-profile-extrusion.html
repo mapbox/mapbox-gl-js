@@ -1,8 +1,8 @@
 --- 
 layout: example 
 category: example 
-title: Extrude and style a 3D road profile.
-description: Create a 3D road profile using fill-extrude-height and data-driven styles.
+title: Extrude a 3D profile.
+description: Create a 3D road or activity profile using fill-extrude-height.
 tags: 
   - layers 
 ---
@@ -13,7 +13,7 @@ tags:
 var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v9',
-    center: [-122.4662, 37.7989], 
+    center: [-122.4662, 37.7989],
     zoom: 14,
     pitch: 50,
     bearing: 0
@@ -37,7 +37,10 @@ map.on('load', function() {
             'fill-color': {
                 'property': 'g',
                 'type': 'exponential',
-                'stops' : [[-10, '#E4855C'], [10, '#97EA8B']]
+                'stops': [
+                    [-10, '#E4855C'],
+                    [10, '#97EA8B']
+                ]
             },
             'fill-extrude-height': {
                 'property': 'e',
@@ -47,6 +50,6 @@ map.on('load', function() {
         }
     });
 
-    
+
 });
 </script>
