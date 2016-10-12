@@ -724,10 +724,10 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _remove: function() {
-        this.dispatcher.remove();
         for (var id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();
         }
+        this.dispatcher.remove();
     },
 
     _reloadSource: function(id) {
