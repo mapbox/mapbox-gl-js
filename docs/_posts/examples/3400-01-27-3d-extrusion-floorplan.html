@@ -34,33 +34,30 @@ map.on('load', function() {
         'source': 'museumData',
         'source-layer': 'gljs_indoor_3d_example-2',
         'paint': {
+            // Color each polygon extrusion
             'fill-color': {
+                //Get the fill-color from the source 'color' property
                 'property': 'color',
                 'type': 'identity'
             },
+            //Extrude each polygon to a given height in meters
             'fill-extrude-height': {
+                //Get the fill-extrude-height from the source 'height' property
                 'property': 'height',
                 'type': 'identity'
             },
+            //Start extruding a polygon at a given height.  This allows for "floating" objects.
+            //For example, extruding from fill-extrude-base : 10 to fill-extrude-height: 20 will 
+            //create a polygon floating above the map, starting at a height of 10 meters, extruded
+            //up to a max height of 20 meters.
             'fill-extrude-base': {
+                //Get the fill-extrude-base from the source 'base_height' property
                 'property': 'base_height',
                 'type': 'identity'
             },
             'fill-opacity': 0.5
         }
     });
-
-    /*map.addLayer({
-        'id': 'room-layer',
-        'type': 'symbol',
-        'source': 'museumData',
-        'source-layer': 'gljs_indoor_3d_example',
-        'layout': {
-            'text-field': '{name}'
-        },
-        'filter': ['all', ['==', 'height', 0],
-            ['==', '$type', 'Point']
-        ]
-    })*/
 });
+
 </script>
