@@ -19,7 +19,7 @@ var Camera = require('./camera');
 var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
-var AttributionControl = require('./control/attribution');
+var AttributionControl = require('./control/attribution_control');
 var isSupported = require('mapbox-gl-supported');
 
 var defaultMinZoom = 0;

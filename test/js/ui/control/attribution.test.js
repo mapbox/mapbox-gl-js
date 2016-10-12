@@ -3,7 +3,7 @@
 var test = require('tap').test;
 var window = require('../../../../js/util/window');
 var Map = require('../../../../js/ui/map');
-var AttributionControl = require('../../../../js/ui/control/attribution');
+var AttributionControl = require('../../../../js/ui/control/attribution_control');
 
 function createMap() {
     return new Map({
