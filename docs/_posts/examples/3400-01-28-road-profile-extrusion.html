@@ -34,22 +34,23 @@ map.on('load', function() {
         'source': 'roadProfile',
         'source-layer': 'road_profile_data',
         'paint': {
+            // Color each polygon extrusion with data-driven styles
             'fill-color': {
-                'property': 'g',
-                'type': 'exponential',
+                'property': 'g', //color by gradient
+                'type': 'exponential', //interpolate colors between min and max
                 'stops': [
-                    [-10, '#E4855C'],
-                    [10, '#97EA8B']
+                    [-10, '#E4855C'], // Red colors for negative gradients
+                    [10, '#97EA8B'] // Green colors for positive gradients
                 ]
             },
+            // Extrude each polygon to the height of the 'elevation' data property
             'fill-extrude-height': {
-                'property': 'e',
-                'type': 'identity'
+                'property': 'e', //use the e data property as the elevation
+                'type': 'identity' //use the value in the 'e' property as the extrude height
             },
-            'fill-opacity': 0.5
+            'fill-opacity': 0.5 //Lower opacity to prevent line-of-sight problems
         }
     });
-
-
 });
 </script>
+
