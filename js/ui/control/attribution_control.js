@@ -68,10 +68,10 @@ AttributionControl.prototype = util.inherit(Control, {
             return true;
         });
         this._container.innerHTML = attributions.join(' | ');
-        this._editLink = this._container.querySelector('.mapbox-improve-map')
     },
 
     _updateEditLink: function() {
+        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             var center = this._map.getCenter();
             this._editLink.href = 'https://www.mapbox.com/map-feedback/#/' +
