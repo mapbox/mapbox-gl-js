@@ -1,7 +1,7 @@
 --- 
 layout: example 
 category: example 
-title: Extrude a 3D profile.
+title: Extrude a 3D road profile.
 description: Create a 3D road or activity profile using fill-extrude-height.
 tags: 
   - layers 
@@ -24,20 +24,19 @@ map.on('load', function() {
     // source GeoJSON data for visual is at
     // https://gist.github.com/ryanbaumann/f196a84c4c5728d860db0fc7a19d0c9b
     map.addSource("roadProfile", {
-        'type': 'vector',
-        'url': 'mapbox://examples.ciu640p5o0ifh2pjwzwd6ga98-0h1qy'
+        'type': 'geojson',
+        'data': '{{site.baseurl}}/assets/data/3d-road-profile-example.geojson'
     });
 
     map.addLayer({
         'id': 'roadExtrude',
         'type': 'fill',
         'source': 'roadProfile',
-        'source-layer': 'road_profile_data',
         'paint': {
             // Color each polygon extrusion with data-driven styles
             'fill-color': {
                 'property': 'g', //color by gradient
-                'type': 'exponential', //interpolate colors between min and max
+                'type': 'exponential', //interpolate colors between stops
                 'stops': [
                     [-10, '#E4855C'], // Red colors for negative gradients
                     [10, '#97EA8B'] // Green colors for positive gradients
@@ -53,4 +52,5 @@ map.on('load', function() {
     });
 });
 </script>
+
 
