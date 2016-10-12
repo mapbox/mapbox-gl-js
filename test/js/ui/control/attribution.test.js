@@ -6,8 +6,9 @@ var Map = require('../../../../js/ui/map');
 var AttributionControl = require('../../../../js/ui/control/attribution_control');
 
 function createMap() {
+    var container = window.document.createElement('div');
     return new Map({
-        container: window.document.createElement('div'),
+        container: container,
         attributionControl: false,
         style: {
             version: 8,
@@ -54,5 +55,22 @@ test('AttributionControl dedupes attributions that are substrings of others', fu
             t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
             t.end();
         }
+    });
+});
+
+test('AttributionControl has the correct edit map link', function (t) {
+    var map = createMap();
+    var attribution = new AttributionControl({position: 'top-left'}).addTo(map);
+
+    map.on('load', function () {
+        map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});
+        map.on('data', function (event) {
+            if (event.dataType === 'source') {
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/1', 'edit link contains map location data');
+                map.setZoom(2);
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/3', 'edit link updates on mapmove');
+                t.end();
+            }
+        });
     });
 });

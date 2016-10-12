@@ -68,6 +68,8 @@ AttributionControl.prototype = util.inherit(Control, {
             return true;
         });
         this._container.innerHTML = attributions.join(' | ');
+        // remove old DOM node from _editLink
+        this._editLink = null;
     },
 
     _updateEditLink: function() {
