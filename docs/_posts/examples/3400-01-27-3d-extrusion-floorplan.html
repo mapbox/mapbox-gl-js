@@ -6,7 +6,6 @@ description: Create a 3D indoor map with the fill-extrude-height paint property.
 tags: 
   - layers 
 ---
-
 <div id='map'>
 </div>
 <script>
@@ -21,37 +20,36 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
-    // Geojson Data source used in vector tiles
+    // Geojson Data source used in vector tiles, documented at
     // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
     map.addSource("museumData", {
-        'type': 'vector',
-        'url': 'mapbox://examples.ciu5u9ge70ib62zqt844cu2al-5h6xr'
+        'type': 'geojson',
+        'data': '{{site.baseurl}}/assets/data/indoor-3d-map.geojson'
     });
 
     map.addLayer({
         'id': 'room-extrude',
         'type': 'fill',
         'source': 'museumData',
-        'source-layer': 'gljs_indoor_3d_example-2',
         'paint': {
-            // Color each polygon extrusion
+            // Color each polygon extrusion.
             'fill-color': {
-                //Get the fill-color from the source 'color' property
+                // Get the fill-color from the source 'color' property.
                 'property': 'color',
                 'type': 'identity'
             },
-            //Extrude each polygon to a given height in meters
+            // Extrude each polygon to a given height in meters.
             'fill-extrude-height': {
-                //Get the fill-extrude-height from the source 'height' property
+                // Get the fill-extrude-height from the source 'height' property.
                 'property': 'height',
                 'type': 'identity'
             },
-            //Start extruding a polygon at a given height.  This allows for "floating" objects.
-            //For example, extruding from fill-extrude-base : 10 to fill-extrude-height: 20 will 
-            //create a polygon floating above the map, starting at a height of 10 meters, extruded
-            //up to a max height of 20 meters.
+            // Start extruding a polygon at a given height.  This allows for "floating" objects.
+            // For example, extruding from fill-extrude-base : 10 to fill-extrude-height: 20 will
+            // create a polygon floating above the map, starting at a height of 10 meters, extruded
+            // up to a max height of 20 meters.
             'fill-extrude-base': {
-                //Get the fill-extrude-base from the source 'base_height' property
+                // Get the fill-extrude-base from the source 'base_height' property
                 'property': 'base_height',
                 'type': 'identity'
             },
@@ -59,5 +57,4 @@ map.on('load', function() {
         }
     });
 });
-
 </script>
