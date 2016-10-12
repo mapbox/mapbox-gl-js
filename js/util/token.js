@@ -2,6 +2,8 @@
 
 module.exports = resolveTokens;
 
+var stringFormat = require('string-format');
+
 /**
  * Replace tokens in a string template with values in an object
  *
@@ -11,7 +13,5 @@ module.exports = resolveTokens;
  * @private
  */
 function resolveTokens(properties, text) {
-    return text.replace(/{([^{}]+)}/g, function(match, key) {
-        return key in properties ? properties[key] : '';
-    });
+    return stringFormat(text, properties);
 }
