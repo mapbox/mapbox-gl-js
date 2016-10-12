@@ -26,6 +26,10 @@ AttributionControl.prototype = util.inherit(Control, {
         position: 'bottom-right'
     },
 
+    _editLink: {
+        href: 'https://www.mapbox.com/map-feedback/#/'
+    },
+
     onAdd: function(map) {
         var className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());
@@ -67,8 +71,10 @@ AttributionControl.prototype = util.inherit(Control, {
             }
             return true;
         });
-
         this._container.innerHTML = attributions.join(' | ');
+        if (this._editLink && this._editLink.href && document.querySelector('.mapbox-improve-map')) {
+            document.querySelector('.mapbox-improve-map').href = this._editLink.href;
+        }
     },
 
     _updateEditLink: function() {
