@@ -15,6 +15,7 @@ test('load tile', function(t) {
         window.useFakeXMLHttpRequest();
         var worker = new Worker(_self);
         worker['load tile'](0, {
+            type: 'vector',
             source: 'source',
             uid: 0,
             url: '/error' // Sinon fake server gives 404 responses by default

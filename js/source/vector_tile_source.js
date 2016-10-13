@@ -32,6 +32,7 @@ function VectorTileSource(id, options, dispatcher, eventedParent) {
 }
 
 VectorTileSource.prototype = util.inherit(Evented, {
+    type: 'vector',
     minzoom: 0,
     maxzoom: 22,
     scheme: 'xyz',
@@ -55,6 +56,7 @@ VectorTileSource.prototype = util.inherit(Evented, {
             coord: tile.coord,
             zoom: tile.coord.z,
             tileSize: this.tileSize * overscaling,
+            type: this.type,
             source: this.id,
             overscaling: overscaling,
             angle: this.map.transform.angle,
@@ -96,11 +98,11 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     abortTile: function(tile) {
-        this.dispatcher.send('abort tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('abort tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     },
 
     unloadTile: function(tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('remove tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 });

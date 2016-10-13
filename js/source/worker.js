@@ -7,6 +7,7 @@ var util = require('../util/util');
 var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
 var featureFilter = require('feature-filter');
+var assert = require('assert');
 
 module.exports = function createWorker(self) {
     return new Worker(self);
@@ -104,28 +105,28 @@ util.extend(Worker.prototype, {
     },
 
     'load tile': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).loadTile(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).loadTile(params, callback);
     },
 
     'reload tile': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).reloadTile(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     },
 
     'abort tile': function(mapId, params) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).abortTile(params);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).abortTile(params);
     },
 
     'remove tile': function(mapId, params) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).removeTile(params);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).removeTile(params);
     },
 
     'redo placement': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).redoPlacement(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     },
 
     /**
