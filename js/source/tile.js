@@ -129,6 +129,7 @@ Tile.prototype = {
         this.state = 'reloading';
 
         source.dispatcher.send('redo placement', {
+            type: source.type,
             uid: this.uid,
             source: source.id,
             angle: source.map.transform.angle,
