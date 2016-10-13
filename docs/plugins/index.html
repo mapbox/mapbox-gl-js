@@ -20,11 +20,10 @@ title: Plugins
     </div>
   </div>
   <div class='col12 quiet-scroll fill-light'>
-    <pre id='snippet-{{forloop.index}}' class='pad2 prettyprint'>{% if plugin.js %}&lt;script src='https://api.mapbox.com/mapbox-gl-js/plugins/{{plugin.prefix}}/v{{site.data.plugins.[plugin.prefix].latest}}/{{plugin.prefix}}.js'&gt;&lt;/script&gt;{% endif %}
-{% if plugin.css %}&lt;link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/{{plugin.prefix}}/v{{site.data.plugins.[plugin.prefix].latest}}/{{plugin.prefix}}.css' type='text/css' /&gt;{% endif %}</pre>
+    <pre id='snippet-{{forloop.index}}' class='pad2 prettyprint'>{% if plugin.js %}&lt;script src='https://api.mapbox.com/mapbox-gl-js/plugins/{{plugin.prefix}}/v{{site.data.plugins[plugin.prefix].latest}}/{{plugin.prefix}}.js'&gt;&lt;/script&gt;{% endif %}
+{% if plugin.css %}&lt;link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/{{plugin.prefix}}/v{{site.data.plugins[plugin.prefix].latest}}/{{plugin.prefix}}.css' type='text/css' /&gt;{% endif %}</pre>
   </div>
 </div>
 {% endfor %}
 </div>
 <script>prettyPrint();</script>
-
