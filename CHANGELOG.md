@@ -7,7 +7,7 @@
  * Add `identity` function type #3274
  * Add depth testing for symbols with `'pitch-alignment': 'map'` #3243
  * Add `dataloading` events for styles and sources #3306
- * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning:
+ * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning: #3355
 
 #### Performance Improvements
 
