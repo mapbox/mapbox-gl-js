@@ -13,7 +13,7 @@ module.exports = resolveTokens;
 function resolveTokens(properties, text, numericMultiplier) {
     return text.replace(/{([^{}]+)}/g, function(match, key) {
         var value = key in properties ? properties[key] : '';
-        if (typeof value === 'number' && numericMultiplier !== undefined) {
+        if (typeof value === 'number' && numericMultiplier != null) {
             value = Math.round(value * numericMultiplier) / numericMultiplier;
         }
         return value;

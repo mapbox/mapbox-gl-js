@@ -15,7 +15,8 @@ function resolveText(features, layoutProperties, codepoints) {
     var textFeatures = [];
     var textField = layoutProperties['text-field'];
     var transform = layoutProperties['text-transform'];
-    var numericMultiplier = Math.pow(10, layoutProperties['numeric-precision']);
+    var numericPrecision = layoutProperties['numeric-precision'];
+    var numericMultiplier = numericPrecision ? Math.pow(10, numericPrecision) : null;
 
     for (var i = 0, fl = features.length; i < fl; i++) {
         var text = resolveTokens(features[i].properties, textField, numericMultiplier);
