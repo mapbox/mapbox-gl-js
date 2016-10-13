@@ -1031,46 +1031,41 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @private
      */
     _render: function() {
-        try {
-            if (this.style && this._styleDirty) {
-                this._styleDirty = false;
-                this.style.update(this._classes, this._classOptions);
-                this._classOptions = null;
-                this.style._recalculate(this.transform.zoom);
-            }
+        if (this.style && this._styleDirty) {
+            this._styleDirty = false;
+            this.style.update(this._classes, this._classOptions);
+            this._classOptions = null;
+            this.style._recalculate(this.transform.zoom);
+        }
 
-            if (this.style && this._sourcesDirty) {
-                this._sourcesDirty = false;
-                this.style._updateSources(this.transform);
-            }
+        if (this.style && this._sourcesDirty) {
+            this._sourcesDirty = false;
+            this.style._updateSources(this.transform);
+        }
 
-            this.painter.render(this.style, {
-                debug: this.showTileBoundaries,
-                showOverdrawInspector: this._showOverdrawInspector,
-                vertices: this.vertices,
-                rotating: this.rotating,
-                zooming: this.zooming
-            });
+        this.painter.render(this.style, {
+            debug: this.showTileBoundaries,
+            showOverdrawInspector: this._showOverdrawInspector,
+            vertices: this.vertices,
+            rotating: this.rotating,
+            zooming: this.zooming
+        });
 
-            this.fire('render');
+        this.fire('render');
 
-            if (this.loaded() && !this._loaded) {
-                this._loaded = true;
-                this.fire('load');
-            }
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
 
-            this._frameId = null;
+        this._frameId = null;
 
-            if (!this.animationLoop.stopped()) {
-                this._styleDirty = true;
-            }
+        if (!this.animationLoop.stopped()) {
+            this._styleDirty = true;
+        }
 
-            if (this._sourcesDirty || this._repaint || this._styleDirty) {
-                this._rerender();
-            }
-
-        } catch (error) {
-            this.fire('error', {error: error});
+        if (this._sourcesDirty || this._repaint || this._styleDirty) {
+            this._rerender();
         }
 
         return this;

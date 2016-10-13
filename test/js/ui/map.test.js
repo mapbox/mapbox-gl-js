@@ -960,28 +960,6 @@ test('Map', function(t) {
             map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
-        t.test('logs errors that happen during render', function (t) {
-            var map = createMap({
-                style: {
-                    version: 8,
-                    sources: {},
-                    layers: []
-                }
-            });
-
-            map.on('render', function () {
-                throw new Error('in render');
-            });
-
-            map.on('error', function (event) {
-                t.equal(event.error.message, 'in render');
-                t.end();
-            });
-
-            map._rerender = function () {};
-            map._render();
-        });
-
         t.end();
     });
 
