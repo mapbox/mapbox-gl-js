@@ -225,6 +225,8 @@ Style.prototype = util.inherit(Evented, {
     },
 
     _recalculate: function(z) {
+        if (!this._loaded) return;
+
         for (var sourceId in this.sourceCaches)
             this.sourceCaches[sourceId].used = false;
 
