@@ -1,3 +1,26 @@
+## 0.26.0 (October 13 2016)
+
+#### New Features & Improvements
+
+ * Add `fill-extrude-height` and `fill-extrude-base` style properties (3d buildings) :cityscape: #3223
+ * Add customizable `colorSpace` interpolation to functions #3245
+ * Add `identity` function type #3274
+ * Add depth testing for symbols with `'pitch-alignment': 'map'` #3243
+ * Add `dataloading` events for styles and sources #3306
+ * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning:
+
+#### Performance Improvements
+
+ * Ensure removing style or source releases all tile resources #3359
+
+#### Bugfixes
+
+ * Fix bug causing an error when `Marker#setLngLat` is called #3294
+ * Fix bug causing incorrect coordinates in `touchend` on Android Chrome #3319
+ * Fix bug causing incorrect popup positioning at top of screen #3333
+ * Restore `tile` property to `data` events fired when a tile is removed #3328
+ * Fix bug causing "Improve this map" link to not preload map location #3356
+
 ## 0.25.1 (September 30 2016)
 
 #### Bugfixes
