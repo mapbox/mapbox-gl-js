@@ -513,7 +513,7 @@ SourceCache.prototype = util.inherit(Evented, {
         var ids = this.getIds();
         for (var i = 0; i < ids.length; i++) {
             var tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this);
+            tile.redoPlacement(this._source);
         }
     },
 
