@@ -53,6 +53,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setCenter([-74, 38]);
+     * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter: function(center, eventData) {
         this.jumpTo({center: center}, eventData);
@@ -68,6 +69,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy: function(offset, options, eventData) {
         this.panTo(this.transform.center,
@@ -181,6 +183,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Returns the map's current bearing (rotation).
      *
      * @returns {number} The map's current bearing, measured in degrees counter-clockwise from north.
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing: function() { return this.transform.bearing; },
 
@@ -285,6 +288,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds: function(bounds, options, eventData) {
 
@@ -393,6 +397,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires zoomend
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     easeTo: function(options, eventData) {
         this.stop();
@@ -544,6 +549,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *     return t;
      *   }
      * });
+     * @see [Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
+     * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
+     * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo: function(options, eventData) {
         // This method implements an “optimal path” animation, as detailed in:

@@ -36,6 +36,7 @@ module.exports = VideoSource;
  * ]);
  *
  * map.removeSource('some id');  // remove
+ * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 function VideoSource(id, options, dispatcher, eventedParent) {
     this.id = id;

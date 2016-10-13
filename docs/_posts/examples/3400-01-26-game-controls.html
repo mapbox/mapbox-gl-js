@@ -7,29 +7,7 @@ tags:
   - camera
 ---
 
-<style>
-    /* Dark attribution */
-    .mapboxgl-ctrl.mapboxgl-ctrl-attrib { background-color:rgba(0,0,0,0.5); }
-    .mapboxgl-ctrl.mapboxgl-ctrl-attrib a { color:#fff; }  
-
-    #instructions {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #fff;
-        padding: 10px;
-        border-radius: 3px;
-        position: absolute;
-        top: 50px;
-        width: 80%;
-        margin: 0 10%;
-        font-family: 'Open sans', sans-serif;
-        text-align: center;
-    }
-
-</style>
-
 <div id='map'></div>
-<div id='instructions'>Click on the map, then use the arrow keys to navigate the map.</div>
-
 
 <script>
     var map = new mapboxgl.Map({
@@ -44,39 +22,39 @@ tags:
 
     // pixels the map pans when the up or down arrow is clicked
     var deltaDistance = 100;
+
     // degrees the map rotates when the left or right arrow is clicked
     var deltaDegrees = 25;
 
-    var instructions = document.getElementById('instructions');
-    map.on('click', function() {
-        instructions.style.display = 'none';
-    });
-
-    function easeFunction(t) {
+    function easing(t) {
         return t * (2 - t);
     }
 
-    document.body.addEventListener('keydown', function(e) {
-        e.preventDefault();
-        if (e.which === 38) { // up
-            map.panBy([0, -deltaDistance], {
-                easing: easeFunction
-            });
-        } else if (e.which === 40) { // down
-            map.panBy([0, deltaDistance], {
-                easing: easeFunction
-            });
-        } else if (e.which === 37) { // left
-            map.easeTo({
-                bearing: map.getBearing() - deltaDegrees,
-                easing: easeFunction
-            });
-        } else if (e.which === 39) { // right
-            map.easeTo({
-                bearing: map.getBearing() + deltaDegrees,
-                easing: easeFunction
-            });
-        }
-    }, true);
+    map.on('load', function() {
+        map.getCanvas().focus();
+
+        map.getCanvas().addEventListener('keydown', function(e) {
+            e.preventDefault();
+            if (e.which === 38) { // up
+                map.panBy([0, -deltaDistance], {
+                    easing: easing
+                });
+            } else if (e.which === 40) { // down
+                map.panBy([0, deltaDistance], {
+                    easing: easing
+                });
+            } else if (e.which === 37) { // left
+                map.easeTo({
+                    bearing: map.getBearing() - deltaDegrees,
+                    easing: easing
+                });
+            } else if (e.which === 39) { // right
+                map.easeTo({
+                    bearing: map.getBearing() + deltaDegrees,
+                    easing: easing
+                });
+            }
+        }, true);
+    });
 
 </script>

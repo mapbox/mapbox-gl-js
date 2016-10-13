@@ -49,6 +49,9 @@ module.exports = GeoJSONSource;
  *       }
  *   }]
  * });
+ * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
+ * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  */
 function GeoJSONSource(id, options, dispatcher, eventedParent) {
     options = options || {};

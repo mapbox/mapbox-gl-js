@@ -19,6 +19,7 @@ var Popup = require('./popup');
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
+ * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
 function Marker(element, options) {
     this._offset = Point.convert(options && options.offset || [0, 0]);

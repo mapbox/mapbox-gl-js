@@ -17,6 +17,8 @@ module.exports = NavigationControl;
  * @example
  * var nav = new mapboxgl.NavigationControl({position: 'top-left'}); // position is optional
  * map.addControl(nav);
+ * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
+ * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
 function NavigationControl(options) {
     util.setOptions(this, options);

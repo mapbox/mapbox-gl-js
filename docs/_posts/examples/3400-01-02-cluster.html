@@ -38,6 +38,7 @@ map.on('load', function() {
         "id": "unclustered-points",
         "type": "symbol",
         "source": "earthquakes",
+        "filter": ["!has", "point_count"],
         "layout": {
             "icon-image": "marker-15"
         }

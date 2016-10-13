@@ -47,6 +47,7 @@ Object.defineProperty(mapboxgl, 'accessToken', {
  * @var {string} accessToken
  * @example
  * mapboxgl.accessToken = myAccessToken;
+ * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 
 /**
@@ -67,4 +68,5 @@ Object.defineProperty(mapboxgl, 'accessToken', {
  * @return {boolean}
  * @example
  * mapboxgl.supported() // = true
+ * @see [Check for browser support](https://www.mapbox.com/mapbox-gl-js/example/check-for-support/)
  */
