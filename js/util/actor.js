@@ -35,7 +35,7 @@ function Actor(target, parent, mapId) {
  * @private
  */
 Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
-    const id = callback ? this.mapId + ':' + this.callbackID++ : null;
+    const id = callback ? `${this.mapId}:${this.callbackID++}` : null;
     if (callback) this.callbacks[id] = callback;
     this.target.postMessage({
         targetMapId: targetMapId,

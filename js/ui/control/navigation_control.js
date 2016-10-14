@@ -32,12 +32,12 @@ NavigationControl.prototype = util.inherit(Control, {
     onAdd: function(map) {
         const className = 'mapboxgl-ctrl';
 
-        const container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        const container = this._container = DOM.create('div', `${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
-        this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(className + '-icon ' + className + '-zoom-out', map.zoomOut.bind(map));
-        this._compass = this._createButton(className + '-icon ' + className + '-compass', map.resetNorth.bind(map));
+        this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, map.zoomOut.bind(map));
+        this._compass = this._createButton(`${className}-icon ${className}-compass`, map.resetNorth.bind(map));
 
         this._compassArrow = DOM.create('span', 'arrow', this._compass);
 
@@ -94,7 +94,7 @@ NavigationControl.prototype = util.inherit(Control, {
     },
 
     _rotateCompassArrow: function() {
-        const rotate = 'rotate(' + (this._map.transform.angle * (180 / Math.PI)) + 'deg)';
+        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
         this._compassArrow.style.transform = rotate;
     }
 });

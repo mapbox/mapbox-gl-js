@@ -21,7 +21,7 @@ module.exports = function parseColor(input) {
 
         if (!cache[input]) {
             const rgba = parseColorString(input);
-            if (!rgba) { throw new Error('Invalid color ' + input); }
+            if (!rgba) { throw new Error(`Invalid color ${input}`); }
 
             // GL expects all components to be in the range [0, 1] and to be
             // multipled by the alpha value.
@@ -39,6 +39,6 @@ module.exports = function parseColor(input) {
         return input;
 
     } else {
-        throw new Error('Invalid color ' + input);
+        throw new Error(`Invalid color ${input}`);
     }
 };

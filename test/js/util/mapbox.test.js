@@ -45,7 +45,7 @@ test("mapbox", function(t) {
         });
 
         t.test('uses provided query parameters', function(t) {
-            t.equal(mapbox.normalizeSourceURL(mapboxSource + '?foo=bar', 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&access_token=token&secure');
+            t.equal(mapbox.normalizeSourceURL(`${mapboxSource}?foo=bar`, 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&access_token=token&secure');
             t.end();
         });
 

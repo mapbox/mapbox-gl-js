@@ -22,7 +22,7 @@ module.exports = function run() {
 
     const evented = util.extend({}, Evented);
 
-    const stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
+    const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
     ajax.getJSON(stylesheetURL, function(err, stylesheet) {
         if (err) return evented.fire('error', {error: err});
 
@@ -59,7 +59,7 @@ module.exports = function run() {
                     if (err) return evented.fire('error', { error: err });
                     timeSum += time;
                     timeCount++;
-                    evented.fire('log', { message: formatNumber(time) + ' ms' });
+                    evented.fire('log', { message: `${formatNumber(time)} ms` });
                     callback();
                 });
             }, function(err) {
@@ -69,7 +69,7 @@ module.exports = function run() {
                 } else {
                     const timeAverage = timeSum / timeCount;
                     evented.fire('end', {
-                        message: formatNumber(timeAverage) + ' ms',
+                        message: `${formatNumber(timeAverage)} ms`,
                         score: timeAverage
                     });
                 }
@@ -130,7 +130,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
     const layerFamilies = createLayerFamilies(stylesheet.layers);
 
     util.asyncAll(coordinates, function(coordinate, eachCallback) {
-        const url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
+        const url = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
 
         const workerTile = new WorkerTile({
             coord: coordinate,

@@ -179,19 +179,19 @@ function createEmplaceBack(members, bytesPerElement) {
         // var o{SIZE} = i * ROUNDED(bytesPerElement / size);
         if (usedTypeSizes.indexOf(size) < 0) {
             usedTypeSizes.push(size);
-            body += 'var o' + size.toFixed(0) + ' = i * ' + (bytesPerElement / size).toFixed(0) + ';\n';
+            body += `var o${size.toFixed(0)} = i * ${(bytesPerElement / size).toFixed(0)};\n`;
         }
 
         for (let c = 0; c < member.components; c++) {
             // arguments v0, v1, v2, ... are, in order, the components of
             // member 0, then the components of member 1, etc.
-            const argName = 'v' + argNames.length;
+            const argName = `v${argNames.length}`;
             // The index for `member` component `c` into the appropriate type array is:
             // this.{TYPE}[o{SIZE} + MEMBER_OFFSET + {c}] = v{X}
             // where MEMBER_OFFSET = ROUND(member.offset / size) is the per-element
             // offset of this member into the array
-            const index = 'o' + size.toFixed(0) + ' + ' + (member.offset / size + c).toFixed(0);
-            body += 'this.' + getArrayViewName(member.type) + '[' + index + '] = ' + argName + ';\n';
+            const index = `o${size.toFixed(0)} + ${(member.offset / size + c).toFixed(0)}`;
+            body += `this.${getArrayViewName(member.type)}[${index}] = ${argName};\n`;
             argNames.push(argName);
         }
     }
@@ -202,19 +202,19 @@ function createEmplaceBack(members, bytesPerElement) {
 }
 
 function createMemberComponentString(member, component) {
-    const elementOffset = 'this._pos' + sizeOf(member.type).toFixed(0);
+    const elementOffset = `this._pos${sizeOf(member.type).toFixed(0)}`;
     const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
-    const index = elementOffset + ' + ' + componentOffset;
-    return 'this._structArray.' + getArrayViewName(member.type) + '[' + index + ']';
+    const index = `${elementOffset} + ${componentOffset}`;
+    return `this._structArray.${getArrayViewName(member.type)}[${index}]`;
 
 }
 
 function createGetter(member, c) {
-    return new Function([], 'return ' + createMemberComponentString(member, c) + ';');
+    return new Function([], `return ${createMemberComponentString(member, c)};`);
 }
 
 function createSetter(member, c) {
-    return new Function(['x'], createMemberComponentString(member, c) + ' = x;');
+    return new Function(['x'], `${createMemberComponentString(member, c)} = x;`);
 }
 
 /**

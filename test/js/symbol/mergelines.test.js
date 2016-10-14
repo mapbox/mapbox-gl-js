@@ -18,7 +18,7 @@ function testLines(coords) {
 
 function merge(lines, letters) {
     const features = new Array(lines.length);
-    letters = letters || features.join('a') + 'a';
+    letters = letters || `${features.join('a')}a`;
     return mergeLines(features, letters.split(''), lines).geometries.filter(function (a) { return a !== null; });
 }
 

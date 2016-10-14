@@ -397,7 +397,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
             return this;
 
-        } else throw new Error('minZoom must be between ' + defaultMinZoom + ' and the current maxZoom, inclusive');
+        } else throw new Error(`minZoom must be between ${defaultMinZoom} and the current maxZoom, inclusive`);
     },
 
     /**
@@ -421,7 +421,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
             return this;
 
-        } else throw new Error('maxZoom must be between the current minZoom and ' + defaultMaxZoom + ', inclusive');
+        } else throw new Error(`maxZoom must be between the current minZoom and ${defaultMaxZoom}, inclusive`);
     },
     /**
      * Returns a [`Point`](#Point) representing pixel coordinates, relative to the map's `container`,
@@ -956,7 +956,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const corners = this._controlCorners = {};
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
-            corners[pos] = DOM.create('div', 'mapboxgl-ctrl-' + pos, controlContainer);
+            corners[pos] = DOM.create('div', `mapboxgl-ctrl-${pos}`, controlContainer);
         });
     },
 
@@ -968,8 +968,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._canvas.height = pixelRatio * height;
 
         // Maintain the same canvas size, potentially downscaling it for HiDPI displays
-        this._canvas.style.width = width + 'px';
-        this._canvas.style.height = height + 'px';
+        this._canvas.style.width = `${width}px`;
+        this._canvas.style.height = `${height}px`;
     },
 
     _setupPainter: function() {

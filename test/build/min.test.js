@@ -12,6 +12,6 @@ test('production build removes asserts', function(t) {
 });
 
 test('trims package.json assets', function(t) {
-    t.assert(minBundle.indexOf('module.exports={"version":"' + pkg.version + '"}') !== -1);
+    t.assert(minBundle.indexOf(`module.exports={"version":"${pkg.version}"}`) !== -1);
     t.end();
 });

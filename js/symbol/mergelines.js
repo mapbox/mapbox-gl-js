@@ -39,7 +39,7 @@ module.exports = function (features, textFeatures, geometries) {
 
     function getKey(text, geom, onRight) {
         const point = onRight ? geom[0][geom[0].length - 1] : geom[0][0];
-        return text + ':' + point.x + ':' + point.y;
+        return `${text}:${point.x}:${point.y}`;
     }
 
     for (k = 0; k < features.length; k++) {

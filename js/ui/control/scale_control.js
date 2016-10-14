@@ -78,7 +78,7 @@ function setScale(scale, maxWidth, maxDistance, unit) {
         unit = 'km';
     }
 
-    scale.style.width = maxWidth * ratio + 'px';
+    scale.style.width = `${maxWidth * ratio}px`;
     scale.innerHTML = distance + unit;
 }
 
@@ -98,7 +98,7 @@ function getDistance(latlng1, latlng2) {
 }
 
 function getRoundNum(num) {
-    let pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
+    let pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1),
         d = num / pow10;
 
     d = d >= 10 ? 10 :

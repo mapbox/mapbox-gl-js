@@ -70,8 +70,8 @@ module.exports = function (polygonRings, precision, debug) {
     }
 
     if (debug) {
-        console.log('num probes: ' + numProbes);
-        console.log('best distance: ' + bestCell.d);
+        console.log(`num probes: ${numProbes}`);
+        console.log(`best distance: ${bestCell.d}`);
     }
 
     return bestCell.p;

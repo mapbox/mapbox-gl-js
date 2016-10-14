@@ -13,7 +13,7 @@ function makeAPIURL(path, query, accessToken) {
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
 
-    let url = config.API_URL + path + (query ? '?' + query : '');
+    let url = config.API_URL + path + (query ? `?${query}` : '');
 
     if (config.REQUIRE_ACCESS_TOKEN) {
         if (accessToken[0] === 's') {
@@ -21,7 +21,7 @@ function makeAPIURL(path, query, accessToken) {
                 'See https://www.mapbox.com/developers/api/#access-tokens');
         }
 
-        url += (query ? '&' : '?') + 'access_token=' + accessToken;
+        url += `${query ? '&' : '?'}access_token=${accessToken}`;
     }
 
     return url;
@@ -38,7 +38,7 @@ module.exports.normalizeStyleURL = function(url, accessToken) {
         return url;
     } else {
         return makeAPIURL(
-            '/styles/v1' + urlObject.pathname,
+            `/styles/v1${urlObject.pathname}`,
             urlObject.query,
             accessToken
         );
@@ -57,11 +57,11 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
 
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
-        return makeAPIURL(
-            '/v4/' + sources + '.json',
+        return `${makeAPIURL(
+            `/v4/${sources}.json`,
             urlObject.query,
             accessToken
-        ) + '&secure';
+        )}&secure`;
     }
 
 };
@@ -74,7 +74,7 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
     } else {
         const user = urlObject.pathname.split('/')[1];
         return makeAPIURL(
-            '/fonts/v1/' + user + '/{fontstack}/{range}.pbf',
+            `/fonts/v1/${user}/{fontstack}/{range}.pbf`,
             urlObject.query,
             accessToken
         );
@@ -89,7 +89,7 @@ module.exports.normalizeSpriteURL = function(url, format, extension, accessToken
         return URL.format(urlObject);
     } else {
         return makeAPIURL(
-            '/styles/v1' + urlObject.pathname + '/sprite' + format + extension,
+            `/styles/v1${urlObject.pathname}/sprite${format}${extension}`,
             urlObject.query,
             accessToken
         );

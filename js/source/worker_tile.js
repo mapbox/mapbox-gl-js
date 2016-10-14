@@ -84,9 +84,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             const sourceLayer = data.layers[sourceLayerId];
             if (sourceLayer.version === 1) {
                 util.warnOnce(
-                    'Vector tile source "' + this.source + '" layer "' +
-                    sourceLayerId + '" does not use vector tile spec v2 ' +
-                    'and therefore may have some rendering errors.'
+                    `Vector tile source "${this.source}" layer "${
+                    sourceLayerId}" does not use vector tile spec v2 ` +
+                    `and therefore may have some rendering errors.`
                 );
             }
             sortLayerIntoBuckets(sourceLayer, bucketsBySourceLayer[sourceLayerId]);

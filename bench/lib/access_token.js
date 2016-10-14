@@ -12,7 +12,7 @@ localStorage.setItem('accessToken', accessToken);
 module.exports = accessToken;
 
 function getURLParameter(name) {
-    const regexp = new RegExp('[?&]' + name + '=([^&#]*)', 'i');
+    const regexp = new RegExp(`[?&]${name}=([^&#]*)`, 'i');
     const output = regexp.exec(window.location.href);
     return output && output[1];
 }

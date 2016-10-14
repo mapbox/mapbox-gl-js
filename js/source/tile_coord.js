@@ -29,7 +29,7 @@ function TileCoord(z, x, y, w) {
 }
 
 TileCoord.prototype.toString = function() {
-    return this.z + "/" + this.x + "/" + this.y;
+    return `${this.z}/${this.x}/${this.y}`;
 };
 
 TileCoord.prototype.toCoordinate = function(sourceMaxZoom) {

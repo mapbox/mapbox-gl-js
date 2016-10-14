@@ -195,7 +195,7 @@ LngLatBounds.prototype = {
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
      */
     toString: function () {
-        return 'LngLatBounds(' + this._sw.toString() + ', ' + this._ne.toString() + ')';
+        return `LngLatBounds(${this._sw.toString()}, ${this._ne.toString()})`;
     }
 };
 

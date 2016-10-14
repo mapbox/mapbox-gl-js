@@ -10,7 +10,7 @@ module.exports = function() {
 
     const mapsOnPage = 6;
 
-    evented.fire('log', { message: 'Creating ' + mapsOnPage + ' maps' });
+    evented.fire('log', { message: `Creating ${mapsOnPage} maps` });
 
     let loaded = 0;
     const maps = [];
@@ -36,7 +36,7 @@ module.exports = function() {
                 maps[i].remove();
             }
             evented.fire('end', {
-                message: formatNumber(duration) + ' ms',
+                message: `${formatNumber(duration)} ms`,
                 score: duration
             });
             done();

@@ -46,7 +46,7 @@ module.exports = function() {
                 callback();
             }, function() {
                 evented.fire('log', {
-                    message: (zoomSum / zoomCount).toFixed(2) + ' ms at zoom ' + zoomLevel
+                    message: `${(zoomSum / zoomCount).toFixed(2)} ms at zoom ${zoomLevel}`
                 });
                 map.remove();
                 callback();
@@ -58,7 +58,7 @@ module.exports = function() {
     function done() {
         const average = sum / count;
         evented.fire('end', {
-            message: (average).toFixed(2) + ' ms',
+            message: `${(average).toFixed(2)} ms`,
             score: average
         });
     }

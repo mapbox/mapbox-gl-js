@@ -59,7 +59,7 @@ GlyphAtlas.prototype.getRects = function() {
 GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     if (!glyph) return null;
 
-    const key = name + "#" + glyph.id;
+    const key = `${name}#${glyph.id}`;
 
     // The glyph is already in this texture.
     if (this.index[key]) {
