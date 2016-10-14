@@ -25,5 +25,5 @@ module.exports = function(sourceCache, data, callback) {
 };
 
 function average(array) {
-    return array.reduce(function (sum, value) { return sum + value; }, 0) / array.length;
+    return array.reduce((sum, value) => { return sum + value; }, 0) / array.length;
 }

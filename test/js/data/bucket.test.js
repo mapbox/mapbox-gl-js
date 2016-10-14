@@ -5,7 +5,7 @@ const Bucket = require('../../../js/data/bucket');
 const util = require('../../../js/util/util');
 const StyleLayer = require('../../../js/style/style_layer');
 
-test('Bucket', function(t) {
+test('Bucket', (t) => {
 
     function createClass(options) {
         function Class() {
@@ -76,7 +76,7 @@ test('Bucket', function(t) {
             type: 'circle',
             paint: dataDrivenPaint
         }]);
-        const layers = serializedLayers.map(function(serializedLayer) {
+        const layers = serializedLayers.map((serializedLayer) => {
             const styleLayer = new StyleLayer(serializedLayer);
             styleLayer.updatePaintTransitions([], {}, {});
             return styleLayer;
@@ -91,7 +91,7 @@ test('Bucket', function(t) {
         });
     }
 
-    t.test('add features', function(t) {
+    t.test('add features', (t) => {
         const bucket = create();
 
         bucket.features = [createFeature(17, 42)];
@@ -123,7 +123,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('add features, multiple layers', function(t) {
+    t.test('add features, multiple layers', (t) => {
         const bucket = create({layers: [
             { id: 'one', type: 'circle', paint: dataDrivenPaint },
             { id: 'two', type: 'circle', paint: dataDrivenPaint }
@@ -143,7 +143,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('add features, disabled attribute', function(t) {
+    t.test('add features, disabled attribute', (t) => {
         const bucket = create({
             paintAttributes: [{
                 name: 'a_map',
@@ -169,7 +169,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('add features, array type attribute', function(t) {
+    t.test('add features, array type attribute', (t) => {
         const bucket = create({
             paintAttributes: [],
             layoutAttributes: [{
@@ -187,7 +187,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('reset buffers', function(t) {
+    t.test('reset buffers', (t) => {
         const bucket = create();
 
         bucket.features = [createFeature(17, 42)];
@@ -200,7 +200,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('trimArrays', function(t) {
+    t.test('trimArrays', (t) => {
         const bucket = create();
 
         bucket.createArrays();
@@ -215,7 +215,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('isEmpty', function(t) {
+    t.test('isEmpty', (t) => {
         const bucket = create();
         t.ok(bucket.isEmpty());
 
@@ -229,7 +229,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('getTransferables', function(t) {
+    t.test('getTransferables', (t) => {
         const bucket = create();
         bucket.features = [createFeature(17, 42)];
         bucket.populateArrays();
@@ -246,7 +246,7 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('add features after resetting buffers', function(t) {
+    t.test('add features after resetting buffers', (t) => {
         const bucket = create();
 
         bucket.features = [createFeature(1, 5)];
@@ -281,13 +281,13 @@ test('Bucket', function(t) {
         t.end();
     });
 
-    t.test('layout properties', function(t) {
+    t.test('layout properties', (t) => {
         const bucket = create();
         t.equal(bucket.layer.layout.visibility, 'visible');
         t.end();
     });
 
-    t.test('add features', function(t) {
+    t.test('add features', (t) => {
         const bucket = create();
 
         bucket.features = [createFeature(17, 42)];

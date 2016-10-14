@@ -4,8 +4,8 @@ const test = require('mapbox-gl-js-test').test;
 const Light = require('../../../js/style/light');
 const spec = require('../../../js/style/style_spec').$root.light;
 
-test('Light', function(t) {
-    t.test('creates default light with no options', function (t) {
+test('Light', (t) => {
+    t.test('creates default light with no options', (t) => {
         const light = new Light({});
 
         for (const key in spec) {
@@ -15,7 +15,7 @@ test('Light', function(t) {
         t.end();
     });
 
-    t.test('instantiates light correctly with options', function(t) {
+    t.test('instantiates light correctly with options', (t) => {
         const light = new Light({
             anchor: 'map',
             position: [2, 30, 30],
@@ -33,7 +33,7 @@ test('Light', function(t) {
     t.end();
 });
 
-test('Light#set', function(t) {
+test('Light#set', (t) => {
     const light = new Light({});
 
     t.equal(light.getLightProperty('color'), '#ffffff');
@@ -45,7 +45,7 @@ test('Light#set', function(t) {
     t.end();
 });
 
-test('Light#getLight', function(t) {
+test('Light#getLight', (t) => {
     const light = new Light({});
 
     const defaults = {};
@@ -57,7 +57,7 @@ test('Light#getLight', function(t) {
     t.end();
 });
 
-test('Light#getLightProperty', function(t) {
+test('Light#getLightProperty', (t) => {
     const light = new Light({
         intensity: {
             stops: [[16, 0.2], [17, 0.8]]
@@ -73,7 +73,7 @@ test('Light#getLightProperty', function(t) {
     t.end();
 });
 
-test('Light#getLightValue', function(t) {
+test('Light#getLightValue', (t) => {
     const light = new Light({
         intensity: {
             stops: [[16, 0.2], [17, 0.8]]
@@ -89,7 +89,7 @@ test('Light#getLightValue', function(t) {
     t.end();
 });
 
-test('Light#setLight', function(t) {
+test('Light#setLight', (t) => {
     const light = new Light({});
     light.setLight({ color: 'red', "color-transition": { duration: 3000 }});
     light.updateLightTransitions({ transition: true }, null, createAnimationLoop());
@@ -99,7 +99,7 @@ test('Light#setLight', function(t) {
     t.end();
 });
 
-test('Light#recalculate', function(t) {
+test('Light#recalculate', (t) => {
     const light = new Light({
         intensity: {
             stops: [[16, 0.2], [17, 0.8]]

@@ -14,7 +14,7 @@ module.exports = function(options, callback) {
 
         if (tileJSON.vector_layers) {
             result.vectorLayers = tileJSON.vector_layers;
-            result.vectorLayerIds = result.vectorLayers.map(function(layer) { return layer.id; });
+            result.vectorLayerIds = result.vectorLayers.map((layer) => { return layer.id; });
         }
 
         callback(null, result);

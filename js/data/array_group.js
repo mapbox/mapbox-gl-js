@@ -29,7 +29,7 @@ function ArrayGroup(arrayTypes) {
     const ElementArrayType2 = arrayTypes.elementArrayType2;
     if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
-    this.paintVertexArrays = util.mapObject(arrayTypes.paintVertexArrayTypes, function (PaintVertexArrayType) {
+    this.paintVertexArrays = util.mapObject(arrayTypes.paintVertexArrayTypes, (PaintVertexArrayType) => {
         return new PaintVertexArrayType();
     });
 }
@@ -71,7 +71,7 @@ ArrayGroup.prototype.serialize = function() {
         layoutVertexArray: this.layoutVertexArray.serialize(),
         elementArray: this.elementArray && this.elementArray.serialize(),
         elementArray2: this.elementArray2 && this.elementArray2.serialize(),
-        paintVertexArrays: util.mapObject(this.paintVertexArrays, function(array) {
+        paintVertexArrays: util.mapObject(this.paintVertexArrays, (array) => {
             return array.serialize();
         })
     };

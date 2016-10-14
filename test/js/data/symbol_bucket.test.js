@@ -58,7 +58,7 @@ function bucketSetup() {
 }
 
 
-test('SymbolBucket', function(t) {
+test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
 
@@ -77,10 +77,10 @@ test('SymbolBucket', function(t) {
 });
 
 
-test('SymbolBucket integer overflow', function(t) {
+test('SymbolBucket integer overflow', (t) => {
     const bucket = bucketSetup();
     let numWarnings = 0;
-    t.stub(util, 'warnOnce', function(warning) {
+    t.stub(util, 'warnOnce', (warning) => {
         if (warning.includes('Too many symbols being rendered in a tile.') || warning.includes('Too many glyphs being rendered in a tile.')) numWarnings++;
     });
     // save correct value of MAX_QUADS

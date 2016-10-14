@@ -33,7 +33,7 @@ interpolate.color = function(from, to, t) {
 };
 
 interpolate.array = function(from, to, t) {
-    return from.map(function(d, i) {
+    return from.map((d, i) => {
         return interpolate(d, to[i], t);
     });
 };

@@ -4,8 +4,8 @@ const test = require('mapbox-gl-js-test').test;
 const QueryFeatures = require('../../../js/source/query_features.js');
 const SourceCache = require('../../../js/source/source_cache.js');
 
-test('QueryFeatures#rendered', function (t) {
-    t.test('returns empty object if source returns no tiles', function (t) {
+test('QueryFeatures#rendered', (t) => {
+    t.test('returns empty object if source returns no tiles', (t) => {
         const mockSourceCache = { tilesIn: function () { return []; } };
         const result = QueryFeatures.rendered(mockSourceCache);
         t.deepEqual(result, []);
@@ -15,8 +15,8 @@ test('QueryFeatures#rendered', function (t) {
     t.end();
 });
 
-test('QueryFeatures#source', function (t) {
-    t.test('returns empty result when source has no features', function (t) {
+test('QueryFeatures#source', (t) => {
+    t.test('returns empty result when source has no features', (t) => {
         const sourceCache = new SourceCache('test', {
             type: 'geojson',
             data: { type: 'FeatureCollection', features: [] }

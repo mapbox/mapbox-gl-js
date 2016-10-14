@@ -59,7 +59,7 @@ VectorTileWorkerSource.prototype = {
             if (!vectorTile) return callback(null, null);
 
             workerTile.vectorTile = vectorTile;
-            workerTile.parse(vectorTile, this.styleLayers.getLayerFamilies(), this.actor, function (err, result, transferrables) {
+            workerTile.parse(vectorTile, this.styleLayers.getLayerFamilies(), this.actor, (err, result, transferrables) => {
                 if (err) return callback(err);
 
                 // Not transferring rawTileData because the worker needs to retain its copy.

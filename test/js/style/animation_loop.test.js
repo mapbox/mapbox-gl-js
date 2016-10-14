@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const AnimationLoop = require('../../../js/style/animation_loop');
 
-test('animationloop', function(t) {
+test('animationloop', (t) => {
     const loop = new AnimationLoop();
     t.equal(loop.stopped(), true, 'starts stopped');
     t.equal(loop.n, 0, 'starts with zero animations');

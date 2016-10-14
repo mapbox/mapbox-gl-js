@@ -97,7 +97,7 @@ const BenchmarksView = React.createClass({
                     className={results.status === 'waiting' ? 'quiet' : ''}>
 
                     <h2 className='space-bottom'>{name} on {version}</h2>
-                {results.logs.map(function(log, index) {
+                {results.logs.map((log, index) => {
                     return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
                 })}
             </div>
@@ -139,12 +139,12 @@ const BenchmarksView = React.createClass({
     componentDidMount: function() {
         const that = this;
 
-        asyncSeries(Object.keys(that.state.results), function(name, callback) {
-            asyncSeries(Object.keys(that.state.results[name]), function(version, callback) {
+        asyncSeries(Object.keys(that.state.results), (name, callback) => {
+            asyncSeries(Object.keys(that.state.results[name]), (version, callback) => {
                 that.scrollToBenchmark(name, version);
                 that.runBenchmark(name, version, callback);
             }, callback);
-        }, function(err) {
+        }, (err) => {
             if (err) throw err;
         });
     },
@@ -169,15 +169,15 @@ const BenchmarksView = React.createClass({
         this.scrollToBenchmark(name, version);
         log('dark', 'starting');
 
-        setTimeout(function() {
+        setTimeout(() => {
             const emitter = that.props.benchmarks[name][version]();
 
-            emitter.on('log', function(event) {
+            emitter.on('log', (event) => {
                 log(event.color, event.message);
 
             });
 
-            emitter.on('end', function(event) {
+            emitter.on('end', (event) => {
                 results.message = event.message;
                 results.status = 'ended';
                 log('green', event.message);
@@ -185,7 +185,7 @@ const BenchmarksView = React.createClass({
 
             });
 
-            emitter.on('error', function(event) {
+            emitter.on('error', (event) => {
                 results.status = 'errored';
                 log('red', event.error);
                 callback();
@@ -236,7 +236,7 @@ ReactDOM.render(
 
 function asyncSeries(array, iterator, callback) {
     if (array.length) {
-        iterator(array[0], function(err) {
+        iterator(array[0], (err) => {
             if (err) callback(err);
             else asyncSeries(array.slice(1), iterator, callback);
         });

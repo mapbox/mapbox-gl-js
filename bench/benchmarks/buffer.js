@@ -23,7 +23,7 @@ module.exports = function run() {
     const evented = util.extend({}, Evented);
 
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
-    ajax.getJSON(stylesheetURL, function(err, stylesheet) {
+    ajax.getJSON(stylesheetURL, (err, stylesheet) => {
         if (err) return evented.fire('error', {error: err});
 
         evented.fire('log', {
@@ -31,7 +31,7 @@ module.exports = function run() {
             color: 'dark'
         });
 
-        preloadAssets(stylesheet, function(err, assets) {
+        preloadAssets(stylesheet, (err, assets) => {
             if (err) return evented.fire('error', {error: err});
 
             evented.fire('log', {
@@ -54,15 +54,15 @@ module.exports = function run() {
             let timeSum = 0;
             let timeCount = 0;
 
-            asyncTimesSeries(SAMPLE_COUNT, function(callback) {
-                runSample(stylesheet, getGlyphs, getIcons, getTile, function(err, time) {
+            asyncTimesSeries(SAMPLE_COUNT, (callback) => {
+                runSample(stylesheet, getGlyphs, getIcons, getTile, (err, time) => {
                     if (err) return evented.fire('error', { error: err });
                     timeSum += time;
                     timeCount++;
                     evented.fire('log', { message: `${formatNumber(time)} ms` });
                     callback();
                 });
-            }, function(err) {
+            }, (err) => {
                 if (err) {
                     evented.fire('error', { error: err });
 
@@ -90,35 +90,35 @@ function preloadAssets(stylesheet, callback) {
 
     const style = new Style(stylesheet);
 
-    style.on('style.load', function() {
+    style.on('style.load', () => {
         function getGlyphs(params, callback) {
-            style['get glyphs'](0, params, function(err, glyphs) {
+            style['get glyphs'](0, params, (err, glyphs) => {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
                 callback(err, glyphs);
             });
         }
 
         function getIcons(params, callback) {
-            style['get icons'](0, params, function(err, icons) {
+            style['get icons'](0, params, (err, icons) => {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
         }
 
         function getTile(url, callback) {
-            ajax.getArrayBuffer(url, function(err, response) {
+            ajax.getArrayBuffer(url, (err, response) => {
                 assets.tiles[url] = response;
                 callback(err, response);
             });
         }
 
-        runSample(stylesheet, getGlyphs, getIcons, getTile, function(err) {
+        runSample(stylesheet, getGlyphs, getIcons, getTile, (err) => {
             style._remove();
             callback(err, assets);
         });
     });
 
-    style.on('error', function(event) {
+    style.on('error', (event) => {
         callback(event.error);
     });
 
@@ -129,7 +129,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
 
     const layerFamilies = createLayerFamilies(stylesheet.layers);
 
-    util.asyncAll(coordinates, function(coordinate, eachCallback) {
+    util.asyncAll(coordinates, (coordinate, eachCallback) => {
         const url = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
 
         const workerTile = new WorkerTile({
@@ -146,7 +146,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
 
         const actor = {
             send: function(action, params, sendCallback) {
-                setTimeout(function() {
+                setTimeout(() => {
                     if (action === 'get icons') {
                         getIcons(params, sendCallback);
                     } else if (action === 'get glyphs') {
@@ -156,15 +156,15 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
             }
         };
 
-        getTile(url, function(err, response) {
+        getTile(url, (err, response) => {
             if (err) throw err;
             const data = new VT.VectorTile(new Protobuf(response));
-            workerTile.parse(data, layerFamilies, actor, function(err) {
+            workerTile.parse(data, layerFamilies, actor, (err) => {
                 if (err) return callback(err);
                 eachCallback();
             });
         });
-    }, function(err) {
+    }, (err) => {
         const timeEnd = performance.now();
         callback(err, timeEnd - timeStart);
     });
@@ -172,7 +172,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
 
 function asyncTimesSeries(times, work, callback) {
     if (times > 0) {
-        work(function(err) {
+        work((err) => {
             if (err) callback(err);
             else asyncTimesSeries(times - 1, work, callback);
         });

@@ -48,7 +48,7 @@ function suppressClick(e) {
 }
 exports.suppressClick = function() {
     window.addEventListener('click', suppressClick, true);
-    window.setTimeout(function() {
+    window.setTimeout(() => {
         window.removeEventListener('click', suppressClick, true);
     }, 0);
 };

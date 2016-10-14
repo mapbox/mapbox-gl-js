@@ -5,7 +5,7 @@ const Hash = require('../../../js/ui/hash');
 const window = require('../../../js/util/window');
 const Map = require('../../../js/ui/map');
 
-test('hash', function(t) {
+test('hash', (t) => {
     function createHash() {
         return new Hash();
     }
@@ -18,7 +18,7 @@ test('hash', function(t) {
     }
 
 
-    t.test('#addTo', function(t) {
+    t.test('#addTo', (t) => {
         const map = createMap();
         const hash = createHash();
 
@@ -30,7 +30,7 @@ test('hash', function(t) {
         t.end();
     });
 
-    t.test('#remove', function(t) {
+    t.test('#remove', (t) => {
         const map = createMap();
         const hash = createHash()
             .addTo(map);
@@ -43,7 +43,7 @@ test('hash', function(t) {
         t.end();
     });
 
-    t.test('#_onHashChange', function(t) {
+    t.test('#_onHashChange', (t) => {
         const map = createMap();
         const hash = createHash()
             .addTo(map);
@@ -73,7 +73,7 @@ test('hash', function(t) {
         t.end();
     });
 
-    t.test('#_updateHash', function(t) {
+    t.test('#_updateHash', (t) => {
         function getHash() {
             return window.location.hash.split('/');
         }

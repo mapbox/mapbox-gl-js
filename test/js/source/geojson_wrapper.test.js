@@ -3,9 +3,9 @@
 const test = require('mapbox-gl-js-test').test;
 const Wrapper = require('../../../js/source/geojson_wrapper');
 
-test('geojsonwrapper', function(t) {
+test('geojsonwrapper', (t) => {
 
-    t.test('linestring', function(t) {
+    t.test('linestring', (t) => {
         const features = [{
             type: 2,
             geometry: [[[0, 0], [10, 10]]],
@@ -23,7 +23,7 @@ test('geojsonwrapper', function(t) {
         t.end();
     });
 
-    t.test('point', function(t) {
+    t.test('point', (t) => {
         const features = [{
             type: 1,
             geometry: [[0, 1]],

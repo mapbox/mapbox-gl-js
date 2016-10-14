@@ -39,7 +39,7 @@ Dispatcher.prototype = {
      */
     broadcast: function(type, data, cb) {
         cb = cb || function () {};
-        util.asyncAll(this.actors, function (actor, done) {
+        util.asyncAll(this.actors, (actor, done) => {
             actor.send(type, data, done);
         }, cb);
     },
@@ -67,7 +67,7 @@ Dispatcher.prototype = {
     },
 
     remove: function() {
-        this.actors.forEach(function (actor) { actor.remove(); });
+        this.actors.forEach((actor) => { actor.remove(); });
         this.actors = [];
         this.workerPool.release(this.id);
     }

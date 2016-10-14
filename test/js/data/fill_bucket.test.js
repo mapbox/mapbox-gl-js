@@ -22,7 +22,7 @@ function createFeature(points) {
     };
 }
 
-test('FillBucket', function(t) {
+test('FillBucket', (t) => {
     // Suppress console.warn output.
     const warn = console.warn;
     console.warn = function() {};
@@ -54,7 +54,7 @@ test('FillBucket', function(t) {
     t.end();
 });
 
-test('FillBucket - feature split across array groups', function (t) {
+test('FillBucket - feature split across array groups', (t) => {
     // temporarily reduce the max array length so we can test features
     // breaking across array groups without tests taking a _long_ time.
     const prevMaxArrayLength = ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;

@@ -30,10 +30,10 @@ module.exports = function() {
         style: 'mapbox://styles/mapbox/bright-v9'
     });
 
-    map.on('load', function() {
+    map.on('load', () => {
         map = setupGeoJSONMap(map);
 
-        setDataPerf(map.style.sourceCaches.geojson, featureCollection, function(err, ms) {
+        setDataPerf(map.style.sourceCaches.geojson, featureCollection, (err, ms) => {
             map.remove();
             if (err) return evented.fire('error', {error: err});
             evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});

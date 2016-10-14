@@ -83,7 +83,7 @@ function StructArrayType(options) {
     let maxSize = 0;
     const usedTypes = ['Uint8'];
 
-    StructType.prototype.members = options.members.map(function(member) {
+    StructType.prototype.members = options.members.map((member) => {
         member = {
             name: member.name,
             type: member.type,

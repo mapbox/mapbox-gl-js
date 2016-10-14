@@ -14,7 +14,7 @@ module.exports = function() {
     const evented = util.extend({}, Evented);
 
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
-    ajax.getJSON(stylesheetURL, function(err, json) {
+    ajax.getJSON(stylesheetURL, (err, json) => {
         if (err) {
             return evented.fire('error', {error: err});
         }
@@ -22,19 +22,19 @@ module.exports = function() {
         let timeSum = 0;
         let timeCount = 0;
 
-        asyncTimesSeries(20, function(callback) {
+        asyncTimesSeries(20, (callback) => {
             const timeStart = performance.now();
             new Style(json)
-                .on('error', function(err) {
+                .on('error', (err) => {
                     evented.fire('error', { error: err });
                 })
-                .on('style.load', function() {
+                .on('style.load', () => {
                     const time = performance.now() - timeStart;
                     timeSum += time;
                     timeCount++;
                     callback();
                 });
-        }, function() {
+        }, () => {
             const timeAverage = timeSum / timeCount;
             evented.fire('end', {
                 message: `${formatNumber(timeAverage)} ms`,
@@ -48,7 +48,7 @@ module.exports = function() {
 
 function asyncTimesSeries(times, work, callback) {
     if (times > 0) {
-        work(function(err) {
+        work((err) => {
             if (err) callback(err);
             else asyncTimesSeries(times - 1, work, callback);
         });

@@ -10,7 +10,7 @@ if (typeof process !== 'undefined' && process.env !== undefined) {
     UPDATE = !!process.env.UPDATE;
 }
 
-test('shaping', function(t) {
+test('shaping', (t) => {
     const oneEm = 24;
     const name = 'Test';
     const stacks = {

@@ -199,7 +199,7 @@ function unserializeBuckets(input, style) {
             layer: layer,
             childLayers: input[i].childLayerIds
                 .map(style.getLayer.bind(style))
-                .filter(function(layer) { return layer; })
+                .filter((layer) => { return layer; })
         }, input[i]));
         output[bucket.id] = bucket;
     }

@@ -20,7 +20,7 @@ module.exports = function createMap(options) {
         interactive: false
     }, options));
 
-    map.on('remove', function() {
+    map.on('remove', () => {
         map.getContainer().remove();
     });
 

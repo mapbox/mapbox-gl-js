@@ -10,6 +10,7 @@
     "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
     "no-loop-func": "off",
     "no-var": "off",
+    "prefer-arrow-callback": "off",
     "prefer-template": "off"
   },
   "env": {

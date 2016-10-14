@@ -10,8 +10,8 @@ const _self = {
     addEventListener: function() {}
 };
 
-test('load tile', function(t) {
-    t.test('calls callback on error', function(t) {
+test('load tile', (t) => {
+    t.test('calls callback on error', (t) => {
         window.useFakeXMLHttpRequest();
         const worker = new Worker(_self);
         worker['load tile'](0, {
@@ -19,7 +19,7 @@ test('load tile', function(t) {
             source: 'source',
             uid: 0,
             url: '/error' // Sinon fake server gives 404 responses by default
-        }, function(err) {
+        }, (err) => {
             t.ok(err);
             window.restore();
             t.end();
@@ -30,7 +30,7 @@ test('load tile', function(t) {
     t.end();
 });
 
-test('set layers', function(t) {
+test('set layers', (t) => {
     const worker = new Worker(_self);
 
     worker['set layers'](0, [
@@ -56,7 +56,7 @@ test('set layers', function(t) {
     t.end();
 });
 
-test('update layers', function(t) {
+test('update layers', (t) => {
     const worker = new Worker(_self);
 
     worker['set layers'](0, [
@@ -78,7 +78,7 @@ test('update layers', function(t) {
     t.end();
 });
 
-test('redo placement', function(t) {
+test('redo placement', (t) => {
     const worker = new Worker(_self);
     _self.registerWorkerSource('test', function() {
         this.redoPlacement = function(options) {
@@ -90,7 +90,7 @@ test('redo placement', function(t) {
     worker['redo placement'](0, {type: 'test', mapbox: true});
 });
 
-test('update layers isolates different instances\' data', function(t) {
+test('update layers isolates different instances\' data', (t) => {
     const worker = new Worker(_self);
 
     worker['set layers'](0, [
@@ -129,7 +129,7 @@ test('update layers isolates different instances\' data', function(t) {
     t.end();
 });
 
-test('worker source messages dispatched to the correct map instance', function(t) {
+test('worker source messages dispatched to the correct map instance', (t) => {
     const worker = new Worker(_self);
 
     worker.actor.send = function (type, data, callback, buffers, mapId) {
@@ -142,7 +142,7 @@ test('worker source messages dispatched to the correct map instance', function(t
         this.loadTile = function() {
             // we expect the map id to get appended in the call to the "real"
             // actor.send()
-            actor.send('main thread task', {}, function () {}, null);
+            actor.send('main thread task', {}, () => {}, null);
         };
     });
 

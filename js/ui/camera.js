@@ -478,13 +478,13 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             if (this.pitching) {
                 this.fire('pitch', eventData);
             }
-        }, function() {
+        }, () => {
             if (options.delayEndEvents) {
                 this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), options.delayEndEvents);
             } else {
                 this._easeToEnd(eventData);
             }
-        }.bind(this), options);
+        }, options);
 
         return this;
     },

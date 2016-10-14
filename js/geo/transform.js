@@ -169,7 +169,7 @@ Transform.prototype = {
             tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
             tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
             tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
-        ], options.reparseOverscaled ? actualZ : z).sort(function(a, b) {
+        ], options.reparseOverscaled ? actualZ : z).sort((a, b) => {
             return centerPoint.dist(a) - centerPoint.dist(b);
         });
     },

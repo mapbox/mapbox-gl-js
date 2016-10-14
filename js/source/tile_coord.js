@@ -186,7 +186,7 @@ TileCoord.cover = function(z, bounds, actualZ) {
     scanTriangle(bounds[0], bounds[1], bounds[2], 0, tiles, scanLine);
     scanTriangle(bounds[2], bounds[3], bounds[0], 0, tiles, scanLine);
 
-    return Object.keys(t).map(function(id) {
+    return Object.keys(t).map((id) => {
         return t[id];
     });
 };

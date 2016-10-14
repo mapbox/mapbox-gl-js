@@ -13,15 +13,15 @@ t.zoom = 12;
 t.center = new LngLat(30.5, 50.5);
 
 suite
-.add('locationPoint', function() {
+.add('locationPoint', () => {
     const lnglat = new LngLat(30 + Math.random(), 50 + Math.random());
     t.locationPoint(lnglat);
 })
-.add('pointLocation', function() {
+.add('pointLocation', () => {
     const point = new Point(1000 * Math.random(), 1000 * Math.random());
     t.pointLocation(point);
 })
-.on('cycle', function(event) {
+.on('cycle', (event) => {
     console.log(String(event.target));
 })
 .run();

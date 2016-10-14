@@ -24,7 +24,7 @@ function BufferGroup(arrayGroup, arrayTypes) {
         secondVaos = this.secondVaos = {};
     }
 
-    this.paintVertexBuffers = util.mapObject(arrayGroup.paintVertexArrays, function(array, name) {
+    this.paintVertexBuffers = util.mapObject(arrayGroup.paintVertexArrays, (array, name) => {
         vaos[name] = new VertexArrayObject();
         if (arrayGroup.elementArray2) {
             secondVaos[name] = new VertexArrayObject();

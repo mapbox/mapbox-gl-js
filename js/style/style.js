@@ -137,7 +137,7 @@ Style.prototype = util.inherit(Evented, {
         let layer, layerJSON;
 
         this._layers = {};
-        this._order  = this.stylesheet.layers.map(function(layer) {
+        this._order  = this.stylesheet.layers.map((layer) => {
             return layer.id;
         });
 
@@ -603,13 +603,13 @@ Style.prototype = util.inherit(Evented, {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: util.mapObject(this.sourceCaches, function(source) {
+            sources: util.mapObject(this.sourceCaches, (source) => {
                 return source.serialize();
             }),
             layers: this._order.map(function(id) {
                 return this._layers[id].serialize();
             }, this)
-        }, function(value) { return value !== undefined; });
+        }, (value) => { return value !== undefined; });
     },
 
     _updateLayer: function (layer) {
@@ -757,7 +757,7 @@ Style.prototype = util.inherit(Evented, {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('data', function() {
+            sprite.on('data', () => {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });

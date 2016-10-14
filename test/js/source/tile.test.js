@@ -14,7 +14,7 @@ const SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
 const SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
 const util = require('../../../js/util/util');
 
-test('querySourceFeatures', function(t) {
+test('querySourceFeatures', (t) => {
     const features = [{
         type: 1,
         geometry: [0, 0],
@@ -22,7 +22,7 @@ test('querySourceFeatures', function(t) {
     }];
 
 
-    t.test('geojson tile', function(t) {
+    t.test('geojson tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         let result;
 
@@ -47,7 +47,7 @@ test('querySourceFeatures', function(t) {
         t.end();
     });
 
-    t.test('vector tile', function(t) {
+    t.test('vector tile', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         let result;
 
@@ -78,7 +78,7 @@ test('querySourceFeatures', function(t) {
         t.end();
     });
 
-    t.test('loadVectorData unloads existing data before overwriting it', function(t) {
+    t.test('loadVectorData unloads existing data before overwriting it', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.state = 'loaded';
         t.stub(tile, 'unloadVectorData');
@@ -90,7 +90,7 @@ test('querySourceFeatures', function(t) {
         t.end();
     });
 
-    t.test('loadVectorData preserves the most recent rawTileData', function(t) {
+    t.test('loadVectorData preserves the most recent rawTileData', (t) => {
         const tile = new Tile(new TileCoord(1, 1, 1));
         tile.state = 'loaded';
 

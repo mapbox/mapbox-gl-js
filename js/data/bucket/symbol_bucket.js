@@ -419,7 +419,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
         let sin = Math.sin(angle),
             cos = Math.cos(angle);
 
-        this.sortedSymbolInstances = symbolInstancesStructTypeArray.sort(function(a, b) {
+        this.sortedSymbolInstances = symbolInstancesStructTypeArray.sort((a, b) => {
             const aRotated = (sin * a.anchorPointX + cos * a.anchorPointY) | 0;
             const bRotated = (sin * b.anchorPointX + cos * b.anchorPointY) | 0;
             return (aRotated - bRotated) || (b.index - a.index);

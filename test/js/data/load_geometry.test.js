@@ -10,7 +10,7 @@ const loadGeometry = require('../../../js/data/load_geometry.js');
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 
-test('loadGeometry', function(t) {
+test('loadGeometry', (t) => {
     const feature = vt.layers.road.feature(0);
     const originalGeometry = feature.loadGeometry();
     const scaledGeometry = loadGeometry(feature);
@@ -19,7 +19,7 @@ test('loadGeometry', function(t) {
     t.end();
 });
 
-test('loadGeometry extent error', function(t) {
+test('loadGeometry extent error', (t) => {
     const feature = vt.layers.road.feature(0);
     feature.extent = 2048;
 

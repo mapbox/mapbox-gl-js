@@ -9,7 +9,7 @@ function AnimationLoop() {
 
 // Are all animations done?
 AnimationLoop.prototype.stopped = function() {
-    this.times = this.times.filter(function(t) {
+    this.times = this.times.filter((t) => {
         return t.time >= (new Date()).getTime();
     });
     return !this.times.length;
@@ -24,7 +24,7 @@ AnimationLoop.prototype.set = function(t) {
 
 // Cancel an animation
 AnimationLoop.prototype.cancel = function(n) {
-    this.times = this.times.filter(function(t) {
+    this.times = this.times.filter((t) => {
         return t.id !== n;
     });
 };

@@ -4,7 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const Point = require('point-geometry');
 const findPoleOfInaccessibility = require('../../../js/util/find_pole_of_inaccessibility');
 
-test('polygon_poi', function(t) {
+test('polygon_poi', (t) => {
 
     const closedRing = [
         new Point(0, 0),

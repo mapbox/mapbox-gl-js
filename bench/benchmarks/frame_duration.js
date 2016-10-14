@@ -28,7 +28,7 @@ module.exports = function(options) {
     function runZoom(times, callback) {
         const index = zooms.length - times;
 
-        measureFrameTime(options, zooms[index], function(err_, result) {
+        measureFrameTime(options, zooms[index], (err_, result) => {
             results[index] = result;
             evented.fire('log', {
                 message: `${formatNumber(result.sum / result.count * 10) / 10} ms, ${
@@ -67,12 +67,12 @@ function measureFrameTime(options, zoom, callback) {
         style: 'mapbox://styles/mapbox/streets-v9'
     });
 
-    map.on('load', function() {
+    map.on('load', () => {
 
         map.repaint = true;
 
         // adding a delay seems to make the results more consistent
-        window.setTimeout(function() {
+        window.setTimeout(() => {
             let sum = 0;
             let count = 0;
             let countAbove16 = 0;
@@ -109,7 +109,7 @@ function measureFrameTime(options, zoom, callback) {
 
 function asyncSeries(times, work, callback) {
     if (times > 0) {
-        work(times, function(err) {
+        work(times, (err) => {
             if (err) callback(err);
             else asyncSeries(times - 1, work, callback);
         });

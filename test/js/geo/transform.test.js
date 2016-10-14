@@ -10,9 +10,9 @@ const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;
 const fixedCoord = fixed.Coord;
 
-test('transform', function(t) {
+test('transform', (t) => {
 
-    t.test('creates a transform', function(t) {
+    t.test('creates a transform', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.unmodified, true);
@@ -45,7 +45,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('panBy', function(t) {
+    t.test('panBy', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.latRange = undefined;
@@ -55,7 +55,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('setLocationAt', function(t) {
+    t.test('setLocationAt', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 4;
@@ -65,7 +65,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('setLocationAt tilted', function(t) {
+    t.test('setLocationAt tilted', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         transform.zoom = 4;
@@ -76,7 +76,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('has a default zoom', function(t) {
+    t.test('has a default zoom', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
         t.equal(transform.tileZoom, 0);
@@ -84,7 +84,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('lngRange & latRange constrain zoom and center', function(t) {
+    t.test('lngRange & latRange constrain zoom and center', (t) => {
         const transform = new Transform();
         transform.center = new LngLat(0, 0);
         transform.zoom = 10;
@@ -106,7 +106,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    test('coveringTiles', function(t) {
+    test('coveringTiles', (t) => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -134,7 +134,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    test('coveringZoomLevel', function(t) {
+    test('coveringZoomLevel', (t) => {
         const options = {
             minzoom: 1,
             maxzoom: 10,
@@ -194,7 +194,7 @@ test('transform', function(t) {
         t.end();
     });
 
-    t.test('clamps pitch', function(t) {
+    t.test('clamps pitch', (t) => {
         const transform = new Transform();
 
         transform.pitch = 45;

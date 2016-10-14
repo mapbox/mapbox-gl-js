@@ -15,14 +15,14 @@ function RasterTileSource(id, options, dispatcher, eventedParent) {
 
     this.setEventedParent(eventedParent);
     this.fire('dataloading', {dataType: 'source'});
-    loadTileJSON(options, function (err, tileJSON) {
+    loadTileJSON(options, (err, tileJSON) => {
         if (err) {
             return this.fire('error', err);
         }
         util.extend(this, tileJSON);
         this.fire('data', {dataType: 'source'});
         this.fire('source.load');
-    }.bind(this));
+    });
 }
 
 RasterTileSource.prototype = util.inherit(Evented, {

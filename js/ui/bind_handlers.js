@@ -132,14 +132,14 @@ module.exports = function bindHandlers(map, options) {
 
     function fireTouchEvent(type, e) {
         const touches = DOM.touchPos(el, e);
-        const singular = touches.reduce(function(prev, curr, i, arr) {
+        const singular = touches.reduce((prev, curr, i, arr) => {
             return prev.add(curr.div(arr.length));
         }, new Point(0, 0));
 
         return map.fire(type, {
             lngLat: map.unproject(singular),
             point: singular,
-            lngLats: touches.map(function(t) { return map.unproject(t); }, this),
+            lngLats: touches.map((t) => { return map.unproject(t); }, this),
             points: touches,
             originalEvent: e
         });

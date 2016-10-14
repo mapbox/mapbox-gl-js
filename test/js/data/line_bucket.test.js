@@ -13,7 +13,7 @@ const StyleLayer = require('../../../js/style/style_layer');
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.road.feature(0);
 
-test('LineBucket', function(t) {
+test('LineBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
     const bucket = new LineBucket({
         buffers: {},

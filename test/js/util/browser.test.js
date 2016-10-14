@@ -3,44 +3,44 @@
 const test = require('mapbox-gl-js-test').test;
 const browser = require('../../../js/util/browser');
 
-test('browser', function(t) {
-    t.test('frame', function(t) {
-        const id = browser.frame(function() {
+test('browser', (t) => {
+    t.test('frame', (t) => {
+        const id = browser.frame(() => {
             t.pass('called frame');
             t.ok(id, 'returns id');
             t.end();
         });
     });
 
-    t.test('now', function(t) {
+    t.test('now', (t) => {
         t.equal(typeof browser.now(), 'number');
         t.end();
     });
 
-    t.test('cancelFrame', function(t) {
-        const id = browser.frame(function() {
+    t.test('cancelFrame', (t) => {
+        const id = browser.frame(() => {
             t.fail();
         });
         browser.cancelFrame(id);
         t.end();
     });
 
-    t.test('devicePixelRatio', function(t) {
+    t.test('devicePixelRatio', (t) => {
         t.equal(typeof browser.devicePixelRatio, 'number');
         t.end();
     });
 
-    t.test('hardwareConcurrency', function(t) {
+    t.test('hardwareConcurrency', (t) => {
         t.equal(typeof browser.hardwareConcurrency, 'number');
         t.end();
     });
 
-    t.test('supportsWebp', function(t) {
+    t.test('supportsWebp', (t) => {
         t.equal(typeof browser.supportsWebp, 'boolean');
         t.end();
     });
 
-    t.test('supportsGeolocation', function(t) {
+    t.test('supportsGeolocation', (t) => {
         t.equal(typeof browser.supportsGeolocation, 'boolean');
         t.end();
     });

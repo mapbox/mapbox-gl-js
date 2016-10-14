@@ -24,7 +24,7 @@ module.exports = function() {
             }
         });
         map.on('load', onload.bind(null, map));
-        map.on('error', function (err) {
+        map.on('error', (err) => {
             evented.fire('error', err);
         });
     }

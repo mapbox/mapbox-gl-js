@@ -11,7 +11,7 @@ const classifyRings = require('../../../js/util/classify_rings');
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 const feature = vt.layers.water.feature(0);
 
-test('classifyRings', function(assert) {
+test('classifyRings', (assert) => {
     let geometry;
     let classified;
 
@@ -77,7 +77,7 @@ test('classifyRings', function(assert) {
     assert.end();
 });
 
-test('classifyRings + maxRings', function(t) {
+test('classifyRings + maxRings', (t) => {
 
     function createGeometry(options) {
         const geometry = [
@@ -97,7 +97,7 @@ test('classifyRings + maxRings', function(t) {
     }
 
 
-    t.test('maxRings=undefined', function(t) {
+    t.test('maxRings=undefined', (t) => {
         const geometry = sortRings(classifyRings(createGeometry()));
         t.equal(geometry.length, 1);
         t.equal(geometry[0].length, 3);
@@ -107,7 +107,7 @@ test('classifyRings + maxRings', function(t) {
         t.end();
     });
 
-    t.test('maxRings=2', function(t) {
+    t.test('maxRings=2', (t) => {
         const geometry = sortRings(classifyRings(createGeometry(), 2));
         t.equal(geometry.length, 1);
         t.equal(geometry[0].length, 2);
@@ -116,7 +116,7 @@ test('classifyRings + maxRings', function(t) {
         t.end();
     });
 
-    t.test('maxRings=2, reversed geometry', function(t) {
+    t.test('maxRings=2, reversed geometry', (t) => {
         const geometry = sortRings(classifyRings(createGeometry({reverse: true}), 2));
         t.equal(geometry.length, 1);
         t.equal(geometry[0].length, 2);
@@ -125,13 +125,13 @@ test('classifyRings + maxRings', function(t) {
         t.end();
     });
 
-    t.test('maxRings=5, geometry from fixture', function(t) {
+    t.test('maxRings=5, geometry from fixture', (t) => {
         const geometry = sortRings(classifyRings(feature.loadGeometry(), 5));
         t.equal(geometry.length, 2);
         t.equal(geometry[0].length, 1);
         t.equal(geometry[1].length, 5);
 
-        const areas = geometry[1].map(function(ring) { return ring.area; });
+        const areas = geometry[1].map((ring) => { return ring.area; });
         t.deepEqual(areas, [2763951, 21600, 8298, 4758, 3411]);
         t.end();
     });
