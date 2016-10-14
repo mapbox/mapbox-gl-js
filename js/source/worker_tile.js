@@ -8,6 +8,7 @@ var DictionaryCoder = require('../util/dictionary_coder');
 var util = require('../util/util');
 var SymbolInstancesArray = require('../symbol/symbol_instances');
 var SymbolQuadsArray = require('../symbol/symbol_quads');
+var assert = require('assert');
 
 module.exports = WorkerTile;
 
@@ -47,8 +48,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     for (var layerId in layerFamilies) {
         var layer = layerFamilies[layerId][0];
 
+        assert(!layer.ref);
+
         if (layer.source !== this.source) continue;
-        if (layer.ref) continue;
         if (layer.minzoom && this.zoom < layer.minzoom) continue;
         if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
         if (layer.layout && layer.layout.visibility === 'none') continue;
