@@ -9,14 +9,14 @@ Focus on the problem and save design ideas for the next section.
 
 <!--
 How could we accommodate the use cases above?
-What are the pros and cons of each design?
-What are the pros and cons of doing nothing?
+Is "do nothing" an option?
 -->
 
 ## Design
 
 <!--
 Which design should we implement? Why?
+What are the pros and cons of this design?
 -->
 
 ### Implementation
