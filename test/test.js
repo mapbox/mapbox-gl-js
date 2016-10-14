@@ -45,17 +45,6 @@ test('function types', function(t) {
 
     t.test('exponential', function(t) {
 
-        t.test('is the default type for numeric inputs', function(t) {
-            var f = MapboxGLFunction({
-                stops: [[1, 2], [3, 6]],
-                base: 2
-            });
-
-            t.equal(f(2), 30 / 9);
-
-            t.end();
-        });
-
         t.test('base', function(t) {
             var f = MapboxGLFunction({
                 type: 'exponential',
@@ -266,17 +255,6 @@ test('function types', function(t) {
     });
 
     t.test('categorical', function(t) {
-
-        t.test('is the default type for string inputs', function(t) {
-            var f = MapboxGLFunction({
-                type: 'categorical',
-                stops: [['umpteen', 42]]
-            });
-
-            t.equal(f('umpteen'), 42);
-
-            t.end();
-        });
 
         t.test('one element', function(t) {
             var f = MapboxGLFunction({

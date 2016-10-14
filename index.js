@@ -18,8 +18,7 @@ function createFunction(parameters, defaultType) {
         var zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
         var featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
         var zoomDependent = zoomAndFeatureDependent || !featureDependent;
-        var inputType = parameters.stops && typeof (zoomAndFeatureDependent ? parameters.stops[0][0].property : parameters.stops[0][0]);
-        var type = parameters.type || defaultType || (inputType === 'string' ? 'categorical' : 'exponential');
+        var type = parameters.type || defaultType || 'exponential';
 
         var innerFun;
         if (type === 'exponential') {
