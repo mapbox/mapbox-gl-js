@@ -12,6 +12,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
+    "bubleify": "^0.5.1",
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
     "feature-filter": "^2.2.0",
@@ -41,7 +42,6 @@
   },
   "devDependencies": {
     "babel-preset-react": "^6.11.1",
-    "babelify": "^7.3.0",
     "benchmark": "~2.1.0",
     "browserify": "^13.0.0",
     "clipboard": "^1.5.12",
@@ -79,6 +79,15 @@
   },
   "browserify": {
     "transform": [
+      [
+        "bubleify",
+        {
+          "bubleError": true,
+          "transforms": {
+            "dangerousForOf": true
+          }
+        }
+      ],
       "package-json-versionify",
       "unassertify"
     ]
@@ -94,7 +103,7 @@
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
     "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
-    "watch-benchmarks-view": "watchify bench/benchmarks_view.js --debug --transform [babelify --presets react] --outfile bench/benchmarks_view_generated.js --verbose",
+    "watch-benchmarks-view": "watchify bench/benchmarks_view.js --debug --outfile bench/benchmarks_view_generated.js --verbose",
     "start-server": "st --no-cache --localhost --port 9966 --index index.html .",
     "start": "run-p build-token watch-dev watch-benchmarks watch-benchmarks-view start-server",
     "start-debug": "run-p build-token watch-dev start-server",
@@ -104,9 +113,9 @@
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
     "lint": "eslint  --ignore-path .gitignore js test bench docs/_posts/examples/*.html",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
-    "plugin-deploy":"set -e; node plugins/exists.js; aws s3 sync --exclude *.DS_Store --acl public-read plugins/src s3://mapbox-gl-js/plugins/; echo ' -- DEPLOYED --'",
+    "plugin-deploy": "set -e; node plugins/exists.js; aws s3 sync --exclude *.DS_Store --acl public-read plugins/src s3://mapbox-gl-js/plugins/; echo ' -- DEPLOYED --'",
     "test": "run-s lint test-unit test-plugin",
-    "test-plugin":"tap test/plugins/",
+    "test-plugin": "tap test/plugins/",
     "test-suite": "run-s test-render test-query",
     "test-unit": "tap --reporter dot --no-coverage test/js",
     "test-render": "node test/render.test.js",
