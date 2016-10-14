@@ -25,6 +25,10 @@ function WorkerTile(params) {
 }
 
 WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
+    // Normalize GeoJSON data.
+    if (!data.layers) {
+        data = { layers: { '_geojsonTileLayer': data } };
+    }
 
     this.status = 'parsing';
     this.data = data;
@@ -33,20 +37,19 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     this.symbolInstancesArray = new SymbolInstancesArray();
     this.symbolQuadsArray = new SymbolQuadsArray();
     const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-    const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
-    const sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
+    const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-    const tile = this;
-    const bucketsById = {};
+    const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
+    featureIndex.bucketLayerIDs = {};
+
+    const buckets = [];
     const bucketsBySourceLayer = {};
-    let i;
-    let sourceLayerId;
-    let bucket;
 
     // Map non-ref layers to buckets.
     let bucketIndex = 0;
     for (const layerId in layerFamilies) {
         const layer = layerFamilies[layerId][0];
+        const sourceLayerId = layer.sourceLayer || '_geojsonTileLayer';
 
         assert(!layer.ref);
 
@@ -54,9 +57,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         if (layer.minzoom && this.zoom < layer.minzoom) continue;
         if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
         if (layer.layout && layer.layout.visibility === 'none') continue;
-        if (data.layers && !data.layers[layer.sourceLayer]) continue;
+        if (!data.layers[sourceLayerId]) continue;
 
-        bucket = Bucket.create({
+        const bucket = Bucket.create({
             layer: layer,
             index: bucketIndex++,
             childLayers: layerFamilies[layerId],
@@ -66,146 +69,69 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             collisionBoxArray: this.collisionBoxArray,
             symbolQuadsArray: this.symbolQuadsArray,
             symbolInstancesArray: this.symbolInstancesArray,
-            sourceLayerIndex: sourceLayerCoder.encode(layer.sourceLayer || '_geojsonTileLayer')
+            sourceLayerIndex: sourceLayerCoder.encode(sourceLayerId)
         });
-
-        bucketsById[layer.id] = bucket;
-
-        if (data.layers) { // vectortile
-            sourceLayerId = layer.sourceLayer;
-            bucketsBySourceLayer[sourceLayerId] = bucketsBySourceLayer[sourceLayerId] || {};
-            bucketsBySourceLayer[sourceLayerId][layer.id] = bucket;
-        }
-    }
-
-    // read each layer, and sort its features into buckets
-    if (data.layers) { // vectortile
-        for (sourceLayerId in bucketsBySourceLayer) {
-            const sourceLayer = data.layers[sourceLayerId];
-            if (sourceLayer.version === 1) {
-                util.warnOnce(
-                    `Vector tile source "${this.source}" layer "${
-                    sourceLayerId}" does not use vector tile spec v2 ` +
-                    `and therefore may have some rendering errors.`
-                );
-            }
-            sortLayerIntoBuckets(sourceLayer, bucketsBySourceLayer[sourceLayerId]);
-        }
-    } else { // geojson
-        sortLayerIntoBuckets(data, bucketsById);
-    }
-
-    function sortLayerIntoBuckets(layer, buckets) {
-        for (let i = 0; i < layer.length; i++) {
-            const feature = layer.feature(i);
-            feature.index = i;
-            for (const id in buckets) {
-                if (buckets[id].layer.filter(feature))
-                    buckets[id].features.push(feature);
-            }
-        }
-    }
-
-    const buckets = [],
-        symbolBuckets = this.symbolBuckets = [],
-        otherBuckets = [];
-
-    featureIndex.bucketLayerIDs = {};
-
-    for (const id in bucketsById) {
-        bucket = bucketsById[id];
-        if (bucket.features.length === 0) continue;
 
         featureIndex.bucketLayerIDs[bucket.index] = bucket.childLayers.map(getLayerId);
 
         buckets.push(bucket);
 
-        if (bucket.type === 'symbol')
-            symbolBuckets.push(bucket);
-        else
-            otherBuckets.push(bucket);
+        bucketsBySourceLayer[sourceLayerId] = bucketsBySourceLayer[sourceLayerId] || [];
+        bucketsBySourceLayer[sourceLayerId].push(bucket);
     }
 
-    let icons = {};
-    let stacks = {};
-    let deps = 0;
-
-
-    if (symbolBuckets.length > 0) {
-
-        // Get dependencies for symbol buckets
-        for (i = symbolBuckets.length - 1; i >= 0; i--) {
-            symbolBuckets[i].updateIcons(icons);
-            symbolBuckets[i].updateFont(stacks);
+    // read each layer, and sort its features into buckets
+    for (const sourceLayerId in bucketsBySourceLayer) {
+        const sourceLayer = data.layers[sourceLayerId];
+        if (sourceLayer.version === 1) {
+            util.warnOnce(
+                `Vector tile source "${this.source}" layer "${
+                sourceLayerId}" does not use vector tile spec v2 ` +
+                `and therefore may have some rendering errors.`
+            );
         }
-
-        for (const fontName in stacks) {
-            stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
-        }
-        icons = Object.keys(icons);
-
-        actor.send('get glyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
-            stacks = newStacks;
-            gotDependency(err);
-        });
-
-        if (icons.length) {
-            actor.send('get icons', {icons: icons}, (err, newIcons) => {
-                icons = newIcons;
-                gotDependency(err);
-            });
-        } else {
-            gotDependency();
-        }
-    }
-
-    // immediately parse non-symbol buckets (they have no dependencies)
-    for (i = otherBuckets.length - 1; i >= 0; i--) {
-        parseBucket(this, otherBuckets[i]);
-    }
-
-    if (symbolBuckets.length === 0)
-        return done();
-
-    function gotDependency(err) {
-        if (err) return callback(err);
-        deps++;
-        if (deps === 2) {
-            // all symbol bucket dependencies fetched; parse them in proper order
-            for (let i = symbolBuckets.length - 1; i >= 0; i--) {
-                parseBucket(tile, symbolBuckets[i]);
+        const buckets = bucketsBySourceLayer[sourceLayerId];
+        for (let i = 0; i < sourceLayer.length; i++) {
+            const feature = sourceLayer.feature(i);
+            feature.index = i;
+            for (const bucket of buckets) {
+                if (bucket.layer.filter(feature)) {
+                    bucket.features.push(feature);
+                }
             }
-            done();
         }
     }
 
-    function parseBucket(tile, bucket) {
-        bucket.populateArrays(collisionTile, stacks, icons);
+    const symbolBuckets = this.symbolBuckets = [];
 
+    for (const bucket of buckets) {
+        if (bucket.type === 'symbol') {
+            symbolBuckets.push(bucket);
+        } else {
+            // immediately parse non-symbol buckets (they have no dependencies)
+            bucket.populateArrays();
 
-        if (bucket.type !== 'symbol') {
-            for (let i = 0; i < bucket.features.length; i++) {
-                const feature = bucket.features[i];
+            for (const feature of bucket.features) {
                 featureIndex.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
-        }
 
-        bucket.features = null;
+            bucket.features = null;
+        }
     }
 
-    function done() {
-        tile.status = 'done';
+    const done = () => {
+        this.status = 'done';
 
-        if (tile.redoPlacementAfterDone) {
-            tile.redoPlacement(tile.angle, tile.pitch, null);
-            tile.redoPlacementAfterDone = false;
+        if (this.redoPlacementAfterDone) {
+            this.redoPlacement(this.angle, this.pitch, null);
+            this.redoPlacementAfterDone = false;
         }
 
         const featureIndex_ = featureIndex.serialize();
         const collisionTile_ = collisionTile.serialize();
-        const collisionBoxArray = tile.collisionBoxArray.serialize();
-        const symbolInstancesArray = tile.symbolInstancesArray.serialize();
-        const symbolQuadsArray = tile.symbolQuadsArray.serialize();
+        const collisionBoxArray = this.collisionBoxArray.serialize();
+        const symbolInstancesArray = this.symbolInstancesArray.serialize();
+        const symbolQuadsArray = this.symbolQuadsArray.serialize();
         const nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
 
         callback(null, {
@@ -218,6 +144,54 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         }, getTransferables(nonEmptyBuckets)
             .concat(featureIndex_.transferables)
             .concat(collisionTile_.transferables));
+    };
+
+    if (symbolBuckets.length === 0) {
+        return done();
+    }
+
+    let icons = {};
+    let stacks = {};
+    let deps = 0;
+
+    // Get dependencies for symbol buckets
+    for (const bucket of symbolBuckets) {
+        bucket.updateIcons(icons);
+        bucket.updateFont(stacks);
+    }
+
+    for (const fontName in stacks) {
+        stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
+    }
+
+    icons = Object.keys(icons);
+
+    const gotDependency = (err) => {
+        if (err) return callback(err);
+        deps++;
+        if (deps === 2) {
+            // all symbol bucket dependencies fetched; parse them in proper order
+            for (let i = symbolBuckets.length - 1; i >= 0; i--) {
+                const bucket = symbolBuckets[i];
+                bucket.populateArrays(collisionTile, stacks, icons);
+                bucket.features = null;
+            }
+            done();
+        }
+    };
+
+    actor.send('get glyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
+        stacks = newStacks;
+        gotDependency(err);
+    });
+
+    if (icons.length) {
+        actor.send('get icons', {icons: icons}, (err, newIcons) => {
+            icons = newIcons;
+            gotDependency(err);
+        });
+    } else {
+        gotDependency();
     }
 };
 
