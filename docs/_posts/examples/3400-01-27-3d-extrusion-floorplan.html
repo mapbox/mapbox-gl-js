@@ -1,8 +1,8 @@
 --- 
 layout: example 
 category: example 
-title: Extrude polygons for 3D buildings.
-description: Create a 3D indoor map with the fill-extrude-height paint property.
+title: Extrude polygons for 3D buildings. 
+description: Create a 3D indoor map with the fill-extrude-height paint property. 
 tags: 
   - layers 
 ---
@@ -32,27 +32,24 @@ map.on('load', function() {
         'type': 'fill',
         'source': 'museumData',
         'paint': {
-            // Color each polygon extrusion.
+            // See the Mapbox Style Spec for details on property functions
+            // https://www.mapbox.com/mapbox-gl-style-spec/#types-function
             'fill-color': {
                 // Get the fill-color from the source 'color' property.
                 'property': 'color',
                 'type': 'identity'
             },
-            // Extrude each polygon to a given height in meters.
             'fill-extrude-height': {
-                // Get the fill-extrude-height from the source 'height' property.
+                // Get fill-extrude-height from the source 'height' property.
                 'property': 'height',
                 'type': 'identity'
             },
-            // Start extruding a polygon at a given height.  This allows for "floating" objects.
-            // For example, extruding from fill-extrude-base : 10 to fill-extrude-height: 20 will
-            // create a polygon floating above the map, starting at a height of 10 meters, extruded
-            // up to a max height of 20 meters.
             'fill-extrude-base': {
-                // Get the fill-extrude-base from the source 'base_height' property
+                // Get fill-extrude-base from the source 'base_height' property.
                 'property': 'base_height',
                 'type': 'identity'
             },
+            // Make extrusions slightly opaque for see through indoor walls.
             'fill-opacity': 0.5
         }
     });
