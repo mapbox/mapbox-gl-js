@@ -39,14 +39,13 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     var bucketsById = {};
     var bucketsBySourceLayer = {};
     var i;
-    var layer;
     var sourceLayerId;
     var bucket;
 
     // Map non-ref layers to buckets.
     var bucketIndex = 0;
     for (var layerId in layerFamilies) {
-        layer = layerFamilies[layerId][0];
+        var layer = layerFamilies[layerId][0];
 
         if (layer.source !== this.source) continue;
         if (layer.ref) continue;
@@ -80,17 +79,15 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     // read each layer, and sort its features into buckets
     if (data.layers) { // vectortile
         for (sourceLayerId in bucketsBySourceLayer) {
-            if (layer.version === 1) {
+            var sourceLayer = data.layers[sourceLayerId];
+            if (sourceLayer.version === 1) {
                 util.warnOnce(
                     'Vector tile source "' + this.source + '" layer "' +
                     sourceLayerId + '" does not use vector tile spec v2 ' +
                     'and therefore may have some rendering errors.'
                 );
             }
-            layer = data.layers[sourceLayerId];
-            if (layer) {
-                sortLayerIntoBuckets(layer, bucketsBySourceLayer[sourceLayerId]);
-            }
+            sortLayerIntoBuckets(sourceLayer, bucketsBySourceLayer[sourceLayerId]);
         }
     } else { // geojson
         sortLayerIntoBuckets(data, bucketsById);
