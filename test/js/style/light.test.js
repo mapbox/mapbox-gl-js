@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Light = require('../../../js/style/light');
 var spec = require('../../../js/style/style_spec').$root.light;
 

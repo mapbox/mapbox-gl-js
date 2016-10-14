@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Camera = require('../../../js/ui/camera');
 var Evented = require('../../../js/util/evented');
 var Transform = require('../../../js/geo/transform');

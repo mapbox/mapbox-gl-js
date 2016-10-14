@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var browser = require('../../../js/util/browser');
 
 test('browser', function(t) {

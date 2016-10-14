@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var VectorTileSource = require('../../../js/source/vector_tile_source');
 var TileCoord = require('../../../js/source/tile_coord');
 var window = require('../../../js/util/window');

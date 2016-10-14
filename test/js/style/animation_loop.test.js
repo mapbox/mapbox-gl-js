@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var AnimationLoop = require('../../../js/style/animation_loop');
 
 test('animationloop', function(t) {

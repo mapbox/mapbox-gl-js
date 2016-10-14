@@ -2,7 +2,7 @@
 
 /* jshint -W079 */
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Worker = require('../../../js/source/worker');
 var window = require('../../../js/util/window');
 

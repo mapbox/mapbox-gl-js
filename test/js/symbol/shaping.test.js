@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var fs = require('fs');
 var path = require('path');
 var shaping = require('../../../js/symbol/shaping');

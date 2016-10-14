@@ -1,13 +1,12 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Tile = require('../../../js/source/tile');
 var GeoJSONWrapper = require('../../../js/source/geojson_wrapper');
 var TileCoord = require('../../../js/source/tile_coord');
 var fs = require('fs');
 var path = require('path');
 var vtpbf = require('vt-pbf');
-var sinon = require('sinon');
 var FeatureIndex = require('../../../js/data/feature_index');
 var CollisionTile = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
@@ -82,7 +81,7 @@ test('querySourceFeatures', function(t) {
     t.test('loadVectorData unloads existing data before overwriting it', function(t) {
         var tile = new Tile(new TileCoord(1, 1, 1));
         tile.state = 'loaded';
-        sinon.stub(tile, 'unloadVectorData');
+        t.stub(tile, 'unloadVectorData');
         var painter = {};
 
         tile.loadVectorData(null, painter);
