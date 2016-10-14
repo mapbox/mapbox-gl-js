@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var resolveText = require('../../../js/symbol/resolve_text');
 
 function mockFeature(obj) {

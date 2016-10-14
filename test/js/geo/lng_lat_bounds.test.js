@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var LngLat = require('../../../js/geo/lng_lat');
 var LngLatBounds = require('../../../js/geo/lng_lat_bounds');
 

@@ -1,7 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
-var sinon = require('sinon');
+var test = require('mapbox-gl-js-test').test;
 var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');
@@ -81,7 +80,7 @@ test('SymbolBucket', function(t) {
 test('SymbolBucket integer overflow', function(t) {
     var bucket = bucketSetup();
     var numWarnings = 0;
-    sinon.stub(util, 'warnOnce', function(warning) {
+    t.stub(util, 'warnOnce', function(warning) {
         if (warning.includes('Too many symbols being rendered in a tile.') || warning.includes('Too many glyphs being rendered in a tile.')) numWarnings++;
     });
     // save correct value of MAX_QUADS

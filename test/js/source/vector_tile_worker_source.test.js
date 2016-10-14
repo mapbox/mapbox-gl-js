@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var VectorTileWorkerSource = require('../../../js/source/vector_tile_worker_source');
 
 var styleLayers = {

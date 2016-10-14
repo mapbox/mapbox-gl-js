@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var proxyquire = require('proxyquire');
 var Dispatcher = require('../../../js/util/dispatcher');
 var WebWorker = require('../../../js/util/web_worker');

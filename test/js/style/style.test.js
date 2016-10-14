@@ -1,7 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
-var sinon = require('sinon');
+var test = require('mapbox-gl-js-test').test;
 var proxyquire = require('proxyquire');
 var Style = require('../../../js/style/style');
 var SourceCache = require('../../../js/source/source_cache');
@@ -186,7 +185,7 @@ test('Style#_remove', function(t) {
 
         style.on('style.load', function () {
             var sourceCache = style.sourceCaches['source-id'];
-            sinon.spy(sourceCache, 'clearTiles');
+            t.spy(sourceCache, 'clearTiles');
             style._remove();
             t.ok(sourceCache.clearTiles.calledOnce);
             t.end();
@@ -461,7 +460,7 @@ test('Style#removeSource', function(t) {
 
         style.on('style.load', function () {
             var sourceCache = style.sourceCaches['source-id'];
-            sinon.spy(sourceCache, 'clearTiles');
+            t.spy(sourceCache, 'clearTiles');
             style.removeSource('source-id');
             t.ok(sourceCache.clearTiles.calledOnce);
             t.end();
@@ -1137,7 +1136,7 @@ test('Style#queryRenderedFeatures', function(t) {
 
         t.test('fires an error if layer included in params does not exist on the style', function(t) {
             var errors = 0;
-            sinon.stub(style, 'fire', function(type, data) {
+            t.stub(style, 'fire', function(type, data) {
                 if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
@@ -1161,10 +1160,10 @@ test('Style defers expensive methods', function(t) {
         style.update();
 
         // spies to track defered methods
-        sinon.spy(style, 'fire');
-        sinon.spy(style, '_reloadSource');
-        sinon.spy(style, '_updateWorkerLayers');
-        sinon.spy(style, '_groupLayers');
+        t.spy(style, 'fire');
+        t.spy(style, '_reloadSource');
+        t.spy(style, '_updateWorkerLayers');
+        t.spy(style, '_groupLayers');
 
         style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
         style.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
@@ -1219,7 +1218,7 @@ test('Style#query*Features', function(t) {
             }]
         });
 
-        onError = sinon.spy();
+        onError = t.spy();
 
         style.on('error', onError)
             .on('style.load', function() {

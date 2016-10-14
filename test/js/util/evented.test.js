@@ -1,14 +1,13 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Evented = require('../../../js/util/evented');
-var sinon = require('sinon');
 
 test('Evented', function(t) {
 
     t.test('calls listeners added with "on"', function(t) {
         var evented = Object.create(Evented);
-        var listener = sinon.spy();
+        var listener = t.spy();
         evented.on('a', listener);
         evented.fire('a');
         evented.fire('a');
@@ -18,7 +17,7 @@ test('Evented', function(t) {
 
     t.test('calls listeners added with "once" once', function(t) {
         var evented = Object.create(Evented);
-        var listener = sinon.spy();
+        var listener = t.spy();
         evented.once('a', listener);
         evented.fire('a');
         evented.fire('a');
@@ -55,7 +54,7 @@ test('Evented', function(t) {
 
     t.test('removes listeners with "off"', function(t) {
         var evented = Object.create(Evented);
-        var listener = sinon.spy();
+        var listener = t.spy();
         evented.on('a', listener);
         evented.off('a', listener);
         evented.fire('a');
@@ -83,7 +82,7 @@ test('Evented', function(t) {
     t.test('evented parents', function(t) {
 
         t.test('adds parents with "setEventedParent"', function(t) {
-            var listener = sinon.spy();
+            var listener = t.spy();
             var eventedSource = Object.create(Evented);
             var eventedSink = Object.create(Evented);
             eventedSource.setEventedParent(eventedSink);
@@ -129,7 +128,7 @@ test('Evented', function(t) {
         });
 
         t.test('removes parents with "setEventedParent(null)"', function(t) {
-            var listener = sinon.spy();
+            var listener = t.spy();
             var eventedSource = Object.create(Evented);
             var eventedSink = Object.create(Evented);
             eventedSink.on('a', listener);

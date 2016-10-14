@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Bucket = require('../../../js/data/bucket');
 var util = require('../../../js/util/util');
 var StyleLayer = require('../../../js/style/style_layer');

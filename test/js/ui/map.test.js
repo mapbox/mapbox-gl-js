@@ -1,11 +1,10 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var util = require('../../../js/util/util');
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var LngLat = require('../../../js/geo/lng_lat');
-var sinon = require('sinon');
 
 var fixed = require('../../testutil/fixed');
 var fixedNum = fixed.Num;
@@ -329,9 +328,9 @@ test('Map', function(t) {
         t.test('do not resize if trackResize is false', function (t) {
             var map = createMap({trackResize: false});
 
-            sinon.spy(map, 'stop');
-            sinon.spy(map, '_update');
-            sinon.spy(map, 'resize');
+            t.spy(map, 'stop');
+            t.spy(map, '_update');
+            t.spy(map, 'resize');
 
             map._onWindowResize();
 
@@ -345,9 +344,9 @@ test('Map', function(t) {
         t.test('do resize if trackResize is true (default)', function (t) {
             var map = createMap();
 
-            sinon.spy(map, 'stop');
-            sinon.spy(map, '_update');
-            sinon.spy(map, 'resize');
+            t.spy(map, 'stop');
+            t.spy(map, '_update');
+            t.spy(map, 'resize');
 
             map._onWindowResize();
 
@@ -560,7 +559,7 @@ test('Map', function(t) {
         t.test('if no arguments provided', function(t) {
             createMap({}, function(err, map) {
                 t.error(err);
-                sinon.spy(map.style, 'queryRenderedFeatures');
+                t.spy(map.style, 'queryRenderedFeatures');
 
                 var output = map.queryRenderedFeatures();
 
@@ -576,7 +575,7 @@ test('Map', function(t) {
         t.test('if only "geometry" provided', function(t) {
             createMap({}, function(err, map) {
                 t.error(err);
-                sinon.spy(map.style, 'queryRenderedFeatures');
+                t.spy(map.style, 'queryRenderedFeatures');
 
                 var output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
@@ -594,7 +593,7 @@ test('Map', function(t) {
         t.test('if only "params" provided', function(t) {
             createMap({}, function(err, map) {
                 t.error(err);
-                sinon.spy(map.style, 'queryRenderedFeatures');
+                t.spy(map.style, 'queryRenderedFeatures');
 
                 var output = map.queryRenderedFeatures({filter: ['all']});
 
@@ -610,7 +609,7 @@ test('Map', function(t) {
         t.test('if both "geometry" and "params" provided', function(t) {
             createMap({}, function(err, map) {
                 t.error(err);
-                sinon.spy(map.style, 'queryRenderedFeatures');
+                t.spy(map.style, 'queryRenderedFeatures');
 
                 var output = map.queryRenderedFeatures({filter: ['all']});
 
@@ -626,7 +625,7 @@ test('Map', function(t) {
         t.test('if "geometry" with unwrapped coords provided', function(t) {
             createMap({}, function(err, map) {
                 t.error(err);
-                sinon.spy(map.style, 'queryRenderedFeatures');
+                t.spy(map.style, 'queryRenderedFeatures');
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
@@ -931,8 +930,8 @@ test('Map', function(t) {
         t.test('logs errors to console when it has NO listeners', function (t) {
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
-            sinon.spy(map, 'fire');
-            sinon.stub(console, 'error', function(error) {
+            t.spy(map, 'fire');
+            t.stub(console, 'error', function(error) {
                 if (error.message === 'version: expected one of [8], 7 found') {
                     t.notOk(map.fire.calledWith('error'));
                     console.error.restore();
@@ -949,7 +948,7 @@ test('Map', function(t) {
         t.test('calls listeners', function (t) {
             var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
-            sinon.spy(console, 'error');
+            t.spy(console, 'error');
             map.on('error', function(event) {
                 t.equal(event.error.message, 'version: expected one of [8], 7 found');
                 t.notOk(console.error.calledWith('version: expected one of [8], 7 found'));
