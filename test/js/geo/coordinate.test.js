@@ -3,8 +3,8 @@
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../js/geo/coordinate');
 
-test('Coordinate', function(t) {
-    t.test('#constructor', function(t) {
+test('Coordinate', (t) => {
+    t.test('#constructor', (t) => {
         const c = new Coordinate(1, 2, 3);
         t.equal(c.column, 1);
         t.equal(c.row, 2);
@@ -12,7 +12,7 @@ test('Coordinate', function(t) {
         t.end();
     });
 
-    t.test('#zoomTo', function(t) {
+    t.test('#zoomTo', (t) => {
         let c = new Coordinate(1, 2, 3);
         c = c.zoomTo(3);
         t.equal(c.column, 1);
@@ -29,7 +29,7 @@ test('Coordinate', function(t) {
         t.end();
     });
 
-    t.test('#sub', function(t) {
+    t.test('#sub', (t) => {
         const o = new Coordinate(5, 4, 3);
         const c = new Coordinate(1, 2, 3);
         const r = o.sub(c);

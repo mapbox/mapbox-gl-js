@@ -89,7 +89,7 @@ NavigationControl.prototype = util.inherit(Control, {
     _createButton: function(className, fn) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
-        a.addEventListener('click', function() { fn(); });
+        a.addEventListener('click', () => { fn(); });
         return a;
     },
 

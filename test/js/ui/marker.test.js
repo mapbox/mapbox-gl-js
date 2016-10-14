@@ -13,15 +13,15 @@ function createMap() {
     return new Map({container: container});
 }
 
-test('Marker', function (t) {
-    t.test('constructor', function (t) {
+test('Marker', (t) => {
+    t.test('constructor', (t) => {
         const el = window.document.createElement('div');
         const marker = new Marker(el);
         t.ok(marker.getElement(), 'marker element is created');
         t.end();
     });
 
-    t.test('marker is added to map', function (t) {
+    t.test('marker is added to map', (t) => {
         const map = createMap();
         const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]);
         t.ok(marker.addTo(map) instanceof Marker, 'marker.addTo(map) returns Marker instance');
@@ -29,7 +29,7 @@ test('Marker', function (t) {
         t.end();
     });
 
-    t.test('marker\'s lngLat can be changed', function (t) {
+    t.test('marker\'s lngLat can be changed', (t) => {
         const map = createMap();
         const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
         t.ok(marker.setLngLat([-76, 39]) instanceof Marker, 'marker.setLngLat() returns Marker instance');
@@ -38,7 +38,7 @@ test('Marker', function (t) {
         t.end();
     });
 
-    t.test('popups can be bound to marker instance', function (t) {
+    t.test('popups can be bound to marker instance', (t) => {
         const map = createMap();
         const popup = new Popup();
         const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
@@ -47,7 +47,7 @@ test('Marker', function (t) {
         t.end();
     });
 
-    t.test('popups can be unbound from a marker instance', function (t) {
+    t.test('popups can be unbound from a marker instance', (t) => {
         const map = createMap();
         const marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
         marker.setPopup(new Popup());

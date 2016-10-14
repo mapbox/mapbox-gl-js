@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const StructArrayType = require('../../../js/util/struct_array');
 
-test('StructArray', function(t) {
+test('StructArray', (t) => {
 
     const TestArray = new StructArrayType({
         members: [
@@ -13,7 +13,7 @@ test('StructArray', function(t) {
         alignment: 4
     });
 
-    t.test('type defined', function(t) {
+    t.test('type defined', (t) => {
 
         t.deepEqual(TestArray.serialize(), {
             members: [{
@@ -34,7 +34,7 @@ test('StructArray', function(t) {
         t.end();
     });
 
-    t.test('array constructs itself', function(t) {
+    t.test('array constructs itself', (t) => {
         const array = new TestArray();
 
         t.equal(array.length, 0);
@@ -44,7 +44,7 @@ test('StructArray', function(t) {
         t.end();
     });
 
-    t.test('emplaceBack', function(t) {
+    t.test('emplaceBack', (t) => {
         const array = new TestArray();
 
         t.equal(0, array.emplaceBack(1, 7, 3));
@@ -64,7 +64,7 @@ test('StructArray', function(t) {
         t.end();
     });
 
-    t.test('automatically resizes', function(t) {
+    t.test('automatically resizes', (t) => {
         const array = new TestArray();
         const initialCapacity = array.capacity;
 
@@ -80,7 +80,7 @@ test('StructArray', function(t) {
         t.end();
     });
 
-    t.test('trims', function(t) {
+    t.test('trims', (t) => {
         const array = new TestArray();
         const capacityInitial = array.capacity;
 

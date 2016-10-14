@@ -33,12 +33,12 @@ AttributionControl.prototype = util.inherit(Control, {
         this._updateAttributions();
         this._updateEditLink();
 
-        map.on('data', function(event) {
+        map.on('data', (event) => {
             if (event.dataType === 'source') {
                 this._updateAttributions();
                 this._updateEditLink();
             }
-        }.bind(this));
+        });
 
         map.on('moveend', this._updateEditLink.bind(this));
 
@@ -60,8 +60,8 @@ AttributionControl.prototype = util.inherit(Control, {
 
         // remove any entries that are substrings of another entry.
         // first sort by length so that substrings come first
-        attributions.sort(function (a, b) { return a.length - b.length; });
-        attributions = attributions.filter(function (attrib, i) {
+        attributions.sort((a, b) => { return a.length - b.length; });
+        attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
                 if (attributions[j].indexOf(attrib) >= 0) { return false; }
             }

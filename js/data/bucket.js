@@ -86,10 +86,10 @@ function Bucket(options) {
 
     if (options.arrays) {
         const programInterfaces = this.programInterfaces;
-        this.bufferGroups = util.mapObject(options.arrays, function(programArrayGroups, programName) {
+        this.bufferGroups = util.mapObject(options.arrays, (programArrayGroups, programName) => {
             const programInterface = programInterfaces[programName];
             const paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
-            return programArrayGroups.map(function(arrayGroup) {
+            return programArrayGroups.map((arrayGroup) => {
                 return new BufferGroup(arrayGroup, {
                     layoutVertexArrayType: programInterface.layoutVertexArrayType.serialize(),
                     elementArrayType: programInterface.elementArrayType && programInterface.elementArrayType.serialize(),
@@ -224,18 +224,18 @@ Bucket.prototype.serialize = function() {
     return {
         layerId: this.layer.id,
         zoom: this.zoom,
-        arrays: util.mapObject(this.arrayGroups, function(programArrayGroups) {
-            return programArrayGroups.map(function(arrayGroup) {
+        arrays: util.mapObject(this.arrayGroups, (programArrayGroups) => {
+            return programArrayGroups.map((arrayGroup) => {
                 return arrayGroup.serialize();
             });
         }),
-        paintVertexArrayTypes: util.mapObject(this.paintVertexArrayTypes, function(arrayTypes) {
-            return util.mapObject(arrayTypes, function(arrayType) {
+        paintVertexArrayTypes: util.mapObject(this.paintVertexArrayTypes, (arrayTypes) => {
+            return util.mapObject(arrayTypes, (arrayType) => {
                 return arrayType.serialize();
             });
         }),
 
-        childLayerIds: this.childLayers.map(function(layer) {
+        childLayerIds: this.childLayers.map((layer) => {
             return layer.id;
         })
     };

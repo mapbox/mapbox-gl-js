@@ -5,8 +5,8 @@ const StyleLayer = require('../../../js/style/style_layer');
 const FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
 const util = require('../../../js/util/util');
 
-test('StyleLayer', function(t) {
-    t.test('sets properties from ref', function (t) {
+test('StyleLayer', (t) => {
+    t.test('sets properties from ref', (t) => {
         const layer = StyleLayer.create(
             {ref: 'ref'},
             StyleLayer.create({type: 'fill'})
@@ -16,7 +16,7 @@ test('StyleLayer', function(t) {
         t.end();
     });
 
-    t.test('instantiates the correct subclass', function (t) {
+    t.test('instantiates the correct subclass', (t) => {
         const layer = StyleLayer.create({type: 'fill'});
 
         t.ok(layer instanceof FillStyleLayer);
@@ -26,9 +26,9 @@ test('StyleLayer', function(t) {
     t.end();
 });
 
-test('StyleLayer#updatePaintTransition', function (t) {
+test('StyleLayer#updatePaintTransition', (t) => {
 
-    t.test('updates paint transition', function(t) {
+    t.test('updates paint transition', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -41,7 +41,7 @@ test('StyleLayer#updatePaintTransition', function (t) {
         t.end();
     });
 
-    t.test('updates paint transition with class', function(t) {
+    t.test('updates paint transition with class', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -57,7 +57,7 @@ test('StyleLayer#updatePaintTransition', function (t) {
         t.end();
     });
 
-    t.test('updates paint transition with extraneous class', function(t) {
+    t.test('updates paint transition with extraneous class', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -73,8 +73,8 @@ test('StyleLayer#updatePaintTransition', function (t) {
     t.end();
 });
 
-test('StyleLayer#updatePaintTransitions', function (t) {
-    t.test('respects classes regardless of layer properties order', function (t) {
+test('StyleLayer#updatePaintTransitions', (t) => {
+    t.test('respects classes regardless of layer properties order', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "fill",
@@ -99,8 +99,8 @@ test('StyleLayer#updatePaintTransitions', function (t) {
     t.end();
 });
 
-test('StyleLayer#setPaintProperty', function(t) {
-    t.test('sets new property value', function(t) {
+test('StyleLayer#setPaintProperty', (t) => {
+    t.test('sets new property value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background"
@@ -112,7 +112,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('updates property value', function(t) {
+    t.test('updates property value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -127,7 +127,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('unsets value', function(t) {
+    t.test('unsets value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -148,7 +148,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('sets classed paint value', function(t) {
+    t.test('sets classed paint value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -163,7 +163,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('unsets classed paint value', function(t) {
+    t.test('unsets classed paint value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -188,7 +188,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('preserves existing transition', function(t) {
+    t.test('preserves existing transition', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -206,7 +206,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('sets transition', function(t) {
+    t.test('sets transition', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -221,7 +221,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('sets transition with a class name equal to the property name', function(t) {
+    t.test('sets transition with a class name equal to the property name', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background",
@@ -236,13 +236,13 @@ test('StyleLayer#setPaintProperty', function(t) {
         t.end();
     });
 
-    t.test('emits on an invalid property value', function(t) {
+    t.test('emits on an invalid property value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background"
         });
 
-        layer.on('error', function() {
+        layer.on('error', () => {
             t.equal(layer.getPaintProperty('background-opacity'), undefined);
             t.equal(layer.getPaintValue('background-opacity'), 1);
             t.end();
@@ -251,13 +251,13 @@ test('StyleLayer#setPaintProperty', function(t) {
         layer.setPaintProperty('background-opacity', 5);
     });
 
-    t.test('emits on an invalid transition property value', function(t) {
+    t.test('emits on an invalid transition property value', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
             "type": "background"
         });
 
-        layer.on('error', function() {
+        layer.on('error', () => {
             t.end();
         });
 
@@ -266,7 +266,7 @@ test('StyleLayer#setPaintProperty', function(t) {
         });
     });
 
-    t.test('can unset fill-outline-color #2886', function (t) {
+    t.test('can unset fill-outline-color #2886', (t) => {
         const layer = StyleLayer.create({
             id: 'building',
             type: 'fill',
@@ -289,8 +289,8 @@ test('StyleLayer#setPaintProperty', function(t) {
     t.end();
 });
 
-test('StyleLayer#setLayoutProperty', function(t) {
-    t.test('sets new property value', function(t) {
+test('StyleLayer#setLayoutProperty', (t) => {
+    t.test('sets new property value', (t) => {
         const layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol"
@@ -302,20 +302,20 @@ test('StyleLayer#setLayoutProperty', function(t) {
         t.end();
     });
 
-    t.test('emits on an invalid property value', function(t) {
+    t.test('emits on an invalid property value', (t) => {
         const layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol"
         });
 
-        layer.on('error', function() {
+        layer.on('error', () => {
             t.end();
         });
 
         layer.setLayoutProperty('text-transform', 'mapboxcase');
     });
 
-    t.test('updates property value', function(t) {
+    t.test('updates property value', (t) => {
         const layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol",
@@ -330,7 +330,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
         t.end();
     });
 
-    t.test('unsets property value', function(t) {
+    t.test('unsets property value', (t) => {
         const layer = StyleLayer.create({
             "id": "symbol",
             "type": "symbol",
@@ -349,7 +349,7 @@ test('StyleLayer#setLayoutProperty', function(t) {
     t.end();
 });
 
-test('StyleLayer#serialize', function(t) {
+test('StyleLayer#serialize', (t) => {
 
     function createSymbolLayer(layer) {
         return util.extend({
@@ -374,7 +374,7 @@ test('StyleLayer#serialize', function(t) {
         }, layer);
     }
 
-    t.test('serializes layers', function(t) {
+    t.test('serializes layers', (t) => {
         t.deepEqual(
             StyleLayer.create(createSymbolLayer()).serialize(),
             createSymbolLayer()
@@ -382,7 +382,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes layers with paint classes', function(t) {
+    t.test('serializes layers with paint classes', (t) => {
         const layer = createSymbolLayer({
             'paint.night': {
                 'text-color': 'orange'
@@ -395,7 +395,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes refed layers', function(t) {
+    t.test('serializes refed layers', (t) => {
         t.deepEqual(
             StyleLayer.create(
                 createRefedSymbolLayer(),
@@ -406,7 +406,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes refed layers with ref properties', function(t) {
+    t.test('serializes refed layers with ref properties', (t) => {
         t.deepEqual(
             StyleLayer.create(
                 createRefedSymbolLayer(),
@@ -423,7 +423,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes functions', function(t) {
+    t.test('serializes functions', (t) => {
         const layerPaint = {
             'text-color': {
                 base: 2,
@@ -438,7 +438,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes added paint properties', function(t) {
+    t.test('serializes added paint properties', (t) => {
         const layer = StyleLayer.create(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
@@ -448,7 +448,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes added layout properties', function(t) {
+    t.test('serializes added layout properties', (t) => {
         const layer = StyleLayer.create(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
@@ -461,7 +461,7 @@ test('StyleLayer#serialize', function(t) {
     t.end();
 });
 
-test('StyleLayer#serialize', function(t) {
+test('StyleLayer#serialize', (t) => {
 
     function createSymbolLayer(layer) {
         return util.extend({
@@ -486,7 +486,7 @@ test('StyleLayer#serialize', function(t) {
         }, layer);
     }
 
-    t.test('serializes layers', function(t) {
+    t.test('serializes layers', (t) => {
         t.deepEqual(
             StyleLayer.create(createSymbolLayer()).serialize(),
             createSymbolLayer()
@@ -494,7 +494,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes refed layers', function(t) {
+    t.test('serializes refed layers', (t) => {
         t.deepEqual(
             StyleLayer.create(
                 createRefedSymbolLayer(),
@@ -504,7 +504,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes refed layers with ref properties', function(t) {
+    t.test('serializes refed layers with ref properties', (t) => {
         t.deepEqual(
             StyleLayer.create(
                 createRefedSymbolLayer(),
@@ -521,7 +521,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes functions', function(t) {
+    t.test('serializes functions', (t) => {
         const layerPaint = {
             'text-color': {
                 base: 2,
@@ -536,7 +536,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes added paint properties', function(t) {
+    t.test('serializes added paint properties', (t) => {
         const layer = StyleLayer.create(createSymbolLayer());
         layer.setPaintProperty('text-halo-color', 'orange');
 
@@ -546,7 +546,7 @@ test('StyleLayer#serialize', function(t) {
         t.end();
     });
 
-    t.test('serializes added layout properties', function(t) {
+    t.test('serializes added layout properties', (t) => {
         const layer = StyleLayer.create(createSymbolLayer());
         layer.setLayoutProperty('text-size', 20);
 
@@ -559,8 +559,8 @@ test('StyleLayer#serialize', function(t) {
     t.end();
 });
 
-test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
-    t.test('symbol-placement:point => *-rotation-alignment:viewport', function(t) {
+test('StyleLayer#getLayoutValue (default exceptions)', (t) => {
+    t.test('symbol-placement:point => *-rotation-alignment:viewport', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -572,7 +572,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('symbol-placement:line => *-rotation-alignment:map', function(t) {
+    t.test('symbol-placement:line => *-rotation-alignment:map', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -584,7 +584,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('text-rotation-alignment:map => text-pitch-alignment:map', function(t) {
+    t.test('text-rotation-alignment:map => text-pitch-alignment:map', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -596,7 +596,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('text-rotation-alignment:viewport => text-pitch-alignment:viewport', function(t) {
+    t.test('text-rotation-alignment:viewport => text-pitch-alignment:viewport', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -608,7 +608,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('text-pitch-alignment:auto defaults to text-rotation-alignment', function(t) {
+    t.test('text-pitch-alignment:auto defaults to text-rotation-alignment', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -621,7 +621,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('text-pitch-alignment respected when set', function(t) {
+    t.test('text-pitch-alignment respected when set', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -634,7 +634,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('symbol-placement:point and text-rotation-alignment:auto  => text-rotation-alignment:viewport ', function(t) {
+    t.test('symbol-placement:point and text-rotation-alignment:auto  => text-rotation-alignment:viewport ', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -646,7 +646,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('symbol-placement:line and text-rotation-alignment:auto  => text-rotation-alignment:map ', function(t) {
+    t.test('symbol-placement:line and text-rotation-alignment:auto  => text-rotation-alignment:map ', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -658,7 +658,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('symbol-placement:point and icon-rotation-alignment:auto  => icon-rotation-alignment:viewport ', function(t) {
+    t.test('symbol-placement:point and icon-rotation-alignment:auto  => icon-rotation-alignment:viewport ', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -670,7 +670,7 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
         t.end();
     });
 
-    t.test('symbol-placement:line and icon-rotation-alignment:auto  => icon-rotation-alignment:map ', function(t) {
+    t.test('symbol-placement:line and icon-rotation-alignment:auto  => icon-rotation-alignment:map ', (t) => {
         const layer = StyleLayer.create({
             "type": "symbol",
             "layout": {

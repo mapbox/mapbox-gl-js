@@ -6,7 +6,7 @@ const Anchor = require('../../../js/symbol/anchor');
 const Point = require('point-geometry');
 const CollisionBoxArray = require('../../../js/symbol/collision_box');
 
-test('CollisionFeature', function(t) {
+test('CollisionFeature', (t) => {
 
     const collisionBoxArray = new CollisionBoxArray();
 
@@ -17,7 +17,7 @@ test('CollisionFeature', function(t) {
         bottom: 10
     };
 
-    test('point label', function(t) {
+    test('point label', (t) => {
         const point = new Point(500, 0);
         const anchor = new Anchor(point.x, point.y, 0, undefined);
 
@@ -32,7 +32,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('line label', function(t) {
+    test('line label', (t) => {
         const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         const anchor = new Anchor(505, 95, 0, 1);
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
@@ -51,7 +51,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('vertical line label', function(t) {
+    test('vertical line label', (t) => {
         const line = [new Point(0, 0), new Point(0, 100), new Point(0, 111), new Point(0, 112), new Point(0, 200)];
         const anchor = new Anchor(0, 110, 0, 1);
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
@@ -70,7 +70,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('doesnt create any boxes for features with zero height', function(t) {
+    test('doesnt create any boxes for features with zero height', (t) => {
         const shapedText = {
             left: -50,
             top: -10,
@@ -85,7 +85,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('doesnt create any boxes for features with negative height', function(t) {
+    test('doesnt create any boxes for features with negative height', (t) => {
         const shapedText = {
             left: -50,
             top: 10,
@@ -100,7 +100,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('doesnt create way too many tiny boxes for features with really low height', function(t) {
+    test('doesnt create way too many tiny boxes for features with really low height', (t) => {
         const shapedText = {
             left: -50,
             top: 10,
@@ -115,7 +115,7 @@ test('CollisionFeature', function(t) {
         t.end();
     });
 
-    test('height is big enough that first box can be placed *after* anchor', function(t) {
+    test('height is big enough that first box can be placed *after* anchor', (t) => {
         const line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
         const anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
         const shaping = { right: 256, left: 0, bottom: 256, top: 0 };

@@ -19,7 +19,7 @@ module.exports = function() {
         style: 'mapbox://styles/mapbox/bright-v9'
     });
 
-    map.on('load', function() {
+    map.on('load', () => {
         map.repaint = true;
 
         evented.fire('log', {
@@ -27,7 +27,7 @@ module.exports = function() {
             color: 'dark'
         });
 
-        measureFramerate(DURATION_MILLISECONDS, function(err, fps) {
+        measureFramerate(DURATION_MILLISECONDS, (err, fps) => {
             map.remove();
             if (err) {
                 evented.fire('error', { error: err });

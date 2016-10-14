@@ -29,7 +29,7 @@ module.exports = function() {
     let sum = 0;
     let count = 0;
 
-    asyncSeries(zoomLevels.length, function(n, callback) {
+    asyncSeries(zoomLevels.length, (n, callback) => {
         const zoomLevel = zoomLevels[zoomLevels.length - n];
         const map = createMap({
             width: width,
@@ -40,11 +40,11 @@ module.exports = function() {
         });
         map.getContainer().style.display = 'none';
 
-        map.on('load', function() {
+        map.on('load', () => {
 
             let zoomSum = 0;
             let zoomCount = 0;
-            asyncSeries(queryPoints.length, function(n, callback) {
+            asyncSeries(queryPoints.length, (n, callback) => {
                 const queryPoint = queryPoints[queryPoints.length - n];
                 const start = performance.now();
                 map.queryRenderedFeatures(queryPoint, {});
@@ -54,7 +54,7 @@ module.exports = function() {
                 zoomSum += duration;
                 zoomCount++;
                 callback();
-            }, function() {
+            }, () => {
                 map.remove();
                 evented.fire('log', {
                     message: `${(zoomSum / zoomCount).toFixed(2)} ms at zoom ${zoomLevel}`
@@ -72,7 +72,7 @@ module.exports = function() {
             score: average
         });
     }
-    setTimeout(function() {
+    setTimeout(() => {
         evented.fire('log', {
             message: 'loading assets',
             color: 'dark'
@@ -84,7 +84,7 @@ module.exports = function() {
 
 function asyncSeries(times, work, callback) {
     if (times > 0) {
-        work(times, function(err) {
+        work(times, (err) => {
             if (err) callback(err);
             else asyncSeries(times - 1, work, callback);
         });

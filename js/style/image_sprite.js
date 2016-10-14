@@ -13,7 +13,7 @@ function ImageSprite(base) {
 
     const format = this.retina ? '@2x' : '';
 
-    ajax.getJSON(normalizeURL(base, format, '.json'), function(err, data) {
+    ajax.getJSON(normalizeURL(base, format, '.json'), (err, data) => {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -21,9 +21,9 @@ function ImageSprite(base) {
 
         this.data = data;
         if (this.img) this.fire('data', {dataType: 'style'});
-    }.bind(this));
+    });
 
-    ajax.getImage(normalizeURL(base, format, '.png'), function(err, img) {
+    ajax.getImage(normalizeURL(base, format, '.png'), (err, img) => {
         if (err) {
             this.fire('error', {error: err});
             return;
@@ -42,7 +42,7 @@ function ImageSprite(base) {
 
         this.img = img;
         if (this.data) this.fire('data', {dataType: 'style'});
-    }.bind(this));
+    });
 }
 
 ImageSprite.prototype = Object.create(Evented);
@@ -58,11 +58,11 @@ ImageSprite.prototype.loaded = function() {
 ImageSprite.prototype.resize = function(/*gl*/) {
     if (browser.devicePixelRatio > 1 !== this.retina) {
         const newSprite = new ImageSprite(this.base);
-        newSprite.on('data', function() {
+        newSprite.on('data', () => {
             this.img = newSprite.img;
             this.data = newSprite.data;
             this.retina = newSprite.retina;
-        }.bind(this));
+        });
     }
 };
 

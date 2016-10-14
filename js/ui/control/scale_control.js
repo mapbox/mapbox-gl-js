@@ -36,7 +36,7 @@ ScaleControl.prototype = util.inherit(Control, {
             options = this.options;
 
         updateScale(map, container, options);
-        map.on('move', function() {
+        map.on('move', () => {
             updateScale(map, container, options);
         });
 

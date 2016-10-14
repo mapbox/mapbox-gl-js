@@ -4,7 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const Buffer = require('../../../js/data/buffer');
 const StructArrayType = require('../../../js/util/struct_array');
 
-test('Buffer', function(t) {
+test('Buffer', (t) => {
 
     const TestArray = new StructArrayType({
         members: [
@@ -15,7 +15,7 @@ test('Buffer', function(t) {
     });
 
 
-    t.test('constructs itself', function(t) {
+    t.test('constructs itself', (t) => {
         const array = new TestArray();
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);

@@ -127,8 +127,8 @@ FeatureIndex.prototype.query = function(args, styleLayers) {
         additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
     }
 
-    const queryGeometry = args.queryGeometry.map(function(q) {
-        return q.map(function(p) {
+    const queryGeometry = args.queryGeometry.map((q) => {
+        return q.map((p) => {
             return new Point(p.x, p.y);
         });
     });

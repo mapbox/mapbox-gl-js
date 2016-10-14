@@ -163,7 +163,7 @@ function convertCoords(rings) {
 }
 
 function isBoundaryEdge(v1, v2) {
-    return v1.some(function(a, i) {
+    return v1.some((a, i) => {
         return isOutside(v2[i]) && v2[i] === a;
     });
 }

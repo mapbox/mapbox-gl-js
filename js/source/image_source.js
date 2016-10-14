@@ -51,7 +51,7 @@ function ImageSource(id, options, dispatcher, eventedParent) {
 
     this.setEventedParent(eventedParent);
     this.fire('dataloading', {dataType: 'source'});
-    ajax.getImage(options.url, function(err, image) {
+    ajax.getImage(options.url, (err, image) => {
         if (err) return this.fire('error', {error: err});
 
         this.image = image;
@@ -62,7 +62,7 @@ function ImageSource(id, options, dispatcher, eventedParent) {
         if (this.map) {
             this.setCoordinates(options.coordinates);
         }
-    }.bind(this));
+    });
 }
 
 ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype */ {
@@ -93,7 +93,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
         const map = this.map;
-        const cornerZ0Coords = coordinates.map(function(coord) {
+        const cornerZ0Coords = coordinates.map((coord) => {
             return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
@@ -103,7 +103,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
 
         this.minzoom = this.maxzoom = centerCoord.zoom;
         this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
-        this._tileCoords = cornerZ0Coords.map(function(coord) {
+        this._tileCoords = cornerZ0Coords.map((coord) => {
             const zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),

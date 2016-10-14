@@ -4,8 +4,8 @@ const test = require('mapbox-gl-js-test').test;
 const LngLat = require('../../../js/geo/lng_lat');
 const LngLatBounds = require('../../../js/geo/lng_lat_bounds');
 
-test('LngLatBounds', function(t) {
-    t.test('#constructor', function(t) {
+test('LngLatBounds', (t) => {
+    t.test('#constructor', (t) => {
         const sw = new LngLat(0, 0);
         const ne = new LngLat(-10, 10);
         const bounds = new LngLatBounds(sw, ne);
@@ -16,7 +16,7 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#constructor across dateline', function(t) {
+    t.test('#constructor across dateline', (t) => {
         const sw = new LngLat(170, 0);
         const ne = new LngLat(-170, 10);
         const bounds = new LngLatBounds(sw, ne);
@@ -27,7 +27,7 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#constructor across pole', function(t) {
+    t.test('#constructor across pole', (t) => {
         const sw = new LngLat(0, 85);
         const ne = new LngLat(-10, -85);
         const bounds = new LngLatBounds(sw, ne);
@@ -38,15 +38,15 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#constructor no args', function(t) {
+    t.test('#constructor no args', (t) => {
         const bounds = new LngLatBounds();
-        t.throws(function() {
+        t.throws(() => {
             bounds.getCenter();
         });
         t.end();
     });
 
-    t.test('#extend with coordinate', function(t) {
+    t.test('#extend with coordinate', (t) => {
         const bounds = new LngLatBounds([0, 0], [10, 10]);
         bounds.extend([-10, -10]);
 
@@ -65,7 +65,7 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#extend with bounds', function(t) {
+    t.test('#extend with bounds', (t) => {
         const bounds1 = new LngLatBounds([0, 0], [10, 10]);
         const bounds2 = new LngLatBounds([-10, -10], [10, 10]);
         bounds1.extend(bounds2);
@@ -86,7 +86,7 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('accessors', function(t) {
+    t.test('accessors', (t) => {
         const sw = new LngLat(0, 0);
         const ne = new LngLat(-10, -20);
         const bounds = new LngLatBounds(sw, ne);
@@ -102,7 +102,7 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#convert', function(t) {
+    t.test('#convert', (t) => {
         const sw = new LngLat(0, 0);
         const ne = new LngLat(-10, 10);
         const bounds = new LngLatBounds(sw, ne);
@@ -113,13 +113,13 @@ test('LngLatBounds', function(t) {
         t.end();
     });
 
-    t.test('#toArray', function(t) {
+    t.test('#toArray', (t) => {
         const llb = new LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
         t.deepEqual(llb.toArray(), [[-73.9876, 40.7661], [-73.9397, 40.8002]]);
         t.end();
     });
 
-    t.test('#toString', function(t) {
+    t.test('#toString', (t) => {
         const llb = new LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
         t.deepEqual(llb.toString(), 'LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))');
         t.end();

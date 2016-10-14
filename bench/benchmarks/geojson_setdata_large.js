@@ -11,11 +11,11 @@ const ajax = require('../../js/util/ajax');
 module.exports = function() {
     const evented = util.extend({}, Evented);
 
-    setTimeout(function() {
+    setTimeout(() => {
         evented.fire('log', {message: 'downloading large geojson'});
     }, 0);
 
-    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', function(err, data) {
+    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', (err, data) => {
         evented.fire('log', {message: 'starting test'});
 
         if (err) return evented.fire('error', {error: err});
@@ -28,10 +28,10 @@ module.exports = function() {
             style: 'mapbox://styles/mapbox/bright-v9'
         });
 
-        map.on('load', function() {
+        map.on('load', () => {
             map = setupGeoJSONMap(map);
 
-            setDataPerf(map.style.sourceCaches.geojson, data, function(err, ms) {
+            setDataPerf(map.style.sourceCaches.geojson, data, (err, ms) => {
                 if (err) return evented.fire('error', {error: err});
                 map.remove();
                 evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});

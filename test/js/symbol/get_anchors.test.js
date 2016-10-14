@@ -6,7 +6,7 @@ const getAnchors = require('../../../js/symbol/get_anchors');
 
 const TILE_EXTENT = 4096;
 
-test('getAnchors', function(t) {
+test('getAnchors', (t) => {
     const nonContinuedLine = [];
     for (let i = 1; i < 11; i++) {
         nonContinuedLine.push(new Point(1, i));
@@ -28,7 +28,7 @@ test('getAnchors', function(t) {
 
     const glyphSize = 0.1;
 
-    test('non-continued line with short labels', function(t) {
+    test('non-continued line with short labels', (t) => {
         const anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         t.deepEqual(anchors, [ { x: 1,
@@ -50,7 +50,7 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('non-continued line with long labels', function(t) {
+    test('non-continued line with long labels', (t) => {
         const anchors = getAnchors(nonContinuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         t.deepEqual(anchors, [ { x: 1,
@@ -69,7 +69,7 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('continued line with short labels', function(t) {
+    test('continued line with short labels', (t) => {
         const anchors = getAnchors(continuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         t.deepEqual(anchors, [ { x: 1,
@@ -88,7 +88,7 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('continued line with long labels', function(t) {
+    test('continued line with long labels', (t) => {
         const anchors = getAnchors(continuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
         t.deepEqual(anchors, [ { x: 1,
@@ -107,7 +107,7 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('overscaled anchors contain all anchors in parent', function(t) {
+    test('overscaled anchors contain all anchors in parent', (t) => {
         const anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
         const childAnchors = getAnchors(nonContinuedLine, bigSpacing / 2, Math.PI, shapedText, shapedIcon, glyphSize, 0.5, 2, TILE_EXTENT);
         for (let i = 0; i < anchors.length; i++) {
@@ -125,7 +125,7 @@ test('getAnchors', function(t) {
         t.end();
     });
 
-    test('use middle point as a fallback position for short non-continued lines', function(t) {
+    test('use middle point as a fallback position for short non-continued lines', (t) => {
         const line = [new Point(1, 1), new Point(1, 3.1)];
         const anchors = getAnchors(line, 2, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
         t.deepEqual(anchors, [

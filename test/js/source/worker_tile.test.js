@@ -28,7 +28,7 @@ function createWrapper() {
     }]);
 }
 
-test('WorkerTile#parse', function(t) {
+test('WorkerTile#parse', (t) => {
     const layerFamilies = {
         test: [new StyleLayer({
             id: 'test',
@@ -41,14 +41,14 @@ test('WorkerTile#parse', function(t) {
     };
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerFamilies, {}, function(err, result) {
+    tile.parse(createWrapper(), layerFamilies, {}, (err, result) => {
         t.ifError(err);
         t.ok(result.buckets[0]);
         t.end();
     });
 });
 
-test('WorkerTile#parse skips hidden layers', function(t) {
+test('WorkerTile#parse skips hidden layers', (t) => {
     const layerFamilies = {
         'test': [new StyleLayer({
             id: 'test',
@@ -69,14 +69,14 @@ test('WorkerTile#parse skips hidden layers', function(t) {
     };
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerFamilies, {}, function(err, result) {
+    tile.parse(createWrapper(), layerFamilies, {}, (err, result) => {
         t.ifError(err);
         t.equal(Object.keys(result.buckets[0].arrays).length, 1);
         t.end();
     });
 });
 
-test('WorkerTile#parse skips layers without a corresponding source layer', function(t) {
+test('WorkerTile#parse skips layers without a corresponding source layer', (t) => {
     const layerFamilies = {
         'test-sourceless': [new StyleLayer({
             id: 'test',
@@ -90,14 +90,14 @@ test('WorkerTile#parse skips layers without a corresponding source layer', funct
     };
 
     const tile = createWorkerTile();
-    tile.parse({layers: {}}, layerFamilies, {}, function(err, result) {
+    tile.parse({layers: {}}, layerFamilies, {}, (err, result) => {
         t.ifError(err);
         t.equal(result.buckets.length, 0);
         t.end();
     });
 });
 
-test('WorkerTile#parse warns once when encountering a v1 vector tile layer', function(t) {
+test('WorkerTile#parse warns once when encountering a v1 vector tile layer', (t) => {
     const layerFamilies = {
         'test': [new StyleLayer({
             id: 'test',
@@ -121,7 +121,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', fun
     t.stub(util, 'warnOnce');
 
     const tile = createWorkerTile();
-    tile.parse(data, layerFamilies, {}, function(err) {
+    tile.parse(data, layerFamilies, {}, (err) => {
         t.ifError(err);
         t.ok(util.warnOnce.calledWithMatch(/does not use vector tile spec v2/));
         t.end();

@@ -20,7 +20,7 @@ function compareNum(a, b) {
     return a - b;
 }
 
-test('resolveText', function(t) {
+test('resolveText', (t) => {
     // Latin ranges.
     // Skips feature without text field.
     compareResolve(t, {

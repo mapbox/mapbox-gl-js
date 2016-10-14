@@ -89,7 +89,7 @@ module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, f
 };
 
 function applyPragmas(source, pragmas) {
-    return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, function(match, operation, precision, type, name) {
+    return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
         return pragmas[operation][name].replace(/{type}/g, type).replace(/{precision}/g, precision);
     });
 }

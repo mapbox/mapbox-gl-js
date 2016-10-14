@@ -272,7 +272,7 @@ StyleLayer.prototype = util.inherit(Evented, {
             });
         }
 
-        return util.filterObject(output, function(value, key) {
+        return util.filterObject(output, (value, key) => {
             return value !== undefined && !(key === 'layout' && !Object.keys(value).length);
         });
     },

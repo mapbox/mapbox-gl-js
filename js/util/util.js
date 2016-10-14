@@ -105,8 +105,8 @@ exports.asyncAll = function (array, fn, callback) {
     let remaining = array.length;
     const results = new Array(array.length);
     let error = null;
-    array.forEach(function (item, i) {
-        fn(item, function (err, result) {
+    array.forEach((item, i) => {
+        fn(item, (err, result) => {
             if (err) error = err;
             results[i] = result;
             if (--remaining === 0) callback(error, results);
@@ -238,7 +238,7 @@ exports.debounce = function(fn, time) {
         args = arguments;
         clearTimeout(timer);
 
-        timer = setTimeout(function() {
+        timer = setTimeout(() => {
             fn.apply(null, args);
         }, time);
     };
@@ -267,7 +267,7 @@ exports.debounce = function(fn, time) {
  * @private
  */
 exports.bindAll = function(fns, context) {
-    fns.forEach(function(fn) {
+    fns.forEach((fn) => {
         if (!context[fn]) { return; }
         context[fn] = context[fn].bind(context);
     });

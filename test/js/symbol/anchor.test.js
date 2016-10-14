@@ -3,13 +3,13 @@
 const test = require('mapbox-gl-js-test').test;
 const Anchor = require('../../../js/symbol/anchor');
 
-test('Anchor', function(t) {
-    t.test('#constructor', function(t) {
+test('Anchor', (t) => {
+    t.test('#constructor', (t) => {
         t.ok(new Anchor(0, 0, 0, []) instanceof Anchor, 'creates an object');
         t.ok(new Anchor(0, 0, 0, [], []) instanceof Anchor, 'creates an object with a segment');
         t.end();
     });
-    t.test('#clone', function(t) {
+    t.test('#clone', (t) => {
         const a = new Anchor(1, 2, 3, []);
         const b = new Anchor(1, 2, 3, []);
         t.deepEqual(a.clone(), b);

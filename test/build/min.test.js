@@ -6,12 +6,12 @@ const pkg = require('../../package.json');
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
-test('production build removes asserts', function(t) {
+test('production build removes asserts', (t) => {
     t.assert(minBundle.indexOf('assert(') === -1);
     t.end();
 });
 
-test('trims package.json assets', function(t) {
+test('trims package.json assets', (t) => {
     t.assert(minBundle.indexOf(`module.exports={"version":"${pkg.version}"}`) !== -1);
     t.end();
 });

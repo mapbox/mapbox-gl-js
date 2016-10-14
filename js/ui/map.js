@@ -162,10 +162,10 @@ const Map = module.exports = function(options) {
 
     this.on('move', this._update.bind(this, false));
     this.on('zoom', this._update.bind(this, true));
-    this.on('moveend', function() {
+    this.on('moveend', () => {
         this.animationLoop.set(300); // text fading
         this._rerender();
-    }.bind(this));
+    });
 
     if (typeof window !== 'undefined') {
         window.addEventListener('online', this._onWindowOnline, false);
@@ -565,9 +565,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             ];
         }
 
-        queryGeometry = queryGeometry.map(function(p) {
+        queryGeometry = queryGeometry.map((p) => {
             return this.transform.pointCoordinate(p);
-        }.bind(this));
+        });
 
         return queryGeometry;
     },
@@ -955,7 +955,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
         const corners = this._controlCorners = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((pos) => {
             corners[pos] = DOM.create('div', `mapboxgl-ctrl-${pos}`, controlContainer);
         });
     },

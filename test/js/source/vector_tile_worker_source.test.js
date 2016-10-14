@@ -8,8 +8,8 @@ const styleLayers = {
     getLayerFamilies: function () {}
 };
 
-test('abortTile', function(t) {
-    t.test('aborts pending request', function(t) {
+test('abortTile', (t) => {
+    t.test('aborts pending request', (t) => {
         const source = new VectorTileWorkerSource(null, styleLayers);
 
         source.loadTile({
@@ -30,8 +30,8 @@ test('abortTile', function(t) {
     t.end();
 });
 
-test('removeTile', function(t) {
-    t.test('removes loaded tile', function(t) {
+test('removeTile', (t) => {
+    t.test('removes loaded tile', (t) => {
         const source = new VectorTileWorkerSource(null, styleLayers);
 
         source.loaded = {
@@ -52,9 +52,9 @@ test('removeTile', function(t) {
     t.end();
 });
 
-test('redoPlacement', function(t) {
+test('redoPlacement', (t) => {
 
-    t.test('on loaded tile', function(t) {
+    t.test('on loaded tile', (t) => {
         const source = new VectorTileWorkerSource(null, styleLayers);
         const tile = {
             redoPlacement: function(angle, pitch, showCollisionBoxes) {
@@ -75,7 +75,7 @@ test('redoPlacement', function(t) {
             angle: 60,
             pitch: 30,
             showCollisionBoxes: false
-        }, function(err, result, transferables) {
+        }, (err, result, transferables) => {
             t.error(err);
             t.ok(result.isResult);
             t.ok(transferables.isTransferrables);
@@ -83,7 +83,7 @@ test('redoPlacement', function(t) {
         });
     });
 
-    t.test('on loading tile', function(t) {
+    t.test('on loading tile', (t) => {
         const source = new VectorTileWorkerSource(null, styleLayers);
         const tile = {};
         source.loading = {mapbox: {3: tile}};

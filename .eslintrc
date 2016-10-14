@@ -11,6 +11,7 @@
     "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
+    "prefer-arrow-callback": "error",
     "prefer-template": "error",
     "quotes": "off",
     "space-before-function-paren": "off",

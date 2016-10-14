@@ -12,7 +12,7 @@ module.exports = function parseColor(input) {
 
         if (!input.stops) return input;
         else return util.extend({}, input, {
-            stops: input.stops.map(function(stop) {
+            stops: input.stops.map((stop) => {
                 return [stop[0], parseColor(stop[1])];
             })
         });

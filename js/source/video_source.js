@@ -45,7 +45,7 @@ function VideoSource(id, options, dispatcher, eventedParent) {
 
     this.setEventedParent(eventedParent);
     this.fire('dataloading', {dataType: 'source'});
-    ajax.getVideo(options.urls, function(err, video) {
+    ajax.getVideo(options.urls, (err, video) => {
         if (err) return this.fire('error', {error: err});
 
         this.video = video;
@@ -54,15 +54,15 @@ function VideoSource(id, options, dispatcher, eventedParent) {
         let loopID;
 
         // start repainting when video starts playing
-        this.video.addEventListener('playing', function() {
+        this.video.addEventListener('playing', () => {
             loopID = this.map.style.animationLoop.set(Infinity);
             this.map._rerender();
-        }.bind(this));
+        });
 
         // stop repainting when video stops
-        this.video.addEventListener('pause', function() {
+        this.video.addEventListener('pause', () => {
             this.map.style.animationLoop.cancel(loopID);
-        }.bind(this));
+        });
 
         if (this.map) {
             this.video.play();
@@ -71,7 +71,7 @@ function VideoSource(id, options, dispatcher, eventedParent) {
 
         this.fire('data', {dataType: 'source'});
         this.fire('source.load');
-    }.bind(this));
+    });
 }
 
 VideoSource.prototype = util.inherit(ImageSource, /** @lends VideoSource.prototype */{

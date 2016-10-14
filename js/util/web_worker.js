@@ -33,11 +33,11 @@ function MessageBus(addListeners, postListeners) {
             }
         },
         postMessage: function(data) {
-            setImmediate(function() {
+            setImmediate(() => {
                 for (let i = 0; i < postListeners.length; i++) {
                     postListeners[i]({data: data, target: this.target});
                 }
-            }.bind(this));
+            });
         },
         terminate: function() {
             addListeners.splice(0, addListeners.length);

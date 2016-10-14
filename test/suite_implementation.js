@@ -40,8 +40,8 @@ module.exports = function(style, options, _callback) {
 
     const gl = map.painter.gl;
 
-    map.once('load', function() {
-        applyOperations(map, options.operations, function() {
+    map.once('load', () => {
+        applyOperations(map, options.operations, () => {
             const w = options.width * window.devicePixelRatio;
             const h = options.height * window.devicePixelRatio;
 
@@ -69,7 +69,7 @@ module.exports = function(style, options, _callback) {
             gl.getExtension('STACKGL_destroy_context').destroy();
             delete map.painter.gl;
 
-            callback(null, data, results.map(function (feature) {
+            callback(null, data, results.map((feature) => {
                 feature = feature.toJSON();
                 delete feature.layer;
                 return feature;
@@ -113,14 +113,14 @@ function fakeImage(png) {
 const cache = {};
 
 function cached(data, callback) {
-    setImmediate(function () {
+    setImmediate(() => {
         callback(null, data);
     });
 }
 
-sinon.stub(ajax, 'getJSON', function(url, callback) {
+sinon.stub(ajax, 'getJSON', (url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
-    return request(url, function(error, response, body) {
+    return request(url, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             let data;
             try {
@@ -136,9 +136,9 @@ sinon.stub(ajax, 'getJSON', function(url, callback) {
     });
 });
 
-sinon.stub(ajax, 'getArrayBuffer', function(url, callback) {
+sinon.stub(ajax, 'getArrayBuffer', (url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
-    return request({url: url, encoding: null}, function(error, response, body) {
+    return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             const ab = new ArrayBuffer(body.length);
             const view = new Uint8Array(ab);
@@ -153,11 +153,11 @@ sinon.stub(ajax, 'getArrayBuffer', function(url, callback) {
     });
 });
 
-sinon.stub(ajax, 'getImage', function(url, callback) {
+sinon.stub(ajax, 'getImage', (url, callback) => {
     if (cache[url]) return cached(fakeImage(cache[url]), callback);
-    return request({url: url, encoding: null}, function(error, response, body) {
+    return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, function(err, png) {
+            new PNG().parse(body, (err, png) => {
                 if (err) return callback(err);
                 cache[url] = png;
                 callback(null, fakeImage(png));
@@ -170,10 +170,10 @@ sinon.stub(ajax, 'getImage', function(url, callback) {
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with
 // the first frame and fake the video API.
-sinon.stub(ajax, 'getVideo', function(urls, callback) {
-    return request({url: urls[0], encoding: null}, function(error, response, body) {
+sinon.stub(ajax, 'getVideo', (urls, callback) => {
+    return request({url: urls[0], encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            new PNG().parse(body, function(err, png) {
+            new PNG().parse(body, (err, png) => {
                 if (err) return callback(err);
                 callback(null, {
                     readyState: 4, // HAVE_ENOUGH_DATA

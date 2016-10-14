@@ -78,11 +78,11 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
                 return callback(new Error("Input data is not a valid GeoJSON object."));
             }
             rewind(data, true);
-            this._indexData(data, params, function (err, indexed) {
+            this._indexData(data, params, (err, indexed) => {
                 if (err) { return callback(err); }
                 this._geoJSONIndexes[params.source] = indexed;
                 callback(null);
-            }.bind(this));
+            });
         }.bind(this);
 
         this.loadGeoJSON(params, handleData);
