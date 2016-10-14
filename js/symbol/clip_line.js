@@ -1,6 +1,6 @@
 'use strict';
 
-var Point = require('point-geometry');
+const Point = require('point-geometry');
 
 module.exports = clipLine;
 
@@ -16,15 +16,15 @@ module.exports = clipLine;
  * @private
  */
 function clipLine(lines, x1, y1, x2, y2) {
-    var clippedLines = [];
+    const clippedLines = [];
 
-    for (var l = 0; l < lines.length; l++) {
-        var line = lines[l];
-        var clippedLine;
+    for (let l = 0; l < lines.length; l++) {
+        const line = lines[l];
+        let clippedLine;
 
-        for (var i = 0; i < line.length - 1; i++) {
-            var p0 = line[i];
-            var p1 = line[i + 1];
+        for (let i = 0; i < line.length - 1; i++) {
+            let p0 = line[i];
+            let p1 = line[i + 1];
 
 
             if (p0.x < x1 && p1.x < x1) {

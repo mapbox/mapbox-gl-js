@@ -1,10 +1,10 @@
 'use strict';
 
-var ArrayGroup = require('./array_group');
-var BufferGroup = require('./buffer_group');
-var util = require('../util/util');
-var StructArrayType = require('../util/struct_array');
-var assert = require('assert');
+const ArrayGroup = require('./array_group');
+const BufferGroup = require('./buffer_group');
+const util = require('../util/util');
+const StructArrayType = require('../util/struct_array');
+const assert = require('assert');
 
 module.exports = Bucket;
 
@@ -15,7 +15,7 @@ module.exports = Bucket;
  * @returns {Bucket}
  */
 Bucket.create = function(options) {
-    var Classes = {
+    const Classes = {
         fill: require('./bucket/fill_bucket'),
         fillextrusion: require('./bucket/fill_extrusion_bucket'),
         line: require('./bucket/line_bucket'),
@@ -23,7 +23,7 @@ Bucket.create = function(options) {
         symbol: require('./bucket/symbol_bucket')
     };
 
-    var type = options.layer.type;
+    let type = options.layer.type;
     if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
         !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
         options.layer.getPaintValue('fill-extrude-height') !== 0)) {
@@ -85,10 +85,10 @@ function Bucket(options) {
     this.paintAttributes = createPaintAttributes(this);
 
     if (options.arrays) {
-        var programInterfaces = this.programInterfaces;
+        const programInterfaces = this.programInterfaces;
         this.bufferGroups = util.mapObject(options.arrays, function(programArrayGroups, programName) {
-            var programInterface = programInterfaces[programName];
-            var paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
+            const programInterface = programInterfaces[programName];
+            const paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
             return programArrayGroups.map(function(arrayGroup) {
                 return new BufferGroup(arrayGroup, {
                     layoutVertexArrayType: programInterface.layoutVertexArrayType.serialize(),
@@ -109,7 +109,7 @@ Bucket.prototype.populateArrays = function() {
     this.createArrays();
     this.recalculateStyleLayers();
 
-    for (var i = 0; i < this.features.length; i++) {
+    for (let i = 0; i < this.features.length; i++) {
         this.addFeature(this.features[i]);
     }
 
@@ -129,8 +129,8 @@ Bucket.prototype.populateArrays = function() {
  * @returns The current array group
  */
 Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
-    var groups = this.arrayGroups[programName];
-    var currentGroup = groups.length && groups[groups.length - 1];
+    const groups = this.arrayGroups[programName];
+    let currentGroup = groups.length && groups[groups.length - 1];
 
     if (!currentGroup || !currentGroup.hasCapacityFor(numVertices)) {
         currentGroup = new ArrayGroup({
@@ -160,40 +160,40 @@ Bucket.prototype.createArrays = function() {
     this.arrayGroups = {};
     this.paintVertexArrayTypes = {};
 
-    for (var programName in this.programInterfaces) {
+    for (const programName in this.programInterfaces) {
         this.arrayGroups[programName] = [];
 
-        var paintVertexArrayTypes = this.paintVertexArrayTypes[programName] = {};
-        var layerPaintAttributes = this.paintAttributes[programName];
+        const paintVertexArrayTypes = this.paintVertexArrayTypes[programName] = {};
+        const layerPaintAttributes = this.paintAttributes[programName];
 
-        for (var layerName in layerPaintAttributes) {
+        for (const layerName in layerPaintAttributes) {
             paintVertexArrayTypes[layerName] = new Bucket.VertexArrayType(layerPaintAttributes[layerName].attributes);
         }
     }
 };
 
 Bucket.prototype.destroy = function() {
-    for (var programName in this.bufferGroups) {
-        var programBufferGroups = this.bufferGroups[programName];
-        for (var i = 0; i < programBufferGroups.length; i++) {
+    for (const programName in this.bufferGroups) {
+        const programBufferGroups = this.bufferGroups[programName];
+        for (let i = 0; i < programBufferGroups.length; i++) {
             programBufferGroups[i].destroy();
         }
     }
 };
 
 Bucket.prototype.trimArrays = function() {
-    for (var programName in this.arrayGroups) {
-        var arrayGroups = this.arrayGroups[programName];
-        for (var i = 0; i < arrayGroups.length; i++) {
+    for (const programName in this.arrayGroups) {
+        const arrayGroups = this.arrayGroups[programName];
+        for (let i = 0; i < arrayGroups.length; i++) {
             arrayGroups[i].trim();
         }
     }
 };
 
 Bucket.prototype.isEmpty = function() {
-    for (var programName in this.arrayGroups) {
-        var arrayGroups = this.arrayGroups[programName];
-        for (var i = 0; i < arrayGroups.length; i++) {
+    for (const programName in this.arrayGroups) {
+        const arrayGroups = this.arrayGroups[programName];
+        for (let i = 0; i < arrayGroups.length; i++) {
             if (!arrayGroups[i].isEmpty()) {
                 return false;
             }
@@ -203,19 +203,19 @@ Bucket.prototype.isEmpty = function() {
 };
 
 Bucket.prototype.getTransferables = function(transferables) {
-    for (var programName in this.arrayGroups) {
-        var arrayGroups = this.arrayGroups[programName];
-        for (var i = 0; i < arrayGroups.length; i++) {
+    for (const programName in this.arrayGroups) {
+        const arrayGroups = this.arrayGroups[programName];
+        for (let i = 0; i < arrayGroups.length; i++) {
             arrayGroups[i].getTransferables(transferables);
         }
     }
 };
 
 Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalProperties) {
-    var uniforms = this.paintAttributes[programName][layer.id].uniforms;
-    for (var i = 0; i < uniforms.length; i++) {
-        var uniform = uniforms[i];
-        var uniformLocation = program[uniform.name];
+    const uniforms = this.paintAttributes[programName][layer.id].uniforms;
+    for (let i = 0; i < uniforms.length; i++) {
+        const uniform = uniforms[i];
+        const uniformLocation = program[uniform.name];
         gl['uniform' + uniform.components + 'fv'](uniformLocation, uniform.getValue(layer, globalProperties));
     }
 };
@@ -241,36 +241,36 @@ Bucket.prototype.serialize = function() {
     };
 };
 
-var FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 Bucket.prototype.recalculateStyleLayers = function() {
-    for (var i = 0; i < this.childLayers.length; i++) {
+    for (let i = 0; i < this.childLayers.length; i++) {
         this.childLayers[i].recalculate(this.zoom, FAKE_ZOOM_HISTORY);
     }
 };
 
 Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
-    for (var l = 0; l < this.childLayers.length; l++) {
-        var layer = this.childLayers[l];
-        var groups = this.arrayGroups[interfaceName];
-        for (var g = startGroup.index; g < groups.length; g++) {
-            var group = groups[g];
-            var length = group.layoutVertexArray.length;
-            var paintArray = group.paintVertexArrays[layer.id];
+    for (let l = 0; l < this.childLayers.length; l++) {
+        const layer = this.childLayers[l];
+        const groups = this.arrayGroups[interfaceName];
+        for (let g = startGroup.index; g < groups.length; g++) {
+            const group = groups[g];
+            const length = group.layoutVertexArray.length;
+            const paintArray = group.paintVertexArrays[layer.id];
             paintArray.resize(length);
 
-            var attributes = this.paintAttributes[interfaceName][layer.id].attributes;
-            for (var m = 0; m < attributes.length; m++) {
-                var attribute = attributes[m];
+            const attributes = this.paintAttributes[interfaceName][layer.id].attributes;
+            for (let m = 0; m < attributes.length; m++) {
+                const attribute = attributes[m];
 
-                var value = attribute.getValue(layer, globalProperties, featureProperties);
-                var multiplier = attribute.multiplier || 1;
-                var components = attribute.components || 1;
+                const value = attribute.getValue(layer, globalProperties, featureProperties);
+                const multiplier = attribute.multiplier || 1;
+                const components = attribute.components || 1;
 
-                var start = g === startGroup.index  ? startIndex : 0;
-                for (var i = start; i < length; i++) {
-                    var vertex = paintArray.get(i);
-                    for (var c = 0; c < components; c++) {
-                        var memberName = components > 1 ? (attribute.name + c) : attribute.name;
+                const start = g === startGroup.index  ? startIndex : 0;
+                for (let i = start; i < length; i++) {
+                    const vertex = paintArray.get(i);
+                    for (let c = 0; c < components; c++) {
+                        const memberName = components > 1 ? (attribute.name + c) : attribute.name;
                         vertex[memberName] = value[c] * multiplier;
                     }
                 }
@@ -307,12 +307,12 @@ Bucket.ElementArrayType = function (components) {
 };
 
 function createPaintAttributes(bucket) {
-    var attributes = {};
-    for (var interfaceName in bucket.programInterfaces) {
-        var layerPaintAttributes = attributes[interfaceName] = {};
+    const attributes = {};
+    for (const interfaceName in bucket.programInterfaces) {
+        const layerPaintAttributes = attributes[interfaceName] = {};
 
-        for (var c = 0; c < bucket.childLayers.length; c++) {
-            var childLayer = bucket.childLayers[c];
+        for (let c = 0; c < bucket.childLayers.length; c++) {
+            const childLayer = bucket.childLayers[c];
 
             layerPaintAttributes[childLayer.id] = {
                 attributes: [],
@@ -323,26 +323,26 @@ function createPaintAttributes(bucket) {
             };
         }
 
-        var interface_ = bucket.programInterfaces[interfaceName];
+        const interface_ = bucket.programInterfaces[interfaceName];
         if (!interface_.paintAttributes) continue;
 
         // These tokens are replaced by arguments to the pragma
         // https://github.com/mapbox/mapbox-gl-shaders#pragmas
-        var attributePrecision = '{precision}';
-        var attributeType = '{type}';
+        const attributePrecision = '{precision}';
+        const attributeType = '{type}';
 
-        for (var i = 0; i < interface_.paintAttributes.length; i++) {
-            var attribute = interface_.paintAttributes[i];
+        for (let i = 0; i < interface_.paintAttributes.length; i++) {
+            const attribute = interface_.paintAttributes[i];
             attribute.multiplier = attribute.multiplier || 1;
 
-            for (var j = 0; j < bucket.childLayers.length; j++) {
-                var layer = bucket.childLayers[j];
-                var paintAttributes = layerPaintAttributes[layer.id];
+            for (let j = 0; j < bucket.childLayers.length; j++) {
+                const layer = bucket.childLayers[j];
+                const paintAttributes = layerPaintAttributes[layer.id];
 
-                var attributeInputName = attribute.name;
+                const attributeInputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
-                var attributeInnerName = attribute.name.slice(2);
-                var attributeVaryingDefinition;
+                const attributeInnerName = attribute.name.slice(2);
+                let attributeVaryingDefinition;
 
                 paintAttributes.fragmentPragmas.initialize[attributeInnerName] = '';
 
@@ -376,7 +376,7 @@ function createPaintAttributes(bucket) {
                         attributeInnerName
                     ].join(' ') + ';\n';
 
-                    var attributeAttributeDefinition = [
+                    const attributeAttributeDefinition = [
                         paintAttributes.fragmentPragmas.define[attributeInnerName],
                         'attribute',
                         attributePrecision,
@@ -398,17 +398,17 @@ function createPaintAttributes(bucket) {
 
                 } else {
 
-                    var tName = 'u_' + attributeInputName.slice(2) + '_t';
-                    var zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
+                    const tName = 'u_' + attributeInputName.slice(2) + '_t';
+                    const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
 
                     // Pick the index of the first offset to add to the buffers.
                     // Find the four closest stops, ideally with two on each side of the zoom level.
-                    var numStops = 0;
+                    let numStops = 0;
                     while (numStops < zoomLevels.length && zoomLevels[numStops] < bucket.zoom) numStops++;
-                    var stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
+                    const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
 
-                    var fourZoomLevels = [];
-                    for (var s = 0; s < 4; s++) {
+                    const fourZoomLevels = [];
+                    for (let s = 0; s < 4; s++) {
                         fourZoomLevels.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
                     }
 
@@ -433,7 +433,7 @@ function createPaintAttributes(bucket) {
                         components: 1
                     }));
 
-                    var components = attribute.components;
+                    const components = attribute.components;
                     if (components === 1) {
 
                         paintAttributes.attributes.push(util.extend({}, attribute, {
@@ -459,8 +459,8 @@ function createPaintAttributes(bucket) {
 
                     } else {
 
-                        var attributeInputNames = [];
-                        for (var k = 0; k < 4; k++) {
+                        const attributeInputNames = [];
+                        for (let k = 0; k < 4; k++) {
                             attributeInputNames.push(attributeInputName + k);
                             paintAttributes.attributes.push(util.extend({}, attribute, {
                                 getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
@@ -496,9 +496,9 @@ function createFunctionGetValue(attribute, stopZoomLevels) {
             return attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevels[0] }), featureProperties);
         } else {
             // pack multiple single-component values into a four component attribute
-            var values = [];
-            for (var z = 0; z < stopZoomLevels.length; z++) {
-                var stopZoomLevel = stopZoomLevels[z];
+            const values = [];
+            for (let z = 0; z < stopZoomLevels.length; z++) {
+                const stopZoomLevel = stopZoomLevels[z];
                 values.push(attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevel }), featureProperties)[0]);
             }
             return values;
@@ -510,7 +510,7 @@ function createGetUniform(attribute, stopOffset) {
     return function(layer, globalProperties) {
         // stopInterp indicates which stops need to be interpolated.
         // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-        var stopInterp = layer.getPaintInterpolationT(attribute.paintProperty, globalProperties.zoom);
+        const stopInterp = layer.getPaintInterpolationT(attribute.paintProperty, globalProperties.zoom);
         // We can only store four stop values in the buffers. stopOffset is the number of stops that come
         // before the stops that were added to the buffers.
         return [Math.max(0, Math.min(4, stopInterp - stopOffset))];

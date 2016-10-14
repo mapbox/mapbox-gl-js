@@ -1,10 +1,10 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var AnimationLoop = require('../../../js/style/animation_loop');
+const test = require('mapbox-gl-js-test').test;
+const AnimationLoop = require('../../../js/style/animation_loop');
 
 test('animationloop', function(t) {
-    var loop = new AnimationLoop();
+    const loop = new AnimationLoop();
     t.equal(loop.stopped(), true, 'starts stopped');
     t.equal(loop.n, 0, 'starts with zero animations');
     t.equal(loop.set(1000), 0, 'returns an id for cancelling animations');

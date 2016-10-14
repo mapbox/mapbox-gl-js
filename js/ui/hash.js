@@ -9,8 +9,8 @@
  */
 module.exports = Hash;
 
-var util = require('../util/util');
-var window = require('../util/window');
+const util = require('../util/util');
+const window = require('../util/window');
 
 function Hash() {
     util.bindAll([
@@ -46,7 +46,7 @@ Hash.prototype = {
     },
 
     _onHashChange: function() {
-        var loc = window.location.hash.replace('#', '').split('/');
+        const loc = window.location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.jumpTo({
                 center: [+loc[2], +loc[1]],
@@ -60,7 +60,7 @@ Hash.prototype = {
     },
 
     _updateHash: function() {
-        var center = this._map.getCenter(),
+        let center = this._map.getCenter(),
             zoom = this._map.getZoom(),
             bearing = this._map.getBearing(),
             pitch = this._map.getPitch(),

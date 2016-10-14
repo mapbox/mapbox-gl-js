@@ -1,28 +1,28 @@
 'use strict';
 
-var assert = require('assert');
-var util = require('../../util/util');
-var shaders = require('mapbox-gl-shaders');
+const assert = require('assert');
+const util = require('../../util/util');
+const shaders = require('mapbox-gl-shaders');
 
-var utilSource = shaders.util;
+const utilSource = shaders.util;
 
 module.exports._createProgram = function(name, defines, vertexPragmas, fragmentPragmas) {
-    var gl = this.gl;
-    var program = gl.createProgram();
-    var definition = shaders[name];
+    const gl = this.gl;
+    const program = gl.createProgram();
+    const definition = shaders[name];
 
-    var definesSource = '#define MAPBOX_GL_JS;\n';
-    for (var j = 0; j < defines.length; j++) {
+    let definesSource = '#define MAPBOX_GL_JS;\n';
+    for (let j = 0; j < defines.length; j++) {
         definesSource += '#define ' + defines[j] + ';\n';
     }
 
-    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmentShader, applyPragmas(definesSource + definition.fragmentSource, fragmentPragmas));
     gl.compileShader(fragmentShader);
     assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
     gl.attachShader(program, fragmentShader);
 
-    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, applyPragmas(definesSource + utilSource + definition.vertexSource, vertexPragmas));
     gl.compileShader(vertexShader);
     assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
@@ -31,17 +31,17 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
     gl.linkProgram(program);
     assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
 
-    var attributes = {};
-    var numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-    for (var i = 0; i < numAttributes; i++) {
-        var attribute = gl.getActiveAttrib(program, i);
+    const attributes = {};
+    const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    for (let i = 0; i < numAttributes; i++) {
+        const attribute = gl.getActiveAttrib(program, i);
         attributes[attribute.name] = gl.getAttribLocation(program, attribute.name);
     }
 
-    var uniforms = {};
-    var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-    for (var ui = 0; ui < numUniforms; ui++) {
-        var uniform = gl.getActiveUniform(program, ui);
+    const uniforms = {};
+    const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    for (let ui = 0; ui < numUniforms; ui++) {
+        const uniform = gl.getActiveUniform(program, ui);
         uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name);
     }
 
@@ -56,7 +56,7 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
 module.exports._createProgramCached = function(name, defines, vertexPragmas, fragmentPragmas) {
     this.cache = this.cache || {};
 
-    var key = JSON.stringify({
+    const key = JSON.stringify({
         name: name,
         defines: defines,
         vertexPragmas: vertexPragmas,
@@ -70,15 +70,15 @@ module.exports._createProgramCached = function(name, defines, vertexPragmas, fra
 };
 
 module.exports.useProgram = function (nextProgramName, defines, vertexPragmas, fragmentPragmas) {
-    var gl = this.gl;
+    const gl = this.gl;
 
     defines = defines || [];
     if (this._showOverdrawInspector) {
         defines = defines.concat('OVERDRAW_INSPECTOR');
     }
 
-    var nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
-    var previousProgram = this.currentProgram;
+    const nextProgram = this._createProgramCached(nextProgramName, defines, vertexPragmas, fragmentPragmas);
+    const previousProgram = this.currentProgram;
 
     if (previousProgram !== nextProgram) {
         gl.useProgram(nextProgram.program);

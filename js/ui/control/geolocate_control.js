@@ -1,14 +1,14 @@
 'use strict';
 
-var Control = require('./control');
-var browser = require('../../util/browser');
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const Control = require('./control');
+const browser = require('../../util/browser');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = GeolocateControl;
 
-var geoOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
+const geoOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 
 
 /**
@@ -31,9 +31,9 @@ GeolocateControl.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl';
+        const className = 'mapboxgl-ctrl';
 
-        var container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        const container = this._container = DOM.create('div', className + '-group', map.getContainer());
         if (!browser.supportsGeolocation) return container;
 
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));

@@ -1,12 +1,12 @@
 'use strict';
 
-var ShelfPack = require('shelf-pack');
-var util = require('../util/util');
+const ShelfPack = require('shelf-pack');
+const util = require('../util/util');
 
-var SIZE_GROWTH_RATE = 4;
-var DEFAULT_SIZE = 128;
+const SIZE_GROWTH_RATE = 4;
+const DEFAULT_SIZE = 128;
 // must be "DEFAULT_SIZE * SIZE_GROWTH_RATE ^ n" for some integer n
-var MAX_SIZE = 2048;
+const MAX_SIZE = 2048;
 
 module.exports = GlyphAtlas;
 function GlyphAtlas() {
@@ -20,12 +20,12 @@ function GlyphAtlas() {
 }
 
 GlyphAtlas.prototype.getGlyphs = function() {
-    var glyphs = {},
+    let glyphs = {},
         split,
         name,
         id;
 
-    for (var key in this.ids) {
+    for (const key in this.ids) {
         split = key.split('#');
         name = split[0];
         id = split[1];
@@ -38,12 +38,12 @@ GlyphAtlas.prototype.getGlyphs = function() {
 };
 
 GlyphAtlas.prototype.getRects = function() {
-    var rects = {},
+    let rects = {},
         split,
         name,
         id;
 
-    for (var key in this.ids) {
+    for (const key in this.ids) {
         split = key.split('#');
         name = split[0];
         id = split[1];
@@ -59,7 +59,7 @@ GlyphAtlas.prototype.getRects = function() {
 GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     if (!glyph) return null;
 
-    var key = name + "#" + glyph.id;
+    const key = name + "#" + glyph.id;
 
     // The glyph is already in this texture.
     if (this.index[key]) {
@@ -74,13 +74,13 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
         return null;
     }
 
-    var bufferedWidth = glyph.width + buffer * 2;
-    var bufferedHeight = glyph.height + buffer * 2;
+    const bufferedWidth = glyph.width + buffer * 2;
+    const bufferedHeight = glyph.height + buffer * 2;
 
     // Add a 1px border around every image.
-    var padding = 1;
-    var packWidth = bufferedWidth + 2 * padding;
-    var packHeight = bufferedHeight + 2 * padding;
+    const padding = 1;
+    let packWidth = bufferedWidth + 2 * padding;
+    let packHeight = bufferedHeight + 2 * padding;
 
     // Increase to next number divisible by 4, but at least 1.
     // This is so we can scale down the texture coordinates and pack them
@@ -88,7 +88,7 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     packWidth += (4 - packWidth % 4);
     packHeight += (4 - packHeight % 4);
 
-    var rect = this.bin.packOne(packWidth, packHeight);
+    let rect = this.bin.packOne(packWidth, packHeight);
     if (!rect) {
         this.resize();
         rect = this.bin.packOne(packWidth, packHeight);
@@ -101,12 +101,12 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
     this.index[key] = rect;
     this.ids[key] = [id];
 
-    var target = this.data;
-    var source = glyph.bitmap;
-    for (var y = 0; y < bufferedHeight; y++) {
-        var y1 = this.width * (rect.y + y + padding) + rect.x + padding;
-        var y2 = bufferedWidth * y;
-        for (var x = 0; x < bufferedWidth; x++) {
+    const target = this.data;
+    const source = glyph.bitmap;
+    for (let y = 0; y < bufferedHeight; y++) {
+        const y1 = this.width * (rect.y + y + padding) + rect.x + padding;
+        const y2 = bufferedWidth * y;
+        for (let x = 0; x < bufferedWidth; x++) {
             target[y1 + x] = source[y2 + x];
         }
     }
@@ -117,8 +117,8 @@ GlyphAtlas.prototype.addGlyph = function(id, name, glyph, buffer) {
 };
 
 GlyphAtlas.prototype.resize = function() {
-    var prevWidth = this.width;
-    var prevHeight = this.height;
+    const prevWidth = this.width;
+    const prevHeight = this.height;
 
     if (prevWidth >= MAX_SIZE || prevHeight >= MAX_SIZE) return;
 
@@ -133,10 +133,10 @@ GlyphAtlas.prototype.resize = function() {
     this.height *= SIZE_GROWTH_RATE;
     this.bin.resize(this.width, this.height);
 
-    var buf = new ArrayBuffer(this.width * this.height);
-    for (var i = 0; i < prevHeight; i++) {
-        var src = new Uint8Array(this.data.buffer, prevHeight * i, prevWidth);
-        var dst = new Uint8Array(buf, prevHeight * i * SIZE_GROWTH_RATE, prevWidth);
+    const buf = new ArrayBuffer(this.width * this.height);
+    for (let i = 0; i < prevHeight; i++) {
+        const src = new Uint8Array(this.data.buffer, prevHeight * i, prevWidth);
+        const dst = new Uint8Array(buf, prevHeight * i * SIZE_GROWTH_RATE, prevWidth);
         dst.set(src);
     }
     this.data = new Uint8Array(buf);

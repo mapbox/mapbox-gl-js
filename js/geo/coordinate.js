@@ -61,7 +61,7 @@ Coordinate.prototype = {
     sub: function(c) { return this.clone()._sub(c); },
 
     _zoomTo: function(zoom) {
-        var scale = Math.pow(2, zoom - this.zoom);
+        const scale = Math.pow(2, zoom - this.zoom);
         this.column *= scale;
         this.row *= scale;
         this.zoom = zoom;

@@ -1,7 +1,7 @@
 'use strict';
 
-var util = require('./util');
-var Actor = require('./actor');
+const util = require('./util');
+const Actor = require('./actor');
 
 module.exports = Dispatcher;
 
@@ -17,10 +17,10 @@ function Dispatcher(workerPool, parent) {
     this.actors = [];
     this.currentActor = 0;
     this.id = util.uniqueId();
-    var workers = this.workerPool.acquire(this.id);
-    for (var i = 0; i < workers.length; i++) {
-        var worker = workers[i];
-        var actor = new Actor(worker, parent, this.id);
+    const workers = this.workerPool.acquire(this.id);
+    for (let i = 0; i < workers.length; i++) {
+        const worker = workers[i];
+        const actor = new Actor(worker, parent, this.id);
         actor.name = "Worker " + i;
         this.actors.push(actor);
     }

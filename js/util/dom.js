@@ -1,19 +1,19 @@
 'use strict';
 
-var Point = require('point-geometry');
-var window = require('./window');
+const Point = require('point-geometry');
+const window = require('./window');
 
 exports.create = function (tagName, className, container) {
-    var el = window.document.createElement(tagName);
+    const el = window.document.createElement(tagName);
     if (className) el.className = className;
     if (container) container.appendChild(el);
     return el;
 };
 
-var docStyle = window.document.documentElement.style;
+const docStyle = window.document.documentElement.style;
 
 function testProp(props) {
-    for (var i = 0; i < props.length; i++) {
+    for (let i = 0; i < props.length; i++) {
         if (props[i] in docStyle) {
             return props[i];
         }
@@ -21,7 +21,7 @@ function testProp(props) {
     return props[0];
 }
 
-var selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']),
+let selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']),
     userSelect;
 exports.disableDrag = function () {
     if (selectProp) {
@@ -35,7 +35,7 @@ exports.enableDrag = function () {
     }
 };
 
-var transformProp = testProp(['transform', 'WebkitTransform']);
+const transformProp = testProp(['transform', 'WebkitTransform']);
 exports.setTransform = function(el, value) {
     el.style[transformProp] = value;
 };
@@ -54,7 +54,7 @@ exports.suppressClick = function() {
 };
 
 exports.mousePos = function (el, e) {
-    var rect = el.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
     e = e.touches ? e.touches[0] : e;
     return new Point(
         e.clientX - rect.left - el.clientLeft,
@@ -63,10 +63,10 @@ exports.mousePos = function (el, e) {
 };
 
 exports.touchPos = function (el, e) {
-    var rect = el.getBoundingClientRect(),
+    let rect = el.getBoundingClientRect(),
         points = [];
-    var touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
-    for (var i = 0; i < touches.length; i++) {
+    const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
+    for (let i = 0; i < touches.length; i++) {
         points.push(new Point(
             touches[i].clientX - rect.left - el.clientLeft,
             touches[i].clientY - rect.top - el.clientTop

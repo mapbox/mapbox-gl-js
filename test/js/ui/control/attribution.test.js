@@ -1,12 +1,12 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var window = require('../../../../js/util/window');
-var Map = require('../../../../js/ui/map');
-var AttributionControl = require('../../../../js/ui/control/attribution_control');
+const test = require('mapbox-gl-js-test').test;
+const window = require('../../../../js/util/window');
+const Map = require('../../../../js/ui/map');
+const AttributionControl = require('../../../../js/ui/control/attribution_control');
 
 function createMap() {
-    var container = window.document.createElement('div');
+    const container = window.document.createElement('div');
     return new Map({
         container: container,
         attributionControl: false,
@@ -19,7 +19,7 @@ function createMap() {
 }
 
 test('AttributionControl appears in bottom-right by default', function (t) {
-    var map = createMap();
+    const map = createMap();
     new AttributionControl()
         .addTo(map);
 
@@ -28,7 +28,7 @@ test('AttributionControl appears in bottom-right by default', function (t) {
 });
 
 test('AttributionControl appears in the position specified by the position option', function (t) {
-    var map = createMap();
+    const map = createMap();
     new AttributionControl({position: 'top-left'})
         .addTo(map);
 
@@ -37,8 +37,8 @@ test('AttributionControl appears in the position specified by the position optio
 });
 
 test('AttributionControl dedupes attributions that are substrings of others', function (t) {
-    var map = createMap();
-    var attribution = new AttributionControl({position: 'top-left'}).addTo(map);
+    const map = createMap();
+    const attribution = new AttributionControl({position: 'top-left'}).addTo(map);
 
     map.on('load', function() {
         map.addSource('1', { type: 'vector', attribution: 'World' });
@@ -49,7 +49,7 @@ test('AttributionControl dedupes attributions that are substrings of others', fu
 
     });
 
-    var times = 0;
+    let times = 0;
     map.on('data', function(event) {
         if (event.dataType === 'source' && ++times === 5) {
             t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
@@ -59,8 +59,8 @@ test('AttributionControl dedupes attributions that are substrings of others', fu
 });
 
 test('AttributionControl has the correct edit map link', function (t) {
-    var map = createMap();
-    var attribution = new AttributionControl({position: 'top-left'}).addTo(map);
+    const map = createMap();
+    const attribution = new AttributionControl({position: 'top-left'}).addTo(map);
 
     map.on('load', function () {
         map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});

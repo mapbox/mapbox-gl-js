@@ -1,9 +1,9 @@
 'use strict';
 
-var Bucket = require('../bucket');
-var util = require('../../util/util');
-var loadGeometry = require('../load_geometry');
-var EXTENT = Bucket.EXTENT;
+const Bucket = require('../bucket');
+const util = require('../../util/util');
+const loadGeometry = require('../load_geometry');
+const EXTENT = Bucket.EXTENT;
 
 module.exports = CircleBucket;
 
@@ -79,17 +79,17 @@ CircleBucket.prototype.programInterfaces = {
 };
 
 CircleBucket.prototype.addFeature = function(feature) {
-    var globalProperties = {zoom: this.zoom};
-    var geometries = loadGeometry(feature);
+    const globalProperties = {zoom: this.zoom};
+    const geometries = loadGeometry(feature);
 
-    var startGroup = this.prepareArrayGroup('circle', 0);
-    var startIndex = startGroup.layoutVertexArray.length;
+    const startGroup = this.prepareArrayGroup('circle', 0);
+    const startIndex = startGroup.layoutVertexArray.length;
 
-    for (var j = 0; j < geometries.length; j++) {
-        for (var k = 0; k < geometries[j].length; k++) {
+    for (let j = 0; j < geometries.length; j++) {
+        for (let k = 0; k < geometries[j].length; k++) {
 
-            var x = geometries[j][k].x;
-            var y = geometries[j][k].y;
+            const x = geometries[j][k].x;
+            const y = geometries[j][k].y;
 
             // Do not include points that are outside the tile boundaries.
             if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
@@ -103,10 +103,10 @@ CircleBucket.prototype.addFeature = function(feature) {
             // │ 0     1 │
             // └─────────┘
 
-            var group = this.prepareArrayGroup('circle', 4);
-            var layoutVertexArray = group.layoutVertexArray;
+            const group = this.prepareArrayGroup('circle', 4);
+            const layoutVertexArray = group.layoutVertexArray;
 
-            var index = this.addCircleVertex(layoutVertexArray, x, y, -1, -1);
+            const index = this.addCircleVertex(layoutVertexArray, x, y, -1, -1);
             this.addCircleVertex(layoutVertexArray, x, y, 1, -1);
             this.addCircleVertex(layoutVertexArray, x, y, 1, 1);
             this.addCircleVertex(layoutVertexArray, x, y, -1, 1);

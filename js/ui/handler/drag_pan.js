@@ -1,12 +1,12 @@
 'use strict';
 
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = DragPanHandler;
 
-var inertiaLinearity = 0.3,
+let inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 1400, // px/s
     inertiaDeceleration = 2500; // px/s^2
@@ -101,7 +101,7 @@ DragPanHandler.prototype = {
             this._fireEvent('movestart', e);
         }
 
-        var pos = DOM.mousePos(this._el, e),
+        let pos = DOM.mousePos(this._el, e),
             map = this._map;
 
         map.stop();
@@ -125,17 +125,17 @@ DragPanHandler.prototype = {
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
-        var finish = function() {
+        const finish = function() {
             this._fireEvent('moveend', e);
         }.bind(this);
 
-        var inertia = this._inertia;
+        const inertia = this._inertia;
         if (inertia.length < 2) {
             finish();
             return;
         }
 
-        var last = inertia[inertia.length - 1],
+        let last = inertia[inertia.length - 1],
             first = inertia[0],
             flingOffset = last[1].sub(first[1]),
             flingDuration = (last[0] - first[0]) / 1000;
@@ -146,7 +146,7 @@ DragPanHandler.prototype = {
         }
 
         // calculate px/s velocity & adjust for increased initial animation speed when easing out
-        var velocity = flingOffset.mult(inertiaLinearity / flingDuration),
+        let velocity = flingOffset.mult(inertiaLinearity / flingDuration),
             speed = velocity.mag(); // px/s
 
         if (speed > inertiaMaxSpeed) {
@@ -154,7 +154,7 @@ DragPanHandler.prototype = {
             velocity._unit()._mult(speed);
         }
 
-        var duration = speed / (inertiaDeceleration * inertiaLinearity),
+        let duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = velocity.mult(-duration / 2);
 
         this._map.panBy(offset, {
@@ -183,7 +183,7 @@ DragPanHandler.prototype = {
     },
 
     _ignoreEvent: function (e) {
-        var map = this._map;
+        const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
         if (map.dragRotate && map.dragRotate.isActive()) return true;
@@ -191,14 +191,14 @@ DragPanHandler.prototype = {
             return (e.touches.length > 1);
         } else {
             if (e.ctrlKey) return true;
-            var buttons = 1,  // left button
+            let buttons = 1,  // left button
                 button = 0;   // left button
             return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
         }
     },
 
     _drainInertiaBuffer: function () {
-        var inertia = this._inertia,
+        let inertia = this._inertia,
             now = Date.now(),
             cutoff = 160;   // msec
 

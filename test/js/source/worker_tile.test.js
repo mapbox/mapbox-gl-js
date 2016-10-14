@@ -1,12 +1,12 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var WorkerTile = require('../../../js/source/worker_tile');
-var Wrapper = require('../../../js/source/geojson_wrapper');
-var TileCoord = require('../../../js/source/tile_coord');
-var StyleLayer = require('../../../js/style/style_layer');
-var util = require('../../../js/util/util');
-var featureFilter = require('feature-filter');
+const test = require('mapbox-gl-js-test').test;
+const WorkerTile = require('../../../js/source/worker_tile');
+const Wrapper = require('../../../js/source/geojson_wrapper');
+const TileCoord = require('../../../js/source/tile_coord');
+const StyleLayer = require('../../../js/style/style_layer');
+const util = require('../../../js/util/util');
+const featureFilter = require('feature-filter');
 
 function createWorkerTile() {
     return new WorkerTile({
@@ -29,7 +29,7 @@ function createWrapper() {
 }
 
 test('WorkerTile#parse', function(t) {
-    var layerFamilies = {
+    const layerFamilies = {
         test: [new StyleLayer({
             id: 'test',
             source: 'source',
@@ -40,7 +40,7 @@ test('WorkerTile#parse', function(t) {
         })]
     };
 
-    var tile = createWorkerTile();
+    const tile = createWorkerTile();
     tile.parse(createWrapper(), layerFamilies, {}, function(err, result) {
         t.ifError(err);
         t.ok(result.buckets[0]);
@@ -49,7 +49,7 @@ test('WorkerTile#parse', function(t) {
 });
 
 test('WorkerTile#parse skips hidden layers', function(t) {
-    var layerFamilies = {
+    const layerFamilies = {
         'test': [new StyleLayer({
             id: 'test',
             source: 'source',
@@ -68,7 +68,7 @@ test('WorkerTile#parse skips hidden layers', function(t) {
         })]
     };
 
-    var tile = createWorkerTile();
+    const tile = createWorkerTile();
     tile.parse(createWrapper(), layerFamilies, {}, function(err, result) {
         t.ifError(err);
         t.equal(Object.keys(result.buckets[0].arrays).length, 1);
@@ -77,7 +77,7 @@ test('WorkerTile#parse skips hidden layers', function(t) {
 });
 
 test('WorkerTile#parse skips layers without a corresponding source layer', function(t) {
-    var layerFamilies = {
+    const layerFamilies = {
         'test-sourceless': [new StyleLayer({
             id: 'test',
             source: 'source',
@@ -89,7 +89,7 @@ test('WorkerTile#parse skips layers without a corresponding source layer', funct
         })]
     };
 
-    var tile = createWorkerTile();
+    const tile = createWorkerTile();
     tile.parse({layers: {}}, layerFamilies, {}, function(err, result) {
         t.ifError(err);
         t.equal(result.buckets.length, 0);
@@ -98,7 +98,7 @@ test('WorkerTile#parse skips layers without a corresponding source layer', funct
 });
 
 test('WorkerTile#parse warns once when encountering a v1 vector tile layer', function(t) {
-    var layerFamilies = {
+    const layerFamilies = {
         'test': [new StyleLayer({
             id: 'test',
             source: 'source',
@@ -110,7 +110,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', fun
         })]
     };
 
-    var data = {
+    const data = {
         layers: {
             test: {
                 version: 1
@@ -120,7 +120,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', fun
 
     t.stub(util, 'warnOnce');
 
-    var tile = createWorkerTile();
+    const tile = createWorkerTile();
     tile.parse(data, layerFamilies, {}, function(err) {
         t.ifError(err);
         t.ok(util.warnOnce.calledWithMatch(/does not use vector tile spec v2/));

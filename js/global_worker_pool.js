@@ -1,7 +1,7 @@
 'use strict';
-var WorkerPool = require('./util/worker_pool');
+const WorkerPool = require('./util/worker_pool');
 
-var globalWorkerPool;
+let globalWorkerPool;
 
 /**
  * Creates (if necessary) and returns the single, global WorkerPool instance

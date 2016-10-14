@@ -1,6 +1,6 @@
 'use strict';
 
-var Bucket = require('../data/bucket');
+const Bucket = require('../data/bucket');
 
 /**
  * Converts a pixel value at a the given zoom level to tile units.

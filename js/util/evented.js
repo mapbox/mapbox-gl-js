@@ -1,13 +1,13 @@
 'use strict';
 
-var util = require('./util');
+const util = require('./util');
 
 /**
  * Methods mixed in to other classes for event capabilities.
  *
  * @mixin Evented
  */
-var Evented = {
+const Evented = {
 
     /**
      * Adds a listener to a specified event type.
@@ -35,7 +35,7 @@ var Evented = {
      */
     off: function(type, listener) {
         if (this._listeners && this._listeners[type]) {
-            var index = this._listeners[type].indexOf(listener);
+            const index = this._listeners[type].indexOf(listener);
             if (index !== -1) {
                 this._listeners[type].splice(index, 1);
             }
@@ -54,7 +54,7 @@ var Evented = {
      * @returns {Object} `this`
      */
     once: function(type, listener) {
-        var wrapper = function(data) {
+        const wrapper = function(data) {
             this.off(type, wrapper);
             listener.call(this, data);
         }.bind(this);
@@ -75,9 +75,9 @@ var Evented = {
             data = util.extend({}, data, {type: type, target: this});
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
-            var listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
+            const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
 
-            for (var i = 0; i < listeners.length; i++) {
+            for (let i = 0; i < listeners.length; i++) {
                 listeners[i].call(this, data);
             }
 

@@ -1,14 +1,14 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var mapbox = require('../../../js/util/mapbox');
-var config = require('../../../js/util/config');
-var browser = require('../../../js/util/browser');
-var window = require('../../../js/util/window');
+const test = require('mapbox-gl-js-test').test;
+const mapbox = require('../../../js/util/mapbox');
+const config = require('../../../js/util/config');
+const browser = require('../../../js/util/browser');
+const window = require('../../../js/util/window');
 
 test("mapbox", function(t) {
-    var mapboxSource = 'mapbox://user.map';
-    var nonMapboxSource = 'http://www.example.com/tiles.json';
+    const mapboxSource = 'mapbox://user.map';
+    const nonMapboxSource = 'http://www.example.com/tiles.json';
     config.ACCESS_TOKEN = 'key';
 
     t.test('.normalizeStyleURL', function(t) {

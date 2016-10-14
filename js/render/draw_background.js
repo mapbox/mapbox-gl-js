@@ -1,22 +1,22 @@
 'use strict';
 
-var pixelsToTileUnits = require('../source/pixels_to_tile_units');
-var createUniformPragmas = require('./create_uniform_pragmas');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const createUniformPragmas = require('./create_uniform_pragmas');
 
-var tileSize = 512;
+const tileSize = 512;
 
 module.exports = drawBackground;
 
 function drawBackground(painter, sourceCache, layer) {
-    var gl = painter.gl;
-    var transform = painter.transform;
-    var color = layer.paint['background-color'];
-    var image = layer.paint['background-pattern'];
-    var opacity = layer.paint['background-opacity'];
-    var program;
+    const gl = painter.gl;
+    const transform = painter.transform;
+    const color = layer.paint['background-color'];
+    const image = layer.paint['background-pattern'];
+    const opacity = layer.paint['background-opacity'];
+    let program;
 
-    var imagePosA = image ? painter.spriteAtlas.getPosition(image.from, true) : null;
-    var imagePosB = image ? painter.spriteAtlas.getPosition(image.to, true) : null;
+    const imagePosA = image ? painter.spriteAtlas.getPosition(image.from, true) : null;
+    const imagePosB = image ? painter.spriteAtlas.getPosition(image.to, true) : null;
 
     painter.setDepthSublayer(0);
     if (imagePosA && imagePosB) {
@@ -47,7 +47,7 @@ function drawBackground(painter, sourceCache, layer) {
         // Draw filling rectangle.
         if (painter.isOpaquePass !== (color[3] === 1)) return;
 
-        var pragmas = createUniformPragmas([
+        const pragmas = createUniformPragmas([
             {name: 'u_color', components: 4},
             {name: 'u_opacity', components: 1}
         ]);
@@ -64,19 +64,19 @@ function drawBackground(painter, sourceCache, layer) {
     // the depth and stencil buffers get into a bad state.
     // This can be refactored into a single draw call once earcut lands and
     // we don't have so much going on in the stencil buffer.
-    var coords = transform.coveringTiles({ tileSize: tileSize });
-    for (var c = 0; c < coords.length; c++) {
-        var coord = coords[c];
+    const coords = transform.coveringTiles({ tileSize: tileSize });
+    for (let c = 0; c < coords.length; c++) {
+        const coord = coords[c];
         // var pixelsToTileUnitsBound = pixelsToTileUnits.bind({coord:coord, tileSize: tileSize});
         if (imagePosA && imagePosB) {
-            var tile = {coord:coord, tileSize: tileSize};
+            const tile = {coord:coord, tileSize: tileSize};
 
             gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
 
-            var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+            const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-            var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-            var pixelY = tileSizeAtNearestZoom * tile.coord.y;
+            const pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+            const pixelY = tileSizeAtNearestZoom * tile.coord.y;
             // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
             gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
             gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);

@@ -1,10 +1,10 @@
 'use strict';
 
-var normalizeURL = require('../util/mapbox').normalizeGlyphsURL;
-var ajax = require('../util/ajax');
-var Glyphs = require('../util/glyphs');
-var GlyphAtlas = require('../symbol/glyph_atlas');
-var Protobuf = require('pbf');
+const normalizeURL = require('../util/mapbox').normalizeGlyphsURL;
+const ajax = require('../util/ajax');
+const Glyphs = require('../util/glyphs');
+const GlyphAtlas = require('../symbol/glyph_atlas');
+const Protobuf = require('pbf');
 
 module.exports = GlyphSource;
 
@@ -31,24 +31,24 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
         this.atlases[fontstack] = new GlyphAtlas();
     }
 
-    var glyphs = {};
-    var stack = this.stacks[fontstack];
-    var atlas = this.atlases[fontstack];
+    const glyphs = {};
+    const stack = this.stacks[fontstack];
+    const atlas = this.atlases[fontstack];
 
     // the number of pixels the sdf bitmaps are padded by
-    var buffer = 3;
+    const buffer = 3;
 
-    var missing = {};
-    var remaining = 0;
-    var range;
+    const missing = {};
+    let remaining = 0;
+    let range;
 
-    for (var i = 0; i < glyphIDs.length; i++) {
-        var glyphID = glyphIDs[i];
+    for (let i = 0; i < glyphIDs.length; i++) {
+        const glyphID = glyphIDs[i];
         range = Math.floor(glyphID / 256);
 
         if (stack[range]) {
-            var glyph = stack[range].glyphs[glyphID];
-            var rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
+            const glyph = stack[range].glyphs[glyphID];
+            const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
             if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
         } else {
             if (missing[range] === undefined) {
@@ -61,13 +61,13 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
 
     if (!remaining) callback(undefined, glyphs, fontstack);
 
-    var onRangeLoaded = function(err, range, data) {
+    const onRangeLoaded = function(err, range, data) {
         if (!err) {
-            var stack = this.stacks[fontstack][range] = data.stacks[0];
-            for (var i = 0; i < missing[range].length; i++) {
-                var glyphID = missing[range][i];
-                var glyph = stack.glyphs[glyphID];
-                var rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
+            const stack = this.stacks[fontstack][range] = data.stacks[0];
+            for (let i = 0; i < missing[range].length; i++) {
+                const glyphID = missing[range][i];
+                const glyph = stack.glyphs[glyphID];
+                const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
                 if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
             }
         }
@@ -75,14 +75,14 @@ GlyphSource.prototype.getSimpleGlyphs = function(fontstack, glyphIDs, uid, callb
         if (!remaining) callback(undefined, glyphs, fontstack);
     }.bind(this);
 
-    for (var r in missing) {
+    for (const r in missing) {
         this.loadRange(fontstack, r, onRangeLoaded);
     }
 };
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
 function SimpleGlyph(glyph, rect, buffer) {
-    var padding = 1;
+    const padding = 1;
     this.advance = glyph.advance;
     this.left = glyph.left - buffer - padding;
     this.top = glyph.top + buffer + padding;
@@ -95,19 +95,19 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
     if (this.loading[fontstack] === undefined) {
         this.loading[fontstack] = {};
     }
-    var loading = this.loading[fontstack];
+    const loading = this.loading[fontstack];
 
     if (loading[range]) {
         loading[range].push(callback);
     } else {
         loading[range] = [callback];
 
-        var rangeName = (range * 256) + '-' + (range * 256 + 255);
-        var url = glyphUrl(fontstack, rangeName, this.url);
+        const rangeName = (range * 256) + '-' + (range * 256 + 255);
+        const url = glyphUrl(fontstack, rangeName, this.url);
 
         ajax.getArrayBuffer(url, function(err, data) {
-            var glyphs = !err && new Glyphs(new Protobuf(data));
-            for (var i = 0; i < loading[range].length; i++) {
+            const glyphs = !err && new Glyphs(new Protobuf(data));
+            for (let i = 0; i < loading[range].length; i++) {
                 loading[range][i](err, range, glyphs);
             }
             delete loading[range];

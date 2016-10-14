@@ -1,13 +1,13 @@
 'use strict';
 
-var Actor = require('../util/actor');
-var StyleLayer = require('../style/style_layer');
-var util = require('../util/util');
+const Actor = require('../util/actor');
+const StyleLayer = require('../style/style_layer');
+const util = require('../util/util');
 
-var VectorTileWorkerSource = require('./vector_tile_worker_source');
-var GeoJSONWorkerSource = require('./geojson_worker_source');
-var featureFilter = require('feature-filter');
-var assert = require('assert');
+const VectorTileWorkerSource = require('./vector_tile_worker_source');
+const GeoJSONWorkerSource = require('./geojson_worker_source');
+const featureFilter = require('feature-filter');
+const assert = require('assert');
 
 module.exports = function createWorker(self) {
     return new Worker(self);
@@ -38,12 +38,12 @@ function Worker(self) {
 
 util.extend(Worker.prototype, {
     'set layers': function(mapId, layerDefinitions) {
-        var layers = this.layers[mapId] = {};
+        const layers = this.layers[mapId] = {};
 
         // Filter layers and create an id -> layer map
-        var childLayerIndicies = [];
-        for (var i = 0; i < layerDefinitions.length; i++) {
-            var layer = layerDefinitions[i];
+        const childLayerIndicies = [];
+        for (let i = 0; i < layerDefinitions.length; i++) {
+            const layer = layerDefinitions[i];
             if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
                 if (layer.ref) {
                     childLayerIndicies.push(i);
@@ -54,12 +54,12 @@ util.extend(Worker.prototype, {
         }
 
         // Create an instance of StyleLayer per layer
-        for (var j = 0; j < childLayerIndicies.length; j++) {
+        for (let j = 0; j < childLayerIndicies.length; j++) {
             setLayer(layerDefinitions[childLayerIndicies[j]]);
         }
 
         function setLayer(serializedLayer) {
-            var styleLayer = StyleLayer.create(
+            const styleLayer = StyleLayer.create(
                 serializedLayer,
                 serializedLayer.ref && layers[serializedLayer.ref]
             );
@@ -72,10 +72,10 @@ util.extend(Worker.prototype, {
     },
 
     'update layers': function(mapId, layerDefinitions) {
-        var id;
-        var layer;
+        let id;
+        let layer;
 
-        var layers = this.layers[mapId];
+        const layers = this.layers[mapId];
 
         // Update ref parents
         for (id in layerDefinitions) {
@@ -90,8 +90,8 @@ util.extend(Worker.prototype, {
         }
 
         function updateLayer(layer) {
-            var refLayer = layers[layer.ref];
-            var styleLayer = layers[layer.id];
+            const refLayer = layers[layer.ref];
+            let styleLayer = layers[layer.id];
             if (styleLayer) {
                 styleLayer.set(layer, refLayer);
             } else {
@@ -149,14 +149,14 @@ util.extend(Worker.prototype, {
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type]) {
             // simple accessor object for passing to WorkerSources
-            var layers = {
+            const layers = {
                 getLayers: function () { return this.layers[mapId]; }.bind(this),
                 getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
             };
 
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
-            var actor = {
+            const actor = {
                 send: function (type, data, callback, buffers) {
                     this.actor.send(type, data, callback, buffers, mapId);
                 }.bind(this)
@@ -170,12 +170,12 @@ util.extend(Worker.prototype, {
 });
 
 function createLayerFamilies(layers) {
-    var families = {};
+    const families = {};
 
-    for (var layerId in layers) {
-        var layer = layers[layerId];
-        var parentLayerId = layer.ref || layer.id;
-        var parentLayer = layers[parentLayerId];
+    for (const layerId in layers) {
+        const layer = layers[layerId];
+        const parentLayerId = layer.ref || layer.id;
+        const parentLayer = layers[parentLayerId];
 
         if (parentLayer.layout && parentLayer.layout.visibility === 'none') continue;
 

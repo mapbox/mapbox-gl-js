@@ -1,10 +1,10 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var LRUCache = require('../../../js/util/lru_cache');
+const test = require('mapbox-gl-js-test').test;
+const LRUCache = require('../../../js/util/lru_cache');
 
 test('LRUCache', function(t) {
-    var cache = new LRUCache(10, function(removed) {
+    const cache = new LRUCache(10, function(removed) {
         t.equal(removed, 'dc');
     });
     t.equal(cache.get('foo'), null, '.get() to null');
@@ -19,7 +19,7 @@ test('LRUCache', function(t) {
 });
 
 test('LRUCache - duplicate add', function(t) {
-    var cache = new LRUCache(10, function() {
+    const cache = new LRUCache(10, function() {
         t.fail();
     });
 
@@ -33,7 +33,7 @@ test('LRUCache - duplicate add', function(t) {
 });
 
 test('LRUCache - overflow', function(t) {
-    var cache = new LRUCache(1, function(removed) {
+    const cache = new LRUCache(1, function(removed) {
         t.equal(removed, 'b');
         t.end();
     });
@@ -42,8 +42,8 @@ test('LRUCache - overflow', function(t) {
 });
 
 test('LRUCache#reset', function(t) {
-    var called;
-    var cache = new LRUCache(10, function(removed) {
+    let called;
+    const cache = new LRUCache(10, function(removed) {
         t.equal(removed, 'dc');
         called = true;
     });
@@ -55,8 +55,8 @@ test('LRUCache#reset', function(t) {
 });
 
 test('LRUCache#setMaxSize', function(t) {
-    var numRemoved = 0;
-    var cache = new LRUCache(10, function() {
+    let numRemoved = 0;
+    const cache = new LRUCache(10, function() {
         numRemoved++;
     });
     cache.add(1, 1);

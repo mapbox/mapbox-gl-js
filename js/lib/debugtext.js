@@ -2,7 +2,7 @@
 
 // Font data From Hershey Simplex Font
 // http://paulbourke.net/dataformats/hershey/
-var simplexFont = {
+const simplexFont = {
     " ": [16, []],
     "!": [10, [5, 21, 5, 7, -1, -1, 5, 2, 4, 1, 5, 0, 6, 1, 5, 2]],
     "\"": [16, [4, 21, 4, 14, -1, -1, 12, 21, 12, 14]],
@@ -103,7 +103,7 @@ var simplexFont = {
 module.exports = function textVertices(text, left, baseline, scale) {
     scale = scale || 1;
 
-    var strokes = [],
+    let strokes = [],
         i, len, j, len2, glyph, x, y, prev;
 
     for (i = 0, len = text.length; i < len; i++) {

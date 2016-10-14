@@ -1,9 +1,9 @@
 'use strict';
 
-var Evented = require('../util/evented');
-var util = require('../util/util');
-var window = require('../util/window');
-var EXTENT = require('../data/bucket').EXTENT;
+const Evented = require('../util/evented');
+const util = require('../util/util');
+const window = require('../util/window');
+const EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = GeoJSONSource;
 
@@ -63,7 +63,7 @@ function GeoJSONSource(id, options, dispatcher, eventedParent) {
     if (options.maxzoom !== undefined) this.maxzoom = options.maxzoom;
     if (options.type) this.type = options.type;
 
-    var scale = EXTENT / this.tileSize;
+    const scale = EXTENT / this.tileSize;
 
     // sent to the worker, along with `url: ...` or `data: literal geojson`,
     // so that it can load/parse/index the geojson data
@@ -138,8 +138,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
      * using geojson-vt or supercluster as appropriate.
      */
     _updateWorkerData: function(callback) {
-        var options = util.extend({}, this.workerOptions);
-        var data = this._data;
+        const options = util.extend({}, this.workerOptions);
+        const data = this._data;
         if (typeof data === 'string') {
             options.url = resolveURL(data);
         } else {
@@ -157,8 +157,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     loadTile: function (tile, callback) {
-        var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
-        var params = {
+        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
+        const params = {
             type: this.type,
             uid: tile.uid,
             coord: tile.coord,
@@ -213,7 +213,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 });
 
 function resolveURL(url) {
-    var a = window.document.createElement('a');
+    const a = window.document.createElement('a');
     a.href = url;
     return a.href;
 }

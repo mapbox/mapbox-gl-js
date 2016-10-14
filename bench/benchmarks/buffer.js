@@ -1,28 +1,28 @@
 'use strict';
 
-var VT = require('vector-tile');
-var Protobuf = require('pbf');
-var assert = require('assert');
+const VT = require('vector-tile');
+const Protobuf = require('pbf');
+const assert = require('assert');
 
-var WorkerTile = require('../../js/source/worker_tile');
-var Worker = require('../../js/source/worker');
-var ajax = require('../../js/util/ajax');
-var Style = require('../../js/style/style');
-var util = require('../../js/util/util');
-var Evented = require('../../js/util/evented');
-var config = require('../../js/util/config');
-var coordinates = require('../lib/coordinates');
-var formatNumber = require('../lib/format_number');
-var accessToken = require('../lib/access_token');
+const WorkerTile = require('../../js/source/worker_tile');
+const Worker = require('../../js/source/worker');
+const ajax = require('../../js/util/ajax');
+const Style = require('../../js/style/style');
+const util = require('../../js/util/util');
+const Evented = require('../../js/util/evented');
+const config = require('../../js/util/config');
+const coordinates = require('../lib/coordinates');
+const formatNumber = require('../lib/format_number');
+const accessToken = require('../lib/access_token');
 
-var SAMPLE_COUNT = 10;
+const SAMPLE_COUNT = 10;
 
 module.exports = function run() {
     config.ACCESS_TOKEN = accessToken;
 
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
-    var stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
+    const stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
     ajax.getJSON(stylesheetURL, function(err, stylesheet) {
         if (err) return evented.fire('error', {error: err});
 
@@ -51,8 +51,8 @@ module.exports = function run() {
                 callback(null, assets.tiles[url]);
             }
 
-            var timeSum = 0;
-            var timeCount = 0;
+            let timeSum = 0;
+            let timeCount = 0;
 
             asyncTimesSeries(SAMPLE_COUNT, function(callback) {
                 runSample(stylesheet, getGlyphs, getIcons, getTile, function(err, time) {
@@ -67,7 +67,7 @@ module.exports = function run() {
                     evented.fire('error', { error: err });
 
                 } else {
-                    var timeAverage = timeSum / timeCount;
+                    const timeAverage = timeSum / timeCount;
                     evented.fire('end', {
                         message: formatNumber(timeAverage) + ' ms',
                         score: timeAverage
@@ -82,13 +82,13 @@ module.exports = function run() {
 };
 
 function preloadAssets(stylesheet, callback) {
-    var assets = {
+    const assets = {
         glyphs: {},
         icons: {},
         tiles: {}
     };
 
-    var style = new Style(stylesheet);
+    const style = new Style(stylesheet);
 
     style.on('style.load', function() {
         function getGlyphs(params, callback) {
@@ -125,14 +125,14 @@ function preloadAssets(stylesheet, callback) {
 }
 
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
-    var timeStart = performance.now();
+    const timeStart = performance.now();
 
-    var layerFamilies = createLayerFamilies(stylesheet.layers);
+    const layerFamilies = createLayerFamilies(stylesheet.layers);
 
     util.asyncAll(coordinates, function(coordinate, eachCallback) {
-        var url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
+        const url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
 
-        var workerTile = new WorkerTile({
+        const workerTile = new WorkerTile({
             coord: coordinate,
             zoom: coordinate.zoom,
             tileSize: 512,
@@ -144,7 +144,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
             uid: url
         });
 
-        var actor = {
+        const actor = {
             send: function(action, params, sendCallback) {
                 setTimeout(function() {
                     if (action === 'get icons') {
@@ -158,14 +158,14 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
 
         getTile(url, function(err, response) {
             if (err) throw err;
-            var data = new VT.VectorTile(new Protobuf(response));
+            const data = new VT.VectorTile(new Protobuf(response));
             workerTile.parse(data, layerFamilies, actor, function(err) {
                 if (err) return callback(err);
                 eachCallback();
             });
         });
     }, function(err) {
-        var timeEnd = performance.now();
+        const timeEnd = performance.now();
         callback(err, timeEnd - timeStart);
     });
 }
@@ -181,11 +181,11 @@ function asyncTimesSeries(times, work, callback) {
     }
 }
 
-var createLayerFamiliesCacheKey;
-var createLayerFamiliesCacheValue;
+let createLayerFamiliesCacheKey;
+let createLayerFamiliesCacheValue;
 function createLayerFamilies(layers) {
     if (layers !== createLayerFamiliesCacheKey) {
-        var worker = new Worker({addEventListener: function() {} });
+        const worker = new Worker({addEventListener: function() {} });
         worker['set layers'](0, layers);
 
         createLayerFamiliesCacheKey = layers;

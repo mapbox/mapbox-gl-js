@@ -1,12 +1,12 @@
 'use strict';
 
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = TouchZoomRotateHandler;
 
-var inertiaLinearity = 0.15,
+let inertiaLinearity = 0.15,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaDeceleration = 12, // scale / s^2
     inertiaMaxSpeed = 2.5, // scale / s
@@ -90,7 +90,7 @@ TouchZoomRotateHandler.prototype = {
     _onStart: function (e) {
         if (e.touches.length !== 2) return;
 
-        var p0 = DOM.mousePos(this._el, e.touches[0]),
+        let p0 = DOM.mousePos(this._el, e.touches[0]),
             p1 = DOM.mousePos(this._el, e.touches[1]);
 
         this._startVec = p0.sub(p1);
@@ -106,7 +106,7 @@ TouchZoomRotateHandler.prototype = {
     _onMove: function (e) {
         if (e.touches.length !== 2) return;
 
-        var p0 = DOM.mousePos(this._el, e.touches[0]),
+        let p0 = DOM.mousePos(this._el, e.touches[0]),
             p1 = DOM.mousePos(this._el, e.touches[1]),
             p = p0.add(p1).div(2),
             vec = p0.sub(p1),
@@ -117,7 +117,7 @@ TouchZoomRotateHandler.prototype = {
         // Determine 'intent' by whichever threshold is surpassed first,
         // then keep that state for the duration of this gesture.
         if (!this._gestureIntent) {
-            var scalingSignificantly = (Math.abs(1 - scale) > significantScaleThreshold),
+            let scalingSignificantly = (Math.abs(1 - scale) > significantScaleThreshold),
                 rotatingSignificantly = (Math.abs(bearing) > significantRotateThreshold);
 
             if (rotatingSignificantly) {
@@ -133,7 +133,7 @@ TouchZoomRotateHandler.prototype = {
             }
 
         } else {
-            var param = { duration: 0, around: map.unproject(p) };
+            const param = { duration: 0, around: map.unproject(p) };
 
             if (this._gestureIntent === 'rotate') {
                 param.bearing = this._startBearing + bearing;
@@ -157,7 +157,7 @@ TouchZoomRotateHandler.prototype = {
         window.document.removeEventListener('touchend', this._onEnd);
         this._drainInertiaBuffer();
 
-        var inertia = this._inertia,
+        let inertia = this._inertia,
             map = this._map;
 
         if (inertia.length < 2) {
@@ -165,7 +165,7 @@ TouchZoomRotateHandler.prototype = {
             return;
         }
 
-        var last = inertia[inertia.length - 1],
+        let last = inertia[inertia.length - 1],
             first = inertia[0],
             lastScale = map.transform.scaleZoom(this._startScale * last[1]),
             firstScale = map.transform.scaleZoom(this._startScale * first[1]),
@@ -179,7 +179,7 @@ TouchZoomRotateHandler.prototype = {
         }
 
         // calculate scale/s speed and adjust for increased initial animation speed when easing
-        var speed = scaleOffset * inertiaLinearity / scaleDuration; // scale/s
+        let speed = scaleOffset * inertiaLinearity / scaleDuration; // scale/s
 
         if (Math.abs(speed) > inertiaMaxSpeed) {
             if (speed > 0) {
@@ -189,7 +189,7 @@ TouchZoomRotateHandler.prototype = {
             }
         }
 
-        var duration = Math.abs(speed / (inertiaDeceleration * inertiaLinearity)) * 1000,
+        let duration = Math.abs(speed / (inertiaDeceleration * inertiaLinearity)) * 1000,
             targetScale = lastScale + speed * duration / 2000;
 
         if (targetScale < 0) {
@@ -205,7 +205,7 @@ TouchZoomRotateHandler.prototype = {
     },
 
     _drainInertiaBuffer: function() {
-        var inertia = this._inertia,
+        let inertia = this._inertia,
             now = Date.now(),
             cutoff = 160; // msec
 

@@ -1,7 +1,7 @@
 'use strict';
 
-var util = require('../../util/util');
-var Evented = require('../../util/evented');
+const util = require('../../util/util');
+const Evented = require('../../util/evented');
 module.exports = Control;
 
 /**
@@ -22,10 +22,10 @@ Control.prototype = {
      */
     addTo: function(map) {
         this._map = map;
-        var container = this._container = this.onAdd(map);
+        const container = this._container = this.onAdd(map);
         if (this.options && this.options.position) {
-            var pos = this.options.position;
-            var corner = map._controlCorners[pos];
+            const pos = this.options.position;
+            const corner = map._controlCorners[pos];
             container.className += ' mapboxgl-ctrl';
             if (pos.indexOf('bottom') !== -1) {
                 corner.insertBefore(container, corner.firstChild);

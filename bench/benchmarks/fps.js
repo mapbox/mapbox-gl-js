@@ -1,17 +1,17 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var measureFramerate = require('../lib/measure_framerate');
-var createMap = require('../lib/create_map');
+const Evented = require('../../js/util/evented');
+const util = require('../../js/util/util');
+const formatNumber = require('../lib/format_number');
+const measureFramerate = require('../lib/measure_framerate');
+const createMap = require('../lib/create_map');
 
-var DURATION_MILLISECONDS = 5 * 1000;
+const DURATION_MILLISECONDS = 5 * 1000;
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
-    var map = createMap({
+    const map = createMap({
         width: 1024,
         height: 768,
         zoom: 5,

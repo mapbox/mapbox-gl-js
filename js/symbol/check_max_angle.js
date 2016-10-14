@@ -20,9 +20,9 @@ function checkMaxAngle(line, anchor, labelLength, windowSize, maxAngle) {
     // horizontal labels always pass
     if (anchor.segment === undefined) return true;
 
-    var p = anchor;
-    var index = anchor.segment + 1;
-    var anchorDistance = 0;
+    let p = anchor;
+    let index = anchor.segment + 1;
+    let anchorDistance = 0;
 
     // move backwards along the line to the first segment the label appears on
     while (anchorDistance > -labelLength / 2) {
@@ -39,19 +39,19 @@ function checkMaxAngle(line, anchor, labelLength, windowSize, maxAngle) {
     index++;
 
     // store recent corners and their total angle difference
-    var recentCorners = [];
-    var recentAngleDelta = 0;
+    const recentCorners = [];
+    let recentAngleDelta = 0;
 
     // move forwards by the length of the label and check angles along the way
     while (anchorDistance < labelLength / 2) {
-        var prev = line[index - 1];
-        var current = line[index];
-        var next = line[index + 1];
+        const prev = line[index - 1];
+        const current = line[index];
+        const next = line[index + 1];
 
         // there isn't enough room for the label before the end of the line
         if (!next) return false;
 
-        var angleDelta = prev.angleTo(current) - current.angleTo(next);
+        let angleDelta = prev.angleTo(current) - current.angleTo(next);
         // restrict angle to -pi..pi range
         angleDelta = Math.abs(((angleDelta + 3 * Math.PI) % (Math.PI * 2)) - Math.PI);
 

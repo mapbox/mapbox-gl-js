@@ -35,7 +35,7 @@ function Actor(target, parent, mapId) {
  * @private
  */
 Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
-    var id = callback ? this.mapId + ':' + this.callbackID++ : null;
+    const id = callback ? this.mapId + ':' + this.callbackID++ : null;
     if (callback) this.callbacks[id] = callback;
     this.target.postMessage({
         targetMapId: targetMapId,
@@ -47,7 +47,7 @@ Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
 };
 
 Actor.prototype.receive = function(message) {
-    var data = message.data,
+    let data = message.data,
         id = data.id,
         callback;
 
@@ -63,8 +63,8 @@ Actor.prototype.receive = function(message) {
         this.parent[data.type](data.sourceMapId, data.data, done.bind(this));
     } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
         // data.type == sourcetype.method
-        var keys = data.type.split('.');
-        var workerSource = this.parent.getWorkerSource(data.sourceMapId, keys[0]);
+        const keys = data.type.split('.');
+        const workerSource = this.parent.getWorkerSource(data.sourceMapId, keys[0]);
         workerSource[keys[1]](data.data, done.bind(this));
     } else {
         this.parent[data.type](data.data);

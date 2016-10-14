@@ -1,9 +1,9 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Hash = require('../../../js/ui/hash');
-var window = require('../../../js/util/window');
-var Map = require('../../../js/ui/map');
+const test = require('mapbox-gl-js-test').test;
+const Hash = require('../../../js/ui/hash');
+const window = require('../../../js/util/window');
+const Map = require('../../../js/ui/map');
 
 test('hash', function(t) {
     function createHash() {
@@ -11,7 +11,7 @@ test('hash', function(t) {
     }
 
     function createMap() {
-        var container = window.document.createElement('div');
+        const container = window.document.createElement('div');
         container.offsetWidth = 512;
         container.offsetHeight = 512;
         return new Map({container: container});
@@ -19,8 +19,8 @@ test('hash', function(t) {
 
 
     t.test('#addTo', function(t) {
-        var map = createMap();
-        var hash = createHash();
+        const map = createMap();
+        const hash = createHash();
 
         t.notok(hash._map);
 
@@ -31,8 +31,8 @@ test('hash', function(t) {
     });
 
     t.test('#remove', function(t) {
-        var map = createMap();
-        var hash = createHash()
+        const map = createMap();
+        const hash = createHash()
             .addTo(map);
 
         t.ok(hash._map);
@@ -44,8 +44,8 @@ test('hash', function(t) {
     });
 
     t.test('#_onHashChange', function(t) {
-        var map = createMap();
-        var hash = createHash()
+        const map = createMap();
+        const hash = createHash()
             .addTo(map);
 
         window.location.hash = '#10/3.00/-1.00';
@@ -78,7 +78,7 @@ test('hash', function(t) {
             return window.location.hash.split('/');
         }
 
-        var map = createMap();
+        const map = createMap();
         createHash()
             .addTo(map);
 
@@ -89,7 +89,7 @@ test('hash', function(t) {
 
         t.ok(window.location.hash);
 
-        var newHash = getHash();
+        let newHash = getHash();
 
         t.equal(newHash.length, 3);
         t.equal(newHash[0], '#3');

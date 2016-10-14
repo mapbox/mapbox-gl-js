@@ -1,30 +1,30 @@
 'use strict';
 
-var util = require('../util/util');
-var browser = require('../util/browser');
-var window = require('../util/window');
-var Evented = require('../util/evented');
-var DOM = require('../util/dom');
+const util = require('../util/util');
+const browser = require('../util/browser');
+const window = require('../util/window');
+const Evented = require('../util/evented');
+const DOM = require('../util/dom');
 
-var Style = require('../style/style');
-var AnimationLoop = require('../style/animation_loop');
-var Painter = require('../render/painter');
+const Style = require('../style/style');
+const AnimationLoop = require('../style/animation_loop');
+const Painter = require('../render/painter');
 
-var Transform = require('../geo/transform');
-var Hash = require('./hash');
+const Transform = require('../geo/transform');
+const Hash = require('./hash');
 
-var bindHandlers = require('./bind_handlers');
+const bindHandlers = require('./bind_handlers');
 
-var Camera = require('./camera');
-var LngLat = require('../geo/lng_lat');
-var LngLatBounds = require('../geo/lng_lat_bounds');
-var Point = require('point-geometry');
-var AttributionControl = require('./control/attribution_control');
-var isSupported = require('mapbox-gl-supported');
+const Camera = require('./camera');
+const LngLat = require('../geo/lng_lat');
+const LngLatBounds = require('../geo/lng_lat_bounds');
+const Point = require('point-geometry');
+const AttributionControl = require('./control/attribution_control');
+const isSupported = require('mapbox-gl-supported');
 
-var defaultMinZoom = 0;
-var defaultMaxZoom = 20;
-var defaultOptions = {
+const defaultMinZoom = 0;
+const defaultMaxZoom = 20;
+const defaultOptions = {
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -126,7 +126,7 @@ var defaultOptions = {
  * });
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
-var Map = module.exports = function(options) {
+const Map = module.exports = function(options) {
     options = util.extend({}, defaultOptions, options);
 
     this._interactive = options.interactive;
@@ -256,7 +256,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     removeClass: function(klass, options) {
-        var i = this._classes.indexOf(klass);
+        const i = this._classes.indexOf(klass);
         if (i < 0 || klass === '') return this;
         this._classes.splice(i, 1);
         this._classOptions = options;
@@ -274,8 +274,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     setClasses: function(klasses, options) {
-        var uniqueClasses = {};
-        for (var i = 0; i < klasses.length; i++) {
+        const uniqueClasses = {};
+        for (let i = 0; i < klasses.length; i++) {
             if (klasses[i] !== '') uniqueClasses[klasses[i]] = true;
         }
         this._classes = Object.keys(uniqueClasses);
@@ -315,9 +315,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      */
     resize: function() {
-        var dimensions = this._containerDimensions();
-        var width = dimensions[0];
-        var height = dimensions[1];
+        const dimensions = this._containerDimensions();
+        const width = dimensions[0];
+        const height = dimensions[1];
 
         this._resizeCanvas(width, height);
         this.transform.resize(width, height);
@@ -336,7 +336,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {LngLatBounds} The map's geographical bounds.
      */
     getBounds: function() {
-        var bounds = new LngLatBounds(
+        const bounds = new LngLatBounds(
             this.transform.pointLocation(new Point(0, this.transform.height)),
             this.transform.pointLocation(new Point(this.transform.width, 0)));
 
@@ -363,7 +363,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      */
     setMaxBounds: function (lnglatbounds) {
         if (lnglatbounds) {
-            var b = LngLatBounds.convert(lnglatbounds);
+            const b = LngLatBounds.convert(lnglatbounds);
             this.transform.lngRange = [b.getWest(), b.getEast()];
             this.transform.latRange = [b.getSouth(), b.getNorth()];
             this.transform._constrain();
@@ -515,8 +515,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     queryRenderedFeatures: function() {
-        var params = {};
-        var geometry;
+        let params = {};
+        let geometry;
 
         if (arguments.length === 2) {
             geometry = arguments[0];
@@ -548,14 +548,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
             ];
         }
 
-        var queryGeometry;
-        var isPoint = pointOrBox instanceof Point || typeof pointOrBox[0] === 'number';
+        let queryGeometry;
+        const isPoint = pointOrBox instanceof Point || typeof pointOrBox[0] === 'number';
 
         if (isPoint) {
-            var point = Point.convert(pointOrBox);
+            const point = Point.convert(pointOrBox);
             queryGeometry = [point];
         } else {
-            var box = [Point.convert(pointOrBox[0]), Point.convert(pointOrBox[1])];
+            const box = [Point.convert(pointOrBox[0]), Point.convert(pointOrBox[1])];
             queryGeometry = [
                 box[0],
                 new Point(box[1].x, box[0].y),
@@ -924,8 +924,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _containerDimensions: function() {
-        var width = 0;
-        var height = 0;
+        let width = 0;
+        let height = 0;
 
         if (this._container) {
             width = this._container.offsetWidth || 400;
@@ -936,10 +936,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupContainer: function() {
-        var container = this._container;
+        const container = this._container;
         container.classList.add('mapboxgl-map');
 
-        var canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
+        const canvasContainer = this._canvasContainer = DOM.create('div', 'mapboxgl-canvas-container', container);
         if (this._interactive) {
             canvasContainer.classList.add('mapboxgl-interactive');
         }
@@ -950,18 +950,18 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         this._canvas.addEventListener('webglcontextrestored', this._contextRestored, false);
         this._canvas.setAttribute('tabindex', 0);
 
-        var dimensions = this._containerDimensions();
+        const dimensions = this._containerDimensions();
         this._resizeCanvas(dimensions[0], dimensions[1]);
 
-        var controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
-        var corners = this._controlCorners = {};
+        const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
+        const corners = this._controlCorners = {};
         ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(function (pos) {
             corners[pos] = DOM.create('div', 'mapboxgl-ctrl-' + pos, controlContainer);
         });
     },
 
     _resizeCanvas: function(width, height) {
-        var pixelRatio = window.devicePixelRatio || 1;
+        const pixelRatio = window.devicePixelRatio || 1;
 
         // Request the required canvas size taking the pixelratio into account.
         this._canvas.width = pixelRatio * width;
@@ -973,12 +973,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     _setupPainter: function() {
-        var attributes = util.extend({
+        const attributes = util.extend({
             failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat,
             preserveDrawingBuffer: this._preserveDrawingBuffer
         }, isSupported.webGLContextAttributes);
 
-        var gl = this._canvas.getContext('webgl', attributes) ||
+        const gl = this._canvas.getContext('webgl', attributes) ||
             this._canvas.getContext('experimental-webgl', attributes);
 
         if (!gl) {
@@ -1117,7 +1117,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
         }
-        var extension = this.painter.gl.getExtension('WEBGL_lose_context');
+        const extension = this.painter.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
         removeNode(this._canvasContainer);
         removeNode(this._controlContainer);

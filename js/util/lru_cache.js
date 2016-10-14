@@ -24,7 +24,7 @@ function LRUCache(max, onRemove) {
  * @private
  */
 LRUCache.prototype.reset = function() {
-    for (var key in this.data) {
+    for (const key in this.data) {
         this.onRemove(this.data[key]);
     }
 
@@ -56,7 +56,7 @@ LRUCache.prototype.add = function(key, data) {
         this.order.push(key);
 
         if (this.order.length > this.max) {
-            var removedData = this.get(this.order[0]);
+            const removedData = this.get(this.order[0]);
             if (removedData) this.onRemove(removedData);
         }
     }
@@ -96,7 +96,7 @@ LRUCache.prototype.keys = function() {
 LRUCache.prototype.get = function(key) {
     if (!this.has(key)) { return null; }
 
-    var data = this.data[key];
+    const data = this.data[key];
 
     delete this.data[key];
     this.order.splice(this.order.indexOf(key), 1);
@@ -115,7 +115,7 @@ LRUCache.prototype.setMaxSize = function(max) {
     this.max = max;
 
     while (this.order.length > this.max) {
-        var removedData = this.get(this.order[0]);
+        const removedData = this.get(this.order[0]);
         if (removedData) this.onRemove(removedData);
     }
 

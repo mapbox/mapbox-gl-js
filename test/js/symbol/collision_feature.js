@@ -1,16 +1,16 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var CollisionFeature = require('../../../js/symbol/collision_feature');
-var Anchor = require('../../../js/symbol/anchor');
-var Point = require('point-geometry');
-var CollisionBoxArray = require('../../../js/symbol/collision_box');
+const test = require('mapbox-gl-js-test').test;
+const CollisionFeature = require('../../../js/symbol/collision_feature');
+const Anchor = require('../../../js/symbol/anchor');
+const Point = require('point-geometry');
+const CollisionBoxArray = require('../../../js/symbol/collision_box');
 
 test('CollisionFeature', function(t) {
 
-    var collisionBoxArray = new CollisionBoxArray();
+    const collisionBoxArray = new CollisionBoxArray();
 
-    var shapedText = {
+    const shapedText = {
         left: -50,
         top: -10,
         right: 50,
@@ -18,13 +18,13 @@ test('CollisionFeature', function(t) {
     };
 
     test('point label', function(t) {
-        var point = new Point(500, 0);
-        var anchor = new Anchor(point.x, point.y, 0, undefined);
+        const point = new Point(500, 0);
+        const anchor = new Anchor(point.x, point.y, 0, undefined);
 
-        var cf = new CollisionFeature(collisionBoxArray, [point], anchor, 0, 0, 0, shapedText, 1, 0, false);
+        const cf = new CollisionFeature(collisionBoxArray, [point], anchor, 0, 0, 0, shapedText, 1, 0, false);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 1);
 
-        var box = collisionBoxArray.get(cf.boxStartIndex);
+        const box = collisionBoxArray.get(cf.boxStartIndex);
         t.equal(box.x1, -50);
         t.equal(box.x2, 50);
         t.equal(box.y1, -10);
@@ -33,10 +33,10 @@ test('CollisionFeature', function(t) {
     });
 
     test('line label', function(t) {
-        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
-        var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
-        var boxPoints = pluckAnchorPoints(cf);
+        const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        const anchor = new Anchor(505, 95, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
             { x: 468, y: 94},
             { x: 478, y: 96},
@@ -52,10 +52,10 @@ test('CollisionFeature', function(t) {
     });
 
     test('vertical line label', function(t) {
-        var line = [new Point(0, 0), new Point(0, 100), new Point(0, 111), new Point(0, 112), new Point(0, 200)];
-        var anchor = new Anchor(0, 110, 0, 1);
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
-        var boxPoints = pluckAnchorPoints(cf);
+        const line = [new Point(0, 0), new Point(0, 100), new Point(0, 111), new Point(0, 112), new Point(0, 200)];
+        const anchor = new Anchor(0, 110, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const boxPoints = pluckAnchorPoints(cf);
         t.deepEqual(boxPoints, [
             { x: 0, y: 70 },
             { x: 0, y: 80 },
@@ -71,55 +71,55 @@ test('CollisionFeature', function(t) {
     });
 
     test('doesnt create any boxes for features with zero height', function(t) {
-        var shapedText = {
+        const shapedText = {
             left: -50,
             top: -10,
             right: 50,
             bottom: -10
         };
 
-        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
-        var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        const anchor = new Anchor(505, 95, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 0);
         t.end();
     });
 
     test('doesnt create any boxes for features with negative height', function(t) {
-        var shapedText = {
+        const shapedText = {
             left: -50,
             top: 10,
             right: 50,
             bottom: -10
         };
 
-        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
-        var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        const anchor = new Anchor(505, 95, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 0);
         t.end();
     });
 
     test('doesnt create way too many tiny boxes for features with really low height', function(t) {
-        var shapedText = {
+        const shapedText = {
             left: -50,
             top: 10,
             right: 50,
             bottom: 10.00001
         };
 
-        var line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
-        var anchor = new Anchor(505, 95, 0, 1);
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
+        const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
+        const anchor = new Anchor(505, 95, 0, 1);
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
         t.ok(cf.boxEndIndex - cf.boxStartIndex < 30);
         t.end();
     });
 
     test('height is big enough that first box can be placed *after* anchor', function(t) {
-        var line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
-        var anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
-        var shaping = { right: 256, left: 0, bottom: 256, top: 0 };
-        var cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shaping, 1, 0, true);
+        const line = [new Point(3103, 4068), new Point(3225.6206896551726, 4096)];
+        const anchor = new Anchor(3144.5959947505007, 4077.498298013894, 0.22449735614507618, 0);
+        const shaping = { right: 256, left: 0, bottom: 256, top: 0 };
+        const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shaping, 1, 0, true);
         t.equal(cf.boxEndIndex - cf.boxStartIndex, 1);
         t.end();
     });
@@ -127,8 +127,8 @@ test('CollisionFeature', function(t) {
     t.end();
 
     function pluckAnchorPoints(cf) {
-        var result = [];
-        for (var i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
+        const result = [];
+        for (let i = cf.boxStartIndex; i < cf.boxEndIndex; i++) {
             result.push(collisionBoxArray.get(i).anchorPoint);
         }
         return result;

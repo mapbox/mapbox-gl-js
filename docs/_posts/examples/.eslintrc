@@ -8,9 +8,11 @@
   "rules": {
     "strict": "off",
     "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
-    "no-loop-func": "off"
+    "no-loop-func": "off",
+    "no-var": "off"
   },
   "env": {
+    "es6": false,
     "browser": true
   }
 }

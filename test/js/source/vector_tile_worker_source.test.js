@@ -1,16 +1,16 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var VectorTileWorkerSource = require('../../../js/source/vector_tile_worker_source');
+const test = require('mapbox-gl-js-test').test;
+const VectorTileWorkerSource = require('../../../js/source/vector_tile_worker_source');
 
-var styleLayers = {
+const styleLayers = {
     getLayers: function () {},
     getLayerFamilies: function () {}
 };
 
 test('abortTile', function(t) {
     t.test('aborts pending request', function(t) {
-        var source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, styleLayers);
 
         source.loadTile({
             source: 'source',
@@ -32,7 +32,7 @@ test('abortTile', function(t) {
 
 test('removeTile', function(t) {
     t.test('removes loaded tile', function(t) {
-        var source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, styleLayers);
 
         source.loaded = {
             source: {
@@ -55,8 +55,8 @@ test('removeTile', function(t) {
 test('redoPlacement', function(t) {
 
     t.test('on loaded tile', function(t) {
-        var source = new VectorTileWorkerSource(null, styleLayers);
-        var tile = {
+        const source = new VectorTileWorkerSource(null, styleLayers);
+        const tile = {
             redoPlacement: function(angle, pitch, showCollisionBoxes) {
                 t.equal(angle, 60);
                 t.equal(pitch, 30);
@@ -84,8 +84,8 @@ test('redoPlacement', function(t) {
     });
 
     t.test('on loading tile', function(t) {
-        var source = new VectorTileWorkerSource(null, styleLayers);
-        var tile = {};
+        const source = new VectorTileWorkerSource(null, styleLayers);
+        const tile = {};
         source.loading = {mapbox: {3: tile}};
 
         source.redoPlacement({

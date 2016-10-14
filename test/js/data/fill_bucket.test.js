@@ -1,18 +1,18 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var fs = require('fs');
-var Protobuf = require('pbf');
-var VectorTile = require('vector-tile').VectorTile;
-var Point = require('point-geometry');
-var ArrayGroup = require('../../../js/data/array_group');
-var FillBucket = require('../../../js/data/bucket/fill_bucket');
-var path = require('path');
-var StyleLayer = require('../../../js/style/style_layer');
+const test = require('mapbox-gl-js-test').test;
+const fs = require('fs');
+const Protobuf = require('pbf');
+const VectorTile = require('vector-tile').VectorTile;
+const Point = require('point-geometry');
+const ArrayGroup = require('../../../js/data/array_group');
+const FillBucket = require('../../../js/data/bucket/fill_bucket');
+const path = require('path');
+const StyleLayer = require('../../../js/style/style_layer');
 
 // Load a fill feature from fixture tile.
-var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
-var feature = vt.layers.water.feature(0);
+const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+const feature = vt.layers.water.feature(0);
 
 function createFeature(points) {
     return {
@@ -24,11 +24,11 @@ function createFeature(points) {
 
 test('FillBucket', function(t) {
     // Suppress console.warn output.
-    var warn = console.warn;
+    const warn = console.warn;
     console.warn = function() {};
 
-    var layer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
-    var bucket = new FillBucket({
+    const layer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
+    const bucket = new FillBucket({
         buffers: {},
         layer: layer,
         childLayers: [layer]
@@ -57,10 +57,10 @@ test('FillBucket', function(t) {
 test('FillBucket - feature split across array groups', function (t) {
     // temporarily reduce the max array length so we can test features
     // breaking across array groups without tests taking a _long_ time.
-    var prevMaxArrayLength = ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
+    const prevMaxArrayLength = ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
     ArrayGroup.MAX_VERTEX_ARRAY_LENGTH = 1023;
 
-    var layer = new StyleLayer({
+    const layer = new StyleLayer({
         id: 'test',
         type: 'fill',
         layout: {},
@@ -74,7 +74,7 @@ test('FillBucket - feature split across array groups', function (t) {
     // populatePaintArrays iterates through each vertex
     layer.updatePaintTransition('fill-color', [], {});
 
-    var bucket = new FillBucket({
+    const bucket = new FillBucket({
         buffers: {},
         layer: layer,
         childLayers: [layer]
@@ -92,14 +92,14 @@ test('FillBucket - feature split across array groups', function (t) {
         20 // but the second one breaks across the boundary.
     ].map(createPolygon)));
 
-    var groups = bucket.arrayGroups.fill;
+    const groups = bucket.arrayGroups.fill;
 
     // check array group lengths
     // FillBucket#addPolygon does NOT allow a single polygon to break across
     // group boundary, so we expect the first group to include the first
     // feature and the first polygon of the second feature, and the second
     // group to include the _entire_ second polygon of the second feature.
-    var expectedLengths = [
+    const expectedLengths = [
         10 + (ArrayGroup.MAX_VERTEX_ARRAY_LENGTH - 20),
         20
     ];
@@ -109,14 +109,14 @@ test('FillBucket - feature split across array groups', function (t) {
     t.equal(groups[1].layoutVertexArray.length, expectedLengths[1], 'group 1 length, layout');
 
     // check that every vertex's color values match the first vertex
-    var expected = [0, 0, 255, 255];
+    const expected = [0, 0, 255, 255];
     t.same(getVertexColor(0, 0), expected, 'first vertex');
     t.same(getVertexColor(0, expectedLengths[0] - 1), expected, 'last vertex of first group');
     t.same(getVertexColor(1, 0), expected, 'first vertex of second group');
     t.same(getVertexColor(1, expectedLengths[1] - 1), expected, 'last vertex');
 
     function getVertexColor(g, i) {
-        var vertex = groups[g].paintVertexArrays.test.get(i);
+        const vertex = groups[g].paintVertexArrays.test.get(i);
         return [
             vertex['a_color0'],
             vertex['a_color1'],
@@ -132,8 +132,8 @@ test('FillBucket - feature split across array groups', function (t) {
 });
 
 function createPolygon (numPoints) {
-    var points = [];
-    for (var i = 0; i < numPoints; i++) {
+    const points = [];
+    for (let i = 0; i < numPoints; i++) {
         points.push(new Point(i / numPoints, i / numPoints));
     }
     return points;

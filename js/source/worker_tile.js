@@ -1,14 +1,14 @@
 'use strict';
 
-var FeatureIndex = require('../data/feature_index');
-var CollisionTile = require('../symbol/collision_tile');
-var Bucket = require('../data/bucket');
-var CollisionBoxArray = require('../symbol/collision_box');
-var DictionaryCoder = require('../util/dictionary_coder');
-var util = require('../util/util');
-var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads');
-var assert = require('assert');
+const FeatureIndex = require('../data/feature_index');
+const CollisionTile = require('../symbol/collision_tile');
+const Bucket = require('../data/bucket');
+const CollisionBoxArray = require('../symbol/collision_box');
+const DictionaryCoder = require('../util/dictionary_coder');
+const util = require('../util/util');
+const SymbolInstancesArray = require('../symbol/symbol_instances');
+const SymbolQuadsArray = require('../symbol/symbol_quads');
+const assert = require('assert');
 
 module.exports = WorkerTile;
 
@@ -32,21 +32,21 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     this.collisionBoxArray = new CollisionBoxArray();
     this.symbolInstancesArray = new SymbolInstancesArray();
     this.symbolQuadsArray = new SymbolQuadsArray();
-    var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-    var featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
-    var sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
+    const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
+    const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
+    const sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
 
-    var tile = this;
-    var bucketsById = {};
-    var bucketsBySourceLayer = {};
-    var i;
-    var sourceLayerId;
-    var bucket;
+    const tile = this;
+    const bucketsById = {};
+    const bucketsBySourceLayer = {};
+    let i;
+    let sourceLayerId;
+    let bucket;
 
     // Map non-ref layers to buckets.
-    var bucketIndex = 0;
-    for (var layerId in layerFamilies) {
-        var layer = layerFamilies[layerId][0];
+    let bucketIndex = 0;
+    for (const layerId in layerFamilies) {
+        const layer = layerFamilies[layerId][0];
 
         assert(!layer.ref);
 
@@ -81,7 +81,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     // read each layer, and sort its features into buckets
     if (data.layers) { // vectortile
         for (sourceLayerId in bucketsBySourceLayer) {
-            var sourceLayer = data.layers[sourceLayerId];
+            const sourceLayer = data.layers[sourceLayerId];
             if (sourceLayer.version === 1) {
                 util.warnOnce(
                     'Vector tile source "' + this.source + '" layer "' +
@@ -96,23 +96,23 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
     }
 
     function sortLayerIntoBuckets(layer, buckets) {
-        for (var i = 0; i < layer.length; i++) {
-            var feature = layer.feature(i);
+        for (let i = 0; i < layer.length; i++) {
+            const feature = layer.feature(i);
             feature.index = i;
-            for (var id in buckets) {
+            for (const id in buckets) {
                 if (buckets[id].layer.filter(feature))
                     buckets[id].features.push(feature);
             }
         }
     }
 
-    var buckets = [],
+    let buckets = [],
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 
     featureIndex.bucketLayerIDs = {};
 
-    for (var id in bucketsById) {
+    for (const id in bucketsById) {
         bucket = bucketsById[id];
         if (bucket.features.length === 0) continue;
 
@@ -126,9 +126,9 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             otherBuckets.push(bucket);
     }
 
-    var icons = {};
-    var stacks = {};
-    var deps = 0;
+    let icons = {};
+    let stacks = {};
+    let deps = 0;
 
 
     if (symbolBuckets.length > 0) {
@@ -139,7 +139,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             symbolBuckets[i].updateFont(stacks);
         }
 
-        for (var fontName in stacks) {
+        for (const fontName in stacks) {
             stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
         }
         icons = Object.keys(icons);
@@ -172,7 +172,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         deps++;
         if (deps === 2) {
             // all symbol bucket dependencies fetched; parse them in proper order
-            for (var i = symbolBuckets.length - 1; i >= 0; i--) {
+            for (let i = symbolBuckets.length - 1; i >= 0; i--) {
                 parseBucket(tile, symbolBuckets[i]);
             }
             done();
@@ -184,8 +184,8 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
 
 
         if (bucket.type !== 'symbol') {
-            for (var i = 0; i < bucket.features.length; i++) {
-                var feature = bucket.features[i];
+            for (let i = 0; i < bucket.features.length; i++) {
+                const feature = bucket.features[i];
                 featureIndex.insert(feature, feature.index, bucket.sourceLayerIndex, bucket.index);
             }
         }
@@ -201,12 +201,12 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             tile.redoPlacementAfterDone = false;
         }
 
-        var featureIndex_ = featureIndex.serialize();
-        var collisionTile_ = collisionTile.serialize();
-        var collisionBoxArray = tile.collisionBoxArray.serialize();
-        var symbolInstancesArray = tile.symbolInstancesArray.serialize();
-        var symbolQuadsArray = tile.symbolQuadsArray.serialize();
-        var nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
+        const featureIndex_ = featureIndex.serialize();
+        const collisionTile_ = collisionTile.serialize();
+        const collisionBoxArray = tile.collisionBoxArray.serialize();
+        const symbolInstancesArray = tile.symbolInstancesArray.serialize();
+        const symbolQuadsArray = tile.symbolQuadsArray.serialize();
+        const nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
 
         callback(null, {
             buckets: nonEmptyBuckets.map(serializeBucket),
@@ -228,16 +228,16 @@ WorkerTile.prototype.redoPlacement = function(angle, pitch, showCollisionBoxes) 
         return {};
     }
 
-    var collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
+    const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
 
-    var buckets = this.symbolBuckets;
+    const buckets = this.symbolBuckets;
 
-    for (var i = buckets.length - 1; i >= 0; i--) {
+    for (let i = buckets.length - 1; i >= 0; i--) {
         buckets[i].placeFeatures(collisionTile, showCollisionBoxes);
     }
 
-    var collisionTile_ = collisionTile.serialize();
-    var nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
+    const collisionTile_ = collisionTile.serialize();
+    const nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
 
     return {
         result: {
@@ -257,8 +257,8 @@ function serializeBucket(bucket) {
 }
 
 function getTransferables(buckets) {
-    var transferables = [];
-    for (var i in buckets) {
+    const transferables = [];
+    for (const i in buckets) {
         buckets[i].getTransferables(transferables);
     }
     return transferables;

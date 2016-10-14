@@ -1,9 +1,9 @@
 'use strict';
 
-var DOM = require('../../util/dom');
-var LngLatBounds = require('../../geo/lng_lat_bounds');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const DOM = require('../../util/dom');
+const LngLatBounds = require('../../geo/lng_lat_bounds');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = BoxZoomHandler;
 
@@ -82,7 +82,7 @@ BoxZoomHandler.prototype = {
     },
 
     _onMouseMove: function (e) {
-        var p0 = this._startPos,
+        let p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e);
 
         if (!this._box) {
@@ -91,7 +91,7 @@ BoxZoomHandler.prototype = {
             this._fireEvent('boxzoomstart', e);
         }
 
-        var minX = Math.min(p0.x, p1.x),
+        let minX = Math.min(p0.x, p1.x),
             maxX = Math.max(p0.x, p1.x),
             minY = Math.min(p0.y, p1.y),
             maxY = Math.max(p0.y, p1.y);
@@ -105,7 +105,7 @@ BoxZoomHandler.prototype = {
     _onMouseUp: function (e) {
         if (e.button !== 0) return;
 
-        var p0 = this._startPos,
+        let p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
             bounds = new LngLatBounds()
                 .extend(this._map.unproject(p0))

@@ -1,13 +1,13 @@
 'use strict';
 
-var browser = require('../util/browser');
+const browser = require('../util/browser');
 
 module.exports = drawCircles;
 
 function drawCircles(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
-    var gl = painter.gl;
+    const gl = painter.gl;
 
     painter.setDepthSublayer(0);
     painter.depthMask(false);
@@ -16,17 +16,17 @@ function drawCircles(painter, sourceCache, layer, coords) {
     // large circles are not clipped to tiles
     gl.disable(gl.STENCIL_TEST);
 
-    for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
+    for (let i = 0; i < coords.length; i++) {
+        const coord = coords[i];
 
-        var tile = sourceCache.getTile(coord);
-        var bucket = tile.getBucket(layer);
+        const tile = sourceCache.getTile(coord);
+        const bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var bufferGroups = bucket.bufferGroups.circle;
+        const bufferGroups = bucket.bufferGroups.circle;
         if (!bufferGroups) continue;
 
-        var programOptions = bucket.paintAttributes.circle[layer.id];
-        var program = painter.useProgram(
+        const programOptions = bucket.paintAttributes.circle[layer.id];
+        const program = painter.useProgram(
             'circle',
             programOptions.defines,
             programOptions.vertexPragmas,
@@ -54,8 +54,8 @@ function drawCircles(painter, sourceCache, layer, coords) {
 
         bucket.setUniforms(gl, 'circle', program, layer, {zoom: painter.transform.zoom});
 
-        for (var k = 0; k < bufferGroups.length; k++) {
-            var group = bufferGroups[k];
+        for (let k = 0; k < bufferGroups.length; k++) {
+            const group = bufferGroups[k];
             group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
             gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
         }

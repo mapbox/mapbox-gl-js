@@ -1,28 +1,28 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var fs = require('fs');
-var path = require('path');
-var Protobuf = require('pbf');
-var VectorTile = require('vector-tile').VectorTile;
-var Point = require('point-geometry');
-var LineBucket = require('../../../js/data/bucket/line_bucket');
-var StyleLayer = require('../../../js/style/style_layer');
+const test = require('mapbox-gl-js-test').test;
+const fs = require('fs');
+const path = require('path');
+const Protobuf = require('pbf');
+const VectorTile = require('vector-tile').VectorTile;
+const Point = require('point-geometry');
+const LineBucket = require('../../../js/data/bucket/line_bucket');
+const StyleLayer = require('../../../js/style/style_layer');
 
 // Load a line feature from fixture tile.
-var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
-var feature = vt.layers.road.feature(0);
+const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
+const feature = vt.layers.road.feature(0);
 
 test('LineBucket', function(t) {
-    var layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
-    var bucket = new LineBucket({
+    const layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
+    const bucket = new LineBucket({
         buffers: {},
         layer: layer,
         childLayers: [layer]
     });
     bucket.createArrays();
 
-    var pointWithScale = new Point(0, 0);
+    const pointWithScale = new Point(0, 0);
     pointWithScale.scale = 10;
 
     // should throw in the future?

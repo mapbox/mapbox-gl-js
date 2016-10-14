@@ -1,7 +1,7 @@
 'use strict';
 
-var UnitBezier = require('unitbezier');
-var Coordinate = require('../geo/coordinate');
+const UnitBezier = require('unitbezier');
+const Coordinate = require('../geo/coordinate');
 
 /**
  * Given a value `t` that varies between 0 and 1, return
@@ -15,7 +15,7 @@ var Coordinate = require('../geo/coordinate');
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
-    var t2 = t * t,
+    let t2 = t * t,
         t3 = t2 * t;
     return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
 };
@@ -33,7 +33,7 @@ exports.easeCubicInOut = function (t) {
  * @private
  */
 exports.bezier = function(p1x, p1y, p2x, p2y) {
-    var bezier = new UnitBezier(p1x, p1y, p2x, p2y);
+    const bezier = new UnitBezier(p1x, p1y, p2x, p2y);
     return function(t) {
         return bezier.solve(t);
     };
@@ -71,8 +71,8 @@ exports.clamp = function (n, min, max) {
  * @private
  */
 exports.wrap = function (n, min, max) {
-    var d = max - min;
-    var w = ((n - min) % d + d) % d + min;
+    const d = max - min;
+    const w = ((n - min) % d + d) % d + min;
     return (w === min) ? max : w;
 };
 
@@ -82,8 +82,8 @@ exports.wrap = function (n, min, max) {
  * @private
  */
 exports.coalesce = function() {
-    for (var i = 0; i < arguments.length; i++) {
-        var arg = arguments[i];
+    for (let i = 0; i < arguments.length; i++) {
+        const arg = arguments[i];
         if (arg !== null && arg !== undefined)
             return arg;
     }
@@ -102,9 +102,9 @@ exports.coalesce = function() {
  */
 exports.asyncAll = function (array, fn, callback) {
     if (!array.length) { return callback(null, []); }
-    var remaining = array.length;
-    var results = new Array(array.length);
-    var error = null;
+    let remaining = array.length;
+    const results = new Array(array.length);
+    let error = null;
     array.forEach(function (item, i) {
         fn(item, function (err, result) {
             if (err) error = err;
@@ -124,8 +124,8 @@ exports.asyncAll = function (array, fn, callback) {
  * @private
  */
 exports.keysDifference = function (obj, other) {
-    var difference = [];
-    for (var i in obj) {
+    const difference = [];
+    for (const i in obj) {
         if (!(i in other)) {
             difference.push(i);
         }
@@ -144,9 +144,9 @@ exports.keysDifference = function (obj, other) {
  * @private
  */
 exports.extend = function (dest) {
-    for (var i = 1; i < arguments.length; i++) {
-        var src = arguments[i];
-        for (var k in src) {
+    for (let i = 1; i < arguments.length; i++) {
+        const src = arguments[i];
+        for (const k in src) {
             dest[k] = src[k];
         }
     }
@@ -162,7 +162,7 @@ exports.extend = function (dest) {
  * @private
  */
 exports.extendAll = function (dest, src) {
-    for (var i in src) {
+    for (const i in src) {
         Object.defineProperty(dest, i, Object.getOwnPropertyDescriptor(src, i));
     }
     return dest;
@@ -178,7 +178,7 @@ exports.extendAll = function (dest, src) {
  * @private
  */
 exports.inherit = function (parent, props) {
-    var parentProto = typeof parent === 'function' ? parent.prototype : parent,
+    let parentProto = typeof parent === 'function' ? parent.prototype : parent,
         proto = Object.create(parentProto);
     exports.extendAll(proto, props);
     return proto;
@@ -199,9 +199,9 @@ exports.inherit = function (parent, props) {
  * @private
  */
 exports.pick = function (src, properties) {
-    var result = {};
-    for (var i = 0; i < properties.length; i++) {
-        var k = properties[i];
+    const result = {};
+    for (let i = 0; i < properties.length; i++) {
+        const k = properties[i];
         if (k in src) {
             result[k] = src[k];
         }
@@ -209,7 +209,7 @@ exports.pick = function (src, properties) {
     return result;
 };
 
-var id = 1;
+let id = 1;
 
 /**
  * Return a unique numeric id, starting at 1 and incrementing with
@@ -232,7 +232,7 @@ exports.uniqueId = function () {
  * @private
  */
 exports.debounce = function(fn, time) {
-    var timer, args;
+    let timer, args;
 
     return function() {
         args = arguments;
@@ -281,7 +281,7 @@ exports.bindAll = function(fns, context) {
  * @private
  */
 exports.bindHandlers = function(context) {
-    for (var i in context) {
+    for (const i in context) {
         if (typeof context[i] === 'function' && i.indexOf('_on') === 0) {
             context[i] = context[i].bind(context);
         }
@@ -302,7 +302,7 @@ exports.setOptions = function(obj, options) {
     if (!obj.hasOwnProperty('options')) {
         obj.options = obj.options ? Object.create(obj.options) : {};
     }
-    for (var i in options) {
+    for (const i in options) {
         obj.options[i] = options[i];
     }
     return obj.options;
@@ -315,21 +315,21 @@ exports.setOptions = function(obj, options) {
  * @private
  */
 exports.getCoordinatesCenter = function(coords) {
-    var minX = Infinity;
-    var minY = Infinity;
-    var maxX = -Infinity;
-    var maxY = -Infinity;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
 
-    for (var i = 0; i < coords.length; i++) {
+    for (let i = 0; i < coords.length; i++) {
         minX = Math.min(minX, coords[i].column);
         minY = Math.min(minY, coords[i].row);
         maxX = Math.max(maxX, coords[i].column);
         maxY = Math.max(maxY, coords[i].row);
     }
 
-    var dx = maxX - minX;
-    var dy = maxY - minY;
-    var dMax = Math.max(dx, dy);
+    const dx = maxX - minX;
+    const dy = maxY - minY;
+    const dMax = Math.max(dx, dy);
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
         .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
 };
@@ -365,8 +365,8 @@ exports.startsWith = function(string, prefix) {
  * @private
  */
 exports.mapObject = function(input, iterator, context) {
-    var output = {};
-    for (var key in input) {
+    const output = {};
+    for (const key in input) {
         output[key] = iterator.call(context || this, input[key], key, input);
     }
     return output;
@@ -380,8 +380,8 @@ exports.mapObject = function(input, iterator, context) {
  * @private
  */
 exports.filterObject = function(input, iterator, context) {
-    var output = {};
-    for (var key in input) {
+    const output = {};
+    for (const key in input) {
         if (iterator.call(context || this, input[key], key, input)) {
             output[key] = input[key];
         }
@@ -399,16 +399,16 @@ exports.filterObject = function(input, iterator, context) {
 exports.deepEqual = function(a, b) {
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) return false;
-        for (var i = 0; i < a.length; i++) {
+        for (let i = 0; i < a.length; i++) {
             if (!exports.deepEqual(a[i], b[i])) return false;
         }
         return true;
     }
     if (typeof a === 'object' && a !== null && b !== null) {
         if (!(typeof b === 'object')) return false;
-        var keys = Object.keys(a);
+        const keys = Object.keys(a);
         if (keys.length !== Object.keys(b).length) return false;
-        for (var key in a) {
+        for (const key in a) {
             if (!exports.deepEqual(a[key], b[key])) return false;
         }
         return true;
@@ -441,13 +441,13 @@ exports.clone = function(input) {
  * @private
  */
 exports.arraysIntersect = function(a, b) {
-    for (var l = 0; l < a.length; l++) {
+    for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }
     return false;
 };
 
-var warnOnceHistory = {};
+const warnOnceHistory = {};
 exports.warnOnce = function(message) {
     if (!warnOnceHistory[message]) {
         // console isn't defined in some WebWorkers, see #2558
@@ -480,8 +480,8 @@ exports.isCounterClockwise = function(a, b, c) {
  * @returns {number}
  */
 exports.calculateSignedArea = function(ring) {
-    var sum = 0;
-    for (var i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
+    let sum = 0;
+    for (let i = 0, len = ring.length, j = len - 1, p1, p2; i < len; j = i++) {
         p1 = ring[i];
         p2 = ring[j];
         sum += (p2.x - p1.x) * (p1.y + p2.y);
@@ -501,8 +501,8 @@ exports.isClosedPolygon = function(points) {
     if (points.length < 4)
         return false;
 
-    var p1 = points[0];
-    var p2 = points[points.length - 1];
+    const p1 = points[0];
+    const p2 = points[points.length - 1];
 
     if (Math.abs(p1.x - p2.x) > 0 ||
         Math.abs(p1.y - p2.y) > 0) {
@@ -521,7 +521,7 @@ exports.isClosedPolygon = function(points) {
  */
 
 exports.sphericalToCartesian = function(spherical) {
-    var r = spherical[0],
+    let r = spherical[0],
         azimuthal = spherical[1],
         polar = spherical[2];
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):

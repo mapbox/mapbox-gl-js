@@ -1,6 +1,6 @@
 'use strict';
 
-var Point = require('point-geometry');
+const Point = require('point-geometry');
 
 module.exports = Anchor;
 

@@ -1,14 +1,14 @@
 'use strict';
 
-var setPattern = require('./set_pattern');
+const setPattern = require('./set_pattern');
 
 module.exports = draw;
 
 function draw(painter, sourceCache, layer, coords) {
-    var gl = painter.gl;
+    const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
-    var isOpaque = (
+    const isOpaque = (
         !layer.paint['fill-pattern'] &&
         layer.isPaintValueFeatureConstant('fill-color') &&
         layer.isPaintValueFeatureConstant('fill-opacity') &&
@@ -21,7 +21,7 @@ function draw(painter, sourceCache, layer, coords) {
         // Once we switch to earcut drawing we can pull most of the WebGL setup
         // outside of this coords loop.
         painter.setDepthSublayer(1);
-        for (var i = 0; i < coords.length; i++) {
+        for (let i = 0; i < coords.length; i++) {
             drawFill(painter, sourceCache, layer, coords[i]);
         }
     }
@@ -40,27 +40,27 @@ function draw(painter, sourceCache, layer, coords) {
         // the (non-antialiased) fill.
         painter.setDepthSublayer(layer.getPaintProperty('fill-outline-color') ? 2 : 0);
 
-        for (var j = 0; j < coords.length; j++) {
+        for (let j = 0; j < coords.length; j++) {
             drawStroke(painter, sourceCache, layer, coords[j]);
         }
     }
 }
 
 function drawFill(painter, sourceCache, layer, coord) {
-    var tile = sourceCache.getTile(coord);
-    var bucket = tile.getBucket(layer);
+    const tile = sourceCache.getTile(coord);
+    const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.fill;
+    const bufferGroups = bucket.bufferGroups.fill;
     if (!bufferGroups) return;
 
-    var gl = painter.gl;
+    const gl = painter.gl;
 
-    var image = layer.paint['fill-pattern'];
-    var program;
+    const image = layer.paint['fill-pattern'];
+    let program;
 
     if (!image) {
 
-        var programOptions = bucket.paintAttributes.fill[layer.id];
+        const programOptions = bucket.paintAttributes.fill[layer.id];
         program = painter.useProgram(
             'fill',
             programOptions.defines,
@@ -88,32 +88,32 @@ function drawFill(painter, sourceCache, layer, coord) {
 
     painter.enableTileClippingMask(coord);
 
-    for (var i = 0; i < bufferGroups.length; i++) {
-        var group = bufferGroups[i];
+    for (let i = 0; i < bufferGroups.length; i++) {
+        const group = bufferGroups[i];
         group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.elementBuffer.length, gl.UNSIGNED_SHORT, 0);
     }
 }
 
 function drawStroke(painter, sourceCache, layer, coord) {
-    var tile = sourceCache.getTile(coord);
-    var bucket = tile.getBucket(layer);
+    const tile = sourceCache.getTile(coord);
+    const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.fill;
+    const bufferGroups = bucket.bufferGroups.fill;
     if (!bufferGroups) return;
 
-    var gl = painter.gl;
+    const gl = painter.gl;
 
-    var image = layer.paint['fill-pattern'];
-    var isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
-    var program;
+    const image = layer.paint['fill-pattern'];
+    const isOutlineColorDefined = layer.getPaintProperty('fill-outline-color');
+    let program;
 
     if (image && !isOutlineColorDefined) {
         program = painter.useProgram('fillOutlinePattern');
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     } else {
-        var programOptions = bucket.paintAttributes.fill[layer.id];
+        const programOptions = bucket.paintAttributes.fill[layer.id];
         program = painter.useProgram(
             'fillOutline',
             programOptions.defines,
@@ -139,8 +139,8 @@ function drawStroke(painter, sourceCache, layer, coord) {
 
     painter.enableTileClippingMask(coord);
 
-    for (var k = 0; k < bufferGroups.length; k++) {
-        var group = bufferGroups[k];
+    for (let k = 0; k < bufferGroups.length; k++) {
+        const group = bufferGroups[k];
         group.secondVaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
     }

@@ -1,19 +1,19 @@
 'use strict';
 
-var jsdom = require('jsdom');
-var gl = require('gl');
-var sinon = require('sinon');
-var util = require('./util');
+const jsdom = require('jsdom');
+const gl = require('gl');
+const sinon = require('sinon');
+const util = require('./util');
 
 function restore() {
 
     // Remove previous window from module.exports
-    var previousWindow = module.exports;
+    const previousWindow = module.exports;
     if (previousWindow.close) previousWindow.close();
-    for (var key in previousWindow) if (previousWindow.hasOwnProperty(key)) delete previousWindow[key];
+    for (const key in previousWindow) if (previousWindow.hasOwnProperty(key)) delete previousWindow[key];
 
     // Create new window and inject into module.exports
-    var window = jsdom.jsdom(undefined, {
+    const window = jsdom.jsdom(undefined, {
         // Send jsdom console output to the node console object.
         virtualConsole: jsdom.createVirtualConsole().sendTo(console)
     }).defaultView;

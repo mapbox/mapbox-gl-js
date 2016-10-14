@@ -1,18 +1,18 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Point = require('point-geometry');
-var findPoleOfInaccessibility = require('../../../js/util/find_pole_of_inaccessibility');
+const test = require('mapbox-gl-js-test').test;
+const Point = require('point-geometry');
+const findPoleOfInaccessibility = require('../../../js/util/find_pole_of_inaccessibility');
 
 test('polygon_poi', function(t) {
 
-    var closedRing = [
+    const closedRing = [
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 0),
         new Point(0, 0)
     ];
-    var closedRingHole = [
+    const closedRingHole = [
         new Point(2, 1),
         new Point(6, 6),
         new Point(6, 1),

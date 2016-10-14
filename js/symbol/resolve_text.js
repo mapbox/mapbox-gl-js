@@ -1,6 +1,6 @@
 'use strict';
 
-var resolveTokens = require('../util/token');
+const resolveTokens = require('../util/token');
 
 module.exports = resolveText;
 
@@ -12,24 +12,24 @@ module.exports = resolveText;
  * @private
  */
 function resolveText(features, layoutProperties, codepoints) {
-    var textFeatures = [];
+    const textFeatures = [];
 
-    for (var i = 0, fl = features.length; i < fl; i++) {
-        var text = resolveTokens(features[i].properties, layoutProperties['text-field']);
+    for (let i = 0, fl = features.length; i < fl; i++) {
+        let text = resolveTokens(features[i].properties, layoutProperties['text-field']);
         if (!text) {
             textFeatures[i] = null;
             continue;
         }
         text = text.toString();
 
-        var transform = layoutProperties['text-transform'];
+        const transform = layoutProperties['text-transform'];
         if (transform === 'uppercase') {
             text = text.toLocaleUpperCase();
         } else if (transform === 'lowercase') {
             text = text.toLocaleLowerCase();
         }
 
-        for (var j = 0; j < text.length; j++) {
+        for (let j = 0; j < text.length; j++) {
             codepoints[text.charCodeAt(j)] = true;
         }
 

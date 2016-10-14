@@ -1,14 +1,14 @@
 'use strict';
 
-var assert = require('assert');
+const assert = require('assert');
 
 module.exports = DictionaryCoder;
 
 function DictionaryCoder(strings) {
     this._stringToNumber = {};
     this._numberToString = [];
-    for (var i = 0; i < strings.length; i++) {
-        var string = strings[i];
+    for (let i = 0; i < strings.length; i++) {
+        const string = strings[i];
         this._stringToNumber[string] = i;
         this._numberToString[i] = string;
     }

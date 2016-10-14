@@ -1,14 +1,14 @@
 'use strict';
 
-var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = setPattern;
 
 function setPattern(image, tile, coord, painter, program, includeHeightFactor) {
-    var gl = painter.gl;
+    const gl = painter.gl;
 
-    var imagePosA = painter.spriteAtlas.getPosition(image.from, true);
-    var imagePosB = painter.spriteAtlas.getPosition(image.to, true);
+    const imagePosA = painter.spriteAtlas.getPosition(image.from, true);
+    const imagePosB = painter.spriteAtlas.getPosition(image.to, true);
     if (!imagePosA || !imagePosB) return;
 
     gl.uniform1i(program.u_image, 0);
@@ -24,10 +24,10 @@ function setPattern(image, tile, coord, painter, program, includeHeightFactor) {
     gl.uniform1f(program.u_scale_a, image.fromScale);
     gl.uniform1f(program.u_scale_b, image.toScale);
 
-    var tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
 
-    var pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
-    var pixelY = tileSizeAtNearestZoom * tile.coord.y;
+    const pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+    const pixelY = tileSizeAtNearestZoom * tile.coord.y;
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);

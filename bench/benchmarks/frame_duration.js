@@ -1,14 +1,14 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var createMap = require('../lib/create_map');
+const Evented = require('../../js/util/evented');
+const util = require('../../js/util/util');
+const formatNumber = require('../lib/format_number');
+const createMap = require('../lib/create_map');
 
-var DURATION_MILLISECONDS = 1 * 5000;
+const DURATION_MILLISECONDS = 1 * 5000;
 
-var zooms = [4, 8, 11, 13, 15, 17];
-var results = [];
+const zooms = [4, 8, 11, 13, 15, 17];
+const results = [];
 
 module.exports = function(options) {
     // The goal of this benchmark is to measure the time it takes to run the cpu
@@ -21,12 +21,12 @@ module.exports = function(options) {
     // impact the actual rendering has on this benchmark.
     window.devicePixelRatio = 1 / 16;
 
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
     asyncSeries(zooms.length, runZoom, done);
 
     function runZoom(times, callback) {
-        var index = zooms.length - times;
+        const index = zooms.length - times;
 
         measureFrameTime(options, zooms[index], function(err_, result) {
             results[index] = result;
@@ -39,11 +39,11 @@ module.exports = function(options) {
     }
 
     function done() {
-        var sum = 0;
-        var count = 0;
-        var countAbove16 = 0;
-        for (var i = 0; i < results.length; i++) {
-            var result = results[i];
+        let sum = 0;
+        let count = 0;
+        let countAbove16 = 0;
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
             sum += result.sum;
             count += result.count;
             countAbove16 += result.countAbove16;
@@ -59,7 +59,7 @@ module.exports = function(options) {
 
 function measureFrameTime(options, zoom, callback) {
 
-    var map = createMap({
+    const map = createMap({
         width: 1024,
         height: 768,
         zoom: zoom,
@@ -73,20 +73,20 @@ function measureFrameTime(options, zoom, callback) {
 
         // adding a delay seems to make the results more consistent
         window.setTimeout(function() {
-            var sum = 0;
-            var count = 0;
-            var countAbove16 = 0;
-            var start = performance.now();
+            let sum = 0;
+            let count = 0;
+            let countAbove16 = 0;
+            const start = performance.now();
 
             map._realrender = map._render;
             map._render = function() {
                 map._styleDirty = true;
                 map._sourcesDirty = true;
 
-                var frameStart = performance.now();
+                const frameStart = performance.now();
                 map._realrender();
-                var frameEnd = performance.now();
-                var duration = frameEnd - frameStart;
+                const frameEnd = performance.now();
+                const duration = frameEnd - frameStart;
 
                 sum += duration;
                 count++;

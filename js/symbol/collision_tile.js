@@ -1,8 +1,8 @@
 'use strict';
 
-var Point = require('point-geometry');
-var EXTENT = require('../data/bucket').EXTENT;
-var Grid = require('grid-index');
+const Point = require('point-geometry');
+const EXTENT = require('../data/bucket').EXTENT;
+const Grid = require('grid-index');
 
 module.exports = CollisionTile;
 
@@ -18,7 +18,7 @@ module.exports = CollisionTile;
  */
 function CollisionTile(angle, pitch, collisionBoxArray) {
     if (typeof angle === 'object') {
-        var serialized = angle;
+        const serialized = angle;
         collisionBoxArray = pitch;
         angle = serialized.angle;
         pitch = serialized.pitch;
@@ -32,7 +32,7 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
     this.angle = angle;
     this.pitch = pitch;
 
-    var sin = Math.sin(angle),
+    let sin = Math.sin(angle),
         cos = Math.cos(angle);
     this.rotationMatrix = [cos, -sin, sin, cos];
     this.reverseRotationMatrix = [cos, sin, -sin, cos];
@@ -51,7 +51,7 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
         // tempCollisionBox
         collisionBoxArray.emplaceBack();
 
-        var maxInt16 = 32767;
+        const maxInt16 = 32767;
         //left
         collisionBoxArray.emplaceBack(0, 0, 0, -maxInt16, 0, maxInt16, maxInt16,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -80,7 +80,7 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
 }
 
 CollisionTile.prototype.serialize = function() {
-    var data = {
+    const data = {
         angle: this.angle,
         pitch: this.pitch,
         grid: this.grid.toArrayBuffer(),
@@ -106,23 +106,23 @@ CollisionTile.prototype.maxScale = 2;
  */
 CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allowOverlap, avoidEdges) {
 
-    var collisionBoxArray = this.collisionBoxArray;
-    var minPlacementScale = this.minScale;
-    var rotationMatrix = this.rotationMatrix;
-    var yStretch = this.yStretch;
+    const collisionBoxArray = this.collisionBoxArray;
+    let minPlacementScale = this.minScale;
+    const rotationMatrix = this.rotationMatrix;
+    const yStretch = this.yStretch;
 
-    for (var b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
+    for (let b = collisionFeature.boxStartIndex; b < collisionFeature.boxEndIndex; b++) {
 
-        var box = collisionBoxArray.get(b);
+        const box = collisionBoxArray.get(b);
 
-        var anchorPoint = box.anchorPoint._matMult(rotationMatrix);
-        var x = anchorPoint.x;
-        var y = anchorPoint.y;
+        const anchorPoint = box.anchorPoint._matMult(rotationMatrix);
+        const x = anchorPoint.x;
+        const y = anchorPoint.y;
 
-        var x1 = x + box.x1;
-        var y1 = y + box.y1 * yStretch;
-        var x2 = x + box.x2;
-        var y2 = y + box.y2 * yStretch;
+        const x1 = x + box.x1;
+        const y1 = y + box.y1 * yStretch;
+        const x2 = x + box.x2;
+        const y2 = y + box.y2 * yStretch;
 
         box.bbox0 = x1;
         box.bbox1 = y1;
@@ -130,11 +130,11 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
         box.bbox3 = y2;
 
         if (!allowOverlap) {
-            var blockingBoxes = this.grid.query(x1, y1, x2, y2);
+            const blockingBoxes = this.grid.query(x1, y1, x2, y2);
 
-            for (var i = 0; i < blockingBoxes.length; i++) {
-                var blocking = collisionBoxArray.get(blockingBoxes[i]);
-                var blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
+            for (let i = 0; i < blockingBoxes.length; i++) {
+                const blocking = collisionBoxArray.get(blockingBoxes[i]);
+                const blockingAnchorPoint = blocking.anchorPoint._matMult(rotationMatrix);
 
                 minPlacementScale = this.getPlacementScale(minPlacementScale, anchorPoint, box, blockingAnchorPoint, blocking);
                 if (minPlacementScale >= this.maxScale) {
@@ -144,14 +144,14 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
         }
 
         if (avoidEdges) {
-            var rotatedCollisionBox;
+            let rotatedCollisionBox;
 
             if (this.angle) {
-                var reverseRotationMatrix = this.reverseRotationMatrix;
-                var tl = new Point(box.x1, box.y1).matMult(reverseRotationMatrix);
-                var tr = new Point(box.x2, box.y1).matMult(reverseRotationMatrix);
-                var bl = new Point(box.x1, box.y2).matMult(reverseRotationMatrix);
-                var br = new Point(box.x2, box.y2).matMult(reverseRotationMatrix);
+                const reverseRotationMatrix = this.reverseRotationMatrix;
+                const tl = new Point(box.x1, box.y1).matMult(reverseRotationMatrix);
+                const tr = new Point(box.x2, box.y1).matMult(reverseRotationMatrix);
+                const bl = new Point(box.x1, box.y2).matMult(reverseRotationMatrix);
+                const br = new Point(box.x2, box.y2).matMult(reverseRotationMatrix);
 
                 rotatedCollisionBox = this.tempCollisionBox;
                 rotatedCollisionBox.anchorPointX = box.anchorPoint.x;
@@ -165,8 +165,8 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
                 rotatedCollisionBox = box;
             }
 
-            for (var k = 0; k < this.edges.length; k++) {
-                var edgeBox = this.edges[k];
+            for (let k = 0; k < this.edges.length; k++) {
+                const edgeBox = this.edges[k];
                 minPlacementScale = this.getPlacementScale(minPlacementScale, box.anchorPoint, rotatedCollisionBox, edgeBox.anchorPoint, edgeBox);
                 if (minPlacementScale >= this.maxScale) {
                     return minPlacementScale;
@@ -179,14 +179,14 @@ CollisionTile.prototype.placeCollisionFeature = function(collisionFeature, allow
 };
 
 CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, scale) {
-    var sourceLayerFeatures = {};
-    var result = [];
+    const sourceLayerFeatures = {};
+    const result = [];
 
-    var collisionBoxArray = this.collisionBoxArray;
-    var rotationMatrix = this.rotationMatrix;
-    var anchorPoint = new Point(minX, minY)._matMult(rotationMatrix);
+    const collisionBoxArray = this.collisionBoxArray;
+    const rotationMatrix = this.rotationMatrix;
+    const anchorPoint = new Point(minX, minY)._matMult(rotationMatrix);
 
-    var queryBox = this.tempCollisionBox;
+    const queryBox = this.tempCollisionBox;
     queryBox.anchorX = anchorPoint.x;
     queryBox.anchorY = anchorPoint.y;
     queryBox.x1 = 0;
@@ -198,31 +198,31 @@ CollisionTile.prototype.queryRenderedSymbols = function(minX, minY, maxX, maxY, 
     // maxScale is stored using a Float32. Convert `scale` to the stored Float32 value.
     scale = queryBox.maxScale;
 
-    var searchBox = [
+    const searchBox = [
         anchorPoint.x + queryBox.x1 / scale,
         anchorPoint.y + queryBox.y1 / scale * this.yStretch,
         anchorPoint.x + queryBox.x2 / scale,
         anchorPoint.y + queryBox.y2 / scale * this.yStretch
     ];
 
-    var blockingBoxKeys = this.grid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
-    var blockingBoxKeys2 = this.ignoredGrid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
-    for (var k = 0; k < blockingBoxKeys2.length; k++) {
+    const blockingBoxKeys = this.grid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
+    const blockingBoxKeys2 = this.ignoredGrid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
+    for (let k = 0; k < blockingBoxKeys2.length; k++) {
         blockingBoxKeys.push(blockingBoxKeys2[k]);
     }
 
-    for (var i = 0; i < blockingBoxKeys.length; i++) {
-        var blocking = collisionBoxArray.get(blockingBoxKeys[i]);
+    for (let i = 0; i < blockingBoxKeys.length; i++) {
+        const blocking = collisionBoxArray.get(blockingBoxKeys[i]);
 
-        var sourceLayer = blocking.sourceLayerIndex;
-        var featureIndex = blocking.featureIndex;
+        const sourceLayer = blocking.sourceLayerIndex;
+        const featureIndex = blocking.featureIndex;
         if (sourceLayerFeatures[sourceLayer] === undefined) {
             sourceLayerFeatures[sourceLayer] = {};
         }
 
         if (!sourceLayerFeatures[sourceLayer][featureIndex]) {
-            var blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
-            var minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
+            const blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
+            const minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
             if (minPlacementScale >= scale) {
                 sourceLayerFeatures[sourceLayer][featureIndex] = true;
                 result.push(blockingBoxKeys[i]);
@@ -237,19 +237,19 @@ CollisionTile.prototype.getPlacementScale = function(minPlacementScale, anchorPo
 
     // Find the lowest scale at which the two boxes can fit side by side without overlapping.
     // Original algorithm:
-    var anchorDiffX = anchorPoint.x - blockingAnchorPoint.x;
-    var anchorDiffY = anchorPoint.y - blockingAnchorPoint.y;
-    var s1 = (blocking.x1 - box.x2) / anchorDiffX; // scale at which new box is to the left of old box
-    var s2 = (blocking.x2 - box.x1) / anchorDiffX; // scale at which new box is to the right of old box
-    var s3 = (blocking.y1 - box.y2) * this.yStretch / anchorDiffY; // scale at which new box is to the top of old box
-    var s4 = (blocking.y2 - box.y1) * this.yStretch / anchorDiffY; // scale at which new box is to the bottom of old box
+    const anchorDiffX = anchorPoint.x - blockingAnchorPoint.x;
+    const anchorDiffY = anchorPoint.y - blockingAnchorPoint.y;
+    let s1 = (blocking.x1 - box.x2) / anchorDiffX; // scale at which new box is to the left of old box
+    let s2 = (blocking.x2 - box.x1) / anchorDiffX; // scale at which new box is to the right of old box
+    let s3 = (blocking.y1 - box.y2) * this.yStretch / anchorDiffY; // scale at which new box is to the top of old box
+    let s4 = (blocking.y2 - box.y1) * this.yStretch / anchorDiffY; // scale at which new box is to the bottom of old box
 
     if (isNaN(s1) || isNaN(s2)) s1 = s2 = 1;
     if (isNaN(s3) || isNaN(s4)) s3 = s4 = 1;
 
-    var collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
-    var blockingMaxScale = blocking.maxScale;
-    var boxMaxScale = box.maxScale;
+    let collisionFreeScale = Math.min(Math.max(s1, s2), Math.max(s3, s4));
+    const blockingMaxScale = blocking.maxScale;
+    const boxMaxScale = box.maxScale;
 
     if (collisionFreeScale > blockingMaxScale) {
         // After a box's maxScale the label has shrunk enough that the box is no longer needed to cover it,
@@ -286,11 +286,11 @@ CollisionTile.prototype.getPlacementScale = function(minPlacementScale, anchorPo
  */
 CollisionTile.prototype.insertCollisionFeature = function(collisionFeature, minPlacementScale, ignorePlacement) {
 
-    var grid = ignorePlacement ? this.ignoredGrid : this.grid;
-    var collisionBoxArray = this.collisionBoxArray;
+    const grid = ignorePlacement ? this.ignoredGrid : this.grid;
+    const collisionBoxArray = this.collisionBoxArray;
 
-    for (var k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
-        var box = collisionBoxArray.get(k);
+    for (let k = collisionFeature.boxStartIndex; k < collisionFeature.boxEndIndex; k++) {
+        const box = collisionBoxArray.get(k);
         box.placementScale = minPlacementScale;
         if (minPlacementScale < this.maxScale) {
             grid.insert(k, box.bbox0, box.bbox1, box.bbox2, box.bbox3);

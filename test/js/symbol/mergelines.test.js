@@ -1,14 +1,14 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var mergeLines = require('../../../js/symbol/mergelines');
-var Point = require('point-geometry');
+const test = require('mapbox-gl-js-test').test;
+const mergeLines = require('../../../js/symbol/mergelines');
+const Point = require('point-geometry');
 
 function testLines(coords) {
-    var lines = [];
-    for (var i = 0; i < coords.length; i++) {
-        var points = [];
-        for (var j = 0; j < coords[i].length; j++) {
+    const lines = [];
+    for (let i = 0; i < coords.length; i++) {
+        const points = [];
+        for (let j = 0; j < coords[i].length; j++) {
             points.push(new Point(coords[i][j], 0));
         }
         lines.push([points]);
@@ -17,7 +17,7 @@ function testLines(coords) {
 }
 
 function merge(lines, letters) {
-    var features = new Array(lines.length);
+    const features = new Array(lines.length);
     letters = letters || features.join('a') + 'a';
     return mergeLines(features, letters.split(''), lines).geometries.filter(function (a) { return a !== null; });
 }

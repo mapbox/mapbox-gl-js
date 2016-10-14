@@ -1,9 +1,9 @@
 'use strict';
 
-var Evented = require('../util/evented');
-var util = require('../util/util');
-var loadTileJSON = require('./load_tilejson');
-var normalizeURL = require('../util/mapbox').normalizeTileURL;
+const Evented = require('../util/evented');
+const util = require('../util/util');
+const loadTileJSON = require('./load_tilejson');
+const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = VectorTileSource;
 
@@ -49,8 +49,8 @@ VectorTileSource.prototype = util.inherit(Evented, {
     },
 
     loadTile: function(tile, callback) {
-        var overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
-        var params = {
+        const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
+        const params = {
             url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
             uid: tile.uid,
             coord: tile.coord,

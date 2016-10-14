@@ -1,7 +1,7 @@
 'use strict';
 
-var util = require('../../util/util');
-var StyleLayer = require('../style_layer');
+const util = require('../../util/util');
+const StyleLayer = require('../style_layer');
 
 function FillStyleLayer() {
     StyleLayer.apply(this, arguments);

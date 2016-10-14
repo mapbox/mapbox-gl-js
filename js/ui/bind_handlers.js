@@ -1,9 +1,9 @@
 'use strict';
 
-var DOM = require('../util/dom');
-var Point = require('point-geometry');
+const DOM = require('../util/dom');
+const Point = require('point-geometry');
 
-var handlers = {
+const handlers = {
     scrollZoom: require('./handler/scroll_zoom'),
     boxZoom: require('./handler/box_zoom'),
     dragRotate: require('./handler/drag_rotate'),
@@ -14,12 +14,12 @@ var handlers = {
 };
 
 module.exports = function bindHandlers(map, options) {
-    var el = map.getCanvasContainer();
-    var contextMenuEvent = null;
-    var startPos = null;
-    var tapped = null;
+    const el = map.getCanvasContainer();
+    let contextMenuEvent = null;
+    let startPos = null;
+    let tapped = null;
 
-    for (var name in handlers) {
+    for (const name in handlers) {
         map[name] = new handlers[name](map, options);
         if (options.interactive && options[name]) {
             map[name].enable();
@@ -49,7 +49,7 @@ module.exports = function bindHandlers(map, options) {
     }
 
     function onMouseUp(e) {
-        var rotating = map.dragRotate && map.dragRotate.isActive();
+        const rotating = map.dragRotate && map.dragRotate.isActive();
 
         if (contextMenuEvent && !rotating) {
             fireMouseEvent('contextmenu', contextMenuEvent);
@@ -63,7 +63,7 @@ module.exports = function bindHandlers(map, options) {
         if (map.dragPan && map.dragPan.isActive()) return;
         if (map.dragRotate && map.dragRotate.isActive()) return;
 
-        var target = e.toElement || e.target;
+        let target = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
         if (target !== el) return;
 
@@ -103,7 +103,7 @@ module.exports = function bindHandlers(map, options) {
     }
 
     function onClick(e) {
-        var pos = DOM.mousePos(el, e);
+        const pos = DOM.mousePos(el, e);
 
         if (pos.equals(startPos)) {
             fireMouseEvent('click', e);
@@ -121,7 +121,7 @@ module.exports = function bindHandlers(map, options) {
     }
 
     function fireMouseEvent(type, e) {
-        var pos = DOM.mousePos(el, e);
+        const pos = DOM.mousePos(el, e);
 
         return map.fire(type, {
             lngLat: map.unproject(pos),
@@ -131,8 +131,8 @@ module.exports = function bindHandlers(map, options) {
     }
 
     function fireTouchEvent(type, e) {
-        var touches = DOM.touchPos(el, e);
-        var singular = touches.reduce(function(prev, curr, i, arr) {
+        const touches = DOM.touchPos(el, e);
+        const singular = touches.reduce(function(prev, curr, i, arr) {
             return prev.add(curr.div(arr.length));
         }, new Point(0, 0));
 
