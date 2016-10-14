@@ -1696,7 +1696,12 @@
       "default": 0,
       "minimum": 0,
       "doc": "The height with which to extrude this fill layer.",
-      "transition": true
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.26.0"
+        }
+      }
     },
     "fill-extrude-base": {
       "type": "number",
@@ -1711,7 +1716,12 @@
         {
           "<=": "fill-extrude-height"
         }
-      ]
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.26.0"
+        }
+      }
     }
   },
   "paint_line": {

@@ -727,31 +727,81 @@ navigation:
 
           <p>The value for any layout or paint property may be specified as a <em>function</em>. Functions allow you to make the appearance of a map feature change with the current zoom level and/or the feature's properties.</p>
 
-          <div class='col12 pad1x space-bottom2'>
-            <ul>
-              <li class='pad0y'>
-                <div><span class='code'>stops</span><em class='pad1x quiet'>Required <a href='#types-array'>array</a>.</em></div>
-                <div class='pad1x'>Functions are defined in terms of input and output values. A set of one input value and one output value is known as a "stop."</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>property</span><em class='pad1x quiet'>Optional <a href='#types-string'>string</a>.</em></div>
-                <div class='pad1x'>If specified, the function will take the specified feature property as an input. See <a href="#types-function-zoom-property">Zoom Functions and Property Functions</a> for more information.</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>base</span><em class='pad1x quiet'>Optional <a href='#types-number'>number</a>. Default is <%= ref.function.base.default %>.</em></div>
-                <div class='pad1x'>The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.</div>
-              </li>
-              <li class='pad0y'>
-                <div><span class='code'>type</span><em class='pad1x quiet'>Optional <a href='#types-string'>enum</a>. One of <var>identity</var>, <var>exponential</var>, <var>interval</var>, <var>categorical</var>.</em></div>
-                <div class='pad1x'>
-                    <div class=''></span><var>identity</var> functions return their input as their output.</div>
-                    <div class=''><var>exponential</var> functions generate an output by interpolating between stops just less than and just greater than the function input. This is the default for <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span> properties.</div>
-                    <div class=''></span><var>interval</var> functions return the output value of the stop just less than the function input. This is the default for <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span> properties.</div>
-                    <div class=''></span><var>categorical</var> functions return the output value of the stop equal to the function input.</div>
-                </ul>
-              </li>
-            </ul>
+          <div class='col12 pad1x'>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-stops" href="#function-stops">stops</a></span></div>
+              <div><em class='quiet'>Required (except for <var>identity</var> functions) <a href='#types-array'>array</a>.</em></div>
+              <div>Functions are defined in terms of input and output values. A set of one input value and one output value is known as a "stop."</div>
+            </div>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-property" href="#function-property">property</a></span></div>
+              <div><em class='quiet'>Optional <a href='#types-string'>string</a>.</em></div>
+              <div>If specified, the function will take the specified feature property as an input. See <a href="#types-function-zoom-property">Zoom Functions and Property Functions</a> for more information.</div>
+            </div>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-base" href="#function-base">base</a></span></div>
+              <div><em class='quiet'>Optional <a href='#types-number'>number</a>. Default is <%= ref.function.base.default %>.</em></div>
+              <div>The exponential base of the interpolation curve. It controls the rate at which the function output increases. Higher values make the output increase more towards the high end of the range. With values close to 1 the output increases linearly.</div>
+            </div>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-type" href="#function-type">type</a></span></div>
+              <div><em class='quiet'>Optional <a href='#types-string'>enum</a>. One of <var>identity</var>, <var>exponential</var>, <var>interval</var>, <var>categorical</var>.</em></div>
+              <dl>
+                <dt><var>identity</var></dt>
+                <dd>functions return their input as their output.</dd>
+                <dt><var>exponential</var></dt>
+                <dd>functions generate an output by interpolating between stops just less than and just greater than the function input. This is the default for <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span> properties.</dd>
+                <dt><var>interval</var></dt>
+                <dd>functions return the output value of the stop just less than the function input. This is the default for <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span> properties.</dd>
+                <dt><var>categorical</var></dt>
+                <dd>functions return the output value of the stop equal to the function input.</dd>
+              </dl>
+            </div>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-colorSpace" href="#function-colorSpace">colorSpace</a></span></div>
+              <div><em class='quiet'>Optional <a href='#types-string'>enum</a>. One of <var>rgb</var>, <var>lab</var>, <var>hcl</var>.</em></div>
+              <div class=' space-bottom1'>The color space in which colors interpolated. Interpolating colors in perceptual color spaces like LAB and HCL tend to produce color ramps that look more consistent and produce colors that can be differentiated more easily than those interpolated in RGB space.</div>
+              <dl class="space-bottom">
+                <dt><var>rgb</var></dt>
+                <dd>Use the RGB color space to interpolate color values</dd>
+                <dt><var>lab</var></dt>
+                <dd>Use the LAB color space to interpolate color values.</dd>
+                <dt><var>hcl</var></dt>
+                <dd>Use the HCL color space to interpolate color values, interpolating the Hue, Chroma, and Luminance channels individually.</dd>
+              </dl>
+            </div>
           </div>
+
+          <table class="micro space-bottom">
+            <thead>
+            <tr class='fill-light'>
+              <th>SDK Support</th>
+              <td class='center'>Mapbox GL JS</td>
+              <td class='center'>iOS SDK</td>
+              <td class='center'>Android SDK</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td>basic functionality</td>
+              <td class='center'>&gt;= 0.10.0</td>
+              <td class='center'>&gt;= 2.0.0</td>
+              <td class='center'>&gt;= 2.0.1</td>
+            </tr>
+            <tr>
+              <td><code>identity</code> type</td>
+              <td class='center'>&gt;= 0.26.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>colorSpace</code></td>
+              <td class='center'>&gt;= 0.26.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            </tbody>
+          </table>
 
           <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements, the first is a zoom and the second is a function output value.</p>
 
