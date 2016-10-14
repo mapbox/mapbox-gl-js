@@ -721,7 +721,9 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "`auto` value": {}
+        "`auto` value": {
+          "js": "0.25.0"
+        }
       }
     },
     "icon-size": {
@@ -938,7 +940,9 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "`auto` value": {}
+        "`auto` value": {
+          "js": "0.25.0"
+        }
       }
     },
     "text-rotation-alignment": {
@@ -968,7 +972,9 @@
           "ios": "2.0.0",
           "android": "2.0.1"
         },
-        "`auto` value": {}
+        "`auto` value": {
+          "js": "0.25.0"
+        }
       }
     },
     "text-field": {
