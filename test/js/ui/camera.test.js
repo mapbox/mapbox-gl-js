@@ -5,7 +5,8 @@ var Camera = require('../../../js/ui/camera');
 var Evented = require('../../../js/util/evented');
 var Transform = require('../../../js/geo/transform');
 var util = require('../../../js/util/util');
-var fixed = require('../../testutil/fixed');
+
+var fixed = require('mapbox-gl-js-test/fixed');
 var fixedLngLat = fixed.LngLat;
 var fixedNum = fixed.Num;
 

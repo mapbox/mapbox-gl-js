@@ -6,7 +6,7 @@ var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var LngLat = require('../../../js/geo/lng_lat');
 
-var fixed = require('../../testutil/fixed');
+var fixed = require('mapbox-gl-js-test/fixed');
 var fixedNum = fixed.Num;
 var fixedLngLat = fixed.LngLat;
 

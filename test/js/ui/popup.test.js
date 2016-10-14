@@ -6,7 +6,7 @@ var Map = require('../../../js/ui/map');
 var Popup = require('../../../js/ui/popup');
 var LngLat = require('../../../js/geo/lng_lat');
 var Point = require('point-geometry');
-var simulateClick = require('../../testutil/simulate_interaction').click;
+var simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 
 var containerWidth = 512;
 var containerHeight = 512;
