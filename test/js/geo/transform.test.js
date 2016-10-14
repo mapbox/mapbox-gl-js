@@ -6,7 +6,7 @@ var Transform = require('../../../js/geo/transform');
 var TileCoord = require('../../../js/source/tile_coord');
 var LngLat = require('../../../js/geo/lng_lat');
 
-var fixed = require('../../testutil/fixed');
+var fixed = require('mapbox-gl-js-test/fixed');
 var fixedLngLat = fixed.LngLat;
 var fixedCoord = fixed.Coord;
 
