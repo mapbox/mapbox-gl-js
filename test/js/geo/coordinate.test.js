@@ -1,11 +1,11 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Coordinate = require('../../../js/geo/coordinate');
+const test = require('mapbox-gl-js-test').test;
+const Coordinate = require('../../../js/geo/coordinate');
 
 test('Coordinate', function(t) {
     t.test('#constructor', function(t) {
-        var c = new Coordinate(1, 2, 3);
+        const c = new Coordinate(1, 2, 3);
         t.equal(c.column, 1);
         t.equal(c.row, 2);
         t.equal(c.zoom, 3);
@@ -13,7 +13,7 @@ test('Coordinate', function(t) {
     });
 
     t.test('#zoomTo', function(t) {
-        var c = new Coordinate(1, 2, 3);
+        let c = new Coordinate(1, 2, 3);
         c = c.zoomTo(3);
         t.equal(c.column, 1);
         t.equal(c.row, 2);
@@ -30,14 +30,14 @@ test('Coordinate', function(t) {
     });
 
     t.test('#sub', function(t) {
-        var o = new Coordinate(5, 4, 3);
-        var c = new Coordinate(1, 2, 3);
-        var r = o.sub(c);
+        const o = new Coordinate(5, 4, 3);
+        const c = new Coordinate(1, 2, 3);
+        const r = o.sub(c);
         t.equal(r.column, 4);
         t.equal(r.row, 2);
         t.equal(r.zoom, 3);
-        var otherZoom = new Coordinate(4, 4, 4);
-        var r2 = o.sub(otherZoom);
+        const otherZoom = new Coordinate(4, 4, 4);
+        const r2 = o.sub(otherZoom);
         t.equal(r2.column, 3);
         t.equal(r2.row, 2);
         t.equal(r2.zoom, 3);

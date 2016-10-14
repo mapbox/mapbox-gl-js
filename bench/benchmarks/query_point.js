@@ -1,21 +1,21 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var createMap = require('../lib/create_map');
+const Evented = require('../../js/util/evented');
+const util = require('../../js/util/util');
+const createMap = require('../lib/create_map');
 
-var width = 1024;
-var height = 768;
+const width = 1024;
+const height = 768;
 
-var zoomLevels = [];
-for (var i = 4; i < 19; i++) {
+const zoomLevels = [];
+for (let i = 4; i < 19; i++) {
     zoomLevels.push(i);
 }
 
-var queryPoints = [];
-var d = 20;
-for (var x = 0; x < d; x++) {
-    for (var y = 0; y < d; y++) {
+const queryPoints = [];
+const d = 20;
+for (let x = 0; x < d; x++) {
+    for (let y = 0; y < d; y++) {
         queryPoints.push([
             (x / d) * width,
             (y / d) * height
@@ -24,14 +24,14 @@ for (var x = 0; x < d; x++) {
 }
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
-    var sum = 0;
-    var count = 0;
+    let sum = 0;
+    let count = 0;
 
     asyncSeries(zoomLevels.length, function(n, callback) {
-        var zoomLevel = zoomLevels[zoomLevels.length - n];
-        var map = createMap({
+        const zoomLevel = zoomLevels[zoomLevels.length - n];
+        const map = createMap({
             width: width,
             height: height,
             zoom: zoomLevel,
@@ -42,13 +42,13 @@ module.exports = function() {
 
         map.on('load', function() {
 
-            var zoomSum = 0;
-            var zoomCount = 0;
+            let zoomSum = 0;
+            let zoomCount = 0;
             asyncSeries(queryPoints.length, function(n, callback) {
-                var queryPoint = queryPoints[queryPoints.length - n];
-                var start = performance.now();
+                const queryPoint = queryPoints[queryPoints.length - n];
+                const start = performance.now();
                 map.queryRenderedFeatures(queryPoint, {});
-                var duration = performance.now() - start;
+                const duration = performance.now() - start;
                 sum += duration;
                 count++;
                 zoomSum += duration;
@@ -66,7 +66,7 @@ module.exports = function() {
 
 
     function done() {
-        var average = sum / count;
+        const average = sum / count;
         evented.fire('end', {
             message: (average).toFixed(2) + ' ms',
             score: average

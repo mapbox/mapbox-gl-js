@@ -1,21 +1,21 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var util = require('../../../js/util/util');
-var window = require('../../../js/util/window');
-var Map = require('../../../js/ui/map');
-var LngLat = require('../../../js/geo/lng_lat');
+const test = require('mapbox-gl-js-test').test;
+const util = require('../../../js/util/util');
+const window = require('../../../js/util/window');
+const Map = require('../../../js/ui/map');
+const LngLat = require('../../../js/geo/lng_lat');
 
-var fixed = require('mapbox-gl-js-test/fixed');
-var fixedNum = fixed.Num;
-var fixedLngLat = fixed.LngLat;
+const fixed = require('mapbox-gl-js-test/fixed');
+const fixedNum = fixed.Num;
+const fixedLngLat = fixed.LngLat;
 
 function createMap(options, callback) {
-    var container = window.document.createElement('div');
+    const container = window.document.createElement('div');
     container.offsetWidth = 200;
     container.offsetHeight = 200;
 
-    var map = new Map(util.extend({
+    const map = new Map(util.extend({
         container: container,
         interactive: false,
         attributionControl: false,
@@ -46,7 +46,7 @@ test('Map', function(t) {
     });
 
     t.test('constructor', function(t) {
-        var map = createMap({interactive: true, style: null});
+        const map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
         t.equal(map.getStyle(), undefined);
         t.ok(map.boxZoom.isEnabled());
@@ -61,7 +61,7 @@ test('Map', function(t) {
 
     t.test('disables handlers', function(t) {
         t.test('disables all handlers', function(t) {
-            var map = createMap({interactive: false});
+            const map = createMap({interactive: false});
 
             t.notOk(map.boxZoom.isEnabled());
             t.notOk(map.doubleClickZoom.isEnabled());
@@ -74,7 +74,7 @@ test('Map', function(t) {
             t.end();
         });
 
-        var handlerNames = [
+        const handlerNames = [
             'scrollZoom',
             'boxZoom',
             'dragRotate',
@@ -85,9 +85,9 @@ test('Map', function(t) {
         ];
         handlerNames.forEach(function(handlerName) {
             t.test('disables "' + handlerName + '" handler', function(t) {
-                var options = {};
+                const options = {};
                 options[handlerName] = false;
-                var map = createMap(options);
+                const map = createMap(options);
 
                 t.notOk(map[handlerName].isEnabled());
 
@@ -99,7 +99,7 @@ test('Map', function(t) {
     });
 
     t.test('emits load event after a style is set', function(t) {
-        var map = createMap();
+        const map = createMap();
 
         map.on('load', fail);
 
@@ -115,7 +115,7 @@ test('Map', function(t) {
 
     t.test('#setStyle', function(t) {
         t.test('returns self', function(t) {
-            var map = createMap(),
+            let map = createMap(),
                 style = {
                     version: 8,
                     sources: {},
@@ -129,7 +129,7 @@ test('Map', function(t) {
             createMap({}, function(error, map) {
                 t.error(error);
 
-                var events = [];
+                const events = [];
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('error', recordEvent);
@@ -154,7 +154,7 @@ test('Map', function(t) {
         });
 
         t.test('can be called more than once', function(t) {
-            var map = createMap();
+            const map = createMap();
 
             map.setStyle({version: 8, sources: {}, layers: []});
             map.setStyle({version: 8, sources: {}, layers: []});
@@ -163,7 +163,7 @@ test('Map', function(t) {
         });
 
         t.test('style transform overrides unmodified map transform', function (t) {
-            var map = createMap();
+            const map = createMap();
             map.transform.lngRange = [-120, 140];
             map.transform.latRange = [-60, 80];
             map.transform.resize(600, 400);
@@ -180,7 +180,7 @@ test('Map', function(t) {
         });
 
         t.test('style transform does not override map transform modified via options', function (t) {
-            var map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
+            const map = createMap({zoom: 10, center: [-77.0186, 38.8888]});
             t.notOk(map.transform.unmodified, 'map transform is modified by options');
             map.setStyle(createStyle());
             map.on('style.load', function () {
@@ -193,7 +193,7 @@ test('Map', function(t) {
         });
 
         t.test('style transform does not override map transform modified via setters', function (t) {
-            var map = createMap();
+            const map = createMap();
             t.ok(map.transform.unmodified);
             map.setZoom(10);
             map.setCenter([-77.0186, 38.8888]);
@@ -242,8 +242,8 @@ test('Map', function(t) {
         }
 
         t.test('returns the style', function(t) {
-            var style = createStyle();
-            var map = createMap({style: style});
+            const style = createStyle();
+            const map = createMap({style: style});
 
             map.on('load', function () {
                 t.deepEqual(map.getStyle(), style);
@@ -252,8 +252,8 @@ test('Map', function(t) {
         });
 
         t.test('returns the style with added sources', function(t) {
-            var style = createStyle();
-            var map = createMap({style: style});
+            const style = createStyle();
+            const map = createMap({style: style});
 
             map.on('load', function () {
                 map.addSource('geojson', createStyleSource());
@@ -265,8 +265,8 @@ test('Map', function(t) {
         });
 
         t.test('returns the style with added layers', function(t) {
-            var style = createStyle();
-            var map = createMap({style: style});
+            const style = createStyle();
+            const map = createMap({style: style});
 
             map.on('load', function () {
                 map.addLayer(createStyleLayer());
@@ -282,7 +282,7 @@ test('Map', function(t) {
 
     t.test('#resize', function(t) {
         t.test('sets width and height from container offsets', function(t) {
-            var map = createMap(),
+            let map = createMap(),
                 container = map.getContainer();
 
             container.offsetWidth = 250;
@@ -296,7 +296,7 @@ test('Map', function(t) {
         });
 
         t.test('fires movestart, move, resize, and moveend events', function(t) {
-            var map = createMap(),
+            let map = createMap(),
                 events = [];
 
             ['movestart', 'move', 'resize', 'moveend'].forEach(function (event) {
@@ -326,7 +326,7 @@ test('Map', function(t) {
         });
 
         t.test('do not resize if trackResize is false', function (t) {
-            var map = createMap({trackResize: false});
+            const map = createMap({trackResize: false});
 
             t.spy(map, 'stop');
             t.spy(map, '_update');
@@ -342,7 +342,7 @@ test('Map', function(t) {
         });
 
         t.test('do resize if trackResize is true (default)', function (t) {
-            var map = createMap();
+            const map = createMap();
 
             t.spy(map, 'stop');
             t.spy(map, '_update');
@@ -361,7 +361,7 @@ test('Map', function(t) {
     });
 
     t.test('#getBounds', function(t) {
-        var map = createMap({ zoom: 0 });
+        const map = createMap({ zoom: 0 });
         t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
@@ -370,7 +370,7 @@ test('Map', function(t) {
             [ 70.31249999999977, 57.32652122521695 ] ]));
 
         t.test('rotated bounds', function(t) {
-            var map = createMap({ zoom: 1, bearing: 45 });
+            const map = createMap({ zoom: 1, bearing: 45 });
             t.deepEqual(
                 toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
                 toFixed(map.getBounds().toArray())
@@ -380,7 +380,7 @@ test('Map', function(t) {
         t.end();
 
         function toFixed(bounds) {
-            var n = 10;
+            const n = 10;
             return [
                 [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
@@ -390,7 +390,7 @@ test('Map', function(t) {
 
     t.test('#setMaxBounds', function (t) {
         t.test('constrains map bounds', function (t) {
-            var map = createMap({zoom:0});
+            const map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.deepEqual(
                 toFixed([[-130.4297000000, 7.0136641176], [-61.5234400000, 60.2398142283]]),
@@ -400,7 +400,7 @@ test('Map', function(t) {
         });
 
         t.test('when no argument is passed, map bounds constraints are removed', function (t) {
-            var map = createMap({zoom:0});
+            const map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.deepEqual(
                 toFixed([[-166.28906999999964, -27.6835270554], [-25.664070000000066, 73.8248206697]]),
@@ -410,14 +410,14 @@ test('Map', function(t) {
         });
 
         t.test('should not zoom out farther than bounds', function (t) {
-            var map = createMap();
+            const map = createMap();
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.notEqual(map.setZoom(0).getZoom(), 0);
             t.end();
         });
 
         t.test('throws on invalid bounds', function(t) {
-            var map = createMap({zoom:0});
+            const map = createMap({zoom:0});
             t.throws(function() {
                 map.setMaxBounds([-130.4297, 50.0642], [-61.52344, 24.20688]);
             }, Error, 'throws on two decoupled array coordinate arguments');
@@ -428,7 +428,7 @@ test('Map', function(t) {
         });
 
         function toFixed(bounds) {
-            var n = 10;
+            const n = 10;
             return [
                 [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
@@ -439,7 +439,7 @@ test('Map', function(t) {
     });
 
     t.test('#setMinZoom', function(t) {
-        var map = createMap({zoom:5});
+        const map = createMap({zoom:5});
         map.setMinZoom(3.5);
         map.setZoom(1);
         t.equal(map.getZoom(), 3.5);
@@ -447,7 +447,7 @@ test('Map', function(t) {
     });
 
     t.test('unset minZoom', function(t) {
-        var map = createMap({minZoom:5});
+        const map = createMap({minZoom:5});
         map.setMinZoom(null);
         map.setZoom(1);
         t.equal(map.getZoom(), 1);
@@ -455,7 +455,7 @@ test('Map', function(t) {
     });
 
     t.test('ignore minZooms over maxZoom', function(t) {
-        var map = createMap({zoom:2, maxZoom:5});
+        const map = createMap({zoom:2, maxZoom:5});
         t.throws(function() {
             map.setMinZoom(6);
         });
@@ -465,7 +465,7 @@ test('Map', function(t) {
     });
 
     t.test('#setMaxZoom', function (t) {
-        var map = createMap({zoom:0});
+        const map = createMap({zoom:0});
         map.setMaxZoom(3.5);
         map.setZoom(4);
         t.equal(map.getZoom(), 3.5);
@@ -473,7 +473,7 @@ test('Map', function(t) {
     });
 
     t.test('unset maxZoom', function(t) {
-        var map = createMap({maxZoom:5});
+        const map = createMap({maxZoom:5});
         map.setMaxZoom(null);
         map.setZoom(6);
         t.equal(map.getZoom(), 6);
@@ -481,7 +481,7 @@ test('Map', function(t) {
     });
 
     t.test('ignore maxZooms over minZoom', function(t) {
-        var map = createMap({minZoom:5});
+        const map = createMap({minZoom:5});
         t.throws(function() {
             map.setMaxZoom(4);
         });
@@ -491,7 +491,7 @@ test('Map', function(t) {
     });
 
     t.test('#remove', function(t) {
-        var map = createMap();
+        const map = createMap();
         t.equal(map.getContainer().childNodes.length, 2);
         map.remove();
         t.equal(map.getContainer().childNodes.length, 0);
@@ -499,8 +499,8 @@ test('Map', function(t) {
     });
 
     t.test('#addControl', function(t) {
-        var map = createMap();
-        var control = {
+        const map = createMap();
+        const control = {
             addTo: function(_) {
                 t.equal(map, _, 'addTo() called with map');
                 t.end();
@@ -510,14 +510,14 @@ test('Map', function(t) {
     });
 
     t.test('#addClass', function(t) {
-        var map = createMap();
+        const map = createMap();
         map.addClass('night');
         t.ok(map.hasClass('night'));
         t.end();
     });
 
     t.test('#removeClass', function(t) {
-        var map = createMap();
+        const map = createMap();
         map.addClass('night');
         map.removeClass('night');
         t.ok(!map.hasClass('night'));
@@ -525,7 +525,7 @@ test('Map', function(t) {
     });
 
     t.test('#setClasses', function(t) {
-        var map = createMap();
+        const map = createMap();
         map.addClass('night');
         map.setClasses([]);
         t.ok(!map.hasClass('night'));
@@ -536,20 +536,20 @@ test('Map', function(t) {
     });
 
     t.test('#getClasses', function(t) {
-        var map = createMap();
+        const map = createMap();
         map.addClass('night');
         t.deepEqual(map.getClasses(), ['night']);
         t.end();
     });
 
     t.test('#project', function(t) {
-        var map = createMap();
+        const map = createMap();
         t.deepEqual(map.project([0, 0]), { x: 100, y: 100 });
         t.end();
     });
 
     t.test('#unproject', function(t) {
-        var map = createMap();
+        const map = createMap();
         t.deepEqual(map.unproject([100, 100]), { lng: 0, lat: 0 });
         t.end();
     });
@@ -561,9 +561,9 @@ test('Map', function(t) {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
-                var output = map.queryRenderedFeatures();
+                const output = map.queryRenderedFeatures();
 
-                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
                 t.deepEqual(args[1], {});
                 t.deepEqual(output, []);
@@ -577,9 +577,9 @@ test('Map', function(t) {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
-                var output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
+                const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
-                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.deepEqual(args[0], [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
                 t.deepEqual(args[1], {}); // params
                 t.deepEqual(args[2], 0); // bearing
@@ -595,9 +595,9 @@ test('Map', function(t) {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
-                var output = map.queryRenderedFeatures({filter: ['all']});
+                const output = map.queryRenderedFeatures({filter: ['all']});
 
-                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
                 t.deepEqual(args[1], {filter: ['all']});
                 t.deepEqual(output, []);
@@ -611,9 +611,9 @@ test('Map', function(t) {
                 t.error(err);
                 t.spy(map.style, 'queryRenderedFeatures');
 
-                var output = map.queryRenderedFeatures({filter: ['all']});
+                const output = map.queryRenderedFeatures({filter: ['all']});
 
-                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                const args = map.style.queryRenderedFeatures.getCall(0).args;
                 t.ok(args[0]);
                 t.deepEqual(args[1], {filter: ['all']});
                 t.deepEqual(output, []);
@@ -629,7 +629,7 @@ test('Map', function(t) {
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
-                var coords = map.style.queryRenderedFeatures.getCall(0).args[0];
+                const coords = map.style.queryRenderedFeatures.getCall(0).args[0];
                 t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
                 t.equal(coords[0].row, 0.5);
                 t.equal(coords[0].zoom, 0);
@@ -643,7 +643,7 @@ test('Map', function(t) {
 
     t.test('#setLayoutProperty', function (t) {
         t.test('sets property', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {
@@ -680,7 +680,7 @@ test('Map', function(t) {
         });
 
         t.test('sets property on parent layer', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {
@@ -720,7 +720,7 @@ test('Map', function(t) {
         });
 
         t.test('throw before loaded', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     version: 8,
                     sources: {},
@@ -737,7 +737,7 @@ test('Map', function(t) {
 
         t.test('fires a data event', function (t) {
             // background layers do not have a source
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {},
@@ -764,7 +764,7 @@ test('Map', function(t) {
 
         t.test('sets visibility on background layer', function (t) {
             // background layers do not have a source
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {},
@@ -786,7 +786,7 @@ test('Map', function(t) {
         });
 
         t.test('sets visibility on raster layer', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {
@@ -817,7 +817,7 @@ test('Map', function(t) {
         });
 
         t.test('sets visibility on video layer', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {
@@ -851,7 +851,7 @@ test('Map', function(t) {
         });
 
         t.test('sets visibility on image layer', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {
@@ -889,7 +889,7 @@ test('Map', function(t) {
 
     t.test('#setPaintProperty', function (t) {
         t.test('sets property', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     "version": 8,
                     "sources": {},
@@ -908,7 +908,7 @@ test('Map', function(t) {
         });
 
         t.test('throw before loaded', function (t) {
-            var map = createMap({
+            const map = createMap({
                 style: {
                     version: 8,
                     sources: {},
@@ -928,7 +928,7 @@ test('Map', function(t) {
 
     t.test('error event', function (t) {
         t.test('logs errors to console when it has NO listeners', function (t) {
-            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
+            const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
             t.spy(map, 'fire');
             t.stub(console, 'error', function(error) {
@@ -946,7 +946,7 @@ test('Map', function(t) {
         });
 
         t.test('calls listeners', function (t) {
-            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
+            const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
             t.spy(console, 'error');
             map.on('error', function(event) {
@@ -963,7 +963,7 @@ test('Map', function(t) {
     });
 
     t.test('render stabilizes', function (t) {
-        var style = createStyle();
+        const style = createStyle();
         style.sources.mapbox = {
             type: 'vector',
             minzoom: 1,
@@ -977,8 +977,8 @@ test('Map', function(t) {
             'source-layer': 'sourceLayer'
         });
 
-        var timer;
-        var map = createMap({ style: style });
+        let timer;
+        const map = createMap({ style: style });
         map.on('render', function () {
             if (timer) clearTimeout(timer);
             timer = setTimeout(function () {
@@ -991,7 +991,7 @@ test('Map', function(t) {
     });
 
     t.test('#removeLayer restores Map#loaded() to true', function (t) {
-        var map = createMap({
+        const map = createMap({
             style: util.extend(createStyle(), {
                 sources: {
                     mapbox: {

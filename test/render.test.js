@@ -1,9 +1,9 @@
 'use strict';
 
-var renderSuite = require('mapbox-gl-test-suite').render;
-var suiteImplementation = require('./suite_implementation');
+const renderSuite = require('mapbox-gl-test-suite').render;
+const suiteImplementation = require('./suite_implementation');
 
-var tests;
+let tests;
 
 if (process.argv[1] === __filename && process.argv.length > 2) {
     tests = process.argv.slice(2);

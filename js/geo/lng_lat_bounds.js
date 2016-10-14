@@ -2,7 +2,7 @@
 
 module.exports = LngLatBounds;
 
-var LngLat = require('./lng_lat');
+const LngLat = require('./lng_lat');
 
 /**
  * A `LngLatBounds` object represents a geographical bounding box,
@@ -65,7 +65,7 @@ LngLatBounds.prototype = {
      * @returns {LngLatBounds} `this`
      */
     extend: function(obj) {
-        var sw = this._sw,
+        let sw = this._sw,
             ne = this._ne,
             sw2, ne2;
 

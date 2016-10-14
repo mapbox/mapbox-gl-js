@@ -1,9 +1,9 @@
 'use strict';
 
-var config = require('./config');
-var browser = require('./browser');
-var URL = require('url');
-var util = require('./util');
+const config = require('./config');
+const browser = require('./browser');
+const URL = require('url');
+const util = require('./util');
 
 function makeAPIURL(path, query, accessToken) {
     accessToken = accessToken || config.ACCESS_TOKEN;
@@ -13,7 +13,7 @@ function makeAPIURL(path, query, accessToken) {
             'See https://www.mapbox.com/developers/api/#access-tokens');
     }
 
-    var url = config.API_URL + path + (query ? '?' + query : '');
+    let url = config.API_URL + path + (query ? '?' + query : '');
 
     if (config.REQUIRE_ACCESS_TOKEN) {
         if (accessToken[0] === 's') {
@@ -32,7 +32,7 @@ module.exports.isMapboxURL = function(url) {
 };
 
 module.exports.normalizeStyleURL = function(url, accessToken) {
-    var urlObject = URL.parse(url);
+    const urlObject = URL.parse(url);
 
     if (urlObject.protocol !== 'mapbox:') {
         return url;
@@ -46,14 +46,14 @@ module.exports.normalizeStyleURL = function(url, accessToken) {
 };
 
 module.exports.normalizeSourceURL = function(url, accessToken) {
-    var urlObject = URL.parse(url);
+    const urlObject = URL.parse(url);
 
     if (urlObject.protocol !== 'mapbox:') {
         return url;
     } else {
         // We parse the URL with a regex because the URL module does not handle
         // URLs with commas in the hostname
-        var sources = url.match(/mapbox:\/\/([^?]+)/)[1];
+        const sources = url.match(/mapbox:\/\/([^?]+)/)[1];
 
         // TileJSON requests need a secure flag appended to their URLs so
         // that the server knows to send SSL-ified resource references.
@@ -67,12 +67,12 @@ module.exports.normalizeSourceURL = function(url, accessToken) {
 };
 
 module.exports.normalizeGlyphsURL = function(url, accessToken) {
-    var urlObject = URL.parse(url);
+    const urlObject = URL.parse(url);
 
     if (urlObject.protocol !== 'mapbox:') {
         return url;
     } else {
-        var user = urlObject.pathname.split('/')[1];
+        const user = urlObject.pathname.split('/')[1];
         return makeAPIURL(
             '/fonts/v1/' + user + '/{fontstack}/{range}.pbf',
             urlObject.query,
@@ -82,7 +82,7 @@ module.exports.normalizeGlyphsURL = function(url, accessToken) {
 };
 
 module.exports.normalizeSpriteURL = function(url, format, extension, accessToken) {
-    var urlObject = URL.parse(url);
+    const urlObject = URL.parse(url);
 
     if (urlObject.protocol !== 'mapbox:') {
         urlObject.pathname += format + extension;
@@ -97,9 +97,9 @@ module.exports.normalizeSpriteURL = function(url, format, extension, accessToken
 };
 
 module.exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
-    var tileURLObject = URL.parse(tileURL, true);
+    const tileURLObject = URL.parse(tileURL, true);
     if (!sourceURL) return tileURL;
-    var sourceURLObject = URL.parse(sourceURL);
+    const sourceURLObject = URL.parse(sourceURL);
     if (sourceURLObject.protocol !== 'mapbox:') return tileURL;
 
     // The v4 mapbox tile API supports 512x512 image tiles only when @2x
@@ -107,8 +107,8 @@ module.exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
     // a Mapbox raster source force the @2x suffix even if a non hidpi
     // device.
 
-    var extension = browser.supportsWebp ? '.webp' : '$1';
-    var resolution = (browser.devicePixelRatio >= 2 || tileSize === 512) ? '@2x' : '';
+    const extension = browser.supportsWebp ? '.webp' : '$1';
+    const resolution = (browser.devicePixelRatio >= 2 || tileSize === 512) ? '@2x' : '';
 
     return URL.format({
         protocol: tileURLObject.protocol,

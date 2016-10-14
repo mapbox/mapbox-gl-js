@@ -1,6 +1,6 @@
 'use strict';
 
-var util = require('../util/util');
+const util = require('../util/util');
 
 module.exports = ArrayGroup;
 
@@ -20,13 +20,13 @@ module.exports = ArrayGroup;
  * @private
  */
 function ArrayGroup(arrayTypes) {
-    var LayoutVertexArrayType = arrayTypes.layoutVertexArrayType;
+    const LayoutVertexArrayType = arrayTypes.layoutVertexArrayType;
     this.layoutVertexArray = new LayoutVertexArrayType();
 
-    var ElementArrayType = arrayTypes.elementArrayType;
+    const ElementArrayType = arrayTypes.elementArrayType;
     if (ElementArrayType) this.elementArray = new ElementArrayType();
 
-    var ElementArrayType2 = arrayTypes.elementArrayType2;
+    const ElementArrayType2 = arrayTypes.elementArrayType2;
     if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
     this.paintVertexArrays = util.mapObject(arrayTypes.paintVertexArrayTypes, function (PaintVertexArrayType) {
@@ -61,7 +61,7 @@ ArrayGroup.prototype.trim = function() {
         this.elementArray2.trim();
     }
 
-    for (var layerName in this.paintVertexArrays) {
+    for (const layerName in this.paintVertexArrays) {
         this.paintVertexArrays[layerName].trim();
     }
 };
@@ -88,7 +88,7 @@ ArrayGroup.prototype.getTransferables = function(transferables) {
         transferables.push(this.elementArray2.arrayBuffer);
     }
 
-    for (var layerName in this.paintVertexArrays) {
+    for (const layerName in this.paintVertexArrays) {
         transferables.push(this.paintVertexArrays[layerName].arrayBuffer);
     }
 };

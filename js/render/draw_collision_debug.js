@@ -3,19 +3,19 @@
 module.exports = drawCollisionDebug;
 
 function drawCollisionDebug(painter, sourceCache, layer, coords) {
-    var gl = painter.gl;
+    const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
-    var program = painter.useProgram('collisionBox');
+    const program = painter.useProgram('collisionBox');
 
-    for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
-        var tile = sourceCache.getTile(coord);
-        var bucket = tile.getBucket(layer);
+    for (let i = 0; i < coords.length; i++) {
+        const coord = coords[i];
+        const tile = sourceCache.getTile(coord);
+        const bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        var bufferGroups = bucket.bufferGroups.collisionBox;
+        const bufferGroups = bucket.bufferGroups.collisionBox;
 
         if (!bufferGroups || !bufferGroups.length) continue;
-        var group = bufferGroups[0];
+        const group = bufferGroups[0];
         if (group.layoutVertexBuffer.length === 0) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);

@@ -1,7 +1,7 @@
 'use strict';
-var util = require('../../util/util');
-var Control = require('./control');
-var DOM = require('../../util/dom');
+const util = require('../../util/util');
+const Control = require('./control');
+const DOM = require('../../util/dom');
 
 module.exports = ScaleControl;
 
@@ -31,7 +31,7 @@ ScaleControl.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl-scale',
+        let className = 'mapboxgl-ctrl-scale',
             container = this._container = DOM.create('div', className, map.getContainer()),
             options = this.options;
 
@@ -49,17 +49,17 @@ function updateScale(map, scale, options) {
     // container with maximum length (Default) as 100px.
     // Using spherical law of cosines approximation, the real distance is
     // found between the two coordinates.
-    var maxWidth = options && options.maxWidth || 100;
+    const maxWidth = options && options.maxWidth || 100;
 
-    var y = map._container.clientHeight / 2;
-    var maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
+    const y = map._container.clientHeight / 2;
+    const maxMeters = getDistance(map.unproject([0, y]), map.unproject([maxWidth, y]));
     // The real distance corresponding to 100px scale length is rounded off to
     // near pretty number and the scale length for the same is found out.
     // Default unit of the scale is based on User's locale.
     if (options && options.unit === 'imperial') {
-        var maxFeet = 3.2808 * maxMeters;
+        const maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
-            var maxMiles = maxFeet / 5280;
+            const maxMiles = maxFeet / 5280;
             setScale(scale, maxWidth, maxMiles, 'mi');
         } else {
             setScale(scale, maxWidth, maxFeet, 'ft');
@@ -70,8 +70,8 @@ function updateScale(map, scale, options) {
 }
 
 function setScale(scale, maxWidth, maxDistance, unit) {
-    var distance = getRoundNum(maxDistance);
-    var ratio = distance / maxDistance;
+    let distance = getRoundNum(maxDistance);
+    const ratio = distance / maxDistance;
 
     if (unit === 'm' && distance >= 1000) {
         distance = distance / 1000;
@@ -84,21 +84,21 @@ function setScale(scale, maxWidth, maxDistance, unit) {
 
 function getDistance(latlng1, latlng2) {
     // Uses spherical law of cosines approximation.
-    var R = 6371000;
+    const R = 6371000;
 
-    var rad = Math.PI / 180,
+    let rad = Math.PI / 180,
         lat1 = latlng1.lat * rad,
         lat2 = latlng2.lat * rad,
         a = Math.sin(lat1) * Math.sin(lat2) +
           Math.cos(lat1) * Math.cos(lat2) * Math.cos((latlng2.lng - latlng1.lng) * rad);
 
-    var maxMeters = R * Math.acos(Math.min(a, 1));
+    const maxMeters = R * Math.acos(Math.min(a, 1));
     return maxMeters;
 
 }
 
 function getRoundNum(num) {
-    var pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
+    let pow10 = Math.pow(10, (Math.floor(num) + '').length - 1),
         d = num / pow10;
 
     d = d >= 10 ? 10 :

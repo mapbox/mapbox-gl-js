@@ -1,17 +1,17 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var resolveText = require('../../../js/symbol/resolve_text');
+const test = require('mapbox-gl-js-test').test;
+const resolveText = require('../../../js/symbol/resolve_text');
 
 function mockFeature(obj) {
-    var f = {};
+    const f = {};
     f.loadGeometry = function() { return {}; };
     f.properties = obj;
     return f;
 }
 
 function compareResolve(t, expected, features, props) {
-    var stack = {};
+    const stack = {};
     t.deepEqual(resolveText(features, props, stack), expected.textFeatures);
     t.deepEqual(Object.keys(stack).map(Number).sort(compareNum), expected.codepoints);
 }

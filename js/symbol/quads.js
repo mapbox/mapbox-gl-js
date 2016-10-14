@@ -1,6 +1,6 @@
 'use strict';
 
-var Point = require('point-geometry');
+const Point = require('point-geometry');
 
 module.exports = {
     getIconQuads: getIconQuads,
@@ -8,7 +8,7 @@ module.exports = {
     SymbolQuad: SymbolQuad
 };
 
-var minScale = 0.5; // underscale by 1 zoom level
+const minScale = 0.5; // underscale by 1 zoom level
 
 /**
  * A textured quad for rendering a single icon or glyph.
@@ -56,19 +56,19 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @private
  */
 function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shapedText, globalProperties, featureProperties) {
-    var rect = shapedIcon.image.rect;
-    var layout = layer.layout;
+    const rect = shapedIcon.image.rect;
+    const layout = layer.layout;
 
-    var border = 1;
-    var left = shapedIcon.left - border;
-    var right = left + rect.w / shapedIcon.image.pixelRatio;
-    var top = shapedIcon.top - border;
-    var bottom = top + rect.h / shapedIcon.image.pixelRatio;
-    var tl, tr, br, bl;
+    const border = 1;
+    const left = shapedIcon.left - border;
+    const right = left + rect.w / shapedIcon.image.pixelRatio;
+    const top = shapedIcon.top - border;
+    const bottom = top + rect.h / shapedIcon.image.pixelRatio;
+    let tl, tr, br, bl;
 
     // text-fit mode
     if (layout['icon-text-fit'] !== 'none' && shapedText) {
-        var iconWidth = (right - left),
+        let iconWidth = (right - left),
             iconHeight = (bottom - top),
             size = layout['text-size'] / 24,
             textLeft = shapedText.left * size,
@@ -97,11 +97,11 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         bl = new Point(left, bottom);
     }
 
-    var angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
+    let angle = layer.getLayoutValue('icon-rotate', globalProperties, featureProperties) * Math.PI / 180;
     if (alongLine) {
-        var prev = line[anchor.segment];
+        const prev = line[anchor.segment];
         if (anchor.y === prev.y && anchor.x === prev.x && anchor.segment + 1 < line.length) {
-            var next = line[anchor.segment + 1];
+            const next = line[anchor.segment + 1];
             angle += Math.atan2(anchor.y - next.y, anchor.x - next.x) + Math.PI;
         } else {
             angle += Math.atan2(anchor.y - prev.y, anchor.x - prev.x);
@@ -109,7 +109,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
     }
 
     if (angle) {
-        var sin = Math.sin(angle),
+        let sin = Math.sin(angle),
             cos = Math.cos(angle),
             matrix = [cos, -sin, sin, cos];
 
@@ -136,24 +136,24 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  */
 function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
-    var textRotate = layer.layout['text-rotate'] * Math.PI / 180;
-    var keepUpright = layer.layout['text-keep-upright'];
+    const textRotate = layer.layout['text-rotate'] * Math.PI / 180;
+    const keepUpright = layer.layout['text-keep-upright'];
 
-    var positionedGlyphs = shaping.positionedGlyphs;
-    var quads = [];
+    const positionedGlyphs = shaping.positionedGlyphs;
+    const quads = [];
 
-    for (var k = 0; k < positionedGlyphs.length; k++) {
-        var positionedGlyph = positionedGlyphs[k];
-        var glyph = positionedGlyph.glyph;
+    for (let k = 0; k < positionedGlyphs.length; k++) {
+        const positionedGlyph = positionedGlyphs[k];
+        const glyph = positionedGlyph.glyph;
         if (!glyph) continue;
 
-        var rect = glyph.rect;
+        const rect = glyph.rect;
         if (!rect) continue;
 
-        var centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
+        const centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
-        var glyphInstances;
-        var labelMinScale = minScale;
+        let glyphInstances;
+        let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
             labelMinScale = getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true);
@@ -171,7 +171,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
             }];
         }
 
-        var x1 = positionedGlyph.x + glyph.left,
+        let x1 = positionedGlyph.x + glyph.left,
             y1 = positionedGlyph.y - glyph.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
@@ -181,16 +181,16 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
             obl = new Point(x1, y2),
             obr = new Point(x2, y2);
 
-        for (var i = 0; i < glyphInstances.length; i++) {
+        for (let i = 0; i < glyphInstances.length; i++) {
 
-            var instance = glyphInstances[i],
+            let instance = glyphInstances[i],
                 tl = otl,
                 tr = otr,
                 bl = obl,
                 br = obr;
 
             if (textRotate) {
-                var sin = Math.sin(textRotate),
+                let sin = Math.sin(textRotate),
                     cos = Math.cos(textRotate),
                     matrix = [cos, -sin, sin, cos];
 
@@ -201,10 +201,10 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
             }
 
             // Prevent label from extending past the end of the line
-            var glyphMinScale = Math.max(instance.minScale, labelMinScale);
+            const glyphMinScale = Math.max(instance.minScale, labelMinScale);
 
-            var anchorAngle = (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            var glyphAngle = (instance.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            const anchorAngle = (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+            const glyphAngle = (instance.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
             quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale));
         }
     }
@@ -229,26 +229,26 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
  * @private
  */
 function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
-    var upsideDown = !forward;
+    const upsideDown = !forward;
 
     if (offset < 0) forward = !forward;
 
     if (forward) segment++;
 
-    var newAnchorPoint = new Point(anchor.x, anchor.y);
-    var end = line[segment];
-    var prevScale = Infinity;
+    let newAnchorPoint = new Point(anchor.x, anchor.y);
+    let end = line[segment];
+    let prevScale = Infinity;
 
     offset = Math.abs(offset);
 
-    var placementScale = minScale;
+    const placementScale = minScale;
 
     while (true) {
-        var distance = newAnchorPoint.dist(end);
-        var scale = offset / distance;
+        const distance = newAnchorPoint.dist(end);
+        const scale = offset / distance;
 
         // Get the angle of the line segment
-        var angle = Math.atan2(end.y - newAnchorPoint.y, end.x - newAnchorPoint.x);
+        let angle = Math.atan2(end.y - newAnchorPoint.y, end.x - newAnchorPoint.x);
         if (!forward) angle += Math.PI;
 
         glyphs.push({
@@ -272,7 +272,7 @@ function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
             }
         }
 
-        var unit = end.sub(newAnchorPoint)._unit();
+        const unit = end.sub(newAnchorPoint)._unit();
         newAnchorPoint = newAnchorPoint.sub(unit._mult(distance));
 
         prevScale = scale;

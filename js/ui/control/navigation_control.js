@@ -1,9 +1,9 @@
 'use strict';
 
-var Control = require('./control');
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const Control = require('./control');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = NavigationControl;
 
@@ -30,9 +30,9 @@ NavigationControl.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl';
+        const className = 'mapboxgl-ctrl';
 
-        var container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        const container = this._container = DOM.create('div', className + '-group', map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._zoomInButton = this._createButton(className + '-icon ' + className + '-zoom-in', map.zoomIn.bind(map));
@@ -87,14 +87,14 @@ NavigationControl.prototype = util.inherit(Control, {
     },
 
     _createButton: function(className, fn) {
-        var a = DOM.create('button', className, this._container);
+        const a = DOM.create('button', className, this._container);
         a.type = 'button';
         a.addEventListener('click', function() { fn(); });
         return a;
     },
 
     _rotateCompassArrow: function() {
-        var rotate = 'rotate(' + (this._map.transform.angle * (180 / Math.PI)) + 'deg)';
+        const rotate = 'rotate(' + (this._map.transform.angle * (180 / Math.PI)) + 'deg)';
         this._compassArrow.style.transform = rotate;
     }
 });

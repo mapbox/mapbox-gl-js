@@ -1,14 +1,14 @@
 'use strict';
 
-var ajax =  require('../js/util/ajax');
-var sinon = require('sinon');
-var request = require('request');
-var PNG = require('pngjs').PNG;
-var Map = require('../js/ui/map');
-var window = require('../js/util/window');
+const ajax =  require('../js/util/ajax');
+const sinon = require('sinon');
+const request = require('request');
+const PNG = require('pngjs').PNG;
+const Map = require('../js/ui/map');
+const window = require('../js/util/window');
 
 module.exports = function(style, options, _callback) {
-    var wasCallbackCalled = false;
+    let wasCallbackCalled = false;
     function callback() {
         if (!wasCallbackCalled) {
             wasCallbackCalled = true;
@@ -18,11 +18,11 @@ module.exports = function(style, options, _callback) {
 
     window.devicePixelRatio = options.pixelRatio;
 
-    var container = window.document.createElement('div');
+    const container = window.document.createElement('div');
     container.offsetHeight = options.height;
     container.offsetWidth = options.width;
 
-    var map = new Map({
+    const map = new Map({
         container: container,
         style: style,
         classes: options.classes,
@@ -38,30 +38,30 @@ module.exports = function(style, options, _callback) {
     if (options.collisionDebug) map.showCollisionBoxes = true;
     if (options.showOverdrawInspector) map.showOverdrawInspector = true;
 
-    var gl = map.painter.gl;
+    const gl = map.painter.gl;
 
     map.once('load', function() {
         applyOperations(map, options.operations, function() {
-            var w = options.width * window.devicePixelRatio;
-            var h = options.height * window.devicePixelRatio;
+            const w = options.width * window.devicePixelRatio;
+            const h = options.height * window.devicePixelRatio;
 
-            var pixels = new Uint8Array(w * h * 4);
+            const pixels = new Uint8Array(w * h * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
-            var data = new Buffer(pixels);
+            const data = new Buffer(pixels);
 
             // Flip the scanlines.
-            var stride = w * 4;
-            var tmp = new Buffer(stride);
-            for (var i = 0, j = h - 1; i < j; i++, j--) {
-                var start = i * stride;
-                var end = j * stride;
+            const stride = w * 4;
+            const tmp = new Buffer(stride);
+            for (let i = 0, j = h - 1; i < j; i++, j--) {
+                const start = i * stride;
+                const end = j * stride;
                 data.copy(tmp, 0, start, start + stride);
                 data.copy(data, start, end, end + stride);
                 tmp.copy(data, end);
             }
 
-            var results = options.queryGeometry ?
+            const results = options.queryGeometry ?
                 map.queryRenderedFeatures(options.queryGeometry, options) :
                 [];
 
@@ -80,12 +80,12 @@ module.exports = function(style, options, _callback) {
 };
 
 function applyOperations(map, operations, callback) {
-    var operation = operations && operations[0];
+    const operation = operations && operations[0];
     if (!operations || operations.length === 0) {
         callback();
 
     } else if (operation[0] === 'wait') {
-        var wait = function() {
+        const wait = function() {
             if (map.loaded()) {
                 applyOperations(map, operations.slice(1), callback);
             } else {
@@ -110,7 +110,7 @@ function fakeImage(png) {
     };
 }
 
-var cache = {};
+const cache = {};
 
 function cached(data, callback) {
     setImmediate(function () {
@@ -122,7 +122,7 @@ sinon.stub(ajax, 'getJSON', function(url, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request(url, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            var data;
+            let data;
             try {
                 data = JSON.parse(body);
             } catch (err) {
@@ -140,9 +140,9 @@ sinon.stub(ajax, 'getArrayBuffer', function(url, callback) {
     if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, function(error, response, body) {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            var ab = new ArrayBuffer(body.length);
-            var view = new Uint8Array(ab);
-            for (var i = 0; i < body.length; ++i) {
+            const ab = new ArrayBuffer(body.length);
+            const view = new Uint8Array(ab);
+            for (let i = 0; i < body.length; ++i) {
                 view[i] = body[i];
             }
             cache[url] = ab;

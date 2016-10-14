@@ -1,9 +1,9 @@
 'use strict';
-var ajax = require('../util/ajax');
-var vt = require('vector-tile');
-var Protobuf = require('pbf');
-var WorkerTile = require('./worker_tile');
-var util = require('../util/util');
+const ajax = require('../util/ajax');
+const vt = require('vector-tile');
+const Protobuf = require('pbf');
+const WorkerTile = require('./worker_tile');
+const util = require('../util/util');
 
 module.exports = VectorTileWorkerSource;
 
@@ -43,13 +43,13 @@ VectorTileWorkerSource.prototype = {
      * @param {boolean} params.showCollisionBoxes
      */
     loadTile: function(params, callback) {
-        var source = params.source,
+        let source = params.source,
             uid = params.uid;
 
         if (!this.loading[source])
             this.loading[source] = {};
 
-        var workerTile = this.loading[source][uid] = new WorkerTile(params);
+        const workerTile = this.loading[source][uid] = new WorkerTile(params);
         workerTile.abort = this.loadVectorData(params, done.bind(this));
 
         function done(err, vectorTile) {
@@ -81,10 +81,10 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     reloadTile: function(params, callback) {
-        var loaded = this.loaded[params.source],
+        let loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
-            var workerTile = loaded[uid];
+            const workerTile = loaded[uid];
             workerTile.parse(workerTile.vectorTile, this.styleLayers.getLayerFamilies(), this.actor, callback);
         }
     },
@@ -97,7 +97,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     abortTile: function(params) {
-        var loading = this.loading[params.source],
+        let loading = this.loading[params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
@@ -113,7 +113,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     removeTile: function(params) {
-        var loaded = this.loaded[params.source],
+        let loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
@@ -146,24 +146,24 @@ VectorTileWorkerSource.prototype = {
      * @param {LoadVectorDataCallback} callback
      */
     loadVectorData: function (params, callback) {
-        var xhr = ajax.getArrayBuffer(params.url, done.bind(this));
+        const xhr = ajax.getArrayBuffer(params.url, done.bind(this));
         return function abort () { xhr.abort(); };
         function done(err, arrayBuffer) {
             if (err) { return callback(err); }
-            var vectorTile = new vt.VectorTile(new Protobuf(arrayBuffer));
+            const vectorTile = new vt.VectorTile(new Protobuf(arrayBuffer));
             vectorTile.rawData = arrayBuffer;
             callback(err, vectorTile);
         }
     },
 
     redoPlacement: function(params, callback) {
-        var loaded = this.loaded[params.source],
+        let loaded = this.loaded[params.source],
             loading = this.loading[params.source],
             uid = params.uid;
 
         if (loaded && loaded[uid]) {
-            var workerTile = loaded[uid];
-            var result = workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
+            const workerTile = loaded[uid];
+            const result = workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
 
             if (result.result) {
                 callback(null, result.result, result.transferables);

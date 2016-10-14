@@ -14,7 +14,7 @@ function FrameHistory() {
 }
 
 FrameHistory.prototype.record = function(zoom) {
-    var now = Date.now();
+    let now = Date.now();
 
     if (this.firstFrame) {
         now = 0;
@@ -23,7 +23,7 @@ FrameHistory.prototype.record = function(zoom) {
 
     zoom = Math.floor(zoom * 10);
 
-    var z;
+    let z;
     if (zoom < this.previousZoom) {
         for (z = zoom + 1; z <= this.previousZoom; z++) {
             this.changeTimes[z] = now;
@@ -37,8 +37,8 @@ FrameHistory.prototype.record = function(zoom) {
     }
 
     for (z = 0; z < 256; z++) {
-        var timeSince = now - this.changeTimes[z];
-        var opacityChange = timeSince / this.fadeDuration * 255;
+        const timeSince = now - this.changeTimes[z];
+        const opacityChange = timeSince / this.fadeDuration * 255;
         if (z <= zoom) {
             this.opacities[z] = this.changeOpacities[z] + opacityChange;
         } else {

@@ -1,7 +1,7 @@
 'use strict';
 
-var browser = require('../util/browser');
-var pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const browser = require('../util/browser');
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 /**
  * Draw a line. Under the hood this will read elements from
@@ -18,37 +18,37 @@ module.exports = function drawLine(painter, sourceCache, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
-    var gl = painter.gl;
+    const gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
 
     // don't draw zero-width lines
     if (layer.paint['line-width'] <= 0) return;
 
-    for (var k = 0; k < coords.length; k++) {
+    for (let k = 0; k < coords.length; k++) {
         drawLineTile(painter, sourceCache, layer, coords[k]);
     }
 };
 
 function drawLineTile(painter, sourceCache, layer, coord) {
-    var tile = sourceCache.getTile(coord);
-    var bucket = tile.getBucket(layer);
+    const tile = sourceCache.getTile(coord);
+    const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.line;
+    const bufferGroups = bucket.bufferGroups.line;
     if (!bufferGroups) return;
 
-    var gl = painter.gl;
-    var dasharray = layer.paint['line-dasharray'];
-    var image = layer.paint['line-pattern'];
-    var programOptions = bucket.paintAttributes.line[layer.id];
+    const gl = painter.gl;
+    const dasharray = layer.paint['line-dasharray'];
+    const image = layer.paint['line-pattern'];
+    const programOptions = bucket.paintAttributes.line[layer.id];
 
-    var program = painter.useProgram(dasharray ? 'lineSDF' : image ? 'linePattern' : 'line',
+    const program = painter.useProgram(dasharray ? 'lineSDF' : image ? 'linePattern' : 'line',
             programOptions.defines, programOptions.vertexPragmas, programOptions.fragmentPragmas);
 
     if (!image) {
         gl.uniform4fv(program.u_color, layer.paint['line-color']);
     }
 
-    var posA, posB, imagePosA, imagePosB;
+    let posA, posB, imagePosA, imagePosB;
     if (dasharray) {
         posA = painter.lineAtlas.getDash(dasharray.from, layer.layout['line-cap'] === 'round');
         posB = painter.lineAtlas.getDash(dasharray.to, layer.layout['line-cap'] === 'round');
@@ -79,7 +79,7 @@ function drawLineTile(painter, sourceCache, layer, coord) {
 
     // the distance over which the line edge fades out.
     // Retina devices need a smaller distance to avoid aliasing.
-    var antialiasing = 1 / browser.devicePixelRatio;
+    const antialiasing = 1 / browser.devicePixelRatio;
 
     gl.uniform1f(program.u_linewidth, layer.paint['line-width'] / 2);
     gl.uniform1f(program.u_gapwidth, layer.paint['line-gap-width'] / 2);
@@ -93,15 +93,15 @@ function drawLineTile(painter, sourceCache, layer, coord) {
     painter.enableTileClippingMask(coord);
 
     // set uniforms that are different for each tile
-    var posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
+    const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint['line-translate'], layer.paint['line-translate-anchor']);
     gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
     if (dasharray) {
-        var widthA = posA.width * dasharray.fromScale;
-        var widthB = posB.width * dasharray.toScale;
-        var scaleA = [1 / pixelsToTileUnits(tile, widthA, painter.transform.tileZoom), -posA.height / 2];
-        var scaleB = [1 / pixelsToTileUnits(tile, widthB, painter.transform.tileZoom), -posB.height / 2];
-        var gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
+        const widthA = posA.width * dasharray.fromScale;
+        const widthB = posB.width * dasharray.toScale;
+        const scaleA = [1 / pixelsToTileUnits(tile, widthA, painter.transform.tileZoom), -posA.height / 2];
+        const scaleB = [1 / pixelsToTileUnits(tile, widthB, painter.transform.tileZoom), -posB.height / 2];
+        const gamma = painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2;
 
         gl.uniform2fv(program.u_patternscale_a, scaleA);
         gl.uniform2fv(program.u_patternscale_b, scaleB);
@@ -122,8 +122,8 @@ function drawLineTile(painter, sourceCache, layer, coord) {
 
     bucket.setUniforms(gl, 'line', program, layer, {zoom: painter.transform.zoom});
 
-    for (var i = 0; i < bufferGroups.length; i++) {
-        var group = bufferGroups[i];
+    for (let i = 0; i < bufferGroups.length; i++) {
+        const group = bufferGroups[i];
         group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
     }

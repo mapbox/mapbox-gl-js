@@ -2,18 +2,18 @@
 
 /* jshint -W079 */
 
-var test = require('mapbox-gl-js-test').test;
-var Worker = require('../../../js/source/worker');
-var window = require('../../../js/util/window');
+const test = require('mapbox-gl-js-test').test;
+const Worker = require('../../../js/source/worker');
+const window = require('../../../js/util/window');
 
-var _self = {
+const _self = {
     addEventListener: function() {}
 };
 
 test('load tile', function(t) {
     t.test('calls callback on error', function(t) {
         window.useFakeXMLHttpRequest();
-        var worker = new Worker(_self);
+        const worker = new Worker(_self);
         worker['load tile'](0, {
             type: 'vector',
             source: 'source',
@@ -31,7 +31,7 @@ test('load tile', function(t) {
 });
 
 test('set layers', function(t) {
-    var worker = new Worker(_self);
+    const worker = new Worker(_self);
 
     worker['set layers'](0, [
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
@@ -57,7 +57,7 @@ test('set layers', function(t) {
 });
 
 test('update layers', function(t) {
-    var worker = new Worker(_self);
+    const worker = new Worker(_self);
 
     worker['set layers'](0, [
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
@@ -79,7 +79,7 @@ test('update layers', function(t) {
 });
 
 test('redo placement', function(t) {
-    var worker = new Worker(_self);
+    const worker = new Worker(_self);
     _self.registerWorkerSource('test', function() {
         this.redoPlacement = function(options) {
             t.ok(options.mapbox);
@@ -91,7 +91,7 @@ test('redo placement', function(t) {
 });
 
 test('update layers isolates different instances\' data', function(t) {
-    var worker = new Worker(_self);
+    const worker = new Worker(_self);
 
     worker['set layers'](0, [
         { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
@@ -130,7 +130,7 @@ test('update layers isolates different instances\' data', function(t) {
 });
 
 test('worker source messages dispatched to the correct map instance', function(t) {
-    var worker = new Worker(_self);
+    const worker = new Worker(_self);
 
     worker.actor.send = function (type, data, callback, buffers, mapId) {
         t.equal(type, 'main thread task');

@@ -1,24 +1,24 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var fs = require('fs');
-var path = require('path');
-var shaping = require('../../../js/symbol/shaping');
+const test = require('mapbox-gl-js-test').test;
+const fs = require('fs');
+const path = require('path');
+const shaping = require('../../../js/symbol/shaping');
 
-var UPDATE = false;
+let UPDATE = false;
 if (typeof process !== 'undefined' && process.env !== undefined) {
     UPDATE = !!process.env.UPDATE;
 }
 
 test('shaping', function(t) {
-    var oneEm = 24;
-    var name = 'Test';
-    var stacks = {
+    const oneEm = 24;
+    const name = 'Test';
+    const stacks = {
         'Test': JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')))
     };
-    var glyphs = stacks[name];
+    const glyphs = stacks[name];
 
-    var shaped;
+    let shaped;
 
     JSON.parse('{}');
 
@@ -41,7 +41,7 @@ test('shaping', function(t) {
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-linebreak.json'), JSON.stringify(shaped, null, 2));
     t.deepEqual(shaped, require('../../expected/text-shaping-linebreak.json'));
 
-    var expectedNewLine = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json')));
+    const expectedNewLine = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json')));
 
     shaped = shaping.shapeText('abcde\nabcde', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0, [0, 0]);
     if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newline.json'), JSON.stringify(shaped, null, 2));
@@ -59,7 +59,7 @@ test('shaping', function(t) {
 
     // https://github.com/mapbox/mapbox-gl-js/issues/3254
     shaped = shaping.shapeText('   foo bar\n', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
-    var shaped2 = shaping.shapeText('foo bar', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
+    const shaped2 = shaping.shapeText('foo bar', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.same(shaped.positionedGlyphs, shaped2.positionedGlyphs);
 
     t.end();

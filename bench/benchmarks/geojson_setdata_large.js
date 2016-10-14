@@ -1,15 +1,15 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var setDataPerf = require('../lib/set_data_perf');
-var setupGeoJSONMap = require('../lib/setup_geojson_map');
-var createMap = require('../lib/create_map');
-var ajax = require('../../js/util/ajax');
+const Evented = require('../../js/util/evented');
+const util = require('../../js/util/util');
+const formatNumber = require('../lib/format_number');
+const setDataPerf = require('../lib/set_data_perf');
+const setupGeoJSONMap = require('../lib/setup_geojson_map');
+const createMap = require('../lib/create_map');
+const ajax = require('../../js/util/ajax');
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
     setTimeout(function() {
         evented.fire('log', {message: 'downloading large geojson'});
@@ -20,7 +20,7 @@ module.exports = function() {
 
         if (err) return evented.fire('error', {error: err});
 
-        var map = createMap({
+        let map = createMap({
             width: 1024,
             height: 768,
             zoom: 5,

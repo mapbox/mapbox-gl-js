@@ -1,17 +1,17 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Tile = require('../../../js/source/tile');
-var TileCoord = require('../../../js/source/tile_coord');
-var GeoJSONSource = require('../../../js/source/geojson_source');
-var Transform = require('../../../js/geo/transform');
-var LngLat = require('../../../js/geo/lng_lat');
+const test = require('mapbox-gl-js-test').test;
+const Tile = require('../../../js/source/tile');
+const TileCoord = require('../../../js/source/tile_coord');
+const GeoJSONSource = require('../../../js/source/geojson_source');
+const Transform = require('../../../js/geo/transform');
+const LngLat = require('../../../js/geo/lng_lat');
 
-var mockDispatcher = {
+const mockDispatcher = {
     send: function () {}
 };
 
-var hawkHill = {
+const hawkHill = {
     "type": "FeatureCollection",
     "features": [{
         "type": "Feature",
@@ -55,13 +55,13 @@ test('GeoJSONSource#setData', function(t) {
     }
 
     t.test('returns self', function(t) {
-        var source = createSource();
+        const source = createSource();
         t.equal(source.setData({}), source);
         t.end();
     });
 
     t.test('fires "data" event', function(t) {
-        var source = createSource();
+        const source = createSource();
         source.once('data', function() {
             source.on('data', t.end);
             source.setData({});
@@ -69,7 +69,7 @@ test('GeoJSONSource#setData', function(t) {
     });
 
     t.test('fires "dataloading" event', function(t) {
-        var source = createSource();
+        const source = createSource();
         source.once('data', function() {
             source.on('dataloading', t.end);
             source.setData({});
@@ -80,15 +80,15 @@ test('GeoJSONSource#setData', function(t) {
 });
 
 test('GeoJSONSource#update', function(t) {
-    var transform = new Transform();
+    const transform = new Transform();
     transform.resize(200, 200);
-    var lngLat = LngLat.convert([-122.486052, 37.830348]);
-    var point = transform.locationPoint(lngLat);
+    const lngLat = LngLat.convert([-122.486052, 37.830348]);
+    const point = transform.locationPoint(lngLat);
     transform.zoom = 15;
     transform.setLocationAtPoint(lngLat, point);
 
     t.test('sends initial loadData request to dispatcher', function(t) {
-        var mockDispatcher = {
+        const mockDispatcher = {
             send: function(message) {
                 t.equal(message, 'geojson.loadData');
                 t.end();
@@ -100,7 +100,7 @@ test('GeoJSONSource#update', function(t) {
     });
 
     t.test('forwards geojson-vt options with worker request', function(t) {
-        var mockDispatcher = {
+        const mockDispatcher = {
             send: function(message, params) {
                 t.equal(message, 'geojson.loadData');
                 t.deepEqual(params.geojsonVtOptions, {
@@ -122,13 +122,13 @@ test('GeoJSONSource#update', function(t) {
     });
 
     t.test('fires "source.load"', function(t) {
-        var mockDispatcher = {
+        const mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback, 0);
             }
         };
 
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('source.load', function() {
             t.end();
@@ -136,13 +136,13 @@ test('GeoJSONSource#update', function(t) {
     });
 
     t.test('fires "error"', function(t) {
-        var mockDispatcher = {
+        const mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback.bind(null, 'error'), 0);
             }
         };
 
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('error', function(err) {
             t.equal(err.error, 'error');
@@ -151,8 +151,8 @@ test('GeoJSONSource#update', function(t) {
     });
 
     t.test('sends loadData request to dispatcher after data update', function(t) {
-        var expectedLoadDataCalls = 2;
-        var mockDispatcher = {
+        let expectedLoadDataCalls = 2;
+        const mockDispatcher = {
             send: function(message, args, callback) {
                 if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
@@ -161,7 +161,7 @@ test('GeoJSONSource#update', function(t) {
             }
         };
 
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.map = {
             transform: {}
         };
@@ -178,7 +178,7 @@ test('GeoJSONSource#update', function(t) {
 test('GeoJSONSource#serialize', function(t) {
 
     t.test('serialize source with inline data', function(t) {
-        var source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: hawkHill}, mockDispatcher);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: hawkHill
@@ -187,7 +187,7 @@ test('GeoJSONSource#serialize', function(t) {
     });
 
     t.test('serialize source with url', function(t) {
-        var source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: 'local://data.json'}, mockDispatcher);
         t.deepEqual(source.serialize(), {
             type: 'geojson',
             data: 'local://data.json'
@@ -196,7 +196,7 @@ test('GeoJSONSource#serialize', function(t) {
     });
 
     t.test('serialize source with updated data', function(t) {
-        var source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
+        const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
         source.setData(hawkHill);
         t.deepEqual(source.serialize(), {
             type: 'geojson',

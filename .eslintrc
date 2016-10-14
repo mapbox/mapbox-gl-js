@@ -8,6 +8,7 @@
     "key-spacing": "off",
     "no-eq-null": "off",
     "no-new": "off",
+    "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
     "quotes": "off",

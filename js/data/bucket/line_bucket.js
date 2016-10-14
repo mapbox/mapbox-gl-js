@@ -1,9 +1,9 @@
 'use strict';
 
-var Bucket = require('../bucket');
-var util = require('../../util/util');
-var loadGeometry = require('../load_geometry');
-var EXTENT = Bucket.EXTENT;
+const Bucket = require('../bucket');
+const util = require('../../util/util');
+const loadGeometry = require('../load_geometry');
+const EXTENT = Bucket.EXTENT;
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -11,7 +11,7 @@ var EXTENT = Bucket.EXTENT;
 // normals for line joins, because the x-value remains 0 for the texture
 // normal array, while the extrude normal actually moves the vertex to create
 // the acute/bevelled line join.
-var EXTRUDE_SCALE = 63;
+const EXTRUDE_SCALE = 63;
 
 /*
  * Sharp corners cause dashed lines to tilt because the distance along the line
@@ -24,19 +24,19 @@ var EXTRUDE_SCALE = 63;
  *
  * The newly created vertices are placed SHARP_CORNER_OFFSET pixels from the corner.
  */
-var COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
-var SHARP_CORNER_OFFSET = 15;
+const COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
+const SHARP_CORNER_OFFSET = 15;
 
 // The number of bits that is used to store the line distance in the buffer.
-var LINE_DISTANCE_BUFFER_BITS = 15;
+const LINE_DISTANCE_BUFFER_BITS = 15;
 
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
 // value. This lets us store longer distances while sacrificing precision.
-var LINE_DISTANCE_SCALE = 1 / 2;
+const LINE_DISTANCE_SCALE = 1 / 2;
 
 // The maximum line distance, in tile units, that fits in the buffer.
-var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
+const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
 
 module.exports = LineBucket;
@@ -94,8 +94,8 @@ LineBucket.prototype.programInterfaces = {
 };
 
 LineBucket.prototype.addFeature = function(feature) {
-    var lines = loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS);
-    for (var i = 0; i < lines.length; i++) {
+    const lines = loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS);
+    for (let i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],
             feature.properties,
@@ -109,7 +109,7 @@ LineBucket.prototype.addFeature = function(feature) {
 
 LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, miterLimit, roundLimit) {
 
-    var len = vertices.length;
+    let len = vertices.length;
     // If the line has duplicate vertices at the end, adjust length to remove them.
     while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
         len--;
@@ -120,22 +120,22 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
 
     if (join === 'bevel') miterLimit = 1.05;
 
-    var sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
+    const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-    var firstVertex = vertices[0],
+    let firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
     // we could be more precise, but it would only save a negligible amount of space
-    var group = this.prepareArrayGroup('line', len * 10);
-    var startIndex = group.layoutVertexArray.length;
+    const group = this.prepareArrayGroup('line', len * 10);
+    const startIndex = group.layoutVertexArray.length;
 
     // a line may not have coincident points
     if (len === 2 && closed) return;
 
     this.distance = 0;
 
-    var beginCap = cap,
+    let beginCap = cap,
         endCap = closed ? 'butt' : cap,
         startOfLine = true,
         currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
@@ -148,7 +148,7 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
         nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
     }
 
-    for (var i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
 
         nextVertex = closed && i === len - 1 ?
             vertices[1] : // if the line is closed, we treat the last vertex like the first
@@ -173,7 +173,7 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
 
         // Determine the normal of the join extrusion. It is the angle bisector
         // of the segments between the previous line and the next line.
-        var joinNormal = prevNormal.add(nextNormal)._unit();
+        let joinNormal = prevNormal.add(nextNormal)._unit();
 
         /*  joinNormal     prevNormal
          *             ↖      ↑
@@ -188,15 +188,15 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
         // Calculate the length of the miter (the ratio of the miter to the width).
         // Find the cosine of the angle between the next and join normals
         // using dot product. The inverse of that is the miter length.
-        var cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
-        var miterLength = 1 / cosHalfAngle;
+        const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
+        const miterLength = 1 / cosHalfAngle;
 
-        var isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
+        const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
         if (isSharpCorner && i > 0) {
-            var prevSegmentLength = currentVertex.dist(prevVertex);
+            const prevSegmentLength = currentVertex.dist(prevVertex);
             if (prevSegmentLength > 2 * sharpCornerOffset) {
-                var newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
+                const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
                 this.distance += newPrevVertex.dist(prevVertex);
                 this.addCurrentVertex(newPrevVertex, this.distance, prevNormal.mult(1), 0, 0, false);
                 prevVertex = newPrevVertex;
@@ -204,8 +204,8 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
         }
 
         // The join if a middle vertex, otherwise the cap.
-        var middleVertex = prevVertex && nextVertex;
-        var currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
+        const middleVertex = prevVertex && nextVertex;
+        let currentJoin = middleVertex ? join : nextVertex ? beginCap : endCap;
 
         if (middleVertex && currentJoin === 'round') {
             if (miterLength < roundLimit) {
@@ -245,16 +245,16 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
                 joinNormal = nextNormal.clone();
 
             } else {
-                var direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
-                var bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
+                const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
+                const bevelLength = miterLength * prevNormal.add(nextNormal).mag() / prevNormal.sub(nextNormal).mag();
                 joinNormal._perp()._mult(bevelLength * direction);
             }
             this.addCurrentVertex(currentVertex, this.distance, joinNormal, 0, 0, false);
             this.addCurrentVertex(currentVertex, this.distance, joinNormal.mult(-1), 0, 0, false);
 
         } else if (currentJoin === 'bevel' || currentJoin === 'fakeround') {
-            var lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
-            var offset = -Math.sqrt(miterLength * miterLength - 1);
+            const lineTurnsLeft = (prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x) > 0;
+            const offset = -Math.sqrt(miterLength * miterLength - 1);
             if (lineTurnsLeft) {
                 offsetB = 0;
                 offsetA = offset;
@@ -276,17 +276,17 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
 
                 // Add more triangles for sharper angles.
                 // This math is just a good enough approximation. It isn't "correct".
-                var n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
-                var approxFractionalJoinNormal;
+                const n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
+                let approxFractionalJoinNormal;
 
-                for (var m = 0; m < n; m++) {
+                for (let m = 0; m < n; m++) {
                     approxFractionalJoinNormal = nextNormal.mult((m + 1) / (n + 1))._add(prevNormal)._unit();
                     this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft);
                 }
 
                 this.addPieSliceVertex(currentVertex, this.distance, joinNormal, lineTurnsLeft);
 
-                for (var k = n - 1; k >= 0; k--) {
+                for (let k = n - 1; k >= 0; k--) {
                     approxFractionalJoinNormal = prevNormal.mult((k + 1) / (n + 1))._add(nextNormal)._unit();
                     this.addPieSliceVertex(currentVertex, this.distance, approxFractionalJoinNormal, lineTurnsLeft);
                 }
@@ -347,9 +347,9 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
         }
 
         if (isSharpCorner && i < len - 1) {
-            var nextSegmentLength = currentVertex.dist(nextVertex);
+            const nextSegmentLength = currentVertex.dist(nextVertex);
             if (nextSegmentLength > 2 * sharpCornerOffset) {
-                var newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
+                const newCurrentVertex = currentVertex.add(nextVertex.sub(currentVertex)._mult(sharpCornerOffset / nextSegmentLength)._round());
                 this.distance += newCurrentVertex.dist(currentVertex);
                 this.addCurrentVertex(newCurrentVertex, this.distance, nextNormal.mult(1), 0, 0, false);
                 currentVertex = newCurrentVertex;
@@ -378,11 +378,11 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
  * @private
  */
 LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal, endLeft, endRight, round) {
-    var tx = round ? 1 : 0;
-    var extrude;
-    var arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
-    var layoutVertexArray = arrayGroup.layoutVertexArray;
-    var elementArray = arrayGroup.elementArray;
+    const tx = round ? 1 : 0;
+    let extrude;
+    const arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
+    const layoutVertexArray = arrayGroup.layoutVertexArray;
+    const elementArray = arrayGroup.elementArray;
 
     extrude = normal.clone();
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
@@ -423,11 +423,11 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
  * @private
  */
 LineBucket.prototype.addPieSliceVertex = function(currentVertex, distance, extrude, lineTurnsLeft) {
-    var ty = lineTurnsLeft ? 1 : 0;
+    const ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-    var arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
-    var layoutVertexArray = arrayGroup.layoutVertexArray;
-    var elementArray = arrayGroup.elementArray;
+    const arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
+    const layoutVertexArray = arrayGroup.layoutVertexArray;
+    const elementArray = arrayGroup.elementArray;
 
     this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, 0, ty, 0, distance);
 

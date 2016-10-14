@@ -1,9 +1,9 @@
 'use strict';
 
 module.exports = function(sourceCache, data, callback) {
-    var sampleCount = 50;
-    var startTime = null;
-    var samples = [];
+    const sampleCount = 50;
+    let startTime = null;
+    const samples = [];
 
     sourceCache.on('data', function onData() {
         if (sourceCache.loaded()) {

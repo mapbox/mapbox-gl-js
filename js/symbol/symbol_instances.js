@@ -1,8 +1,8 @@
 'use strict';
 
-var StructArrayType = require('../util/struct_array');
-var util = require('../util/util');
-var Point = require('point-geometry');
+const StructArrayType = require('../util/struct_array');
+const util = require('../util/util');
+const Point = require('point-geometry');
 
 /*
  *
@@ -13,7 +13,7 @@ var Point = require('point-geometry');
  * @private
  */
 
-var SymbolInstancesArray = module.exports = new StructArrayType({
+const SymbolInstancesArray = module.exports = new StructArrayType({
     members: [
 
         { type: 'Uint16', name: 'textBoxStartIndex' },

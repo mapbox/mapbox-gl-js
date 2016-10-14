@@ -1,8 +1,8 @@
 'use strict';
 
-var Point = require('point-geometry');
-var VectorTileFeature = require('vector-tile').VectorTileFeature;
-var EXTENT = require('../data/bucket').EXTENT;
+const Point = require('point-geometry');
+const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const EXTENT = require('../data/bucket').EXTENT;
 
 module.exports = GeoJSONWrapper;
 
@@ -21,7 +21,7 @@ function FeatureWrapper(feature) {
     this.type = feature.type;
     if (feature.type === 1) {
         this.rawGeometry = [];
-        for (var i = 0; i < feature.geometry.length; i++) {
+        for (let i = 0; i < feature.geometry.length; i++) {
             this.rawGeometry.push([feature.geometry[i]]);
         }
     } else {
@@ -32,13 +32,13 @@ function FeatureWrapper(feature) {
 }
 
 FeatureWrapper.prototype.loadGeometry = function() {
-    var rings = this.rawGeometry;
+    const rings = this.rawGeometry;
     this.geometry = [];
 
-    for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i],
+    for (let i = 0; i < rings.length; i++) {
+        let ring = rings[i],
             newRing = [];
-        for (var j = 0; j < ring.length; j++) {
+        for (let j = 0; j < ring.length; j++) {
             newRing.push(new Point(ring[j][0], ring[j][1]));
         }
         this.geometry.push(newRing);
@@ -49,17 +49,17 @@ FeatureWrapper.prototype.loadGeometry = function() {
 FeatureWrapper.prototype.bbox = function() {
     if (!this.geometry) this.loadGeometry();
 
-    var rings = this.geometry,
+    let rings = this.geometry,
         x1 = Infinity,
         x2 = -Infinity,
         y1 = Infinity,
         y2 = -Infinity;
 
-    for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i];
+    for (let i = 0; i < rings.length; i++) {
+        const ring = rings[i];
 
-        for (var j = 0; j < ring.length; j++) {
-            var coord = ring[j];
+        for (let j = 0; j < ring.length; j++) {
+            const coord = ring[j];
 
             x1 = Math.min(x1, coord.x);
             x2 = Math.max(x2, coord.x);

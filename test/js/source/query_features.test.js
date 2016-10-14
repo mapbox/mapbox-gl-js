@@ -1,13 +1,13 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var QueryFeatures = require('../../../js/source/query_features.js');
-var SourceCache = require('../../../js/source/source_cache.js');
+const test = require('mapbox-gl-js-test').test;
+const QueryFeatures = require('../../../js/source/query_features.js');
+const SourceCache = require('../../../js/source/source_cache.js');
 
 test('QueryFeatures#rendered', function (t) {
     t.test('returns empty object if source returns no tiles', function (t) {
-        var mockSourceCache = { tilesIn: function () { return []; } };
-        var result = QueryFeatures.rendered(mockSourceCache);
+        const mockSourceCache = { tilesIn: function () { return []; } };
+        const result = QueryFeatures.rendered(mockSourceCache);
         t.deepEqual(result, []);
         t.end();
     });
@@ -17,13 +17,13 @@ test('QueryFeatures#rendered', function (t) {
 
 test('QueryFeatures#source', function (t) {
     t.test('returns empty result when source has no features', function (t) {
-        var sourceCache = new SourceCache('test', {
+        const sourceCache = new SourceCache('test', {
             type: 'geojson',
             data: { type: 'FeatureCollection', features: [] }
         }, {
             send: function (type, params, callback) { return callback(); }
         });
-        var result = QueryFeatures.source(sourceCache, {});
+        const result = QueryFeatures.source(sourceCache, {});
         t.deepEqual(result, []);
         t.end();
     });

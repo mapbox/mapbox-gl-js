@@ -1,7 +1,7 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Anchor = require('../../../js/symbol/anchor');
+const test = require('mapbox-gl-js-test').test;
+const Anchor = require('../../../js/symbol/anchor');
 
 test('Anchor', function(t) {
     t.test('#constructor', function(t) {
@@ -10,8 +10,8 @@ test('Anchor', function(t) {
         t.end();
     });
     t.test('#clone', function(t) {
-        var a = new Anchor(1, 2, 3, []);
-        var b = new Anchor(1, 2, 3, []);
+        const a = new Anchor(1, 2, 3, []);
+        const b = new Anchor(1, 2, 3, []);
         t.deepEqual(a.clone(), b);
         t.deepEqual(a.clone(), a);
         t.end();

@@ -1,9 +1,9 @@
 'use strict';
 
-var browser = require('./util/browser');
+const browser = require('./util/browser');
 
 // jshint -W079
-var mapboxgl = module.exports = {};
+const mapboxgl = module.exports = {};
 
 mapboxgl.version = require('../package.json').version;
 mapboxgl.workerCount = Math.max(browser.hardwareConcurrency - 1, 1);
@@ -29,11 +29,11 @@ mapboxgl.util = require('./util/util');
 
 mapboxgl.supported = require('./util/browser').supported;
 
-var ajax = require('./util/ajax');
+const ajax = require('./util/ajax');
 mapboxgl.util.getJSON = ajax.getJSON;
 mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 
-var config = require('./util/config');
+const config = require('./util/config');
 mapboxgl.config = config;
 
 Object.defineProperty(mapboxgl, 'accessToken', {

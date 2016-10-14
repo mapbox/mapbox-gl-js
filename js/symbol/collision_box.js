@@ -1,8 +1,8 @@
 'use strict';
 
-var StructArrayType = require('../util/struct_array');
-var util = require('../util/util');
-var Point = require('point-geometry');
+const StructArrayType = require('../util/struct_array');
+const util = require('../util/util');
+const Point = require('point-geometry');
 
 /**
  * A collision box represents an area of the map that that is covered by a
@@ -40,7 +40,7 @@ var Point = require('point-geometry');
  * @private
  */
 
-var CollisionBoxArray = module.exports = new StructArrayType({
+const CollisionBoxArray = module.exports = new StructArrayType({
     members: [
         // the box is centered around the anchor point
         { type: 'Int16', name: 'anchorPointX' },

@@ -1,9 +1,9 @@
 'use strict';
 
-var Worker = require('../source/worker');
+const Worker = require('../source/worker');
 
 module.exports = function () {
-    var parentListeners = [],
+    let parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),
         workerBus = new MessageBus(parentListeners, workerListeners);
@@ -27,14 +27,14 @@ function MessageBus(addListeners, postListeners) {
             }
         },
         removeEventListener: function(event, callback) {
-            var i = addListeners.indexOf(callback);
+            const i = addListeners.indexOf(callback);
             if (i >= 0) {
                 addListeners.splice(i, 1);
             }
         },
         postMessage: function(data) {
             setImmediate(function() {
-                for (var i = 0; i < postListeners.length; i++) {
+                for (let i = 0; i < postListeners.length; i++) {
                     postListeners[i]({data: data, target: this.target});
                 }
             }.bind(this));

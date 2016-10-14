@@ -1,13 +1,13 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var proxyquire = require('proxyquire');
-var Style = require('../../../js/style/style');
-var SourceCache = require('../../../js/source/source_cache');
-var StyleLayer = require('../../../js/style/style_layer');
-var util = require('../../../js/util/util');
-var Evented = require('../../../js/util/evented');
-var window = require('../../../js/util/window');
+const test = require('mapbox-gl-js-test').test;
+const proxyquire = require('proxyquire');
+const Style = require('../../../js/style/style');
+const SourceCache = require('../../../js/source/source_cache');
+const StyleLayer = require('../../../js/style/style_layer');
+const util = require('../../../js/util/util');
+const Evented = require('../../../js/util/evented');
+const window = require('../../../js/util/window');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -44,13 +44,13 @@ test('Style', function(t) {
     });
 
     t.test('can be constructed from JSON', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
         t.ok(style);
         t.end();
     });
 
     t.test('fires "dataloading"', function(t) {
-        var eventedParent = Object.create(Evented);
+        const eventedParent = Object.create(Evented);
         eventedParent.on('dataloading', t.end);
         new Style(createStyleJSON(), eventedParent);
     });
@@ -58,7 +58,7 @@ test('Style', function(t) {
     t.test('can be constructed from a URL', function(t) {
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
-        var style = new Style('/style.json');
+        const style = new Style('/style.json');
         style.on('style.load', function() {
             window.restore();
             t.end();
@@ -67,7 +67,7 @@ test('Style', function(t) {
     });
 
     t.test('creates sources', function(t) {
-        var style = new Style(util.extend(createStyleJSON(), {
+        const style = new Style(util.extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -82,7 +82,7 @@ test('Style', function(t) {
     });
 
     t.test('validates the style by default', function(t) {
-        var style = new Style(createStyleJSON({version: 'invalid'}));
+        const style = new Style(createStyleJSON({version: 'invalid'}));
 
         style.on('error', function(event) {
             t.ok(event.error);
@@ -92,7 +92,7 @@ test('Style', function(t) {
     });
 
     t.test('skips validation for mapbox:// styles', function(t) {
-        var Style = proxyquire('../../../js/style/style', {
+        const Style = proxyquire('../../../js/style/style', {
             '../util/mapbox': {
                 isMapboxURL: function(url) {
                     t.equal(url, 'mapbox://styles/test/test');
@@ -121,7 +121,7 @@ test('Style', function(t) {
     });
 
     t.test('emits an error on non-existant vector source layer', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             sources: {
                 '-source-id-': { type: "vector", tiles: [] }
             },
@@ -136,14 +136,14 @@ test('Style', function(t) {
         style.on('style.load', function() {
             style.removeSource('-source-id-');
 
-            var source = createSource();
+            const source = createSource();
             source['vector_layers'] = [{ id: 'green' }];
             style.addSource('-source-id-', source);
             style.update();
         });
 
         style.on('error', function(event) {
-            var err = event.error;
+            const err = event.error;
 
             t.ok(err);
             t.ok(err.toString().indexOf('-source-layer-') !== -1);
@@ -155,7 +155,7 @@ test('Style', function(t) {
     });
 
     t.test('sets up layer event forwarding', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             layers: [{
                 id: 'background',
                 type: 'background'
@@ -179,12 +179,12 @@ test('Style', function(t) {
 test('Style#_remove', function(t) {
 
     t.test('clears tiles', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             sources: {'source-id': createGeoJSONSource()}
         }));
 
         style.on('style.load', function () {
-            var sourceCache = style.sourceCaches['source-id'];
+            const sourceCache = style.sourceCaches['source-id'];
             t.spy(sourceCache, 'clearTiles');
             style._remove();
             t.ok(sourceCache.clearTiles.calledOnce);
@@ -197,7 +197,7 @@ test('Style#_remove', function(t) {
 });
 
 test('Style#_updateWorkerLayers', function(t) {
-    var style = new Style({
+    const style = new Style({
         'version': 8,
         'sources': {
             'source': {
@@ -229,7 +229,7 @@ test('Style#_updateWorkerLayers', function(t) {
 });
 
 test('Style#_updateWorkerLayers with specific ids', function(t) {
-    var style = new Style({
+    const style = new Style({
         'version': 8,
         'sources': {
             'source': {
@@ -258,7 +258,7 @@ test('Style#_updateWorkerLayers with specific ids', function(t) {
 
 test('Style#_resolve', function(t) {
     t.test('creates StyleLayers', function(t) {
-        var style = new Style({
+        const style = new Style({
             "version": 8,
             "sources": {
                 "foo": {
@@ -282,7 +282,7 @@ test('Style#_resolve', function(t) {
     });
 
     t.test('handles ref layer preceding referent', function(t) {
-        var style = new Style({
+        const style = new Style({
             "version": 8,
             "sources": {
                 "foo": {
@@ -304,7 +304,7 @@ test('Style#_resolve', function(t) {
         style.on('error', function(event) { t.error(event.error); });
 
         style.on('style.load', function() {
-            var ref = style.getLayer('ref'),
+            let ref = style.getLayer('ref'),
                 referent = style.getLayer('referent');
             t.equal(ref.type, 'fill');
             t.deepEqual(ref.layout, referent.layout);
@@ -317,7 +317,7 @@ test('Style#_resolve', function(t) {
 
 test('Style#addSource', function(t) {
     t.test('returns self', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', function () {
             t.equal(style.addSource('source-id', source), style);
@@ -326,7 +326,7 @@ test('Style#addSource', function(t) {
     });
 
     t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         t.throws(function () {
             style.addSource('source-id', source);
@@ -337,7 +337,7 @@ test('Style#addSource', function(t) {
     });
 
     t.test('throw if missing source type', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
 
         delete source.type;
@@ -351,7 +351,7 @@ test('Style#addSource', function(t) {
     });
 
     t.test('fires "data" event', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         style.once('data', t.end);
         style.on('style.load', function () {
@@ -361,7 +361,7 @@ test('Style#addSource', function(t) {
     });
 
     t.test('throws on duplicates', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', function () {
             style.addSource('source-id', source);
@@ -373,7 +373,7 @@ test('Style#addSource', function(t) {
     });
 
     t.test('emits on invalid source', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
         style.on('style.load', function() {
             style.on('error', function() {
                 t.notOk(style.sourceCaches['source-id']);
@@ -390,13 +390,13 @@ test('Style#addSource', function(t) {
     });
 
     t.test('sets up source event forwarding', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             layers: [{
                 id: 'background',
                 type: 'background'
             }]
         }));
-        var source = createSource();
+        const source = createSource();
 
         style.on('style.load', function () {
             t.plan(4);
@@ -416,7 +416,7 @@ test('Style#addSource', function(t) {
 
 test('Style#removeSource', function(t) {
     t.test('returns self', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', function () {
             style.addSource('source-id', source);
@@ -426,7 +426,7 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             "sources": {
                 "source-id": {
                     "type": "vector",
@@ -443,7 +443,7 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('fires "data" event', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
         style.once('data', t.end);
         style.on('style.load', function () {
@@ -454,12 +454,12 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('clears tiles', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             sources: {'source-id': createGeoJSONSource()}
         }));
 
         style.on('style.load', function () {
-            var sourceCache = style.sourceCaches['source-id'];
+            const sourceCache = style.sourceCaches['source-id'];
             t.spy(sourceCache, 'clearTiles');
             style.removeSource('source-id');
             t.ok(sourceCache.clearTiles.calledOnce);
@@ -468,9 +468,9 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('emits errors for an invalid style', function(t) {
-        var stylesheet = createStyleJSON();
+        const stylesheet = createStyleJSON();
         stylesheet.version =  'INVALID';
-        var style = new Style(stylesheet);
+        const style = new Style(stylesheet);
         style.on('error', function (e) {
             t.deepEqual(e.error.message, 'version: expected one of [8], INVALID found');
             t.end();
@@ -478,7 +478,7 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('throws on non-existence', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
         style.on('style.load', function () {
             t.throws(function() {
                 style.removeSource('source-id');
@@ -488,7 +488,7 @@ test('Style#removeSource', function(t) {
     });
 
     t.test('tears down source event forwarding', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             source = createSource();
 
         style.on('style.load', function () {
@@ -514,7 +514,7 @@ test('Style#removeSource', function(t) {
 
 test('Style#addLayer', function(t) {
     t.test('returns self', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('style.load', function() {
@@ -524,7 +524,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
         t.throws(function () {
             style.addLayer(layer);
@@ -535,7 +535,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('sets up layer event forwarding', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
 
         style.on('error', function(e) {
             t.deepEqual(e.layer, {id: 'background'});
@@ -553,7 +553,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('throws on non-existant vector source layer', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             sources: {
                 // At least one source must be added to trigger the load event
                 dummy: { type: "vector", tiles: [] }
@@ -561,7 +561,7 @@ test('Style#addLayer', function(t) {
         }));
 
         style.on('style.load', function() {
-            var source = createSource();
+            const source = createSource();
             source['vector_layers'] = [{id: 'green'}];
             style.addSource('-source-id-', source);
             style.addLayer({
@@ -573,7 +573,7 @@ test('Style#addLayer', function(t) {
         });
 
         style.on('error', function(event) {
-            var err = event.error;
+            const err = event.error;
 
             t.ok(err);
             t.ok(err.toString().indexOf('-source-layer-') !== -1);
@@ -585,7 +585,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('emits error on invalid layer', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
         style.on('style.load', function() {
             style.on('error', function() {
                 t.notOk(style.getLayer('background'));
@@ -602,7 +602,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('reloads source', function(t) {
-        var style = new Style(util.extend(createStyleJSON(), {
+        const style = new Style(util.extend(createStyleJSON(), {
             "sources": {
                 "mapbox": {
                     "type": "vector",
@@ -610,7 +610,7 @@ test('Style#addLayer', function(t) {
                 }
             }
         }));
-        var layer = {
+        const layer = {
             "id": "symbol",
             "type": "symbol",
             "source": "mapbox",
@@ -627,7 +627,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('fires "data" event', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.once('data', t.end);
@@ -639,7 +639,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('emits error on duplicates', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('error', function(e) {
@@ -656,7 +656,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('adds to the end by default', function(t) {
-        var style = new Style(createStyleJSON({
+        let style = new Style(createStyleJSON({
                 layers: [{
                     id: 'a',
                     type: 'background'
@@ -675,7 +675,7 @@ test('Style#addLayer', function(t) {
     });
 
     t.test('adds before the given layer', function(t) {
-        var style = new Style(createStyleJSON({
+        let style = new Style(createStyleJSON({
                 layers: [{
                     id: 'a',
                     type: 'background'
@@ -698,7 +698,7 @@ test('Style#addLayer', function(t) {
 
 test('Style#removeLayer', function(t) {
     t.test('returns self', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('style.load', function() {
@@ -709,7 +709,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('throw before loaded', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             "layers": [{id: 'background', type: 'background'}]
         }));
         t.throws(function () {
@@ -721,7 +721,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('fires "data" event', function(t) {
-        var style = new Style(createStyleJSON()),
+        let style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.once('data', t.end);
@@ -734,7 +734,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('tears down layer event forwarding', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             layers: [{
                 id: 'background',
                 type: 'background'
@@ -746,7 +746,7 @@ test('Style#removeLayer', function(t) {
         });
 
         style.on('style.load', function() {
-            var layer = style._layers.background;
+            const layer = style._layers.background;
             style.removeLayer('background');
 
             // Bind a listener to prevent fallback Evented error reporting.
@@ -758,7 +758,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('throws on non-existence', function(t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
 
         style.on('style.load', function() {
             t.throws(function () {
@@ -769,7 +769,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('removes from the order', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             layers: [{
                 id: 'a',
                 type: 'background'
@@ -787,7 +787,7 @@ test('Style#removeLayer', function(t) {
     });
 
     t.test('removes referring layers', function(t) {
-        var style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
             layers: [{
                 id: 'a',
                 type: 'background'
@@ -823,7 +823,7 @@ test('Style#setFilter', function(t) {
     }
 
     t.test('sets filter', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
             style.dispatcher.broadcast = function(key, value) {
@@ -840,13 +840,13 @@ test('Style#setFilter', function(t) {
     });
 
     t.test('gets a clone of the filter', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
-            var filter1 = ['==', 'id', 1];
+            const filter1 = ['==', 'id', 1];
             style.setFilter('symbol', filter1);
-            var filter2 = style.getFilter('symbol');
-            var filter3 = style.getLayer('symbol').filter;
+            const filter2 = style.getFilter('symbol');
+            const filter3 = style.getLayer('symbol').filter;
 
             t.notEqual(filter1, filter2);
             t.notEqual(filter1, filter3);
@@ -857,10 +857,10 @@ test('Style#setFilter', function(t) {
     });
 
     t.test('sets again mutated filter', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
-            var filter = ['==', 'id', 1];
+            const filter = ['==', 'id', 1];
             style.setFilter('symbol', filter);
             style.update({}, {}); // flush pending operations
 
@@ -877,7 +877,7 @@ test('Style#setFilter', function(t) {
     });
 
     t.test('sets filter on parent', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
             style.dispatcher.broadcast = function(key, value) {
@@ -893,7 +893,7 @@ test('Style#setFilter', function(t) {
     });
 
     t.test('throws if style is not loaded', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         t.throws(function () {
             style.setFilter('symbol', ['==', 'id', 1]);
@@ -903,7 +903,7 @@ test('Style#setFilter', function(t) {
     });
 
     t.test('emits if invalid', function(t) {
-        var style = createStyle();
+        const style = createStyle();
         style.on('style.load', function() {
             style.on('error', function() {
                 t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
@@ -935,7 +935,7 @@ test('Style#setLayerZoomRange', function(t) {
     }
 
     t.test('sets zoom range', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
             style.dispatcher.broadcast = function(key, value) {
@@ -951,7 +951,7 @@ test('Style#setLayerZoomRange', function(t) {
     });
 
     t.test('sets zoom range on parent layer', function(t) {
-        var style = createStyle();
+        const style = createStyle();
 
         style.on('style.load', function() {
             style.dispatcher.broadcast = function(key, value) {
@@ -967,7 +967,7 @@ test('Style#setLayerZoomRange', function(t) {
     });
 
     t.test('throw before loaded', function(t) {
-        var style = createStyle();
+        const style = createStyle();
         t.throws(function () {
             style.setLayerZoomRange('symbol', 5, 12);
         }, Error, /load/i);
@@ -980,15 +980,15 @@ test('Style#setLayerZoomRange', function(t) {
 });
 
 test('Style#queryRenderedFeatures', function(t) {
-    var style;
-    var Style = proxyquire('../../../js/style/style', {
+    let style;
+    const Style = proxyquire('../../../js/style/style', {
         '../source/query_features': {
             rendered: function(source, layers, queryGeom, params) {
                 if (source.id !== 'mapbox') {
                     return [];
                 }
 
-                var features = {
+                const features = {
                     'land': [{
                         type: 'Feature',
                         layer: style._layers.land,
@@ -1012,7 +1012,7 @@ test('Style#queryRenderedFeatures', function(t) {
                 };
 
                 if (params.layers) {
-                    for (var l in features) {
+                    for (const l in features) {
                         if (params.layers.indexOf(l) < 0) {
                             delete features[l];
                         }
@@ -1078,34 +1078,34 @@ test('Style#queryRenderedFeatures', function(t) {
         style._recalculate(0);
 
         t.test('returns feature type', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             t.equal(results[0].geometry.type, 'Line');
             t.end();
         });
 
         t.test('filters by `layers` option', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
             t.equal(results.length, 2);
             t.end();
         });
 
         t.test('includes layout properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-            var layout = results[0].layer.layout;
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const layout = results[0].layer.layout;
             t.deepEqual(layout['line-cap'], 'round');
             t.end();
         });
 
         t.test('includes paint properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
             t.end();
         });
 
         t.test('ref layer inherits properties', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-            var layer = results[1].layer;
-            var refLayer = results[0].layer;
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const layer = results[1].layer;
+            const refLayer = results[0].layer;
             t.deepEqual(layer.layout, refLayer.layout);
             t.deepEqual(layer.type, refLayer.type);
             t.deepEqual(layer.id, refLayer.ref);
@@ -1114,16 +1114,16 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('includes metadata', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
 
-            var layer = results[1].layer;
+            const layer = results[1].layer;
             t.equal(layer.metadata.something, 'else');
 
             t.end();
         });
 
         t.test('include multiple layers', function(t) {
-            var results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
             t.equals(results.length, 3);
             t.end();
         });
@@ -1135,7 +1135,7 @@ test('Style#queryRenderedFeatures', function(t) {
         });
 
         t.test('fires an error if layer included in params does not exist on the style', function(t) {
-            var errors = 0;
+            let errors = 0;
             t.stub(style, 'fire', function(type, data) {
                 if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
             });
@@ -1149,7 +1149,7 @@ test('Style#queryRenderedFeatures', function(t) {
 });
 
 test('Style defers expensive methods', function(t) {
-    var style = new Style(createStyleJSON({
+    const style = new Style(createStyleJSON({
         "sources": {
             "streets": createGeoJSONSource(),
             "terrain": createGeoJSONSource()
@@ -1199,8 +1199,8 @@ test('Style#query*Features', function(t) {
     // These tests only cover filter validation. Most tests for these methods
     // live in mapbox-gl-test-suite.
 
-    var style;
-    var onError;
+    let style;
+    let onError;
 
     t.beforeEach(function (callback) {
         style = new Style({
@@ -1242,8 +1242,8 @@ test('Style#query*Features', function(t) {
 });
 
 test('Style#addSourceType', function (t) {
-    var _types = { 'existing': function () {} };
-    var Style = proxyquire('../../../js/style/style', {
+    const _types = { 'existing': function () {} };
+    const Style = proxyquire('../../../js/style/style', {
         '../source/source': {
             getType: function (name) { return _types[name]; },
             setType: function (name, create) { _types[name] = create; }
@@ -1251,8 +1251,8 @@ test('Style#addSourceType', function (t) {
     });
 
     t.test('adds factory function', function (t) {
-        var style = new Style(createStyleJSON());
-        var SourceType = function () {};
+        const style = new Style(createStyleJSON());
+        const SourceType = function () {};
 
         // expect no call to load worker source
         style.dispatcher.broadcast = function (type) {
@@ -1268,8 +1268,8 @@ test('Style#addSourceType', function (t) {
     });
 
     t.test('triggers workers to load worker source code', function (t) {
-        var style = new Style(createStyleJSON());
-        var SourceType = function () {};
+        const style = new Style(createStyleJSON());
+        const SourceType = function () {};
         SourceType.workerSourceURL = 'worker-source.js';
 
         style.dispatcher.broadcast = function (type, params) {
@@ -1285,7 +1285,7 @@ test('Style#addSourceType', function (t) {
     });
 
     t.test('refuses to add new type over existing name', function (t) {
-        var style = new Style(createStyleJSON());
+        const style = new Style(createStyleJSON());
         style.addSourceType('existing', function () {}, function (err) {
             t.ok(err);
             t.end();

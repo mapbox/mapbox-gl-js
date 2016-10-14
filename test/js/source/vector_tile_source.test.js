@@ -1,13 +1,13 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var VectorTileSource = require('../../../js/source/vector_tile_source');
-var TileCoord = require('../../../js/source/tile_coord');
-var window = require('../../../js/util/window');
-var Evented = require('../../../js/util/evented');
+const test = require('mapbox-gl-js-test').test;
+const VectorTileSource = require('../../../js/source/vector_tile_source');
+const TileCoord = require('../../../js/source/tile_coord');
+const window = require('../../../js/util/window');
+const Evented = require('../../../js/util/evented');
 
 function createSource(options) {
-    var source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
 
     source.on('error', function(e) {
         throw e.error;
@@ -32,7 +32,7 @@ test('VectorTileSource', function(t) {
     });
 
     t.test('can be constructed from TileJSON', function(t) {
-        var source = createSource({
+        const source = createSource({
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
@@ -51,7 +51,7 @@ test('VectorTileSource', function(t) {
     t.test('can be constructed from a TileJSON URL', function(t) {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
 
-        var source = createSource({ url: "/source.json" });
+        const source = createSource({ url: "/source.json" });
 
         source.on('source.load', function() {
             t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
@@ -66,21 +66,21 @@ test('VectorTileSource', function(t) {
 
     t.test('fires "data" event', function(t) {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
-        var source = createSource({ url: "/source.json" });
+        const source = createSource({ url: "/source.json" });
         source.on('data', t.end);
         window.server.respond();
     });
 
     t.test('fires "dataloading" event', function(t) {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
-        var evented = Object.create(Evented);
+        const evented = Object.create(Evented);
         evented.on('dataloading', t.end);
         createSource({ url: "/source.json", eventedParent: evented });
         window.server.respond();
     });
 
     t.test('serialize URL', function(t) {
-        var source = createSource({
+        const source = createSource({
             url: "http://localhost:2900/source.json"
         });
         t.deepEqual(source.serialize(), {
@@ -91,7 +91,7 @@ test('VectorTileSource', function(t) {
     });
 
     t.test('serialize TileJSON', function(t) {
-        var source = createSource({
+        const source = createSource({
             minzoom: 1,
             maxzoom: 10,
             attribution: "Mapbox",
@@ -109,7 +109,7 @@ test('VectorTileSource', function(t) {
 
     function testScheme(scheme, expectedURL) {
         t.test('scheme "' + scheme + '"', function(t) {
-            var source = createSource({
+            const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,
                 attribution: "Mapbox",
@@ -133,10 +133,10 @@ test('VectorTileSource', function(t) {
     testScheme('tms', 'http://example.com/10/5/1018.png');
 
     t.test('reloads a loading tile properly', function (t) {
-        var source = createSource({
+        const source = createSource({
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
-        var events = [];
+        const events = [];
         source.dispatcher.send = function(type, params, cb) {
             events.push(type);
             setTimeout(cb, 0);
@@ -144,7 +144,7 @@ test('VectorTileSource', function(t) {
         };
 
         source.on('source.load', function () {
-            var tile = {
+            const tile = {
                 coord: new TileCoord(10, 5, 5, 0),
                 state: 'loading',
                 loadVectorData: function () {

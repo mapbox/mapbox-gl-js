@@ -1,17 +1,17 @@
 'use strict';
 
-var browser = require('../util/browser');
-var mat4 = require('gl-matrix').mat4;
-var FrameHistory = require('./frame_history');
-var SourceCache = require('../source/source_cache');
-var EXTENT = require('../data/bucket').EXTENT;
-var pixelsToTileUnits = require('../source/pixels_to_tile_units');
-var util = require('../util/util');
-var StructArrayType = require('../util/struct_array');
-var Buffer = require('../data/buffer');
-var VertexArrayObject = require('./vertex_array_object');
-var RasterBoundsArray = require('./draw_raster').RasterBoundsArray;
-var createUniformPragmas = require('./create_uniform_pragmas');
+const browser = require('../util/browser');
+const mat4 = require('gl-matrix').mat4;
+const FrameHistory = require('./frame_history');
+const SourceCache = require('../source/source_cache');
+const EXTENT = require('../data/bucket').EXTENT;
+const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const util = require('../util/util');
+const StructArrayType = require('../util/struct_array');
+const Buffer = require('../data/buffer');
+const VertexArrayObject = require('./vertex_array_object');
+const RasterBoundsArray = require('./draw_raster').RasterBoundsArray;
+const createUniformPragmas = require('./create_uniform_pragmas');
 
 module.exports = Painter;
 
@@ -47,7 +47,7 @@ util.extend(Painter.prototype, require('./painter/use_program'));
  * for a new width and height value.
  */
 Painter.prototype.resize = function(width, height) {
-    var gl = this.gl;
+    const gl = this.gl;
 
     this.width = width * browser.devicePixelRatio;
     this.height = height * browser.devicePixelRatio;
@@ -56,7 +56,7 @@ Painter.prototype.resize = function(width, height) {
 };
 
 Painter.prototype.setup = function() {
-    var gl = this.gl;
+    const gl = this.gl;
 
     gl.verbose = true;
 
@@ -73,11 +73,11 @@ Painter.prototype.setup = function() {
     this._depthMask = false;
     gl.depthMask(false);
 
-    var PosArray = this.PosArray = new StructArrayType({
+    const PosArray = this.PosArray = new StructArrayType({
         members: [{ name: 'a_pos', type: 'Int16', components: 2 }]
     });
 
-    var tileExtentArray = new PosArray();
+    const tileExtentArray = new PosArray();
     tileExtentArray.emplaceBack(0, 0);
     tileExtentArray.emplaceBack(EXTENT, 0);
     tileExtentArray.emplaceBack(0, EXTENT);
@@ -86,7 +86,7 @@ Painter.prototype.setup = function() {
     this.tileExtentVAO = new VertexArrayObject();
     this.tileExtentPatternVAO = new VertexArrayObject();
 
-    var debugArray = new PosArray();
+    const debugArray = new PosArray();
     debugArray.emplaceBack(0, 0);
     debugArray.emplaceBack(EXTENT, 0);
     debugArray.emplaceBack(EXTENT, EXTENT);
@@ -95,7 +95,7 @@ Painter.prototype.setup = function() {
     this.debugBuffer = new Buffer(debugArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
     this.debugVAO = new VertexArrayObject();
 
-    var rasterBoundsArray = new RasterBoundsArray();
+    const rasterBoundsArray = new RasterBoundsArray();
     rasterBoundsArray.emplaceBack(0, 0, 0, 0);
     rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
     rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
@@ -108,7 +108,7 @@ Painter.prototype.setup = function() {
  * Reset the color buffers of the drawing canvas.
  */
 Painter.prototype.clearColor = function() {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 };
@@ -118,21 +118,21 @@ Painter.prototype.clearColor = function() {
  * new tiles at the same location, while retaining previously drawn pixels.
  */
 Painter.prototype.clearStencil = function() {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.clearStencil(0x0);
     gl.stencilMask(0xFF);
     gl.clear(gl.STENCIL_BUFFER_BIT);
 };
 
 Painter.prototype.clearDepth = function() {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.clearDepth(1);
     this.depthMask(true);
     gl.clear(gl.DEPTH_BUFFER_BIT);
 };
 
 Painter.prototype._renderTileClippingMasks = function(coords) {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.colorMask(false, false, false, false);
     this.depthMask(false);
     gl.disable(gl.DEPTH_TEST);
@@ -143,19 +143,19 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
     // Tests will always pass, and ref value will be written to stencil buffer.
     gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-    var idNext = 1;
+    let idNext = 1;
     this._tileClippingMaskIDs = {};
-    for (var i = 0; i < coords.length; i++) {
-        var coord = coords[i];
-        var id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
+    for (let i = 0; i < coords.length; i++) {
+        const coord = coords[i];
+        const id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
 
         gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-        var pragmas = createUniformPragmas([
+        const pragmas = createUniformPragmas([
             {name: 'u_color', components: 4},
             {name: 'u_opacity', components: 1}
         ]);
-        var program = this.useProgram('fill', [], pragmas, pragmas);
+        const program = this.useProgram('fill', [], pragmas, pragmas);
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
         // Draw the clipping mask
@@ -170,18 +170,18 @@ Painter.prototype._renderTileClippingMasks = function(coords) {
 };
 
 Painter.prototype.enableTileClippingMask = function(coord) {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
 };
 
 // Overridden by headless tests.
 Painter.prototype.prepareBuffers = function() {};
 Painter.prototype.bindDefaultFramebuffer = function() {
-    var gl = this.gl;
+    const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
 
-var draw = {
+const draw = {
     symbol: require('./draw_symbol'),
     circle: require('./draw_circle'),
     line: require('./draw_line'),
@@ -218,16 +218,16 @@ Painter.prototype.render = function(style, options) {
 };
 
 Painter.prototype.renderPass = function(options) {
-    var groups = this.style._groups;
-    var isOpaquePass = options.isOpaquePass;
+    const groups = this.style._groups;
+    const isOpaquePass = options.isOpaquePass;
     this.currentLayer = isOpaquePass ? this.style._order.length : -1;
 
-    for (var i = 0; i < groups.length; i++) {
-        var group = groups[isOpaquePass ? groups.length - 1 - i : i];
-        var sourceCache = this.style.sourceCaches[group.source];
+    for (let i = 0; i < groups.length; i++) {
+        const group = groups[isOpaquePass ? groups.length - 1 - i : i];
+        const sourceCache = this.style.sourceCaches[group.source];
 
-        var j;
-        var coords = [];
+        let j;
+        let coords = [];
         if (sourceCache) {
             coords = sourceCache.getVisibleCoordinates();
             for (j = 0; j < coords.length; j++) {
@@ -252,7 +252,7 @@ Painter.prototype.renderPass = function(options) {
         }
 
         for (j = 0; j < group.length; j++) {
-            var layer = group[isOpaquePass ? group.length - 1 - j : j];
+            const layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
             this.renderLayer(this, sourceCache, layer, coords);
         }
@@ -275,7 +275,7 @@ Painter.prototype.renderLayer = function(painter, sourceCache, layer, coords) {
     if (layer.type !== 'background' && !coords.length) return;
     this.id = layer.id;
 
-    var type = layer.type;
+    let type = layer.type;
     if (type === 'fill' &&
         (!layer.isPaintValueFeatureConstant('fill-extrude-height') ||
         !layer.isPaintValueZoomConstant('fill-extrude-height') ||
@@ -287,8 +287,8 @@ Painter.prototype.renderLayer = function(painter, sourceCache, layer, coords) {
 };
 
 Painter.prototype.setDepthSublayer = function(n) {
-    var farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
-    var nearDepth = farDepth - 1 + this.depthRange;
+    const farDepth = 1 - ((1 + this.currentLayer) * this.numSublayers + n) * this.depthEpsilon;
+    const nearDepth = farDepth - 1 + this.depthRange;
     this.gl.depthRange(nearDepth, farDepth);
 };
 
@@ -296,27 +296,27 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     if (!translate[0] && !translate[1]) return matrix;
 
     if (anchor === 'viewport') {
-        var sinA = Math.sin(-this.transform.angle);
-        var cosA = Math.cos(-this.transform.angle);
+        const sinA = Math.sin(-this.transform.angle);
+        const cosA = Math.cos(-this.transform.angle);
         translate = [
             translate[0] * cosA - translate[1] * sinA,
             translate[0] * sinA + translate[1] * cosA
         ];
     }
 
-    var translation = [
+    const translation = [
         pixelsToTileUnits(tile, translate[0], this.transform.zoom),
         pixelsToTileUnits(tile, translate[1], this.transform.zoom),
         0
     ];
 
-    var translatedMatrix = new Float32Array(16);
+    const translatedMatrix = new Float32Array(16);
     mat4.translate(translatedMatrix, matrix, translation);
     return translatedMatrix;
 };
 
 Painter.prototype.saveTileTexture = function(texture) {
-    var textures = this.reusableTextures[texture.size];
+    const textures = this.reusableTextures[texture.size];
     if (!textures) {
         this.reusableTextures[texture.size] = [texture];
     } else {
@@ -330,9 +330,9 @@ Painter.prototype.saveViewportTexture = function(texture) {
 };
 
 Painter.prototype.getTileTexture = function(width, height) {
-    var widthTextures = this.reusableTextures[width];
+    const widthTextures = this.reusableTextures[width];
     if (widthTextures) {
-        var textures = widthTextures[height || width];
+        const textures = widthTextures[height || width];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 };
@@ -340,7 +340,7 @@ Painter.prototype.getTileTexture = function(width, height) {
 Painter.prototype.getViewportTexture = function(width, height) {
     if (!this.reusableTextures.viewport) return;
 
-    var texture = this.reusableTextures.viewport.texture;
+    const texture = this.reusableTextures.viewport.texture;
 
     if (texture.width === width && texture.height === height) {
         return texture;
@@ -359,11 +359,11 @@ Painter.prototype.showOverdrawInspector = function(enabled) {
     if (!enabled && !this._showOverdrawInspector) return;
     this._showOverdrawInspector = enabled;
 
-    var gl = this.gl;
+    const gl = this.gl;
     if (enabled) {
         gl.blendFunc(gl.CONSTANT_COLOR, gl.ONE);
-        var numOverdrawSteps = 8;
-        var a = 1 / numOverdrawSteps;
+        const numOverdrawSteps = 8;
+        const a = 1 / numOverdrawSteps;
         gl.blendColor(a, a, a, 0);
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);

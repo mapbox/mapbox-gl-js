@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('../util/util');
-var ajax = require('../util/ajax');
-var ImageSource = require('./image_source');
+const util = require('../util/util');
+const ajax = require('../util/ajax');
+const ImageSource = require('./image_source');
 
 module.exports = VideoSource;
 
@@ -51,7 +51,7 @@ function VideoSource(id, options, dispatcher, eventedParent) {
         this.video = video;
         this.video.loop = true;
 
-        var loopID;
+        let loopID;
 
         // start repainting when video starts playing
         this.video.addEventListener('playing', function() {

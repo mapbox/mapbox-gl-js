@@ -2,7 +2,7 @@
 
 module.exports = LngLat;
 
-var wrap = require('../util/util').wrap;
+const wrap = require('../util/util').wrap;
 
 /**
  * A `LngLat` object represents a given longitude and latitude coordinate, measured in degrees.

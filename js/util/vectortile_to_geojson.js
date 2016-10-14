@@ -33,8 +33,8 @@ Feature.prototype = {
     },
 
     toJSON: function() {
-        var json = {};
-        for (var i in this) {
+        const json = {};
+        for (const i in this) {
             if (i === '_geometry' || i === '_vectorTileFeature' || i === 'toJSON') continue;
             json[i] = this[i];
         }

@@ -8,7 +8,7 @@ function Glyphs(pbf, end) {
 
 function readFontstacks(tag, stacks, pbf) {
     if (tag === 1) {
-        var fontstack = pbf.readMessage(readFontstack, {glyphs: {}});
+        const fontstack = pbf.readMessage(readFontstack, {glyphs: {}});
         stacks.push(fontstack);
     }
 }
@@ -17,7 +17,7 @@ function readFontstack(tag, fontstack, pbf) {
     if (tag === 1) fontstack.name = pbf.readString();
     else if (tag === 2) fontstack.range = pbf.readString();
     else if (tag === 3) {
-        var glyph = pbf.readMessage(readGlyph, {});
+        const glyph = pbf.readMessage(readGlyph, {});
         fontstack.glyphs[glyph.id] = glyph;
     }
 }

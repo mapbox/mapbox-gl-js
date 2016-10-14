@@ -1,10 +1,10 @@
 'use strict';
 
-var MapboxGLFunction = require('mapbox-gl-function');
+const MapboxGLFunction = require('mapbox-gl-function');
 
 exports.interpolated = function(parameters, specDefault) {
-    var inner = MapboxGLFunction.interpolated(parameters, specDefault);
-    var outer = function(globalProperties, featureProperties) {
+    const inner = MapboxGLFunction.interpolated(parameters, specDefault);
+    const outer = function(globalProperties, featureProperties) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };
     outer.isFeatureConstant = inner.isFeatureConstant;
@@ -13,8 +13,8 @@ exports.interpolated = function(parameters, specDefault) {
 };
 
 exports['piecewise-constant'] = function(parameters, specDefault) {
-    var inner = MapboxGLFunction['piecewise-constant'](parameters, specDefault);
-    var outer = function(globalProperties, featureProperties) {
+    const inner = MapboxGLFunction['piecewise-constant'](parameters, specDefault);
+    const outer = function(globalProperties, featureProperties) {
         return inner(globalProperties && globalProperties.zoom, featureProperties || {});
     };
     outer.isFeatureConstant = inner.isFeatureConstant;

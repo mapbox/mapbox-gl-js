@@ -1,15 +1,15 @@
 'use strict';
 
-var util = require('../util/util');
-var TileCoord = require('./tile_coord');
-var LngLat = require('../geo/lng_lat');
-var Point = require('point-geometry');
-var Evented = require('../util/evented');
-var ajax = require('../util/ajax');
-var EXTENT = require('../data/bucket').EXTENT;
-var RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
-var Buffer = require('../data/buffer');
-var VertexArrayObject = require('../render/vertex_array_object');
+const util = require('../util/util');
+const TileCoord = require('./tile_coord');
+const LngLat = require('../geo/lng_lat');
+const Point = require('point-geometry');
+const Evented = require('../util/evented');
+const ajax = require('../util/ajax');
+const EXTENT = require('../data/bucket').EXTENT;
+const RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
+const Buffer = require('../data/buffer');
+const VertexArrayObject = require('../render/vertex_array_object');
 
 module.exports = ImageSource;
 
@@ -92,19 +92,19 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         // and create a buffer with the corner coordinates. These coordinates
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
-        var map = this.map;
-        var cornerZ0Coords = coordinates.map(function(coord) {
+        const map = this.map;
+        const cornerZ0Coords = coordinates.map(function(coord) {
             return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
-        var centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
+        const centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
         centerCoord.column = Math.round(centerCoord.column);
         centerCoord.row = Math.round(centerCoord.row);
 
         this.minzoom = this.maxzoom = centerCoord.zoom;
         this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
         this._tileCoords = cornerZ0Coords.map(function(coord) {
-            var zoomedCoord = coord.zoomTo(centerCoord.zoom);
+            const zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
                 Math.round((zoomedCoord.column - centerCoord.column) * EXTENT),
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
@@ -117,8 +117,8 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     _setTile: function (tile) {
         this._prepared = false;
         this.tile = tile;
-        var maxInt16 = 32767;
-        var array = new RasterBoundsArray();
+        const maxInt16 = 32767;
+        const array = new RasterBoundsArray();
         array.emplaceBack(this._tileCoords[0].x, this._tileCoords[0].y, 0, 0);
         array.emplaceBack(this._tileCoords[1].x, this._tileCoords[1].y, maxInt16, 0);
         array.emplaceBack(this._tileCoords[3].x, this._tileCoords[3].y, 0, maxInt16);

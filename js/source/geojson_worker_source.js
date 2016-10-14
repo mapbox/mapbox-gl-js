@@ -1,14 +1,14 @@
 'use strict';
 
-var util = require('../util/util');
-var ajax = require('../util/ajax');
-var rewind = require('geojson-rewind');
-var GeoJSONWrapper = require('./geojson_wrapper');
-var vtpbf = require('vt-pbf');
-var supercluster = require('supercluster');
-var geojsonvt = require('geojson-vt');
+const util = require('../util/util');
+const ajax = require('../util/ajax');
+const rewind = require('geojson-rewind');
+const GeoJSONWrapper = require('./geojson_wrapper');
+const vtpbf = require('vt-pbf');
+const supercluster = require('supercluster');
+const geojsonvt = require('geojson-vt');
 
-var VectorTileWorkerSource = require('./vector_tile_worker_source');
+const VectorTileWorkerSource = require('./vector_tile_worker_source');
 
 module.exports = GeoJSONWorkerSource;
 
@@ -36,21 +36,21 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
      * See {@link VectorTileWorkerSource#loadTile}.
      */
     loadVectorData: function (params, callback) {
-        var source = params.source,
+        let source = params.source,
             coord = params.coord;
 
         if (!this._geoJSONIndexes[source]) {
             return callback(null, null);  // we couldn't load the file
         }
 
-        var geoJSONTile = this._geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
+        const geoJSONTile = this._geoJSONIndexes[source].getTile(Math.min(coord.z, params.maxZoom), coord.x, coord.y);
         if (!geoJSONTile) {
             return callback(null, null); // nothing in the given tile
         }
 
-        var geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
+        const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
         geojsonWrapper.name = '_geojsonTileLayer';
-        var pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
+        let pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
         if (pbf.byteOffset !== 0 || pbf.byteLength !== pbf.buffer.byteLength) {
             // Compatibility with node Buffer (https://github.com/mapbox/pbf/issues/35)
             pbf = new Uint8Array(pbf);
@@ -72,7 +72,7 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
      * @param {Function} callback
      */
     loadData: function (params, callback) {
-        var handleData = function(err, data) {
+        const handleData = function(err, data) {
             if (err) return callback(err);
             if (typeof data != 'object') {
                 return callback(new Error("Input data is not a valid GeoJSON object."));

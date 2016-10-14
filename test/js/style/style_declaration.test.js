@@ -1,7 +1,7 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var StyleDeclaration = require('../../../js/style/style_declaration');
+const test = require('mapbox-gl-js-test').test;
+const StyleDeclaration = require('../../../js/style/style_declaration');
 
 test('StyleDeclaration', function(t) {
     t.test('constant', function(t) {
@@ -13,7 +13,7 @@ test('StyleDeclaration', function(t) {
     });
 
     t.test('interpolated functions', function(t) {
-        var reference = {type: "number", function: "interpolated"};
+        const reference = {type: "number", function: "interpolated"};
         t.equal((new StyleDeclaration(reference, { stops: [[0, 1]] })).calculate({zoom: 0}), 1);
         t.equal((new StyleDeclaration(reference, { stops: [[2, 2], [5, 10]] })).calculate({zoom: 0}), 2);
         t.equal((new StyleDeclaration(reference, { stops: [[0, 0], [5, 10]] })).calculate({zoom: 12}), 10);
@@ -28,21 +28,21 @@ test('StyleDeclaration', function(t) {
     });
 
     t.test('non-interpolated piecewise-constant function', function(t) {
-        var decl = new StyleDeclaration({type: "array", function: "piecewise-constant"}, {stops: [[0, [0, 10, 5]]]});
+        const decl = new StyleDeclaration({type: "array", function: "piecewise-constant"}, {stops: [[0, [0, 10, 5]]]});
         t.deepEqual(decl.calculate({zoom: 0}), [0, 10, 5]);
         t.end();
     });
 
     t.test('interpolated piecewise-constant function', function(t) {
-        var reference = {type: "image", function: "piecewise-constant", transition: true};
+        const reference = {type: "image", function: "piecewise-constant", transition: true};
 
-        var constant = new StyleDeclaration(reference, 'a.png');
+        const constant = new StyleDeclaration(reference, 'a.png');
         t.deepEqual(
             constant.calculate({zoom: 0, zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, duration: 300}),
             { to: 'a.png', toScale: 1, from: 'a.png', fromScale: 0.5, t: 1 }
         );
 
-        var variable = new StyleDeclaration(reference, {stops: [[0, 'a.png'], [1, 'b.png']]});
+        const variable = new StyleDeclaration(reference, {stops: [[0, 'a.png'], [1, 'b.png']]});
         t.deepEqual(
             variable.calculate({
                 zoom: 1,
@@ -52,7 +52,7 @@ test('StyleDeclaration', function(t) {
             { to: 'b.png', toScale: 1, from: 'a.png', fromScale: 2, t: 1 }
         );
 
-        var unset = new StyleDeclaration(reference, undefined);
+        const unset = new StyleDeclaration(reference, undefined);
         t.deepEqual(
             unset.calculate({
                 zoom: 1,
@@ -66,7 +66,7 @@ test('StyleDeclaration', function(t) {
     });
 
     t.test('color parsing', function(t) {
-        var reference = {type: "color", function: "interpolated"};
+        const reference = {type: "color", function: "interpolated"};
         t.deepEqual(new StyleDeclaration(reference, 'red').calculate({zoom: 0}), [ 1, 0, 0, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate({zoom: 0}), [ 1, 0, 1, 1 ]);
         t.deepEqual(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, '#0f0']] }).calculate({zoom: 0}), [1, 0, 0, 1]);
@@ -84,7 +84,7 @@ test('StyleDeclaration', function(t) {
     });
 
     t.test('property functions', function(t) {
-        var declaration = new StyleDeclaration(
+        const declaration = new StyleDeclaration(
             {type: "number", function: "interpolated"},
             { stops: [[0, 1]], property: 'mapbox' }
         );

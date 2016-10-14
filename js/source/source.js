@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('../util/util');
+const util = require('../util/util');
 
-var sourceTypes = {
+const sourceTypes = {
     'vector': require('../source/vector_tile_source'),
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),

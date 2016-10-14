@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('../util/util');
-var Buffer = require('./buffer');
-var VertexArrayObject = require('../render/vertex_array_object');
+const util = require('../util/util');
+const Buffer = require('./buffer');
+const VertexArrayObject = require('../render/vertex_array_object');
 
 module.exports = BufferGroup;
 
@@ -15,8 +15,8 @@ function BufferGroup(arrayGroup, arrayTypes) {
             arrayTypes.elementArrayType, Buffer.BufferType.ELEMENT);
     }
 
-    var vaos = this.vaos = {};
-    var secondVaos;
+    const vaos = this.vaos = {};
+    let secondVaos;
 
     if (arrayGroup.elementArray2) {
         this.elementBuffer2 = new Buffer(arrayGroup.elementArray2,
@@ -41,13 +41,13 @@ BufferGroup.prototype.destroy = function() {
     if (this.elementBuffer2) {
         this.elementBuffer2.destroy();
     }
-    for (var n in this.paintVertexBuffers) {
+    for (const n in this.paintVertexBuffers) {
         this.paintVertexBuffers[n].destroy();
     }
-    for (var j in this.vaos) {
+    for (const j in this.vaos) {
         this.vaos[j].destroy();
     }
-    for (var k in this.secondVaos) {
+    for (const k in this.secondVaos) {
         this.secondVaos[k].destroy();
     }
 };

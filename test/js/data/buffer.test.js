@@ -1,12 +1,12 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var Buffer = require('../../../js/data/buffer');
-var StructArrayType = require('../../../js/util/struct_array');
+const test = require('mapbox-gl-js-test').test;
+const Buffer = require('../../../js/data/buffer');
+const StructArrayType = require('../../../js/util/struct_array');
 
 test('Buffer', function(t) {
 
-    var TestArray = new StructArrayType({
+    const TestArray = new StructArrayType({
         members: [
             { type: 'Int16', name: 'map' },
             { type: 'Int16', name: 'box', components: 2 }
@@ -16,12 +16,12 @@ test('Buffer', function(t) {
 
 
     t.test('constructs itself', function(t) {
-        var array = new TestArray();
+        const array = new TestArray();
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
 
-        var buffer = new Buffer(array.serialize(), TestArray.serialize(), Buffer.BufferType.VERTEX);
+        const buffer = new Buffer(array.serialize(), TestArray.serialize(), Buffer.BufferType.VERTEX);
 
         t.deepEqual(buffer.attributes, [
             {

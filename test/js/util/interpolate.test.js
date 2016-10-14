@@ -1,7 +1,7 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var interpolate = require('../../../js/util/interpolate');
+const test = require('mapbox-gl-js-test').test;
+const interpolate = require('../../../js/util/interpolate');
 
 test('interpolate.number', function(t) {
     t.equal(interpolate(0, 1, 0.5), 0.5);

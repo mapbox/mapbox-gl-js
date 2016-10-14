@@ -1,30 +1,30 @@
 'use strict';
 
-var mat3 = require('gl-matrix').mat3;
-var mat4 = require('gl-matrix').mat4;
-var vec3 = require('gl-matrix').vec3;
-var Buffer = require('../data/buffer');
-var VertexArrayObject = require('./vertex_array_object');
-var StructArrayType = require('../util/struct_array');
-var setPattern = require('./set_pattern');
+const mat3 = require('gl-matrix').mat3;
+const mat4 = require('gl-matrix').mat4;
+const vec3 = require('gl-matrix').vec3;
+const Buffer = require('../data/buffer');
+const VertexArrayObject = require('./vertex_array_object');
+const StructArrayType = require('../util/struct_array');
+const setPattern = require('./set_pattern');
 
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
     if (layer.paint['fill-opacity'] === 0) return;
-    var gl = painter.gl;
+    const gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     painter.depthMask(true);
 
     // Create a new texture to which to render the extrusion layer. This approach
     // allows us to adjust opacity on a per-layer basis (eliminating the interior
     // walls per-feature opacity problem)
-    var texture = new ExtrusionTexture(gl, painter, layer);
+    const texture = new ExtrusionTexture(gl, painter, layer);
     texture.bindFramebuffer();
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    for (var i = 0; i < coords.length; i++) {
+    for (let i = 0; i < coords.length; i++) {
         drawExtrusion(painter, source, layer, coords[i]);
     }
 
@@ -46,7 +46,7 @@ function ExtrusionTexture(gl, painter, layer) {
 }
 
 ExtrusionTexture.prototype.bindFramebuffer = function() {
-    var gl = this.gl;
+    const gl = this.gl;
 
     this.texture = this.painter.getViewportTexture(this.width, this.height);
 
@@ -67,8 +67,8 @@ ExtrusionTexture.prototype.bindFramebuffer = function() {
 
     if (!this.fbos) {
         this.fbo = gl.createFramebuffer();
-        var stencil = gl.createRenderbuffer();
-        var depthRenderBuffer = gl.createRenderbuffer();
+        const stencil = gl.createRenderbuffer();
+        const depthRenderBuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.width, this.height);
@@ -102,9 +102,9 @@ ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
 });
 
 ExtrusionTexture.prototype.renderToMap = function() {
-    var gl = this.gl;
-    var painter = this.painter;
-    var program = painter.useProgram('fillExtrudeTexture');
+    const gl = this.gl;
+    const painter = this.painter;
+    const program = painter.useProgram('fillExtrudeTexture');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -127,14 +127,14 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.uniform1i(program.u_xdim, painter.width);
     gl.uniform1i(program.u_ydim, painter.height);
 
-    var array = new this.TextureBoundsArray();
+    const array = new this.TextureBoundsArray();
     array.emplaceBack(0, 0);
     array.emplaceBack(painter.width, 0);
     array.emplaceBack(0, painter.height);
     array.emplaceBack(painter.width, painter.height);
-    var buffer = new Buffer(array.serialize(), this.TextureBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+    const buffer = new Buffer(array.serialize(), this.TextureBoundsArray.serialize(), Buffer.BufferType.VERTEX);
 
-    var vao = new VertexArrayObject();
+    const vao = new VertexArrayObject();
     vao.bind(gl, program, buffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -142,20 +142,20 @@ ExtrusionTexture.prototype.renderToMap = function() {
 };
 
 function drawExtrusion(painter, source, layer, coord) {
-    var tile = source.getTile(coord);
-    var bucket = tile.getBucket(layer);
+    const tile = source.getTile(coord);
+    const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    var bufferGroups = bucket.bufferGroups.fillextrusion;
+    const bufferGroups = bucket.bufferGroups.fillextrusion;
     if (!bufferGroups) return;
 
     if (painter.isOpaquePass) return;
 
-    var gl = painter.gl;
+    const gl = painter.gl;
 
-    var image = layer.paint['fill-pattern'];
+    const image = layer.paint['fill-pattern'];
 
-    var programOptions = bucket.paintAttributes.fillextrusion[layer.id];
-    var program = painter.useProgram(
+    const programOptions = bucket.paintAttributes.fillextrusion[layer.id];
+    const program = painter.useProgram(
         image ? 'fillExtrudePattern' : 'fillExtrude',
         programOptions.defines,
         programOptions.vertexPragmas,
@@ -171,15 +171,15 @@ function drawExtrusion(painter, source, layer, coord) {
 
     bucket.setUniforms(gl, 'fillextrusion', program, layer, {zoom: painter.transform.zoom});
 
-    for (var i = 0; i < bufferGroups.length; i++) {
-        var group = bufferGroups[i];
+    for (let i = 0; i < bufferGroups.length; i++) {
+        const group = bufferGroups[i];
         group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
         gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
     }
 }
 
 function setMatrix(program, painter, coord, tile, layer) {
-    var zScale = Math.pow(2, painter.transform.zoom) / 50000;
+    const zScale = Math.pow(2, painter.transform.zoom) / 50000;
 
     painter.gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
         mat4.create(),
@@ -194,12 +194,12 @@ function setMatrix(program, painter, coord, tile, layer) {
 }
 
 function setLight(program, painter) {
-    var gl = painter.gl;
-    var light = painter.style.light;
+    const gl = painter.gl;
+    const light = painter.style.light;
 
-    var _lp = light.calculated.position,
+    let _lp = light.calculated.position,
         lightPos = [_lp.x, _lp.y, _lp.z];
-    var lightMat = mat3.create();
+    const lightMat = mat3.create();
     if (light.calculated.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);
     vec3.transformMat3(lightPos, lightPos, lightMat);
 

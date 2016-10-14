@@ -2,11 +2,11 @@
 
 // Note: all "sizes" are measured in bytes
 
-var assert = require('assert');
+const assert = require('assert');
 
 module.exports = StructArrayType;
 
-var viewTypes = {
+const viewTypes = {
     'Int8': Int8Array,
     'Uint8': Uint8Array,
     'Uint8Clamped': Uint8ClampedArray,
@@ -26,7 +26,7 @@ var viewTypes = {
  * @property {number} components
  */
 
-var structArrayTypeCache = {};
+const structArrayTypeCache = {};
 
 /**
  * `StructArrayType` is used to create new `StructArray` types.
@@ -66,7 +66,7 @@ var structArrayTypeCache = {};
  */
 function StructArrayType(options) {
 
-    var key = JSON.stringify(options);
+    const key = JSON.stringify(options);
     if (structArrayTypeCache[key]) {
         return structArrayTypeCache[key];
     }
@@ -79,9 +79,9 @@ function StructArrayType(options) {
 
     StructType.prototype = Object.create(Struct.prototype);
 
-    var offset = 0;
-    var maxSize = 0;
-    var usedTypes = ['Uint8'];
+    let offset = 0;
+    let maxSize = 0;
+    const usedTypes = ['Uint8'];
 
     StructType.prototype.members = options.members.map(function(member) {
         member = {
@@ -95,11 +95,11 @@ function StructArrayType(options) {
 
         if (usedTypes.indexOf(member.type) < 0) usedTypes.push(member.type);
 
-        var typeSize = sizeOf(member.type);
+        const typeSize = sizeOf(member.type);
         maxSize = Math.max(maxSize, typeSize);
         member.offset = offset = align(offset, Math.max(options.alignment, typeSize));
 
-        for (var c = 0; c < member.components; c++) {
+        for (let c = 0; c < member.components; c++) {
             Object.defineProperty(StructType.prototype, member.name + (member.components === 1 ? '' : c), {
                 get: createGetter(member, c),
                 set: createSetter(member, c)
@@ -165,15 +165,15 @@ function getArrayViewName(type) {
  * - lucaswoj
  */
 function createEmplaceBack(members, bytesPerElement) {
-    var usedTypeSizes = [];
-    var argNames = [];
-    var body = '' +
+    const usedTypeSizes = [];
+    const argNames = [];
+    let body = '' +
     'var i = this.length;\n' +
     'this.resize(this.length + 1);\n';
 
-    for (var m = 0; m < members.length; m++) {
-        var member = members[m];
-        var size = sizeOf(member.type);
+    for (let m = 0; m < members.length; m++) {
+        const member = members[m];
+        const size = sizeOf(member.type);
 
         // array offsets to the end of current data for each type size
         // var o{SIZE} = i * ROUNDED(bytesPerElement / size);
@@ -182,15 +182,15 @@ function createEmplaceBack(members, bytesPerElement) {
             body += 'var o' + size.toFixed(0) + ' = i * ' + (bytesPerElement / size).toFixed(0) + ';\n';
         }
 
-        for (var c = 0; c < member.components; c++) {
+        for (let c = 0; c < member.components; c++) {
             // arguments v0, v1, v2, ... are, in order, the components of
             // member 0, then the components of member 1, etc.
-            var argName = 'v' + argNames.length;
+            const argName = 'v' + argNames.length;
             // The index for `member` component `c` into the appropriate type array is:
             // this.{TYPE}[o{SIZE} + MEMBER_OFFSET + {c}] = v{X}
             // where MEMBER_OFFSET = ROUND(member.offset / size) is the per-element
             // offset of this member into the array
-            var index = 'o' + size.toFixed(0) + ' + ' + (member.offset / size + c).toFixed(0);
+            const index = 'o' + size.toFixed(0) + ' + ' + (member.offset / size + c).toFixed(0);
             body += 'this.' + getArrayViewName(member.type) + '[' + index + '] = ' + argName + ';\n';
             argNames.push(argName);
         }
@@ -202,9 +202,9 @@ function createEmplaceBack(members, bytesPerElement) {
 }
 
 function createMemberComponentString(member, component) {
-    var elementOffset = 'this._pos' + sizeOf(member.type).toFixed(0);
-    var componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
-    var index = elementOffset + ' + ' + componentOffset;
+    const elementOffset = 'this._pos' + sizeOf(member.type).toFixed(0);
+    const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
+    const index = elementOffset + ' + ' + componentOffset;
     return 'this._structArray.' + getArrayViewName(member.type) + '[' + index + ']';
 
 }
@@ -311,7 +311,7 @@ StructArray.prototype.resize = function(n) {
         this.capacity = Math.max(n, Math.floor(this.capacity * this.RESIZE_MULTIPLIER), this.DEFAULT_CAPACITY);
         this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
 
-        var oldUint8Array = this.uint8;
+        const oldUint8Array = this.uint8;
         this._refreshViews();
         if (oldUint8Array) this.uint8.set(oldUint8Array);
     }
@@ -322,8 +322,8 @@ StructArray.prototype.resize = function(n) {
  * @private
  */
 StructArray.prototype._refreshViews = function() {
-    for (var t = 0; t < this._usedTypes.length; t++) {
-        var type = this._usedTypes[t];
+    for (let t = 0; t < this._usedTypes.length; t++) {
+        const type = this._usedTypes[t];
         this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
     }
 };
@@ -335,10 +335,10 @@ StructArray.prototype._refreshViews = function() {
  * @private
  */
 StructArray.prototype.toArray = function(startIndex, endIndex) {
-    var array = [];
+    const array = [];
 
-    for (var i = startIndex; i < endIndex; i++) {
-        var struct = this.get(i);
+    for (let i = startIndex; i < endIndex; i++) {
+        const struct = this.get(i);
         array.push(struct);
     }
 

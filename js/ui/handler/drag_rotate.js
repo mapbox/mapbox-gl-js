@@ -1,12 +1,12 @@
 'use strict';
 
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
-var window = require('../../util/window');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
+const window = require('../../util/window');
 
 module.exports = DragRotateHandler;
 
-var inertiaLinearity = 0.25,
+let inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 180, // deg/s
     inertiaDeceleration = 720; // deg/s^2
@@ -103,10 +103,10 @@ DragRotateHandler.prototype = {
             this._fireEvent('movestart', e);
         }
 
-        var map = this._map;
+        const map = this._map;
         map.stop();
 
-        var p1 = this._pos,
+        let p1 = this._pos,
             p2 = DOM.mousePos(this._el, e),
             bearingDiff = (p1.x - p2.x) * 0.8,
             pitchDiff = (p1.y - p2.y) * -0.5,
@@ -138,11 +138,11 @@ DragRotateHandler.prototype = {
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 
-        var map = this._map,
+        let map = this._map,
             mapBearing = map.getBearing(),
             inertia = this._inertia;
 
-        var finish = function() {
+        const finish = function() {
             if (Math.abs(mapBearing) < this._bearingSnap) {
                 map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
@@ -155,7 +155,7 @@ DragRotateHandler.prototype = {
             return;
         }
 
-        var first = inertia[0],
+        let first = inertia[0],
             last = inertia[inertia.length - 1],
             previous = inertia[inertia.length - 2],
             bearing = map._normalizeBearing(mapBearing, previous[1]),
@@ -168,12 +168,12 @@ DragRotateHandler.prototype = {
             return;
         }
 
-        var speed = Math.abs(flingDiff * (inertiaLinearity / flingDuration));  // deg/s
+        let speed = Math.abs(flingDiff * (inertiaLinearity / flingDuration));  // deg/s
         if (speed > inertiaMaxSpeed) {
             speed = inertiaMaxSpeed;
         }
 
-        var duration = speed / (inertiaDeceleration * inertiaLinearity),
+        let duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = sign * speed * (duration / 2);
 
         bearing += offset;
@@ -194,21 +194,21 @@ DragRotateHandler.prototype = {
     },
 
     _ignoreEvent: function (e) {
-        var map = this._map;
+        const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
         if (map.dragPan && map.dragPan.isActive()) return true;
         if (e.touches) {
             return (e.touches.length > 1);
         } else {
-            var buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
+            let buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
                 button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
             return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
         }
     },
 
     _drainInertiaBuffer: function () {
-        var inertia = this._inertia,
+        let inertia = this._inertia,
             now = Date.now(),
             cutoff = 160;   //msec
 

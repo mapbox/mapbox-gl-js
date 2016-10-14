@@ -1,11 +1,11 @@
 'use strict';
 
-var util = require('../util/util');
-var interpolate = require('../util/interpolate');
-var browser = require('../util/browser');
-var LngLat = require('../geo/lng_lat');
-var LngLatBounds = require('../geo/lng_lat_bounds');
-var Point = require('point-geometry');
+const util = require('../util/util');
+const interpolate = require('../util/interpolate');
+const browser = require('../util/browser');
+const LngLat = require('../geo/lng_lat');
+const LngLatBounds = require('../geo/lng_lat_bounds');
+const Point = require('point-geometry');
 
 /**
  * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo},
@@ -33,7 +33,7 @@ var Point = require('point-geometry');
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
-var Camera = module.exports = function() {};
+const Camera = module.exports = function() {};
 
 util.extend(Camera.prototype, /** @lends Map.prototype */{
     /**
@@ -300,7 +300,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         bounds = LngLatBounds.convert(bounds);
 
-        var offset = Point.convert(options.offset),
+        let offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
@@ -337,7 +337,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     jumpTo: function(options, eventData) {
         this.stop();
 
-        var tr = this.transform,
+        let tr = this.transform,
             zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -408,7 +408,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             easing: util.ease
         }, options);
 
-        var tr = this.transform,
+        let tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
@@ -432,7 +432,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             toLngLat = tr.pointLocation(toPoint);
         }
 
-        var fromPoint = tr.locationPoint(toLngLat);
+        const fromPoint = tr.locationPoint(toLngLat);
 
         if (options.animate === false) options.duration = 0;
 
@@ -490,7 +490,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     _easeToEnd: function(eventData) {
-        var wasZooming = this.zooming;
+        const wasZooming = this.zooming;
         this.zooming = false;
         this.rotating = false;
         this.pitching = false;
@@ -571,16 +571,16 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             easing: util.ease
         }, options);
 
-        var tr = this.transform,
+        let tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        var center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
-        var zoom = 'zoom' in options ?  +options.zoom : startZoom;
-        var bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
-        var pitch = 'pitch' in options ? +options.pitch : startPitch;
+        const center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
+        const zoom = 'zoom' in options ?  +options.zoom : startZoom;
+        const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
+        const pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
         // interpolating between the two endpoints will cross it.
@@ -592,11 +592,11 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             }
         }
 
-        var scale = tr.zoomScale(zoom - startZoom),
+        let scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
             to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
-        var startWorldSize = tr.worldSize,
+        let startWorldSize = tr.worldSize,
             rho = options.curve,
 
             // w₀: Initial visible span, measured in pixels at the initial scale.
@@ -608,15 +608,15 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             u1 = to.sub(from).mag();
 
         if ('minZoom' in options) {
-            var minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
+            const minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
-            var wMax = w0 / tr.zoomScale(minZoom - startZoom);
+            const wMax = w0 / tr.zoomScale(minZoom - startZoom);
             rho = Math.sqrt(wMax / u1 * 2);
         }
 
         // ρ²
-        var rho2 = rho * rho;
+        const rho2 = rho * rho;
 
         /**
          * rᵢ: Returns the zoom-out factor at one end of the animation.
@@ -625,7 +625,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
          * @private
          */
         function r(i) {
-            var b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
+            const b = (w1 * w1 - w0 * w0 + (i ? -1 : 1) * rho2 * rho2 * u1 * u1) / (2 * (i ? w1 : w0) * rho2 * u1);
             return Math.log(Math.sqrt(b * b + 1) - b);
         }
 
@@ -634,7 +634,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         function tanh(n) { return sinh(n) / cosh(n); }
 
         // r₀: Zoom-out factor during ascent.
-        var r0 = r(0),
+        let r0 = r(0),
             /**
              * w(s): Returns the visible span on the ground, measured in pixels with respect to the
              * initial scale.
@@ -657,7 +657,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             // Perform a more or less instantaneous transition if the path is too short.
             if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options);
 
-            var k = w1 < w0 ? -1 : 1;
+            const k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
 
             u = function() { return 0; };
@@ -667,7 +667,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         if ('duration' in options) {
             options.duration = +options.duration;
         } else {
-            var V = 'screenSpeed' in options ? +options.screenSpeed / rho : +options.speed;
+            const V = 'screenSpeed' in options ? +options.screenSpeed / rho : +options.speed;
             options.duration = 1000 * S / V;
         }
 
@@ -680,7 +680,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
-            var s = k * S,
+            let s = k * S,
                 us = u(s);
 
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
@@ -744,7 +744,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         delete this._abortFn;
         // The finish function might emit events which trigger new eases, which
         // set a new _finishFn. Ensure we don't delete it unintentionally.
-        var finish = this._finishFn;
+        const finish = this._finishFn;
         delete this._finishFn;
         finish.call(this);
     },
@@ -752,7 +752,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     // convert bearing so that it's numerically close to the current one so that it interpolates properly
     _normalizeBearing: function(bearing, currentBearing) {
         bearing = util.wrap(bearing, -180, 180);
-        var diff = Math.abs(bearing - currentBearing);
+        const diff = Math.abs(bearing - currentBearing);
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
         if (Math.abs(bearing + 360 - currentBearing) < diff) bearing += 360;
         return bearing;
@@ -760,10 +760,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
     // only used on mouse-wheel zoom to smooth out animation
     _smoothOutEasing: function(duration) {
-        var easing = util.ease;
+        let easing = util.ease;
 
         if (this._prevEase) {
-            var ease = this._prevEase,
+            let ease = this._prevEase,
                 t = (Date.now() - ease.start) / ease.duration,
                 speed = ease.easing(t + 0.01) - ease.easing(t),
 

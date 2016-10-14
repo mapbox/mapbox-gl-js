@@ -1,11 +1,11 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var StructArrayType = require('../../../js/util/struct_array');
+const test = require('mapbox-gl-js-test').test;
+const StructArrayType = require('../../../js/util/struct_array');
 
 test('StructArray', function(t) {
 
-    var TestArray = new StructArrayType({
+    const TestArray = new StructArrayType({
         members: [
             { type: 'Int16', name: 'map' },
             { type: 'Int16', name: 'box', components: 2 }
@@ -35,7 +35,7 @@ test('StructArray', function(t) {
     });
 
     t.test('array constructs itself', function(t) {
-        var array = new TestArray();
+        const array = new TestArray();
 
         t.equal(array.length, 0);
         t.equal(array.bytesPerElement, 8);
@@ -45,18 +45,18 @@ test('StructArray', function(t) {
     });
 
     t.test('emplaceBack', function(t) {
-        var array = new TestArray();
+        const array = new TestArray();
 
         t.equal(0, array.emplaceBack(1, 7, 3));
         t.equal(1, array.emplaceBack(4, 2, 5));
 
         t.equal(array.length, 2);
 
-        var e0 = array.get(0);
+        const e0 = array.get(0);
         t.equal(e0.map, 1);
         t.equal(e0.box0, 7);
         t.equal(e0.box1, 3);
-        var e1 = array.get(1);
+        const e1 = array.get(1);
         t.equal(e1.map, 4);
         t.equal(e1.box0, 2);
         t.equal(e1.box1, 5);
@@ -65,8 +65,8 @@ test('StructArray', function(t) {
     });
 
     t.test('automatically resizes', function(t) {
-        var array = new TestArray();
-        var initialCapacity = array.capacity;
+        const array = new TestArray();
+        const initialCapacity = array.capacity;
 
         while (initialCapacity > array.length) {
             array.emplaceBack(1, 1, 1);
@@ -81,8 +81,8 @@ test('StructArray', function(t) {
     });
 
     t.test('trims', function(t) {
-        var array = new TestArray();
-        var capacityInitial = array.capacity;
+        const array = new TestArray();
+        const capacityInitial = array.capacity;
 
         array.emplaceBack(1, 1, 1);
         t.equal(array.capacity, capacityInitial);

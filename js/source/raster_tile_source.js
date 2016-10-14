@@ -1,10 +1,10 @@
 'use strict';
 
-var util = require('../util/util');
-var ajax = require('../util/ajax');
-var Evented = require('../util/evented');
-var loadTileJSON = require('./load_tilejson');
-var normalizeURL = require('../util/mapbox').normalizeTileURL;
+const util = require('../util/util');
+const ajax = require('../util/ajax');
+const Evented = require('../util/evented');
+const loadTileJSON = require('./load_tilejson');
+const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = RasterTileSource;
 
@@ -47,7 +47,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
     },
 
     loadTile: function(tile, callback) {
-        var url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
+        const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
 
@@ -61,7 +61,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
                 return callback(err);
             }
 
-            var gl = this.map.painter.gl;
+            const gl = this.map.painter.gl;
             tile.texture = this.map.painter.getTileTexture(img.width);
             if (tile.texture) {
                 gl.bindTexture(gl.TEXTURE_2D, tile.texture);

@@ -22,17 +22,17 @@ module.exports = CollisionFeature;
  */
 function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shaped, boxScale, padding, alignLine, straight) {
 
-    var y1 = shaped.top * boxScale - padding;
-    var y2 = shaped.bottom * boxScale + padding;
-    var x1 = shaped.left * boxScale - padding;
-    var x2 = shaped.right * boxScale + padding;
+    const y1 = shaped.top * boxScale - padding;
+    const y2 = shaped.bottom * boxScale + padding;
+    const x1 = shaped.left * boxScale - padding;
+    const x2 = shaped.right * boxScale + padding;
 
     this.boxStartIndex = collisionBoxArray.length;
 
     if (alignLine) {
 
-        var height = y2 - y1;
-        var length = x2 - x1;
+        let height = y2 - y1;
+        const length = x2 - x1;
 
         if (height > 0) {
             // set minimum box height to avoid very many small labels
@@ -40,8 +40,8 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
 
             if (straight) {
                 // used for icon labels that are aligned with the line, but don't curve along it
-                var vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
-                var straightLine = [anchor.sub(vector), anchor.add(vector)];
+                const vector = line[anchor.segment + 1].sub(line[anchor.segment])._unit()._mult(length);
+                const straightLine = [anchor.sub(vector), anchor.add(vector)];
                 this._addLineCollisionBoxes(collisionBoxArray, straightLine, anchor, 0, length, height, featureIndex, sourceLayerIndex, bucketIndex);
             } else {
                 // used for text labels that curve along a line
@@ -70,18 +70,18 @@ function CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceL
  * @private
  */
 CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
-    var step = boxSize / 2;
-    var nBoxes = Math.floor(labelLength / step);
+    const step = boxSize / 2;
+    const nBoxes = Math.floor(labelLength / step);
 
     // offset the center of the first box by half a box so that the edge of the
     // box is at the edge of the label.
-    var firstBoxOffset = -boxSize / 2;
+    const firstBoxOffset = -boxSize / 2;
 
-    var bboxes = this.boxes;
+    const bboxes = this.boxes;
 
-    var p = anchor;
-    var index = segment + 1;
-    var anchorDistance = firstBoxOffset;
+    let p = anchor;
+    let index = segment + 1;
+    let anchorDistance = firstBoxOffset;
 
     // move backwards along the line to the first segment the label appears on
     do {
@@ -95,11 +95,11 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, 
         p = line[index];
     } while (anchorDistance > -labelLength / 2);
 
-    var segmentLength = line[index].dist(line[index + 1]);
+    let segmentLength = line[index].dist(line[index + 1]);
 
-    for (var i = 0; i < nBoxes; i++) {
+    for (let i = 0; i < nBoxes; i++) {
         // the distance the box will be from the anchor
-        var boxDistanceToAnchor = -labelLength / 2 + i * step;
+        const boxDistanceToAnchor = -labelLength / 2 + i * step;
 
         // the box is not on the current segment. Move to the next segment.
         while (anchorDistance + segmentLength < boxDistanceToAnchor) {
@@ -113,14 +113,14 @@ CollisionFeature.prototype._addLineCollisionBoxes = function(collisionBoxArray, 
         }
 
         // the distance the box will be from the beginning of the segment
-        var segmentBoxDistance = boxDistanceToAnchor - anchorDistance;
+        const segmentBoxDistance = boxDistanceToAnchor - anchorDistance;
 
-        var p0 = line[index];
-        var p1 = line[index + 1];
-        var boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
+        const p0 = line[index];
+        const p1 = line[index + 1];
+        const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
-        var distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
-        var maxScale = labelLength / 2 / distanceToInnerEdge;
+        const distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
+        const maxScale = labelLength / 2 / distanceToInnerEdge;
 
         collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                 -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,

@@ -1,16 +1,16 @@
 'use strict';
 
-var util = require('../util/util');
-var Bucket = require('../data/bucket');
-var FeatureIndex = require('../data/feature_index');
-var vt = require('vector-tile');
-var Protobuf = require('pbf');
-var GeoJSONFeature = require('../util/vectortile_to_geojson');
-var featureFilter = require('feature-filter');
-var CollisionTile = require('../symbol/collision_tile');
-var CollisionBoxArray = require('../symbol/collision_box');
-var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads');
+const util = require('../util/util');
+const Bucket = require('../data/bucket');
+const FeatureIndex = require('../data/feature_index');
+const vt = require('vector-tile');
+const Protobuf = require('pbf');
+const GeoJSONFeature = require('../util/vectortile_to_geojson');
+const featureFilter = require('feature-filter');
+const CollisionTile = require('../symbol/collision_tile');
+const CollisionBoxArray = require('../symbol/collision_box');
+const SymbolInstancesArray = require('../symbol/symbol_instances');
+const SymbolQuadsArray = require('../symbol/symbol_quads');
 
 module.exports = Tile;
 
@@ -89,8 +89,8 @@ Tile.prototype = {
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.featureIndex.setCollisionTile(this.collisionTile);
 
-        for (var id in this.buckets) {
-            var bucket = this.buckets[id];
+        for (const id in this.buckets) {
+            const bucket = this.buckets[id];
             if (bucket.type === 'symbol') {
                 bucket.destroy();
                 delete this.buckets[id];
@@ -107,7 +107,7 @@ Tile.prototype = {
      * @private
      */
     unloadVectorData: function() {
-        for (var id in this.buckets) {
+        for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
 
@@ -163,17 +163,17 @@ Tile.prototype = {
             this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
-        var layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
+        const layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
 
         if (!layer) return;
 
-        var filter = featureFilter(params.filter);
-        var coord = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
+        const filter = featureFilter(params.filter);
+        const coord = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
 
-        for (var i = 0; i < layer.length; i++) {
-            var feature = layer.feature(i);
+        for (let i = 0; i < layer.length; i++) {
+            const feature = layer.feature(i);
             if (filter(feature)) {
-                var geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
+                const geojsonFeature = new GeoJSONFeature(feature, this.coord.z, this.coord.x, this.coord.y);
                 geojsonFeature.tile = coord;
                 result.push(geojsonFeature);
             }
@@ -190,12 +190,12 @@ function unserializeBuckets(input, style) {
     // this bucket has been parsing.
     if (!style) return;
 
-    var output = {};
-    for (var i = 0; i < input.length; i++) {
-        var layer = style.getLayer(input[i].layerId);
+    const output = {};
+    for (let i = 0; i < input.length; i++) {
+        const layer = style.getLayer(input[i].layerId);
         if (!layer) continue;
 
-        var bucket = Bucket.create(util.extend({
+        const bucket = Bucket.create(util.extend({
             layer: layer,
             childLayers: input[i].childLayerIds
                 .map(style.getLayer.bind(style))

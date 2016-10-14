@@ -1,7 +1,7 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var TileCoord = require('../../../js/source/tile_coord');
+const test = require('mapbox-gl-js-test').test;
+const TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {
     t.test('#constructor', function(t) {
@@ -92,7 +92,7 @@ test('TileCoord', function(t) {
 
     t.test('.cover', function(t) {
         t.test('calculates tile coverage at w = 0', function(t) {
-            var z = 2,
+            let z = 2,
                 coords = [
                     {column: 0, row: 1, zoom: 2},
                     {column: 1, row: 1, zoom: 2},
@@ -105,7 +105,7 @@ test('TileCoord', function(t) {
         });
 
         t.test('calculates tile coverage at w > 0', function(t) {
-            var z = 2,
+            let z = 2,
                 coords = [
                     {column: 12, row: 1, zoom: 2},
                     {column: 13, row: 1, zoom: 2},
@@ -118,7 +118,7 @@ test('TileCoord', function(t) {
         });
 
         t.test('calculates tile coverage at w = -1', function(t) {
-            var z = 2,
+            let z = 2,
                 coords = [
                     {column: -1, row: 1, zoom: 2},
                     {column:  0, row: 1, zoom: 2},
@@ -131,7 +131,7 @@ test('TileCoord', function(t) {
         });
 
         t.test('calculates tile coverage at w < -1', function(t) {
-            var z = 2,
+            let z = 2,
                 coords = [
                     {column: -13, row: 1, zoom: 2},
                     {column: -12, row: 1, zoom: 2},
@@ -144,7 +144,7 @@ test('TileCoord', function(t) {
         });
 
         t.test('calculates tile coverage across meridian', function(t) {
-            var z = 2,
+            let z = 2,
                 coords = [
                     {column: -0.5, row: 1, zoom: 2},
                     {column:  0.5, row: 1, zoom: 2},

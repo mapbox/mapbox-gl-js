@@ -1,8 +1,8 @@
 'use strict';
 
-var Control = require('./control');
-var DOM = require('../../util/dom');
-var util = require('../../util/util');
+const Control = require('./control');
+const DOM = require('../../util/dom');
+const util = require('../../util/util');
 
 module.exports = AttributionControl;
 
@@ -27,7 +27,7 @@ AttributionControl.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        var className = 'mapboxgl-ctrl-attrib',
+        let className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());
 
         this._updateAttributions();
@@ -48,11 +48,11 @@ AttributionControl.prototype = util.inherit(Control, {
     _updateAttributions: function() {
         if (!this._map.style) return;
 
-        var attributions = [];
+        let attributions = [];
 
-        var sourceCaches = this._map.style.sourceCaches;
-        for (var id in sourceCaches) {
-            var source = sourceCaches[id].getSource();
+        const sourceCaches = this._map.style.sourceCaches;
+        for (const id in sourceCaches) {
+            const source = sourceCaches[id].getSource();
             if (source.attribution && attributions.indexOf(source.attribution) < 0) {
                 attributions.push(source.attribution);
             }
@@ -62,7 +62,7 @@ AttributionControl.prototype = util.inherit(Control, {
         // first sort by length so that substrings come first
         attributions.sort(function (a, b) { return a.length - b.length; });
         attributions = attributions.filter(function (attrib, i) {
-            for (var j = i + 1; j < attributions.length; j++) {
+            for (let j = i + 1; j < attributions.length; j++) {
                 if (attributions[j].indexOf(attrib) >= 0) { return false; }
             }
             return true;
@@ -75,7 +75,7 @@ AttributionControl.prototype = util.inherit(Control, {
     _updateEditLink: function() {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
-            var center = this._map.getCenter();
+            const center = this._map.getCenter();
             this._editLink.href = 'https://www.mapbox.com/map-feedback/#/' +
                     center.lng + '/' + center.lat + '/' + Math.round(this._map.getZoom() + 1);
         }

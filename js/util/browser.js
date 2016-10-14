@@ -5,7 +5,7 @@
  * @private
  */
 
-var window = require('./window');
+const window = require('./window');
 
 /**
  * Provides a function that outputs milliseconds: either performance.now()
@@ -20,7 +20,7 @@ module.exports.now = (function() {
     }
 }());
 
-var frame = window.requestAnimationFrame ||
+const frame = window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.msRequestAnimationFrame;
@@ -29,7 +29,7 @@ exports.frame = function(fn) {
     return frame(fn);
 };
 
-var cancel = window.cancelAnimationFrame ||
+const cancel = window.cancelAnimationFrame ||
     window.mozCancelAnimationFrame ||
     window.webkitCancelAnimationFrame ||
     window.msCancelAnimationFrame;
@@ -44,7 +44,7 @@ exports.timed = function (fn, dur, ctx) {
         return null;
     }
 
-    var abort = false,
+    let abort = false,
         start = module.exports.now();
 
     function tick(now) {
@@ -82,7 +82,7 @@ Object.defineProperty(exports, 'devicePixelRatio', {
 
 exports.supportsWebp = false;
 
-var webpImgTest = window.document.createElement('img');
+const webpImgTest = window.document.createElement('img');
 webpImgTest.onload = function() {
     exports.supportsWebp = true;
 };

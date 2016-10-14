@@ -1,22 +1,22 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var createMap = require('../lib/create_map');
+const Evented = require('../../js/util/evented');
+const util = require('../../js/util/util');
+const formatNumber = require('../lib/format_number');
+const createMap = require('../lib/create_map');
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = util.extend({}, Evented);
 
-    var mapsOnPage = 6;
+    const mapsOnPage = 6;
 
     evented.fire('log', { message: 'Creating ' + mapsOnPage + ' maps' });
 
-    var loaded = 0;
-    var maps = [];
-    var start = Date.now();
-    for (var i = 0; i < mapsOnPage; i++) {
-        var map = maps[i] = createMap({
+    let loaded = 0;
+    const maps = [];
+    const start = Date.now();
+    for (let i = 0; i < mapsOnPage; i++) {
+        const map = maps[i] = createMap({
             style: {
                 version: 8,
                 sources: {},
@@ -31,8 +31,8 @@ module.exports = function() {
 
     function onload () {
         if (++loaded >= mapsOnPage) {
-            var duration = Date.now() - start;
-            for (var i = 0; i < maps.length; i++) {
+            const duration = Date.now() - start;
+            for (let i = 0; i < maps.length; i++) {
                 maps[i].remove();
             }
             evented.fire('end', {

@@ -1,8 +1,8 @@
 'use strict';
 
-var interpolate = require('../util/interpolate');
-var Anchor = require('../symbol/anchor');
-var checkMaxAngle = require('./check_max_angle');
+const interpolate = require('../util/interpolate');
+const Anchor = require('../symbol/anchor');
+const checkMaxAngle = require('./check_max_angle');
 
 module.exports = getAnchors;
 
@@ -12,16 +12,16 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
     // potential label passes text-max-angle check and has enough froom to fit
     // on the line.
 
-    var angleWindowSize = shapedText ?
+    const angleWindowSize = shapedText ?
         3 / 5 * glyphSize * boxScale :
         0;
 
-    var labelLength = Math.max(
+    const labelLength = Math.max(
         shapedText ? shapedText.right - shapedText.left : 0,
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
     // Is the line continued from outside the tile boundary?
-    var isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
+    const isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
 
     // Is the label long, relative to the spacing?
     // If so, adjust the spacing so there is always a minimum space of `spacing / 4` between label edges.
@@ -34,9 +34,9 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
     // Or half the spacing if the line is continued.
 
     // For non-continued lines, add a bit of fixed extra offset to avoid collisions at T intersections.
-    var fixedExtraOffset = glyphSize * 2;
+    const fixedExtraOffset = glyphSize * 2;
 
-    var offset = !isLineContinued ?
+    const offset = !isLineContinued ?
         ((labelLength / 2 + fixedExtraOffset) * boxScale * overscaling) % spacing :
         (spacing / 2 * overscaling) % spacing;
 
@@ -46,29 +46,29 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedIcon, glyphSize, 
 
 function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength, isLineContinued, placeAtMiddle, tileExtent) {
 
-    var halfLabelLength = labelLength / 2;
-    var lineLength = 0;
-    for (var k = 0; k < line.length - 1; k++) {
+    const halfLabelLength = labelLength / 2;
+    let lineLength = 0;
+    for (let k = 0; k < line.length - 1; k++) {
         lineLength += line[k].dist(line[k + 1]);
     }
 
-    var distance = 0,
+    let distance = 0,
         markedDistance = offset - spacing;
 
-    var anchors = [];
+    let anchors = [];
 
-    for (var i = 0; i < line.length - 1; i++) {
+    for (let i = 0; i < line.length - 1; i++) {
 
-        var a = line[i],
+        let a = line[i],
             b = line[i + 1];
 
-        var segmentDist = a.dist(b),
+        let segmentDist = a.dist(b),
             angle = b.angleTo(a);
 
         while (markedDistance + spacing < distance + segmentDist) {
             markedDistance += spacing;
 
-            var t = (markedDistance - distance) / segmentDist,
+            let t = (markedDistance - distance) / segmentDist,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 
@@ -78,7 +78,7 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
             if (x >= 0 && x < tileExtent && y >= 0 && y < tileExtent &&
                     markedDistance - halfLabelLength >= 0 &&
                     markedDistance + halfLabelLength <= lineLength) {
-                var anchor = new Anchor(x, y, angle, i)._round();
+                const anchor = new Anchor(x, y, angle, i)._round();
 
                 if (!angleWindowSize || checkMaxAngle(line, anchor, labelLength, angleWindowSize, maxAngle)) {
                     anchors.push(anchor);

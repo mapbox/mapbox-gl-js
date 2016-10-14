@@ -1,11 +1,11 @@
 'use strict';
 
-var test = require('mapbox-gl-js-test').test;
-var browser = require('../../../js/util/browser');
+const test = require('mapbox-gl-js-test').test;
+const browser = require('../../../js/util/browser');
 
 test('browser', function(t) {
     t.test('frame', function(t) {
-        var id = browser.frame(function() {
+        const id = browser.frame(function() {
             t.pass('called frame');
             t.ok(id, 'returns id');
             t.end();
@@ -18,7 +18,7 @@ test('browser', function(t) {
     });
 
     t.test('cancelFrame', function(t) {
-        var id = browser.frame(function() {
+        const id = browser.frame(function() {
             t.fail();
         });
         browser.cancelFrame(id);

@@ -3,7 +3,7 @@
 module.exports = KeyboardHandler;
 
 
-var panStep = 100,
+let panStep = 100,
     bearingStep = 15,
     pitchStep = 10;
 
@@ -75,11 +75,11 @@ KeyboardHandler.prototype = {
     _onKeyDown: function (e) {
         if (e.altKey || e.ctrlKey || e.metaKey) return;
 
-        var zoomDir = 0;
-        var bearingDir = 0;
-        var pitchDir = 0;
-        var xDir = 0;
-        var yDir = 0;
+        let zoomDir = 0;
+        let bearingDir = 0;
+        let pitchDir = 0;
+        let xDir = 0;
+        let yDir = 0;
 
         switch (e.keyCode) {
         case 61:
@@ -132,10 +132,10 @@ KeyboardHandler.prototype = {
             break;
         }
 
-        var map = this._map;
-        var zoom = map.getZoom();
+        const map = this._map;
+        const zoom = map.getZoom();
 
-        var easeOptions = {
+        const easeOptions = {
             duration: 300,
             delayEndEvents: 500,
             easing: easeOut,

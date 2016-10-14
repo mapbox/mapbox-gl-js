@@ -1,8 +1,8 @@
 'use strict';
 
-var MapboxGLFunction = require('./style_function');
-var parseColor = require('./parse_color');
-var util = require('../util/util');
+const MapboxGLFunction = require('./style_function');
+const parseColor = require('./parse_color');
+const util = require('../util/util');
 
 module.exports = StyleDeclaration;
 
@@ -13,8 +13,8 @@ function StyleDeclaration(reference, value) {
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
-    var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
-    var specDefault = reference.default;
+    const parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
+    let specDefault = reference.default;
     if (specDefault && reference.type === 'color') specDefault = parseColor(specDefault);
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
@@ -30,10 +30,10 @@ function StyleDeclaration(reference, value) {
 
     if (!this.isFeatureConstant && !this.isZoomConstant) {
         this.stopZoomLevels = [];
-        var interpolationAmountStops = [];
-        var stops = this.value.stops;
-        for (var i = 0; i < this.value.stops.length; i++) {
-            var zoom = stops[i][0].zoom;
+        const interpolationAmountStops = [];
+        const stops = this.value.stops;
+        for (let i = 0; i < this.value.stops.length; i++) {
+            const zoom = stops[i][0].zoom;
             if (this.stopZoomLevels.indexOf(zoom) < 0) {
                 this.stopZoomLevels.push(zoom);
                 interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
@@ -50,7 +50,7 @@ function StyleDeclaration(reference, value) {
 
 function wrapColorCalculate(calculate) {
     return function(globalProperties, featureProperties) {
-        var color = calculate(globalProperties, featureProperties);
+        const color = calculate(globalProperties, featureProperties);
         return color && parseColor(color);
     };
 }
@@ -59,15 +59,15 @@ function wrapColorCalculate(calculate) {
 // as images and dasharrays.
 function wrapTransitionedCalculate(calculate) {
     return function(globalProperties, featureProperties) {
-        var z = globalProperties.zoom;
-        var zh = globalProperties.zoomHistory;
-        var duration = globalProperties.duration;
+        const z = globalProperties.zoom;
+        const zh = globalProperties.zoomHistory;
+        const duration = globalProperties.duration;
 
-        var fraction = z % 1;
-        var t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
-        var fromScale = 1;
-        var toScale = 1;
-        var mix, from, to;
+        const fraction = z % 1;
+        const t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
+        let fromScale = 1;
+        const toScale = 1;
+        let mix, from, to;
 
         if (z > zh.lastIntegerZoom) {
             mix = fraction + (1 - fraction) * t;

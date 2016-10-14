@@ -1,16 +1,16 @@
 'use strict';
-var util = require('../util/util');
-var ajax = require('../util/ajax');
-var browser = require('../util/browser');
-var normalizeURL = require('../util/mapbox').normalizeSourceURL;
+const util = require('../util/util');
+const ajax = require('../util/ajax');
+const browser = require('../util/browser');
+const normalizeURL = require('../util/mapbox').normalizeSourceURL;
 
 module.exports = function(options, callback) {
-    var loaded = function(err, tileJSON) {
+    const loaded = function(err, tileJSON) {
         if (err) {
             return callback(err);
         }
 
-        var result = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution']);
+        const result = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution']);
 
         if (tileJSON.vector_layers) {
             result.vectorLayers = tileJSON.vector_layers;

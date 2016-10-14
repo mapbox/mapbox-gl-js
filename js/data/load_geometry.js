@@ -1,8 +1,8 @@
 'use strict';
 
-var util = require('../util/util');
-var EXTENT = require('./bucket').EXTENT;
-var assert = require('assert');
+const util = require('../util/util');
+const EXTENT = require('./bucket').EXTENT;
+const assert = require('assert');
 
 
 // These bounds define the minimum and maximum supported coordinate values.
@@ -16,7 +16,7 @@ function createBounds(bits) {
     };
 }
 
-var boundsLookup = {
+const boundsLookup = {
     15: createBounds(15),
     16: createBounds(16)
 };
@@ -31,15 +31,15 @@ var boundsLookup = {
  * @private
  */
 module.exports = function loadGeometry(feature, bits) {
-    var bounds = boundsLookup[bits || 16];
+    const bounds = boundsLookup[bits || 16];
     assert(bounds);
 
-    var scale = EXTENT / feature.extent;
-    var geometry = feature.loadGeometry();
-    for (var r = 0; r < geometry.length; r++) {
-        var ring = geometry[r];
-        for (var p = 0; p < ring.length; p++) {
-            var point = ring[p];
+    const scale = EXTENT / feature.extent;
+    const geometry = feature.loadGeometry();
+    for (let r = 0; r < geometry.length; r++) {
+        const ring = geometry[r];
+        for (let p = 0; p < ring.length; p++) {
+            const point = ring[p];
             // round here because mapbox-gl-native uses integers to represent
             // points and we need to do the same to avoid renering differences.
             point.x = Math.round(point.x * scale);
