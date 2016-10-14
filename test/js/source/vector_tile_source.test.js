@@ -108,7 +108,7 @@ test('VectorTileSource', function(t) {
     });
 
     function testScheme(scheme, expectedURL) {
-        t.test('scheme "' + scheme + '"', function(t) {
+        t.test(`scheme "${scheme}"`, function(t) {
             const source = createSource({
                 minzoom: 1,
                 maxzoom: 10,

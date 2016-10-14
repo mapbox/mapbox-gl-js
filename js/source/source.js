@@ -24,7 +24,7 @@ exports.create = function(id, source, dispatcher, eventedParent) {
     source.setEventedParent(eventedParent);
 
     if (source.id !== id) {
-        throw new Error('Expected Source id to be ' + id + ' instead of ' + source.id);
+        throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);
     }
 
     util.bindAll(['load', 'abort', 'unload', 'serialize', 'prepare'], source);

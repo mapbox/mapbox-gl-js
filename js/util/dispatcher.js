@@ -21,7 +21,7 @@ function Dispatcher(workerPool, parent) {
     for (let i = 0; i < workers.length; i++) {
         const worker = workers[i];
         const actor = new Actor(worker, parent, this.id);
-        actor.name = "Worker " + i;
+        actor.name = `Worker ${i}`;
         this.actors.push(actor);
     }
 }

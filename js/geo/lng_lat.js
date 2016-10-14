@@ -25,7 +25,7 @@ const wrap = require('../util/util').wrap;
  */
 function LngLat(lng, lat) {
     if (isNaN(lng) || isNaN(lat)) {
-        throw new Error('Invalid LngLat object: (' + lng + ', ' + lat + ')');
+        throw new Error(`Invalid LngLat object: (${lng}, ${lat})`);
     }
     this.lng = +lng;
     this.lat = +lat;
@@ -68,7 +68,7 @@ LngLat.prototype.toArray = function () {
  * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
  */
 LngLat.prototype.toString = function () {
-    return 'LngLat(' + this.lng + ', ' + this.lat + ')';
+    return `LngLat(${this.lng}, ${this.lat})`;
 };
 
 /**

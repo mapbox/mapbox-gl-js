@@ -273,11 +273,11 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
 
         const classList = this._container.classList;
         for (const key in anchorTranslate) {
-            classList.remove('mapboxgl-popup-anchor-' + key);
+            classList.remove(`mapboxgl-popup-anchor-${key}`);
         }
-        classList.add('mapboxgl-popup-anchor-' + anchor);
+        classList.add(`mapboxgl-popup-anchor-${anchor}`);
 
-        DOM.setTransform(this._container, anchorTranslate[anchor] + ' translate(' + offsetedPos.x + 'px,' + offsetedPos.y + 'px)');
+        DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
     },
 
     _onClickClose: function() {

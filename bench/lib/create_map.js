@@ -7,8 +7,8 @@ module.exports = function createMap(options) {
     options = util.extend({width: 512, height: 512}, options);
 
     const element = document.createElement('div');
-    element.style.width = options.width + 'px';
-    element.style.height = options.height + 'px';
+    element.style.width = `${options.width}px`;
+    element.style.height = `${options.height}px`;
     element.style.margin = '0 auto';
     document.body.appendChild(element);
 

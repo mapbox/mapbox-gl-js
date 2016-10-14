@@ -149,7 +149,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
         // target {this.type}.loadData rather than literally geojson.loadData,
         // so that other geojson-like source types can easily reuse this
         // implementation
-        this.workerID = this.dispatcher.send(this.type + '.loadData', options, function(err) {
+        this.workerID = this.dispatcher.send(`${this.type}.loadData`, options, function(err) {
             this._loaded = true;
             callback(err);
 

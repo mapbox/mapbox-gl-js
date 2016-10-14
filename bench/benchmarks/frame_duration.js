@@ -31,8 +31,8 @@ module.exports = function(options) {
         measureFrameTime(options, zooms[index], function(err_, result) {
             results[index] = result;
             evented.fire('log', {
-                message: formatNumber(result.sum / result.count * 10) / 10 + ' ms, ' +
-                    formatNumber(result.countAbove16 / result.count * 100) + '% > 16 ms at zoom ' + zooms[index]
+                message: `${formatNumber(result.sum / result.count * 10) / 10} ms, ${
+                    formatNumber(result.countAbove16 / result.count * 100)}% > 16 ms at zoom ${zooms[index]}`
             });
             callback();
         });
@@ -49,7 +49,7 @@ module.exports = function(options) {
             countAbove16 += result.countAbove16;
         }
         evented.fire('end', {
-            message: formatNumber(sum / count * 10) / 10 + ' ms, ' + formatNumber(countAbove16 / count * 100) + '% > 16ms',
+            message: `${formatNumber(sum / count * 10) / 10} ms, ${formatNumber(countAbove16 / count * 100)}% > 16ms`,
             score: sum / count
         });
     }

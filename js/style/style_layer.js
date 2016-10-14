@@ -32,8 +32,8 @@ StyleLayer.prototype = util.inherit(Evented, {
         this.paint = {};
         this.layout = {};
 
-        this._paintSpecifications = styleSpec['paint_' + this.type];
-        this._layoutSpecifications = styleSpec['layout_' + this.type];
+        this._paintSpecifications = styleSpec[`paint_${this.type}`];
+        this._layoutSpecifications = styleSpec[`layout_${this.type}`];
 
         this._paintTransitions = {}; // {[propertyName]: StyleTransition}
         this._paintTransitionOptions = {}; // {[className]: {[propertyName]: { duration:Number, delay:Number }}}
@@ -78,7 +78,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         if (value == null) {
             delete this._layoutDeclarations[name];
         } else {
-            const key = 'layers.' + this.id + '.layout.' + name;
+            const key = `layers.${this.id}.layout.${name}`;
             if (this._validate(validateStyle.layoutProperty, key, name, value, options)) return;
             this._layoutDeclarations[name] = new StyleDeclaration(this._layoutSpecifications[name], value);
         }
@@ -104,7 +104,7 @@ StyleLayer.prototype = util.inherit(Evented, {
     },
 
     setPaintProperty: function(name, value, klass, options) {
-        const validateStyleKey = 'layers.' + this.id + (klass ? '["paint.' + klass + '"].' : '.paint.') + name;
+        const validateStyleKey = `layers.${this.id}${klass ? `["paint.${klass}"].` : '.paint.'}${name}`;
 
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
             if (!this._paintTransitionOptions[klass || '']) {
@@ -258,7 +258,7 @@ StyleLayer.prototype = util.inherit(Evented, {
         };
 
         for (const klass in this._paintDeclarations) {
-            const key = klass === '' ? 'paint' : 'paint.' + klass;
+            const key = klass === '' ? 'paint' : `paint.${klass}`;
             output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
         }
 

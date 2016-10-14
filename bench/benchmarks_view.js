@@ -66,10 +66,10 @@ const BenchmarksView = React.createClass({
     renderTextBenchmarks: function() {
         let output = '# Benchmarks\n';
         for (const name in this.state.results) {
-            output += '\n## ' + name + '\n\n';
+            output += `\n## ${name}\n\n`;
             for (const version in this.state.results[name]) {
                 const result = this.state.results[name][version];
-                output += '**' + version + ':** ' + (result.message || '...') + '\n';
+                output += `**${version}:** ${result.message || '...'}\n`;
             }
         }
         return output;
@@ -98,7 +98,7 @@ const BenchmarksView = React.createClass({
 
                     <h2 className='space-bottom'>{name} on {version}</h2>
                 {results.logs.map(function(log, index) {
-                    return <div key={index} className={'pad1 dark fill-' + log.color}>{log.message}</div>;
+                    return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
                 })}
             </div>
         );

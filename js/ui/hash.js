@@ -66,12 +66,12 @@ Hash.prototype = {
             pitch = this._map.getPitch(),
             precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
 
-            hash = '#' + (Math.round(zoom * 100) / 100) +
-                '/' + center.lat.toFixed(precision) +
-                '/' + center.lng.toFixed(precision);
+            hash = `#${Math.round(zoom * 100) / 100
+                }/${center.lat.toFixed(precision)
+                }/${center.lng.toFixed(precision)}`;
 
-        if (bearing || pitch) hash += ('/' + (Math.round(bearing * 10) / 10));
-        if (pitch) hash += ('/' + Math.round(pitch));
+        if (bearing || pitch) hash += (`/${Math.round(bearing * 10) / 10}`);
+        if (pitch) hash += (`/${Math.round(pitch)}`);
 
         window.history.replaceState('', '', hash);
     }

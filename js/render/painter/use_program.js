@@ -13,7 +13,7 @@ module.exports._createProgram = function(name, defines, vertexPragmas, fragmentP
 
     let definesSource = '#define MAPBOX_GL_JS;\n';
     for (let j = 0; j < defines.length; j++) {
-        definesSource += '#define ' + defines[j] + ';\n';
+        definesSource += `#define ${defines[j]};\n`;
     }
 
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);

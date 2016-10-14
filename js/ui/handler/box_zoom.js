@@ -96,10 +96,10 @@ BoxZoomHandler.prototype = {
             minY = Math.min(p0.y, p1.y),
             maxY = Math.max(p0.y, p1.y);
 
-        DOM.setTransform(this._box, 'translate(' + minX + 'px,' + minY + 'px)');
+        DOM.setTransform(this._box, `translate(${minX}px,${minY}px)`);
 
-        this._box.style.width = (maxX - minX) + 'px';
-        this._box.style.height = (maxY - minY) + 'px';
+        this._box.style.width = `${maxX - minX}px`;
+        this._box.style.height = `${maxY - minY}px`;
     },
 
     _onMouseUp: function (e) {

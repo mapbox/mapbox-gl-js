@@ -84,7 +84,7 @@ test('Map', function(t) {
             'touchZoomRotate'
         ];
         handlerNames.forEach(function(handlerName) {
-            t.test('disables "' + handlerName + '" handler', function(t) {
+            t.test(`disables "${handlerName}" handler`, function(t) {
                 const options = {};
                 options[handlerName] = false;
                 const map = createMap(options);

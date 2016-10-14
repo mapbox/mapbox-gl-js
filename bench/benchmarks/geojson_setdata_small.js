@@ -36,7 +36,7 @@ module.exports = function() {
         setDataPerf(map.style.sourceCaches.geojson, featureCollection, function(err, ms) {
             map.remove();
             if (err) return evented.fire('error', {error: err});
-            evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
+            evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});
         });
     });
 

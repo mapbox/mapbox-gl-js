@@ -11,8 +11,10 @@
     "no-var": "error",
     "no-warning-comments": "error",
     "object-curly-spacing": "off",
+    "prefer-template": "error",
     "quotes": "off",
     "space-before-function-paren": "off",
+    "template-curly-spacing": "error"
   },
   "env": {
     "es6": true,

@@ -13,7 +13,7 @@ module.exports = function() {
 
     const evented = util.extend({}, Evented);
 
-    const stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
+    const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
     ajax.getJSON(stylesheetURL, function(err, json) {
         if (err) {
             return evented.fire('error', {error: err});
@@ -37,7 +37,7 @@ module.exports = function() {
         }, function() {
             const timeAverage = timeSum / timeCount;
             evented.fire('end', {
-                message: formatNumber(timeAverage) + ' ms',
+                message: `${formatNumber(timeAverage)} ms`,
                 score: timeAverage
             });
         });

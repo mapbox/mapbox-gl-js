@@ -102,7 +102,7 @@ GlyphSource.prototype.loadRange = function(fontstack, range, callback) {
     } else {
         loading[range] = [callback];
 
-        const rangeName = (range * 256) + '-' + (range * 256 + 255);
+        const rangeName = `${range * 256}-${range * 256 + 255}`;
         const url = glyphUrl(fontstack, rangeName, this.url);
 
         ajax.getArrayBuffer(url, function(err, data) {

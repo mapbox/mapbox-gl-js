@@ -33,12 +33,12 @@ GeolocateControl.prototype = util.inherit(Control, {
     onAdd: function(map) {
         const className = 'mapboxgl-ctrl';
 
-        const container = this._container = DOM.create('div', className + '-group', map.getContainer());
+        const container = this._container = DOM.create('div', `${className}-group`, map.getContainer());
         if (!browser.supportsGeolocation) return container;
 
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
-        this._geolocateButton = DOM.create('button', (className + '-icon ' + className + '-geolocate'), this._container);
+        this._geolocateButton = DOM.create('button', (`${className}-icon ${className}-geolocate`), this._container);
         this._geolocateButton.type = 'button';
         this._geolocateButton.addEventListener('click', this._onClickGeolocate.bind(this));
         return container;

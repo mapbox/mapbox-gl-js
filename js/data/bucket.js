@@ -216,7 +216,7 @@ Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalP
     for (let i = 0; i < uniforms.length; i++) {
         const uniform = uniforms[i];
         const uniformLocation = program[uniform.name];
-        gl['uniform' + uniform.components + 'fv'](uniformLocation, uniform.getValue(layer, globalProperties));
+        gl[`uniform${uniform.components}fv`](uniformLocation, uniform.getValue(layer, globalProperties));
     }
 };
 
@@ -349,56 +349,56 @@ function createPaintAttributes(bucket) {
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);
 
-                    paintAttributes.fragmentPragmas.define[attributeInnerName] = paintAttributes.vertexPragmas.define[attributeInnerName] = [
+                    paintAttributes.fragmentPragmas.define[attributeInnerName] = paintAttributes.vertexPragmas.define[attributeInnerName] = `${[
                         'uniform',
                         attributePrecision,
                         attributeType,
                         attributeInputName
-                    ].join(' ') + ';';
+                    ].join(' ')};`;
 
-                    paintAttributes.fragmentPragmas.initialize[attributeInnerName] = paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
+                    paintAttributes.fragmentPragmas.initialize[attributeInnerName] = paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
                         attributePrecision,
                         attributeType,
                         attributeInnerName,
                         '=',
                         attributeInputName
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
 
                 } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
                     paintAttributes.attributes.push(util.extend({}, attribute, {
                         name: attributeInputName
                     }));
 
-                    attributeVaryingDefinition = [
+                    attributeVaryingDefinition = `${[
                         'varying',
                         attributePrecision,
                         attributeType,
                         attributeInnerName
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
 
-                    const attributeAttributeDefinition = [
+                    const attributeAttributeDefinition = `${[
                         paintAttributes.fragmentPragmas.define[attributeInnerName],
                         'attribute',
                         attributePrecision,
                         attributeType,
                         attributeInputName
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
 
                     paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
 
                     paintAttributes.vertexPragmas.define[attributeInnerName] = attributeVaryingDefinition + attributeAttributeDefinition;
 
-                    paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
+                    paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
                         attributeInnerName,
                         '=',
                         attributeInputName,
                         '/',
                         attribute.multiplier.toFixed(1)
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
 
                 } else {
 
-                    const tName = 'u_' + attributeInputName.slice(2) + '_t';
+                    const tName = `u_${attributeInputName.slice(2)}_t`;
                     const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
 
                     // Pick the index of the first offset to add to the buffers.
@@ -412,19 +412,19 @@ function createPaintAttributes(bucket) {
                         fourZoomLevels.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
                     }
 
-                    attributeVaryingDefinition = [
+                    attributeVaryingDefinition = `${[
                         'varying',
                         attributePrecision,
                         attributeType,
                         attributeInnerName
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
 
-                    paintAttributes.vertexPragmas.define[attributeInnerName] = attributeVaryingDefinition + [
+                    paintAttributes.vertexPragmas.define[attributeInnerName] = `${attributeVaryingDefinition + [
                         'uniform',
                         'lowp',
                         'float',
                         tName
-                    ].join(' ') + ';\n';
+                    ].join(' ')};\n`;
                     paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
 
                     paintAttributes.uniforms.push(util.extend({}, attribute, {
@@ -442,20 +442,20 @@ function createPaintAttributes(bucket) {
                             components: components * 4
                         }));
 
-                        paintAttributes.vertexPragmas.define[attributeInnerName] += [
+                        paintAttributes.vertexPragmas.define[attributeInnerName] += `${[
                             'attribute',
                             attributePrecision,
                             'vec4',
                             attributeInputName
-                        ].join(' ') + ';\n';
+                        ].join(' ')};\n`;
 
-                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
+                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
                             attributeInnerName,
                             '=',
-                            'evaluate_zoom_function_1(' + attributeInputName + ', ' + tName + ')',
+                            `evaluate_zoom_function_1(${attributeInputName}, ${tName})`,
                             '/',
                             attribute.multiplier.toFixed(1)
-                        ].join(' ') + ';\n';
+                        ].join(' ')};\n`;
 
                     } else {
 
@@ -467,20 +467,20 @@ function createPaintAttributes(bucket) {
                                 isFunction: true,
                                 name: attributeInputName + k
                             }));
-                            paintAttributes.vertexPragmas.define[attributeInnerName] += [
+                            paintAttributes.vertexPragmas.define[attributeInnerName] += `${[
                                 'attribute',
                                 attributePrecision,
                                 attributeType,
                                 attributeInputName + k
-                            ].join(' ') + ';\n';
+                            ].join(' ')};\n`;
                         }
-                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = [
+                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
                             attributeInnerName,
                             ' = ',
-                            'evaluate_zoom_function_4(' + attributeInputNames.join(', ') + ', ' + tName + ')',
+                            `evaluate_zoom_function_4(${attributeInputNames.join(', ')}, ${tName})`,
                             '/',
                             attribute.multiplier.toFixed(1)
-                        ].join(' ') + ';\n';
+                        ].join(' ')};\n`;
                     }
                 }
             }

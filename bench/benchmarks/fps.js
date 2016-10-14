@@ -23,7 +23,7 @@ module.exports = function() {
         map.repaint = true;
 
         evented.fire('log', {
-            message: 'starting ' + formatNumber(DURATION_MILLISECONDS / 1000) + ' second test',
+            message: `starting ${formatNumber(DURATION_MILLISECONDS / 1000)} second test`,
             color: 'dark'
         });
 
@@ -33,7 +33,7 @@ module.exports = function() {
                 evented.fire('error', { error: err });
             } else {
                 evented.fire('end', {
-                    message: formatNumber(fps) + ' fps',
+                    message: `${formatNumber(fps)} fps`,
                     score: 1 / fps
                 });
             }

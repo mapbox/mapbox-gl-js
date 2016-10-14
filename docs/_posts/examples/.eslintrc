@@ -9,7 +9,8 @@
     "strict": "off",
     "no-unused-vars": ["error", {varsIgnorePattern: "map|popup"}],
     "no-loop-func": "off",
-    "no-var": "off"
+    "no-var": "off",
+    "prefer-template": "off"
   },
   "env": {
     "es6": false,

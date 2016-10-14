@@ -76,8 +76,8 @@ AttributionControl.prototype = util.inherit(Control, {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
-            this._editLink.href = 'https://www.mapbox.com/map-feedback/#/' +
-                    center.lng + '/' + center.lat + '/' + Math.round(this._map.getZoom() + 1);
+            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
+                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
         }
     }
 });
