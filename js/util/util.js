@@ -15,7 +15,7 @@ const Coordinate = require('../geo/coordinate');
 exports.easeCubicInOut = function (t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
-    let t2 = t * t,
+    const t2 = t * t,
         t3 = t2 * t;
     return 4 * (t < 0.5 ? t3 : 3 * (t - t2) + t3 - 0.75);
 };
@@ -178,7 +178,7 @@ exports.extendAll = function (dest, src) {
  * @private
  */
 exports.inherit = function (parent, props) {
-    let parentProto = typeof parent === 'function' ? parent.prototype : parent,
+    const parentProto = typeof parent === 'function' ? parent.prototype : parent,
         proto = Object.create(parentProto);
     exports.extendAll(proto, props);
     return proto;
@@ -521,8 +521,8 @@ exports.isClosedPolygon = function(points) {
  */
 
 exports.sphericalToCartesian = function(spherical) {
-    let r = spherical[0],
-        azimuthal = spherical[1],
+    const r = spherical[0];
+    let azimuthal = spherical[1],
         polar = spherical[2];
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here

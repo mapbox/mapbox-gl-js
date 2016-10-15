@@ -122,7 +122,7 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
 
     const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-    let firstVertex = vertices[0],
+    const firstVertex = vertices[0],
         lastVertex = vertices[len - 1],
         closed = firstVertex.equals(lastVertex);
 
@@ -135,10 +135,10 @@ LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, 
 
     this.distance = 0;
 
-    let beginCap = cap,
-        endCap = closed ? 'butt' : cap,
-        startOfLine = true,
-        currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
+    const beginCap = cap,
+        endCap = closed ? 'butt' : cap;
+    let startOfLine = true;
+    let currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
 
     // the last three vertices added
     this.e1 = this.e2 = this.e3 = -1;

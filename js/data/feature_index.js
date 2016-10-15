@@ -104,7 +104,7 @@ FeatureIndex.prototype.query = function(args, styleLayers) {
 
     const result = {};
 
-    let params = args.params || {},
+    const params = args.params || {},
         pixelsToTileUnits = EXTENT / args.tileSize / args.scale,
         filter = featureFilter(params.filter);
 

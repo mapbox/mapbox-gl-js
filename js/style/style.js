@@ -765,9 +765,9 @@ Style.prototype = util.inherit(Evented, {
     },
 
     'get glyphs': function(mapId, params, callback) {
-        let stacks = params.stacks,
-            remaining = Object.keys(stacks).length,
-            allGlyphs = {};
+        const stacks = params.stacks;
+        let remaining = Object.keys(stacks).length;
+        const allGlyphs = {};
 
         for (const fontName in stacks) {
             this.glyphSource.getSimpleGlyphs(fontName, stacks[fontName], params.uid, done);

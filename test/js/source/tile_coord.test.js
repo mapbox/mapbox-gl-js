@@ -92,7 +92,7 @@ test('TileCoord', (t) => {
 
     t.test('.cover', (t) => {
         t.test('calculates tile coverage at w = 0', (t) => {
-            let z = 2,
+            const z = 2,
                 coords = [
                     {column: 0, row: 1, zoom: 2},
                     {column: 1, row: 1, zoom: 2},
@@ -105,7 +105,7 @@ test('TileCoord', (t) => {
         });
 
         t.test('calculates tile coverage at w > 0', (t) => {
-            let z = 2,
+            const z = 2,
                 coords = [
                     {column: 12, row: 1, zoom: 2},
                     {column: 13, row: 1, zoom: 2},
@@ -118,7 +118,7 @@ test('TileCoord', (t) => {
         });
 
         t.test('calculates tile coverage at w = -1', (t) => {
-            let z = 2,
+            const z = 2,
                 coords = [
                     {column: -1, row: 1, zoom: 2},
                     {column:  0, row: 1, zoom: 2},
@@ -131,7 +131,7 @@ test('TileCoord', (t) => {
         });
 
         t.test('calculates tile coverage at w < -1', (t) => {
-            let z = 2,
+            const z = 2,
                 coords = [
                     {column: -13, row: 1, zoom: 2},
                     {column: -12, row: 1, zoom: 2},
@@ -144,7 +144,7 @@ test('TileCoord', (t) => {
         });
 
         t.test('calculates tile coverage across meridian', (t) => {
-            let z = 2,
+            const z = 2,
                 coords = [
                     {column: -0.5, row: 1, zoom: 2},
                     {column:  0.5, row: 1, zoom: 2},

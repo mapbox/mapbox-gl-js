@@ -42,9 +42,9 @@ TileCoord.prototype.toCoordinate = function(sourceMaxZoom) {
 
 // Parse a packed integer id into a TileCoord object
 TileCoord.fromID = function(id) {
-    let z = id % 32, dim = 1 << z;
+    const z = id % 32, dim = 1 << z;
     const xy = ((id - z) / 32);
-    let x = xy % dim, y = ((xy - x) / dim) % dim;
+    const x = xy % dim, y = ((xy - x) / dim) % dim;
     let w = Math.floor(xy / (dim * dim));
     if (w % 2 !== 0) w = w * -1 - 1;
     w /= 2;

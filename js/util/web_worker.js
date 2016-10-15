@@ -3,7 +3,7 @@
 const Worker = require('../source/worker');
 
 module.exports = function () {
-    let parentListeners = [],
+    const parentListeners = [],
         workerListeners = [],
         parentBus = new MessageBus(workerListeners, parentListeners),
         workerBus = new MessageBus(parentListeners, workerListeners);

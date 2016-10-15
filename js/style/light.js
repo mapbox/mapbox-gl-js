@@ -70,7 +70,7 @@ Light.prototype = util.inherit(Evented, {
 
     getLightValue: function(property, globalProperties) {
         if (property === 'position') {
-            let calculated = this._transitions[property].calculate(globalProperties),
+            const calculated = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
             return {
                 x: cartesian[0],

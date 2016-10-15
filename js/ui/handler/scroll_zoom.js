@@ -8,7 +8,7 @@ const window = require('../../util/window');
 module.exports = ScrollZoomHandler;
 
 
-let ua = window.navigator.userAgent.toLowerCase(),
+const ua = window.navigator.userAgent.toLowerCase(),
     firefox = ua.indexOf('firefox') !== -1,
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
 
@@ -79,7 +79,7 @@ ScrollZoomHandler.prototype = {
             if (safari) value = value / 3;
         }
 
-        let now = browser.now(),
+        const now = browser.now(),
             timeDelta = now - (this._time || 0);
 
         this._pos = DOM.mousePos(this._el, e);
@@ -137,7 +137,7 @@ ScrollZoomHandler.prototype = {
         let scale = 2 / (1 + Math.exp(-Math.abs(delta / 100)));
         if (delta < 0 && scale !== 0) scale = 1 / scale;
 
-        let fromScale = map.ease ? map.ease.to : map.transform.scale,
+        const fromScale = map.ease ? map.ease.to : map.transform.scale,
             targetZoom = map.transform.scaleZoom(fromScale * scale);
 
         map.zoomTo(targetZoom, {

@@ -82,7 +82,7 @@ BoxZoomHandler.prototype = {
     },
 
     _onMouseMove: function (e) {
-        let p0 = this._startPos,
+        const p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e);
 
         if (!this._box) {
@@ -91,7 +91,7 @@ BoxZoomHandler.prototype = {
             this._fireEvent('boxzoomstart', e);
         }
 
-        let minX = Math.min(p0.x, p1.x),
+        const minX = Math.min(p0.x, p1.x),
             maxX = Math.max(p0.x, p1.x),
             minY = Math.min(p0.y, p1.y),
             maxY = Math.max(p0.y, p1.y);
@@ -105,7 +105,7 @@ BoxZoomHandler.prototype = {
     _onMouseUp: function (e) {
         if (e.button !== 0) return;
 
-        let p0 = this._startPos,
+        const p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
             bounds = new LngLatBounds()
                 .extend(this._map.unproject(p0))

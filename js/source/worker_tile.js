@@ -106,7 +106,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         }
     }
 
-    let buckets = [],
+    const buckets = [],
         symbolBuckets = this.symbolBuckets = [],
         otherBuckets = [];
 

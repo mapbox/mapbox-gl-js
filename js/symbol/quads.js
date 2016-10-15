@@ -68,7 +68,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
 
     // text-fit mode
     if (layout['icon-text-fit'] !== 'none' && shapedText) {
-        let iconWidth = (right - left),
+        const iconWidth = (right - left),
             iconHeight = (bottom - top),
             size = layout['text-size'] / 24,
             textLeft = shapedText.left * size,
@@ -109,7 +109,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
     }
 
     if (angle) {
-        let sin = Math.sin(angle),
+        const sin = Math.sin(angle),
             cos = Math.cos(angle),
             matrix = [cos, -sin, sin, cos];
 
@@ -171,7 +171,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
             }];
         }
 
-        let x1 = positionedGlyph.x + glyph.left,
+        const x1 = positionedGlyph.x + glyph.left,
             y1 = positionedGlyph.y - glyph.top,
             x2 = x1 + rect.w,
             y2 = y1 + rect.h,
@@ -183,14 +183,14 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
         for (let i = 0; i < glyphInstances.length; i++) {
 
-            let instance = glyphInstances[i],
-                tl = otl,
+            const instance = glyphInstances[i];
+            let tl = otl,
                 tr = otr,
                 bl = obl,
                 br = obr;
 
             if (textRotate) {
-                let sin = Math.sin(textRotate),
+                const sin = Math.sin(textRotate),
                     cos = Math.cos(textRotate),
                     matrix = [cos, -sin, sin, cos];
 

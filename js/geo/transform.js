@@ -1,6 +1,6 @@
 'use strict';
 
-let LngLat = require('./lng_lat'),
+const LngLat = require('./lng_lat'),
     Point = require('point-geometry'),
     Coordinate = require('./coordinate'),
     util = require('../util/util'),
@@ -9,7 +9,7 @@ let LngLat = require('./lng_lat'),
     EXTENT = require('../data/bucket').EXTENT,
     glmatrix = require('gl-matrix');
 
-let vec4 = glmatrix.vec4,
+const vec4 = glmatrix.vec4,
     mat4 = glmatrix.mat4,
     mat2 = glmatrix.mat2;
 
@@ -160,7 +160,7 @@ Transform.prototype = {
         if (z < options.minzoom) return [];
         if (z > options.maxzoom) z = options.maxzoom;
 
-        let tr = this,
+        const tr = this,
             tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
             centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
 
@@ -278,7 +278,7 @@ Transform.prototype = {
      * @private
      */
     locationCoordinate: function(lnglat) {
-        let k = this.zoomScale(this.tileZoom) / this.worldSize,
+        const k = this.zoomScale(this.tileZoom) / this.worldSize,
             ll = LngLat.convert(lnglat);
 
         return new Coordinate(
@@ -377,8 +377,8 @@ Transform.prototype = {
 
         this._constraining = true;
 
-        let minY, maxY, minX, maxX, sy, sx, x2, y2,
-            size = this.size,
+        let minY, maxY, minX, maxX, sy, sx, x2, y2;
+        const size = this.size,
             unmodified = this._unmodified;
 
         if (this.latRange) {
@@ -407,7 +407,7 @@ Transform.prototype = {
         }
 
         if (this.latRange) {
-            let y = this.y,
+            const y = this.y,
                 h2 = size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
@@ -415,7 +415,7 @@ Transform.prototype = {
         }
 
         if (this.lngRange) {
-            let x = this.x,
+            const x = this.x,
                 w2 = size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;

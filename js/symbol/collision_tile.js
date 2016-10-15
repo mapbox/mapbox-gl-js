@@ -32,7 +32,7 @@ function CollisionTile(angle, pitch, collisionBoxArray) {
     this.angle = angle;
     this.pitch = pitch;
 
-    let sin = Math.sin(angle),
+    const sin = Math.sin(angle),
         cos = Math.cos(angle);
     this.rotationMatrix = [cos, -sin, sin, cos];
     this.reverseRotationMatrix = [cos, sin, -sin, cos];

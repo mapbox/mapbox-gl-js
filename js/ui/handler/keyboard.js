@@ -3,7 +3,7 @@
 module.exports = KeyboardHandler;
 
 
-let panStep = 100,
+const panStep = 100,
     bearingStep = 15,
     pitchStep = 10;
 

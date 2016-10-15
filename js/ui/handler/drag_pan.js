@@ -6,7 +6,7 @@ const window = require('../../util/window');
 
 module.exports = DragPanHandler;
 
-let inertiaLinearity = 0.3,
+const inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 1400, // px/s
     inertiaDeceleration = 2500; // px/s^2
@@ -101,7 +101,7 @@ DragPanHandler.prototype = {
             this._fireEvent('movestart', e);
         }
 
-        let pos = DOM.mousePos(this._el, e),
+        const pos = DOM.mousePos(this._el, e),
             map = this._map;
 
         map.stop();
@@ -135,7 +135,7 @@ DragPanHandler.prototype = {
             return;
         }
 
-        let last = inertia[inertia.length - 1],
+        const last = inertia[inertia.length - 1],
             first = inertia[0],
             flingOffset = last[1].sub(first[1]),
             flingDuration = (last[0] - first[0]) / 1000;
@@ -146,15 +146,15 @@ DragPanHandler.prototype = {
         }
 
         // calculate px/s velocity & adjust for increased initial animation speed when easing out
-        let velocity = flingOffset.mult(inertiaLinearity / flingDuration),
-            speed = velocity.mag(); // px/s
+        const velocity = flingOffset.mult(inertiaLinearity / flingDuration);
+        let speed = velocity.mag(); // px/s
 
         if (speed > inertiaMaxSpeed) {
             speed = inertiaMaxSpeed;
             velocity._unit()._mult(speed);
         }
 
-        let duration = speed / (inertiaDeceleration * inertiaLinearity),
+        const duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = velocity.mult(-duration / 2);
 
         this._map.panBy(offset, {
@@ -191,14 +191,14 @@ DragPanHandler.prototype = {
             return (e.touches.length > 1);
         } else {
             if (e.ctrlKey) return true;
-            let buttons = 1,  // left button
+            const buttons = 1,  // left button
                 button = 0;   // left button
             return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
         }
     },
 
     _drainInertiaBuffer: function () {
-        let inertia = this._inertia,
+        const inertia = this._inertia,
             now = Date.now(),
             cutoff = 160;   // msec
 

@@ -21,8 +21,8 @@ function testProp(props) {
     return props[0];
 }
 
-let selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']),
-    userSelect;
+const selectProp = testProp(['userSelect', 'MozUserSelect', 'WebkitUserSelect', 'msUserSelect']);
+let userSelect;
 exports.disableDrag = function () {
     if (selectProp) {
         userSelect = docStyle[selectProp];
@@ -63,7 +63,7 @@ exports.mousePos = function (el, e) {
 };
 
 exports.touchPos = function (el, e) {
-    let rect = el.getBoundingClientRect(),
+    const rect = el.getBoundingClientRect(),
         points = [];
     const touches = (e.type === 'touchend') ? e.changedTouches : e.touches;
     for (let i = 0; i < touches.length; i++) {
