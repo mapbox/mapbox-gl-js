@@ -197,7 +197,7 @@ function setLight(program, painter) {
     const gl = painter.gl;
     const light = painter.style.light;
 
-    let _lp = light.calculated.position,
+    const _lp = light.calculated.position,
         lightPos = [_lp.x, _lp.y, _lp.z];
     const lightMat = mat3.create();
     if (light.calculated.anchor === 'viewport') mat3.fromRotation(lightMat, -painter.transform.angle);

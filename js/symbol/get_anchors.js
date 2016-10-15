@@ -59,16 +59,16 @@ function resample(line, offset, spacing, angleWindowSize, maxAngle, labelLength,
 
     for (let i = 0; i < line.length - 1; i++) {
 
-        let a = line[i],
+        const a = line[i],
             b = line[i + 1];
 
-        let segmentDist = a.dist(b),
+        const segmentDist = a.dist(b),
             angle = b.angleTo(a);
 
         while (markedDistance + spacing < distance + segmentDist) {
             markedDistance += spacing;
 
-            let t = (markedDistance - distance) / segmentDist,
+            const t = (markedDistance - distance) / segmentDist,
                 x = interpolate(a.x, b.x, t),
                 y = interpolate(a.y, b.y, t);
 

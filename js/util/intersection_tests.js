@@ -114,7 +114,7 @@ function pointIntersectsBufferedLine(p, line, radius) {
     for (let i = 1; i < line.length; i++) {
         // Find line segments that have a distance <= radius^2 to p
         // In that case, we treat the line as "containing point p".
-        let v = line[i - 1], w = line[i];
+        const v = line[i - 1], w = line[i];
         if (distToSegmentSquared(p, v, w) < radiusSquared) return true;
     }
     return false;

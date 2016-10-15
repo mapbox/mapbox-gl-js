@@ -76,8 +76,8 @@ test('SourceCache#addTile', (t) => {
     });
 
     t.test('uses cached tile', (t) => {
-        let coord = new TileCoord(0, 0, 0),
-            load = 0,
+        const coord = new TileCoord(0, 0, 0);
+        let load = 0,
             add = 0;
 
         const sourceCache = createSourceCache({
@@ -104,8 +104,8 @@ test('SourceCache#addTile', (t) => {
     });
 
     t.test('reuses wrapped tile', (t) => {
-        let coord = new TileCoord(0, 0, 0),
-            load = 0,
+        const coord = new TileCoord(0, 0, 0);
+        let load = 0,
             add = 0;
 
         const sourceCache = createSourceCache({
@@ -166,8 +166,8 @@ test('SourceCache#removeTile', (t) => {
     });
 
     t.test('aborts and unloads unfinished tile', (t) => {
-        let coord = new TileCoord(0, 0, 0),
-            abort = 0,
+        const coord = new TileCoord(0, 0, 0);
+        let abort = 0,
             unload = 0;
 
         const sourceCache = createSourceCache({
@@ -470,8 +470,8 @@ test('SourceCache#update', (t) => {
 
 test('SourceCache#clearTiles', (t) => {
     t.test('unloads tiles', (t) => {
-        let coord = new TileCoord(0, 0, 0),
-            abort = 0,
+        const coord = new TileCoord(0, 0, 0);
+        let abort = 0,
             unload = 0;
 
         const sourceCache = createSourceCache({

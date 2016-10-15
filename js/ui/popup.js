@@ -173,7 +173,8 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
      */
     setHTML: function(html) {
         const frag = window.document.createDocumentFragment();
-        let temp = window.document.createElement('body'), child;
+        const temp = window.document.createElement('body');
+        let child;
         temp.innerHTML = html;
         while (true) {
             child = temp.firstChild;
@@ -234,7 +235,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
         const pos = this._map.project(this._lngLat).round();
 
         if (!anchor) {
-            let width = this._container.offsetWidth,
+            const width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
             if (pos.y + offset.bottom.y < height) {

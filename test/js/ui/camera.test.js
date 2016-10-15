@@ -100,8 +100,8 @@ test('camera', (t) => {
         });
 
         t.test('emits move events, preserving eventData', (t) => {
-            let started, moved, ended,
-                eventData = { data: 'ok'};
+            let started, moved, ended;
+            const eventData = { data: 'ok'};
 
             camera
                 .on('movestart', (d) => { started = d.data; })
@@ -116,8 +116,8 @@ test('camera', (t) => {
         });
 
         t.test('emits zoom events, preserving eventData', (t) => {
-            let started, zoomed, ended,
-                eventData = { data: 'ok'};
+            let started, zoomed, ended;
+            const eventData = { data: 'ok'};
 
             camera
                 .on('zoomstart', (d) => { started = d.data; })
@@ -160,8 +160,8 @@ test('camera', (t) => {
         });
 
         t.test('emits move events, preserving eventData', (t) => {
-            let started, moved, ended,
-                eventData = { data: 'ok' };
+            let started, moved, ended;
+            const eventData = { data: 'ok'};
 
             camera.on('movestart', (d) => { started = d.data; })
                 .on('move', (d) => { moved = d.data; })
@@ -195,8 +195,8 @@ test('camera', (t) => {
         });
 
         t.test('emits move and zoom events, preserving eventData', (t) => {
-            let movestarted, moved, moveended, zoomstarted, zoomed, zoomended,
-                eventData = { data: 'ok' };
+            let movestarted, moved, moveended, zoomstarted, zoomed, zoomended;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { movestarted = d.data; })
@@ -237,8 +237,8 @@ test('camera', (t) => {
         });
 
         t.test('emits move events, preserving eventData', (t) => {
-            let started, moved, ended,
-                eventData = { data: 'ok' };
+            let started, moved, ended;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { started = d.data; })
@@ -279,8 +279,8 @@ test('camera', (t) => {
 
         t.test('emits move events, preserving eventData', (t) => {
             const camera = createCamera();
-            let started, moved,
-                eventData = { data: 'ok' };
+            let started, moved;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { started = d.data; })
@@ -344,8 +344,8 @@ test('camera', (t) => {
 
         t.test('emits move events, preserving eventData', (t) => {
             const camera = createCamera();
-            let started, moved,
-                eventData = { data: 'ok' };
+            let started, moved;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { started = d.data; })
@@ -411,8 +411,8 @@ test('camera', (t) => {
 
         t.test('emits move and zoom events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, moved, zoomstarted, zoomed,
-                eventData = { data: 'ok' };
+            let movestarted, moved, zoomstarted, zoomed;
+            const eventData = { data: 'ok' };
 
             t.plan(6);
 
@@ -490,8 +490,8 @@ test('camera', (t) => {
 
         t.test('emits move and rotate events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, moved, rotated,
-                eventData = { data: 'ok' };
+            let movestarted, moved, rotated;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { movestarted = d.data; })
@@ -647,8 +647,8 @@ test('camera', (t) => {
 
         t.test('emits move, zoom, rotate, and pitch events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, moved, rotated, pitched, zoomstarted, zoomed,
-                eventData = { data: 'ok' };
+            let movestarted, moved, rotated, pitched, zoomstarted, zoomed;
+            const eventData = { data: 'ok' };
 
             t.plan(12);
 
@@ -826,7 +826,8 @@ test('camera', (t) => {
         t.test('emits move, zoom, rotate, and pitch events, preserving eventData', (t) => {
             const camera = createCamera();
             let movestarted, moved, rotated, pitched, zoomstarted, zoomed,
-                count = 0, eventData = { data: 'ok' };
+                count = 0;
+            const eventData = { data: 'ok' };
 
             camera
                 .on('movestart', (d) => { movestarted = d.data; })
@@ -1080,8 +1081,8 @@ test('camera', (t) => {
         });
 
         t.test('emits moveend if panning, preserving eventData', (t) => {
-            let camera = createCamera(),
-                eventData = { data: 'ok' };
+            const camera = createCamera();
+            const eventData = { data: 'ok' };
 
             camera.on('moveend', (d) => {
                 t.equal(d.data, 'ok');
@@ -1093,8 +1094,8 @@ test('camera', (t) => {
         });
 
         t.test('emits moveend if zooming, preserving eventData', (t) => {
-            let camera = createCamera(),
-                eventData = { data: 'ok' };
+            const camera = createCamera();
+            const eventData = { data: 'ok' };
 
             camera.on('moveend', (d) => {
                 t.equal(d.data, 'ok');
@@ -1106,8 +1107,8 @@ test('camera', (t) => {
         });
 
         t.test('emits moveend if rotating, preserving eventData', (t) => {
-            let camera = createCamera(),
-                eventData = { data: 'ok' };
+            const camera = createCamera();
+            const eventData = { data: 'ok' };
 
             camera.on('moveend', (d) => {
                 t.equal(d.data, 'ok');
@@ -1119,8 +1120,8 @@ test('camera', (t) => {
         });
 
         t.test('does not emit moveend if not moving', (t) => {
-            let camera = createCamera(),
-                eventData = { data: 'ok' };
+            const camera = createCamera();
+            const eventData = { data: 'ok' };
 
             camera.on('moveend', (d) => {
                 t.equal(d.data, 'ok');

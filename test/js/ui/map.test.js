@@ -115,7 +115,7 @@ test('Map', (t) => {
 
     t.test('#setStyle', (t) => {
         t.test('returns self', (t) => {
-            let map = createMap(),
+            const map = createMap(),
                 style = {
                     version: 8,
                     sources: {},
@@ -282,7 +282,7 @@ test('Map', (t) => {
 
     t.test('#resize', (t) => {
         t.test('sets width and height from container offsets', (t) => {
-            let map = createMap(),
+            const map = createMap(),
                 container = map.getContainer();
 
             container.offsetWidth = 250;
@@ -296,7 +296,7 @@ test('Map', (t) => {
         });
 
         t.test('fires movestart, move, resize, and moveend events', (t) => {
-            let map = createMap(),
+            const map = createMap(),
                 events = [];
 
             ['movestart', 'move', 'resize', 'moveend'].forEach((event) => {

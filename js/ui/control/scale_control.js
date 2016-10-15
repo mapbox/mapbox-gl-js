@@ -31,7 +31,7 @@ ScaleControl.prototype = util.inherit(Control, {
     },
 
     onAdd: function(map) {
-        let className = 'mapboxgl-ctrl-scale',
+        const className = 'mapboxgl-ctrl-scale',
             container = this._container = DOM.create('div', className, map.getContainer()),
             options = this.options;
 
@@ -86,7 +86,7 @@ function getDistance(latlng1, latlng2) {
     // Uses spherical law of cosines approximation.
     const R = 6371000;
 
-    let rad = Math.PI / 180,
+    const rad = Math.PI / 180,
         lat1 = latlng1.lat * rad,
         lat2 = latlng2.lat * rad,
         a = Math.sin(lat1) * Math.sin(lat2) +
@@ -98,8 +98,8 @@ function getDistance(latlng1, latlng2) {
 }
 
 function getRoundNum(num) {
-    let pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1),
-        d = num / pow10;
+    const pow10 = Math.pow(10, (`${Math.floor(num)}`).length - 1);
+    let d = num / pow10;
 
     d = d >= 10 ? 10 :
         d >= 5 ? 5 :

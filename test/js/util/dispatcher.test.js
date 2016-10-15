@@ -7,7 +7,6 @@ const WebWorker = require('../../../js/util/web_worker');
 
 test('Dispatcher', (t) => {
     t.test('requests and releases workers from pool', (t) => {
-        let dispatcher;
         const workers = [new WebWorker(), new WebWorker()];
 
         const releaseCalled = [];
@@ -20,7 +19,7 @@ test('Dispatcher', (t) => {
             }
         };
 
-        dispatcher = new Dispatcher(workerPool, {});
+        const dispatcher = new Dispatcher(workerPool, {});
         t.same(dispatcher.actors.map((actor) => { return actor.target; }), workers);
         dispatcher.remove();
         t.equal(dispatcher.actors.length, 0, 'actors discarded');

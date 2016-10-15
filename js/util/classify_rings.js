@@ -9,8 +9,8 @@ module.exports = function classifyRings(rings, maxRings) {
 
     if (len <= 1) return [rings];
 
-    let polygons = [],
-        polygon,
+    const polygons = [];
+    let polygon,
         ccw;
 
     for (let i = 0; i < len; i++) {

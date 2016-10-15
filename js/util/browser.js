@@ -44,8 +44,8 @@ exports.timed = function (fn, dur, ctx) {
         return null;
     }
 
-    let abort = false,
-        start = module.exports.now();
+    let abort = false;
+    const start = module.exports.now();
 
     function tick(now) {
         if (abort) return;

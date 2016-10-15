@@ -47,9 +47,9 @@ Actor.prototype.send = function(type, data, callback, buffers, targetMapId) {
 };
 
 Actor.prototype.receive = function(message) {
-    let data = message.data,
-        id = data.id,
-        callback;
+    const data = message.data,
+        id = data.id;
+    let callback;
 
     if (data.targetMapId && this.mapId !== data.targetMapId)
         return;

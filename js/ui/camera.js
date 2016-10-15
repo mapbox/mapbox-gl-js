@@ -300,7 +300,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         bounds = LngLatBounds.convert(bounds);
 
-        let offset = Point.convert(options.offset),
+        const offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
@@ -337,8 +337,8 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     jumpTo: function(options, eventData) {
         this.stop();
 
-        let tr = this.transform,
-            zoomChanged = false,
+        const tr = this.transform;
+        let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
 
@@ -408,7 +408,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             easing: util.ease
         }, options);
 
-        let tr = this.transform,
+        const tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
@@ -416,9 +416,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
             zoom = 'zoom' in options ? +options.zoom : startZoom,
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
-            pitch = 'pitch' in options ? +options.pitch : startPitch,
+            pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-            toLngLat,
+        let toLngLat,
             toPoint;
 
         if ('center' in options) {
@@ -571,7 +571,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             easing: util.ease
         }, options);
 
-        let tr = this.transform,
+        const tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
@@ -592,15 +592,15 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
             }
         }
 
-        let scale = tr.zoomScale(zoom - startZoom),
+        const scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
             to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
-        let startWorldSize = tr.worldSize,
-            rho = options.curve,
+        const startWorldSize = tr.worldSize;
+        let rho = options.curve;
 
             // w₀: Initial visible span, measured in pixels at the initial scale.
-            w0 = Math.max(tr.width, tr.height),
+        const w0 = Math.max(tr.width, tr.height),
             // w₁: Final visible span, measured in pixels with respect to the initial scale.
             w1 = w0 / scale,
             // Length of the flight path as projected onto the ground plane, measured in pixels from
@@ -634,7 +634,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         function tanh(n) { return sinh(n) / cosh(n); }
 
         // r₀: Zoom-out factor during ascent.
-        let r0 = r(0),
+        const r0 = r(0);
             /**
              * w(s): Returns the visible span on the ground, measured in pixels with respect to the
              * initial scale.
@@ -642,7 +642,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
              * Assumes an angular field of view of 2 arctan ½ ≈ 53°.
              * @private
              */
-            w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
+        let w = function (s) { return (cosh(r0) / cosh(r0 + rho * s)); },
             /**
              * u(s): Returns the distance along the flight path as projected onto the ground plane,
              * measured in pixels from the world image origin at the initial scale.
@@ -680,7 +680,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
-            let s = k * S,
+            const s = k * S,
                 us = u(s);
 
             tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
@@ -763,7 +763,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         let easing = util.ease;
 
         if (this._prevEase) {
-            let ease = this._prevEase,
+            const ease = this._prevEase,
                 t = (Date.now() - ease.start) / ease.duration,
                 speed = ease.easing(t + 0.01) - ease.easing(t),
 

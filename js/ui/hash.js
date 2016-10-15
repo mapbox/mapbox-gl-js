@@ -60,13 +60,13 @@ Hash.prototype = {
     },
 
     _updateHash: function() {
-        let center = this._map.getCenter(),
+        const center = this._map.getCenter(),
             zoom = this._map.getZoom(),
             bearing = this._map.getBearing(),
             pitch = this._map.getPitch(),
-            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2)),
+            precision = Math.max(0, Math.ceil(Math.log(zoom) / Math.LN2));
 
-            hash = `#${Math.round(zoom * 100) / 100
+        let hash = `#${Math.round(zoom * 100) / 100
                 }/${center.lat.toFixed(precision)
                 }/${center.lng.toFixed(precision)}`;
 

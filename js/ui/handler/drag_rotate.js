@@ -6,7 +6,7 @@ const window = require('../../util/window');
 
 module.exports = DragRotateHandler;
 
-let inertiaLinearity = 0.25,
+const inertiaLinearity = 0.25,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 180, // deg/s
     inertiaDeceleration = 720; // deg/s^2
@@ -106,7 +106,7 @@ DragRotateHandler.prototype = {
         const map = this._map;
         map.stop();
 
-        let p1 = this._pos,
+        const p1 = this._pos,
             p2 = DOM.mousePos(this._el, e),
             bearingDiff = (p1.x - p2.x) * 0.8,
             pitchDiff = (p1.y - p2.y) * -0.5,
@@ -138,7 +138,7 @@ DragRotateHandler.prototype = {
         this._fireEvent('rotateend', e);
         this._drainInertiaBuffer();
 
-        let map = this._map,
+        const map = this._map,
             mapBearing = map.getBearing(),
             inertia = this._inertia;
 
@@ -155,11 +155,11 @@ DragRotateHandler.prototype = {
             return;
         }
 
-        let first = inertia[0],
+        const first = inertia[0],
             last = inertia[inertia.length - 1],
-            previous = inertia[inertia.length - 2],
-            bearing = map._normalizeBearing(mapBearing, previous[1]),
-            flingDiff = last[1] - first[1],
+            previous = inertia[inertia.length - 2];
+        let bearing = map._normalizeBearing(mapBearing, previous[1]);
+        const flingDiff = last[1] - first[1],
             sign = flingDiff < 0 ? -1 : 1,
             flingDuration = (last[0] - first[0]) / 1000;
 
@@ -173,7 +173,7 @@ DragRotateHandler.prototype = {
             speed = inertiaMaxSpeed;
         }
 
-        let duration = speed / (inertiaDeceleration * inertiaLinearity),
+        const duration = speed / (inertiaDeceleration * inertiaLinearity),
             offset = sign * speed * (duration / 2);
 
         bearing += offset;
@@ -201,14 +201,14 @@ DragRotateHandler.prototype = {
         if (e.touches) {
             return (e.touches.length > 1);
         } else {
-            let buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
+            const buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
                 button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
             return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
         }
     },
 
     _drainInertiaBuffer: function () {
-        let inertia = this._inertia,
+        const inertia = this._inertia,
             now = Date.now(),
             cutoff = 160;   //msec
 

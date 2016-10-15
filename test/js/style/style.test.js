@@ -304,7 +304,7 @@ test('Style#_resolve', (t) => {
         style.on('error', (event) => { t.error(event.error); });
 
         style.on('style.load', () => {
-            let ref = style.getLayer('ref'),
+            const ref = style.getLayer('ref'),
                 referent = style.getLayer('referent');
             t.equal(ref.type, 'fill');
             t.deepEqual(ref.layout, referent.layout);
@@ -317,7 +317,7 @@ test('Style#_resolve', (t) => {
 
 test('Style#addSource', (t) => {
     t.test('returns self', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', () => {
             t.equal(style.addSource('source-id', source), style);
@@ -326,7 +326,7 @@ test('Style#addSource', (t) => {
     });
 
     t.test('throw before loaded', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         t.throws(() => {
             style.addSource('source-id', source);
@@ -337,7 +337,7 @@ test('Style#addSource', (t) => {
     });
 
     t.test('throw if missing source type', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
 
         delete source.type;
@@ -351,7 +351,7 @@ test('Style#addSource', (t) => {
     });
 
     t.test('fires "data" event', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         style.once('data', t.end);
         style.on('style.load', () => {
@@ -361,7 +361,7 @@ test('Style#addSource', (t) => {
     });
 
     t.test('throws on duplicates', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', () => {
             style.addSource('source-id', source);
@@ -416,7 +416,7 @@ test('Style#addSource', (t) => {
 
 test('Style#removeSource', (t) => {
     t.test('returns self', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         style.on('style.load', () => {
             style.addSource('source-id', source);
@@ -443,7 +443,7 @@ test('Style#removeSource', (t) => {
     });
 
     t.test('fires "data" event', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             source = createSource();
         style.once('data', t.end);
         style.on('style.load', () => {
@@ -488,8 +488,8 @@ test('Style#removeSource', (t) => {
     });
 
     t.test('tears down source event forwarding', (t) => {
-        let style = new Style(createStyleJSON()),
-            source = createSource();
+        const style = new Style(createStyleJSON());
+        let source = createSource();
 
         style.on('style.load', () => {
             style.addSource('source-id', source);
@@ -514,7 +514,7 @@ test('Style#removeSource', (t) => {
 
 test('Style#addLayer', (t) => {
     t.test('returns self', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('style.load', () => {
@@ -524,7 +524,7 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('throw before loaded', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
         t.throws(() => {
             style.addLayer(layer);
@@ -627,7 +627,7 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('fires "data" event', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.once('data', t.end);
@@ -639,7 +639,7 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('emits error on duplicates', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('error', (e) => {
@@ -656,7 +656,7 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('adds to the end by default', (t) => {
-        let style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
                 layers: [{
                     id: 'a',
                     type: 'background'
@@ -675,7 +675,7 @@ test('Style#addLayer', (t) => {
     });
 
     t.test('adds before the given layer', (t) => {
-        let style = new Style(createStyleJSON({
+        const style = new Style(createStyleJSON({
                 layers: [{
                     id: 'a',
                     type: 'background'
@@ -698,7 +698,7 @@ test('Style#addLayer', (t) => {
 
 test('Style#removeLayer', (t) => {
     t.test('returns self', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.on('style.load', () => {
@@ -721,7 +721,7 @@ test('Style#removeLayer', (t) => {
     });
 
     t.test('fires "data" event', (t) => {
-        let style = new Style(createStyleJSON()),
+        const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
 
         style.once('data', t.end);
@@ -980,7 +980,7 @@ test('Style#setLayerZoomRange', (t) => {
 });
 
 test('Style#queryRenderedFeatures', (t) => {
-    let style;
+    let style; // eslint-disable-line prefer-const
     const Style = proxyquire('../../../js/style/style', {
         '../source/query_features': {
             rendered: function(source, layers, queryGeom, params) {

@@ -43,7 +43,7 @@ VectorTileWorkerSource.prototype = {
      * @param {boolean} params.showCollisionBoxes
      */
     loadTile: function(params, callback) {
-        let source = params.source,
+        const source = params.source,
             uid = params.uid;
 
         if (!this.loading[source])
@@ -81,7 +81,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     reloadTile: function(params, callback) {
-        let loaded = this.loaded[params.source],
+        const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
@@ -97,7 +97,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     abortTile: function(params) {
-        let loading = this.loading[params.source],
+        const loading = this.loading[params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
@@ -113,7 +113,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.uid The UID for this tile.
      */
     removeTile: function(params) {
-        let loaded = this.loaded[params.source],
+        const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
@@ -157,7 +157,7 @@ VectorTileWorkerSource.prototype = {
     },
 
     redoPlacement: function(params, callback) {
-        let loaded = this.loaded[params.source],
+        const loaded = this.loaded[params.source],
             loading = this.loading[params.source],
             uid = params.uid;
 

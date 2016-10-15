@@ -266,7 +266,7 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedIcon, feat
 
     const glyphSize = 24;
 
-    let fontScale = this.adjustedTextSize / glyphSize,
+    const fontScale = this.adjustedTextSize / glyphSize,
         textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize,
         textBoxScale = this.tilePixelRatio * fontScale,
         textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
@@ -416,7 +416,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
         const angle = collisionTile.angle;
 
-        let sin = Math.sin(angle),
+        const sin = Math.sin(angle),
             cos = Math.cos(angle);
 
         this.sortedSymbolInstances = symbolInstancesStructTypeArray.sort((a, b) => {
@@ -440,7 +440,7 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
         const hasText = !(symbolInstance.textBoxStartIndex === symbolInstance.textBoxEndIndex);
         const hasIcon = !(symbolInstance.iconBoxStartIndex === symbolInstance.iconBoxEndIndex);
 
-        let iconWithoutText = layout['text-optional'] || !hasText,
+        const iconWithoutText = layout['text-optional'] || !hasText,
             textWithoutIcon = layout['icon-optional'] || !hasIcon;
 
 
@@ -507,15 +507,15 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
         const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
         if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
-        let tl = symbol.tl,
+        const tl = symbol.tl,
             tr = symbol.tr,
             bl = symbol.bl,
             br = symbol.br,
             tex = symbol.tex,
-            anchorPoint = symbol.anchorPoint,
+            anchorPoint = symbol.anchorPoint;
 
-            minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
-            maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
+        let minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom);
+        const maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
 
         if (maxZoom <= minZoom) continue;
 
@@ -550,7 +550,7 @@ SymbolBucket.prototype.updateIcons = function(icons) {
 
 SymbolBucket.prototype.updateFont = function(stacks) {
     this.recalculateStyleLayers();
-    let fontName = this.layer.layout['text-font'],
+    const fontName = this.layer.layout['text-font'],
         stack = stacks[fontName] = stacks[fontName] || {};
 
     this.textFeatures = resolveText(this.features, this.layer.layout, stack);
@@ -600,19 +600,19 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     textBoxScale, textPadding, textAlongLine,
     iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
-    let glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
+    let textCollisionFeature, iconCollisionFeature, glyphQuads, iconQuads;
     if (shapedText) {
         glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine) : [];
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, textBoxScale, textPadding, textAlongLine, false);
     }
 
-    glyphQuadStartIndex = this.symbolQuadsArray.length;
+    const glyphQuadStartIndex = this.symbolQuadsArray.length;
     if (glyphQuads && glyphQuads.length) {
         for (let i = 0; i < glyphQuads.length; i++) {
             this.addSymbolQuad(glyphQuads[i]);
         }
     }
-    glyphQuadEndIndex = this.symbolQuadsArray.length;
+    const glyphQuadEndIndex = this.symbolQuadsArray.length;
 
     const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
@@ -622,11 +622,11 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 
-    iconQuadStartIndex = this.symbolQuadsArray.length;
+    const iconQuadStartIndex = this.symbolQuadsArray.length;
     if (iconQuads && iconQuads.length === 1) {
         this.addSymbolQuad(iconQuads[0]);
     }
-    iconQuadEndIndex = this.symbolQuadsArray.length;
+    const iconQuadEndIndex = this.symbolQuadsArray.length;
 
     const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;

@@ -36,7 +36,7 @@ GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends 
      * See {@link VectorTileWorkerSource#loadTile}.
      */
     loadVectorData: function (params, callback) {
-        let source = params.source,
+        const source = params.source,
             coord = params.coord;
 
         if (!this._geoJSONIndexes[source]) {

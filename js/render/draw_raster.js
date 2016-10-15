@@ -54,7 +54,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform1f(program.u_contrast_factor, contrastFactor(layer.paint['raster-contrast']));
     gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
-    let parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
+    const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
         opacities = getOpacities(tile, parentTile, layer, painter.transform);
 
     let parentScaleBy, parentTL;

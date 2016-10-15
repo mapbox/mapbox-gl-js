@@ -2,12 +2,12 @@
 
 module.exports = function (features, textFeatures, geometries) {
 
-    let leftIndex = {},
+    const leftIndex = {},
         rightIndex = {},
         mergedFeatures = [],
         mergedGeom = [],
-        mergedTexts = [],
-        mergedIndex = 0,
+        mergedTexts = [];
+    let mergedIndex = 0,
         k;
 
     function add(k) {
@@ -43,7 +43,7 @@ module.exports = function (features, textFeatures, geometries) {
     }
 
     for (k = 0; k < features.length; k++) {
-        let geom = geometries[k],
+        const geom = geometries[k],
             text = textFeatures[k];
 
         if (!text) {
@@ -51,7 +51,7 @@ module.exports = function (features, textFeatures, geometries) {
             continue;
         }
 
-        let leftKey = getKey(text, geom),
+        const leftKey = getKey(text, geom),
             rightKey = getKey(text, geom, true);
 
         if ((leftKey in rightIndex) && (rightKey in leftIndex) && (rightIndex[leftKey] !== leftIndex[rightKey])) {

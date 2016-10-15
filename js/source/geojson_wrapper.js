@@ -36,7 +36,7 @@ FeatureWrapper.prototype.loadGeometry = function() {
     this.geometry = [];
 
     for (let i = 0; i < rings.length; i++) {
-        let ring = rings[i],
+        const ring = rings[i],
             newRing = [];
         for (let j = 0; j < ring.length; j++) {
             newRing.push(new Point(ring[j][0], ring[j][1]));
@@ -49,8 +49,8 @@ FeatureWrapper.prototype.loadGeometry = function() {
 FeatureWrapper.prototype.bbox = function() {
     if (!this.geometry) this.loadGeometry();
 
-    let rings = this.geometry,
-        x1 = Infinity,
+    const rings = this.geometry;
+    let x1 = Infinity,
         x2 = -Infinity,
         y1 = Infinity,
         y2 = -Infinity;

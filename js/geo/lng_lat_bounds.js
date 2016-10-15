@@ -65,9 +65,9 @@ LngLatBounds.prototype = {
      * @returns {LngLatBounds} `this`
      */
     extend: function(obj) {
-        let sw = this._sw,
-            ne = this._ne,
-            sw2, ne2;
+        const sw = this._sw,
+            ne = this._ne;
+        let sw2, ne2;
 
         if (obj instanceof LngLat) {
             sw2 = obj;

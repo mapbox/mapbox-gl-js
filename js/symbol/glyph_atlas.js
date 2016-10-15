@@ -20,8 +20,8 @@ function GlyphAtlas() {
 }
 
 GlyphAtlas.prototype.getGlyphs = function() {
-    let glyphs = {},
-        split,
+    const glyphs = {};
+    let split,
         name,
         id;
 
@@ -38,8 +38,8 @@ GlyphAtlas.prototype.getGlyphs = function() {
 };
 
 GlyphAtlas.prototype.getRects = function() {
-    let rects = {},
-        split,
+    const rects = {};
+    let split,
         name,
         id;
 
