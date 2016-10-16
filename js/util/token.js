@@ -10,8 +10,12 @@ module.exports = resolveTokens;
  * @returns {string} the template with tokens replaced
  * @private
  */
-function resolveTokens(properties, text) {
+function resolveTokens(properties, text, numericMultiplier) {
     return text.replace(/{([^{}]+)}/g, function(match, key) {
-        return key in properties ? properties[key] : '';
+        var value = key in properties ? properties[key] : '';
+        if (typeof value === 'number' && numericMultiplier != null) {
+            value = Math.round(value * numericMultiplier) / numericMultiplier;
+        }
+        return value;
     });
 }

@@ -14,6 +14,7 @@ test('token', function(t) {
     t.equal('dashed', resolveTokens({'dashed-property': 'dashed'}, '{dashed-property}'));
     t.equal('150 m', resolveTokens({'HØYDE': 150}, '{HØYDE} m'));
     t.equal('mapbox', resolveTokens({'$special:characters;': 'mapbox'}, '{$special:characters;}'));
+    t.equal('12.345 m', resolveTokens({foo: 12.345178911111}, '{foo} m', 1e3));
 
     t.end();
 });
