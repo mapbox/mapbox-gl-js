@@ -2,21 +2,21 @@
 
 module.exports = drawCollisionDebug;
 
-function drawCollisionDebug(painter, source, layer, coords) {
+function drawCollisionDebug(painter, sourceCache, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
-    var program = painter.useProgram('collisionbox');
+    var program = painter.useProgram('collisionBox');
 
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
-        var tile = source.getTile(coord);
+        var tile = sourceCache.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
         var bufferGroups = bucket.bufferGroups.collisionBox;
 
         if (!bufferGroups || !bufferGroups.length) continue;
         var group = bufferGroups[0];
-        if (group.layout.vertex.length === 0) continue;
+        if (group.layoutVertexBuffer.length === 0) continue;
 
         gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
@@ -27,7 +27,7 @@ function drawCollisionDebug(painter, source, layer, coords) {
         gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
         gl.uniform1f(program.u_maxzoom, (tile.coord.z + 1) * 10);
 
-        group.vaos[layer.id].bind(gl, program, group.layout.vertex);
-        gl.drawArrays(gl.LINES, 0, group.layout.vertex.length);
+        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer);
+        gl.drawArrays(gl.LINES, 0, group.layoutVertexBuffer.length);
     }
 }

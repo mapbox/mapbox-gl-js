@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var LRUCache = require('../../../js/util/lru_cache');
 
 test('LRUCache', function(t) {

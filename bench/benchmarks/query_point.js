@@ -2,6 +2,7 @@
 
 var Evented = require('../../js/util/evented');
 var util = require('../../js/util/util');
+var createMap = require('../lib/create_map');
 
 var width = 1024;
 var height = 768;
@@ -22,7 +23,7 @@ for (var x = 0; x < d; x++) {
     }
 }
 
-module.exports = function(options) {
+module.exports = function() {
     var evented = util.extend({}, Evented);
 
     var sum = 0;
@@ -30,14 +31,14 @@ module.exports = function(options) {
 
     asyncSeries(zoomLevels.length, function(n, callback) {
         var zoomLevel = zoomLevels[zoomLevels.length - n];
-        var map = options.createMap({
+        var map = createMap({
             width: width,
             height: height,
             zoom: zoomLevel,
             center: [-77.032194, 38.912753],
             style: 'mapbox://styles/mapbox/streets-v9'
         });
-        document.getElementById('map').style.display = 'none';
+        map.getContainer().style.display = 'none';
 
         map.on('load', function() {
 
@@ -46,7 +47,7 @@ module.exports = function(options) {
             asyncSeries(queryPoints.length, function(n, callback) {
                 var queryPoint = queryPoints[queryPoints.length - n];
                 var start = performance.now();
-                map.queryRenderedFeatures(queryPoint);
+                map.queryRenderedFeatures(queryPoint, {});
                 var duration = performance.now() - start;
                 sum += duration;
                 count++;
@@ -54,8 +55,9 @@ module.exports = function(options) {
                 zoomCount++;
                 callback();
             }, function() {
+                map.remove();
                 evented.fire('log', {
-                    message: 'zoom ' + zoomLevel + ' average: ' + (zoomSum / zoomCount).toFixed(2) + ' ms'
+                    message: (zoomSum / zoomCount).toFixed(2) + ' ms at zoom ' + zoomLevel
                 });
                 callback();
             });
@@ -90,4 +92,3 @@ function asyncSeries(times, work, callback) {
         callback();
     }
 }
-

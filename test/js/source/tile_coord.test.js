@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var TileCoord = require('../../../js/source/tile_coord');
 
 test('TileCoord', function(t) {
@@ -45,6 +45,19 @@ test('TileCoord', function(t) {
     t.test('.url', function(t) {
         t.test('replaces {z}/{x}/{y}', function(t) {
             t.equal(new TileCoord(1, 0, 0).url(['{z}/{x}/{y}.json']), '1/0/0.json');
+            t.end();
+        });
+
+        t.test('replaces {quadkey}', function(t) {
+            t.equal(new TileCoord(1, 0, 0).url(['quadkey={quadkey}']), 'quadkey=0');
+            t.equal(new TileCoord(2, 0, 0).url(['quadkey={quadkey}']), 'quadkey=00');
+            t.equal(new TileCoord(2, 1, 1).url(['quadkey={quadkey}']), 'quadkey=03');
+            t.equal(new TileCoord(17, 22914, 52870).url(['quadkey={quadkey}']), 'quadkey=02301322130000230');
+
+            // Test case confirmed by quadkeytools package
+            // https://bitbucket.org/steele/quadkeytools/src/master/test/quadkey.js?fileviewer=file-view-default#quadkey.js-57
+            t.equal(new TileCoord(6, 29, 3).url(['quadkey={quadkey}']), 'quadkey=011123');
+
             t.end();
         });
 

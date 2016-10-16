@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');
@@ -8,7 +8,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var loadGeometry = require('../../../js/data/load_geometry.js');
 
 // Load a line feature from fixture tile.
-var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 
 test('loadGeometry', function(t) {
     var feature = vt.layers.road.feature(0);
@@ -33,7 +33,7 @@ test('loadGeometry extent error', function(t) {
         }
     };
 
-    loadGeometry(feature);
+    loadGeometry(feature, 15);
 
     t.equal(numWarnings, 1);
 
@@ -42,4 +42,3 @@ test('loadGeometry extent error', function(t) {
 
     t.end();
 });
-

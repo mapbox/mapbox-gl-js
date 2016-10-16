@@ -5,7 +5,7 @@
 <meta charset='utf-8'>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-<link rel='stylesheet' href='../dist/mapbox-gl.css' />
+<link rel='stylesheet' href='/dist/mapbox-gl.css' />
 <style>
 body {
     margin: 0;
@@ -94,8 +94,8 @@ html, body, #map {
 
 <div id='console' class='hide'></div>
 
-<script src='mapbox-gl.js'></script>
-<script src='access-token.js'></script>
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 
 <script>
 var map = window.map = new mapboxgl.Map({
@@ -166,7 +166,7 @@ function checkEvent(type, checked) {
 var checkboxContainer = document.querySelector('#checkboxes');
 
 ['touchstart', 'touchend', 'touchmove', 'touchcancel',
- 'mousedown', 'mouseup', 'mousemove',
+ 'mouseout', 'mousedown', 'mouseup', 'mousemove',
  'click', 'dblclick', 'contextmenu',
  'dragstart', 'drag', 'dragend',
  'movestart', 'move', 'moveend',

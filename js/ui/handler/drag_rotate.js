@@ -1,8 +1,8 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    Point = require('point-geometry'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = DragRotateHandler;
 
@@ -13,14 +13,21 @@ var inertiaLinearity = 0.25,
 
 
 /**
- * The `DragRotateHandler` allows a user to rotate the map by clicking and
- * dragging the cursor while holding the right mouse button or the `ctrl` key.
+ * The `DragRotateHandler` allows the user to rotate the map by clicking and
+ * dragging the cursor while holding the right mouse button or `ctrl` key.
+ *
  * @class DragRotateHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
+ * @param {Object} [options]
+ * @param {number} [options.bearingSnap] The threshold, measured in degrees, that determines when the map's
+ *   bearing (rotation) will snap to north.
+ * @param {bool} [options.pitchWithRotate=true] Control the map pitch in addition to the bearing
  */
 function DragRotateHandler(map, options) {
     this._map = map;
     this._el = map.getCanvasContainer();
     this._bearingSnap = options.bearingSnap;
+    this._pitchWithRotate = options.pitchWithRotate !== false;
 
     util.bindHandlers(this);
 }
@@ -31,23 +38,26 @@ DragRotateHandler.prototype = {
     _active: false,
 
     /**
-     * Returns the current enabled/disabled state of the "drag to rotate" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "drag to rotate" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "drag to rotate" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Returns true if the "drag to rotate" interaction is currently active, i.e. currently being used.
-     * @returns {boolean} active state
+     * Returns a Boolean indicating whether the "drag to rotate" interaction is active, i.e. currently being used.
+     *
+     * @returns {boolean} `true` if the "drag to rotate" interaction is active.
      */
     isActive: function () {
         return this._active;
     },
 
     /**
-     * Enable the "drag to rotate" interaction.
+     * Enables the "drag to rotate" interaction.
+     *
      * @example
      * map.dragRotate.enable();
      */
@@ -58,7 +68,8 @@ DragRotateHandler.prototype = {
     },
 
     /**
-     * Disable the "drag to rotate" interaction.
+     * Disables the "drag to rotate" interaction.
+     *
      * @example
      * map.dragRotate.disable();
      */
@@ -72,22 +83,13 @@ DragRotateHandler.prototype = {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
-        document.addEventListener('mousemove', this._onMove);
-        document.addEventListener('mouseup', this._onUp);
+        window.document.addEventListener('mousemove', this._onMove);
+        window.document.addEventListener('mouseup', this._onUp);
 
         this._active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._center = this._map.transform.centerPoint;  // Center of rotation
-
-        // If the first click was too close to the center, move the center of rotation by 200 pixels
-        // in the direction of the click.
-        var startToCenter = this._startPos.sub(this._center),
-            startToCenterDist = startToCenter.mag();
-
-        if (startToCenterDist < 200) {
-            this._center = this._startPos.add(new Point(-200, 0)._rotate(startToCenter.angle()));
-        }
 
         e.preventDefault();
     },
@@ -106,9 +108,10 @@ DragRotateHandler.prototype = {
 
         var p1 = this._pos,
             p2 = DOM.mousePos(this._el, e),
-            center = this._center,
-            bearingDiff = p1.sub(center).angleWith(p2.sub(center)) / Math.PI * 180,
+            bearingDiff = (p1.x - p2.x) * 0.8,
+            pitchDiff = (p1.y - p2.y) * -0.5,
             bearing = map.getBearing() - bearingDiff,
+            pitch = map.getPitch() - pitchDiff,
             inertia = this._inertia,
             last = inertia[inertia.length - 1];
 
@@ -116,6 +119,7 @@ DragRotateHandler.prototype = {
         inertia.push([Date.now(), map._normalizeBearing(bearing, last[1])]);
 
         map.transform.bearing = bearing;
+        if (this._pitchWithRotate) map.transform.pitch = pitch;
 
         this._fireEvent('rotate', e);
         this._fireEvent('move', e);
@@ -125,8 +129,8 @@ DragRotateHandler.prototype = {
 
     _onUp: function (e) {
         if (this._ignoreEvent(e)) return;
-        document.removeEventListener('mousemove', this._onMove);
-        document.removeEventListener('mouseup', this._onUp);
+        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mouseup', this._onUp);
 
         if (!this.isActive()) return;
 
@@ -216,28 +220,28 @@ DragRotateHandler.prototype = {
 
 
 /**
- * Rotate start event. This event is emitted at the start of a user-initiated rotate interaction.
+ * Fired when a "drag to rotate" interaction starts. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotatestart
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
- * Rotate event. This event is emitted repeatedly during a user-initiated rotate interaction.
+ * Fired repeatedly during a "drag to rotate" interaction. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotate
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
- * Rotate end event. This event is emitted at the end of a user-initiated rotate interaction.
+ * Fired when a "drag to rotate" interaction ends. See [`DragRotateHandler`](#DragRotateHandler).
  *
  * @event rotateend
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */

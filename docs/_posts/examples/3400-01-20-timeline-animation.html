@@ -3,6 +3,9 @@ layout: example
 category: example
 title: Create a timeline animation
 description: Drag the range slider to visualize earthquakes that were greater than 5.9 magnitude in 2015.
+tags:
+  - user-interaction
+  - sources
 ---
 <style>
 .map-overlay {
@@ -62,7 +65,7 @@ description: Drag the range slider to visualize earthquakes that were greater th
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v8',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [31.4606, 20.7927],
     zoom: 0.5
 });
@@ -137,13 +140,14 @@ map.on('load', function() {
     // Here we're using d3 to help us make the ajax request but you can use
     // Any request method (library or otherwise) you wish.
     d3.json('{{site.baseurl}}/assets/data/significant-earthquakes-2015.geojson', function(err, data) {
+        if (err) throw err;
 
         // Create a month property value based on time
         // used to filter against.
         data.features = data.features.map(function(d) {
             d.properties.month = new Date(d.properties.time).getMonth();
             return d;
-        })
+        });
 
         map.addSource('earthquakes', {
             'type': 'geojson',

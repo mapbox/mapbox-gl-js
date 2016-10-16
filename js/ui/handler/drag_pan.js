@@ -1,7 +1,8 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = DragPanHandler;
 
@@ -12,9 +13,11 @@ var inertiaLinearity = 0.3,
 
 
 /**
- * The `DragPanHandler` allows a user to pan the map by clicking and dragging
+ * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
+ *
  * @class DragPanHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function DragPanHandler(map) {
     this._map = map;
@@ -29,23 +32,26 @@ DragPanHandler.prototype = {
     _active: false,
 
     /**
-     * Returns the current enabled/disabled state of the "drag to pan" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "drag to pan" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "drag to pan" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Returns true if the "drag to pan" interaction is currently active, i.e. currently being used.
-     * @returns {boolean} active state
+     * Returns a Boolean indicating whether the "drag to pan" interaction is active, i.e. currently being used.
+     *
+     * @returns {boolean} `true` if the "drag to pan" interaction is active.
      */
     isActive: function () {
         return this._active;
     },
 
     /**
-     * Enable the "drag to pan" interaction.
+     * Enables the "drag to pan" interaction.
+     *
      * @example
      * map.dragPan.enable();
      */
@@ -57,7 +63,8 @@ DragPanHandler.prototype = {
     },
 
     /**
-     * Disable the "drag to pan" interaction.
+     * Disables the "drag to pan" interaction.
+     *
      * @example
      * map.dragPan.disable();
      */
@@ -73,11 +80,11 @@ DragPanHandler.prototype = {
         if (this.isActive()) return;
 
         if (e.touches) {
-            document.addEventListener('touchmove', this._onMove);
-            document.addEventListener('touchend', this._onTouchEnd);
+            window.document.addEventListener('touchmove', this._onMove);
+            window.document.addEventListener('touchend', this._onTouchEnd);
         } else {
-            document.addEventListener('mousemove', this._onMove);
-            document.addEventListener('mouseup', this._onMouseUp);
+            window.document.addEventListener('mousemove', this._onMove);
+            window.document.addEventListener('mouseup', this._onMouseUp);
         }
 
         this._active = false;
@@ -160,15 +167,15 @@ DragPanHandler.prototype = {
     _onMouseUp: function (e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
-        document.removeEventListener('mousemove', this._onMove);
-        document.removeEventListener('mouseup', this._onMouseUp);
+        window.document.removeEventListener('mousemove', this._onMove);
+        window.document.removeEventListener('mouseup', this._onMouseUp);
     },
 
     _onTouchEnd: function (e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
-        document.removeEventListener('touchmove', this._onMove);
-        document.removeEventListener('touchend', this._onTouchEnd);
+        window.document.removeEventListener('touchmove', this._onMove);
+        window.document.removeEventListener('touchend', this._onTouchEnd);
     },
 
     _fireEvent: function (type, e) {
@@ -201,28 +208,28 @@ DragPanHandler.prototype = {
 
 
 /**
- * Drag start event. This event is emitted at the start of a user-initiated pan interaction.
+ * Fired when a "drag to pan" interaction starts. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event dragstart
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {{originalEvent: DragEvent}} data
  */
 
 /**
- * Drag event. This event is emitted repeatedly during a user-initiated pan interaction.
+ * Fired repeatedly during a "drag to pan" interaction. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event drag
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapMouseEvent | MapTouchEvent} data
  */
 
 /**
- * Drag end event. This event is emitted at the end of a user-initiated pan interaction.
+ * Fired when a "drag to pan" interaction ends. See [`DragPanHandler`](#DragPanHandler).
  *
  * @event dragend
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {{originalEvent: DragEvent}} data
  */

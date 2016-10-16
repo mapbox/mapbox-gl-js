@@ -1,4 +1,4 @@
-Mapbox GL JS has [API documentation](#api-documentation) and [examples](#examples).
+Mapbox GL JS has [API documentation](#writing-api-documentation) and [examples](#writing-examples).
 
 ## Writing API Documentation
 
@@ -30,7 +30,7 @@ In the post body, write the HTML and JavaScript constituting the example.
 * Use **4 space indentation**. Exception: do not add an initial level of indentation to code within `<script>` tags (it should start flush left).
 * Do **not** include an access token in the example code. The access token will be inserted automatically by the template, using the current logged in user's default public token, or a placeholder `<insert token here>` string if the user is not logged in.
 * Do **not** use custom styles from your personal account. Use only the default `mapbox` account styles.
-* When embedding literal JSON (GeoJSON or GL style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
+* When embedding literal JSON (GeoJSON or Mapbox style snippets) into script code, double-quote property names and string values. Elsewhere, use single-quoted strings.
 
 ## Running the Documentation Server Locally
 
@@ -53,11 +53,11 @@ Ensure you have the right version of all dependencies
 npm install
 ```
 
-Ensure you are running Jekyll version 2.5.x
+Ensure you are running Jekyll version 3.2.x
 
 ```bash
 jekyll -v
- > jekyll 2.5.3
+ > jekyll 3.2.1
 ```
 
 ## Committing and Publishing Documentation

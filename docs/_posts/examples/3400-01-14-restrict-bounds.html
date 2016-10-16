@@ -3,6 +3,8 @@ layout: example
 category: example
 title: Restrict map panning to an area
 description: Prevent a map from being panned to a different place by setting <code>maxBounds</code>.
+tags:
+  - user-interaction
 ---
 <div id='map'></div>
 <script>
@@ -15,7 +17,7 @@ var bounds = [
 
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: [-73.9978, 40.7209],
     zoom: 13,
     maxBounds: bounds // Sets bounds as max

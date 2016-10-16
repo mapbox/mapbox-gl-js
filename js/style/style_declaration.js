@@ -7,21 +7,25 @@ var util = require('../util/util');
 module.exports = StyleDeclaration;
 
 function StyleDeclaration(reference, value) {
-    this.type = reference.type;
-    this.transitionable = reference.transition;
     this.value = util.clone(value);
     this.isFunction = MapboxGLFunction.isFunctionDefinition(value);
 
     // immutable representation of value. used for comparison
     this.json = JSON.stringify(this.value);
 
-    var parsedValue = this.type === 'color' ? parseColor(this.value) : value;
+    var parsedValue = reference.type === 'color' && this.value ? parseColor(this.value) : value;
+    var specDefault = reference.default;
+    if (specDefault && reference.type === 'color') specDefault = parseColor(specDefault);
     this.calculate = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue);
     this.isFeatureConstant = this.calculate.isFeatureConstant;
     this.isZoomConstant = this.calculate.isZoomConstant;
 
+    if (reference.type === 'color') {
+        this.calculate = wrapColorCalculate(this.calculate);
+    }
+
     if (reference.function === 'piecewise-constant' && reference.transition) {
-        this.calculate = transitioned(this.calculate);
+        this.calculate = wrapTransitionedCalculate(this.calculate);
     }
 
     if (!this.isFeatureConstant && !this.isZoomConstant) {
@@ -38,14 +42,22 @@ function StyleDeclaration(reference, value) {
 
         this.calculateInterpolationT = MapboxGLFunction.interpolated({
             stops: interpolationAmountStops,
-            base: value.base
+            base: value.base,
+            colorSpace: value.colorSpace
         });
     }
 }
 
+function wrapColorCalculate(calculate) {
+    return function(globalProperties, featureProperties) {
+        var color = calculate(globalProperties, featureProperties);
+        return color && parseColor(color);
+    };
+}
+
 // This function is used to smoothly transition between discrete values, such
 // as images and dasharrays.
-function transitioned(calculate) {
+function wrapTransitionedCalculate(calculate) {
     return function(globalProperties, featureProperties) {
         var z = globalProperties.zoom;
         var zh = globalProperties.zoomHistory;

@@ -3,75 +3,82 @@
 var Evented = require('../util/evented');
 var StyleLayer = require('./style_layer');
 var ImageSprite = require('./image_sprite');
+var Light = require('./light');
 var GlyphSource = require('../symbol/glyph_source');
 var SpriteAtlas = require('../symbol/sprite_atlas');
 var LineAtlas = require('../render/line_atlas');
 var util = require('../util/util');
 var ajax = require('../util/ajax');
-var normalizeURL = require('../util/mapbox').normalizeStyleURL;
+var mapbox = require('../util/mapbox');
 var browser = require('../util/browser');
 var Dispatcher = require('../util/dispatcher');
 var AnimationLoop = require('./animation_loop');
 var validateStyle = require('./validate_style');
 var Source = require('../source/source');
+var QueryFeatures = require('../source/query_features');
+var SourceCache = require('../source/source_cache');
 var styleSpec = require('./style_spec');
 var StyleFunction = require('./style_function');
+var getWorkerPool = require('../global_worker_pool');
 
 module.exports = Style;
 
-function Style(stylesheet, animationLoop, workerCount) {
-    this.animationLoop = animationLoop || new AnimationLoop();
-    this.dispatcher = new Dispatcher(workerCount || 1, this);
-    this.spriteAtlas = new SpriteAtlas(512, 512);
+function Style(stylesheet, map, options) {
+    this.map = map;
+    this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
+    this.dispatcher = new Dispatcher(getWorkerPool(), this);
+    this.spriteAtlas = new SpriteAtlas(1024, 1024);
     this.lineAtlas = new LineAtlas(256, 512);
 
     this._layers = {};
     this._order  = [];
     this._groups = [];
-    this.sources = {};
+    this.sourceCaches = {};
     this.zoomHistory = {};
 
-    util.bindAll([
-        '_forwardSourceEvent',
-        '_forwardTileEvent',
-        '_forwardLayerEvent',
-        '_redoPlacement'
-    ], this);
+    util.bindAll(['_redoPlacement'], this);
 
     this._resetUpdates();
 
-    var loaded = function(err, stylesheet) {
+    options = util.extend({
+        validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
+    }, options);
+
+    this.setEventedParent(map);
+    this.fire('dataloading', {dataType: 'style'});
+
+    var stylesheetLoaded = function(err, stylesheet) {
         if (err) {
             this.fire('error', {error: err});
             return;
         }
 
-        if (validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
+        if (options.validate && validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
 
         this._loaded = true;
         this.stylesheet = stylesheet;
 
         this.updateClasses();
 
-        var sources = stylesheet.sources;
-        for (var id in sources) {
-            this.addSource(id, sources[id]);
+        for (var id in stylesheet.sources) {
+            this.addSource(id, stylesheet.sources[id], options);
         }
 
         if (stylesheet.sprite) {
             this.sprite = new ImageSprite(stylesheet.sprite);
-            this.sprite.on('load', this.fire.bind(this, 'change'));
+            this.sprite.setEventedParent(this);
         }
 
         this.glyphSource = new GlyphSource(stylesheet.glyphs);
         this._resolve();
-        this.fire('load');
+        this.fire('data', {dataType: 'style'});
+        this.fire('style.load');
     }.bind(this);
 
     if (typeof stylesheet === 'string') {
-        ajax.getJSON(normalizeURL(stylesheet), loaded);
+        ajax.getJSON(mapbox.normalizeStyleURL(stylesheet), stylesheetLoaded);
     } else {
-        browser.frame(loaded.bind(this, null, stylesheet));
+        browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
     }
 
     this.on('source.load', function(event) {
@@ -91,10 +98,11 @@ Style.prototype = util.inherit(Evented, {
     _loaded: false,
 
     _validateLayer: function(layer) {
-        var source = this.sources[layer.source];
+        var sourceCache = this.sourceCaches[layer.source];
 
         if (!layer.sourceLayer) return;
-        if (!source) return;
+        if (!sourceCache) return;
+        var source = sourceCache.getSource();
         if (!source.vectorLayerIds) return;
 
         if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
@@ -112,8 +120,11 @@ Style.prototype = util.inherit(Evented, {
         if (!this._loaded)
             return false;
 
-        for (var id in this.sources)
-            if (!this.sources[id].loaded())
+        if (Object.keys(this._updates.sources).length)
+            return false;
+
+        for (var id in this.sourceCaches)
+            if (!this.sourceCaches[id].loaded())
                 return false;
 
         if (this.sprite && !this.sprite.loaded())
@@ -136,7 +147,7 @@ Style.prototype = util.inherit(Evented, {
             if (layerJSON.ref) continue;
             layer = StyleLayer.create(layerJSON);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.setEventedParent(this, {layer: {id: layer.id}});
         }
 
         // resolve all layers WITH a ref
@@ -146,11 +157,13 @@ Style.prototype = util.inherit(Evented, {
             var refLayer = this.getLayer(layerJSON.ref);
             layer = StyleLayer.create(layerJSON, refLayer);
             this._layers[layer.id] = layer;
-            layer.on('error', this._forwardLayerEvent);
+            layer.setEventedParent(this, {layer: {id: layer.id}});
         }
 
         this._groupLayers();
         this._updateWorkerLayers();
+
+        this.light = new Light(this.stylesheet.light);
     },
 
     _groupLayers: function() {
@@ -207,11 +220,15 @@ Style.prototype = util.inherit(Evented, {
                 }
             }
         }
+
+        this.light.updateLightTransitions(options, transition, this.animationLoop);
     },
 
     _recalculate: function(z) {
-        for (var sourceId in this.sources)
-            this.sources[sourceId].used = false;
+        if (!this._loaded) return;
+
+        for (var sourceId in this.sourceCaches)
+            this.sourceCaches[sourceId].used = false;
 
         this._updateZoomHistory(z);
 
@@ -221,9 +238,11 @@ Style.prototype = util.inherit(Evented, {
 
             layer.recalculate(z, this.zoomHistory);
             if (!layer.isHidden(z) && layer.source) {
-                this.sources[layer.source].used = true;
+                this.sourceCaches[layer.source].used = true;
             }
         }
+
+        this.light.recalculate(z, this.zoomHistory);
 
         var maxZoomTransitionDuration = 300;
         if (Math.floor(this.z) !== Math.floor(z)) {
@@ -231,7 +250,6 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.z = z;
-        this.fire('zoom');
     },
 
     _updateZoomHistory: function(z) {
@@ -296,7 +314,7 @@ Style.prototype = util.inherit(Evented, {
         this._applyClasses(classes, options);
 
         if (this._updates.changed) {
-            this.fire('change');
+            this.fire('data', {dataType: 'style'});
         }
 
         this._resetUpdates();
@@ -313,29 +331,27 @@ Style.prototype = util.inherit(Evented, {
         };
     },
 
-    addSource: function(id, source) {
+    addSource: function(id, source, options) {
         this._checkLoaded();
-        if (this.sources[id] !== undefined) {
+
+        if (this.sourceCaches[id] !== undefined) {
             throw new Error('There is already a source with this ID');
         }
-        if (!Source.is(source) && this._handleErrors(validateStyle.source, 'sources.' + id, source)) return this;
 
-        source = Source.create(source);
-        this.sources[id] = source;
-        source.id = id;
+        if (!source.type) {
+            throw new Error('The type property must be defined, but the only the following properties were given: ' + Object.keys(source) + '.');
+        }
+
+        var builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
+        var shouldValidate = builtIns.indexOf(source.type) >= 0;
+        if (shouldValidate && this._validate(validateStyle.source, 'sources.' + id, source, null, options)) return this;
+
+        source = new SourceCache(id, source, this.dispatcher);
+        this.sourceCaches[id] = source;
         source.style = this;
-        source.dispatcher = this.dispatcher;
-        source
-            .on('load', this._forwardSourceEvent)
-            .on('error', this._forwardSourceEvent)
-            .on('change', this._forwardSourceEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.load', this._forwardTileEvent)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent)
-            .on('tile.stats', this._forwardTileEvent);
+        source.setEventedParent(this, {source: source.getSource()});
 
-        this._updates.events.push(['source.add', {source: source}]);
+        if (source.onAdd) source.onAdd(this.map);
         this._updates.changed = true;
 
         return this;
@@ -351,22 +367,16 @@ Style.prototype = util.inherit(Evented, {
     removeSource: function(id) {
         this._checkLoaded();
 
-        if (this.sources[id] === undefined) {
+        if (this.sourceCaches[id] === undefined) {
             throw new Error('There is no source with this ID');
         }
-        var source = this.sources[id];
-        delete this.sources[id];
-        source
-            .off('load', this._forwardSourceEvent)
-            .off('error', this._forwardSourceEvent)
-            .off('change', this._forwardSourceEvent)
-            .off('tile.add', this._forwardTileEvent)
-            .off('tile.load', this._forwardTileEvent)
-            .off('tile.error', this._forwardTileEvent)
-            .off('tile.remove', this._forwardTileEvent)
-            .off('tile.stats', this._forwardTileEvent);
+        var sourceCache = this.sourceCaches[id];
+        delete this.sourceCaches[id];
+        delete this._updates.sources[id];
+        sourceCache.setEventedParent(null);
+        sourceCache.clearTiles();
 
-        this._updates.events.push(['source.remove', {source: source}]);
+        if (sourceCache.onRemove) sourceCache.onRemove(this.map);
         this._updates.changed = true;
 
         return this;
@@ -379,7 +389,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getSource: function(id) {
-        return this.sources[id];
+        return this.sourceCaches[id] && this.sourceCaches[id].getSource();
     },
 
     /**
@@ -387,24 +397,23 @@ Style.prototype = util.inherit(Evented, {
      * ID `before`, or appended if `before` is omitted.
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
-     * @fires layer.add
      * @returns {Style} `this`
      * @private
      */
-    addLayer: function(layer, before) {
+    addLayer: function(layer, before, options) {
         this._checkLoaded();
 
         if (!(layer instanceof StyleLayer)) {
             // this layer is not in the style.layers array, so we pass an impossible array index
-            if (this._handleErrors(validateStyle.layer,
-                    'layers.' + layer.id, layer, false, {arrayIndex: -1})) return this;
+            if (this._validate(validateStyle.layer,
+                    'layers.' + layer.id, layer, {arrayIndex: -1}, options)) return this;
 
             var refLayer = layer.ref && this.getLayer(layer.ref);
             layer = StyleLayer.create(layer, refLayer);
         }
         this._validateLayer(layer);
 
-        layer.on('error', this._forwardLayerEvent);
+        layer.setEventedParent(this, {layer: {id: layer.id}});
 
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
@@ -413,7 +422,6 @@ Style.prototype = util.inherit(Evented, {
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
-        this._updates.events.push(['layer.add', {layer: layer}]);
 
         return this.updateClasses(layer.id);
     },
@@ -438,13 +446,14 @@ Style.prototype = util.inherit(Evented, {
             }
         }
 
-        layer.off('error', this._forwardLayerEvent);
+        layer.setEventedParent(null);
 
         delete this._layers[id];
+        delete this._updates.layers[id];
+        delete this._updates.paintProps[id];
         this._order.splice(this._order.indexOf(id), 1);
 
         this._updates.allLayers = true;
-        this._updates.events.push(['layer.remove', {layer: layer}]);
         this._updates.changed = true;
 
         return this;
@@ -498,7 +507,7 @@ Style.prototype = util.inherit(Evented, {
 
         var layer = this.getReferentLayer(layerId);
 
-        if (this._handleErrors(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
+        if (filter !== null && this._validate(validateStyle.filter, 'layers.' + layer.id + '.filter', filter)) return this;
 
         if (util.deepEqual(layer.filter, filter)) return this;
         layer.filter = util.clone(filter);
@@ -513,7 +522,7 @@ Style.prototype = util.inherit(Evented, {
      * @private
      */
     getFilter: function(layer) {
-        return this.getReferentLayer(layer).filter;
+        return util.clone(this.getReferentLayer(layer).filter);
     },
 
     setLayoutProperty: function(layerId, name, value) {
@@ -586,6 +595,7 @@ Style.prototype = util.inherit(Evented, {
             version: this.stylesheet.version,
             name: this.stylesheet.name,
             metadata: this.stylesheet.metadata,
+            light: this.stylesheet.light,
             center: this.stylesheet.center,
             zoom: this.stylesheet.zoom,
             bearing: this.stylesheet.bearing,
@@ -593,7 +603,7 @@ Style.prototype = util.inherit(Evented, {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: util.mapObject(this.sources, function(source) {
+            sources: util.mapObject(this.sourceCaches, function(source) {
                 return source.serialize();
             }),
             layers: this._order.map(function(id) {
@@ -629,98 +639,132 @@ Style.prototype = util.inherit(Evented, {
 
     queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
         if (params && params.filter) {
-            this._handleErrors(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter, true);
+            this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter);
+        }
+
+        var includedSources = {};
+        if (params && params.layers) {
+            for (var i = 0; i < params.layers.length; i++) {
+                var layer = this._layers[params.layers[i]];
+                if (!(layer instanceof StyleLayer)) {
+                    // this layer is not in the style.layers array
+                    return this.fire('error', {error: 'The layer \'' + params.layers[i] +
+                        '\' does not exist in the map\'s style and cannot be queried for features.'});
+                }
+                includedSources[layer.source] = true;
+            }
         }
 
         var sourceResults = [];
-        for (var id in this.sources) {
-            var source = this.sources[id];
-            if (source.queryRenderedFeatures) {
-                sourceResults.push(source.queryRenderedFeatures(queryGeometry, params, zoom, bearing));
-            }
+        for (var id in this.sourceCaches) {
+            if (params.layers && !includedSources[id]) continue;
+            var sourceCache = this.sourceCaches[id];
+            var results = QueryFeatures.rendered(sourceCache, this._layers, queryGeometry, params, zoom, bearing);
+            sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
     },
 
     querySourceFeatures: function(sourceID, params) {
         if (params && params.filter) {
-            this._handleErrors(validateStyle.filter, 'querySourceFeatures.filter', params.filter, true);
+            this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
         }
-        var source = this.getSource(sourceID);
-        return source && source.querySourceFeatures ? source.querySourceFeatures(params) : [];
+        var sourceCache = this.sourceCaches[sourceID];
+        return sourceCache ? QueryFeatures.source(sourceCache, params) : [];
     },
 
-    _handleErrors: function(validate, key, value, throws, props) {
-        var action = throws ? validateStyle.throwErrors : validateStyle.emitErrors;
-        var result = validate.call(validateStyle, util.extend({
+    addSourceType: function (name, SourceType, callback) {
+        if (Source.getType(name)) {
+            return callback(new Error('A source type called "' + name + '" already exists.'));
+        }
+
+        Source.setType(name, SourceType);
+
+        if (!SourceType.workerSourceURL) {
+            return callback(null, null);
+        }
+
+        this.dispatcher.broadcast('load worker source', {
+            name: name,
+            url: SourceType.workerSourceURL
+        }, callback);
+    },
+
+    getLight: function() {
+        return this.light.getLight();
+    },
+
+    setLight: function(lightOptions, transitionOptions) {
+        this._checkLoaded();
+
+        var light = this.light.getLight();
+        var _update = false;
+        for (var key in lightOptions) {
+            if (!util.deepEqual(lightOptions[key], light[key])) {
+                _update = true;
+                break;
+            }
+        }
+        if (!_update) return this;
+
+        var transition = this.stylesheet.transition || {};
+
+        this.light.setLight(lightOptions);
+        return this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
+    },
+
+    _validate: function(validate, key, value, props, options) {
+        if (options && options.validate === false) {
+            return false;
+        }
+        return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
             key: key,
             style: this.serialize(),
             value: value,
             styleSpec: styleSpec
-        }, props));
-        return action.call(validateStyle, this, result);
+        }, props)));
     },
 
     _remove: function() {
+        for (var id in this.sourceCaches) {
+            this.sourceCaches[id].clearTiles();
+        }
         this.dispatcher.remove();
     },
 
     _reloadSource: function(id) {
-        this.sources[id].reload();
+        this.sourceCaches[id].reload();
     },
 
     _updateSources: function(transform) {
-        for (var id in this.sources) {
-            this.sources[id].update(transform);
+        for (var id in this.sourceCaches) {
+            this.sourceCaches[id].update(transform);
         }
     },
 
     _redoPlacement: function() {
-        for (var id in this.sources) {
-            if (this.sources[id].redoPlacement) this.sources[id].redoPlacement();
+        for (var id in this.sourceCaches) {
+            if (this.sourceCaches[id].redoPlacement) this.sourceCaches[id].redoPlacement();
         }
-    },
-
-    _forwardSourceEvent: function(e) {
-        this.fire('source.' + e.type, util.extend({source: e.target}, e));
-    },
-
-    _forwardTileEvent: function(e) {
-        this.fire(e.type, util.extend({source: e.target}, e));
-    },
-
-    _forwardLayerEvent: function(e) {
-        this.fire('layer.' + e.type, util.extend({layer: {id: e.target.id}}, e));
     },
 
     // Callbacks from web workers
 
-    'get sprite json': function(params, callback) {
-        var sprite = this.sprite;
-        if (sprite.loaded()) {
-            callback(null, { sprite: sprite.data, retina: sprite.retina });
-        } else {
-            sprite.on('load', function() {
-                callback(null, { sprite: sprite.data, retina: sprite.retina });
-            });
-        }
-    },
-
-    'get icons': function(params, callback) {
+    'get icons': function(mapId, params, callback) {
         var sprite = this.sprite;
         var spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
             spriteAtlas.setSprite(sprite);
             spriteAtlas.addIcons(params.icons, callback);
         } else {
-            sprite.on('load', function() {
+            sprite.on('data', function() {
                 spriteAtlas.setSprite(sprite);
                 spriteAtlas.addIcons(params.icons, callback);
             });
         }
     },
 
-    'get glyphs': function(params, callback) {
+    'get glyphs': function(mapId, params, callback) {
         var stacks = params.stacks,
             remaining = Object.keys(stacks).length,
             allGlyphs = {};

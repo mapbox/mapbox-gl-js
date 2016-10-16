@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Point = require('point-geometry');
 var checkMaxAngle = require('../../../js/symbol/check_max_angle');
 var Anchor = require('../../../js/symbol/anchor');

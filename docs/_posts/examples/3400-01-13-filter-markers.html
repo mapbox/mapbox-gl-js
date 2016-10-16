@@ -1,8 +1,10 @@
 ---
 layout: example
 category: example
-title: Filter markers by toggling a list
-description: Filter a set of markers based on a property value in the data.
+title: Filter symbols by toggling a list
+description: Filter a set of symbols based on a property value in the data.
+tags:
+  - user-interaction
 ---
 <style>
     .filter-group {
@@ -57,12 +59,12 @@ description: Filter a set of markers based on a property value in the data.
 <nav id='filter-group' class='filter-group'></nav>
 
 <script>
-var markers = {
+var places = {
     "type": "FeatureCollection",
     "features": [{
         "type": "Feature",
         "properties": {
-            "marker-symbol": "theatre"
+            "icon": "theatre"
         },
         "geometry": {
             "type": "Point",
@@ -71,7 +73,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "theatre"
+            "icon": "theatre"
         },
         "geometry": {
             "type": "Point",
@@ -80,7 +82,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "bar"
+            "icon": "bar"
         },
         "geometry": {
             "type": "Point",
@@ -89,7 +91,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "bicycle"
+            "icon": "bicycle"
         },
         "geometry": {
             "type": "Point",
@@ -98,7 +100,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -107,7 +109,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -116,7 +118,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -128,20 +130,20 @@ var markers = {
 var filterGroup = document.getElementById('filter-group');
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [-77.04, 38.907],
     zoom: 11.15
 });
 
 map.on('load', function() {
-    // Add marker data as a new GeoJSON source.
-    map.addSource("markers", {
+    // Add a GeoJSON source containing place coordinates and information.
+    map.addSource("places", {
         "type": "geojson",
-        "data": markers
+        "data": places
     });
 
-    markers.features.forEach(function(feature) {
-        var symbol = feature.properties['marker-symbol'];
+    places.features.forEach(function(feature) {
+        var symbol = feature.properties['icon'];
         var layerID = 'poi-' + symbol;
 
         // Add a layer for this symbol type if it hasn't been added already.
@@ -149,12 +151,12 @@ map.on('load', function() {
             map.addLayer({
                 "id": layerID,
                 "type": "symbol",
-                "source": "markers",
+                "source": "places",
                 "layout": {
                     "icon-image": symbol + "-15",
                     "icon-allow-overlap": true
                 },
-                "filter": ["==", "marker-symbol", symbol]
+                "filter": ["==", "icon", symbol]
             });
 
             // Add checkbox and label elements for the layer.

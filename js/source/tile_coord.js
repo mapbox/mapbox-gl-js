@@ -51,15 +51,26 @@ TileCoord.fromID = function(id) {
     return new TileCoord(z, x, y, w);
 };
 
+function getQuadkey(z, x, y) {
+    var quadkey = '', mask;
+    for (var i = z; i > 0; i--) {
+        mask = 1 << (i - 1);
+        quadkey += ((x & mask ? 1 : 0) + (y & mask ? 2 : 0));
+    }
+    return quadkey;
+}
+
 // given a list of urls, choose a url template and return a tile URL
 TileCoord.prototype.url = function(urls, sourceMaxZoom, scheme) {
     var bbox = WhooTS.getTileBBox(this.x, this.y, this.z);
+    var quadkey = getQuadkey(this.z, this.x, this.y);
 
     return urls[(this.x + this.y) % urls.length]
         .replace('{prefix}', (this.x % 16).toString(16) + (this.y % 16).toString(16))
         .replace('{z}', Math.min(this.z, sourceMaxZoom || this.z))
         .replace('{x}', this.x)
         .replace('{y}', scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y)
+        .replace('{quadkey}', quadkey)
         .replace('{bbox-epsg-3857}', bbox);
 };
 

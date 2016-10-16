@@ -3,6 +3,8 @@ layout: example
 category: example
 title: Slowly fly to a location
 description: Using .flyTo with flyOptions
+tags:
+  - camera
 ---
 <style>
     #fly {
@@ -22,20 +24,20 @@ description: Using .flyTo with flyOptions
 </style>
 <div id='map'></div>
 <br/>
-<button onclick='fly();' id='fly'>Fly</button>
+<button id='fly'>Fly</button>
 <script>
 var start = [-74.50, 40];
 var end = [74.50, 40];
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: start,
     zoom: 9
 });
 
 var isAtStart = true;
 
-function fly() {
+document.getElementById('fly').addEventListener('click', function() {
     // depending on whether we're currently at point a or b, aim for
     // point a or b
     var target = isAtStart ? end : start;
@@ -62,5 +64,5 @@ function fly() {
             return t;
         }
     });
-}
+});
 </script>

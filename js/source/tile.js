@@ -25,12 +25,19 @@ module.exports = Tile;
 function Tile(coord, size, sourceMaxZoom) {
     this.coord = coord;
     this.uid = util.uniqueId();
-    this.loaded = false;
-    this.isUnloaded = false;
     this.uses = 0;
     this.tileSize = size;
     this.sourceMaxZoom = sourceMaxZoom;
     this.buckets = {};
+
+    // `this.state` must be one of
+    //
+    // - `loading`:   Tile data is in the process of loading.
+    // - `loaded`:    Tile data has been loaded. Tile can be rendered.
+    // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
+    // - `unloaded`:  Tile data has been deleted.
+    // - `errored`:   Tile data was not loaded because of an error.
+    this.state = 'loading';
 }
 
 Tile.prototype = {
@@ -44,40 +51,48 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    loadVectorData: function(data, style) {
-        this.loaded = true;
+    loadVectorData: function(data, painter) {
+        if (this.hasData()) {
+            this.unloadVectorData(painter);
+        }
+
+        this.state = 'loaded';
 
         // empty GeoJSON tile
         if (!data) return;
+
+        // If we are redoing placement for the same tile, we will not recieve
+        // a new "rawTileData" object. If we are loading a new tile, we will
+        // recieve a new "rawTileData" object.
+        if (data.rawTileData) {
+            this.rawTileData = data.rawTileData;
+        }
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
-        this.featureIndex = new FeatureIndex(data.featureIndex, data.rawTileData, this.collisionTile);
-        this.rawTileData = data.rawTileData;
-        this.buckets = unserializeBuckets(data.buckets, style);
+        this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
+        this.buckets = unserializeBuckets(data.buckets, painter.style);
     },
 
     /**
-     * given a data object and a GL painter, destroy and re-create
-     * all of its buffers.
+     * Replace this tile's symbol buckets with fresh data.
      * @param {Object} data
-     * @param {Object} painter
+     * @param {Style} style
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData: function(data, painter, style) {
-        if (this.isUnloaded) return;
+    reloadSymbolData: function(data, style) {
+        if (this.state === 'unloaded') return;
 
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.featureIndex.setCollisionTile(this.collisionTile);
 
-        // Destroy and delete existing symbol buckets
         for (var id in this.buckets) {
             var bucket = this.buckets[id];
             if (bucket.type === 'symbol') {
-                bucket.destroy(painter.gl);
+                bucket.destroy();
                 delete this.buckets[id];
             }
         }
@@ -87,17 +102,13 @@ Tile.prototype = {
     },
 
     /**
-     * Make sure that this tile doesn't own any data within a given
-     * painter, so that it doesn't consume any memory or maintain
-     * any references to the painter.
-     * @param {Object} painter gl painter object
+     * Release any data or WebGL resources referenced by this tile.
      * @returns {undefined}
      * @private
      */
-    unloadVectorData: function(painter) {
+    unloadVectorData: function() {
         for (var id in this.buckets) {
-            var bucket = this.buckets[id];
-            bucket.destroy(painter.gl);
+            this.buckets[id].destroy();
         }
 
         this.collisionBoxArray = null;
@@ -105,21 +116,20 @@ Tile.prototype = {
         this.symbolInstancesArray = null;
         this.collisionTile = null;
         this.featureIndex = null;
-        this.rawTileData = null;
         this.buckets = null;
-        this.loaded = false;
-        this.isUnloaded = true;
+        this.state = 'unloaded';
     },
 
     redoPlacement: function(source) {
-        if (!this.loaded || this.redoingPlacement) {
+        if (this.state !== 'loaded' || this.state === 'reloading') {
             this.redoWhenDone = true;
             return;
         }
 
-        this.redoingPlacement = true;
+        this.state = 'reloading';
 
         source.dispatcher.send('redo placement', {
+            type: source.type,
             uid: this.uid,
             source: source.id,
             angle: source.map.transform.angle,
@@ -128,10 +138,13 @@ Tile.prototype = {
         }, done.bind(this), this.workerID);
 
         function done(_, data) {
-            this.reloadSymbolData(data, source.map.painter, source.map.style);
-            source.fire('tile.load', {tile: this});
+            this.reloadSymbolData(data, source.map.style);
+            source.fire('data', {tile: this, dataType: 'tile'});
 
-            this.redoingPlacement = false;
+            // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+            if (source.map) source.map.painter.tileExtentVAO.vao = null;
+
+            this.state = 'loaded';
             if (this.redoWhenDone) {
                 this.redoPlacement(source);
                 this.redoWhenDone = false;
@@ -147,7 +160,7 @@ Tile.prototype = {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {
-            this.vtLayers = new vt.VectorTile(new Protobuf(new Uint8Array(this.rawTileData))).layers;
+            this.vtLayers = new vt.VectorTile(new Protobuf(this.rawTileData)).layers;
         }
 
         var layer = this.vtLayers._geojsonTileLayer || this.vtLayers[params.sourceLayer];
@@ -165,6 +178,10 @@ Tile.prototype = {
                 result.push(geojsonFeature);
             }
         }
+    },
+
+    hasData: function() {
+        return this.state === 'loaded' || this.state === 'reloading';
     }
 };
 

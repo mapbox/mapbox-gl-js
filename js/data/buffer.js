@@ -30,6 +30,7 @@ Buffer.prototype.bind = function(gl) {
     var type = gl[this.type];
 
     if (!this.buffer) {
+        this.gl = gl;
         this.buffer = gl.createBuffer();
         gl.bindBuffer(type, this.buffer);
         gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
@@ -82,9 +83,9 @@ Buffer.prototype.setVertexAttribPointers = function(gl, program) {
  * @private
  * @param gl The WebGL context
  */
-Buffer.prototype.destroy = function(gl) {
+Buffer.prototype.destroy = function() {
     if (this.buffer) {
-        gl.deleteBuffer(this.buffer);
+        this.gl.deleteBuffer(this.buffer);
     }
 };
 
@@ -97,19 +98,3 @@ Buffer.BufferType = {
     VERTEX: 'ARRAY_BUFFER',
     ELEMENT: 'ELEMENT_ARRAY_BUFFER'
 };
-
-/**
- * An `BufferType.ELEMENT` buffer holds indicies of a corresponding `BufferType.VERTEX` buffer.
- * These indicies are stored in the `BufferType.ELEMENT` buffer as `UNSIGNED_SHORT`s.
- *
- * @private
- * @readonly
- */
-Buffer.ELEMENT_ATTRIBUTE_TYPE = 'Uint16';
-
-/**
- * WebGL performs best if vertex attribute offsets are aligned to 4 byte boundaries.
- * @private
- * @readonly
- */
-Buffer.VERTEX_ATTRIBUTE_ALIGNMENT = 4;

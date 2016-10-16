@@ -1,37 +1,52 @@
 'use strict';
 
-var test = require('tap').test;
-var extend = require('../../../js/util/util').extend;
-var window = require('../../../js/util/browser').window;
+var test = require('mapbox-gl-js-test').test;
+var util = require('../../../js/util/util');
+var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
-var Style = require('../../../js/style/style');
 var LngLat = require('../../../js/geo/lng_lat');
-var browser = require('../../../js/util/browser');
-var sinon = require('sinon');
 
-var fixed = require('../../testutil/fixed');
+var fixed = require('mapbox-gl-js-test/fixed');
 var fixedNum = fixed.Num;
 var fixedLngLat = fixed.LngLat;
 
+function createMap(options, callback) {
+    var container = window.document.createElement('div');
+    container.offsetWidth = 200;
+    container.offsetHeight = 200;
+
+    var map = new Map(util.extend({
+        container: container,
+        interactive: false,
+        attributionControl: false,
+        trackResize: true,
+        style: {
+            "version": 8,
+            "sources": {},
+            "layers": []
+        }
+    }, options));
+
+    if (callback) map.on('load', function() {
+        callback(null, map);
+    });
+
+    return map;
+}
+
 test('Map', function(t) {
-    function createMap(options) {
-        return new Map(extend({
-            container: {
-                offsetWidth: 200,
-                offsetHeight: 200,
-                classList: {
-                    add: function() {},
-                    remove: function() {}
-                }
-            },
-            interactive: false,
-            attributionControl: false,
-            trackResize: true
-        }, options));
-    }
+    t.beforeEach(function(callback) {
+        window.useFakeXMLHttpRequest();
+        callback();
+    });
+
+    t.afterEach(function(callback) {
+        window.restore();
+        callback();
+    });
 
     t.test('constructor', function(t) {
-        var map = createMap({interactive: true});
+        var map = createMap({interactive: true, style: null});
         t.ok(map.getContainer());
         t.equal(map.getStyle(), undefined);
         t.ok(map.boxZoom.isEnabled());
@@ -111,46 +126,31 @@ test('Map', function(t) {
         });
 
         t.test('sets up event forwarding', function(t) {
-            var map = createMap(),
-                style = new Style({
-                    version: 8,
-                    sources: {},
-                    layers: []
-                });
+            createMap({}, function(error, map) {
+                t.error(error);
 
-            var events = [];
+                var events = [];
+                function recordEvent(event) { events.push(event.type); }
 
-            function checkEvent(e) {
-                t.equal(e.style, style);
-                events.push(e.type);
-            }
+                map.on('error', recordEvent);
+                map.on('source.load', recordEvent);
+                map.on('data', recordEvent);
+                map.on('dataloading', recordEvent);
 
-            map.on('style.load',    checkEvent);
-            map.on('style.error',   checkEvent);
-            map.on('style.change',  checkEvent);
-            map.on('source.load',   checkEvent);
-            map.on('source.error',  checkEvent);
-            map.on('source.change', checkEvent);
-            map.on('tile.add',      checkEvent);
-            map.on('tile.error',    checkEvent);
-            map.on('tile.remove',   checkEvent);
+                map.style.fire('error');
+                map.style.fire('source.load');
+                map.style.fire('data');
+                map.style.fire('dataloading');
 
-            map.off('style.error', map.onError);
-            map.off('source.error', map.onError);
-            map.off('tile.error', map.onError);
-            map.off('layer.error', map.onError);
+                t.deepEqual(events, [
+                    'error',
+                    'source.load',
+                    'data',
+                    'dataloading',
+                ]);
 
-            t.plan(10);
-            map.setStyle(style); // Fires load
-            style.fire('error');
-            style.fire('change');
-            style.fire('source.load');
-            style.fire('source.error');
-            style.fire('source.change');
-            style.fire('tile.add');
-            style.fire('tile.error');
-            style.fire('tile.remove');
-            style.fire('layer.error');
+                t.end();
+            });
         });
 
         t.test('can be called more than once', function(t) {
@@ -257,7 +257,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addSource('geojson', createStyleSource());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     sources: {geojson: createStyleSource()}
                 }));
                 t.end();
@@ -270,7 +270,7 @@ test('Map', function(t) {
 
             map.on('load', function () {
                 map.addLayer(createStyleLayer());
-                t.deepEqual(map.getStyle(), extend(createStyle(), {
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     layers: [createStyleLayer()]
                 }));
                 t.end();
@@ -328,9 +328,9 @@ test('Map', function(t) {
         t.test('do not resize if trackResize is false', function (t) {
             var map = createMap({trackResize: false});
 
-            sinon.spy(map, 'stop');
-            sinon.spy(map, '_update');
-            sinon.spy(map, 'resize');
+            t.spy(map, 'stop');
+            t.spy(map, '_update');
+            t.spy(map, 'resize');
 
             map._onWindowResize();
 
@@ -344,9 +344,9 @@ test('Map', function(t) {
         t.test('do resize if trackResize is true (default)', function (t) {
             var map = createMap();
 
-            sinon.spy(map, 'stop');
-            sinon.spy(map, '_update');
-            sinon.spy(map, 'resize');
+            t.spy(map, 'stop');
+            t.spy(map, '_update');
+            t.spy(map, 'resize');
 
             map._onWindowResize();
 
@@ -366,14 +366,15 @@ test('Map', function(t) {
         t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
 
         t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-            [ -70.31249999999976, -57.32652122521695 ],
-            [ 70.31249999999977, 57.326521225216965 ] ]));
+            [ -70.31249999999976, -57.326521225216965 ],
+            [ 70.31249999999977, 57.32652122521695 ] ]));
 
         t.test('rotated bounds', function(t) {
             var map = createMap({ zoom: 1, bearing: 45 });
-            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-                [ -49.718445552178764, -44.44541580601936 ],
-                [ 49.71844555217925, 44.445415806019355 ] ]));
+            t.deepEqual(
+                toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
+                toFixed(map.getBounds().toArray())
+            );
             t.end();
         });
         t.end();
@@ -391,18 +392,20 @@ test('Map', function(t) {
         t.test('constrains map bounds', function (t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
-            t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-                [-112.5000192114, 24.2068800000],
-                [-79.4531207886, 50.0642000000]]));
+            t.deepEqual(
+                toFixed([[-130.4297000000, 7.0136641176], [-61.5234400000, 60.2398142283]]),
+                toFixed(map.getBounds().toArray())
+            );
             t.end();
         });
 
         t.test('when no argument is passed, map bounds constraints are removed', function (t) {
             var map = createMap({zoom:0});
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
-            t.deepEqual(toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray()), toFixed([
-                [-166.28906999999964, -27.683527055417144],
-                [-25.664070000000066, 73.8248206696509]]));
+            t.deepEqual(
+                toFixed([[-166.28906999999964, -27.6835270554], [-25.664070000000066, 73.8248206697]]),
+                toFixed(map.setMaxBounds(null).setZoom(0).getBounds().toArray())
+            );
             t.end();
         });
 
@@ -410,6 +413,17 @@ test('Map', function(t) {
             var map = createMap();
             map.setMaxBounds([[-130.4297, 50.0642], [-61.52344, 24.20688]]);
             t.notEqual(map.setZoom(0).getZoom(), 0);
+            t.end();
+        });
+
+        t.test('throws on invalid bounds', function(t) {
+            var map = createMap({zoom:0});
+            t.throws(function() {
+                map.setMaxBounds([-130.4297, 50.0642], [-61.52344, 24.20688]);
+            }, Error, 'throws on two decoupled array coordinate arguments');
+            t.throws(function() {
+                map.setMaxBounds(-130.4297, 50.0642, -61.52344, 24.20688);
+            }, Error, 'throws on individual coordinate arguments');
             t.end();
         });
 
@@ -477,26 +491,10 @@ test('Map', function(t) {
     });
 
     t.test('#remove', function(t) {
-        var map = createMap(),
-            removedCanvas,
-            removedControls;
-
-        map._canvasContainer.parentNode = {
-            removeChild: function (child) {
-                t.equal(child, map._canvasContainer);
-                removedCanvas = true;
-            }
-        };
-        map._controlContainer.parentNode = {
-            removeChild: function (child) {
-                t.equal(child, map._controlContainer);
-                removedControls = true;
-            }
-        };
-
-        t.equal(map.remove(), undefined);
-        t.ok(removedCanvas);
-        t.ok(removedControls);
+        var map = createMap();
+        t.equal(map.getContainer().childNodes.length, 2);
+        map.remove();
+        t.equal(map.getContainer().childNodes.length, 0);
         t.end();
     });
 
@@ -557,47 +555,90 @@ test('Map', function(t) {
     });
 
     t.test('#queryRenderedFeatures', function(t) {
-        var map = createMap();
-        map.setStyle({
-            "version": 8,
-            "sources": {},
-            "layers": []
+
+        t.test('if no arguments provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                t.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures();
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
         });
 
-        map.on('style.load', function() {
-            var opts = {};
+        t.test('if only "geometry" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                t.spy(map.style, 'queryRenderedFeatures');
 
-            t.test('normal coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
-                    t.deepEqual(coords, [{ column: 0.5, row: 0.5, zoom: 0 }]);
-                    t.equal(o, opts);
-                    t.equal(bearing, map.transform.angle);
-                    t.equal(zoom, map.getZoom());
-                    t.end();
-                };
+                var output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
-                map.queryRenderedFeatures(map.project(new LngLat(0, 0)), opts);
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.deepEqual(args[0], [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
+                t.deepEqual(args[1], {}); // params
+                t.deepEqual(args[2], 0); // bearing
+                t.deepEqual(args[3], 0); // zoom
+                t.deepEqual(output, []);
+
+                t.end();
             });
-
-            t.test('does not wrap coords', function(t) {
-                map.style.queryRenderedFeatures = function (coords, o, zoom, bearing) {
-                    // avoid floating point issues
-                    t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
-                    t.equal(coords[0].row, 0.5);
-                    t.equal(coords[0].zoom, 0);
-
-                    t.equal(o, opts);
-                    t.equal(bearing, map.transform.angle);
-                    t.equal(zoom, map.getZoom());
-
-                    t.end();
-                };
-
-                map.queryRenderedFeatures(map.project(new LngLat(360, 0)), opts);
-            });
-
-            t.end();
         });
+
+        t.test('if only "params" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                t.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures({filter: ['all']});
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
+        });
+
+        t.test('if both "geometry" and "params" provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                t.spy(map.style, 'queryRenderedFeatures');
+
+                var output = map.queryRenderedFeatures({filter: ['all']});
+
+                var args = map.style.queryRenderedFeatures.getCall(0).args;
+                t.ok(args[0]);
+                t.deepEqual(args[1], {filter: ['all']});
+                t.deepEqual(output, []);
+
+                t.end();
+            });
+        });
+
+        t.test('if "geometry" with unwrapped coords provided', function(t) {
+            createMap({}, function(err, map) {
+                t.error(err);
+                t.spy(map.style, 'queryRenderedFeatures');
+
+                map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
+
+                var coords = map.style.queryRenderedFeatures.getCall(0).args[0];
+                t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
+                t.equal(coords[0].row, 0.5);
+                t.equal(coords[0].zoom, 0);
+
+                t.end();
+            });
+        });
+
+        t.end();
     });
 
     t.test('#setLayoutProperty', function (t) {
@@ -694,7 +735,7 @@ test('Map', function(t) {
             t.end();
         });
 
-        t.test('fires a style.change event', function (t) {
+        t.test('fires a data event', function (t) {
             // background layers do not have a source
             var map = createMap({
                 style: {
@@ -710,10 +751,11 @@ test('Map', function(t) {
                 }
             });
 
-            map.on('style.load', function () {
-                map.once('style.change', function (e) {
-                    t.ok(e, 'change event');
-                    t.end();
+            map.once('style.load', function () {
+                map.once('data', function (e) {
+                    if (e.dataType === 'style') {
+                        t.end();
+                    }
                 });
 
                 map.setLayoutProperty('background', 'visibility', 'visible');
@@ -750,7 +792,7 @@ test('Map', function(t) {
                     "sources": {
                         "mapbox://mapbox.satellite": {
                             "type": "raster",
-                            "tiles": ["local://tiles/{z}-{x}-{y}.png"]
+                            "tiles": ["http://example.com/{z}/{x}/{y}.png"]
                         }
                     },
                     "layers": [{
@@ -764,8 +806,8 @@ test('Map', function(t) {
                 }
             });
 
-            // We're faking tiles
-            map.off('tile.error', map.onError);
+            // Suppress errors because we're not loading tiles from a real URL.
+            map.on('error', function() {});
 
             map.on('style.load', function () {
                 map.setLayoutProperty('satellite', 'visibility', 'visible');
@@ -884,64 +926,100 @@ test('Map', function(t) {
         t.end();
     });
 
-    t.test('#onError', function (t) {
-        t.test('logs errors to console by default', function (t) {
-            var error = console.error;
+    t.test('error event', function (t) {
+        t.test('logs errors to console when it has NO listeners', function (t) {
+            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
-            console.error = function (e) {
-                console.error = error;
-                t.deepEqual(e.message, 'version: expected one of [8], 7 found');
-                t.end();
-            };
-
-            createMap({
-                style: {
-                    version: 7,
-                    sources: {},
-                    layers: []
+            t.spy(map, 'fire');
+            t.stub(console, 'error', function(error) {
+                if (error.message === 'version: expected one of [8], 7 found') {
+                    t.notOk(map.fire.calledWith('error'));
+                    console.error.restore();
+                    map.fire.restore();
+                    t.end();
+                } else {
+                    console.log(error);
                 }
             });
+
+            map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
-        t.test('logs errors that happen during render', function (t) {
-            var error = console.error;
+        t.test('calls listeners', function (t) {
+            var map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
-            console.error = function (e) {
-                console.error = error;
-                t.deepEqual(e.message, 'in render');
+            t.spy(console, 'error');
+            map.on('error', function(event) {
+                t.equal(event.error.message, 'version: expected one of [8], 7 found');
+                t.notOk(console.error.calledWith('version: expected one of [8], 7 found'));
+                console.error.restore();
                 t.end();
-            };
-
-            var map = createMap({
-                style: {
-                    version: 8,
-                    sources: {},
-                    layers: []
-                }
             });
 
-            map.on('render', function () {
-                throw new Error('in render');
-            });
-
-            map._rerender = function () {};
-            map._render();
+            map.setStyle({ version: 7, sources: {}, layers: [] });
         });
 
         t.end();
     });
 
-    t.test('workerCount option', function(t) {
-        var map = createMap({ style: createStyle() });
-        t.equal(map.style.dispatcher.actors.length, browser.hardwareConcurrency - 1, 'workerCount defaults to hardwareConcurrency - 1');
-        map = createMap({ style: createStyle(), workerCount: 3 });
-        t.equal(map.style.dispatcher.actors.length, 3, 'workerCount option is used');
-        t.throws(function () {
-            createMap({ workerCount: 0 });
+    t.test('render stabilizes', function (t) {
+        var style = createStyle();
+        style.sources.mapbox = {
+            type: 'vector',
+            minzoom: 1,
+            maxzoom: 10,
+            tiles: ['http://example.com/{z}/{x}/{y}.png']
+        };
+        style.layers.push({
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
         });
-        t.end();
+
+        var timer;
+        var map = createMap({ style: style });
+        map.on('render', function () {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(function () {
+                map.off('render');
+                map.on('render', t.fail);
+                t.notOk(map._frameId, 'no rerender scheduled');
+                t.end();
+            }, 100);
+        });
     });
 
+    t.test('#removeLayer restores Map#loaded() to true', function (t) {
+        var map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
+        });
+
+        map.once('render', function() {
+            map.removeLayer('layerId');
+            map.on('render', function() {
+                if (map.loaded()) {
+                    map.remove();
+                    t.end();
+                }
+            });
+        });
+    });
 
     t.end();
 });

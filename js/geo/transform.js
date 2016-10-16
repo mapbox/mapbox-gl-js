@@ -3,7 +3,7 @@
 var LngLat = require('./lng_lat'),
     Point = require('point-geometry'),
     Coordinate = require('./coordinate'),
-    wrap = require('../util/util').wrap,
+    util = require('../util/util'),
     interp = require('../util/interpolate'),
     TileCoord = require('../source/tile_coord'),
     EXTENT = require('../data/bucket').EXTENT,
@@ -72,7 +72,7 @@ Transform.prototype = {
         return -this.angle / Math.PI * 180;
     },
     set bearing(bearing) {
-        var b = -wrap(bearing, -180, 180) * Math.PI / 180;
+        var b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
         this._unmodified = false;
         this.angle = b;
@@ -87,7 +87,7 @@ Transform.prototype = {
         return this._pitch / Math.PI * 180;
     },
     set pitch(pitch) {
-        var p = Math.min(60, pitch) / 180 * Math.PI;
+        var p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;
@@ -125,6 +125,53 @@ Transform.prototype = {
         this._center = center;
         this._calcMatrices();
         this._constrain();
+    },
+
+    /**
+     * Return a zoom level that will cover all tiles the transform
+     * @param {Object} options
+     * @param {number} options.tileSize
+     * @param {boolean} options.roundZoom
+     * @returns {number} zoom level
+     * @private
+     */
+    coveringZoomLevel: function(options) {
+        return (options.roundZoom ? Math.round : Math.floor)(
+            this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
+        );
+    },
+
+    /**
+     * Return all coordinates that could cover this transform for a covering
+     * zoom level.
+     * @param {Object} options
+     * @param {number} options.tileSize
+     * @param {number} options.minzoom
+     * @param {number} options.maxzoom
+     * @param {boolean} options.roundZoom
+     * @param {boolean} options.reparseOverscaled
+     * @returns {Array<Tile>} tiles
+     * @private
+     */
+    coveringTiles: function(options) {
+        var z = this.coveringZoomLevel(options);
+        var actualZ = z;
+
+        if (z < options.minzoom) return [];
+        if (z > options.maxzoom) z = options.maxzoom;
+
+        var tr = this,
+            tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
+            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
+
+        return TileCoord.cover(z, [
+            tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
+            tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
+            tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
+            tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
+        ], options.reparseOverscaled ? actualZ : z).sort(function(a, b) {
+            return centerPoint.dist(a) - centerPoint.dist(b);
+        });
     },
 
     resize: function(width, height) {
@@ -421,5 +468,16 @@ Transform.prototype = {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
+
+        // line antialiasing matrix
+        m = mat2.create();
+        mat2.scale(m, m, [1, Math.cos(this._pitch)]);
+        mat2.rotate(m, m, this.angle);
+        this.lineAntialiasingMatrix = m;
+
+        // calculate how much longer the real world distance is at the top of the screen
+        // than at the middle of the screen.
+        var topedgelength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
+        this.lineStretch = (topedgelength + (this.height / 2 * Math.tan(this._pitch))) / topedgelength - 1;
     }
 };

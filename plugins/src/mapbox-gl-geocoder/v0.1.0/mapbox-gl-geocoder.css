@@ -1,0 +1,133 @@
+/* Basics */
+.mapboxgl-ctrl-geocoder,
+.mapboxgl-ctrl-geocoder *,
+.mapboxgl-ctrl-geocoder *:after,
+.mapboxgl-ctrl-geocoder *:before {
+  -webkit-box-sizing:border-box;
+     -moz-box-sizing:border-box;
+          box-sizing:border-box;
+  }
+.mapboxgl-ctrl-geocoder {
+  font:15px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  position:relative;
+  background-color:white;
+  width:33.3333%;
+  min-width:240px;
+  max-width:360px;
+  z-index:1;
+  border-radius:3px;
+  }
+
+.mapboxgl-ctrl-geocoder input[type='text'] {
+  font-size:12px;
+  width:100%;
+  border:0;
+  background-color:transparent;
+  height:40px;
+  margin:0;
+  color:rgba(0,0,0,.5);
+  padding:10px 10px 10px 40px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+  }
+  .mapboxgl-ctrl-geocoder input:focus {
+    color:rgba(0,0,0,.75);
+    outline:0;
+    box-shadow:none;
+    outline:thin dotted\8;
+    }
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-search {
+  position:absolute;
+  top:10px;
+  left:10px; 
+  }
+.mapboxgl-ctrl-geocoder button {
+  padding:0;
+  margin:0;
+  background-color:#fff;
+  border:none;
+  cursor:pointer;
+  }
+.mapboxgl-ctrl-geocoder .geocoder-pin-right * {
+  background-color:#fff;
+  z-index:2;
+  position:absolute;
+  right:10px;
+  top:10px;
+  display:none;
+  }
+  .mapboxgl-ctrl-geocoder .geocoder-pin-right *.active { display:block; }
+
+.mapboxgl-ctrl-geocoder,
+.mapboxgl-ctrl-geocoder ul {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+  }
+
+/* Suggestions */
+.mapboxgl-ctrl-geocoder ul {
+  background-color:#fff;
+  border-radius: 0 0 3px 3px;
+  left:0;
+  list-style:none;
+  margin:0;
+  padding:0;
+  position:absolute;
+  width:100%;
+  top:100%;
+  z-index:1000;
+  overflow:hidden;
+  font-size:12px;
+  }
+  .mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-geocoder ul,
+  .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-geocoder ul {
+    top:auto;
+    bottom:100%;
+    }
+  .mapboxgl-ctrl-geocoder ul > li > a {
+    clear:both;
+    cursor:default;
+    display:block;
+    padding:5px 10px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    border-bottom:1px solid rgba(0,0,0,0.1);
+    }
+    .mapboxgl-ctrl-geocoder ul > li:last-child > a { border-bottom:none; }
+    .mapboxgl-ctrl-geocoder ul > li.active > a,
+    .mapboxgl-ctrl-geocoder ul > li > a:hover {
+      background-color:#eee;
+      text-decoration:none;
+      cursor:pointer;
+      }
+
+@-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
+   @-moz-keyframes rotate { from { -moz-transform: rotate(0deg); } to { -moz-transform: rotate(360deg); } }
+    @-ms-keyframes rotate { from { -ms-transform: rotate(0deg); } to { -ms-transform: rotate(360deg); } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* icons */
+.geocoder-icon {
+  display:inline-block;
+  width:20px;
+  height:20px;
+  vertical-align:middle;
+  speak:none;
+  background-repeat:no-repeat;
+  }
+  .geocoder-icon-search {
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmVyc2lvbj0iMS4xIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLC0xMDMyLjM2MjIpIj48cGF0aCBkPSJNOC41IDRDNiA0IDQgNiA0IDguNSA0IDExIDYgMTMgOC41IDEzIDkuNCAxMyAxMC4yIDEyLjggMTAuOCAxMi4zTDEwLjkgMTIuMyAxNC4zIDE1LjdDMTQuNSAxNS45IDE0LjcgMTYgMTUgMTYgMTUuNiAxNiAxNiAxNS42IDE2IDE1IDE2IDE0LjcgMTUuOSAxNC41IDE1LjcgMTQuM0wxMi4zIDEwLjkgMTIuMyAxMC44QzEyLjggMTAuMiAxMyA5LjQgMTMgOC41IDEzIDYgMTEgNCA4LjUgNHpNOC41IDUuNUMxMC4yIDUuNSAxMS41IDYuOCAxMS41IDguNSAxMS41IDEwLjIgMTAuMiAxMS41IDguNSAxMS41IDYuOCAxMS41IDUuNSAxMC4yIDUuNSA4LjUgNS41IDYuOCA2LjggNS41IDguNSA1LjV6IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLDEwMzIuMzYyMikiIGZpbGw9IiMwMDAiLz48L2c+PC9zdmc+);
+    }
+  .geocoder-icon-close {
+    background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAyMCIgdmVyc2lvbj0iMS4xIiBpZD0ic3ZnNTMyNyIgaGVpZ2h0PSIyMCIgd2lkdGg9IjIwIj48ZGVmcyBpZD0iZGVmczUzMjkiLz48bWV0YWRhdGEgaWQ9Im1ldGFkYXRhNTMzMiIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0zMjAwLC05OTIuMzYyMTgpIiBpZD0ibGF5ZXIxIj48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLDAsMCwtMSwxLDIwMDQuNzI0NCkiIGlkPSJnNTkzNiIgb3BhY2l0eT0iMC41Ii8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMSwtMikiIGlkPSJnNTkzMiIvPjxnIGlkPSJnNjAzOCIgdHJhbnNmb3JtPSJtYXRyaXgoMSwwLDAsLTEsMSwyMDI0LjcyNDQpIiBmaWxsPSIjZmZmIi8+PHBhdGggaWQ9InBhdGgzMDczIiBkPSJtMzIwNSA5OTcuMzYgMCAxLjUgMy41IDMuNS0zLjUgMy41IDAgMS41IDEuNSAwIDMuNS0zLjUgMy41IDMuNSAxLjUgMCAwLTEuNS0zLjUtMy41IDMuNS0zLjUgMC0xLjUtMS41IDAtMy41IDMuNS0zLjUtMy41LTEuNSAweiIgZmlsbD0iIzAwMCIvPjwvZz48L3N2Zz4=);
+    }
+  .geocoder-icon-loading {
+    background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMjAgMjAiPjxwYXRoIGQ9Im0xMCAyIDAgMy4zYzIuNiAwIDQuNyAyLjEgNC43IDQuN2wzLjMgMGMwLTQuNC0zLjYtOC04LTh6IiBmaWxsPSIjMDAwIi8+PHBhdGggZD0iTTEwIDJDNi44IDIgMy43IDQuMSAyLjYgNy4xIDEuNCAxMCAyLjEgMTMuNiA0LjUgMTUuOGMyLjQgMi40IDYuNCAyLjkgOS40IDEuMiAyLjUtMS40IDQuMi00LjIgNC4yLTctMS4xIDAtMi4yIDAtMy4zIDAgMC4xIDIuMi0xLjcgNC4zLTMuOCA0LjZDOC43IDE1IDYuNCAxMy44IDUuNyAxMS43IDQuOCA5LjcgNS42IDcuMSA3LjYgNiA4LjMgNS42IDkuMSA1LjMgMTAgNS4zYzAtMS4xIDAtMi4yIDAtMy4zeiIgc3R5bGU9ImZpbGw6IzAwMDtvcGFjaXR5OjAuMiIvPjwvc3ZnPg==);
+    -webkit-animation: rotate 400ms linear infinite;
+       -moz-animation: rotate 400ms linear infinite;
+        -ms-animation: rotate 400ms linear infinite;
+            animation: rotate 400ms linear infinite;
+    }

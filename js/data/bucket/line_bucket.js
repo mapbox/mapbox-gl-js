@@ -28,7 +28,7 @@ var COS_HALF_SHARP_CORNER = Math.cos(75 / 2 * (Math.PI / 180));
 var SHARP_CORNER_OFFSET = 15;
 
 // The number of bits that is used to store the line distance in the buffer.
-var LINE_DISTANCE_BUFFER_BITS = 14;
+var LINE_DISTANCE_BUFFER_BITS = 15;
 
 // We don't have enough bits for the line distance as we'd like to have, so
 // use this value to scale the line distance (in tile units) down to a smaller
@@ -36,7 +36,7 @@ var LINE_DISTANCE_BUFFER_BITS = 14;
 var LINE_DISTANCE_SCALE = 1 / 2;
 
 // The maximum line distance, in tile units, that fits in the buffer.
-var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS) / LINE_DISTANCE_SCALE;
+var MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
 
 module.exports = LineBucket;
@@ -50,8 +50,8 @@ function LineBucket() {
 
 LineBucket.prototype = util.inherit(Bucket, {});
 
-LineBucket.prototype.addLineVertex = function(vertexBuffer, point, extrude, tx, ty, dir, linesofar) {
-    return vertexBuffer.emplaceBack(
+LineBucket.prototype.addLineVertex = function(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofar) {
+    return layoutVertexBuffer.emplaceBack(
             // a_pos
             (point.x << 1) | tx,
             (point.y << 1) | ty,
@@ -70,10 +70,7 @@ LineBucket.prototype.addLineVertex = function(vertexBuffer, point, extrude, tx, 
 
 LineBucket.prototype.programInterfaces = {
     line: {
-        vertexBuffer: true,
-        elementBuffer: true,
-
-        layoutAttributes: [{
+        layoutVertexArrayType: new Bucket.VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -81,15 +78,27 @@ LineBucket.prototype.programInterfaces = {
             name: 'a_data',
             components: 4,
             type: 'Uint8'
-        }]
+        }]),
+        paintAttributes: [{
+            name: 'a_color',
+            components: 4,
+            type: 'Uint8',
+            getValue: function(layer, globalProperties, featureProperties) {
+                return layer.getPaintValue("line-color", globalProperties, featureProperties);
+            },
+            multiplier: 255,
+            paintProperty: 'line-color'
+        }],
+        elementArrayType: new Bucket.ElementArrayType()
     }
 };
 
 LineBucket.prototype.addFeature = function(feature) {
-    var lines = loadGeometry(feature);
+    var lines = loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS);
     for (var i = 0; i < lines.length; i++) {
         this.addLine(
             lines[i],
+            feature.properties,
             this.layer.layout['line-join'],
             this.layer.layout['line-cap'],
             this.layer.layout['line-miter-limit'],
@@ -98,7 +107,7 @@ LineBucket.prototype.addFeature = function(feature) {
     }
 };
 
-LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLimit) {
+LineBucket.prototype.addLine = function(vertices, featureProperties, join, cap, miterLimit, roundLimit) {
 
     var len = vertices.length;
     // If the line has duplicate vertices at the end, adjust length to remove them.
@@ -118,7 +127,8 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         closed = firstVertex.equals(lastVertex);
 
     // we could be more precise, but it would only save a negligible amount of space
-    this.makeRoomFor('line', len * 10);
+    var group = this.prepareArrayGroup('line', len * 10);
+    var startIndex = group.layoutVertexArray.length;
 
     // a line may not have coincident points
     if (len === 2 && closed) return;
@@ -349,6 +359,12 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
         startOfLine = false;
     }
 
+    this.populatePaintArrays(
+        'line', {zoom: this.zoom},
+        featureProperties,
+        group,
+        startIndex
+    );
 };
 
 /**
@@ -364,13 +380,13 @@ LineBucket.prototype.addLine = function(vertices, join, cap, miterLimit, roundLi
 LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal, endLeft, endRight, round) {
     var tx = round ? 1 : 0;
     var extrude;
-    var layoutArrays = this.arrayGroups.line[this.arrayGroups.line.length - 1].layout;
-    var vertexArray = layoutArrays.vertex;
-    var elementArray = layoutArrays.element;
+    var arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
+    var layoutVertexArray = arrayGroup.layoutVertexArray;
+    var elementArray = arrayGroup.elementArray;
 
     extrude = normal.clone();
     if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, tx, 0, endLeft, distance);
+    this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 0, endLeft, distance);
     if (this.e1 >= 0 && this.e2 >= 0) {
         elementArray.emplaceBack(this.e1, this.e2, this.e3);
     }
@@ -379,7 +395,7 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
 
     extrude = normal.mult(-1);
     if (endRight) extrude._sub(normal.perp()._mult(endRight));
-    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, tx, 1, -endRight, distance);
+    this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 1, -endRight, distance);
     if (this.e1 >= 0 && this.e2 >= 0) {
         elementArray.emplaceBack(this.e1, this.e2, this.e3);
     }
@@ -409,11 +425,11 @@ LineBucket.prototype.addCurrentVertex = function(currentVertex, distance, normal
 LineBucket.prototype.addPieSliceVertex = function(currentVertex, distance, extrude, lineTurnsLeft) {
     var ty = lineTurnsLeft ? 1 : 0;
     extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-    var layoutArrays = this.arrayGroups.line[this.arrayGroups.line.length - 1].layout;
-    var vertexArray = layoutArrays.vertex;
-    var elementArray = layoutArrays.element;
+    var arrayGroup = this.arrayGroups.line[this.arrayGroups.line.length - 1];
+    var layoutVertexArray = arrayGroup.layoutVertexArray;
+    var elementArray = arrayGroup.elementArray;
 
-    this.e3 = this.addLineVertex(vertexArray, currentVertex, extrude, 0, ty, 0, distance);
+    this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, 0, ty, 0, distance);
 
     if (this.e1 >= 0 && this.e2 >= 0) {
         elementArray.emplaceBack(this.e1, this.e2, this.e3);

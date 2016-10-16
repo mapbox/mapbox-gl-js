@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Anchor = require('../../../js/symbol/anchor');
 
 test('Anchor', function(t) {

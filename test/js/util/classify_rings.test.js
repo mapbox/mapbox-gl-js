@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');
@@ -8,7 +8,7 @@ var VectorTile = require('vector-tile').VectorTile;
 var classifyRings = require('../../../js/util/classify_rings');
 
 // Load a fill feature from fixture tile.
-var vt = new VectorTile(new Protobuf(new Uint8Array(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf')))));
+var vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
 var feature = vt.layers.water.feature(0);
 
 test('classifyRings', function(assert) {

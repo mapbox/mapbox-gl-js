@@ -3,6 +3,8 @@ layout: example
 category: example
 title: Fit a map to a bounding box
 description: Use fitBounds to show a specific area of the map in view, regardless of the pixel size of the map.
+tags:
+  - camera
 ---
 <style>
     #fit {
@@ -22,16 +24,16 @@ description: Use fitBounds to show a specific area of the map in view, regardles
 </style>
 <div id='map'></div>
 <br/>
-<button onclick='fit();' id='fit'>Fit to Kenya</button>
+<button id='fit'>Fit to Kenya</button>
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: [-74.50, 40],
     zoom: 9
 });
 
-function fit() {
+document.getElementById('fit').addEventListener('click', function() {
     map.fitBounds([[
         32.958984,
         -5.353521
@@ -39,5 +41,6 @@ function fit() {
         43.50585,
         5.615985
     ]]);
-}
+});
+
 </script>

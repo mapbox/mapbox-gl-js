@@ -3,6 +3,8 @@ layout: example
 category: example
 title: Highlight features containing similar data
 description: 'Hover over counties to highlight counties that share the same name.'
+tags: 
+  - user-interaction
 ---
 <style>
 .map-overlay {
@@ -25,7 +27,7 @@ description: 'Hover over counties to highlight counties that share the same name
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: [-98, 38.88],
     minZoom: 2,
     zoom: 3
@@ -39,8 +41,6 @@ var popup = new mapboxgl.Popup({
 });
 
 map.on('load', function() {
-    var canvas = map.getCanvasContainer();
-
     // Add the source to query. In this example we're using
     // county polygons uploaded as vector tiles
     map.addSource('counties', {

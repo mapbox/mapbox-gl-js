@@ -1,8 +1,10 @@
 ---
 layout: example
 category: example
-title: Filter markers by text input
-description: Filter markers by icon name by typing in a text input.
+title: Filter symbols by text input
+description: Filter symbols by icon name by typing in a text input.
+tags:
+  - user-interaction
 ---
 <style>
     .filter-ctrl {
@@ -32,12 +34,12 @@ description: Filter markers by icon name by typing in a text input.
 </div>
 
 <script>
-var markers = {
+var places = {
     "type": "FeatureCollection",
     "features": [{
         "type": "Feature",
         "properties": {
-            "marker-symbol": "theatre"
+            "icon": "theatre"
         },
         "geometry": {
             "type": "Point",
@@ -46,7 +48,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "theatre"
+            "icon": "theatre"
         },
         "geometry": {
             "type": "Point",
@@ -55,7 +57,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "bar"
+            "icon": "bar"
         },
         "geometry": {
             "type": "Point",
@@ -64,7 +66,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "bicycle"
+            "icon": "bicycle"
         },
         "geometry": {
             "type": "Point",
@@ -73,7 +75,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -82,7 +84,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -91,7 +93,7 @@ var markers = {
     }, {
         "type": "Feature",
         "properties": {
-            "marker-symbol": "music"
+            "icon": "music"
         },
         "geometry": {
             "type": "Point",
@@ -104,20 +106,20 @@ var layerIDs = []; // Will contain a list used to filter against.
 var filterInput = document.getElementById('filter-input');
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v8',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [-77.04, 38.907],
     zoom: 11.15
 });
 
 map.on('load', function() {
-    // Add marker data as a new GeoJSON source.
-    map.addSource('markers', {
+    // Add a GeoJSON source containing place coordinates and information.
+    map.addSource('places', {
         "type": "geojson",
-        "data": markers
+        "data": places
     });
 
-    markers.features.forEach(function(feature) {
-        var symbol = feature.properties['marker-symbol'];
+    places.features.forEach(function(feature) {
+        var symbol = feature.properties['icon'];
         var layerID = 'poi-' + symbol;
 
         // Add a layer for this symbol type if it hasn't been added already.
@@ -125,7 +127,7 @@ map.on('load', function() {
             map.addLayer({
                 "id": layerID,
                 "type": "symbol",
-                "source": "markers",
+                "source": "places",
                 "layout": {
                     "icon-image": symbol + "-15",
                     "icon-allow-overlap": true,
@@ -141,7 +143,7 @@ map.on('load', function() {
                     "text-halo-color": "#fff",
                     "text-halo-width": 2
                 },
-                "filter": ["==", "marker-symbol", symbol]
+                "filter": ["==", "icon", symbol]
             });
 
             layerIDs.push(layerID);

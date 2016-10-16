@@ -1,8 +1,11 @@
 'use strict';
 
+var ajax =  require('../js/util/ajax');
+var sinon = require('sinon');
+var request = require('request');
+var PNG = require('pngjs').PNG;
 var Map = require('../js/ui/map');
-var browser = require('../js/util/browser');
-
+var window = require('../js/util/window');
 
 module.exports = function(style, options, _callback) {
     var wasCallbackCalled = false;
@@ -13,21 +16,19 @@ module.exports = function(style, options, _callback) {
         }
     }
 
-    browser.devicePixelRatio = options.pixelRatio;
+    window.devicePixelRatio = options.pixelRatio;
+
+    var container = window.document.createElement('div');
+    container.offsetHeight = options.height;
+    container.offsetWidth = options.width;
 
     var map = new Map({
-        container: {
-            offsetWidth: options.width,
-            offsetHeight: options.height,
-            classList: {
-                add: function() {},
-                remove: function() {}
-            }
-        },
+        container: container,
         style: style,
         classes: options.classes,
         interactive: false,
-        attributionControl: false
+        attributionControl: false,
+        preserveDrawingBuffer: true
     });
 
     // Configure the map to never stop the render loop
@@ -39,14 +40,10 @@ module.exports = function(style, options, _callback) {
 
     var gl = map.painter.gl;
 
-    map.on('error', function(event) {
-        callback(event.error);
-    });
-
     map.once('load', function() {
         applyOperations(map, options.operations, function() {
-            var w = options.width * browser.devicePixelRatio;
-            var h = options.height * browser.devicePixelRatio;
+            var w = options.width * window.devicePixelRatio;
+            var h = options.height * window.devicePixelRatio;
 
             var pixels = new Uint8Array(w * h * 4);
             gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
@@ -69,7 +66,8 @@ module.exports = function(style, options, _callback) {
                 [];
 
             map.remove();
-            gl.destroy();
+            gl.getExtension('STACKGL_destroy_context').destroy();
+            delete map.painter.gl;
 
             callback(null, data, results.map(function (feature) {
                 feature = feature.toJSON();
@@ -101,3 +99,93 @@ function applyOperations(map, operations, callback) {
         applyOperations(map, operations.slice(1), callback);
     }
 }
+
+function fakeImage(png) {
+    return {
+        width: png.width,
+        height: png.height,
+        data: png.data.slice(),
+        complete: true,
+        getData: function() { return this.data; }
+    };
+}
+
+var cache = {};
+
+function cached(data, callback) {
+    setImmediate(function () {
+        callback(null, data);
+    });
+}
+
+sinon.stub(ajax, 'getJSON', function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
+    return request(url, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            var data;
+            try {
+                data = JSON.parse(body);
+            } catch (err) {
+                return callback(err);
+            }
+            cache[url] = data;
+            callback(null, data);
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});
+
+sinon.stub(ajax, 'getArrayBuffer', function(url, callback) {
+    if (cache[url]) return cached(cache[url], callback);
+    return request({url: url, encoding: null}, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            var ab = new ArrayBuffer(body.length);
+            var view = new Uint8Array(ab);
+            for (var i = 0; i < body.length; ++i) {
+                view[i] = body[i];
+            }
+            cache[url] = ab;
+            callback(null, ab);
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});
+
+sinon.stub(ajax, 'getImage', function(url, callback) {
+    if (cache[url]) return cached(fakeImage(cache[url]), callback);
+    return request({url: url, encoding: null}, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            new PNG().parse(body, function(err, png) {
+                if (err) return callback(err);
+                cache[url] = png;
+                callback(null, fakeImage(png));
+            });
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});
+
+// Hack: since node doesn't have any good video codec modules, just grab a png with
+// the first frame and fake the video API.
+sinon.stub(ajax, 'getVideo', function(urls, callback) {
+    return request({url: urls[0], encoding: null}, function(error, response, body) {
+        if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+            new PNG().parse(body, function(err, png) {
+                if (err) return callback(err);
+                callback(null, {
+                    readyState: 4, // HAVE_ENOUGH_DATA
+                    addEventListener: function() {},
+                    play: function() {},
+                    width: png.width,
+                    height: png.height,
+                    data: png.data
+                });
+            });
+        } else {
+            callback(error || new Error(response.statusCode));
+        }
+    });
+});

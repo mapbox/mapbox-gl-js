@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var LngLat = require('../../../js/geo/lng_lat');
 
 test('LngLat', function(t) {
@@ -23,8 +23,12 @@ test('LngLat', function(t) {
 
     t.test('#convert', function(t) {
         t.ok(LngLat.convert([0, 10]) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lng: 0, lat: 10}) instanceof LngLat, 'convert creates a LngLat instance');
+        t.ok(LngLat.convert({lng: 0, lat: 0}) instanceof LngLat, 'convert creates a LngLat instance');
         t.ok(LngLat.convert(new LngLat(0, 0)) instanceof LngLat, 'convert creates a LngLat instance');
-        t.equal(LngLat.convert('othervalue'), 'othervalue', 'passes through other values');
+        t.throws(function() {
+            LngLat.convert(0, 10);
+        }, "`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]", 'detects and throws on invalid input');
         t.end();
     });
 

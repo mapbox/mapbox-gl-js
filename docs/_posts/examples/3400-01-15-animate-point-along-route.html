@@ -3,6 +3,9 @@ layout: example
 category: example
 title: Animate a point along a route
 description: "Use <a target='_blank' href='http://turfjs.org/'>Turf</a> to smoothly animate a point along the distance of a line."
+tags:
+  - animate
+  - camera
 ---
 <style>
 .overlay {
@@ -37,7 +40,7 @@ description: "Use <a target='_blank' href='http://turfjs.org/'>Turf</a> to smoot
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: [-96, 37.8],
     zoom: 3
 });
@@ -61,7 +64,7 @@ var route = {
             ]
         }
     }]
-}
+};
 
 // A single point that animates along the route.
 // Coordinates are initially set to origin.
@@ -74,7 +77,7 @@ var point = {
             "coordinates": origin
         }
     }]
-}
+};
 
 // Calculate the distance in kilometers between route start/end point.
 var lineDistance = turf.lineDistance(route.features[0], 'kilometers');
@@ -83,8 +86,8 @@ var arc = [];
 
 // Draw an arc between the `origin` & `destination` of the two points
 for (var i = 0; i < lineDistance; i++) {
-   var segment = turf.along(route.features[0], i / 1000 * lineDistance, 'kilometers');
-   arc.push(segment.geometry.coordinates);
+    var segment = turf.along(route.features[0], i / 1000 * lineDistance, 'kilometers');
+    arc.push(segment.geometry.coordinates);
 }
 
 // Update the route with calculated arc coordinates

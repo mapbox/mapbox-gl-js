@@ -3,12 +3,14 @@ layout: example
 category: example
 title: Highlight features under the mouse pointer
 description: Using queryRenderedFeatures and a filter to change hover styles
+tags:
+  - user-interaction
 ---
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v8',
+    style: 'mapbox://styles/mapbox/streets-v9',
     center: [-100.486052, 37.830348],
     zoom: 2
 });
@@ -64,6 +66,11 @@ map.on('load', function () {
         } else {
             map.setFilter("route-hover", ["==", "name", ""]);
         }
+    });
+
+    // Reset the route-hover layer's filter when the mouse leaves the map
+    map.on("mouseout", function() {
+        map.setFilter("route-hover", ["==", "name", ""]);
     });
 });
 </script>

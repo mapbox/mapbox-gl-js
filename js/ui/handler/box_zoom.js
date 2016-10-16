@@ -1,15 +1,18 @@
 'use strict';
 
-var DOM = require('../../util/dom'),
-    LngLatBounds = require('../../geo/lng_lat_bounds'),
-    util = require('../../util/util');
+var DOM = require('../../util/dom');
+var LngLatBounds = require('../../geo/lng_lat_bounds');
+var util = require('../../util/util');
+var window = require('../../util/window');
 
 module.exports = BoxZoomHandler;
 
 /**
- * The `BoxZoomHandler` allows a user to zoom the map to fit a bounding box.
- * The bounding box is defined by holding `shift` while dragging the cursor.
+ * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
+ * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
+ *
  * @class BoxZoomHandler
+ * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
 function BoxZoomHandler(map) {
     this._map = map;
@@ -25,23 +28,26 @@ BoxZoomHandler.prototype = {
     _active: false,
 
     /**
-     * Returns the current enabled/disabled state of the "box zoom" interaction.
-     * @returns {boolean} enabled state
+     * Returns a Boolean indicating whether the "box zoom" interaction is enabled.
+     *
+     * @returns {boolean} `true` if the "box zoom" interaction is enabled.
      */
     isEnabled: function () {
         return this._enabled;
     },
 
     /**
-     * Returns true if the "box zoom" interaction is currently active, i.e. currently being used.
-     * @returns {boolean} active state
+     * Returns a Boolean indicating whether the "box zoom" interaction is active, i.e. currently being used.
+     *
+     * @returns {boolean} `true` if the "box zoom" interaction is active.
      */
     isActive: function () {
         return this._active;
     },
 
     /**
-     * Enable the "box zoom" interaction.
+     * Enables the "box zoom" interaction.
+     *
      * @example
      *   map.boxZoom.enable();
      */
@@ -52,7 +58,8 @@ BoxZoomHandler.prototype = {
     },
 
     /**
-     * Disable the "box zoom" interaction.
+     * Disables the "box zoom" interaction.
+     *
      * @example
      *   map.boxZoom.disable();
      */
@@ -65,9 +72,9 @@ BoxZoomHandler.prototype = {
     _onMouseDown: function (e) {
         if (!(e.shiftKey && e.button === 0)) return;
 
-        document.addEventListener('mousemove', this._onMouseMove, false);
-        document.addEventListener('keydown', this._onKeyDown, false);
-        document.addEventListener('mouseup', this._onMouseUp, false);
+        window.document.addEventListener('mousemove', this._onMouseMove, false);
+        window.document.addEventListener('keydown', this._onKeyDown, false);
+        window.document.addEventListener('mouseup', this._onMouseUp, false);
 
         DOM.disableDrag();
         this._startPos = DOM.mousePos(this._el, e);
@@ -100,7 +107,9 @@ BoxZoomHandler.prototype = {
 
         var p0 = this._startPos,
             p1 = DOM.mousePos(this._el, e),
-            bounds = new LngLatBounds(this._map.unproject(p0), this._map.unproject(p1));
+            bounds = new LngLatBounds()
+                .extend(this._map.unproject(p0))
+                .extend(this._map.unproject(p1));
 
         this._finish();
 
@@ -123,9 +132,9 @@ BoxZoomHandler.prototype = {
     _finish: function () {
         this._active = false;
 
-        document.removeEventListener('mousemove', this._onMouseMove, false);
-        document.removeEventListener('keydown', this._onKeyDown, false);
-        document.removeEventListener('mouseup', this._onMouseUp, false);
+        window.document.removeEventListener('mousemove', this._onMouseMove, false);
+        window.document.removeEventListener('keydown', this._onKeyDown, false);
+        window.document.removeEventListener('mouseup', this._onMouseUp, false);
 
         this._container.classList.remove('mapboxgl-crosshair');
 
@@ -142,33 +151,38 @@ BoxZoomHandler.prototype = {
     }
 };
 
+/**
+ * @typedef {Object} MapBoxZoomEvent
+ * @property {MouseEvent} originalEvent
+ * @property {LngLatBounds} boxZoomBounds The bounding box of the "box zoom" interaction.
+ *   This property is only provided for `boxzoomend` events.
+ */
 
 /**
- * Boxzoom start event. This event is emitted at the start of a box zoom interaction.
+ * Fired when a "box zoom" interaction starts. See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomstart
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapBoxZoomEvent} data
  */
 
 /**
- * Boxzoom end event. This event is emitted at the end of a box zoom interaction
+ * Fired when a "box zoom" interaction ends.  See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomend
  * @memberof Map
  * @instance
  * @type {Object}
- * @property {Event} originalEvent the original DOM event
- * @property {LngLatBounds} boxZoomBounds the bounds of the box zoom target
+ * @property {MapBoxZoomEvent} data
  */
 
 /**
- * Boxzoom cancel event.  This event is emitted when the user cancels a box zoom interaction,
- *   or when the box zoom does not meet the minimum size threshold.
+ * Fired when the user cancels a "box zoom" interaction, or when the bounding box does not meet the minimum size threshold.
+ * See [`BoxZoomHandler`](#BoxZoomHandler).
  *
  * @event boxzoomcancel
  * @memberof Map
  * @instance
- * @property {EventData} data Original event data
+ * @property {MapBoxZoomEvent} data
  */

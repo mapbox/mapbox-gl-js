@@ -175,13 +175,21 @@ function createEmplaceBack(members, bytesPerElement) {
         var member = members[m];
         var size = sizeOf(member.type);
 
+        // array offsets to the end of current data for each type size
+        // var o{SIZE} = i * ROUNDED(bytesPerElement / size);
         if (usedTypeSizes.indexOf(size) < 0) {
             usedTypeSizes.push(size);
             body += 'var o' + size.toFixed(0) + ' = i * ' + (bytesPerElement / size).toFixed(0) + ';\n';
         }
 
         for (var c = 0; c < member.components; c++) {
+            // arguments v0, v1, v2, ... are, in order, the components of
+            // member 0, then the components of member 1, etc.
             var argName = 'v' + argNames.length;
+            // The index for `member` component `c` into the appropriate type array is:
+            // this.{TYPE}[o{SIZE} + MEMBER_OFFSET + {c}] = v{X}
+            // where MEMBER_OFFSET = ROUND(member.offset / size) is the per-element
+            // offset of this member into the array
             var index = 'o' + size.toFixed(0) + ' + ' + (member.offset / size + c).toFixed(0);
             body += 'this.' + getArrayViewName(member.type) + '[' + index + '] = ' + argName + ';\n';
             argNames.push(argName);
