@@ -20,9 +20,6 @@ map.on('load', function () {
         'type': 'geojson',
         'data': {
             'type': 'Feature',
-            'properties': {
-                'name': 'Maine'
-            },
             'geometry': {
                 'type': 'Polygon',
                 'coordinates': [[[-67.13734351262877, 45.137451890638886],
@@ -50,7 +47,7 @@ map.on('load', function () {
     });
 
     map.addLayer({
-        'id': 'route',
+        'id': 'maine',
         'type': 'fill',
         'source': 'maine',
         'layout': {},
