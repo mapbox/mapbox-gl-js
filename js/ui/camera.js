@@ -718,6 +718,20 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Returns a Boolean indicating whether the map is currently in a "moving" state.
+     * Returns `false` if zooming, rotating, pitching, and dragging are all inactive.
+     *
+     * @returns {boolean} A Boolean indicating whether the map is moving.
+     */
+    isMoving: function() {
+        if (this.isEasing() ||
+            this.zooming ||
+            this.dragPan.isActive() ||
+            this.dragRotate.isActive()) return true;
+        return false;
+    },
+
+    /**
      * Stops any animated transition underway.
      *
      * @returns {Map} `this`
