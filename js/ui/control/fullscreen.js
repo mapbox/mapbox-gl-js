@@ -36,6 +36,10 @@ Fullscreen.prototype = util.inherit(Control, {
         } else if (mapContainer.webkitRequestFullscreen) {
             mapContainer.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
         } else {
+            // mapContainer.addClass('pseudo-fullscreen');
+            // this.invalidateSize();
+            // this._isFullscreen = true;
+            // this.fire('fullscreenchange');
         }
     }
 });            
