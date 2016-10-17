@@ -3,14 +3,12 @@ footer:
   mapbox:
     - title: Products
       path: /products
-    - title: Data
-      path: /data-platform
+    - title: Showcase
+      path: /showcase
     - title: Pricing
       path: /pricing
     - title: Blog
       path: /blog
-    - title: Showcase
-      path: /showcase
     - title: Platform
       path: /platform
     - title: Telemetry
@@ -22,6 +20,8 @@ footer:
       path: /about/team
     - title: Jobs
       path: /jobs
+    - title: Events
+      path: /events
     - title: Press
       path: /about/press
     - title: Green
@@ -50,7 +50,7 @@ footer:
       path: /maps
     - title: Mapbox Studio
       path: /mapbox-studio
-    - title: Map Gallery
+    - title: Gallery
       path: /gallery
     - title: Vector tiles
       path: /vector-tiles
@@ -91,7 +91,7 @@ footer:
   {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
   <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
 
-  <meta class='swiftype' name='title' data-type='string' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;" | replace:"| Mapbox",""}}' />
+  <meta class='swiftype' name='title' data-type='string' content='{{page.title | escape | replace:"| Mapbox",""}}' />
   <meta class='swiftype' name='type' data-type='enum' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
   <meta class='swiftype' name='info' data-type='string' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />{% if page.date and site.baseurl == '/blog' %}
   <meta class='swiftype' name='published_at' data-type='date' content='{{ page.date | date_to_xmlschema }}' />{% endif %}{% if page.tags %}
@@ -99,20 +99,20 @@ footer:
   {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
   <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
   <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
-  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% endif %}' />{% endif %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% endif %}' />{% endif %}
   {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
   {% if page.card or layout.card %}
   <meta name='twitter:site' content='@Mapbox' />
   <meta property='og:site_name' content='Mapbox' />
   <meta name='twitter:url' content='{{site.url}}{{site.baseurl}}{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
   <meta property='og:url' content='{{site.url}}{{site.baseurl}}{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
-  <meta name='twitter:title' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;"}}' />
-  <meta property='og:title' content='{{page.title | replace:"'","&rsquo;" | replace:"'","&rsquo;"}}' />
-  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
-  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | replace:"'","&rsquo;" | replace:"'","&rsquo;" | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta name='twitter:title' content='{{page.title | escape }}' />
+  <meta property='og:title' content='{{page.title | escape }}' />
+  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 | escape }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 | escape}}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
   {% if page.video or layout.video %}
   <meta name='twitter:card' content='player' />
-  <meta name='twitter:player' content='{{page.video | replace: "http:" , "https:" }}' />
+  <meta name='twitter:player' content='{% if page.video %}{{page.video | replace: "http:" , "https:" }}{% else %}{{layout.video}}{% endif %}' />
   <meta name='twitter:player:width' content='640' />
   <meta name='twitter:player:height' content='480' />
   <meta property='og:type' content='video.other' />
@@ -120,16 +120,20 @@ footer:
   <meta property='og:video:width' content='640' />
   <meta property='og:video:height' content='480' />
   {% elsif page.image or layout.image %}
-  <meta name='twitter:image' content='{{page.image | replace:"https:","http:"}}' />
-  <meta name='st:image' content='{{page.image | replace:"https:","http:"}}' />
-  <meta property='og:image' content='{{page.image | replace:"https:","http:"}}' />
+  <meta name='twitter:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
+  <meta name='st:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
+  <meta property='og:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
   <meta name='twitter:card' content='summary_large_image' />
   <meta property='og:type' content='website' />
   {% endif %}
   {% endif %}
   <meta name="p:domain_verify" content="57838af58c8045c2c024bc2f9d1577f9"/>
 
+  {% if site.localbase == true %}
+  <link href='/css/base/latest/base.css?v1.0' rel='stylesheet' />
+  {% else %}
   <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
+  {% endif %}
   <link href='{{site.url}}/css/site.css' rel='stylesheet' />
   <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
   <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
@@ -143,8 +147,11 @@ footer:
   <script src='https://js.stripe.com/v2/'></script>
   <script>
   var KM_COOKIE_DOMAIN = 'www.mapbox.com';
-  var analytics=analytics||[];(function(){var e=['identify','track','trackLink','trackForm','trackClick','trackSubmit','page','pageview','ab','alias','ready','group'],t=function(e){return function(){analytics.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var n=0;n<e.length;n++)analytics[e[n]]=t(e[n])})(),analytics.load=function(e){var t=document.createElement('script');t.type='text/javascript',t.async=!0,t.src=('https:'===document.location.protocol?'https://':"http://")+'d2dq2ahtl5zl1z.cloudfront.net/analytics.js/v1/'+e+'/analytics.min.js';var n=document.getElementsByTagName('script')[0];n.parentNode.insertBefore(t,n)};
+
+  !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="3.1.0";
   analytics.load(window.location.hostname.indexOf('mapbox.com') !== -1 ? 'fl0c8p240n' : '0biiejpgfj');
+  analytics.page()
+  }}();
 
   Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
     'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
@@ -197,7 +204,7 @@ footer:
         </div>
         <div class='col5 margin1r'>
           <h3>Our platform</h3>
-          <a class='block pad1y icon mt' href='/enterprise/'>Enterprise ready</a>
+          <a class='block pad1y icon mt' href='/showcase/'>Enterprise ready</a>
           <a class='block pad1y icon building' href='/platform/'>Scalable infrastructure</a>
           <a class='block pad1y icon lock' href='/platform/security/'>Security</a>
           <a class='block pad1y icon data' href='/data-platform/'>Curated Data</a>
@@ -295,7 +302,7 @@ footer:
   </div>
 </div>
 
-<div class='masthead col12 clearfix {% unless page.options contains 'bleed' or layout.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' or layout.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %} {% if page.title == 'Developers' %}developers-nav{% endif %} {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
+<div class='masthead col12 clearfix {% unless page.options contains 'bleed' or layout.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' or layout.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %}  {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
   <div class='limiter clearfix'>
     <nav class='col12 text-right navigation-padding-top contain animate clearfix noprint'>
       <a class='fl mb-logo' href='/'></a>
@@ -304,11 +311,12 @@ footer:
       <!-- Desktop nav -->
       <div class='text-right z10 strong small primary hide-mobile space-top0'>
         <div class='inline align-top'>
-         <div class='dropdown inline fl contain'  data-category='products'> <a href='/products/'     class='contain primary-nav-button fl pad1x pad0y round '>Products</a></div>
-          <div class='dropdown inline fl contain'  data-category='use-cases'> <a href='/industries/'  class='contain primary-nav-button fl pad1x pad0y round'>Industries</a></div>
-         <div class='dropdown inline fl contain'  data-category='documentation'>  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round '>Developers</a></div>
-         <div class='dropdown inline fl contain'  data-category='help'>  <a href='/help/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
-          <div class='inline fl'> <a href='/pricing/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/pricing' %}active{% endif %}'>Pricing</a></div>
+         <div class='dropdown inline fl contain'  data-category='products'> <a href='/products/' class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/products' %}active{% endif %}'>Products</a></div>
+         <div class='dropdown inline fl contain'  data-category='documentation'>  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/developers' %}active{% endif %}'>Developers</a></div>
+          <div class='inline fl '  > <a href='/showcase/'  class='primary-nav-button fl pad1x pad0y round  {% if page.url contains '/showcase' %}active{% endif %}'>Showcase</a></div>
+          <div class='inline fl'> <a href='/pricing/'  class='primary-nav-button fl pad1x pad0y round  {% if page.url contains '/pricing' %}active{% endif %}'>Pricing</a></div>
+
+           <div class='inline fl'>  <a href='/help/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
           <div class='inline fl'> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
         </div>
         <!-- Hardcoded width so content doesn't jump -->
@@ -348,13 +356,13 @@ footer:
                 <a class='pad0y block quiet col6' href='/satellite/'>Satellite</a>
                 <a class='pad0y block quiet col6' href='/analysis/'>Analysis</a>
                 <a class='pad0y block quiet col6' href='/atlas/'>Atlas</a>
-                <a class='pad0y block quiet col6' href='/highvolume/'>High Volume</a>
               </div>
             </div>
             <div class='col12 pad1x clearfix  mobile-cols pad4y '>
               <a class='pad0y block strong quiet col6' href='/about/'>About</a>
               <a class='pad0y block strong quiet col6' href='/about/team/'>Team</a>
               <a class='pad0y block strong quiet col6' href='/jobs/'>Jobs</a>
+              <a class='pad0y block strong quiet col6' href='/events/'>events</a>
               <a class='pad0y block strong quiet col6' href='/about/press/'>Press</a>
               <a class='pad0y block strong quiet col6' href='/tos/'>Legal</a>
               <a class='pad0y block strong quiet col6' href='/contact/'>Contact</a>
@@ -413,7 +421,7 @@ footer:
         {% for item in layout.footer.industries %}
         <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
         {% endfor %}
-        <a href='{{site.url}}/industries/' class='small rcon next quiet'>All industries</a>
+        <a href='{{site.url}}/showcase#industries-overview' class='small rcon next quiet'>All industries</a>
       </div>
     </div>
 
@@ -432,8 +440,8 @@ footer:
         <p class='quiet'>Keep up with Mapbox product announcements, events, and walkthroughs.</p>
         <fieldset class='clearfix newsletter-in-docs input-pill col12 pill with-icon'>
           <span class='icon mail quiet'></span>
-          <input type='text' value='' placeholder='Email address' name='email' class='col9 required email'>
-          <input type='submit' value='Subscribe' class='button col3'>
+          <input type='text' value='' placeholder='Email address' name='email' class='col9 required email round-big clean'>
+          <input type='submit' value='Subscribe' class='button col3 round-big fill-denim'>
         </fieldset>
       </form>
     </div>
@@ -494,6 +502,59 @@ $dropdownZone.mouseover(function() {
     }
   }, 300);
 });
+
+
+
+// Signup tracking
+
+var $signupform = $('.signup-form-popup');
+App.onUserLoad(function() {
+  analytics.identify();
+  if (App.user){
+    // Show get started button
+     $('.mapbox-signup-button').removeClass('hidden');
+  } else {
+    // Show get signup input field
+    $('.mapbox-signup').removeClass('hidden');
+    // Submitting signup input form
+    $signupform.submit(function(ev) {
+      var form = App.form(ev.currentTarget);
+      if (!form.email || !App.validateEmail(form.email)) {
+        Views.modal.show('err', new Error('Please provide a valid email address'));
+        return false;
+      }
+      // Tracking based on anonymousId
+       analytics.identify(form.email, {
+          email: form.email
+       }, track);
+
+       var formData = $(this);
+
+      function track() {
+
+        analytics.track('Submitted email', {
+          page: window.location.href,
+          location: formData.data('location'),
+          intent: formData.data('intent'),
+          text: formData.data('text')
+        }, function(){
+          window.location.href = "/studio/signup?email=" + encodeURIComponent(form.email);
+        });
+      }
+      return false;
+    });
+  }
+});
+
+
+$('a.js-tracked-link').on("click", function(event){
+     analytics.track('Clicked Link', {
+      text: $(this).text(),
+      location: $(this).attr('data-location'),
+      intent: $(this).attr('data-intent')
+    });
+})
+
 </script>
 
 </body>
