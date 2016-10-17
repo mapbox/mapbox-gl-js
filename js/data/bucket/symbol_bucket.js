@@ -545,15 +545,16 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
 
-
         // drop vertical or horizontal orientation of labels
-        //if (alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
-        if (alongLine && tr.y > tl.y && (a <= Math.PI / 4 || (a > Math.PI * 3 / 4 && a <= Math.PI * 5 / 4) || (a > Math.PI * 7 / 4 && a <= Math.PI * 2))) {
-            console.log("dropping glyphs for vertical label");
+        if (keepUpright && alongLine && tr.y < tl.y && (a > Math.PI / 4 && a <= Math.PI * 3 / 4)) {
+            console.log("dropping glyphs for upside down vertical label");
             continue;
         }
 
-        if (keepUpright && alongLine && tr.y > tl.y && (a > Math.PI * 5 / 4 && a <= Math.PI * 7 / 4)) continue;
+        if (alongLine && tr.y < tl.y && (a <= Math.PI / 4 || (a > Math.PI * 3 / 4 && a <= Math.PI * 5 / 4) || (a > Math.PI * 7 / 4 && a <= Math.PI * 2))) {
+            console.log("dropping glyphs for vertical label");
+            continue;
+        }
 
         if (alongLine && tr.y === tl.y && ((a > Math.PI / 4 && a <= Math.PI * 3 / 4) || (a > Math.PI * 5 / 4 && a <= Math.PI * 7 / 4))) {
             console.log("dropping glyphs for horizontal label");
