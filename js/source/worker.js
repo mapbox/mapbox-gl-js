@@ -1,12 +1,11 @@
 'use strict';
 
 const Actor = require('../util/actor');
-const StyleLayer = require('../style/style_layer');
+const StyleLayerIndex = require('../style/style_layer_index');
 const util = require('../util/util');
 
 const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
-const featureFilter = require('feature-filter');
 const assert = require('assert');
 
 module.exports = function createWorker(self) {
@@ -17,8 +16,7 @@ function Worker(self) {
     this.self = self;
     this.actor = new Actor(self, this);
 
-    this.layers = {};
-    this.layerFamilies = {};
+    this.layerIndexes = {};
 
     this.workerSourceTypes = {
         vector: VectorTileWorkerSource,
@@ -38,38 +36,11 @@ function Worker(self) {
 
 util.extend(Worker.prototype, {
     'set layers': function(mapId, layerDefinitions) {
-        this.layers[mapId] = {};
-        this['update layers'](mapId, layerDefinitions);
+        this.getLayerIndex(mapId).replace(layerDefinitions);
     },
 
     'update layers': function(mapId, layerDefinitions) {
-        const layers = this.layers[mapId];
-
-        // Update ref parents
-        for (const layer of layerDefinitions) {
-            if (!layer.ref) updateLayer(layer);
-        }
-
-        // Update ref children
-        for (const layer of layerDefinitions) {
-            if (layer.ref) updateLayer(layer);
-        }
-
-        function updateLayer(layer) {
-            if (layer.type !== 'fill' && layer.type !== 'line' && layer.type !== 'circle' && layer.type !== 'symbol')
-                return;
-            const refLayer = layer.ref && layers[layer.ref];
-            let styleLayer = layers[layer.id];
-            if (styleLayer) {
-                styleLayer.set(layer, refLayer);
-            } else {
-                styleLayer = layers[layer.id] = StyleLayer.create(layer, refLayer);
-            }
-            styleLayer.updatePaintTransitions({}, {transition: false});
-            styleLayer.filter = featureFilter(styleLayer.filter);
-        }
-
-        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
+        this.getLayerIndex(mapId).update(layerDefinitions);
     },
 
     'load tile': function(mapId, params, callback) {
@@ -112,16 +83,18 @@ util.extend(Worker.prototype, {
         }
     },
 
+    getLayerIndex: function(mapId) {
+        let layerIndexes = this.layerIndexes[mapId];
+        if (!layerIndexes) {
+            layerIndexes = this.layerIndexes[mapId] = new StyleLayerIndex();
+        }
+        return layerIndexes;
+    },
+
     getWorkerSource: function(mapId, type) {
         if (!this.workerSources[mapId])
             this.workerSources[mapId] = {};
         if (!this.workerSources[mapId][type]) {
-            // simple accessor object for passing to WorkerSources
-            const layers = {
-                getLayers: () => this.layers[mapId],
-                getLayerFamilies: () => this.layerFamilies[mapId]
-            };
-
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
@@ -130,30 +103,9 @@ util.extend(Worker.prototype, {
                 }
             };
 
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type](actor, layers);
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type](actor, this.getLayerIndex(mapId));
         }
 
         return this.workerSources[mapId][type];
     }
 });
-
-function createLayerFamilies(layers) {
-    const families = {};
-
-    for (const layerId in layers) {
-        const layer = layers[layerId];
-        const parentLayerId = layer.ref || layer.id;
-        const parentLayer = layers[parentLayerId];
-
-        if (parentLayer.layout && parentLayer.layout.visibility === 'none') continue;
-
-        families[parentLayerId] = families[parentLayerId] || [];
-        if (layerId === parentLayerId) {
-            families[parentLayerId].unshift(layer);
-        } else {
-            families[parentLayerId].push(layer);
-        }
-    }
-
-    return families;
-}

@@ -122,9 +122,7 @@ exports.setType = function (name, type) {
  *
  * @class WorkerSource
  * @param {Actor} actor
- * @param {object} styleLayers An accessor provided by the Worker to get the current style layers and layer families.
- * @param {Function} styleLayers.getLayers
- * @param {Function} styleLayers.getLayerFamilies
+ * @param {StyleLayerIndex} layerIndex
  */
 
 /**

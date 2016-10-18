@@ -1,7 +1,5 @@
 'use strict';
 
-/* jshint -W079 */
-
 const test = require('mapbox-gl-js-test').test;
 const Worker = require('../../../js/source/worker');
 const window = require('../../../js/util/window');
@@ -30,55 +28,6 @@ test('load tile', (t) => {
     t.end();
 });
 
-test('set layers', (t) => {
-    const worker = new Worker(_self);
-
-    worker['set layers'](0, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
-
-    t.equal(worker.layers[0].one.id, 'one');
-    t.equal(worker.layers[0].two.id, 'two');
-    t.equal(worker.layers[0].three.id, 'three');
-
-    t.equal(worker.layers[0].one.getPaintProperty('circle-color'), 'red');
-    t.equal(worker.layers[0].two.getPaintProperty('circle-color'), 'green');
-    t.equal(worker.layers[0].three.getPaintProperty('circle-color'), 'blue');
-
-    t.equal(worker.layerFamilies[0].one.length, 1);
-    t.equal(worker.layerFamilies[0].one[0].id, 'one');
-    t.equal(worker.layerFamilies[0].two.length, 2);
-    t.equal(worker.layerFamilies[0].two[0].id, 'two');
-    t.equal(worker.layerFamilies[0].two[1].id, 'three');
-
-    t.end();
-});
-
-test('update layers', (t) => {
-    const worker = new Worker(_self);
-
-    worker['set layers'](0, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }, 'source': 'foo' },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }, 'source': 'foo' },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
-    ]);
-
-    worker['update layers'](0, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }, 'source': 'bar' },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }, 'source': 'bar' },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    ]);
-
-    t.equal(worker.layers[0].one.getPaintProperty('circle-color'), 'cyan');
-    t.equal(worker.layers[0].two.getPaintProperty('circle-color'), 'magenta');
-    t.equal(worker.layers[0].three.getPaintProperty('circle-color'), 'yellow');
-    t.equal(worker.layers[0].three.source, 'bar');
-
-    t.end();
-});
-
 test('redo placement', (t) => {
     const worker = new Worker(_self);
     _self.registerWorkerSource('test', function() {
@@ -91,41 +40,20 @@ test('redo placement', (t) => {
     worker['redo placement'](0, {type: 'test', mapbox: true});
 });
 
-test('update layers isolates different instances\' data', (t) => {
+test('isolates different instances\' data', (t) => {
     const worker = new Worker(_self);
 
     worker['set layers'](0, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
+        { id: 'one', type: 'circle' }
     ]);
 
     worker['set layers'](1, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
+        { id: 'one', type: 'circle' },
+        { id: 'two', type: 'circle' },
     ]);
 
-    worker['update layers'](1, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    ]);
-
-    t.equal(worker.layers[0].one.id, 'one');
-    t.equal(worker.layers[0].two.id, 'two');
-    t.equal(worker.layers[0].three.id, 'three');
-
-    t.equal(worker.layers[0].one.getPaintProperty('circle-color'), 'red');
-    t.equal(worker.layers[0].two.getPaintProperty('circle-color'), 'green');
-    t.equal(worker.layers[0].three.getPaintProperty('circle-color'), 'blue');
-
-    t.equal(worker.layerFamilies[0].one.length, 1);
-    t.equal(worker.layerFamilies[0].one[0].id, 'one');
-    t.equal(worker.layerFamilies[0].two.length, 2);
-    t.equal(worker.layerFamilies[0].two[0].id, 'two');
-    t.equal(worker.layerFamilies[0].two[1].id, 'three');
-
+    t.equal(worker.layerIndexes[0].families.length, 1);
+    t.equal(worker.layerIndexes[1].families.length, 2);
 
     t.end();
 });
