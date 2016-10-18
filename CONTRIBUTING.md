@@ -97,6 +97,21 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
 
 * We use [`error` events](https://www.mapbox.com/mapbox-gl-js/api/#Map.event:error) to report user errors.
 * We use [`assert`](https://nodejs.org/api/assert.html) to check invariants that are not likely to be caused by user error. These `assert` statements are stripped out of production builds.
+* We use the following ES6 features:
+  * `let`/`const`
+  * `for...of` loops (for arraylike iteration only, i.e. what is supported by [Bublé's `dangerousForOf` transform](https://buble.surge.sh/guide/#dangerous-transforms))
+  * Arrow functions
+  * Classes
+  * Template strings
+  * Computed and shorthand object properties
+* The following ES6 features are not to be used, in order to maintain support for Node 4.x, IE 11, and older mobile browsers. This may change in the future.
+  * Default parameters
+  * Rest parameters
+  * Spread (`...`) operator
+  * Destructuring
+  * Iterators and generators
+  * "Library" features such as `Map`, `Set`, `array.find`, etc.
+  * Modules
 
 ### Version Control Conventions
 
