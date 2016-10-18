@@ -20,26 +20,42 @@ Fullscreen.prototype = util.inherit(Control, {
     onAdd: function(map) {
         var className = 'mapboxgl-ctrl';
         var container = this._container = DOM.create('div', className + '-group', map.getContainer());
-
-        this._fullscreenButton = DOM.create('button', (className + '-icon ' + className + '-fullscreen'), this._container);
+        var button = this._fullscreenButton = DOM.create('button', (className + '-icon ' + className + '-fullscreen'), this._container);
+        button.id = 'fullscreen-button'
         this._fullscreenButton.type = 'button';
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen.bind(this));
         return container;
     },
 
+    isFullscreen: function () {
+        return this._isFullscreen || false;
+    },
+
     _onClickFullscreen: function() {
         var mapContainer = map.getContainer();
-        if (mapContainer.requestFullscreen) {
-            mapContainer.requestFullscreen();
-        } else if (mapContainer.mozRequestFullScreen) {
-            mapContainer.mozRequestFullScreen();
-        } else if (mapContainer.webkitRequestFullscreen) {
-            mapContainer.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        var button = document.getElementById('fullscreen-button');
+        var className = 'mapboxgl-ctrl';
+        if (window.innerHeight == screen.height) {
+            button.classList.remove(className + '-shrink');
+            button.classList.add(className + '-fullscreen');
+           if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else {
+                document.webkitCancelFullScreen();
+            } 
         } else {
-            // mapContainer.addClass('pseudo-fullscreen');
-            // this.invalidateSize();
-            // this._isFullscreen = true;
-            // this.fire('fullscreenchange');
+            button.classList.remove(className + '-fullscreen');
+            button.classList.add(className + '-shrink');
+            if (mapContainer.requestFullscreen) {
+                mapContainer.requestFullscreen();
+            } else if (mapContainer.mozRequestFullScreen) {
+                mapContainer.mozRequestFullScreen();
+            } else {
+                mapContainer.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            }
         }
+        
     }
 });            
