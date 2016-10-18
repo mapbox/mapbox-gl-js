@@ -118,16 +118,16 @@ util.extend(Worker.prototype, {
         if (!this.workerSources[mapId][type]) {
             // simple accessor object for passing to WorkerSources
             const layers = {
-                getLayers: function () { return this.layers[mapId]; }.bind(this),
-                getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
+                getLayers: () => this.layers[mapId],
+                getLayerFamilies: () => this.layerFamilies[mapId]
             };
 
             // use a wrapped actor so that we can attach a target mapId param
             // to any messages invoked by the WorkerSource
             const actor = {
-                send: function (type, data, callback, buffers) {
+                send: (type, data, callback, buffers) => {
                     this.actor.send(type, data, callback, buffers, mapId);
-                }.bind(this)
+                }
             };
 
             this.workerSources[mapId][type] = new this.workerSourceTypes[type](actor, layers);
