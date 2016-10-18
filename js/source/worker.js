@@ -38,59 +38,27 @@ function Worker(self) {
 
 util.extend(Worker.prototype, {
     'set layers': function(mapId, layerDefinitions) {
-        const layers = this.layers[mapId] = {};
-
-        // Filter layers and create an id -> layer map
-        const childLayerIndicies = [];
-        for (let i = 0; i < layerDefinitions.length; i++) {
-            const layer = layerDefinitions[i];
-            if (layer.type === 'fill' || layer.type === 'line' || layer.type === 'circle' || layer.type === 'symbol') {
-                if (layer.ref) {
-                    childLayerIndicies.push(i);
-                } else {
-                    setLayer(layer);
-                }
-            }
-        }
-
-        // Create an instance of StyleLayer per layer
-        for (let j = 0; j < childLayerIndicies.length; j++) {
-            setLayer(layerDefinitions[childLayerIndicies[j]]);
-        }
-
-        function setLayer(serializedLayer) {
-            const styleLayer = StyleLayer.create(
-                serializedLayer,
-                serializedLayer.ref && layers[serializedLayer.ref]
-            );
-            styleLayer.updatePaintTransitions({}, {transition: false});
-            styleLayer.filter = featureFilter(styleLayer.filter);
-            layers[styleLayer.id] = styleLayer;
-        }
-
-        this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
+        this.layers[mapId] = {};
+        this['update layers'](mapId, layerDefinitions);
     },
 
     'update layers': function(mapId, layerDefinitions) {
-        let id;
-        let layer;
-
         const layers = this.layers[mapId];
 
         // Update ref parents
-        for (id in layerDefinitions) {
-            layer = layerDefinitions[id];
-            if (layer.ref) updateLayer(layer);
-        }
-
-        // Update ref children
-        for (id in layerDefinitions) {
-            layer = layerDefinitions[id];
+        for (const layer of layerDefinitions) {
             if (!layer.ref) updateLayer(layer);
         }
 
+        // Update ref children
+        for (const layer of layerDefinitions) {
+            if (layer.ref) updateLayer(layer);
+        }
+
         function updateLayer(layer) {
-            const refLayer = layers[layer.ref];
+            if (layer.type !== 'fill' && layer.type !== 'line' && layer.type !== 'circle' && layer.type !== 'symbol')
+                return;
+            const refLayer = layer.ref && layers[layer.ref];
             let styleLayer = layers[layer.id];
             if (styleLayer) {
                 styleLayer.set(layer, refLayer);

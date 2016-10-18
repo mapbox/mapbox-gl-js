@@ -60,20 +60,21 @@ test('update layers', (t) => {
     const worker = new Worker(_self);
 
     worker['set layers'](0, [
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
+        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }, 'source': 'foo' },
+        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }, 'source': 'foo' },
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
     ]);
 
-    worker['update layers'](0, {
-        one: { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
-        two: { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
-        three: { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    });
+    worker['update layers'](0, [
+        { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }, 'source': 'bar' },
+        { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }, 'source': 'bar' },
+        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
+    ]);
 
     t.equal(worker.layers[0].one.getPaintProperty('circle-color'), 'cyan');
     t.equal(worker.layers[0].two.getPaintProperty('circle-color'), 'magenta');
     t.equal(worker.layers[0].three.getPaintProperty('circle-color'), 'yellow');
+    t.equal(worker.layers[0].three.source, 'bar');
 
     t.end();
 });
@@ -105,11 +106,11 @@ test('update layers isolates different instances\' data', (t) => {
         { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
     ]);
 
-    worker['update layers'](1, {
-        one: { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
-        two: { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
-        three: { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
-    });
+    worker['update layers'](1, [
+        { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }  },
+        { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }  },
+        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
+    ]);
 
     t.equal(worker.layers[0].one.id, 'one');
     t.equal(worker.layers[0].two.id, 'two');
