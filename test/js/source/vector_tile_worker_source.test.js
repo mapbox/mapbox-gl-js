@@ -2,15 +2,11 @@
 
 const test = require('mapbox-gl-js-test').test;
 const VectorTileWorkerSource = require('../../../js/source/vector_tile_worker_source');
-
-const styleLayers = {
-    getLayers: function () {},
-    getLayerFamilies: function () {}
-};
+const StyleLayerIndex = require('../../../js/style/style_layer_index');
 
 test('abortTile', (t) => {
     t.test('aborts pending request', (t) => {
-        const source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
 
         source.loadTile({
             source: 'source',
@@ -32,7 +28,7 @@ test('abortTile', (t) => {
 
 test('removeTile', (t) => {
     t.test('removes loaded tile', (t) => {
-        const source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
 
         source.loaded = {
             source: {
@@ -55,7 +51,7 @@ test('removeTile', (t) => {
 test('redoPlacement', (t) => {
 
     t.test('on loaded tile', (t) => {
-        const source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
         const tile = {
             redoPlacement: function(angle, pitch, showCollisionBoxes) {
                 t.equal(angle, 60);
@@ -84,7 +80,7 @@ test('redoPlacement', (t) => {
     });
 
     t.test('on loading tile', (t) => {
-        const source = new VectorTileWorkerSource(null, styleLayers);
+        const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
         const tile = {};
         source.loading = {mapbox: {3: tile}};
 

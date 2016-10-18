@@ -18,9 +18,9 @@ module.exports = VectorTileWorkerSource;
  * @private
  * @param {Function} [loadVectorData] Optional method for custom loading of a VectorTile object based on parameters passed from the main-thread Source.  See {@link VectorTileWorkerSource#loadTile}.  The default implementation simply loads the pbf at `params.url`.
  */
-function VectorTileWorkerSource (actor, styleLayers, loadVectorData) {
+function VectorTileWorkerSource (actor, layerIndex, loadVectorData) {
     this.actor = actor;
-    this.styleLayers = styleLayers;
+    this.layerIndex = layerIndex;
 
     if (loadVectorData) { this.loadVectorData = loadVectorData; }
 
@@ -59,7 +59,7 @@ VectorTileWorkerSource.prototype = {
             if (!vectorTile) return callback(null, null);
 
             workerTile.vectorTile = vectorTile;
-            workerTile.parse(vectorTile, this.styleLayers.getLayerFamilies(), this.actor, (err, result, transferrables) => {
+            workerTile.parse(vectorTile, this.layerIndex.families, this.actor, (err, result, transferrables) => {
                 if (err) return callback(err);
 
                 // Not transferring rawTileData because the worker needs to retain its copy.
@@ -85,7 +85,7 @@ VectorTileWorkerSource.prototype = {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.parse(workerTile.vectorTile, this.styleLayers.getLayerFamilies(), this.actor, callback);
+            workerTile.parse(workerTile.vectorTile, this.layerIndex.families, this.actor, callback);
         }
     },
 

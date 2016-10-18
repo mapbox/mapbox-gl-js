@@ -47,8 +47,8 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
 
     // Map non-ref layers to buckets.
     let bucketIndex = 0;
-    for (const layerId in layerFamilies) {
-        const layer = layerFamilies[layerId][0];
+    for (const family of layerFamilies) {
+        const layer = family[0];
         const sourceLayerId = layer.sourceLayer || '_geojsonTileLayer';
 
         assert(!layer.ref);
@@ -62,7 +62,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         const bucket = Bucket.create({
             layer: layer,
             index: bucketIndex++,
-            childLayers: layerFamilies[layerId],
+            childLayers: family,
             zoom: this.zoom,
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,

@@ -17,15 +17,15 @@ module.exports = GeoJSONWorkerSource;
  * This class is designed to be easily reused to support custom source types
  * for data formats that can be parsed/converted into an in-memory GeoJSON
  * representation.  To do so, create it with
- * `new GeoJSONWorkerSource(actor, styleLayers, customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
+ * `new GeoJSONWorkerSource(actor, layerIndex, customLoadGeoJSONFunction)`.  For a full example, see [mapbox-gl-topojson](https://github.com/developmentseed/mapbox-gl-topojson).
  *
  * @class GeoJSONWorkerSource
  * @private
  * @param {Function} [loadGeoJSON] Optional method for custom loading/parsing of GeoJSON based on parameters passed from the main-thread Source.  See {@link GeoJSONWorkerSource#loadGeoJSON}.
  */
-function GeoJSONWorkerSource (actor, styleLayers, loadGeoJSON) {
+function GeoJSONWorkerSource (actor, layerIndex, loadGeoJSON) {
     if (loadGeoJSON) { this.loadGeoJSON = loadGeoJSON; }
-    VectorTileWorkerSource.call(this, actor, styleLayers);
+    VectorTileWorkerSource.call(this, actor, layerIndex);
 }
 
 GeoJSONWorkerSource.prototype = util.inherit(VectorTileWorkerSource, /** @lends GeoJSONWorkerSource.prototype */ {

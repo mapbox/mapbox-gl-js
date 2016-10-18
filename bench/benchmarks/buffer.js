@@ -5,9 +5,9 @@ const Protobuf = require('pbf');
 const assert = require('assert');
 
 const WorkerTile = require('../../js/source/worker_tile');
-const Worker = require('../../js/source/worker');
 const ajax = require('../../js/util/ajax');
 const Style = require('../../js/style/style');
+const StyleLayerIndex = require('../../js/style/style_layer_index');
 const util = require('../../js/util/util');
 const Evented = require('../../js/util/evented');
 const config = require('../../js/util/config');
@@ -125,9 +125,9 @@ function preloadAssets(stylesheet, callback) {
 }
 
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
-    const timeStart = performance.now();
+    const layerIndex = new StyleLayerIndex(stylesheet.layers);
 
-    const layerFamilies = createLayerFamilies(stylesheet.layers);
+    const timeStart = performance.now();
 
     util.asyncAll(coordinates, (coordinate, eachCallback) => {
         const url = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
@@ -159,7 +159,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         getTile(url, (err, response) => {
             if (err) throw err;
             const data = new VT.VectorTile(new Protobuf(response));
-            workerTile.parse(data, layerFamilies, actor, (err) => {
+            workerTile.parse(data, layerIndex.families, actor, (err) => {
                 if (err) return callback(err);
                 eachCallback();
             });
@@ -179,17 +179,4 @@ function asyncTimesSeries(times, work, callback) {
     } else {
         callback();
     }
-}
-
-let createLayerFamiliesCacheKey;
-let createLayerFamiliesCacheValue;
-function createLayerFamilies(layers) {
-    if (layers !== createLayerFamiliesCacheKey) {
-        const worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](0, layers);
-
-        createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies[0];
-    }
-    return createLayerFamiliesCacheValue;
 }
