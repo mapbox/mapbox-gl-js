@@ -62,7 +62,7 @@ var invisible = {
     0x200b: true  // zero-width space
 };
 
-var breakableCJK = {
+var breakable = {
     0x20:   true, // space
     0x0028: true, // dollar sign
     0x24: true,
@@ -145,12 +145,12 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 lengthBeforeCurrentLine += lineLength;
                 line++;
             }
-            
+
             if (positionedGlyphs.length > 13) {
-                if (breakableCJK[positionedGlyph.codePoint]) {
+                if (breakable[positionedGlyph.codePoint]) {
                     lastSafeBreak = i - 1;
                 }
-                if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
+                if (!(breakable[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
                     lastSafeBreak = Math.round(wordLength / 3);
                 }
             } else {
@@ -161,7 +161,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
 
     var lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
 
-    // For vertical labels, calculate 'length' along the y axis, and 'height' along the x axis 
+    // For vertical labels, calculate 'length' along the y axis, and 'height' along the x axis
     var axisPrimary = verticalOrientation ? 'y' : 'x';
     var advance = verticalOrientation ? verticalHeight : glyphs[lastPositionedGlyph.codePoint].advance;
     var leading = verticalOrientation ? (lineHeight - verticalHeight + glyphs[lastPositionedGlyph.codePoint].advance) : lineHeight;
@@ -179,75 +179,6 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     shaping.bottom = verticalOrientation ? shaping.top + maxLineLength : shaping.top + height;
     shaping.left += verticalOrientation ? -horizontalAlign * height : -horizontalAlign * maxLineLength;
     shaping.right = verticalOrientation ? shaping.left + height : shaping.left + maxLineLength;
-}
-
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
-    var lastSafeBreak = null;
-
-    var lengthBeforeCurrentLine = 0;
-    var lineStartIndex = 0;
-    var line = 0;
-
-    var maxLineLength = 0;
-
-    var positionedGlyphs = shaping.positionedGlyphs;
-
-    if (maxWidth) {
-
-        var wordLength = positionedGlyphs.length;
-
-        // lastSafeBreak = Math.round(wordLength/2);
-
-        for (var i = 0; i < positionedGlyphs.length; i++) {
-            var positionedGlyph = positionedGlyphs[i];
-
-            positionedGlyph.x -= lengthBeforeCurrentLine;
-            positionedGlyph.y += lineHeight * line;
-
-            if (positionedGlyph.x > maxWidth && lastSafeBreak !== null) {
-
-                var lineLength = positionedGlyphs[lastSafeBreak + 1].x;
-                maxLineLength = Math.max(lineLength, maxLineLength);
-
-                for (var k = lastSafeBreak + 1; k <= i; k++) {
-                    positionedGlyphs[k].y += lineHeight;
-                    positionedGlyphs[k].x -= lineLength;
-                }
-
-                if (justify) {
-                    // Collapse invisible characters.
-                    var lineEnd = lastSafeBreak;
-                    if (invisible[positionedGlyphs[lastSafeBreak].codePoint]) {
-                        lineEnd--;
-                    }
-
-                    justifyLine(positionedGlyphs, glyphs, lineStartIndex, lineEnd, justify);
-                }
-
-                lineStartIndex = lastSafeBreak + 1;
-                lastSafeBreak = null;
-                lengthBeforeCurrentLine += lineLength;
-                line++;
-            }
-            lastSafeBreak = i;
-        }
-
-    }
-
-    var lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
-    var lastLineLength = lastPositionedGlyph.x + glyphs[lastPositionedGlyph.codePoint].advance;
-    maxLineLength = Math.max(maxLineLength, lastLineLength);
-
-    var height = (line + 1) * lineHeight;
-
-    justifyLine(positionedGlyphs, glyphs, lineStartIndex, positionedGlyphs.length - 1, justify);
-    align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate);
-
-    // Calculate the bounding box
-    shaping.top += -verticalAlign * height;
-    shaping.bottom = shaping.top + height;
-    shaping.left += -horizontalAlign * maxLineLength;
-    shaping.right = shaping.left + maxLineLength;
 }
 
 function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
@@ -297,56 +228,15 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            // if (breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = i - 1;
-            // }
-            // lastSafeBreak = Math.round(wordLength / 3);
-
-            // if (!breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = Math.round(wordLength / 3);
-            // } else if (breakableCJK[positionedGlyph.codePoint]) {
-            //     lastSafeBreak = i - 1;
-            // } else {
-            //     lastSafeBreak = Math.round(wordLength / 4);
-            // }
-
             if (wordLength < 15) {
-                if (breakableCJK[positionedGlyph.codePoint]) {
+                if (breakable[positionedGlyph.codePoint]) {
                     lastSafeBreak = i - 1;
                 }
-                if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
+                if (!(breakable[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
                         lastSafeBreak = Math.round(wordLength / 3);
                 }
             }
-
-
-            // if (!(breakableCJK[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 13211) {
-            //         lastSafeBreak = 6;
-            // }
-            // console.log(maxWidth)
-            // lastSafeBreak= maxWidth/4;
-
-            // 16.95/31.24019/121.48622
-            // else {
-            //     lastSafeBreak = (Math.round(wordLength / 3));
-            // }
-
-            // if (positionedGlyph.codePoint > 19968) {
-                // console.log(positionedGlyph.codePoint)
-                // lastSafeBreak = (Math.round(wordLength / 3));
-            // }
-
-            // console.log(typeof breakableCJK)
-            // if (breakableCJK.indexOf(positionedGlyph.codePoint) === 0) {
-            //     lastSafeBreak = i - 1;
-            // }
-            //
-            // if (breakableCJK.indexOf(positionedGlyph.codePoint) !=== 0) {
-            //     lastSafeBreak = Math.round(wordLength / 2);
-            // }
-
         }
-
     }
 
     var lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];

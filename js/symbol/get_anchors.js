@@ -22,11 +22,6 @@ function getAnchors(line, spacing, maxAngle, shapedText, shapedTextVertical, sha
         shapedTextVertical ? shapedTextVertical.bottom - shapedTextVertical.top : 0,
         shapedIcon ? shapedIcon.right - shapedIcon.left : 0);
 
-    // This is probably wrong
-    //var labelLength = Math.max(
-    //    shapedText ? shapedText.bottom - shapedText.top : 0,
-    //    shapedIcon ? shapedIcon.bottom - shapedIcon.top : 0);
-     
     // Is the line continued from outside the tile boundary?
     var isLineContinued = line[0].x === 0 || line[0].x === tileExtent || line[0].y === 0 || line[0].y === tileExtent;
 

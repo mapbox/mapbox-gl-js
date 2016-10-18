@@ -226,7 +226,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         var verticalOrientation = false;
 
         if (textFeatures[k]) {
-            
+
             shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
                     lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, verticalOrientation);
 
@@ -266,19 +266,8 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         if (shapedText || shapedIcon) {
             this.addFeature(geometries[k], shapedText, shapedTextVertical, shapedIcon, features[k], verticalOrientation);
         }
-
-        /*
-        // create another shapedText for vertical orientation if needed
-        if (shapedText && layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line') {
-            verticalOrientation = true;
-            //console.log("vertical orientation from populate arrays: " + verticalOrientation);
-            shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
-                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, verticalOrientation);
-            this.addFeature(geometries[k], shapedText, shapedIcon, features[k], verticalOrientation);
-        }
-        */
-
     }
+
     this.symbolInstancesEndIndex = this.symbolInstancesArray.length;
     this.placeFeatures(collisionTile, this.showCollisionBoxes);
 
@@ -348,13 +337,6 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertic
         // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
-
-            /*if (shapedText && isLine) {
-                if (this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
-                    continue;
-                 // ^^^ this check is where all the vertical labels are being skipped    
-                }
-            }*/
 
             var inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
@@ -499,7 +481,6 @@ SymbolBucket.prototype.placeFeatures = function(collisionTile, showCollisionBoxe
 
         if (hasText) {
             collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
-
             if (glyphScale <= maxScale) {
                 this.addSymbols('glyph', symbolInstance.glyphQuadStartIndex, symbolInstance.glyphQuadEndIndex, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle);
             }
