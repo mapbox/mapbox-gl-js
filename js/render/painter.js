@@ -279,7 +279,7 @@ class Painter {
         if (type === 'fill' &&
             (!layer.isPaintValueFeatureConstant('fill-extrude-height') ||
             !layer.isPaintValueZoomConstant('fill-extrude-height') ||
-            layer.getPaintValue('fill-extrude-height') !== 0)) {
+            layer.getPaintValue('fill-extrude-height', {}) !== 0)) {
             type = 'extrusion';
         }
 
