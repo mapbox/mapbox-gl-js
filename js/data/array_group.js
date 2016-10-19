@@ -2,8 +2,6 @@
 
 const util = require('../util/util');
 
-module.exports = ArrayGroup;
-
 /**
  * A class that manages vertex and element arrays for a range of features. It handles initialization,
  * serialization for transfer to the main thread, and certain intervening mutations.
@@ -19,19 +17,72 @@ module.exports = ArrayGroup;
  *
  * @private
  */
-function ArrayGroup(arrayTypes) {
-    const LayoutVertexArrayType = arrayTypes.layoutVertexArrayType;
-    this.layoutVertexArray = new LayoutVertexArrayType();
+class ArrayGroup {
+    constructor(arrayTypes) {
+        const LayoutVertexArrayType = arrayTypes.layoutVertexArrayType;
+        this.layoutVertexArray = new LayoutVertexArrayType();
 
-    const ElementArrayType = arrayTypes.elementArrayType;
-    if (ElementArrayType) this.elementArray = new ElementArrayType();
+        const ElementArrayType = arrayTypes.elementArrayType;
+        if (ElementArrayType) this.elementArray = new ElementArrayType();
 
-    const ElementArrayType2 = arrayTypes.elementArrayType2;
-    if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
+        const ElementArrayType2 = arrayTypes.elementArrayType2;
+        if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
-    this.paintVertexArrays = util.mapObject(arrayTypes.paintVertexArrayTypes, (PaintVertexArrayType) => {
-        return new PaintVertexArrayType();
-    });
+        this.paintVertexArrays = util.mapObject(arrayTypes.paintVertexArrayTypes, (PaintVertexArrayType) => {
+            return new PaintVertexArrayType();
+        });
+    }
+
+    hasCapacityFor(numVertices) {
+        return this.layoutVertexArray.length + numVertices <= ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
+    }
+
+    isEmpty() {
+        return this.layoutVertexArray.length === 0;
+    }
+
+    trim() {
+        this.layoutVertexArray.trim();
+
+        if (this.elementArray) {
+            this.elementArray.trim();
+        }
+
+        if (this.elementArray2) {
+            this.elementArray2.trim();
+        }
+
+        for (const layerName in this.paintVertexArrays) {
+            this.paintVertexArrays[layerName].trim();
+        }
+    }
+
+    serialize() {
+        return {
+            layoutVertexArray: this.layoutVertexArray.serialize(),
+            elementArray: this.elementArray && this.elementArray.serialize(),
+            elementArray2: this.elementArray2 && this.elementArray2.serialize(),
+            paintVertexArrays: util.mapObject(this.paintVertexArrays, (array) => {
+                return array.serialize();
+            })
+        };
+    }
+
+    getTransferables(transferables) {
+        transferables.push(this.layoutVertexArray.arrayBuffer);
+
+        if (this.elementArray) {
+            transferables.push(this.elementArray.arrayBuffer);
+        }
+
+        if (this.elementArray2) {
+            transferables.push(this.elementArray2.arrayBuffer);
+        }
+
+        for (const layerName in this.paintVertexArrays) {
+            transferables.push(this.paintVertexArrays[layerName].arrayBuffer);
+        }
+    }
 }
 
 /**
@@ -42,53 +93,4 @@ function ArrayGroup(arrayTypes) {
  */
 ArrayGroup.MAX_VERTEX_ARRAY_LENGTH = Math.pow(2, 16) - 1;
 
-ArrayGroup.prototype.hasCapacityFor = function(numVertices) {
-    return this.layoutVertexArray.length + numVertices <= ArrayGroup.MAX_VERTEX_ARRAY_LENGTH;
-};
-
-ArrayGroup.prototype.isEmpty = function() {
-    return this.layoutVertexArray.length === 0;
-};
-
-ArrayGroup.prototype.trim = function() {
-    this.layoutVertexArray.trim();
-
-    if (this.elementArray) {
-        this.elementArray.trim();
-    }
-
-    if (this.elementArray2) {
-        this.elementArray2.trim();
-    }
-
-    for (const layerName in this.paintVertexArrays) {
-        this.paintVertexArrays[layerName].trim();
-    }
-};
-
-ArrayGroup.prototype.serialize = function() {
-    return {
-        layoutVertexArray: this.layoutVertexArray.serialize(),
-        elementArray: this.elementArray && this.elementArray.serialize(),
-        elementArray2: this.elementArray2 && this.elementArray2.serialize(),
-        paintVertexArrays: util.mapObject(this.paintVertexArrays, (array) => {
-            return array.serialize();
-        })
-    };
-};
-
-ArrayGroup.prototype.getTransferables = function(transferables) {
-    transferables.push(this.layoutVertexArray.arrayBuffer);
-
-    if (this.elementArray) {
-        transferables.push(this.elementArray.arrayBuffer);
-    }
-
-    if (this.elementArray2) {
-        transferables.push(this.elementArray2.arrayBuffer);
-    }
-
-    for (const layerName in this.paintVertexArrays) {
-        transferables.push(this.paintVertexArrays[layerName].arrayBuffer);
-    }
-};
+module.exports = ArrayGroup;

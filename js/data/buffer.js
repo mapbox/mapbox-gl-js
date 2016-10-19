@@ -1,47 +1,5 @@
 'use strict';
 
-module.exports = Buffer;
-
-/**
- * The `Buffer` class turns a `StructArray` into a WebGL buffer. Each member of the StructArray's
- * Struct type is converted to a WebGL atribute.
- *
- * @class Buffer
- * @private
- * @param {object} array A serialized StructArray.
- * @param {object} arrayType A serialized StructArrayType.
- * @param {BufferType} type
- */
-function Buffer(array, arrayType, type) {
-    this.arrayBuffer = array.arrayBuffer;
-    this.length = array.length;
-    this.attributes = arrayType.members;
-    this.itemSize = arrayType.bytesPerElement;
-    this.type = type;
-    this.arrayType = arrayType;
-}
-
-/**
- * Bind this buffer to a WebGL context.
- * @private
- * @param gl The WebGL context
- */
-Buffer.prototype.bind = function(gl) {
-    const type = gl[this.type];
-
-    if (!this.buffer) {
-        this.gl = gl;
-        this.buffer = gl.createBuffer();
-        gl.bindBuffer(type, this.buffer);
-        gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
-
-        // dump array buffer once it's bound to gl
-        this.arrayBuffer = null;
-    } else {
-        gl.bindBuffer(type, this.buffer);
-    }
-};
-
 /**
  * @enum {string} AttributeType
  * @private
@@ -55,39 +13,78 @@ const AttributeType = {
 };
 
 /**
- * Set the attribute pointers in a WebGL context
+ * The `Buffer` class turns a `StructArray` into a WebGL buffer. Each member of the StructArray's
+ * Struct type is converted to a WebGL atribute.
  * @private
- * @param gl The WebGL context
- * @param program The active WebGL program
  */
-Buffer.prototype.setVertexAttribPointers = function(gl, program) {
-    for (let j = 0; j < this.attributes.length; j++) {
-        const member = this.attributes[j];
-        const attribIndex = program[member.name];
+class Buffer {
+    /**
+     * @param {object} array A serialized StructArray.
+     * @param {object} arrayType A serialized StructArrayType.
+     * @param {BufferType} type
+     */
+    constructor(array, arrayType, type) {
+        this.arrayBuffer = array.arrayBuffer;
+        this.length = array.length;
+        this.attributes = arrayType.members;
+        this.itemSize = arrayType.bytesPerElement;
+        this.type = type;
+        this.arrayType = arrayType;
+    }
 
-        if (attribIndex !== undefined) {
-            gl.vertexAttribPointer(
-                attribIndex,
-                member.components,
-                gl[AttributeType[member.type]],
-                false,
-                this.arrayType.bytesPerElement,
-                member.offset
-            );
+    /**
+     * Bind this buffer to a WebGL context.
+     * @param gl The WebGL context
+     */
+    bind(gl) {
+        const type = gl[this.type];
+
+        if (!this.buffer) {
+            this.gl = gl;
+            this.buffer = gl.createBuffer();
+            gl.bindBuffer(type, this.buffer);
+            gl.bufferData(type, this.arrayBuffer, gl.STATIC_DRAW);
+
+            // dump array buffer once it's bound to gl
+            this.arrayBuffer = null;
+        } else {
+            gl.bindBuffer(type, this.buffer);
         }
     }
-};
 
-/**
- * Destroy the GL buffer bound to the given WebGL context
- * @private
- * @param gl The WebGL context
- */
-Buffer.prototype.destroy = function() {
-    if (this.buffer) {
-        this.gl.deleteBuffer(this.buffer);
+    /**
+     * Set the attribute pointers in a WebGL context
+     * @param gl The WebGL context
+     * @param program The active WebGL program
+     */
+    setVertexAttribPointers(gl, program) {
+        for (let j = 0; j < this.attributes.length; j++) {
+            const member = this.attributes[j];
+            const attribIndex = program[member.name];
+
+            if (attribIndex !== undefined) {
+                gl.vertexAttribPointer(
+                    attribIndex,
+                    member.components,
+                    gl[AttributeType[member.type]],
+                    false,
+                    this.arrayType.bytesPerElement,
+                    member.offset
+                );
+            }
+        }
     }
-};
+
+    /**
+     * Destroy the GL buffer bound to the given WebGL context
+     * @param gl The WebGL context
+     */
+    destroy() {
+        if (this.buffer) {
+            this.gl.deleteBuffer(this.buffer);
+        }
+    }
+}
 
 /**
  * @enum {string} BufferType
@@ -98,3 +95,5 @@ Buffer.BufferType = {
     VERTEX: 'ARRAY_BUFFER',
     ELEMENT: 'ELEMENT_ARRAY_BUFFER'
 };
+
+module.exports = Buffer;
