@@ -68,7 +68,7 @@ class Actor {
             delete this.callbacks[data.id];
             if (callback) callback(data.error || null, data.data);
         } else if (typeof data.id !== 'undefined' && this.parent[data.type]) {
-            // data.type == 'load tile', 'remove tile', etc.
+            // data.type == 'loadTile', 'removeTile', etc.
             this.parent[data.type](data.sourceMapId, data.data, done);
         } else if (typeof data.id !== 'undefined' && this.parent.getWorkerSource) {
             // data.type == sourcetype.method

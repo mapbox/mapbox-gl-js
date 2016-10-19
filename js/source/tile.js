@@ -127,7 +127,7 @@ class Tile {
 
         this.state = 'reloading';
 
-        source.dispatcher.send('redo placement', {
+        source.dispatcher.send('redoPlacement', {
             type: source.type,
             uid: this.uid,
             source: source.id,
