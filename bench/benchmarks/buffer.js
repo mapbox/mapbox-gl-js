@@ -92,14 +92,14 @@ function preloadAssets(stylesheet, callback) {
 
     style.on('style.load', () => {
         function getGlyphs(params, callback) {
-            style['get glyphs'](0, params, (err, glyphs) => {
+            style.getGlyphs(0, params, (err, glyphs) => {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
                 callback(err, glyphs);
             });
         }
 
         function getIcons(params, callback) {
-            style['get icons'](0, params, (err, icons) => {
+            style.getIcons(0, params, (err, icons) => {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
@@ -147,9 +147,9 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         const actor = {
             send: function(action, params, sendCallback) {
                 setTimeout(() => {
-                    if (action === 'get icons') {
+                    if (action === 'getIcons') {
                         getIcons(params, sendCallback);
-                    } else if (action === 'get glyphs') {
+                    } else if (action === 'getGlyphs') {
                         getGlyphs(params, sendCallback);
                     } else assert(false);
                 }, 0);

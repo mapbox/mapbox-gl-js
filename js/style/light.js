@@ -7,23 +7,21 @@ const validateStyle = require('./validate_style');
 const StyleDeclaration = require('./style_declaration');
 const StyleTransition = require('./style_transition');
 
+const TRANSITION_SUFFIX = '-transition';
+
 /*
  * Represents the light used to light extruded features.
  */
-module.exports = Light;
+class Light extends Evented {
 
-const TRANSITION_SUFFIX = '-transition';
+    constructor(lightOptions) {
+        super();
+        this.properties = ['anchor', 'color', 'position', 'intensity'];
+        this._specifications = styleSpec.$root.light;
+        this.set(lightOptions);
+    }
 
-function Light(lightOptions) {
-    this.set(lightOptions);
-}
-
-Light.prototype = util.inherit(Evented, {
-    properties: ['anchor', 'color', 'position', 'intensity'],
-
-    _specifications: styleSpec.$root.light,
-
-    set: function(lightOpts) {
+    set(lightOpts) {
         if (this._validate(validateStyle.light, lightOpts)) return;
         this._declarations = {};
         this._transitions = {};
@@ -44,18 +42,18 @@ Light.prototype = util.inherit(Evented, {
         }
 
         return this;
-    },
+    }
 
-    getLight: function() {
+    getLight() {
         return {
             anchor: this.getLightProperty('anchor'),
             color: this.getLightProperty('color'),
             position: this.getLightProperty('position'),
             intensity: this.getLightProperty('intensity')
         };
-    },
+    }
 
-    getLightProperty: function(property) {
+    getLightProperty(property) {
         if (util.endsWith(property, TRANSITION_SUFFIX)) {
             return (
                 this._transitionOptions[property]
@@ -66,9 +64,9 @@ Light.prototype = util.inherit(Evented, {
                 this._declarations[property].value
             );
         }
-    },
+    }
 
-    getLightValue: function(property, globalProperties) {
+    getLightValue(property, globalProperties) {
         if (property === 'position') {
             const calculated = this._transitions[property].calculate(globalProperties),
                 cartesian = util.sphericalToCartesian(calculated);
@@ -80,9 +78,9 @@ Light.prototype = util.inherit(Evented, {
         }
 
         return this._transitions[property].calculate(globalProperties);
-    },
+    }
 
-    setLight: function(options) {
+    setLight(options) {
         if (this._validate(validateStyle.light, options)) return;
 
         for (const key in options) {
@@ -96,15 +94,15 @@ Light.prototype = util.inherit(Evented, {
                 this._declarations[key] = new StyleDeclaration(this._specifications[key], value);
             }
         }
-    },
+    }
 
-    recalculate: function(zoom, zoomHistory) {
+    recalculate(zoom, zoomHistory) {
         for (const property in this._declarations) {
             this.calculated[property] = this.getLightValue(property, {zoom: zoom, zoomHistory: zoomHistory});
         }
-    },
+    }
 
-    _applyLightDeclaration: function(property, declaration, options, globalOptions, animationLoop) {
+    _applyLightDeclaration(property, declaration, options, globalOptions, animationLoop) {
         const oldTransition = options.transition ? this._transitions[property] : undefined;
         const spec = this._specifications[property];
 
@@ -127,21 +125,23 @@ Light.prototype = util.inherit(Evented, {
         if (oldTransition) {
             animationLoop.cancel(oldTransition.loopID);
         }
-    },
+    }
 
-    updateLightTransitions: function(options, globalOptions, animationLoop) {
+    updateLightTransitions(options, globalOptions, animationLoop) {
         let property;
         for (property in this._declarations) {
             this._applyLightDeclaration(property, this._declarations[property], options, globalOptions, animationLoop);
         }
-    },
+    }
 
-    _validate: function(validate, value) {
+    _validate(validate, value) {
         return validateStyle.emitErrors(this, validate.call(validateStyle, util.extend({
             value: value,
             // Workaround for https://github.com/mapbox/mapbox-gl-js/issues/2407
             style: {glyphs: true, sprite: true},
             styleSpec: styleSpec
         })));
-    },
-});
+    }
+}
+
+module.exports = Light;

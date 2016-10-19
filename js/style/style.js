@@ -21,83 +21,82 @@ const styleSpec = require('./style_spec');
 const StyleFunction = require('./style_function');
 const getWorkerPool = require('../global_worker_pool');
 
-module.exports = Style;
+class Style extends Evented {
 
-function Style(stylesheet, map, options) {
-    this.map = map;
-    this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
-    this.dispatcher = new Dispatcher(getWorkerPool(), this);
-    this.spriteAtlas = new SpriteAtlas(1024, 1024);
-    this.lineAtlas = new LineAtlas(256, 512);
+    constructor(stylesheet, map, options) {
+        super();
+        this.map = map;
+        this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
+        this.dispatcher = new Dispatcher(getWorkerPool(), this);
+        this.spriteAtlas = new SpriteAtlas(1024, 1024);
+        this.lineAtlas = new LineAtlas(256, 512);
 
-    this._layers = {};
-    this._order  = [];
-    this._groups = [];
-    this.sourceCaches = {};
-    this.zoomHistory = {};
+        this._layers = {};
+        this._order  = [];
+        this._groups = [];
+        this.sourceCaches = {};
+        this.zoomHistory = {};
+        this._loaded = false;
 
-    util.bindAll(['_redoPlacement'], this);
+        util.bindAll(['_redoPlacement'], this);
 
-    this._resetUpdates();
+        this._resetUpdates();
 
-    options = util.extend({
-        validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
-    }, options);
+        options = util.extend({
+            validate: typeof stylesheet === 'string' ? !mapbox.isMapboxURL(stylesheet) : true
+        }, options);
 
-    this.setEventedParent(map);
-    this.fire('dataloading', {dataType: 'style'});
+        this.setEventedParent(map);
+        this.fire('dataloading', {dataType: 'style'});
 
-    const stylesheetLoaded = function(err, stylesheet) {
-        if (err) {
-            this.fire('error', {error: err});
-            return;
+        const stylesheetLoaded = (err, stylesheet) => {
+            if (err) {
+                this.fire('error', {error: err});
+                return;
+            }
+
+            if (options.validate && validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
+
+            this._loaded = true;
+            this.stylesheet = stylesheet;
+
+            this.updateClasses();
+
+            for (const id in stylesheet.sources) {
+                this.addSource(id, stylesheet.sources[id], options);
+            }
+
+            if (stylesheet.sprite) {
+                this.sprite = new ImageSprite(stylesheet.sprite);
+                this.sprite.setEventedParent(this);
+            }
+
+            this.glyphSource = new GlyphSource(stylesheet.glyphs);
+            this._resolve();
+            this.fire('data', {dataType: 'style'});
+            this.fire('style.load');
+        };
+
+        if (typeof stylesheet === 'string') {
+            ajax.getJSON(mapbox.normalizeStyleURL(stylesheet), stylesheetLoaded);
+        } else {
+            browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
         }
 
-        if (options.validate && validateStyle.emitErrors(this, validateStyle(stylesheet))) return;
-
-        this._loaded = true;
-        this.stylesheet = stylesheet;
-
-        this.updateClasses();
-
-        for (const id in stylesheet.sources) {
-            this.addSource(id, stylesheet.sources[id], options);
-        }
-
-        if (stylesheet.sprite) {
-            this.sprite = new ImageSprite(stylesheet.sprite);
-            this.sprite.setEventedParent(this);
-        }
-
-        this.glyphSource = new GlyphSource(stylesheet.glyphs);
-        this._resolve();
-        this.fire('data', {dataType: 'style'});
-        this.fire('style.load');
-    }.bind(this);
-
-    if (typeof stylesheet === 'string') {
-        ajax.getJSON(mapbox.normalizeStyleURL(stylesheet), stylesheetLoaded);
-    } else {
-        browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
-    }
-
-    this.on('source.load', function(event) {
-        const source = event.source;
-        if (source && source.vectorLayerIds) {
-            for (const layerId in this._layers) {
-                const layer = this._layers[layerId];
-                if (layer.source === source.id) {
-                    this._validateLayer(layer);
+        this.on('source.load', (event) => {
+            const source = event.source;
+            if (source && source.vectorLayerIds) {
+                for (const layerId in this._layers) {
+                    const layer = this._layers[layerId];
+                    if (layer.source === source.id) {
+                        this._validateLayer(layer);
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
-Style.prototype = util.inherit(Evented, {
-    _loaded: false,
-
-    _validateLayer: function(layer) {
+    _validateLayer(layer) {
         const sourceCache = this.sourceCaches[layer.source];
 
         if (!layer.sourceLayer) return;
@@ -114,9 +113,9 @@ Style.prototype = util.inherit(Evented, {
                 )
             });
         }
-    },
+    }
 
-    loaded: function() {
+    loaded() {
         if (!this._loaded)
             return false;
 
@@ -131,9 +130,9 @@ Style.prototype = util.inherit(Evented, {
             return false;
 
         return true;
-    },
+    }
 
-    _resolve: function() {
+    _resolve() {
         let layer, layerJSON;
 
         this._layers = {};
@@ -164,9 +163,9 @@ Style.prototype = util.inherit(Evented, {
         this._updateWorkerLayers();
 
         this.light = new Light(this.stylesheet.light);
-    },
+    }
 
-    _groupLayers: function() {
+    _groupLayers() {
         let group;
 
         this._groups = [];
@@ -183,13 +182,13 @@ Style.prototype = util.inherit(Evented, {
 
             group.push(layer);
         }
-    },
+    }
 
-    _updateWorkerLayers: function(ids) {
+    _updateWorkerLayers(ids) {
         this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
-    },
+    }
 
-    _serializeLayers: function(ids) {
+    _serializeLayers(ids) {
         ids = ids || this._order;
         const serialized = [];
         const options = {includeRefProperties: true};
@@ -197,9 +196,9 @@ Style.prototype = util.inherit(Evented, {
             serialized.push(this._layers[ids[i]].serialize(options));
         }
         return serialized;
-    },
+    }
 
-    _applyClasses: function(classes, options) {
+    _applyClasses(classes, options) {
         if (!this._loaded) return;
 
         classes = classes || [];
@@ -222,9 +221,9 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.light.updateLightTransitions(options, transition, this.animationLoop);
-    },
+    }
 
-    _recalculate: function(z) {
+    _recalculate(z) {
         if (!this._loaded) return;
 
         for (const sourceId in this.sourceCaches)
@@ -250,9 +249,9 @@ Style.prototype = util.inherit(Evented, {
         }
 
         this.z = z;
-    },
+    }
 
-    _updateZoomHistory: function(z) {
+    _updateZoomHistory(z) {
 
         const zh = this.zoomHistory;
 
@@ -275,19 +274,19 @@ Style.prototype = util.inherit(Evented, {
         }
 
         zh.lastZoom = z;
-    },
+    }
 
-    _checkLoaded: function () {
+    _checkLoaded () {
         if (!this._loaded) {
             throw new Error('Style is not done loading');
         }
-    },
+    }
 
     /**
      * Apply queued style updates in a batch
      * @private
      */
-    update: function(classes, options) {
+    update(classes, options) {
         if (!this._updates.changed) return this;
 
         if (this._updates.allLayers) {
@@ -320,18 +319,18 @@ Style.prototype = util.inherit(Evented, {
         this._resetUpdates();
 
         return this;
-    },
+    }
 
-    _resetUpdates: function() {
+    _resetUpdates() {
         this._updates = {
             events: [],
             layers: {},
             sources: {},
             paintProps: {}
         };
-    },
+    }
 
-    addSource: function(id, source, options) {
+    addSource(id, source, options) {
         this._checkLoaded();
 
         if (this.sourceCaches[id] !== undefined) {
@@ -355,7 +354,7 @@ Style.prototype = util.inherit(Evented, {
         this._updates.changed = true;
 
         return this;
-    },
+    }
 
     /**
      * Remove a source from this stylesheet, given its id.
@@ -364,7 +363,7 @@ Style.prototype = util.inherit(Evented, {
      * @throws {Error} if no source is found with the given ID
      * @private
      */
-    removeSource: function(id) {
+    removeSource(id) {
         this._checkLoaded();
 
         if (this.sourceCaches[id] === undefined) {
@@ -380,7 +379,7 @@ Style.prototype = util.inherit(Evented, {
         this._updates.changed = true;
 
         return this;
-    },
+    }
 
     /**
      * Get a source by id.
@@ -388,9 +387,9 @@ Style.prototype = util.inherit(Evented, {
      * @returns {Object} source
      * @private
      */
-    getSource: function(id) {
+    getSource(id) {
         return this.sourceCaches[id] && this.sourceCaches[id].getSource();
-    },
+    }
 
     /**
      * Add a layer to the map style. The layer will be inserted before the layer with
@@ -400,7 +399,7 @@ Style.prototype = util.inherit(Evented, {
      * @returns {Style} `this`
      * @private
      */
-    addLayer: function(layer, before, options) {
+    addLayer(layer, before, options) {
         this._checkLoaded();
 
         if (!(layer instanceof StyleLayer)) {
@@ -424,7 +423,7 @@ Style.prototype = util.inherit(Evented, {
         }
 
         return this.updateClasses(layer.id);
-    },
+    }
 
     /**
      * Remove a layer from this stylesheet, given its id.
@@ -433,7 +432,7 @@ Style.prototype = util.inherit(Evented, {
      * @throws {Error} if no layer is found with the given ID
      * @private
      */
-    removeLayer: function(id) {
+    removeLayer(id) {
         this._checkLoaded();
 
         const layer = this._layers[id];
@@ -457,7 +456,7 @@ Style.prototype = util.inherit(Evented, {
         this._updates.changed = true;
 
         return this;
-    },
+    }
 
     /**
      * Return the style layer object with the given `id`.
@@ -466,9 +465,9 @@ Style.prototype = util.inherit(Evented, {
      * @returns {?Object} a layer, if one with the given `id` exists
      * @private
      */
-    getLayer: function(id) {
+    getLayer(id) {
         return this._layers[id];
-    },
+    }
 
     /**
      * If a layer has a `ref` property that makes it derive some values
@@ -478,15 +477,15 @@ Style.prototype = util.inherit(Evented, {
      * @returns {Layer} the referent layer or the layer itself
      * @private
      */
-    getReferentLayer: function(id) {
+    getReferentLayer(id) {
         let layer = this.getLayer(id);
         if (layer.ref) {
             layer = this.getLayer(layer.ref);
         }
         return layer;
-    },
+    }
 
-    setLayerZoomRange: function(layerId, minzoom, maxzoom) {
+    setLayerZoomRange(layerId, minzoom, maxzoom) {
         this._checkLoaded();
 
         const layer = this.getReferentLayer(layerId);
@@ -500,9 +499,9 @@ Style.prototype = util.inherit(Evented, {
             layer.maxzoom = maxzoom;
         }
         return this._updateLayer(layer);
-    },
+    }
 
-    setFilter: function(layerId, filter) {
+    setFilter(layerId, filter) {
         this._checkLoaded();
 
         const layer = this.getReferentLayer(layerId);
@@ -513,7 +512,7 @@ Style.prototype = util.inherit(Evented, {
         layer.filter = util.clone(filter);
 
         return this._updateLayer(layer);
-    },
+    }
 
     /**
      * Get a layer's filter object
@@ -521,11 +520,11 @@ Style.prototype = util.inherit(Evented, {
      * @returns {*} the layer's filter, if any
      * @private
      */
-    getFilter: function(layer) {
+    getFilter(layer) {
         return util.clone(this.getReferentLayer(layer).filter);
-    },
+    }
 
-    setLayoutProperty: function(layerId, name, value) {
+    setLayoutProperty(layerId, name, value) {
         this._checkLoaded();
 
         const layer = this.getReferentLayer(layerId);
@@ -534,7 +533,7 @@ Style.prototype = util.inherit(Evented, {
 
         layer.setLayoutProperty(name, value);
         return this._updateLayer(layer);
-    },
+    }
 
     /**
      * Get a layout property's value from a given layer
@@ -543,11 +542,11 @@ Style.prototype = util.inherit(Evented, {
      * @returns {*} the property value
      * @private
      */
-    getLayoutProperty: function(layer, name) {
+    getLayoutProperty(layer, name) {
         return this.getReferentLayer(layer).getLayoutProperty(name);
-    },
+    }
 
-    setPaintProperty: function(layerId, name, value, klass) {
+    setPaintProperty(layerId, name, value, klass) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -572,13 +571,13 @@ Style.prototype = util.inherit(Evented, {
         }
 
         return this.updateClasses(layerId, name);
-    },
+    }
 
-    getPaintProperty: function(layer, name, klass) {
+    getPaintProperty(layer, name, klass) {
         return this.getLayer(layer).getPaintProperty(name, klass);
-    },
+    }
 
-    updateClasses: function (layerId, paintName) {
+    updateClasses (layerId, paintName) {
         this._updates.changed = true;
         if (!layerId) {
             this._updates.allPaintProps = true;
@@ -588,9 +587,9 @@ Style.prototype = util.inherit(Evented, {
             props[layerId][paintName || 'all'] = true;
         }
         return this;
-    },
+    }
 
-    serialize: function() {
+    serialize() {
         return util.filterObject({
             version: this.stylesheet.version,
             name: this.stylesheet.name,
@@ -603,25 +602,21 @@ Style.prototype = util.inherit(Evented, {
             sprite: this.stylesheet.sprite,
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
-            sources: util.mapObject(this.sourceCaches, (source) => {
-                return source.serialize();
-            }),
-            layers: this._order.map(function(id) {
-                return this._layers[id].serialize();
-            }, this)
+            sources: util.mapObject(this.sourceCaches, (source) => source.serialize()),
+            layers: this._order.map((id) => this._layers[id].serialize(), this)
         }, (value) => { return value !== undefined; });
-    },
+    }
 
-    _updateLayer: function (layer) {
+    _updateLayer (layer) {
         this._updates.layers[layer.id] = true;
         if (layer.source) {
             this._updates.sources[layer.source] = true;
         }
         this._updates.changed = true;
         return this;
-    },
+    }
 
-    _flattenRenderedFeatures: function(sourceResults) {
+    _flattenRenderedFeatures(sourceResults) {
         const features = [];
         for (let l = this._order.length - 1; l >= 0; l--) {
             const layerID = this._order[l];
@@ -635,9 +630,9 @@ Style.prototype = util.inherit(Evented, {
             }
         }
         return features;
-    },
+    }
 
-    queryRenderedFeatures: function(queryGeometry, params, zoom, bearing) {
+    queryRenderedFeatures(queryGeometry, params, zoom, bearing) {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'queryRenderedFeatures.filter', params.filter);
         }
@@ -663,17 +658,17 @@ Style.prototype = util.inherit(Evented, {
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
-    },
+    }
 
-    querySourceFeatures: function(sourceID, params) {
+    querySourceFeatures(sourceID, params) {
         if (params && params.filter) {
             this._validate(validateStyle.filter, 'querySourceFeatures.filter', params.filter);
         }
         const sourceCache = this.sourceCaches[sourceID];
         return sourceCache ? QueryFeatures.source(sourceCache, params) : [];
-    },
+    }
 
-    addSourceType: function (name, SourceType, callback) {
+    addSourceType (name, SourceType, callback) {
         if (Source.getType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
@@ -688,13 +683,13 @@ Style.prototype = util.inherit(Evented, {
             name: name,
             url: SourceType.workerSourceURL
         }, callback);
-    },
+    }
 
-    getLight: function() {
+    getLight() {
         return this.light.getLight();
-    },
+    }
 
-    setLight: function(lightOptions, transitionOptions) {
+    setLight(lightOptions, transitionOptions) {
         this._checkLoaded();
 
         const light = this.light.getLight();
@@ -711,9 +706,9 @@ Style.prototype = util.inherit(Evented, {
 
         this.light.setLight(lightOptions);
         return this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
-    },
+    }
 
-    _validate: function(validate, key, value, props, options) {
+    _validate(validate, key, value, props, options) {
         if (options && options.validate === false) {
             return false;
         }
@@ -723,34 +718,34 @@ Style.prototype = util.inherit(Evented, {
             value: value,
             styleSpec: styleSpec
         }, props)));
-    },
+    }
 
-    _remove: function() {
+    _remove() {
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();
         }
         this.dispatcher.remove();
-    },
+    }
 
-    _reloadSource: function(id) {
+    _reloadSource(id) {
         this.sourceCaches[id].reload();
-    },
+    }
 
-    _updateSources: function(transform) {
+    _updateSources(transform) {
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].update(transform);
         }
-    },
+    }
 
-    _redoPlacement: function() {
+    _redoPlacement() {
         for (const id in this.sourceCaches) {
             if (this.sourceCaches[id].redoPlacement) this.sourceCaches[id].redoPlacement();
         }
-    },
+    }
 
     // Callbacks from web workers
 
-    'get icons': function(mapId, params, callback) {
+    getIcons(mapId, params, callback) {
         const sprite = this.sprite;
         const spriteAtlas = this.spriteAtlas;
         if (sprite.loaded()) {
@@ -762,9 +757,9 @@ Style.prototype = util.inherit(Evented, {
                 spriteAtlas.addIcons(params.icons, callback);
             });
         }
-    },
+    }
 
-    'get glyphs': function(mapId, params, callback) {
+    getGlyphs(mapId, params, callback) {
         const stacks = params.stacks;
         let remaining = Object.keys(stacks).length;
         const allGlyphs = {};
@@ -783,4 +778,6 @@ Style.prototype = util.inherit(Evented, {
                 callback(null, allGlyphs);
         }
     }
-});
+}
+
+module.exports = Style;
