@@ -274,21 +274,6 @@ exports.bindAll = function(fns, context) {
 };
 
 /**
- * Given a class, bind all of the methods that look like handlers: that
- * begin with _on, and bind them to the class.
- *
- * @param {Object} context an object with methods
- * @private
- */
-exports.bindHandlers = function(context) {
-    for (const i in context) {
-        if (typeof context[i] === 'function' && i.indexOf('_on') === 0) {
-            context[i] = context[i].bind(context);
-        }
-    }
-};
-
-/**
  * Set the 'options' property on `obj` with properties
  * from the `options` argument. Properties in the `options`
  * object will override existing properties.

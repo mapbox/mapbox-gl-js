@@ -4,50 +4,48 @@ const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
 
-module.exports = DragPanHandler;
-
 const inertiaLinearity = 0.3,
     inertiaEasing = util.bezier(0, 0, inertiaLinearity, 1),
     inertiaMaxSpeed = 1400, // px/s
     inertiaDeceleration = 2500; // px/s^2
 
-
 /**
  * The `DragPanHandler` allows the user to pan the map by clicking and dragging
  * the cursor.
  *
- * @class DragPanHandler
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
-function DragPanHandler(map) {
-    this._map = map;
-    this._el = map.getCanvasContainer();
+class DragPanHandler {
+    constructor(map) {
+        this._map = map;
+        this._el = map.getCanvasContainer();
 
-    util.bindHandlers(this);
-}
-
-DragPanHandler.prototype = {
-
-    _enabled: false,
-    _active: false,
+        util.bindAll([
+            '_onDown',
+            '_onMove',
+            '_onUp',
+            '_onTouchEnd',
+            '_onMouseUp'
+        ], this);
+    }
 
     /**
      * Returns a Boolean indicating whether the "drag to pan" interaction is enabled.
      *
      * @returns {boolean} `true` if the "drag to pan" interaction is enabled.
      */
-    isEnabled: function () {
-        return this._enabled;
-    },
+    isEnabled() {
+        return !!this._enabled;
+    }
 
     /**
      * Returns a Boolean indicating whether the "drag to pan" interaction is active, i.e. currently being used.
      *
      * @returns {boolean} `true` if the "drag to pan" interaction is active.
      */
-    isActive: function () {
-        return this._active;
-    },
+    isActive() {
+        return !!this._active;
+    }
 
     /**
      * Enables the "drag to pan" interaction.
@@ -55,12 +53,12 @@ DragPanHandler.prototype = {
      * @example
      * map.dragPan.enable();
      */
-    enable: function () {
+    enable() {
         if (this.isEnabled()) return;
         this._el.addEventListener('mousedown', this._onDown);
         this._el.addEventListener('touchstart', this._onDown);
         this._enabled = true;
-    },
+    }
 
     /**
      * Disables the "drag to pan" interaction.
@@ -68,14 +66,14 @@ DragPanHandler.prototype = {
      * @example
      * map.dragPan.disable();
      */
-    disable: function () {
+    disable() {
         if (!this.isEnabled()) return;
         this._el.removeEventListener('mousedown', this._onDown);
         this._el.removeEventListener('touchstart', this._onDown);
         this._enabled = false;
-    },
+    }
 
-    _onDown: function (e) {
+    _onDown(e) {
         if (this._ignoreEvent(e)) return;
         if (this.isActive()) return;
 
@@ -90,9 +88,9 @@ DragPanHandler.prototype = {
         this._active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
         this._inertia = [[Date.now(), this._pos]];
-    },
+    }
 
-    _onMove: function (e) {
+    _onMove(e) {
         if (this._ignoreEvent(e)) return;
 
         if (!this.isActive()) {
@@ -116,18 +114,16 @@ DragPanHandler.prototype = {
         this._pos = pos;
 
         e.preventDefault();
-    },
+    }
 
-    _onUp: function (e) {
+    _onUp(e) {
         if (!this.isActive()) return;
 
         this._active = false;
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
-        const finish = function() {
-            this._fireEvent('moveend', e);
-        }.bind(this);
+        const finish = () => this._fireEvent('moveend', e);
 
         const inertia = this._inertia;
         if (inertia.length < 2) {
@@ -162,27 +158,27 @@ DragPanHandler.prototype = {
             easing: inertiaEasing,
             noMoveStart: true
         }, { originalEvent: e });
-    },
+    }
 
-    _onMouseUp: function (e) {
+    _onMouseUp(e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
-    },
+    }
 
-    _onTouchEnd: function (e) {
+    _onTouchEnd(e) {
         if (this._ignoreEvent(e)) return;
         this._onUp(e);
         window.document.removeEventListener('touchmove', this._onMove);
         window.document.removeEventListener('touchend', this._onTouchEnd);
-    },
+    }
 
-    _fireEvent: function (type, e) {
+    _fireEvent(type, e) {
         return this._map.fire(type, { originalEvent: e });
-    },
+    }
 
-    _ignoreEvent: function (e) {
+    _ignoreEvent(e) {
         const map = this._map;
 
         if (map.boxZoom && map.boxZoom.isActive()) return true;
@@ -195,17 +191,18 @@ DragPanHandler.prototype = {
                 button = 0;   // left button
             return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
         }
-    },
+    }
 
-    _drainInertiaBuffer: function () {
+    _drainInertiaBuffer() {
         const inertia = this._inertia,
             now = Date.now(),
             cutoff = 160;   // msec
 
         while (inertia.length > 0 && now - inertia[0][0] > cutoff) inertia.shift();
     }
-};
+}
 
+module.exports = DragPanHandler;
 
 /**
  * Fired when a "drag to pan" interaction starts. See [`DragPanHandler`](#DragPanHandler).
