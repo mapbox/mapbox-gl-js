@@ -12,35 +12,34 @@ const CollisionBoxArray = require('../symbol/collision_box');
 const SymbolInstancesArray = require('../symbol/symbol_instances');
 const SymbolQuadsArray = require('../symbol/symbol_quads');
 
-module.exports = Tile;
-
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
  *
- * @param {Coordinate} coord
- * @param {number} size
  * @private
  */
-function Tile(coord, size, sourceMaxZoom) {
-    this.coord = coord;
-    this.uid = util.uniqueId();
-    this.uses = 0;
-    this.tileSize = size;
-    this.sourceMaxZoom = sourceMaxZoom;
-    this.buckets = {};
+class Tile {
+    /**
+     * @param {Coordinate} coord
+     * @param {number} size
+     */
+    constructor(coord, size, sourceMaxZoom) {
+        this.coord = coord;
+        this.uid = util.uniqueId();
+        this.uses = 0;
+        this.tileSize = size;
+        this.sourceMaxZoom = sourceMaxZoom;
+        this.buckets = {};
 
-    // `this.state` must be one of
-    //
-    // - `loading`:   Tile data is in the process of loading.
-    // - `loaded`:    Tile data has been loaded. Tile can be rendered.
-    // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
-    // - `unloaded`:  Tile data has been deleted.
-    // - `errored`:   Tile data was not loaded because of an error.
-    this.state = 'loading';
-}
-
-Tile.prototype = {
+        // `this.state` must be one of
+        //
+        // - `loading`:   Tile data is in the process of loading.
+        // - `loaded`:    Tile data has been loaded. Tile can be rendered.
+        // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
+        // - `unloaded`:  Tile data has been deleted.
+        // - `errored`:   Tile data was not loaded because of an error.
+        this.state = 'loading';
+    }
 
     /**
      * Given a data object with a 'buffers' property, load it into
@@ -51,7 +50,7 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    loadVectorData: function(data, painter) {
+    loadVectorData(data, painter) {
         if (this.hasData()) {
             this.unloadVectorData(painter);
         }
@@ -74,7 +73,7 @@ Tile.prototype = {
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = unserializeBuckets(data.buckets, painter.style);
-    },
+    }
 
     /**
      * Replace this tile's symbol buckets with fresh data.
@@ -83,7 +82,7 @@ Tile.prototype = {
      * @returns {undefined}
      * @private
      */
-    reloadSymbolData: function(data, style) {
+    reloadSymbolData(data, style) {
         if (this.state === 'unloaded') return;
 
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
@@ -99,14 +98,14 @@ Tile.prototype = {
 
         // Add new symbol buckets
         util.extend(this.buckets, unserializeBuckets(data.buckets, style));
-    },
+    }
 
     /**
      * Release any data or WebGL resources referenced by this tile.
      * @returns {undefined}
      * @private
      */
-    unloadVectorData: function() {
+    unloadVectorData() {
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
@@ -118,9 +117,9 @@ Tile.prototype = {
         this.featureIndex = null;
         this.buckets = null;
         this.state = 'unloaded';
-    },
+    }
 
-    redoPlacement: function(source) {
+    redoPlacement(source) {
         if (this.state !== 'loaded' || this.state === 'reloading') {
             this.redoWhenDone = true;
             return;
@@ -150,13 +149,13 @@ Tile.prototype = {
                 this.redoWhenDone = false;
             }
         }
-    },
+    }
 
-    getBucket: function(layer) {
+    getBucket(layer) {
         return this.buckets && this.buckets[layer.ref || layer.id];
-    },
+    }
 
-    querySourceFeatures: function(result, params) {
+    querySourceFeatures(result, params) {
         if (!this.rawTileData) return;
 
         if (!this.vtLayers) {
@@ -178,12 +177,12 @@ Tile.prototype = {
                 result.push(geojsonFeature);
             }
         }
-    },
+    }
 
-    hasData: function() {
+    hasData() {
         return this.state === 'loaded' || this.state === 'reloading';
     }
-};
+}
 
 function unserializeBuckets(input, style) {
     // Guard against the case where the map's style has been set to null while
@@ -205,3 +204,5 @@ function unserializeBuckets(input, style) {
     }
     return output;
 }
+
+module.exports = Tile;
