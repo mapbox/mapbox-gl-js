@@ -50,7 +50,7 @@ test('Style', (t) => {
     });
 
     t.test('fires "dataloading"', (t) => {
-        const eventedParent = Object.create(Evented);
+        const eventedParent = new Evented();
         eventedParent.on('dataloading', t.end);
         new Style(createStyleJSON(), eventedParent);
     });

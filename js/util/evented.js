@@ -7,7 +7,7 @@ const util = require('./util');
  *
  * @mixin Evented
  */
-const Evented = {
+class Evented {
 
     /**
      * Adds a listener to a specified event type.
@@ -18,13 +18,13 @@ const Evented = {
      *   extended with `target` and `type` properties.
      * @returns {Object} `this`
      */
-    on: function(type, listener) {
+    on(type, listener) {
         this._listeners = this._listeners || {};
         this._listeners[type] = this._listeners[type] || [];
         this._listeners[type].push(listener);
 
         return this;
-    },
+    }
 
     /**
      * Removes a previously registered event listener.
@@ -33,7 +33,7 @@ const Evented = {
      * @param {Function} listener The listener function to remove.
      * @returns {Object} `this`
      */
-    off: function(type, listener) {
+    off(type, listener) {
         if (this._listeners && this._listeners[type]) {
             const index = this._listeners[type].indexOf(listener);
             if (index !== -1) {
@@ -42,7 +42,7 @@ const Evented = {
         }
 
         return this;
-    },
+    }
 
     /**
      * Adds a listener that will be called only once to a specified event type.
@@ -53,14 +53,14 @@ const Evented = {
      * @param {Function} listener The function to be called when the event is fired the first time.
      * @returns {Object} `this`
      */
-    once: function(type, listener) {
-        const wrapper = function(data) {
+    once(type, listener) {
+        const wrapper = (data) => {
             this.off(type, wrapper);
             listener.call(this, data);
-        }.bind(this);
+        };
         this.on(type, wrapper);
         return this;
-    },
+    }
 
     /**
      * Fires an event of the specified type.
@@ -69,7 +69,7 @@ const Evented = {
      * @param {Object} [data] Data to be passed to any listeners.
      * @returns {Object} `this`
      */
-    fire: function(type, data) {
+    fire(type, data) {
         if (this.listens(type)) {
 
             data = util.extend({}, data, {type: type, target: this});
@@ -92,7 +92,7 @@ const Evented = {
         }
 
         return this;
-    },
+    }
 
     /**
      * Returns a true if this instance of Evented or any forwardeed instances of Evented have a listener for the specified type.
@@ -100,12 +100,12 @@ const Evented = {
      * @param {string} type The event type
      * @returns {boolean} `true` if there is at least one registered listener for specified event type, `false` otherwise
      */
-    listens: function(type) {
+    listens(type) {
         return (
             (this._listeners && this._listeners[type]) ||
             (this._eventedParent && this._eventedParent.listens(type))
         );
-    },
+    }
 
     /**
      * Bubble all events fired by this instance of Evented to this parent instance of Evented.
@@ -115,12 +115,12 @@ const Evented = {
      * @param {data}
      * @returns {Object} `this`
      */
-    setEventedParent: function(parent, data) {
+    setEventedParent(parent, data) {
         this._eventedParent = parent;
         this._eventedParentData = data;
 
         return this;
     }
-};
+}
 
 module.exports = Evented;

@@ -1,7 +1,6 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const formatNumber = require('../lib/format_number');
 const setDataPerf = require('../lib/set_data_perf');
 const setupGeoJSONMap = require('../lib/setup_geojson_map');
@@ -20,7 +19,7 @@ const featureCollection = {
 };
 
 module.exports = function() {
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     let map = createMap({
         width: 1024,

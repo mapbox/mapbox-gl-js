@@ -13,7 +13,7 @@ module.exports = Control;
  */
 function Control() {}
 
-Control.prototype = {
+Control.prototype = util.inherit(Evented, {
     /**
      * Adds the control to a map.
      *
@@ -48,6 +48,4 @@ Control.prototype = {
         this._map = null;
         return this;
     }
-};
-
-util.extend(Control.prototype, Evented);
+});

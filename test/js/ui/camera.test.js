@@ -12,12 +12,11 @@ const fixedNum = fixed.Num;
 
 test('camera', (t) => {
     function createCamera(options) {
-        const camera = new Camera();
+        const camera = new Evented();
+        util.extend(camera, Camera.prototype);
 
         const transform = camera.transform = new Transform(0, 20);
         transform.resize(512, 512);
-
-        util.extend(camera, Evented);
 
         if (options) {
             camera.jumpTo(options);
