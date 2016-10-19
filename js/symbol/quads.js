@@ -139,11 +139,11 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, vertic
     var textRotate = layer.layout['text-rotate'] * Math.PI / 180;
     var keepUpright = layer.layout['text-keep-upright'];
 
-    var positionedGlyphs = shaping.positionedGlyphs;
+    var placedGlyphs = shaping.placedGlyphs;
     var quads = [];
 
-    for (var k = 0; k < positionedGlyphs.length; k++) {
-        var positionedGlyph = positionedGlyphs[k];
+    for (var k = 0; k < placedGlyphs.length; k++) {
+        var positionedGlyph = placedGlyphs[k];
         var glyph = positionedGlyph.glyph;
         if (!glyph) continue;
 
