@@ -11,7 +11,7 @@ var FeatureIndex = require('../../../js/data/feature_index');
 var CollisionTile = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
 var SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
-var SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
+var SymbolQuadsArray = require('../../../js/symbol/symbol_quads_array');
 var util = require('../../../js/util/util');
 
 test('querySourceFeatures', function(t) {

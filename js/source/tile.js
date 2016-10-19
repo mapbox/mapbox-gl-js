@@ -10,7 +10,7 @@ var featureFilter = require('feature-filter');
 var CollisionTile = require('../symbol/collision_tile');
 var CollisionBoxArray = require('../symbol/collision_box');
 var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads');
+var SymbolQuadsArray = require('../symbol/symbol_quads_array');
 
 module.exports = Tile;
 

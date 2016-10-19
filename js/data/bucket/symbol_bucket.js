@@ -6,7 +6,8 @@ var Bucket = require('../bucket');
 var Anchor = require('../../symbol/anchor');
 var getAnchors = require('../../symbol/get_anchors');
 var resolveTokens = require('../../util/token');
-var Quads = require('../../symbol/quads');
+var placeShapedText = require('../../symbol/place_shaped_text');
+var placeShapedIcon = require('../../symbol/place_shaped_icon');
 var shapeText = require('../../symbol/shape_text');
 var shapeIcon = require('../../symbol/shape_icon');
 var resolveText = require('../../symbol/resolve_text');
@@ -17,9 +18,6 @@ var loadGeometry = require('../load_geometry');
 var CollisionFeature = require('../../symbol/collision_feature');
 var findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 var classifyRings = require('../../util/classify_rings');
-
-var getGlyphQuads = Quads.getGlyphQuads;
-var getIconQuads = Quads.getIconQuads;
 
 var EXTENT = Bucket.EXTENT;
 
@@ -653,9 +651,9 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, glyphQuadsVertical, iconQuads;
     if (shapedText) {
-        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine, false) : [];
+        glyphQuads = addToBuffers ? placeShapedText(anchor, shapedText, textBoxScale, line, layer, textAlongLine, false) : [];
         if (shapedTextVertical) {
-            glyphQuadsVertical = addToBuffers ? getGlyphQuads(anchor, shapedTextVertical, textBoxScale, line, layer, textAlongLine, true) : [];
+            glyphQuadsVertical = addToBuffers ? placeShapedText(anchor, shapedTextVertical, textBoxScale, line, layer, textAlongLine, true) : [];
         }
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, shapedTextVertical, textBoxScale, textPadding, textAlongLine, false);
     }
@@ -677,7 +675,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
     if (shapedIcon) {
-        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText, globalProperties, featureProperties) : [];
+        iconQuads = addToBuffers ? placeShapedIcon(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText, globalProperties, featureProperties) : [];
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, null, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 

@@ -7,7 +7,7 @@ var CollisionBoxArray = require('../symbol/collision_box');
 var DictionaryCoder = require('../util/dictionary_coder');
 var util = require('../util/util');
 var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads');
+var SymbolQuadsArray = require('../symbol/symbol_quads_array');
 var assert = require('assert');
 
 module.exports = WorkerTile;
