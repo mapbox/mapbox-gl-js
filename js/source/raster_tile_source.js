@@ -6,47 +6,47 @@ const Evented = require('../util/evented');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports = RasterTileSource;
+class RasterTileSource extends Evented {
 
-function RasterTileSource(id, options, dispatcher, eventedParent) {
-    this.id = id;
-    this.dispatcher = dispatcher;
-    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+    constructor(id, options, dispatcher, eventedParent) {
+        super();
+        this.id = id;
+        this.dispatcher = dispatcher;
 
-    this.setEventedParent(eventedParent);
-    this.fire('dataloading', {dataType: 'source'});
-    loadTileJSON(options, (err, tileJSON) => {
-        if (err) {
-            return this.fire('error', err);
-        }
-        util.extend(this, tileJSON);
-        this.fire('data', {dataType: 'source'});
-        this.fire('source.load');
-    });
-}
+        this.minzoom = 0;
+        this.maxzoom = 22;
+        this.roundZoom = true;
+        this.scheme = 'xyz';
+        this.tileSize = 512;
+        this._loaded = false;
+        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
 
-RasterTileSource.prototype = util.inherit(Evented, {
-    minzoom: 0,
-    maxzoom: 22,
-    roundZoom: true,
-    scheme: 'xyz',
-    tileSize: 512,
-    _loaded: false,
+        this.setEventedParent(eventedParent);
+        this.fire('dataloading', {dataType: 'source'});
+        loadTileJSON(options, (err, tileJSON) => {
+            if (err) {
+                return this.fire('error', err);
+            }
+            util.extend(this, tileJSON);
+            this.fire('data', {dataType: 'source'});
+            this.fire('source.load');
+        });
+    }
 
-    onAdd: function (map) {
+    onAdd(map) {
         this.map = map;
-    },
+    }
 
-    serialize: function() {
+    serialize() {
         return {
             type: 'raster',
             url: this.url,
             tileSize: this.tileSize,
             tiles: this.tiles
         };
-    },
+    }
 
-    loadTile: function(tile, callback) {
+    loadTile(tile, callback) {
         const url = normalizeURL(tile.coord.url(this.tiles, null, this.scheme), this.url, this.tileSize);
 
         tile.request = ajax.getImage(url, done.bind(this));
@@ -85,16 +85,18 @@ RasterTileSource.prototype = util.inherit(Evented, {
 
             callback(null);
         }
-    },
+    }
 
-    abortTile: function(tile) {
+    abortTile(tile) {
         if (tile.request) {
             tile.request.abort();
             delete tile.request;
         }
-    },
+    }
 
-    unloadTile: function(tile) {
+    unloadTile(tile) {
         if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
     }
-});
+}
+
+module.exports = RasterTileSource;
