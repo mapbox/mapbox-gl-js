@@ -338,6 +338,14 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertic
         for (var j = 0, len = anchors.length; j < len; j++) {
             var anchor = anchors[j];
 
+            // this check is commented out because it behaves strangely with vertical labels
+            // this check should be uncommented before merging this into master.
+            // if (shapedText && isLine) {
+            //      if (this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
+            //          continue;
+            //      }
+            //  }
+
             var inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
             if (avoidEdges && !inside) continue;
