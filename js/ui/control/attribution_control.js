@@ -2,31 +2,25 @@
 
 const Control = require('./control');
 const DOM = require('../../util/dom');
-const util = require('../../util/util');
-
-module.exports = AttributionControl;
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
  * Extends [`Control`](#Control).
  *
- * @class AttributionControl
  * @param {Object} [options]
  * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl({position: 'top-left'}));
  */
-function AttributionControl(options) {
-    util.setOptions(this, options);
-}
+class AttributionControl extends Control {
 
-AttributionControl.prototype = util.inherit(Control, {
-    options: {
-        position: 'bottom-right'
-    },
+    constructor(options) {
+        super();
+        this._position = options && options.position || 'bottom-right';
+    }
 
-    onAdd: function(map) {
+    onAdd(map) {
         const className = 'mapboxgl-ctrl-attrib',
             container = this._container = DOM.create('div', className, map.getContainer());
 
@@ -43,9 +37,9 @@ AttributionControl.prototype = util.inherit(Control, {
         map.on('moveend', this._updateEditLink.bind(this));
 
         return container;
-    },
+    }
 
-    _updateAttributions: function() {
+    _updateAttributions() {
         if (!this._map.style) return;
 
         let attributions = [];
@@ -70,9 +64,9 @@ AttributionControl.prototype = util.inherit(Control, {
         this._container.innerHTML = attributions.join(' | ');
         // remove old DOM node from _editLink
         this._editLink = null;
-    },
+    }
 
-    _updateEditLink: function() {
+    _updateEditLink() {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
@@ -80,4 +74,6 @@ AttributionControl.prototype = util.inherit(Control, {
                     center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
         }
     }
-});
+}
+
+module.exports = AttributionControl;

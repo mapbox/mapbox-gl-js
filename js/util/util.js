@@ -274,26 +274,6 @@ exports.bindAll = function(fns, context) {
 };
 
 /**
- * Set the 'options' property on `obj` with properties
- * from the `options` argument. Properties in the `options`
- * object will override existing properties.
- *
- * @param {Object} obj destination object
- * @param {Object} options object of override options
- * @returns {Object} derived options object.
- * @private
- */
-exports.setOptions = function(obj, options) {
-    if (!obj.hasOwnProperty('options')) {
-        obj.options = obj.options ? Object.create(obj.options) : {};
-    }
-    for (const i in options) {
-        obj.options[i] = options[i];
-    }
-    return obj.options;
-};
-
-/**
  * Given a list of coordinates, get their center as a coordinate.
  * @param {Array<Coordinate>} coords
  * @returns {Coordinate} centerpoint

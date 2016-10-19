@@ -1,9 +1,7 @@
 'use strict';
-const util = require('../../util/util');
+
 const Control = require('./control');
 const DOM = require('../../util/dom');
-
-module.exports = ScaleControl;
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
@@ -21,16 +19,14 @@ module.exports = ScaleControl;
  *     unit: 'imperial'
  * }));
  */
-function ScaleControl(options) {
-    util.setOptions(this, options);
-}
+class ScaleControl extends Control {
 
-ScaleControl.prototype = util.inherit(Control, {
-    options: {
-        position: 'bottom-left'
-    },
+    constructor(options) {
+        super();
+        this._position = options && options.position || 'bottom-left';
+    }
 
-    onAdd: function(map) {
+    onAdd(map) {
         const className = 'mapboxgl-ctrl-scale',
             container = this._container = DOM.create('div', className, map.getContainer()),
             options = this.options;
@@ -42,7 +38,9 @@ ScaleControl.prototype = util.inherit(Control, {
 
         return container;
     }
-});
+}
+
+module.exports = ScaleControl;
 
 function updateScale(map, scale, options) {
     // A horizontal scale is imagined to be present at center of the map
