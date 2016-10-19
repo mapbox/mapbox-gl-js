@@ -20,7 +20,7 @@ const SAMPLE_COUNT = 10;
 module.exports = function run() {
     config.ACCESS_TOKEN = accessToken;
 
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
     ajax.getJSON(stylesheetURL, (err, stylesheet) => {

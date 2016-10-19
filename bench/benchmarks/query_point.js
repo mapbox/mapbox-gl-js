@@ -1,7 +1,6 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const createMap = require('../lib/create_map');
 
 const width = 1024;
@@ -24,7 +23,7 @@ for (let x = 0; x < d; x++) {
 }
 
 module.exports = function() {
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     let sum = 0;
     let count = 0;

@@ -6,7 +6,7 @@ const Evented = require('../../../js/util/evented');
 test('Evented', (t) => {
 
     t.test('calls listeners added with "on"', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         const listener = t.spy();
         evented.on('a', listener);
         evented.fire('a');
@@ -16,7 +16,7 @@ test('Evented', (t) => {
     });
 
     t.test('calls listeners added with "once" once', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         const listener = t.spy();
         evented.once('a', listener);
         evented.fire('a');
@@ -26,7 +26,7 @@ test('Evented', (t) => {
     });
 
     t.test('passes data to listeners', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('a', (data) => {
             t.equal(data.foo, 'bar');
         });
@@ -35,7 +35,7 @@ test('Evented', (t) => {
     });
 
     t.test('passes "target" to listeners', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('a', (data) => {
             t.equal(data.target, evented);
         });
@@ -44,7 +44,7 @@ test('Evented', (t) => {
     });
 
     t.test('passes "type" to listeners', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('a', (data) => {
             t.deepEqual(data.type, 'a');
         });
@@ -53,7 +53,7 @@ test('Evented', (t) => {
     });
 
     t.test('removes listeners with "off"', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         const listener = t.spy();
         evented.on('a', listener);
         evented.off('a', listener);
@@ -63,7 +63,7 @@ test('Evented', (t) => {
     });
 
     t.test('reports if an event has listeners with "listens"', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('a', () => {});
         t.ok(evented.listens('a'));
         t.notOk(evented.listens('b'));
@@ -71,7 +71,7 @@ test('Evented', (t) => {
     });
 
     t.test('does not immediately call listeners added within another listener', (t) => {
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('a', () => {
             evented.on('a', t.fail.bind(t));
         });
@@ -83,8 +83,8 @@ test('Evented', (t) => {
 
         t.test('adds parents with "setEventedParent"', (t) => {
             const listener = t.spy();
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSource.setEventedParent(eventedSink);
             eventedSink.on('a', listener);
             eventedSource.fire('a');
@@ -94,8 +94,8 @@ test('Evented', (t) => {
         });
 
         t.test('passes original data to parent listeners', (t) => {
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSource.setEventedParent(eventedSink);
             eventedSink.on('a', (data) => {
                 t.equal(data.foo, 'bar');
@@ -105,8 +105,8 @@ test('Evented', (t) => {
         });
 
         t.test('attaches parent data to parent listeners', (t) => {
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSource.setEventedParent(eventedSink, {foz: 'baz'});
             eventedSink.on('a', (data) => {
                 t.equal(data.foz, 'baz');
@@ -116,8 +116,8 @@ test('Evented', (t) => {
         });
 
         t.test('passes original "target" to parent listeners', (t) => {
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSource.setEventedParent(eventedSink);
             eventedSource.setEventedParent(null);
             eventedSink.on('a', (data) => {
@@ -129,8 +129,8 @@ test('Evented', (t) => {
 
         t.test('removes parents with "setEventedParent(null)"', (t) => {
             const listener = t.spy();
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSink.on('a', listener);
             eventedSource.setEventedParent(eventedSink);
             eventedSource.setEventedParent(null);
@@ -140,8 +140,8 @@ test('Evented', (t) => {
         });
 
         t.test('reports if an event has parent listeners with "listens"', (t) => {
-            const eventedSource = Object.create(Evented);
-            const eventedSink = Object.create(Evented);
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
             eventedSink.on('a', () => {});
             eventedSource.setEventedParent(eventedSink);
             t.ok(eventedSink.listens('a'));

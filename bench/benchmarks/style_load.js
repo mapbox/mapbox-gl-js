@@ -1,6 +1,5 @@
 'use strict';
 
-const util = require('../../js/util/util');
 const Evented = require('../../js/util/evented');
 const ajax = require('../../js/util/ajax');
 const config = require('../../js/util/config');
@@ -11,7 +10,7 @@ const accessToken = require('../lib/access_token');
 module.exports = function() {
     config.ACCESS_TOKEN = accessToken;
 
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
     ajax.getJSON(stylesheetURL, (err, json) => {

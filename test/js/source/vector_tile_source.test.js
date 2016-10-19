@@ -73,7 +73,7 @@ test('VectorTileSource', (t) => {
 
     t.test('fires "dataloading" event', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
-        const evented = Object.create(Evented);
+        const evented = new Evented();
         evented.on('dataloading', t.end);
         createSource({ url: "/source.json", eventedParent: evented });
         window.server.respond();

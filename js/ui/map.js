@@ -210,7 +210,7 @@ const Map = module.exports = function(options) {
     });
 };
 
-util.extend(Map.prototype, Evented);
+Map.prototype = Object.create(Evented.prototype);
 util.extend(Map.prototype, Camera.prototype);
 util.extend(Map.prototype, /** @lends Map.prototype */{
 

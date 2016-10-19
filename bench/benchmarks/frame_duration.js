@@ -1,7 +1,6 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const formatNumber = require('../lib/format_number');
 const createMap = require('../lib/create_map');
 
@@ -21,7 +20,7 @@ module.exports = function(options) {
     // impact the actual rendering has on this benchmark.
     window.devicePixelRatio = 1 / 16;
 
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     asyncSeries(zooms.length, runZoom, done);
 

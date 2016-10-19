@@ -1,7 +1,6 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const formatNumber = require('../lib/format_number');
 const setDataPerf = require('../lib/set_data_perf');
 const setupGeoJSONMap = require('../lib/setup_geojson_map');
@@ -9,7 +8,7 @@ const createMap = require('../lib/create_map');
 const ajax = require('../../js/util/ajax');
 
 module.exports = function() {
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     setTimeout(() => {
         evented.fire('log', {message: 'downloading large geojson'});

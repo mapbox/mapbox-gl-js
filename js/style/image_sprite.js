@@ -45,7 +45,7 @@ function ImageSprite(base) {
     });
 }
 
-ImageSprite.prototype = Object.create(Evented);
+ImageSprite.prototype = Object.create(Evented.prototype);
 
 ImageSprite.prototype.toJSON = function() {
     return this.base;

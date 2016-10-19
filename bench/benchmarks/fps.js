@@ -1,7 +1,6 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const formatNumber = require('../lib/format_number');
 const measureFramerate = require('../lib/measure_framerate');
 const createMap = require('../lib/create_map');
@@ -9,7 +8,7 @@ const createMap = require('../lib/create_map');
 const DURATION_MILLISECONDS = 5 * 1000;
 
 module.exports = function() {
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     const map = createMap({
         width: 1024,

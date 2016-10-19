@@ -1,12 +1,11 @@
 'use strict';
 
 const Evented = require('../../js/util/evented');
-const util = require('../../js/util/util');
 const formatNumber = require('../lib/format_number');
 const createMap = require('../lib/create_map');
 
 module.exports = function() {
-    const evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     const mapsOnPage = 6;
 
