@@ -1,7 +1,5 @@
 'use strict';
 
-module.exports = LngLat;
-
 const wrap = require('../util/util').wrap;
 
 /**
@@ -13,7 +11,6 @@ const wrap = require('../util/util').wrap;
  * can also accept an `Array` of two numbers and will perform an implicit conversion.
  * This flexible type is documented as [`LngLatLike`](#LngLatLike).
  *
- * @class LngLat
  * @param {number} lng Longitude, measured in degrees.
  * @param {number} lat Latitude, measured in degrees.
  * @example
@@ -23,53 +20,55 @@ const wrap = require('../util/util').wrap;
  * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
  * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
  */
-function LngLat(lng, lat) {
-    if (isNaN(lng) || isNaN(lat)) {
-        throw new Error(`Invalid LngLat object: (${lng}, ${lat})`);
+class LngLat {
+    constructor(lng, lat) {
+        if (isNaN(lng) || isNaN(lat)) {
+            throw new Error(`Invalid LngLat object: (${lng}, ${lat})`);
+        }
+        this.lng = +lng;
+        this.lat = +lat;
+        if (this.lat > 90 || this.lat < -90) {
+            throw new Error('Invalid LngLat latitude value: must be between -90 and 90');
+        }
     }
-    this.lng = +lng;
-    this.lat = +lat;
-    if (this.lat > 90 || this.lat < -90) {
-        throw new Error('Invalid LngLat latitude value: must be between -90 and 90');
+
+    /**
+     * Returns a new `LngLat` object whose longitude is wrapped to the range (-180, 180).
+     *
+     * @returns {LngLat} The wrapped `LngLat` object.
+     * @example
+     * var ll = new mapboxgl.LngLat(286.0251, 40.7736);
+     * var wrapped = ll.wrap();
+     * wrapped.lng; // = -73.9749
+     */
+    wrap() {
+        return new LngLat(wrap(this.lng, -180, 180), this.lat);
+    }
+
+    /**
+     * Returns the coordinates represented as an array of two numbers.
+     *
+     * @returns {Array<number>} The coordinates represeted as an array of longitude and latitude.
+     * @example
+     * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+     * ll.toArray(); // = [-73.9749, 40.7736]
+     */
+    toArray() {
+        return [this.lng, this.lat];
+    }
+
+    /**
+     * Returns the coordinates represent as a string.
+     *
+     * @returns {string} The coordinates represented as a string of the format `'LngLat(lng, lat)'`.
+     * @example
+     * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+     * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
+     */
+    toString() {
+        return `LngLat(${this.lng}, ${this.lat})`;
     }
 }
-
-/**
- * Returns a new `LngLat` object whose longitude is wrapped to the range (-180, 180).
- *
- * @returns {LngLat} The wrapped `LngLat` object.
- * @example
- * var ll = new mapboxgl.LngLat(286.0251, 40.7736);
- * var wrapped = ll.wrap();
- * wrapped.lng; // = -73.9749
- */
-LngLat.prototype.wrap = function () {
-    return new LngLat(wrap(this.lng, -180, 180), this.lat);
-};
-
-/**
- * Returns the coordinates represented as an array of two numbers.
- *
- * @returns {Array<number>} The coordinates represeted as an array of longitude and latitude.
- * @example
- * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
- * ll.toArray(); // = [-73.9749, 40.7736]
- */
-LngLat.prototype.toArray = function () {
-    return [this.lng, this.lat];
-};
-
-/**
- * Returns the coordinates represent as a string.
- *
- * @returns {string} The coordinates represented as a string of the format `'LngLat(lng, lat)'`.
- * @example
- * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
- * ll.toString(); // = "LngLat(-73.9749, 40.7736)"
- */
-LngLat.prototype.toString = function () {
-    return `LngLat(${this.lng}, ${this.lat})`;
-};
 
 /**
  * Converts an array of two numbers to a `LngLat` object.
@@ -94,3 +93,5 @@ LngLat.convert = function (input) {
         throw new Error("`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]");
     }
 };
+
+module.exports = LngLat;

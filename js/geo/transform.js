@@ -13,8 +13,6 @@ const vec4 = glmatrix.vec4,
     mat4 = glmatrix.mat4,
     mat2 = glmatrix.mat2;
 
-module.exports = Transform;
-
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
@@ -23,54 +21,54 @@ module.exports = Transform;
  * @param {number} maxZoom
  * @private
  */
-function Transform(minZoom, maxZoom) {
-    this.tileSize = 512; // constant
+class Transform {
+    constructor(minZoom, maxZoom) {
+        this.tileSize = 512; // constant
 
-    this._minZoom = minZoom || 0;
-    this._maxZoom = maxZoom || 22;
+        this._minZoom = minZoom || 0;
+        this._maxZoom = maxZoom || 22;
 
-    this.latRange = [-85.05113, 85.05113];
+        this.latRange = [-85.05113, 85.05113];
 
-    this.width = 0;
-    this.height = 0;
-    this._center = new LngLat(0, 0);
-    this.zoom = 0;
-    this.angle = 0;
-    this._altitude = 1.5;
-    this._pitch = 0;
-    this._unmodified = true;
-}
+        this.width = 0;
+        this.height = 0;
+        this._center = new LngLat(0, 0);
+        this.zoom = 0;
+        this.angle = 0;
+        this._altitude = 1.5;
+        this._pitch = 0;
+        this._unmodified = true;
+    }
 
-Transform.prototype = {
-    get minZoom() { return this._minZoom; },
+    get minZoom() { return this._minZoom; }
     set minZoom(zoom) {
         if (this._minZoom === zoom) return;
         this._minZoom = zoom;
         this.zoom = Math.max(this.zoom, zoom);
-    },
+    }
 
-    get maxZoom() { return this._maxZoom; },
+    get maxZoom() { return this._maxZoom; }
     set maxZoom(zoom) {
         if (this._maxZoom === zoom) return;
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
-    },
+    }
 
     get worldSize() {
         return this.tileSize * this.scale;
-    },
+    }
 
     get centerPoint() {
         return this.size._div(2);
-    },
+    }
 
     get size() {
         return new Point(this.width, this.height);
-    },
+    }
 
     get bearing() {
         return -this.angle / Math.PI * 180;
-    },
+    }
     set bearing(bearing) {
         const b = -util.wrap(bearing, -180, 180) * Math.PI / 180;
         if (this.angle === b) return;
@@ -81,31 +79,31 @@ Transform.prototype = {
         // 2x2 matrix for rotating points
         this.rotationMatrix = mat2.create();
         mat2.rotate(this.rotationMatrix, this.rotationMatrix, this.angle);
-    },
+    }
 
     get pitch() {
         return this._pitch / Math.PI * 180;
-    },
+    }
     set pitch(pitch) {
         const p = util.clamp(pitch, 0, 60) / 180 * Math.PI;
         if (this._pitch === p) return;
         this._unmodified = false;
         this._pitch = p;
         this._calcMatrices();
-    },
+    }
 
     get altitude() {
         return this._altitude;
-    },
+    }
     set altitude(altitude) {
         const a = Math.max(0.75, altitude);
         if (this._altitude === a) return;
         this._unmodified = false;
         this._altitude = a;
         this._calcMatrices();
-    },
+    }
 
-    get zoom() { return this._zoom; },
+    get zoom() { return this._zoom; }
     set zoom(zoom) {
         const z = Math.min(Math.max(zoom, this.minZoom), this.maxZoom);
         if (this._zoom === z) return;
@@ -116,16 +114,16 @@ Transform.prototype = {
         this.zoomFraction = z - this.tileZoom;
         this._calcMatrices();
         this._constrain();
-    },
+    }
 
-    get center() { return this._center; },
+    get center() { return this._center; }
     set center(center) {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
         this._unmodified = false;
         this._center = center;
         this._calcMatrices();
         this._constrain();
-    },
+    }
 
     /**
      * Return a zoom level that will cover all tiles the transform
@@ -135,11 +133,11 @@ Transform.prototype = {
      * @returns {number} zoom level
      * @private
      */
-    coveringZoomLevel: function(options) {
+    coveringZoomLevel(options) {
         return (options.roundZoom ? Math.round : Math.floor)(
             this.zoom + this.scaleZoom(this.tileSize / options.tileSize)
         );
-    },
+    }
 
     /**
      * Return all coordinates that could cover this transform for a covering
@@ -153,7 +151,7 @@ Transform.prototype = {
      * @returns {Array<Tile>} tiles
      * @private
      */
-    coveringTiles: function(options) {
+    coveringTiles(options) {
         let z = this.coveringZoomLevel(options);
         const actualZ = z;
 
@@ -172,38 +170,38 @@ Transform.prototype = {
         ], options.reparseOverscaled ? actualZ : z).sort((a, b) => {
             return centerPoint.dist(a) - centerPoint.dist(b);
         });
-    },
+    }
 
-    resize: function(width, height) {
+    resize(width, height) {
         this.width = width;
         this.height = height;
 
         this.pixelsToGLUnits = [2 / width, -2 / height];
         this._calcMatrices();
         this._constrain();
-    },
+    }
 
-    get unmodified() { return this._unmodified; },
+    get unmodified() { return this._unmodified; }
 
-    zoomScale: function(zoom) { return Math.pow(2, zoom); },
-    scaleZoom: function(scale) { return Math.log(scale) / Math.LN2; },
+    zoomScale(zoom) { return Math.pow(2, zoom); }
+    scaleZoom(scale) { return Math.log(scale) / Math.LN2; }
 
-    project: function(lnglat, worldSize) {
+    project(lnglat, worldSize) {
         return new Point(
             this.lngX(lnglat.lng, worldSize),
             this.latY(lnglat.lat, worldSize));
-    },
+    }
 
-    unproject: function(point, worldSize) {
+    unproject(point, worldSize) {
         return new LngLat(
             this.xLng(point.x, worldSize),
             this.yLat(point.y, worldSize));
-    },
+    }
 
-    get x() { return this.lngX(this.center.lng); },
-    get y() { return this.latY(this.center.lat); },
+    get x() { return this.lngX(this.center.lng); }
+    get y() { return this.latY(this.center.lat); }
 
-    get point() { return new Point(this.x, this.y); },
+    get point() { return new Point(this.x, this.y); }
 
     /**
      * latitude to absolute x coord
@@ -212,9 +210,9 @@ Transform.prototype = {
      * @returns {number} pixel coordinate
      * @private
      */
-    lngX: function(lng, worldSize) {
+    lngX(lng, worldSize) {
         return (180 + lng) * (worldSize || this.worldSize) / 360;
-    },
+    }
     /**
      * latitude to absolute y coord
      * @param {number} lat
@@ -222,32 +220,32 @@ Transform.prototype = {
      * @returns {number} pixel coordinate
      * @private
      */
-    latY: function(lat, worldSize) {
+    latY(lat, worldSize) {
         const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
         return (180 - y) * (worldSize || this.worldSize) / 360;
-    },
+    }
 
-    xLng: function(x, worldSize) {
+    xLng(x, worldSize) {
         return x * 360 / (worldSize || this.worldSize) - 180;
-    },
-    yLat: function(y, worldSize) {
+    }
+    yLat(y, worldSize) {
         const y2 = 180 - y * 360 / (worldSize || this.worldSize);
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
-    },
+    }
 
-    panBy: function(offset) {
+    panBy(offset) {
         const point = this.centerPoint._add(offset);
         this.center = this.pointLocation(point);
-    },
+    }
 
-    setLocationAtPoint: function(lnglat, point) {
+    setLocationAtPoint(lnglat, point) {
         const c = this.locationCoordinate(lnglat);
         const coordAtPoint = this.pointCoordinate(point);
         const coordCenter = this.pointCoordinate(this.centerPoint);
         const translate = coordAtPoint._sub(c);
         this._unmodified = false;
         this.center = this.coordinateLocation(coordCenter._sub(translate));
-    },
+    }
 
     /**
      * Given a location, return the screen point that corresponds to it
@@ -255,9 +253,9 @@ Transform.prototype = {
      * @returns {Point} screen point
      * @private
      */
-    locationPoint: function(lnglat) {
+    locationPoint(lnglat) {
         return this.coordinatePoint(this.locationCoordinate(lnglat));
-    },
+    }
 
     /**
      * Given a point on screen, return its lnglat
@@ -265,9 +263,9 @@ Transform.prototype = {
      * @returns {LngLat} lnglat location
      * @private
      */
-    pointLocation: function(p) {
+    pointLocation(p) {
         return this.coordinateLocation(this.pointCoordinate(p));
-    },
+    }
 
     /**
      * Given a geographical lnglat, return an unrounded
@@ -277,7 +275,7 @@ Transform.prototype = {
      * @returns {Coordinate}
      * @private
      */
-    locationCoordinate: function(lnglat) {
+    locationCoordinate(lnglat) {
         const k = this.zoomScale(this.tileZoom) / this.worldSize,
             ll = LngLat.convert(lnglat);
 
@@ -285,7 +283,7 @@ Transform.prototype = {
             this.lngX(ll.lng) * k,
             this.latY(ll.lat) * k,
             this.tileZoom);
-    },
+    }
 
     /**
      * Given a Coordinate, return its geographical position.
@@ -293,14 +291,14 @@ Transform.prototype = {
      * @returns {LngLat} lnglat
      * @private
      */
-    coordinateLocation: function(coord) {
+    coordinateLocation(coord) {
         const worldSize = this.zoomScale(coord.zoom);
         return new LngLat(
             this.xLng(coord.column, worldSize),
             this.yLat(coord.row, worldSize));
-    },
+    }
 
-    pointCoordinate: function(p) {
+    pointCoordinate(p) {
 
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
@@ -330,7 +328,7 @@ Transform.prototype = {
             interp(x0, x1, t) / scale,
             interp(y0, y1, t) / scale,
             this.tileZoom);
-    },
+    }
 
     /**
      * Given a coordinate, return the screen point that corresponds to it
@@ -338,12 +336,12 @@ Transform.prototype = {
      * @returns {Point} screen point
      * @private
      */
-    coordinatePoint: function(coord) {
+    coordinatePoint(coord) {
         const scale = this.worldSize / this.zoomScale(coord.zoom);
         const p = [coord.column * scale, coord.row * scale, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
-    },
+    }
 
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
@@ -351,7 +349,7 @@ Transform.prototype = {
      * @param {Number} maxZoom maximum source zoom to account for overscaling
      * @private
      */
-    calculatePosMatrix: function(coord, maxZoom) {
+    calculatePosMatrix(coord, maxZoom) {
         if (maxZoom === undefined) maxZoom = Infinity;
         if (coord instanceof TileCoord) coord = coord.toCoordinate(maxZoom);
 
@@ -370,9 +368,9 @@ Transform.prototype = {
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
         return new Float32Array(posMatrix);
-    },
+    }
 
-    _constrain: function() {
+    _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
         this._constraining = true;
@@ -431,9 +429,9 @@ Transform.prototype = {
 
         this._unmodified = unmodified;
         this._constraining = false;
-    },
+    }
 
-    _calcMatrices: function() {
+    _calcMatrices() {
         if (!this.height) return;
 
         // Find the distance from the center point to the center top in altitude units using law of sines.
@@ -480,4 +478,6 @@ Transform.prototype = {
         const topedgelength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
         this.lineStretch = (topedgelength + (this.height / 2 * Math.tan(this._pitch))) / topedgelength - 1;
     }
-};
+}
+
+module.exports = Transform;
