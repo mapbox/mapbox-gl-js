@@ -3,8 +3,6 @@
 const util = require('./util');
 const Actor = require('./actor');
 
-module.exports = Dispatcher;
-
 /**
  * Responsible for sending messages from a {@link Source} to an associated
  * {@link WorkerSource}.
@@ -12,21 +10,22 @@ module.exports = Dispatcher;
  * @interface Dispatcher
  * @private
  */
-function Dispatcher(workerPool, parent) {
-    this.workerPool = workerPool;
-    this.actors = [];
-    this.currentActor = 0;
-    this.id = util.uniqueId();
-    const workers = this.workerPool.acquire(this.id);
-    for (let i = 0; i < workers.length; i++) {
-        const worker = workers[i];
-        const actor = new Actor(worker, parent, this.id);
-        actor.name = `Worker ${i}`;
-        this.actors.push(actor);
-    }
-}
+class Dispatcher {
 
-Dispatcher.prototype = {
+    constructor(workerPool, parent) {
+        this.workerPool = workerPool;
+        this.actors = [];
+        this.currentActor = 0;
+        this.id = util.uniqueId();
+        const workers = this.workerPool.acquire(this.id);
+        for (let i = 0; i < workers.length; i++) {
+            const worker = workers[i];
+            const actor = new Actor(worker, parent, this.id);
+            actor.name = `Worker ${i}`;
+            this.actors.push(actor);
+        }
+    }
+
     /**
      * Broadcast a message to all Workers.
      * @method
@@ -37,12 +36,12 @@ Dispatcher.prototype = {
      * @memberof Dispatcher
      * @instance
      */
-    broadcast: function(type, data, cb) {
+    broadcast(type, data, cb) {
         cb = cb || function () {};
         util.asyncAll(this.actors, (actor, done) => {
             actor.send(type, data, done);
         }, cb);
-    },
+    }
 
     /**
      * Send a message to a Worker.
@@ -56,7 +55,7 @@ Dispatcher.prototype = {
      * @memberof Dispatcher
      * @instance
      */
-    send: function(type, data, callback, targetID, buffers) {
+    send(type, data, callback, targetID, buffers) {
         if (typeof targetID !== 'number' || isNaN(targetID)) {
             // Use round robin to send requests to web workers.
             targetID = this.currentActor = (this.currentActor + 1) % this.actors.length;
@@ -64,12 +63,13 @@ Dispatcher.prototype = {
 
         this.actors[targetID].send(type, data, callback, buffers);
         return targetID;
-    },
+    }
 
-    remove: function() {
+    remove() {
         this.actors.forEach((actor) => { actor.remove(); });
         this.actors = [];
         this.workerPool.release(this.id);
     }
-};
+}
 
+module.exports = Dispatcher;

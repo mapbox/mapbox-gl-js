@@ -3,18 +3,16 @@
 const assert = require('assert');
 const WebWorker = require('./web_worker');
 
-module.exports = WorkerPool;
-
 /**
  * Constructs a worker pool.
  * @private
  */
-function WorkerPool() {
-    this.active = {};
-}
+class WorkerPool {
+    constructor() {
+        this.active = {};
+    }
 
-WorkerPool.prototype = {
-    acquire: function (mapId) {
+    acquire(mapId) {
         if (!this.workers) {
             // Lazily look up the value of mapboxgl.workerCount.  This allows
             // client code a chance to set it while circumventing cyclic
@@ -30,9 +28,9 @@ WorkerPool.prototype = {
 
         this.active[mapId] = true;
         return this.workers.slice();
-    },
+    }
 
-    release: function (mapId) {
+    release(mapId) {
         delete this.active[mapId];
         if (Object.keys(this.active).length === 0) {
             this.workers.forEach((w) => {
@@ -41,4 +39,6 @@ WorkerPool.prototype = {
             this.workers = null;
         }
     }
-};
+}
+
+module.exports = WorkerPool;
