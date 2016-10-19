@@ -5,50 +5,51 @@ const util = require('../util/util');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
-module.exports = VectorTileSource;
+class VectorTileSource extends Evented {
 
-function VectorTileSource(id, options, dispatcher, eventedParent) {
-    this.id = id;
-    this.dispatcher = dispatcher;
-    util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
-    this._options = util.extend({ type: 'vector' }, options);
+    constructor(id, options, dispatcher, eventedParent) {
+        super();
+        this.id = id;
+        this.dispatcher = dispatcher;
 
-    if (this.tileSize !== 512) {
-        throw new Error('vector tile sources must have a tileSize of 512');
+        this.type = 'vector';
+        this.minzoom = 0;
+        this.maxzoom = 22;
+        this.scheme = 'xyz';
+        this.tileSize = 512;
+        this.reparseOverscaled = true;
+        this.isTileClipped = true;
+        util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+
+        this._options = util.extend({ type: 'vector' }, options);
+
+        if (this.tileSize !== 512) {
+            throw new Error('vector tile sources must have a tileSize of 512');
+        }
+
+        this.setEventedParent(eventedParent);
+        this.fire('dataloading', {dataType: 'source'});
+
+        loadTileJSON(options, (err, tileJSON) => {
+            if (err) {
+                this.fire('error', err);
+                return;
+            }
+            util.extend(this, tileJSON);
+            this.fire('data', {dataType: 'source'});
+            this.fire('source.load');
+        });
     }
 
-    this.setEventedParent(eventedParent);
-    this.fire('dataloading', {dataType: 'source'});
-
-    loadTileJSON(options, (err, tileJSON) => {
-        if (err) {
-            this.fire('error', err);
-            return;
-        }
-        util.extend(this, tileJSON);
-        this.fire('data', {dataType: 'source'});
-        this.fire('source.load');
-    });
-}
-
-VectorTileSource.prototype = util.inherit(Evented, {
-    type: 'vector',
-    minzoom: 0,
-    maxzoom: 22,
-    scheme: 'xyz',
-    tileSize: 512,
-    reparseOverscaled: true,
-    isTileClipped: true,
-
-    onAdd: function(map) {
+    onAdd(map) {
         this.map = map;
-    },
+    }
 
-    serialize: function() {
+    serialize() {
         return util.extend({}, this._options);
-    },
+    }
 
-    loadTile: function(tile, callback) {
+    loadTile(tile, callback) {
         const overscaling = tile.coord.z > this.maxzoom ? Math.pow(2, tile.coord.z - this.maxzoom) : 1;
         const params = {
             url: normalizeURL(tile.coord.url(this.tiles, this.maxzoom, this.scheme), this.url),
@@ -95,14 +96,16 @@ VectorTileSource.prototype = util.inherit(Evented, {
                 tile.reloadCallback = null;
             }
         }
-    },
+    }
 
-    abortTile: function(tile) {
+    abortTile(tile) {
         this.dispatcher.send('abort tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
-    },
+    }
 
-    unloadTile: function(tile) {
+    unloadTile(tile) {
         tile.unloadVectorData();
         this.dispatcher.send('remove tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
-});
+}
+
+module.exports = VectorTileSource;

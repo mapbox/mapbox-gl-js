@@ -5,8 +5,6 @@ const Protobuf = require('pbf');
 const WorkerTile = require('./worker_tile');
 const util = require('../util/util');
 
-module.exports = VectorTileWorkerSource;
-
 /**
  * The {@link WorkerSource} implementation that supports {@link VectorTileSource}.
  * This class is designed to be easily reused to support custom source types
@@ -14,21 +12,22 @@ module.exports = VectorTileWorkerSource;
  * representation.  To do so, create it with
  * `new VectorTileWorkerSource(actor, styleLayers, customLoadVectorDataFunction)`.
  *
- * @class VectorTileWorkerSource
  * @private
- * @param {Function} [loadVectorData] Optional method for custom loading of a VectorTile object based on parameters passed from the main-thread Source.  See {@link VectorTileWorkerSource#loadTile}.  The default implementation simply loads the pbf at `params.url`.
  */
-function VectorTileWorkerSource (actor, layerIndex, loadVectorData) {
-    this.actor = actor;
-    this.layerIndex = layerIndex;
+class VectorTileWorkerSource {
+    /**
+     * @param {Function} [loadVectorData] Optional method for custom loading of a VectorTile object based on parameters passed from the main-thread Source.  See {@link VectorTileWorkerSource#loadTile}.  The default implementation simply loads the pbf at `params.url`.
+     */
+    constructor(actor, layerIndex, loadVectorData) {
+        this.actor = actor;
+        this.layerIndex = layerIndex;
 
-    if (loadVectorData) { this.loadVectorData = loadVectorData; }
+        if (loadVectorData) { this.loadVectorData = loadVectorData; }
 
-    this.loading = {};
-    this.loaded = {};
-}
+        this.loading = {};
+        this.loaded = {};
+    }
 
-VectorTileWorkerSource.prototype = {
     /**
      * Implements {@link WorkerSource#loadTile}.  Delegates to {@link VectorTileWorkerSource#loadVectorData} (which by default expects a `params.url` property) for fetching and producing a VectorTile object.
      *
@@ -42,7 +41,7 @@ VectorTileWorkerSource.prototype = {
      * @param {number} params.pitch
      * @param {boolean} params.showCollisionBoxes
      */
-    loadTile: function(params, callback) {
+    loadTile(params, callback) {
         const source = params.source,
             uid = params.uid;
 
@@ -71,7 +70,7 @@ VectorTileWorkerSource.prototype = {
             this.loaded[source] = this.loaded[source] || {};
             this.loaded[source][uid] = workerTile;
         }
-    },
+    }
 
     /**
      * Implements {@link WorkerSource#reloadTile}.
@@ -80,14 +79,14 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    reloadTile: function(params, callback) {
+    reloadTile(params, callback) {
         const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
             workerTile.parse(workerTile.vectorTile, this.layerIndex.families, this.actor, callback);
         }
-    },
+    }
 
     /**
      * Implements {@link WorkerSource#abortTile}.
@@ -96,14 +95,14 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    abortTile: function(params) {
+    abortTile(params) {
         const loading = this.loading[params.source],
             uid = params.uid;
         if (loading && loading[uid] && loading[uid].abort) {
             loading[uid].abort();
             delete loading[uid];
         }
-    },
+    }
 
     /**
      * Implements {@link WorkerSource#removeTile}.
@@ -112,13 +111,13 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
-    removeTile: function(params) {
+    removeTile(params) {
         const loaded = this.loaded[params.source],
             uid = params.uid;
         if (loaded && loaded[uid]) {
             delete loaded[uid];
         }
-    },
+    }
 
     /**
      * @class VectorTile
@@ -145,7 +144,7 @@ VectorTileWorkerSource.prototype = {
      * @param {string} params.url The URL of the tile PBF to load.
      * @param {LoadVectorDataCallback} callback
      */
-    loadVectorData: function (params, callback) {
+    loadVectorData(params, callback) {
         const xhr = ajax.getArrayBuffer(params.url, done.bind(this));
         return function abort () { xhr.abort(); };
         function done(err, arrayBuffer) {
@@ -154,9 +153,9 @@ VectorTileWorkerSource.prototype = {
             vectorTile.rawData = arrayBuffer;
             callback(err, vectorTile);
         }
-    },
+    }
 
-    redoPlacement: function(params, callback) {
+    redoPlacement(params, callback) {
         const loaded = this.loaded[params.source],
             loading = this.loading[params.source],
             uid = params.uid;
@@ -173,4 +172,6 @@ VectorTileWorkerSource.prototype = {
             loading[uid].angle = params.angle;
         }
     }
-};
+}
+
+module.exports = VectorTileWorkerSource;

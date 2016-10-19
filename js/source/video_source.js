@@ -1,10 +1,7 @@
 'use strict';
 
-const util = require('../util/util');
 const ajax = require('../util/ajax');
 const ImageSource = require('./image_source');
-
-module.exports = VideoSource;
 
 /**
  * A data source containing video.
@@ -38,62 +35,59 @@ module.exports = VideoSource;
  * map.removeSource('some id');  // remove
  * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
-function VideoSource(id, options, dispatcher, eventedParent) {
-    this.id = id;
-    this.urls = options.urls;
-    this.coordinates = options.coordinates;
+class VideoSource extends ImageSource {
+    constructor(id, options, dispatcher, eventedParent) {
+        super(id, options, dispatcher, eventedParent);
+        this.roundZoom = true;
+    }
 
-    this.setEventedParent(eventedParent);
-    this.fire('dataloading', {dataType: 'source'});
-    ajax.getVideo(options.urls, (err, video) => {
-        if (err) return this.fire('error', {error: err});
+    _load(options) {
+        this.urls = options.urls;
 
-        this.video = video;
-        this.video.loop = true;
+        ajax.getVideo(options.urls, (err, video) => {
+            if (err) return this.fire('error', {error: err});
 
-        let loopID;
+            this.video = video;
+            this.video.loop = true;
 
-        // start repainting when video starts playing
-        this.video.addEventListener('playing', () => {
-            loopID = this.map.style.animationLoop.set(Infinity);
-            this.map._rerender();
+            let loopID;
+
+            // start repainting when video starts playing
+            this.video.addEventListener('playing', () => {
+                loopID = this.map.style.animationLoop.set(Infinity);
+                this.map._rerender();
+            });
+
+            // stop repainting when video stops
+            this.video.addEventListener('pause', () => {
+                this.map.style.animationLoop.cancel(loopID);
+            });
+
+            if (this.map) {
+                this.video.play();
+            }
+
+            this._finishLoading();
         });
-
-        // stop repainting when video stops
-        this.video.addEventListener('pause', () => {
-            this.map.style.animationLoop.cancel(loopID);
-        });
-
-        if (this.map) {
-            this.video.play();
-            this.setCoordinates(options.coordinates);
-        }
-
-        this.fire('data', {dataType: 'source'});
-        this.fire('source.load');
-    });
-}
-
-VideoSource.prototype = util.inherit(ImageSource, /** @lends VideoSource.prototype */{
-    roundZoom: true,
+    }
 
     /**
      * Returns the HTML `video` element.
      *
      * @returns {HTMLVideoElement} The HTML `video` element.
      */
-    getVideo: function() {
+    getVideo() {
         return this.video;
-    },
+    }
 
-    onAdd: function(map) {
+    onAdd(map) {
         if (this.map) return;
         this.map = map;
         if (this.video) {
             this.video.play();
             this.setCoordinates(this.coordinates);
         }
-    },
+    }
 
     /**
      * Sets the video's coordinates and re-renders the map.
@@ -107,16 +101,18 @@ VideoSource.prototype = util.inherit(ImageSource, /** @lends VideoSource.prototy
      */
     // setCoordiates inherited from ImageSource
 
-    prepare: function() {
+    prepare() {
         if (!this.tile || this.video.readyState < 2) return; // not enough data for current position
         this._prepareImage(this.map.painter.gl, this.video);
-    },
+    }
 
-    serialize: function() {
+    serialize() {
         return {
             type: 'video',
             urls: this.urls,
             coordinates: this.coordinates
         };
     }
-});
+}
+
+module.exports = VideoSource;
