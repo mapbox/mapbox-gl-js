@@ -292,23 +292,22 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertic
 
     var glyphSize = 24;
 
-    var fontScale = this.adjustedTextSize / glyphSize,
-        textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize,
-        textBoxScale = this.tilePixelRatio * fontScale,
-        textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
-        iconBoxScale = this.tilePixelRatio * this.adjustedIconSize,
-        symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
-        avoidEdges = layout['symbol-avoid-edges'],
-        textPadding = layout['text-padding'] * this.tilePixelRatio,
-        iconPadding = layout['icon-padding'] * this.tilePixelRatio,
-        textMaxAngle = layout['text-max-angle'] / 180 * Math.PI,
-        textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line',
-        mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
-            layout['text-ignore-placement'] || layout['icon-ignore-placement'],
-        symbolPlacement = layout['symbol-placement'],
-        isLine = symbolPlacement === 'line',
-        textRepeatDistance = symbolMinDistance / 2;
+    var fontScale = this.adjustedTextSize / glyphSize;
+    var textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize;
+    var textBoxScale = this.tilePixelRatio * fontScale;
+    var textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize;
+    var iconBoxScale = this.tilePixelRatio * this.adjustedIconSize;
+    var symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'];
+    var avoidEdges = layout['symbol-avoid-edges'];
+    var textPadding = layout['text-padding'] * this.tilePixelRatio;
+    var iconPadding = layout['icon-padding'] * this.tilePixelRatio;
+    var textMaxAngle = layout['text-max-angle'] / 180 * Math.PI;
+    var textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+    var iconAlongLine = layout['icon-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
+    var mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] || layout['text-ignore-placement'] || layout['icon-ignore-placement'];
+    var symbolPlacement = layout['symbol-placement'];
+    var isLine = symbolPlacement === 'line';
+    // var textRepeatDistance = symbolMinDistance / 2;
 
     var list = null;
     if (isLine) {

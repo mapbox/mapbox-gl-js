@@ -191,14 +191,12 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, vertic
 
             // vertical orientation
             if (verticalOrientation) {
-                var sin = Math.sin(Math.PI / 2),
-                    cos = Math.cos(Math.PI / 2),
-                    matrix = [cos, -sin, sin, cos];
+                var verticalMatrix = [0, -1, 1, 0];
 
-                tl = tl.matMult(matrix);
-                tr = tr.matMult(matrix);
-                bl = bl.matMult(matrix);
-                br = br.matMult(matrix);
+                tl = tl.matMult(verticalMatrix);
+                tr = tr.matMult(verticalMatrix);
+                bl = bl.matMult(verticalMatrix);
+                br = br.matMult(verticalMatrix);
             }
 
             if (textRotate) {
