@@ -78,7 +78,6 @@ class StructArray {
 
     /**
      * Serialize this StructArray instance
-     * @private
      */
     serialize() {
         this.trim();
@@ -90,7 +89,6 @@ class StructArray {
 
     /**
      * Return the Struct at the given location in the array.
-     * @private
      * @param {number} index The index of the element.
      */
     get(index) {
@@ -99,7 +97,6 @@ class StructArray {
 
     /**
      * Resize the array to discard unused capacity.
-     * @private
      */
     trim() {
         if (this.length !== this.capacity) {
@@ -129,7 +126,6 @@ class StructArray {
 
     /**
      * Create TypedArray views for the current ArrayBuffer.
-     * @private
      */
     _refreshViews() {
         for (const type of this._usedTypes) {
@@ -141,7 +137,6 @@ class StructArray {
      * Output the `StructArray` between indices `startIndex` and `endIndex` as an array of `StructTypes` to enable sorting
      * @param {number} startIndex
      * @param {number} endIndex
-     * @private
      */
     toArray(startIndex, endIndex) {
         const array = [];
@@ -196,6 +191,7 @@ const structArrayTypeCache = {};
 function StructArrayType(options) {
 
     const key = JSON.stringify(options);
+
     if (structArrayTypeCache[key]) {
         return structArrayTypeCache[key];
     }
@@ -214,26 +210,30 @@ function StructArrayType(options) {
 
         const typeSize = sizeOf(member.type);
         const memberOffset = offset = align(offset, Math.max(options.alignment, typeSize));
+        const components = member.components || 1;
 
         maxSize = Math.max(maxSize, typeSize);
-        offset += typeSize * (member.components || 1);
+        offset += typeSize * components;
 
         return {
             name: member.name,
             type: member.type,
-            components: member.components || 1,
+            components: components,
             offset: memberOffset
         };
     });
 
+    const size = align(offset, Math.max(maxSize, options.alignment));
+
     class StructType extends Struct {}
 
     StructType.prototype.alignment = options.alignment;
-    StructType.prototype.size = align(offset, Math.max(maxSize, options.alignment));
+    StructType.prototype.size = size;
 
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
-            Object.defineProperty(StructType.prototype, member.name + (member.components === 1 ? '' : c), {
+            const name = member.name + (member.components === 1 ? '' : c);
+            Object.defineProperty(StructType.prototype, name, {
                 get: createGetter(member, c),
                 set: createSetter(member, c)
             });
@@ -244,8 +244,8 @@ function StructArrayType(options) {
 
     StructArrayType.prototype.members = members;
     StructArrayType.prototype.StructType = StructType;
-    StructArrayType.prototype.bytesPerElement = StructType.prototype.size;
-    StructArrayType.prototype.emplaceBack = createEmplaceBack(members, StructType.prototype.size);
+    StructArrayType.prototype.bytesPerElement = size;
+    StructArrayType.prototype.emplaceBack = createEmplaceBack(members, size);
     StructArrayType.prototype._usedTypes = usedTypes;
 
     structArrayTypeCache[key] = StructArrayType;
@@ -264,7 +264,6 @@ function sizeOf(type) {
 function getArrayViewName(type) {
     return type.toLowerCase();
 }
-
 
 /*
  * > I saw major perf gains by shortening the source of these generated methods (i.e. renaming
@@ -312,7 +311,6 @@ function createMemberComponentString(member, component) {
     const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
     const index = `${elementOffset} + ${componentOffset}`;
     return `this._structArray.${getArrayViewName(member.type)}[${index}]`;
-
 }
 
 function createGetter(member, c) {
