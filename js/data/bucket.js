@@ -6,48 +6,7 @@ const util = require('../util/util');
 const StructArrayType = require('../util/struct_array');
 const assert = require('assert');
 
-module.exports = Bucket;
-
-/**
- * Instantiate the appropriate subclass of `Bucket` for `options`.
- * @private
- * @param options See `Bucket` constructor options
- * @returns {Bucket}
- */
-Bucket.create = function(options) {
-    const Classes = {
-        fill: require('./bucket/fill_bucket'),
-        fillextrusion: require('./bucket/fill_extrusion_bucket'),
-        line: require('./bucket/line_bucket'),
-        circle: require('./bucket/circle_bucket'),
-        symbol: require('./bucket/symbol_bucket')
-    };
-
-    let type = options.layer.type;
-    if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
-        !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
-        options.layer.getPaintValue('fill-extrude-height') !== 0)) {
-        type = 'fillextrusion';
-    }
-
-    return new Classes[type](options);
-};
-
-
-/**
- * The maximum extent of a feature that can be safely stored in the buffer.
- * In practice, all features are converted to this extent before being added.
- *
- * Positions are stored as signed 16bit integers.
- * One bit is lost for signedness to support featuers extending past the left edge of the tile.
- * One bit is lost because the line vertex buffer packs 1 bit of other data into the int.
- * One bit is lost to support features extending past the extent on the right edge of the tile.
- * This leaves us with 2^13 = 8192
- *
- * @private
- * @readonly
- */
-Bucket.EXTENT = 8192;
+const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 
 /**
  * The `Bucket` class is the single point of knowledge about turning vector
@@ -57,227 +16,249 @@ Bucket.EXTENT = 8192;
  * style spec layer type. Because `Bucket` is an abstract class,
  * instances should be created via the `Bucket.create` method.
  *
- * @class Bucket
  * @private
- * @param options
- * @param {number} options.zoom Zoom level of the buffers being built. May be
- *     a fractional zoom level.
- * @param options.layer A Mapbox style layer object
- * @param {Object.<string, Buffer>} options.buffers The set of `Buffer`s being
- *     built for this tile. This object facilitates sharing of `Buffer`s be
-       between `Bucket`s.
  */
-function Bucket(options) {
-    this.zoom = options.zoom;
-    this.overscaling = options.overscaling;
-    this.layer = options.layer;
-    this.childLayers = options.childLayers;
+class Bucket {
+    /**
+     * @param options
+     * @param {number} options.zoom Zoom level of the buffers being built. May be
+     *     a fractional zoom level.
+     * @param options.layer A Mapbox style layer object
+     * @param {Object.<string, Buffer>} options.buffers The set of `Buffer`s being
+     *     built for this tile. This object facilitates sharing of `Buffer`s be
+           between `Bucket`s.
+     */
+    constructor (options) {
+        this.zoom = options.zoom;
+        this.overscaling = options.overscaling;
+        this.layer = options.layer;
+        this.childLayers = options.childLayers;
 
-    this.type = this.layer.type;
-    this.features = [];
-    this.id = this.layer.id;
-    this.index = options.index;
-    this.sourceLayer = this.layer.sourceLayer;
-    this.sourceLayerIndex = options.sourceLayerIndex;
-    this.minZoom = this.layer.minzoom;
-    this.maxZoom = this.layer.maxzoom;
+        this.type = this.layer.type;
+        this.features = [];
+        this.id = this.layer.id;
+        this.index = options.index;
+        this.sourceLayer = this.layer.sourceLayer;
+        this.sourceLayerIndex = options.sourceLayerIndex;
+        this.minZoom = this.layer.minzoom;
+        this.maxZoom = this.layer.maxzoom;
 
-    this.paintAttributes = createPaintAttributes(this);
+        this.paintAttributes = createPaintAttributes(this);
 
-    if (options.arrays) {
-        const programInterfaces = this.programInterfaces;
-        this.bufferGroups = util.mapObject(options.arrays, (programArrayGroups, programName) => {
-            const programInterface = programInterfaces[programName];
-            const paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
-            return programArrayGroups.map((arrayGroup) => {
-                return new BufferGroup(arrayGroup, {
-                    layoutVertexArrayType: programInterface.layoutVertexArrayType.serialize(),
-                    elementArrayType: programInterface.elementArrayType && programInterface.elementArrayType.serialize(),
-                    elementArrayType2: programInterface.elementArrayType2 && programInterface.elementArrayType2.serialize(),
-                    paintVertexArrayTypes: paintVertexArrayTypes
+        if (options.arrays) {
+            const programInterfaces = this.programInterfaces;
+            this.bufferGroups = util.mapObject(options.arrays, (programArrayGroups, programName) => {
+                const programInterface = programInterfaces[programName];
+                const paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
+                return programArrayGroups.map((arrayGroup) => {
+                    return new BufferGroup(arrayGroup, {
+                        layoutVertexArrayType: programInterface.layoutVertexArrayType.serialize(),
+                        elementArrayType: programInterface.elementArrayType && programInterface.elementArrayType.serialize(),
+                        elementArrayType2: programInterface.elementArrayType2 && programInterface.elementArrayType2.serialize(),
+                        paintVertexArrayTypes: paintVertexArrayTypes
+                    });
                 });
             });
-        });
-    }
-}
-
-/**
- * Build the arrays! Features are set directly to the `features` property.
- * @private
- */
-Bucket.prototype.populateArrays = function() {
-    this.createArrays();
-    this.recalculateStyleLayers();
-
-    for (let i = 0; i < this.features.length; i++) {
-        this.addFeature(this.features[i]);
-    }
-
-    this.trimArrays();
-};
-
-/**
- * Check if there is enough space available in the current array group for
- * `vertexLength` vertices. If not, append a new array group. Should be called
- * by `populateArrays` and its callees.
- *
- * Array groups are added to this.arrayGroups[programName].
- *
- * @private
- * @param {string} programName the name of the program associated with the buffer that will receive the vertices
- * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
- * @returns The current array group
- */
-Bucket.prototype.prepareArrayGroup = function(programName, numVertices) {
-    const groups = this.arrayGroups[programName];
-    let currentGroup = groups.length && groups[groups.length - 1];
-
-    if (!currentGroup || !currentGroup.hasCapacityFor(numVertices)) {
-        currentGroup = new ArrayGroup({
-            layoutVertexArrayType: this.programInterfaces[programName].layoutVertexArrayType,
-            elementArrayType: this.programInterfaces[programName].elementArrayType,
-            elementArrayType2: this.programInterfaces[programName].elementArrayType2,
-            paintVertexArrayTypes: this.paintVertexArrayTypes[programName]
-        });
-
-        currentGroup.index = groups.length;
-
-        groups.push(currentGroup);
-    }
-
-    return currentGroup;
-};
-
-/**
- * Sets up `this.paintVertexArrayTypes` as { [programName]: { [layerName]: PaintArrayType, ... }, ... }
- *
- * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
- * with array group structure over in `prepareArrayGroup`.
- *
- * @private
- */
-Bucket.prototype.createArrays = function() {
-    this.arrayGroups = {};
-    this.paintVertexArrayTypes = {};
-
-    for (const programName in this.programInterfaces) {
-        this.arrayGroups[programName] = [];
-
-        const paintVertexArrayTypes = this.paintVertexArrayTypes[programName] = {};
-        const layerPaintAttributes = this.paintAttributes[programName];
-
-        for (const layerName in layerPaintAttributes) {
-            paintVertexArrayTypes[layerName] = new Bucket.VertexArrayType(layerPaintAttributes[layerName].attributes);
         }
     }
-};
 
-Bucket.prototype.destroy = function() {
-    for (const programName in this.bufferGroups) {
-        const programBufferGroups = this.bufferGroups[programName];
-        for (let i = 0; i < programBufferGroups.length; i++) {
-            programBufferGroups[i].destroy();
+    /**
+     * Instantiate the appropriate subclass of `Bucket` for `options`.
+     * @param options See `Bucket` constructor options
+     * @returns {Bucket}
+     */
+    static create(options) {
+        const Classes = {
+            fill: require('./bucket/fill_bucket'),
+            fillextrusion: require('./bucket/fill_extrusion_bucket'),
+            line: require('./bucket/line_bucket'),
+            circle: require('./bucket/circle_bucket'),
+            symbol: require('./bucket/symbol_bucket')
+        };
+
+        let type = options.layer.type;
+        if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+            !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
+            options.layer.getPaintValue('fill-extrude-height') !== 0)) {
+            type = 'fillextrusion';
         }
-    }
-};
 
-Bucket.prototype.trimArrays = function() {
-    for (const programName in this.arrayGroups) {
-        const arrayGroups = this.arrayGroups[programName];
-        for (let i = 0; i < arrayGroups.length; i++) {
-            arrayGroups[i].trim();
+        return new Classes[type](options);
+    }
+
+    /**
+     * Build the arrays! Features are set directly to the `features` property.
+     */
+    populateArrays() {
+        this.createArrays();
+        this.recalculateStyleLayers();
+
+        for (let i = 0; i < this.features.length; i++) {
+            this.addFeature(this.features[i]);
         }
-    }
-};
 
-Bucket.prototype.isEmpty = function() {
-    for (const programName in this.arrayGroups) {
-        const arrayGroups = this.arrayGroups[programName];
-        for (let i = 0; i < arrayGroups.length; i++) {
-            if (!arrayGroups[i].isEmpty()) {
-                return false;
+        this.trimArrays();
+    }
+
+    /**
+     * Check if there is enough space available in the current array group for
+     * `vertexLength` vertices. If not, append a new array group. Should be called
+     * by `populateArrays` and its callees.
+     *
+     * Array groups are added to this.arrayGroups[programName].
+     *
+     * @param {string} programName the name of the program associated with the buffer that will receive the vertices
+     * @param {number} vertexLength The number of vertices that will be inserted to the buffer.
+     * @returns The current array group
+     */
+    prepareArrayGroup(programName, numVertices) {
+        const groups = this.arrayGroups[programName];
+        let currentGroup = groups.length && groups[groups.length - 1];
+
+        if (!currentGroup || !currentGroup.hasCapacityFor(numVertices)) {
+            currentGroup = new ArrayGroup({
+                layoutVertexArrayType: this.programInterfaces[programName].layoutVertexArrayType,
+                elementArrayType: this.programInterfaces[programName].elementArrayType,
+                elementArrayType2: this.programInterfaces[programName].elementArrayType2,
+                paintVertexArrayTypes: this.paintVertexArrayTypes[programName]
+            });
+
+            currentGroup.index = groups.length;
+
+            groups.push(currentGroup);
+        }
+
+        return currentGroup;
+    }
+
+    /**
+     * Sets up `this.paintVertexArrayTypes` as { [programName]: { [layerName]: PaintArrayType, ... }, ... }
+     *
+     * And `this.arrayGroups` as { [programName]: [], ... }; these get populated
+     * with array group structure over in `prepareArrayGroup`.
+     */
+    createArrays() {
+        this.arrayGroups = {};
+        this.paintVertexArrayTypes = {};
+
+        for (const programName in this.programInterfaces) {
+            this.arrayGroups[programName] = [];
+
+            const paintVertexArrayTypes = this.paintVertexArrayTypes[programName] = {};
+            const layerPaintAttributes = this.paintAttributes[programName];
+
+            for (const layerName in layerPaintAttributes) {
+                paintVertexArrayTypes[layerName] = new Bucket.VertexArrayType(layerPaintAttributes[layerName].attributes);
             }
         }
     }
-    return true;
-};
 
-Bucket.prototype.getTransferables = function(transferables) {
-    for (const programName in this.arrayGroups) {
-        const arrayGroups = this.arrayGroups[programName];
-        for (let i = 0; i < arrayGroups.length; i++) {
-            arrayGroups[i].getTransferables(transferables);
+    destroy() {
+        for (const programName in this.bufferGroups) {
+            const programBufferGroups = this.bufferGroups[programName];
+            for (let i = 0; i < programBufferGroups.length; i++) {
+                programBufferGroups[i].destroy();
+            }
         }
     }
-};
 
-Bucket.prototype.setUniforms = function(gl, programName, program, layer, globalProperties) {
-    const uniforms = this.paintAttributes[programName][layer.id].uniforms;
-    for (let i = 0; i < uniforms.length; i++) {
-        const uniform = uniforms[i];
-        const uniformLocation = program[uniform.name];
-        gl[`uniform${uniform.components}fv`](uniformLocation, uniform.getValue(layer, globalProperties));
+    trimArrays() {
+        for (const programName in this.arrayGroups) {
+            const arrayGroups = this.arrayGroups[programName];
+            for (let i = 0; i < arrayGroups.length; i++) {
+                arrayGroups[i].trim();
+            }
+        }
     }
-};
 
-Bucket.prototype.serialize = function() {
-    return {
-        layerId: this.layer.id,
-        zoom: this.zoom,
-        arrays: util.mapObject(this.arrayGroups, (programArrayGroups) => {
-            return programArrayGroups.map((arrayGroup) => {
-                return arrayGroup.serialize();
-            });
-        }),
-        paintVertexArrayTypes: util.mapObject(this.paintVertexArrayTypes, (arrayTypes) => {
-            return util.mapObject(arrayTypes, (arrayType) => {
-                return arrayType.serialize();
-            });
-        }),
-
-        childLayerIds: this.childLayers.map((layer) => {
-            return layer.id;
-        })
-    };
-};
-
-const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-Bucket.prototype.recalculateStyleLayers = function() {
-    for (let i = 0; i < this.childLayers.length; i++) {
-        this.childLayers[i].recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+    isEmpty() {
+        for (const programName in this.arrayGroups) {
+            const arrayGroups = this.arrayGroups[programName];
+            for (let i = 0; i < arrayGroups.length; i++) {
+                if (!arrayGroups[i].isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
-};
 
-Bucket.prototype.populatePaintArrays = function(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
-    for (let l = 0; l < this.childLayers.length; l++) {
-        const layer = this.childLayers[l];
-        const groups = this.arrayGroups[interfaceName];
-        for (let g = startGroup.index; g < groups.length; g++) {
-            const group = groups[g];
-            const length = group.layoutVertexArray.length;
-            const paintArray = group.paintVertexArrays[layer.id];
-            paintArray.resize(length);
+    getTransferables(transferables) {
+        for (const programName in this.arrayGroups) {
+            const arrayGroups = this.arrayGroups[programName];
+            for (let i = 0; i < arrayGroups.length; i++) {
+                arrayGroups[i].getTransferables(transferables);
+            }
+        }
+    }
 
-            const attributes = this.paintAttributes[interfaceName][layer.id].attributes;
-            for (let m = 0; m < attributes.length; m++) {
-                const attribute = attributes[m];
+    setUniforms(gl, programName, program, layer, globalProperties) {
+        const uniforms = this.paintAttributes[programName][layer.id].uniforms;
+        for (let i = 0; i < uniforms.length; i++) {
+            const uniform = uniforms[i];
+            const uniformLocation = program[uniform.name];
+            gl[`uniform${uniform.components}fv`](uniformLocation, uniform.getValue(layer, globalProperties));
+        }
+    }
 
-                const value = attribute.getValue(layer, globalProperties, featureProperties);
-                const multiplier = attribute.multiplier || 1;
-                const components = attribute.components || 1;
+    serialize() {
+        return {
+            layerId: this.layer.id,
+            zoom: this.zoom,
+            arrays: util.mapObject(this.arrayGroups, (programArrayGroups) => {
+                return programArrayGroups.map((arrayGroup) => {
+                    return arrayGroup.serialize();
+                });
+            }),
+            paintVertexArrayTypes: util.mapObject(this.paintVertexArrayTypes, (arrayTypes) => {
+                return util.mapObject(arrayTypes, (arrayType) => {
+                    return arrayType.serialize();
+                });
+            }),
 
-                const start = g === startGroup.index  ? startIndex : 0;
-                for (let i = start; i < length; i++) {
-                    const vertex = paintArray.get(i);
-                    for (let c = 0; c < components; c++) {
-                        const memberName = components > 1 ? (attribute.name + c) : attribute.name;
-                        vertex[memberName] = value[c] * multiplier;
+            childLayerIds: this.childLayers.map((layer) => {
+                return layer.id;
+            })
+        };
+    }
+
+    recalculateStyleLayers() {
+        for (let i = 0; i < this.childLayers.length; i++) {
+            this.childLayers[i].recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+        }
+    }
+
+    populatePaintArrays(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
+        for (let l = 0; l < this.childLayers.length; l++) {
+            const layer = this.childLayers[l];
+            const groups = this.arrayGroups[interfaceName];
+            for (let g = startGroup.index; g < groups.length; g++) {
+                const group = groups[g];
+                const length = group.layoutVertexArray.length;
+                const paintArray = group.paintVertexArrays[layer.id];
+                paintArray.resize(length);
+
+                const attributes = this.paintAttributes[interfaceName][layer.id].attributes;
+                for (let m = 0; m < attributes.length; m++) {
+                    const attribute = attributes[m];
+
+                    const value = attribute.getValue(layer, globalProperties, featureProperties);
+                    const multiplier = attribute.multiplier || 1;
+                    const components = attribute.components || 1;
+
+                    const start = g === startGroup.index  ? startIndex : 0;
+                    for (let i = start; i < length; i++) {
+                        const vertex = paintArray.get(i);
+                        for (let c = 0; c < components; c++) {
+                            const memberName = components > 1 ? (attribute.name + c) : attribute.name;
+                            vertex[memberName] = value[c] * multiplier;
+                        }
                     }
                 }
             }
         }
     }
-};
+}
 
 /**
  * A vertex array stores data for each vertex in a geometry. Elements are aligned to 4 byte
@@ -305,6 +286,23 @@ Bucket.ElementArrayType = function (components) {
         }]
     });
 };
+
+/**
+ * The maximum extent of a feature that can be safely stored in the buffer.
+ * In practice, all features are converted to this extent before being added.
+ *
+ * Positions are stored as signed 16bit integers.
+ * One bit is lost for signedness to support featuers extending past the left edge of the tile.
+ * One bit is lost because the line vertex buffer packs 1 bit of other data into the int.
+ * One bit is lost to support features extending past the extent on the right edge of the tile.
+ * This leaves us with 2^13 = 8192
+ *
+ * @private
+ * @readonly
+ */
+Bucket.EXTENT = 8192;
+
+module.exports = Bucket;
 
 function createPaintAttributes(bucket) {
     const attributes = {};

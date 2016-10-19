@@ -2,19 +2,12 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Bucket = require('../../../js/data/bucket');
-const util = require('../../../js/util/util');
 const StyleLayer = require('../../../js/style/style_layer');
 
 test('Bucket', (t) => {
 
     function createClass(options) {
-        function Class() {
-            Bucket.apply(this, arguments);
-        }
-
-        Class.prototype = util.inherit(Bucket, {});
-
-        Class.prototype.programInterfaces = {
+        const programInterfaces = {
             test: {
                 layoutVertexArrayType: new Bucket.VertexArrayType(options.layoutAttributes || [{
                     name: 'a_box',
@@ -34,17 +27,18 @@ test('Bucket', (t) => {
                 }]
             }
         };
-
-        Class.prototype.addFeature = function(feature) {
-            const group = this.prepareArrayGroup('test', 1);
-            const point = feature.loadGeometry()[0][0];
-            const startIndex = group.layoutVertexArray.length;
-            group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
-            group.elementArray.emplaceBack(1, 2, 3);
-            group.elementArray2.emplaceBack(point.x, point.y);
-            this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
-        };
-
+        class Class extends Bucket {
+            addFeature(feature) {
+                const group = this.prepareArrayGroup('test', 1);
+                const point = feature.loadGeometry()[0][0];
+                const startIndex = group.layoutVertexArray.length;
+                group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
+                group.elementArray.emplaceBack(1, 2, 3);
+                group.elementArray2.emplaceBack(point.x, point.y);
+                this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
+            }
+        }
+        Class.prototype.programInterfaces = programInterfaces;
         return Class;
     }
 
