@@ -180,13 +180,13 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         }
     };
 
-    actor.send('get glyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
+    actor.send('getGlyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
         stacks = newStacks;
         gotDependency(err);
     });
 
     if (icons.length) {
-        actor.send('get icons', {icons: icons}, (err, newIcons) => {
+        actor.send('getIcons', {icons: icons}, (err, newIcons) => {
             icons = newIcons;
             gotDependency(err);
         });
