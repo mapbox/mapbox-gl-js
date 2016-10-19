@@ -1,7 +1,5 @@
 'use strict';
 
-module.exports = LngLatBounds;
-
 const LngLat = require('./lng_lat');
 
 /**
@@ -14,7 +12,6 @@ const LngLat = require('./lng_lat');
  * can also accept an `Array` of two [`LngLatLike`](#LngLatLike) constructs and will perform an implicit conversion.
  * This flexible type is documented as [`LngLatBoundsLike`](#LngLatBoundsLike).
  *
- * @class LngLatBounds
  * @param {LngLatLike} [sw] The southwest corner of the bounding box.
  * @param {LngLatLike} [ne] The northeast corner of the bounding box.
  * @example
@@ -22,19 +19,18 @@ const LngLat = require('./lng_lat');
  * var ne = new mapboxgl.LngLat(-73.9397, 40.8002);
  * var llb = new mapboxgl.LngLatBounds(sw, ne);
  */
-function LngLatBounds(sw, ne) {
-    if (!sw) {
-        return;
-    } else if (ne) {
-        this.setSouthWest(sw).setNorthEast(ne);
-    } else if (sw.length === 4) {
-        this.setSouthWest([sw[0], sw[1]]).setNorthEast([sw[2], sw[3]]);
-    } else {
-        this.setSouthWest(sw[0]).setNorthEast(sw[1]);
+class LngLatBounds {
+    constructor(sw, ne) {
+        if (!sw) {
+            return;
+        } else if (ne) {
+            this.setSouthWest(sw).setNorthEast(ne);
+        } else if (sw.length === 4) {
+            this.setSouthWest([sw[0], sw[1]]).setNorthEast([sw[2], sw[3]]);
+        } else {
+            this.setSouthWest(sw[0]).setNorthEast(sw[1]);
+        }
     }
-}
-
-LngLatBounds.prototype = {
 
     /**
      * Set the northeast corner of the bounding box
@@ -42,10 +38,10 @@ LngLatBounds.prototype = {
      * @param {LngLatLike} ne
      * @returns {LngLatBounds} `this`
      */
-    setNorthEast: function(ne) {
+    setNorthEast(ne) {
         this._ne = LngLat.convert(ne);
         return this;
-    },
+    }
 
     /**
      * Set the southwest corner of the bounding box
@@ -53,10 +49,10 @@ LngLatBounds.prototype = {
      * @param {LngLatLike} sw
      * @returns {LngLatBounds} `this`
      */
-    setSouthWest: function(sw) {
+    setSouthWest(sw) {
         this._sw = LngLat.convert(sw);
         return this;
-    },
+    }
 
     /**
      * Extend the bounds to include a given LngLat or LngLatBounds.
@@ -64,7 +60,7 @@ LngLatBounds.prototype = {
      * @param {LngLat|LngLatBounds} obj object to extend to
      * @returns {LngLatBounds} `this`
      */
-    extend: function(obj) {
+    extend(obj) {
         const sw = this._sw,
             ne = this._ne;
         let sw2, ne2;
@@ -102,7 +98,7 @@ LngLatBounds.prototype = {
         }
 
         return this;
-    },
+    }
 
     /**
      * Returns the geographical coordinate equidistant from the bounding box's corners.
@@ -112,65 +108,65 @@ LngLatBounds.prototype = {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.getCenter(); // = LngLat {lng: -73.96365, lat: 40.78315}
      */
-    getCenter: function() {
+    getCenter() {
         return new LngLat((this._sw.lng + this._ne.lng) / 2, (this._sw.lat + this._ne.lat) / 2);
-    },
+    }
 
     /**
      * Returns the southwest corner of the bounding box.
      *
      * @returns {LngLat} The southwest corner of the bounding box.
      */
-    getSouthWest: function() { return this._sw; },
+    getSouthWest() { return this._sw; }
 
     /**
     * Returns the northeast corner of the bounding box.
     *
     * @returns {LngLat} The northeast corner of the bounding box.
      */
-    getNorthEast: function() { return this._ne; },
+    getNorthEast() { return this._ne; }
 
     /**
     * Returns the northwest corner of the bounding box.
     *
     * @returns {LngLat} The northwest corner of the bounding box.
      */
-    getNorthWest: function() { return new LngLat(this.getWest(), this.getNorth()); },
+    getNorthWest() { return new LngLat(this.getWest(), this.getNorth()); }
 
     /**
     * Returns the southeast corner of the bounding box.
     *
     * @returns {LngLat} The southeast corner of the bounding box.
      */
-    getSouthEast: function() { return new LngLat(this.getEast(), this.getSouth()); },
+    getSouthEast() { return new LngLat(this.getEast(), this.getSouth()); }
 
     /**
     * Returns the west edge of the bounding box.
     *
     * @returns {number} The west edge of the bounding box.
      */
-    getWest:  function() { return this._sw.lng; },
+    getWest() { return this._sw.lng; }
 
     /**
     * Returns the south edge of the bounding box.
     *
     * @returns {number} The south edge of the bounding box.
      */
-    getSouth: function() { return this._sw.lat; },
+    getSouth() { return this._sw.lat; }
 
     /**
     * Returns the east edge of the bounding box.
     *
     * @returns {number} The east edge of the bounding box.
      */
-    getEast:  function() { return this._ne.lng; },
+    getEast() { return this._ne.lng; }
 
     /**
     * Returns the north edge of the bounding box.
     *
     * @returns {number} The north edge of the bounding box.
      */
-    getNorth: function() { return this._ne.lat; },
+    getNorth() { return this._ne.lat; }
 
     /**
      * Returns the bounding box represented as an array.
@@ -181,9 +177,9 @@ LngLatBounds.prototype = {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toArray(); // = [[-73.9876, 40.7661], [-73.9397, 40.8002]]
      */
-    toArray: function () {
+    toArray () {
         return [this._sw.toArray(), this._ne.toArray()];
-    },
+    }
 
     /**
      * Return the bounding box represented as a string.
@@ -194,10 +190,10 @@ LngLatBounds.prototype = {
      * var llb = new mapboxgl.LngLatBounds([-73.9876, 40.7661], [-73.9397, 40.8002]);
      * llb.toString(); // = "LngLatBounds(LngLat(-73.9876, 40.7661), LngLat(-73.9397, 40.8002))"
      */
-    toString: function () {
+    toString () {
         return `LngLatBounds(${this._sw.toString()}, ${this._ne.toString()})`;
     }
-};
+}
 
 /**
  * Converts an array to a `LngLatBounds` object.
@@ -217,3 +213,5 @@ LngLatBounds.convert = function (input) {
     if (!input || input instanceof LngLatBounds) return input;
     return new LngLatBounds(input);
 };
+
+module.exports = LngLatBounds;
