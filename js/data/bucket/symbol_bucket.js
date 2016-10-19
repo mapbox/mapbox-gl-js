@@ -7,8 +7,8 @@ var Anchor = require('../../symbol/anchor');
 var getAnchors = require('../../symbol/get_anchors');
 var resolveTokens = require('../../util/token');
 var Quads = require('../../symbol/quads');
-var placeText = require('../../symbol/place_text');
-var placeIcon = require('../../symbol/place_icon');
+var shapeText = require('../../symbol/shape_text');
+var shapeIcon = require('../../symbol/shape_icon');
 var resolveText = require('../../symbol/resolve_text');
 var mergeLines = require('../../symbol/mergelines');
 var clipLine = require('../../symbol/clip_line');
@@ -217,13 +217,13 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         textFeatures = merged.textFeatures;
     }
 
-    var placedText, placedTextVertical, placedIcon;
+    var shapedText, shapedTextVertical, shapedIcon;
 
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
 
         if (textFeatures[k]) {
-            placedText = placeText(
+            shapedText = shapeText(
                 textFeatures[k],
                 stacks[fontstack],
                 maxWidth,
@@ -238,7 +238,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
             );
 
             if (layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line') {
-                placedTextVertical = placeText(
+                shapedTextVertical = shapeText(
                     textFeatures[k],
                     stacks[fontstack],
                     maxWidth,
@@ -257,7 +257,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         if (layout['icon-image']) {
             var iconName = resolveTokens(features[k].properties, layout['icon-image']);
             var image = icons[iconName];
-            placedIcon = placeIcon(image, layout);
+            shapedIcon = shapeIcon(image, layout);
 
             if (image) {
                 if (this.sdfIcons === undefined) {
@@ -272,11 +272,11 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
                 }
             }
         } else {
-            placedIcon = null;
+            shapedIcon = null;
         }
 
-        if (placedText || placedIcon) {
-            this.addFeature(geometries[k], placedText, placedTextVertical, placedIcon, features[k]);
+        if (shapedText || shapedIcon) {
+            this.addFeature(geometries[k], shapedText, shapedTextVertical, shapedIcon, features[k]);
         }
     }
 
@@ -286,7 +286,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
     this.trimArrays();
 };
 
-SymbolBucket.prototype.addFeature = function(lines, placedText, placedTextVertical, placedIcon, feature) {
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertical, shapedIcon, feature) {
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -329,9 +329,9 @@ SymbolBucket.prototype.addFeature = function(lines, placedText, placedTextVertic
                 line,
                 symbolMinDistance,
                 textMaxAngle,
-                placedText,
-                placedTextVertical,
-                placedIcon,
+                shapedText,
+                shapedTextVertical,
+                shapedIcon,
                 glyphSize,
                 textMaxBoxScale,
                 this.overscaling,
@@ -351,8 +351,8 @@ SymbolBucket.prototype.addFeature = function(lines, placedText, placedTextVertic
 
             // this check is commented out because it behaves strangely with vertical labels
             // this check should be uncommented before merging this into master.
-            // if (placedText && isLine) {
-            //      if (this.anchorIsTooClose(placedText.text, textRepeatDistance, anchor)) {
+            // if (shapedText && isLine) {
+            //      if (this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
             //          continue;
             //      }
             //  }
@@ -375,9 +375,9 @@ SymbolBucket.prototype.addFeature = function(lines, placedText, placedTextVertic
             this.addSymbolInstance(
                 anchor,
                 line,
-                placedText,
-                placedTextVertical,
-                placedIcon,
+                shapedText,
+                shapedTextVertical,
+                shapedIcon,
                 this.layer,
                 addToBuffers,
                 this.symbolInstancesArray.length,
@@ -647,17 +647,17 @@ SymbolBucket.prototype.addToDebugBuffers = function(collisionTile) {
     }
 };
 
-SymbolBucket.prototype.addSymbolInstance = function(anchor, line, placedText, placedTextVertical, placedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
+SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, shapedTextVertical, shapedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
     textBoxScale, textPadding, textAlongLine,
     iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
     var glyphQuadStartIndex, glyphQuadEndIndex, iconQuadStartIndex, iconQuadEndIndex, textCollisionFeature, iconCollisionFeature, glyphQuads, glyphQuadsVertical, iconQuads;
-    if (placedText) {
-        glyphQuads = addToBuffers ? getGlyphQuads(anchor, placedText, textBoxScale, line, layer, textAlongLine, false) : [];
-        if (placedTextVertical) {
-            glyphQuadsVertical = addToBuffers ? getGlyphQuads(anchor, placedTextVertical, textBoxScale, line, layer, textAlongLine, true) : [];
+    if (shapedText) {
+        glyphQuads = addToBuffers ? getGlyphQuads(anchor, shapedText, textBoxScale, line, layer, textAlongLine, false) : [];
+        if (shapedTextVertical) {
+            glyphQuadsVertical = addToBuffers ? getGlyphQuads(anchor, shapedTextVertical, textBoxScale, line, layer, textAlongLine, true) : [];
         }
-        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, placedText, placedTextVertical, textBoxScale, textPadding, textAlongLine, false);
+        textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, shapedTextVertical, textBoxScale, textPadding, textAlongLine, false);
     }
 
     glyphQuadStartIndex = this.symbolQuadsArray.length;
@@ -676,9 +676,9 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, placedText, pl
     var textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
-    if (placedIcon) {
-        iconQuads = addToBuffers ? getIconQuads(anchor, placedIcon, iconBoxScale, line, layer, iconAlongLine, placedText, globalProperties, featureProperties) : [];
-        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, placedIcon, null, iconBoxScale, iconPadding, iconAlongLine, true);
+    if (shapedIcon) {
+        iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedText, globalProperties, featureProperties) : [];
+        iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, null, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 
     iconQuadStartIndex = this.symbolQuadsArray.length;

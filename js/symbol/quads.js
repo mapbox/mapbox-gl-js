@@ -126,7 +126,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * Create the quads used for rendering a text label.
  *
  * @param {Anchor} anchor
- * @param {Shaping} shaping
+ * @param shapedText
  * @param {number} boxScale A magic number for converting from glyph metric units to geometry units.
  * @param {Array<Array<Point>>} line
  * @param {StyleLayer} layer
@@ -134,16 +134,16 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, verticalOrientation) {
+function getGlyphQuads(anchor, shapedText, boxScale, line, layer, alongLine, verticalOrientation) {
 
     var textRotate = layer.layout['text-rotate'] * Math.PI / 180;
     var keepUpright = layer.layout['text-keep-upright'];
 
-    var placedGlyphs = shaping.placedGlyphs;
+    var shapedGlyphs = shapedText.shapedGlyphs;
     var quads = [];
 
-    for (var k = 0; k < placedGlyphs.length; k++) {
-        var positionedGlyph = placedGlyphs[k];
+    for (var k = 0; k < shapedGlyphs.length; k++) {
+        var positionedGlyph = shapedGlyphs[k];
         var glyph = positionedGlyph.glyph;
         if (!glyph) continue;
 

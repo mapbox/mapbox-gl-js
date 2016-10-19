@@ -48,10 +48,10 @@ var newLine = 0x0a;
 
 invisible[newLine] = breakable[newLine] = true;
 
-module.exports = function placeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, verticalOrientation) {
-    var placedGlyphs = [];
-    var placedText = {
-        placedGlyphs: placedGlyphs,
+module.exports = function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, verticalOrientation) {
+    var shapedGlyphs = [];
+    var shapedText = {
+        shapedGlyphs: shapedGlyphs,
         text: text,
         top: translate[1],
         bottom: translate[1],
@@ -75,7 +75,7 @@ module.exports = function placeText(text, glyphs, maxWidth, lineHeight, horizont
 
         if (!glyph && codePoint !== newLine) continue;
 
-        placedGlyphs.push({codePoint: codePoint, x: x, y: y, glyph: glyph});
+        shapedGlyphs.push({codePoint: codePoint, x: x, y: y, glyph: glyph});
 
         if (verticalOrientation) {
             y += verticalHeight + spacing;
@@ -84,12 +84,12 @@ module.exports = function placeText(text, glyphs, maxWidth, lineHeight, horizont
         }
     }
 
-    if (!placedGlyphs.length) return false;
-    wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, verticalHeight, verticalOrientation);
-    return placedText;
+    if (!shapedGlyphs.length) return false;
+    wrapTextLines(shapedText, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, verticalHeight, verticalOrientation);
+    return shapedText;
 };
 
-function wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, verticalHeight, verticalOrientation) {
+function wrapTextLines(shapedText, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, verticalHeight, verticalOrientation) {
     var lastSafeBreak = null;
 
     var lengthBeforeCurrentLine = 0;
@@ -98,36 +98,36 @@ function wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign
 
     var maxLineLength = 0;
 
-    var placedGlyphs = placedText.placedGlyphs;
+    var shapedGlyphs = shapedText.shapedGlyphs;
 
     if (maxWidth) {
 
-        var wordLength = placedGlyphs.length;
+        var wordLength = shapedGlyphs.length;
 
-        for (var i = 0; i < placedGlyphs.length; i++) {
-            var positionedGlyph = placedGlyphs[i];
+        for (var i = 0; i < shapedGlyphs.length; i++) {
+            var shapedGlyph = shapedGlyphs[i];
 
-            positionedGlyph.x -= lengthBeforeCurrentLine;
-            positionedGlyph.y += lineHeight * line;
+            shapedGlyph.x -= lengthBeforeCurrentLine;
+            shapedGlyph.y += lineHeight * line;
 
-            if (positionedGlyph.x > maxWidth && lastSafeBreak !== null) {
+            if (shapedGlyph.x > maxWidth && lastSafeBreak !== null) {
 
-                var lineLength = placedGlyphs[lastSafeBreak + 1].x;
+                var lineLength = shapedGlyphs[lastSafeBreak + 1].x;
                 maxLineLength = Math.max(lineLength, maxLineLength);
 
                 for (var k = lastSafeBreak + 1; k <= i; k++) {
-                    placedGlyphs[k].y += lineHeight;
-                    placedGlyphs[k].x -= lineLength;
+                    shapedGlyphs[k].y += lineHeight;
+                    shapedGlyphs[k].x -= lineLength;
                 }
 
                 if (justify) {
                     // Collapse invisible characters.
                     var lineEnd = lastSafeBreak;
-                    if (invisible[placedGlyphs[lastSafeBreak].codePoint]) {
+                    if (invisible[shapedGlyphs[lastSafeBreak].codePoint]) {
                         lineEnd--;
                     }
 
-                    justifyTextLine(placedGlyphs, glyphs, lineStartIndex, lineEnd, justify);
+                    justifyTextLine(shapedGlyphs, glyphs, lineStartIndex, lineEnd, justify);
                 }
 
                 lineStartIndex = lastSafeBreak + 1;
@@ -136,11 +136,11 @@ function wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign
                 line++;
             }
 
-            if (placedGlyphs.length > 13) {
-                if (breakable[positionedGlyph.codePoint]) {
+            if (shapedGlyphs.length > 13) {
+                if (breakable[shapedGlyph.codePoint]) {
                     lastSafeBreak = i - 1;
                 }
-                if (!(breakable[positionedGlyph.codePoint]) && positionedGlyph.codePoint > 19968) {
+                if (!(breakable[shapedGlyph.codePoint]) && shapedGlyph.codePoint > 19968) {
                     lastSafeBreak = Math.round(wordLength / 3);
                 }
             } else {
@@ -149,7 +149,7 @@ function wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign
         }
     }
 
-    var lastPositionedGlyph = placedGlyphs[placedGlyphs.length - 1];
+    var lastPositionedGlyph = shapedGlyphs[shapedGlyphs.length - 1];
 
     // For vertical labels, calculate 'length' along the y axis, and 'height' along the x axis
     var axisPrimary = verticalOrientation ? 'y' : 'x';
@@ -161,32 +161,29 @@ function wrapTextLines(placedText, glyphs, lineHeight, maxWidth, horizontalAlign
 
     var height = (line + 1) * leading;
 
-    justifyTextLine(placedGlyphs, glyphs, lineStartIndex, placedGlyphs.length - 1, justify);
-    align(placedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate);
+    justifyTextLine(shapedGlyphs, glyphs, lineStartIndex, shapedGlyphs.length - 1, justify);
 
-    // Calculate the bounding box
-    placedText.top += verticalOrientation ? -verticalAlign * maxLineLength : -verticalAlign * height;
-    placedText.bottom = verticalOrientation ? placedText.top + maxLineLength : placedText.top + height;
-    placedText.left += verticalOrientation ? -horizontalAlign * height : -horizontalAlign * maxLineLength;
-    placedText.right = verticalOrientation ? placedText.left + height : placedText.left + maxLineLength;
-}
-
-function justifyTextLine(placedGlyphs, glyphs, start, end, justify) {
-    var lastAdvance = glyphs[placedGlyphs[end].codePoint].advance;
-    var lineIndent = (placedGlyphs[end].x + lastAdvance) * justify;
-
-    for (var j = start; j <= end; j++) {
-        placedGlyphs[j].x -= lineIndent;
-    }
-
-}
-
-function align(placedGlyphs, justify, horizontalAlign, verticalAlign, maxLineLength, lineHeight, line, translate) {
+    // align text?
     var shiftX = (justify - horizontalAlign) * maxLineLength + translate[0];
     var shiftY = (-verticalAlign * (line + 1) + 0.5) * lineHeight + translate[1];
-
-    for (var j = 0; j < placedGlyphs.length; j++) {
-        placedGlyphs[j].x += shiftX;
-        placedGlyphs[j].y += shiftY;
+    for (var j = 0; j < shapedGlyphs.length; j++) {
+        shapedGlyphs[j].x += shiftX;
+        shapedGlyphs[j].y += shiftY;
     }
+
+    // Calculate the bounding box
+    shapedText.top += verticalOrientation ? -verticalAlign * maxLineLength : -verticalAlign * height;
+    shapedText.bottom = verticalOrientation ? shapedText.top + maxLineLength : shapedText.top + height;
+    shapedText.left += verticalOrientation ? -horizontalAlign * height : -horizontalAlign * maxLineLength;
+    shapedText.right = verticalOrientation ? shapedText.left + height : shapedText.left + maxLineLength;
+}
+
+function justifyTextLine(shapedGlyphs, glyphs, start, end, justify) {
+    var lastAdvance = glyphs[shapedGlyphs[end].codePoint].advance;
+    var lineIndent = (shapedGlyphs[end].x + lastAdvance) * justify;
+
+    for (var j = start; j <= end; j++) {
+        shapedGlyphs[j].x -= lineIndent;
+    }
+
 }
