@@ -2,20 +2,19 @@
 
 const Point = require('point-geometry');
 
-module.exports = Anchor;
+class Anchor extends Point {
 
-function Anchor(x, y, angle, segment) {
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
+    constructor(x, y, angle, segment) {
+        super(x, y);
+        this.angle = angle;
+        if (segment !== undefined) {
+            this.segment = segment;
+        }
+    }
 
-    if (segment !== undefined) {
-        this.segment = segment;
+    clone() {
+        return new Anchor(this.x, this.y, this.angle, this.segment);
     }
 }
 
-Anchor.prototype = Object.create(Point.prototype);
-
-Anchor.prototype.clone = function() {
-    return new Anchor(this.x, this.y, this.angle, this.segment);
-};
+module.exports = Anchor;
