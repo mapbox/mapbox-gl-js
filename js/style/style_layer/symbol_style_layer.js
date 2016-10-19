@@ -1,17 +1,11 @@
 'use strict';
 
-const util = require('../../util/util');
 const StyleLayer = require('../style_layer');
 
-function SymbolStyleLayer() {
-    StyleLayer.apply(this, arguments);
-}
+class SymbolStyleLayer extends StyleLayer {
 
-module.exports = SymbolStyleLayer;
-
-SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
-    getLayoutValue: function(name, globalProperties, featureProperties) {
-        const value = StyleLayer.prototype.getLayoutValue.apply(this, arguments);
+    getLayoutValue(name, globalProperties, featureProperties) {
+        const value = super.getLayoutValue(name, globalProperties, featureProperties);
         if (value !== 'auto') {
             return value;
         }
@@ -26,4 +20,6 @@ SymbolStyleLayer.prototype = util.inherit(StyleLayer, {
             return value;
         }
     }
-});
+}
+
+module.exports = SymbolStyleLayer;
