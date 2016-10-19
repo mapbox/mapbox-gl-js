@@ -307,12 +307,10 @@ module.exports = Bucket;
 function createPaintAttributes(bucket) {
     const attributes = {};
     for (const interfaceName in bucket.programInterfaces) {
-        const layerPaintAttributes = attributes[interfaceName] = {};
+        attributes[interfaceName] = {};
 
-        for (let c = 0; c < bucket.childLayers.length; c++) {
-            const childLayer = bucket.childLayers[c];
-
-            layerPaintAttributes[childLayer.id] = {
+        for (const childLayer of bucket.childLayers) {
+            attributes[interfaceName][childLayer.id] = {
                 attributes: [],
                 uniforms: [],
                 defines: [],
@@ -321,87 +319,47 @@ function createPaintAttributes(bucket) {
             };
         }
 
-        const interface_ = bucket.programInterfaces[interfaceName];
-        if (!interface_.paintAttributes) continue;
+        const interfacePaintAttributes = bucket.programInterfaces[interfaceName].paintAttributes;
+        if (!interfacePaintAttributes) continue;
 
-        // These tokens are replaced by arguments to the pragma
+        // "{precision} {type} tokens are replaced by arguments to the pragma
         // https://github.com/mapbox/mapbox-gl-shaders#pragmas
-        const attributePrecision = '{precision}';
-        const attributeType = '{type}';
 
-        for (let i = 0; i < interface_.paintAttributes.length; i++) {
-            const attribute = interface_.paintAttributes[i];
+        for (const attribute of interfacePaintAttributes) {
             attribute.multiplier = attribute.multiplier || 1;
 
-            for (let j = 0; j < bucket.childLayers.length; j++) {
-                const layer = bucket.childLayers[j];
-                const paintAttributes = layerPaintAttributes[layer.id];
+            for (const layer of bucket.childLayers) {
+                const paintAttributes = attributes[interfaceName][layer.id];
+                const fragmentInit = paintAttributes.fragmentPragmas.initialize;
+                const fragmentDefine = paintAttributes.fragmentPragmas.define;
+                const vertexInit = paintAttributes.vertexPragmas.initialize;
+                const vertexDefine = paintAttributes.vertexPragmas.define;
 
-                const attributeInputName = attribute.name;
+                const inputName = attribute.name;
                 assert(attribute.name.slice(0, 2) === 'a_');
-                const attributeInnerName = attribute.name.slice(2);
-                let attributeVaryingDefinition;
+                const name = attribute.name.slice(2);
+                const multiplier = attribute.multiplier.toFixed(1);
 
-                paintAttributes.fragmentPragmas.initialize[attributeInnerName] = '';
+                fragmentInit[name] = '';
 
                 if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                     paintAttributes.uniforms.push(attribute);
 
-                    paintAttributes.fragmentPragmas.define[attributeInnerName] = paintAttributes.vertexPragmas.define[attributeInnerName] = `${[
-                        'uniform',
-                        attributePrecision,
-                        attributeType,
-                        attributeInputName
-                    ].join(' ')};`;
-
-                    paintAttributes.fragmentPragmas.initialize[attributeInnerName] = paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
-                        attributePrecision,
-                        attributeType,
-                        attributeInnerName,
-                        '=',
-                        attributeInputName
-                    ].join(' ')};\n`;
+                    fragmentDefine[name] = vertexDefine[name] = `uniform {precision} {type} ${inputName};\n`;
+                    fragmentInit[name] = vertexInit[name] = `{precision} {type} ${name} = ${inputName};\n`;
 
                 } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
-                    paintAttributes.attributes.push(util.extend({}, attribute, {
-                        name: attributeInputName
-                    }));
+                    paintAttributes.attributes.push(util.extend({}, attribute, {name: inputName}));
 
-                    attributeVaryingDefinition = `${[
-                        'varying',
-                        attributePrecision,
-                        attributeType,
-                        attributeInnerName
-                    ].join(' ')};\n`;
-
-                    const attributeAttributeDefinition = `${[
-                        paintAttributes.fragmentPragmas.define[attributeInnerName],
-                        'attribute',
-                        attributePrecision,
-                        attributeType,
-                        attributeInputName
-                    ].join(' ')};\n`;
-
-                    paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
-
-                    paintAttributes.vertexPragmas.define[attributeInnerName] = attributeVaryingDefinition + attributeAttributeDefinition;
-
-                    paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
-                        attributeInnerName,
-                        '=',
-                        attributeInputName,
-                        '/',
-                        attribute.multiplier.toFixed(1)
-                    ].join(' ')};\n`;
+                    fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
+                    vertexDefine[name] = `varying {precision} {type} ${name};\n attribute {precision} {type} ${inputName};\n`;
+                    vertexInit[name] = `${name} = ${inputName} / ${multiplier};\n`;
 
                 } else {
-
-                    const tName = `u_${attributeInputName.slice(2)}_t`;
-                    const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
-
                     // Pick the index of the first offset to add to the buffers.
                     // Find the four closest stops, ideally with two on each side of the zoom level.
                     let numStops = 0;
+                    const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
                     while (numStops < zoomLevels.length && zoomLevels[numStops] < bucket.zoom) numStops++;
                     const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
 
@@ -410,20 +368,10 @@ function createPaintAttributes(bucket) {
                         fourZoomLevels.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
                     }
 
-                    attributeVaryingDefinition = `${[
-                        'varying',
-                        attributePrecision,
-                        attributeType,
-                        attributeInnerName
-                    ].join(' ')};\n`;
+                    const tName = `u_${name}_t`;
 
-                    paintAttributes.vertexPragmas.define[attributeInnerName] = `${attributeVaryingDefinition + [
-                        'uniform',
-                        'lowp',
-                        'float',
-                        tName
-                    ].join(' ')};\n`;
-                    paintAttributes.fragmentPragmas.define[attributeInnerName] = attributeVaryingDefinition;
+                    fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
+                    vertexDefine[name] = `varying {precision} {type} ${name};\n uniform lowp float ${tName};\n`;
 
                     paintAttributes.uniforms.push(util.extend({}, attribute, {
                         name: tName,
@@ -431,54 +379,28 @@ function createPaintAttributes(bucket) {
                         components: 1
                     }));
 
-                    const components = attribute.components;
-                    if (components === 1) {
-
+                    if (attribute.components === 1) {
                         paintAttributes.attributes.push(util.extend({}, attribute, {
                             getValue: createFunctionGetValue(attribute, fourZoomLevels),
                             isFunction: true,
-                            components: components * 4
+                            components: attribute.components * 4
                         }));
 
-                        paintAttributes.vertexPragmas.define[attributeInnerName] += `${[
-                            'attribute',
-                            attributePrecision,
-                            'vec4',
-                            attributeInputName
-                        ].join(' ')};\n`;
-
-                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
-                            attributeInnerName,
-                            '=',
-                            `evaluate_zoom_function_1(${attributeInputName}, ${tName})`,
-                            '/',
-                            attribute.multiplier.toFixed(1)
-                        ].join(' ')};\n`;
+                        vertexDefine[name] += `attribute {precision} vec4 ${inputName};\n`;
+                        vertexInit[name] = `${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier};\n`;
 
                     } else {
-
-                        const attributeInputNames = [];
+                        const inputNames = [];
                         for (let k = 0; k < 4; k++) {
-                            attributeInputNames.push(attributeInputName + k);
+                            inputNames.push(inputName + k);
                             paintAttributes.attributes.push(util.extend({}, attribute, {
                                 getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
                                 isFunction: true,
-                                name: attributeInputName + k
+                                name: inputName + k
                             }));
-                            paintAttributes.vertexPragmas.define[attributeInnerName] += `${[
-                                'attribute',
-                                attributePrecision,
-                                attributeType,
-                                attributeInputName + k
-                            ].join(' ')};\n`;
+                            vertexDefine[name] += `attribute {precision} {type} ${inputName + k};\n`;
                         }
-                        paintAttributes.vertexPragmas.initialize[attributeInnerName] = `${[
-                            attributeInnerName,
-                            ' = ',
-                            `evaluate_zoom_function_4(${attributeInputNames.join(', ')}, ${tName})`,
-                            '/',
-                            attribute.multiplier.toFixed(1)
-                        ].join(' ')};\n`;
+                        vertexInit[name] = `${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier};\n`;
                     }
                 }
             }
