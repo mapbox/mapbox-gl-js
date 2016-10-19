@@ -223,23 +223,36 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
     for (var k = 0; k < features.length; k++) {
         if (!geometries[k]) continue;
 
-        var verticalOrientation = false;
-
         if (textFeatures[k]) {
-
-            shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
-                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, verticalOrientation);
+            shapedText = shapeText(
+                textFeatures[k],
+                stacks[fontstack],
+                maxWidth,
+                lineHeight,
+                horizontalAlign,
+                verticalAlign,
+                justify,
+                spacing,
+                textOffset,
+                oneEm,
+                false
+            );
 
             if (layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line') {
-                verticalOrientation = true;
-                shapedTextVertical = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
-                    lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, verticalOrientation);
-            } else {
-                shapedTextVertical = null;
+                shapedTextVertical = shapeText(
+                    textFeatures[k],
+                    stacks[fontstack],
+                    maxWidth,
+                    lineHeight,
+                    horizontalAlign,
+                    verticalAlign,
+                    justify,
+                    spacing,
+                    textOffset,
+                    oneEm,
+                    true
+                );
             }
-        } else {
-            shapedText = null;
-            shapedTextVertical = null;
         }
 
         if (layout['icon-image']) {
@@ -264,7 +277,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
         }
 
         if (shapedText || shapedIcon) {
-            this.addFeature(geometries[k], shapedText, shapedTextVertical, shapedIcon, features[k], verticalOrientation);
+            this.addFeature(geometries[k], shapedText, shapedTextVertical, shapedIcon, features[k]);
         }
     }
 
@@ -274,7 +287,7 @@ SymbolBucket.prototype.populateArrays = function(collisionTile, stacks, icons) {
     this.trimArrays();
 };
 
-SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertical, shapedIcon, feature, verticalOrientation) {
+SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertical, shapedIcon, feature) {
     var layout = this.layer.layout;
 
     var glyphSize = 24;
@@ -361,10 +374,28 @@ SymbolBucket.prototype.addFeature = function(lines, shapedText, shapedTextVertic
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             var addToBuffers = inside || mayOverlap;
 
-            this.addSymbolInstance(anchor, line, shapedText, shapedTextVertical, shapedIcon, this.layer,
-                addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, this.sourceLayerIndex, this.index,
-                textBoxScale, textPadding, textAlongLine,
-                iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
+            this.addSymbolInstance(
+                anchor,
+                line,
+                shapedText,
+                shapedTextVertical,
+                shapedIcon,
+                this.layer,
+                addToBuffers,
+                this.symbolInstancesArray.length,
+                this.collisionBoxArray,
+                feature.index,
+                this.sourceLayerIndex,
+                this.index,
+                textBoxScale,
+                textPadding,
+                textAlongLine,
+                iconBoxScale,
+                iconPadding,
+                iconAlongLine,
+                {zoom: this.zoom},
+                feature.properties
+            );
         }
     }
 };
@@ -520,10 +551,6 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
 
         var symbol = this.symbolQuadsArray.get(k).SymbolQuad;
 
-        // drop upside down versions of glyphs
-        var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
-        if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
-
         var tl = symbol.tl,
             tr = symbol.tr,
             bl = symbol.bl,
@@ -534,21 +561,14 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
 
+        // drop upside down versions of glyphs
+        var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
+        if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+
         // drop vertical or horizontal orientation of labels
-        if (keepUpright && alongLine && tr.y < tl.y && (a > Math.PI / 4 && a <= Math.PI * 3 / 4)) {
-            console.log("dropping glyphs for upside down vertical label");
-            continue;
-        }
-
-        if (alongLine && tr.y < tl.y && (a <= Math.PI / 4 || (a > Math.PI * 3 / 4 && a <= Math.PI * 5 / 4) || (a > Math.PI * 7 / 4 && a <= Math.PI * 2))) {
-            console.log("dropping glyphs for vertical label");
-            continue;
-        }
-
-        if (alongLine && tr.y === tl.y && ((a > Math.PI / 4 && a <= Math.PI * 3 / 4) || (a > Math.PI * 5 / 4 && a <= Math.PI * 7 / 4))) {
-            console.log("dropping glyphs for horizontal label");
-            continue;
-        }
+        if (keepUpright && alongLine && tr.y < tl.y && (a > Math.PI / 4 && a <= Math.PI * 3 / 4)) continue;
+        if (alongLine && tr.y < tl.y && (a <= Math.PI / 4 || (a > Math.PI * 3 / 4 && a <= Math.PI * 5 / 4) || (a > Math.PI * 7 / 4 && a <= Math.PI * 2))) continue;
+        if (alongLine && tr.y === tl.y && ((a > Math.PI / 4 && a <= Math.PI * 3 / 4) || (a > Math.PI * 5 / 4 && a <= Math.PI * 7 / 4))) continue;
 
         if (maxZoom <= minZoom) continue;
 
