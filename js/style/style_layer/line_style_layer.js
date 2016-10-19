@@ -1,18 +1,11 @@
 'use strict';
 
-const util = require('../../util/util');
 const StyleLayer = require('../style_layer');
 
-function LineStyleLayer() {
-    StyleLayer.apply(this, arguments);
-}
+class LineStyleLayer extends StyleLayer {
 
-module.exports = LineStyleLayer;
-
-LineStyleLayer.prototype = util.inherit(StyleLayer, {
-
-    getPaintValue: function(name, globalProperties, featureProperties) {
-        const value = StyleLayer.prototype.getPaintValue.apply(this, arguments);
+    getPaintValue(name, globalProperties, featureProperties) {
+        const value = super.getPaintValue(name, globalProperties, featureProperties);
 
         // If the line is dashed, scale the dash lengths by the line
         // width at the previous round zoom level.
@@ -29,4 +22,6 @@ LineStyleLayer.prototype = util.inherit(StyleLayer, {
 
         return value;
     }
-});
+}
+
+module.exports = LineStyleLayer;
