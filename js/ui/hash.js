@@ -1,51 +1,48 @@
 'use strict';
 
+const util = require('../util/util');
+const window = require('../util/window');
+
 /*
  * Adds the map's position to its page's location hash.
  * Passed as an option to the map object.
  *
- * @class mapboxgl.Hash
  * @returns {Hash} `this`
  */
-module.exports = Hash;
+class Hash {
+    constructor() {
+        util.bindAll([
+            '_onHashChange',
+            '_updateHash'
+        ], this);
+    }
 
-const util = require('../util/util');
-const window = require('../util/window');
-
-function Hash() {
-    util.bindAll([
-        '_onHashChange',
-        '_updateHash'
-    ], this);
-}
-
-Hash.prototype = {
     /*
      * Map element to listen for coordinate changes
      *
      * @param {Object} map
      * @returns {Hash} `this`
      */
-    addTo: function(map) {
+    addTo(map) {
         this._map = map;
         window.addEventListener('hashchange', this._onHashChange, false);
         this._map.on('moveend', this._updateHash);
         return this;
-    },
+    }
 
     /*
      * Removes hash
      *
      * @returns {Popup} `this`
      */
-    remove: function() {
+    remove() {
         window.removeEventListener('hashchange', this._onHashChange, false);
         this._map.off('moveend', this._updateHash);
         delete this._map;
         return this;
-    },
+    }
 
-    _onHashChange: function() {
+    _onHashChange() {
         const loc = window.location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
             this._map.jumpTo({
@@ -57,9 +54,9 @@ Hash.prototype = {
             return true;
         }
         return false;
-    },
+    }
 
-    _updateHash: function() {
+    _updateHash() {
         const center = this._map.getCenter(),
             zoom = this._map.getZoom(),
             bearing = this._map.getBearing(),
@@ -75,4 +72,6 @@ Hash.prototype = {
 
         window.history.replaceState('', '', hash);
     }
-};
+}
+
+module.exports = Hash;

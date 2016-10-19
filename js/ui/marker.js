@@ -1,8 +1,6 @@
 /* eslint-disable */
 'use strict';
 
-module.exports = Marker;
-
 var DOM = require('../util/dom');
 var util = require('../util/util');
 var LngLat = require('../geo/lng_lat');
@@ -11,7 +9,6 @@ var Popup = require('./popup');
 
 /**
  * Creates a marker component
- * @class Marker
  * @param {HTMLElement=} element DOM element to use as a marker (creates a div element by default)
  * @param {Object=} options
  * @param {PointLike=} options.offset The offset in pixels as a [`PointLike`](#PointLike) object to apply relative to the element's top left corner. Negatives indicate left and up.
@@ -21,26 +18,27 @@ var Popup = require('./popup');
  *   .addTo(map);
  * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
-function Marker(element, options) {
-    this._offset = Point.convert(options && options.offset || [0, 0]);
+class Marker {
 
-    this._update = this._update.bind(this);
-    this._onMapClick = this._onMapClick.bind(this);
+    constructor(element, options) {
+        this._offset = Point.convert(options && options.offset || [0, 0]);
 
-    if (!element) element = DOM.create('div');
-    element.classList.add('mapboxgl-marker');
-    this._element = element;
+        this._update = this._update.bind(this);
+        this._onMapClick = this._onMapClick.bind(this);
 
-    this._popup = null;
-}
+        if (!element) element = DOM.create('div');
+        element.classList.add('mapboxgl-marker');
+        this._element = element;
 
-Marker.prototype = {
+        this._popup = null;
+    }
+
     /**
      * Attaches the marker to a map
      * @param {Map} map
      * @returns {Marker} `this`
      */
-    addTo: function (map) {
+    addTo(map) {
         this.remove();
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
@@ -54,7 +52,7 @@ Marker.prototype = {
         this._map.on('click', this._onMapClick);
 
         return this;
-    },
+    }
 
     /**
      * Removes the marker from a map
@@ -63,7 +61,7 @@ Marker.prototype = {
      * marker.remove();
      * @returns {Marker} `this`
      */
-    remove: function () {
+    remove() {
         if (this._map) {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
@@ -73,31 +71,31 @@ Marker.prototype = {
         DOM.remove(this._element);
         if (this._popup) this._popup.remove();
         return this;
-    },
+    }
 
     /**
      * Get the marker's geographical location
      * @returns {LngLat}
      */
-    getLngLat: function () {
+    getLngLat() {
         return this._lngLat;
-    },
+    }
 
     /**
      * Set the marker's geographical position and move it.
      * @param {LngLat} lnglat
      * @returns {Marker} `this`
      */
-    setLngLat: function (lnglat) {
+    setLngLat(lnglat) {
         this._lngLat = LngLat.convert(lnglat);
         if (this._popup) this._popup.setLngLat(this._lngLat);
         this._update();
         return this;
-    },
+    }
 
-    getElement: function () {
+    getElement() {
         return this._element;
-    },
+    }
 
     /**
      * Binds a Popup to the Marker
@@ -106,7 +104,7 @@ Marker.prototype = {
      * @returns {Marker} `this`
      */
 
-    setPopup: function (popup) {
+    setPopup(popup) {
         var that = this;
 
         if (this._popup) {
@@ -120,44 +118,46 @@ Marker.prototype = {
         }
 
         return this;
-    },
+    }
 
-    _onMapClick: function(event) {
+    _onMapClick(event) {
         var targetElement = event.originalEvent.target;
         var element = this._element;
 
         if (this._popup && (targetElement === element || element.contains(targetElement))) {
             this.togglePopup();
         }
-    },
+    }
 
     /**
      * Returns the Popup instance that is bound to the Marker
      * @returns {Popup} popup
      */
-    getPopup: function () {
+    getPopup() {
         return this._popup;
-    },
+    }
 
     /**
      * Opens or closes the bound popup, depending on the current state
      * @returns {Marker} `this`
      */
-    togglePopup: function () {
+    togglePopup() {
         var popup = this._popup;
 
         if (!popup) return;
         else if (popup.isOpen()) popup.remove();
         else popup.addTo(this._map);
-    },
+    }
 
-    _update: function (e) {
+    _update(e) {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
         // because rouding the coordinates at every `move` event causes stuttered zooming
-        // we only round them when _update is called with `moveend` or when its called with 
+        // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") pos = pos.round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
-};
+}
+
+module.exports = Marker;
