@@ -55,26 +55,6 @@ test('util', (t) => {
         setTimeout(my.ontimer, 0);
     });
 
-    t.test('setOptions', (t) => {
-        function MyClass(options) {
-            util.setOptions(this, options);
-        }
-        const my = new MyClass();
-        t.deepEqual(my.options, {});
-        const my2 = new MyClass({ a: 2 });
-        t.deepEqual(my2.options, { a: 2});
-
-        function MyClassDefaults(options) {
-            this.options = { foo: 'bar' };
-            util.setOptions(this, options);
-        }
-        const myd = new MyClassDefaults();
-        t.deepEqual(myd.options, { foo: 'bar' });
-        const myd2 = new MyClassDefaults({ foo: 'baz' });
-        t.deepEqual(myd2.options, { foo: 'baz' });
-        t.end();
-    });
-
     t.test('asyncAll - sync', (t) => {
         t.equal(util.asyncAll([0, 1, 2], (data, callback) => {
             callback(null, data);
