@@ -134,8 +134,73 @@ class SymbolBucket extends Bucket {
                 placementZoom * 10);
     }
 
-    populateArrays(collisionTile, stacks, icons) {
+    populate(features, dependencies) {
+        this.recalculateStyleLayers();
 
+        const layout = this.layer.layout;
+        const textField = layout['text-field'];
+        const textFont = layout['text-font'];
+        const iconImage = layout['icon-image'];
+
+        const hasText = textField && textFont;
+        const hasIcon = iconImage;
+
+        this.features = [];
+
+        if (!hasText && !hasIcon) {
+            return;
+        }
+
+        const icons = dependencies.icons;
+        const stacks = dependencies.stacks;
+        const stack = stacks[textFont] = stacks[textFont] || {};
+
+        for (const feature of features) {
+            if (!this.layer.filter(feature)) {
+                continue;
+            }
+
+            let text;
+            if (hasText) {
+                text = resolveText(feature, layout);
+            }
+
+            let icon;
+            if (hasIcon) {
+                icon = resolveTokens(feature.properties, iconImage);
+            }
+
+            if (!text && !icon) {
+                continue;
+            }
+
+            this.features.push({
+                text,
+                icon,
+                index: this.features.length,
+                geometry: loadGeometry(feature),
+                properties: feature.properties
+            });
+
+            if (icon) {
+                icons[icon] = true;
+            }
+
+            if (text) {
+                for (let i = 0; i < text.length; i++) {
+                    stack[text.charCodeAt(i)] = true;
+                }
+            }
+        }
+
+        if (layout['symbol-placement'] === 'line') {
+            // Merge adjacent lines with the same text to improve labelling.
+            // It's better to place labels on one long line than on many short segments.
+            this.features = mergeLines(this.features);
+        }
+    }
+
+    prepare(stacks, icons) {
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
@@ -153,8 +218,6 @@ class SymbolBucket extends Bucket {
         this.symbolInstancesStartIndex = this.symbolInstancesArray.length;
 
         const layout = this.layer.layout;
-        let features = this.features;
-        let textFeatures = this.textFeatures;
 
         let horizontalAlign = 0.5,
             verticalAlign = 0.5;
@@ -196,36 +259,16 @@ class SymbolBucket extends Bucket {
         const textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
         const fontstack = this.fontstack = layout['text-font'].join(',');
 
-        let geometries = [];
-        for (let g = 0; g < features.length; g++) {
-            geometries.push(loadGeometry(features[g]));
-        }
-
-        if (layout['symbol-placement'] === 'line') {
-            // Merge adjacent lines with the same text to improve labelling.
-            // It's better to place labels on one long line than on many short segments.
-            const merged = mergeLines(features, textFeatures, geometries);
-
-            geometries = merged.geometries;
-            features = merged.features;
-            textFeatures = merged.textFeatures;
-        }
-
-        let shapedText, shapedIcon;
-
-        for (let k = 0; k < features.length; k++) {
-            if (!geometries[k]) continue;
-
-            if (textFeatures[k]) {
-                shapedText = shapeText(textFeatures[k], stacks[fontstack], maxWidth,
+        for (const feature of this.features) {
+            let shapedText;
+            if (feature.text) {
+                shapedText = shapeText(feature.text, stacks[fontstack], maxWidth,
                         lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset);
-            } else {
-                shapedText = null;
             }
 
-            if (layout['icon-image']) {
-                const iconName = resolveTokens(features[k].properties, layout['icon-image']);
-                const image = icons[iconName];
+            let shapedIcon;
+            if (feature.icon) {
+                const image = icons[feature.icon];
                 shapedIcon = shapeIcon(image, layout);
 
                 if (image) {
@@ -240,21 +283,17 @@ class SymbolBucket extends Bucket {
                         this.iconsNeedLinear = true;
                     }
                 }
-            } else {
-                shapedIcon = null;
             }
 
             if (shapedText || shapedIcon) {
-                this.addFeature(geometries[k], shapedText, shapedIcon, features[k]);
+                this.addFeature(feature, shapedText, shapedIcon);
             }
         }
         this.symbolInstancesEndIndex = this.symbolInstancesArray.length;
-        this.placeFeatures(collisionTile, this.showCollisionBoxes);
-
-        this.trimArrays();
     }
 
-    addFeature(lines, shapedText, shapedIcon, feature) {
+    addFeature(feature, shapedText, shapedIcon) {
+        const lines = feature.geometry;
         const layout = this.layer.layout;
 
         const glyphSize = 24;
@@ -380,7 +419,7 @@ class SymbolBucket extends Bucket {
         return false;
     }
 
-    placeFeatures(collisionTile, showCollisionBoxes) {
+    place(collisionTile, showCollisionBoxes) {
         this.recalculateStyleLayers();
 
         // Calculate which labels can be shown and when they can be shown and
@@ -480,6 +519,8 @@ class SymbolBucket extends Bucket {
         }
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
+
+        this.trimArrays();
     }
 
     addSymbols(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
@@ -526,26 +567,6 @@ class SymbolBucket extends Bucket {
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
         }
-    }
-
-    updateIcons(icons) {
-        this.recalculateStyleLayers();
-        const iconValue = this.layer.layout['icon-image'];
-        if (!iconValue) return;
-
-        for (let i = 0; i < this.features.length; i++) {
-            const iconName = resolveTokens(this.features[i].properties, iconValue);
-            if (iconName)
-                icons[iconName] = true;
-        }
-    }
-
-    updateFont(stacks) {
-        this.recalculateStyleLayers();
-        const fontName = this.layer.layout['text-font'],
-            stack = stacks[fontName] = stacks[fontName] || {};
-
-        this.textFeatures = resolveText(this.features, this.layer.layout, stack);
     }
 
     addToDebugBuffers(collisionTile) {

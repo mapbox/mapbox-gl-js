@@ -2,46 +2,12 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Bucket = require('../../../js/data/bucket');
+const FeatureIndex = require('../../../js/data/feature_index');
 const StyleLayer = require('../../../js/style/style_layer');
+const featureFilter = require('feature-filter');
+const TileCoord = require('../../../js/source/tile_coord');
 
 test('Bucket', (t) => {
-
-    function createClass(options) {
-        const programInterfaces = {
-            test: {
-                layoutVertexArrayType: new Bucket.VertexArrayType(options.layoutAttributes || [{
-                    name: 'a_box',
-                    components: 2,
-                    type: 'Int16'
-                }]),
-                elementArrayType: new Bucket.ElementArrayType(),
-                elementArrayType2: new Bucket.ElementArrayType(2),
-
-                paintAttributes: options.paintAttributes || [{
-                    name: 'a_map',
-                    type: 'Int16',
-                    getValue: function(layer, globalProperties, featureProperties) {
-                        return [featureProperties.x];
-                    },
-                    paintProperty: 'circle-color'
-                }]
-            }
-        };
-        class Class extends Bucket {
-            addFeature(feature) {
-                const group = this.prepareArrayGroup('test', 1);
-                const point = feature.loadGeometry()[0][0];
-                const startIndex = group.layoutVertexArray.length;
-                group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
-                group.elementArray.emplaceBack(1, 2, 3);
-                group.elementArray2.emplaceBack(point.x, point.y);
-                this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
-            }
-        }
-        Class.prototype.programInterfaces = programInterfaces;
-        return Class;
-    }
-
     function createFeature(x, y) {
         return {
             loadGeometry: function() {
@@ -65,6 +31,41 @@ test('Bucket', (t) => {
     function create(options) {
         options = options || {};
 
+        class Class extends Bucket {
+            get programInterfaces() {
+                return {
+                    test: {
+                        layoutVertexArrayType: new Bucket.VertexArrayType(options.layoutAttributes || [{
+                            name: 'a_box',
+                            components: 2,
+                            type: 'Int16'
+                        }]),
+                        elementArrayType: new Bucket.ElementArrayType(),
+                        elementArrayType2: new Bucket.ElementArrayType(2),
+
+                        paintAttributes: options.paintAttributes || [{
+                            name: 'a_map',
+                            type: 'Int16',
+                            getValue: function(layer, globalProperties, featureProperties) {
+                                return [featureProperties.x];
+                            },
+                            paintProperty: 'circle-color'
+                        }]
+                    }
+                };
+            }
+
+            addFeature(feature) {
+                const group = this.prepareArrayGroup('test', 1);
+                const point = feature.loadGeometry()[0][0];
+                const startIndex = group.layoutVertexArray.length;
+                group.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
+                group.elementArray.emplaceBack(1, 2, 3);
+                group.elementArray2.emplaceBack(point.x, point.y);
+                this.populatePaintArrays('test', {}, feature.properties, group, startIndex);
+            }
+        }
+
         const serializedLayers = (options.layers || [{
             id: 'layerid',
             type: 'circle',
@@ -72,24 +73,23 @@ test('Bucket', (t) => {
         }]);
         const layers = serializedLayers.map((serializedLayer) => {
             const styleLayer = new StyleLayer(serializedLayer);
+            styleLayer.filter = featureFilter();
             styleLayer.updatePaintTransitions([], {}, {});
             return styleLayer;
         });
 
-
-        const Class = createClass(options);
         return new Class({
             layer: layers[0],
             childLayers: layers,
-            buffers: {}
+            buffers: {},
+            featureIndex: new FeatureIndex(new TileCoord(0, 0, 0), 0, null)
         });
     }
 
     t.test('add features', (t) => {
         const bucket = create();
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);
@@ -123,8 +123,7 @@ test('Bucket', (t) => {
             { id: 'two', type: 'circle', paint: dataDrivenPaint }
         ]});
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const v0 = bucket.arrayGroups.test[0].layoutVertexArray.get(0);
         const a0 = bucket.arrayGroups.test[0].paintVertexArrays.one.get(0);
@@ -151,8 +150,7 @@ test('Bucket', (t) => {
             ]
         });
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         t.equal(bucket.arrayGroups.test[0].layoutVertexArray.bytesPerElement, 0);
         t.deepEqual(
@@ -172,8 +170,7 @@ test('Bucket', (t) => {
             }]
         });
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const v0 = bucket.arrayGroups.test[0].layoutVertexArray.get(0);
         t.equal(v0.a_map, 34);
@@ -184,8 +181,7 @@ test('Bucket', (t) => {
     t.test('reset buffers', (t) => {
         const bucket = create();
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         t.equal(bucket.arrayGroups.test.length, 1);
         bucket.createArrays();
@@ -216,8 +212,7 @@ test('Bucket', (t) => {
         bucket.createArrays();
         t.ok(bucket.isEmpty());
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
         t.ok(!bucket.isEmpty());
 
         t.end();
@@ -225,8 +220,7 @@ test('Bucket', (t) => {
 
     t.test('getTransferables', (t) => {
         const bucket = create();
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const transferables = [];
         bucket.getTransferables(transferables);
@@ -243,11 +237,9 @@ test('Bucket', (t) => {
     t.test('add features after resetting buffers', (t) => {
         const bucket = create();
 
-        bucket.features = [createFeature(1, 5)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(1, 5)]);
         bucket.createArrays();
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);
@@ -284,8 +276,7 @@ test('Bucket', (t) => {
     t.test('add features', (t) => {
         const bucket = create();
 
-        bucket.features = [createFeature(17, 42)];
-        bucket.populateArrays();
+        bucket.populate([createFeature(17, 42)]);
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);
