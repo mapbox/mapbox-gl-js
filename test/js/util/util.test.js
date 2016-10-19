@@ -75,23 +75,6 @@ test('util', (t) => {
         t.end();
     });
 
-    t.test('bindHandlers', (t) => {
-        function MyClass() {
-            util.bindHandlers(this);
-            this.name = 'Tom';
-        }
-        MyClass.prototype.otherMethod = function() {
-            t.equal(this, undefined);
-        };
-        MyClass.prototype._onClick = function() {
-            t.equal(this.name, 'Tom');
-            t.end();
-        };
-        const my = new MyClass();
-        my.otherMethod.call(undefined);
-        setTimeout(my._onClick, 0);
-    });
-
     t.test('asyncAll - sync', (t) => {
         t.equal(util.asyncAll([0, 1, 2], (data, callback) => {
             callback(null, data);

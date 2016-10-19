@@ -5,39 +5,34 @@ const util = require('../../util/util');
 const browser = require('../../util/browser');
 const window = require('../../util/window');
 
-module.exports = ScrollZoomHandler;
-
-
 const ua = window.navigator.userAgent.toLowerCase(),
     firefox = ua.indexOf('firefox') !== -1,
     safari = ua.indexOf('safari') !== -1 && ua.indexOf('chrom') === -1;
 
-
 /**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  *
- * @class ScrollZoomHandler
  * @param {Map} map The Mapbox GL JS map to add the handler to.
  */
-function ScrollZoomHandler(map) {
-    this._map = map;
-    this._el = map.getCanvasContainer();
+class ScrollZoomHandler {
+    constructor(map) {
+        this._map = map;
+        this._el = map.getCanvasContainer();
 
-    util.bindHandlers(this);
-}
-
-ScrollZoomHandler.prototype = {
-
-    _enabled: false,
+        util.bindAll([
+            '_onWheel',
+            '_onTimeout'
+        ], this);
+    }
 
     /**
      * Returns a Boolean indicating whether the "scroll to zoom" interaction is enabled.
      *
      * @returns {boolean} `true` if the "scroll to zoom" interaction is enabled.
      */
-    isEnabled: function () {
-        return this._enabled;
-    },
+    isEnabled() {
+        return !!this._enabled;
+    }
 
     /**
      * Enables the "scroll to zoom" interaction.
@@ -45,12 +40,12 @@ ScrollZoomHandler.prototype = {
      * @example
      *   map.scrollZoom.enable();
      */
-    enable: function () {
+    enable() {
         if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
         this._enabled = true;
-    },
+    }
 
     /**
      * Disables the "scroll to zoom" interaction.
@@ -58,14 +53,14 @@ ScrollZoomHandler.prototype = {
      * @example
      *   map.scrollZoom.disable();
      */
-    disable: function () {
+    disable() {
         if (!this.isEnabled()) return;
         this._el.removeEventListener('wheel', this._onWheel);
         this._el.removeEventListener('mousewheel', this._onWheel);
         this._enabled = false;
-    },
+    }
 
-    _onWheel: function (e) {
+    _onWheel(e) {
         let value;
 
         if (e.type === 'wheel') {
@@ -122,14 +117,14 @@ ScrollZoomHandler.prototype = {
         if (this._type) this._zoom(-value, e);
 
         e.preventDefault();
-    },
+    }
 
-    _onTimeout: function () {
+    _onTimeout() {
         this._type = 'wheel';
         this._zoom(-this._lastValue);
-    },
+    }
 
-    _zoom: function (delta, e) {
+    _zoom(delta, e) {
         if (delta === 0) return;
         const map = this._map;
 
@@ -147,8 +142,9 @@ ScrollZoomHandler.prototype = {
             smoothEasing: true
         }, { originalEvent: e });
     }
-};
+}
 
+module.exports = ScrollZoomHandler;
 
 /**
  * Fired just before the map begins a transition from one zoom level to another,
