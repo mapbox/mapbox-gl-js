@@ -1,22 +1,20 @@
 'use strict';
 
-module.exports = Feature;
+class Feature {
+    constructor(vectorTileFeature, z, x, y) {
+        this.type = 'Feature';
 
-function Feature(vectorTileFeature, z, x, y) {
-    this._vectorTileFeature = vectorTileFeature;
-    vectorTileFeature._z = z;
-    vectorTileFeature._x = x;
-    vectorTileFeature._y = y;
+        this._vectorTileFeature = vectorTileFeature;
+        vectorTileFeature._z = z;
+        vectorTileFeature._x = x;
+        vectorTileFeature._y = y;
 
-    this.properties = vectorTileFeature.properties;
+        this.properties = vectorTileFeature.properties;
 
-    if (vectorTileFeature.id != null) {
-        this.id = vectorTileFeature.id;
+        if (vectorTileFeature.id != null) {
+            this.id = vectorTileFeature.id;
+        }
     }
-}
-
-Feature.prototype = {
-    type: "Feature",
 
     get geometry() {
         if (this._geometry === undefined) {
@@ -26,18 +24,22 @@ Feature.prototype = {
                 this._vectorTileFeature._z).geometry;
         }
         return this._geometry;
-    },
+    }
 
     set geometry(g) {
         this._geometry = g;
-    },
+    }
 
-    toJSON: function() {
-        const json = {};
+    toJSON() {
+        const json = {
+            geometry: this.geometry
+        };
         for (const i in this) {
-            if (i === '_geometry' || i === '_vectorTileFeature' || i === 'toJSON') continue;
+            if (i === '_geometry' || i === '_vectorTileFeature') continue;
             json[i] = this[i];
         }
         return json;
     }
-};
+}
+
+module.exports = Feature;
