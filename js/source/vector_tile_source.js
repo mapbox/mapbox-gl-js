@@ -66,12 +66,12 @@ class VectorTileSource extends Evented {
         };
 
         if (!tile.workerID) {
-            tile.workerID = this.dispatcher.send('load tile', params, done.bind(this));
+            tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded
             tile.reloadCallback = callback;
         } else {
-            this.dispatcher.send('reload tile', params, done.bind(this), tile.workerID);
+            this.dispatcher.send('reloadTile', params, done.bind(this), tile.workerID);
         }
 
         function done(err, data) {
@@ -99,12 +99,12 @@ class VectorTileSource extends Evented {
     }
 
     abortTile(tile) {
-        this.dispatcher.send('abort tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('abortTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 
     unloadTile(tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('remove tile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, null, tile.workerID);
     }
 }
 

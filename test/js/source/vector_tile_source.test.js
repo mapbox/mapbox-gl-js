@@ -118,7 +118,7 @@ test('VectorTileSource', (t) => {
             });
 
             source.dispatcher.send = function(type, params) {
-                t.equal(type, 'load tile');
+                t.equal(type, 'loadTile');
                 t.equal(expectedURL, params.url);
                 t.end();
             };
@@ -149,13 +149,13 @@ test('VectorTileSource', (t) => {
                 state: 'loading',
                 loadVectorData: function () {
                     this.state = 'loaded';
-                    events.push('tile loaded');
+                    events.push('tileLoaded');
                 }
             };
             source.loadTile(tile, () => {});
             t.equal(tile.state, 'loading');
             source.loadTile(tile, () => {
-                t.same(events, ['load tile', 'tile loaded', 'reload tile', 'tile loaded']);
+                t.same(events, ['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']);
                 t.end();
             });
         });

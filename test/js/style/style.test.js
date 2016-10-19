@@ -219,7 +219,7 @@ test('Style#_updateWorkerLayers', (t) => {
         style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer' });
 
         style.dispatcher.broadcast = function(key, value) {
-            t.equal(key, 'set layers');
+            t.equal(key, 'setLayers');
             t.deepEqual(value.map((layer) => { return layer.id; }), ['first', 'second', 'third']);
             t.end();
         };
@@ -247,7 +247,7 @@ test('Style#_updateWorkerLayers with specific ids', (t) => {
 
     style.on('style.load', () => {
         style.dispatcher.broadcast = function(key, value) {
-            t.equal(key, 'update layers');
+            t.equal(key, 'updateLayers');
             t.deepEqual(value.map((layer) => { return layer.id; }), ['second', 'third']);
             t.end();
         };
@@ -827,7 +827,7 @@ test('Style#setFilter', (t) => {
 
         style.on('style.load', () => {
             style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'update layers');
+                t.equal(key, 'updateLayers');
                 t.deepEqual(value[0].id, 'symbol');
                 t.deepEqual(value[0].filter, ['==', 'id', 1]);
                 t.end();
@@ -865,7 +865,7 @@ test('Style#setFilter', (t) => {
             style.update({}, {}); // flush pending operations
 
             style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'update layers');
+                t.equal(key, 'updateLayers');
                 t.deepEqual(value[0].id, 'symbol');
                 t.deepEqual(value[0].filter, ['==', 'id', 2]);
                 t.end();
@@ -881,7 +881,7 @@ test('Style#setFilter', (t) => {
 
         style.on('style.load', () => {
             style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'update layers');
+                t.equal(key, 'updateLayers');
                 t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
             };
 
@@ -939,7 +939,7 @@ test('Style#setLayerZoomRange', (t) => {
 
         style.on('style.load', () => {
             style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'update layers');
+                t.equal(key, 'updateLayers');
                 t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
             };
 
@@ -955,7 +955,7 @@ test('Style#setLayerZoomRange', (t) => {
 
         style.on('style.load', () => {
             style.dispatcher.broadcast = function(key, value) {
-                t.equal(key, 'update layers');
+                t.equal(key, 'updateLayers');
                 t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
             };
 
@@ -1256,7 +1256,7 @@ test('Style#addSourceType', (t) => {
 
         // expect no call to load worker source
         style.dispatcher.broadcast = function (type) {
-            if (type === 'load worker source') {
+            if (type === 'loadWorkerSource') {
                 t.fail();
             }
         };
@@ -1273,7 +1273,7 @@ test('Style#addSourceType', (t) => {
         SourceType.workerSourceURL = 'worker-source.js';
 
         style.dispatcher.broadcast = function (type, params) {
-            if (type === 'load worker source') {
+            if (type === 'loadWorkerSource') {
                 t.equal(_types['bar'], SourceType);
                 t.equal(params.name, 'bar');
                 t.equal(params.url, 'worker-source.js');

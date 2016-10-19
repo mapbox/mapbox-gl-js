@@ -185,7 +185,7 @@ class Style extends Evented {
     }
 
     _updateWorkerLayers(ids) {
-        this.dispatcher.broadcast(ids ? 'update layers' : 'set layers', this._serializeLayers(ids));
+        this.dispatcher.broadcast(ids ? 'updateLayers' : 'setLayers', this._serializeLayers(ids));
     }
 
     _serializeLayers(ids) {
@@ -679,7 +679,7 @@ class Style extends Evented {
             return callback(null, null);
         }
 
-        this.dispatcher.broadcast('load worker source', {
+        this.dispatcher.broadcast('loadWorkerSource', {
             name: name,
             url: SourceType.workerSourceURL
         }, callback);

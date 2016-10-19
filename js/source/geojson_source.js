@@ -174,7 +174,7 @@ class GeoJSONSource extends Evented {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        tile.workerID = this.dispatcher.send('load tile', params, (err, data) => {
+        tile.workerID = this.dispatcher.send('loadTile', params, (err, data) => {
 
             tile.unloadVectorData();
 
@@ -203,7 +203,7 @@ class GeoJSONSource extends Evented {
 
     unloadTile(tile) {
         tile.unloadVectorData();
-        this.dispatcher.send('remove tile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
+        this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
     }
 
     serialize() {

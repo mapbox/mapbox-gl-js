@@ -12,7 +12,7 @@ test('load tile', (t) => {
     t.test('calls callback on error', (t) => {
         window.useFakeXMLHttpRequest();
         const worker = new Worker(_self);
-        worker['load tile'](0, {
+        worker.loadTile(0, {
             type: 'vector',
             source: 'source',
             uid: 0,
@@ -37,17 +37,17 @@ test('redo placement', (t) => {
         };
     });
 
-    worker['redo placement'](0, {type: 'test', mapbox: true});
+    worker.redoPlacement(0, {type: 'test', mapbox: true});
 });
 
 test('isolates different instances\' data', (t) => {
     const worker = new Worker(_self);
 
-    worker['set layers'](0, [
+    worker.setLayers(0, [
         { id: 'one', type: 'circle' }
     ]);
 
-    worker['set layers'](1, [
+    worker.setLayers(1, [
         { id: 'one', type: 'circle' },
         { id: 'two', type: 'circle' },
     ]);
@@ -75,5 +75,5 @@ test('worker source messages dispatched to the correct map instance', (t) => {
         };
     });
 
-    worker['load tile'](999, {type: 'test'});
+    worker.loadTile(999, {type: 'test'});
 });

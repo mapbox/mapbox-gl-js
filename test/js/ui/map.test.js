@@ -668,7 +668,7 @@ test('Map', (t) => {
 
             map.on('style.load', () => {
                 map.style.dispatcher.broadcast = function(key, value) {
-                    t.equal(key, 'update layers');
+                    t.equal(key, 'updateLayers');
                     t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
                 };
 
@@ -708,7 +708,7 @@ test('Map', (t) => {
 
             map.on('style.load', () => {
                 map.style.dispatcher.broadcast = function(key, value) {
-                    t.equal(key, 'update layers');
+                    t.equal(key, 'updateLayers');
                     t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
                 };
 
