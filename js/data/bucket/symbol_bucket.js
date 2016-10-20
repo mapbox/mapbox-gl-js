@@ -179,6 +179,7 @@ class SymbolBucket extends Bucket {
                 text,
                 icon,
                 index: this.features.length,
+                sourceLayerIndex: feature.sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties
             });
@@ -378,7 +379,7 @@ class SymbolBucket extends Bucket {
                 // the buffers for both tiles and clipped to tile boundaries at draw time.
                 const addToBuffers = inside || mayOverlap;
                 this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layer,
-                    addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, this.sourceLayerIndex, this.index,
+                    addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
                     textBoxScale, textPadding, textAlongLine,
                     iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
             }

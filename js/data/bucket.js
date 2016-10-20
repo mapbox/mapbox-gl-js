@@ -34,7 +34,6 @@ class Bucket {
         this.childLayers = options.childLayers;
 
         this.index = options.index;
-        this.sourceLayerIndex = options.sourceLayerIndex;
         this.featureIndex = options.featureIndex;
         this.programConfigurations = util.mapObject(this.programInterfaces, (programInterface) => {
             const result = {};
@@ -67,7 +66,7 @@ class Bucket {
         for (const feature of features) {
             if (this.layer.filter(feature)) {
                 this.addFeature(feature);
-                this.featureIndex.insert(feature, feature.index, this.sourceLayerIndex, this.index);
+                this.featureIndex.insert(feature, this.index);
             }
         }
 
