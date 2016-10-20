@@ -26,6 +26,130 @@ const viewTypes = {
  * @property {number} components
  */
 
+class Struct {
+    /**
+     * @param {StructArray} structArray The StructArray the struct is stored in
+     * @param {number} index The index of the struct in the StructArray.
+     * @private
+     */
+    constructor(structArray, index) {
+        this._structArray = structArray;
+        this._pos1 = index * this.size;
+        this._pos2 = this._pos1 / 2;
+        this._pos4 = this._pos1 / 4;
+        this._pos8 = this._pos1 / 8;
+    }
+}
+
+const DEFAULT_CAPACITY = 128;
+const RESIZE_MULTIPLIER = 5;
+
+/**
+ * The StructArray class is inherited by the custom StructArrayType classes created with
+ * `new StructArrayType(members, options)`.
+ * @private
+ */
+class StructArray {
+    constructor(serialized) {
+        if (serialized !== undefined) {
+        // Create from an serialized StructArray
+            this.arrayBuffer = serialized.arrayBuffer;
+            this.length = serialized.length;
+            this.capacity = this.arrayBuffer.byteLength / this.bytesPerElement;
+            this._refreshViews();
+
+        // Create a new StructArray
+        } else {
+            this.capacity = -1;
+            this.resize(0);
+        }
+    }
+
+    /**
+     * Serialize the StructArray type. This serializes the *type* not an instance of the type.
+     */
+    static serialize() {
+        return {
+            members: this.prototype.members,
+            alignment: this.prototype.StructType.prototype.alignment,
+            bytesPerElement: this.prototype.bytesPerElement
+        };
+    }
+
+    /**
+     * Serialize this StructArray instance
+     */
+    serialize() {
+        this.trim();
+        return {
+            length: this.length,
+            arrayBuffer: this.arrayBuffer
+        };
+    }
+
+    /**
+     * Return the Struct at the given location in the array.
+     * @param {number} index The index of the element.
+     */
+    get(index) {
+        return new this.StructType(this, index);
+    }
+
+    /**
+     * Resize the array to discard unused capacity.
+     */
+    trim() {
+        if (this.length !== this.capacity) {
+            this.capacity = this.length;
+            this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
+            this._refreshViews();
+        }
+    }
+
+    /**
+     * Resize the array.
+     * If `n` is greater than the current length then additional elements with undefined values are added.
+     * If `n` is less than the current length then the array will be reduced to the first `n` elements.
+     * @param {number} n The new size of the array.
+     */
+    resize(n) {
+        this.length = n;
+        if (n > this.capacity) {
+            this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
+            this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
+
+            const oldUint8Array = this.uint8;
+            this._refreshViews();
+            if (oldUint8Array) this.uint8.set(oldUint8Array);
+        }
+    }
+
+    /**
+     * Create TypedArray views for the current ArrayBuffer.
+     */
+    _refreshViews() {
+        for (const type of this._usedTypes) {
+            this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
+        }
+    }
+
+    /**
+     * Output the `StructArray` between indices `startIndex` and `endIndex` as an array of `StructTypes` to enable sorting
+     * @param {number} startIndex
+     * @param {number} endIndex
+     */
+    toArray(startIndex, endIndex) {
+        const array = [];
+
+        for (let i = startIndex; i < endIndex; i++) {
+            const struct = this.get(i);
+            array.push(struct);
+        }
+
+        return array;
+    }
+}
+
 const structArrayTypeCache = {};
 
 /**
@@ -67,84 +191,67 @@ const structArrayTypeCache = {};
 function StructArrayType(options) {
 
     const key = JSON.stringify(options);
+
     if (structArrayTypeCache[key]) {
         return structArrayTypeCache[key];
     }
 
     if (options.alignment === undefined) options.alignment = 1;
 
-    function StructType() {
-        Struct.apply(this, arguments);
-    }
-
-    StructType.prototype = Object.create(Struct.prototype);
-
     let offset = 0;
     let maxSize = 0;
     const usedTypes = ['Uint8'];
 
-    StructType.prototype.members = options.members.map((member) => {
-        member = {
-            name: member.name,
-            type: member.type,
-            components: member.components || 1
-        };
-
+    const members = options.members.map((member) => {
         assert(member.name.length);
         assert(member.type in viewTypes);
 
         if (usedTypes.indexOf(member.type) < 0) usedTypes.push(member.type);
 
         const typeSize = sizeOf(member.type);
-        maxSize = Math.max(maxSize, typeSize);
-        member.offset = offset = align(offset, Math.max(options.alignment, typeSize));
+        const memberOffset = offset = align(offset, Math.max(options.alignment, typeSize));
+        const components = member.components || 1;
 
+        maxSize = Math.max(maxSize, typeSize);
+        offset += typeSize * components;
+
+        return {
+            name: member.name,
+            type: member.type,
+            components: components,
+            offset: memberOffset
+        };
+    });
+
+    const size = align(offset, Math.max(maxSize, options.alignment));
+
+    class StructType extends Struct {}
+
+    StructType.prototype.alignment = options.alignment;
+    StructType.prototype.size = size;
+
+    for (const member of members) {
         for (let c = 0; c < member.components; c++) {
-            Object.defineProperty(StructType.prototype, member.name + (member.components === 1 ? '' : c), {
+            const name = member.name + (member.components === 1 ? '' : c);
+            Object.defineProperty(StructType.prototype, name, {
                 get: createGetter(member, c),
                 set: createSetter(member, c)
             });
         }
-
-        offset += typeSize * member.components;
-
-        return member;
-    });
-
-    StructType.prototype.alignment = options.alignment;
-    StructType.prototype.size = align(offset, Math.max(maxSize, options.alignment));
-
-    function StructArrayType() {
-        StructArray.apply(this, arguments);
-        this.members = StructType.prototype.members;
     }
 
-    StructArrayType.serialize = serializeStructArrayType;
+    class StructArrayType extends StructArray {}
 
-    StructArrayType.prototype = Object.create(StructArray.prototype);
+    StructArrayType.prototype.members = members;
     StructArrayType.prototype.StructType = StructType;
-    StructArrayType.prototype.bytesPerElement = StructType.prototype.size;
-    StructArrayType.prototype.emplaceBack = createEmplaceBack(StructType.prototype.members, StructType.prototype.size);
+    StructArrayType.prototype.bytesPerElement = size;
+    StructArrayType.prototype.emplaceBack = createEmplaceBack(members, size);
     StructArrayType.prototype._usedTypes = usedTypes;
-
 
     structArrayTypeCache[key] = StructArrayType;
 
     return StructArrayType;
 }
-
-/**
- * Serialize the StructArray type. This serializes the *type* not an instance of the type.
- * @private
- */
-function serializeStructArrayType() {
-    return {
-        members: this.prototype.StructType.prototype.members,
-        alignment: this.prototype.StructType.prototype.alignment,
-        bytesPerElement: this.prototype.bytesPerElement
-    };
-}
-
 
 function align(offset, size) {
     return Math.ceil(offset / size) * size;
@@ -158,7 +265,6 @@ function getArrayViewName(type) {
     return type.toLowerCase();
 }
 
-
 /*
  * > I saw major perf gains by shortening the source of these generated methods (i.e. renaming
  * > elementIndex to i) (likely due to v8 inlining heuristics).
@@ -167,12 +273,11 @@ function getArrayViewName(type) {
 function createEmplaceBack(members, bytesPerElement) {
     const usedTypeSizes = [];
     const argNames = [];
-    let body = '' +
-    'var i = this.length;\n' +
-    'this.resize(this.length + 1);\n';
+    let body =
+        'var i = this.length;\n' +
+        'this.resize(this.length + 1);\n';
 
-    for (let m = 0; m < members.length; m++) {
-        const member = members[m];
+    for (const member of members) {
         const size = sizeOf(member.type);
 
         // array offsets to the end of current data for each type size
@@ -206,7 +311,6 @@ function createMemberComponentString(member, component) {
     const componentOffset = (member.offset / sizeOf(member.type) + component).toFixed(0);
     const index = `${elementOffset} + ${componentOffset}`;
     return `this._structArray.${getArrayViewName(member.type)}[${index}]`;
-
 }
 
 function createGetter(member, c) {
@@ -216,131 +320,3 @@ function createGetter(member, c) {
 function createSetter(member, c) {
     return new Function(['x'], `${createMemberComponentString(member, c)} = x;`);
 }
-
-/**
- * @class Struct
- * @param {StructArray} structArray The StructArray the struct is stored in
- * @param {number} index The index of the struct in the StructArray.
- * @private
- */
-function Struct(structArray, index) {
-    this._structArray = structArray;
-    this._pos1 = index * this.size;
-    this._pos2 = this._pos1 / 2;
-    this._pos4 = this._pos1 / 4;
-    this._pos8 = this._pos1 / 8;
-}
-
-/**
- * @class StructArray
- * The StructArray class is inherited by the custom StructArrayType classes created with
- * `new StructArrayType(members, options)`.
- * @private
- */
-function StructArray(serialized) {
-    if (serialized !== undefined) {
-    // Create from an serialized StructArray
-        this.arrayBuffer = serialized.arrayBuffer;
-        this.length = serialized.length;
-        this.capacity = this.arrayBuffer.byteLength / this.bytesPerElement;
-        this._refreshViews();
-
-    // Create a new StructArray
-    } else {
-        this.capacity = -1;
-        this.resize(0);
-    }
-}
-
-/**
- * @property {number}
- * @private
- * @readonly
- */
-StructArray.prototype.DEFAULT_CAPACITY = 128;
-
-/**
- * @property {number}
- * @private
- * @readonly
- */
-StructArray.prototype.RESIZE_MULTIPLIER = 5;
-
-/**
- * Serialize this StructArray instance
- * @private
- */
-StructArray.prototype.serialize = function() {
-    this.trim();
-    return {
-        length: this.length,
-        arrayBuffer: this.arrayBuffer
-    };
-};
-
-/**
- * Return the Struct at the given location in the array.
- * @private
- * @param {number} index The index of the element.
- */
-StructArray.prototype.get = function(index) {
-    return new this.StructType(this, index);
-};
-
-/**
- * Resize the array to discard unused capacity.
- * @private
- */
-StructArray.prototype.trim = function() {
-    if (this.length !== this.capacity) {
-        this.capacity = this.length;
-        this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
-        this._refreshViews();
-    }
-};
-
-/**
- * Resize the array.
- * If `n` is greater than the current length then additional elements with undefined values are added.
- * If `n` is less than the current length then the array will be reduced to the first `n` elements.
- * @param {number} n The new size of the array.
- */
-StructArray.prototype.resize = function(n) {
-    this.length = n;
-    if (n > this.capacity) {
-        this.capacity = Math.max(n, Math.floor(this.capacity * this.RESIZE_MULTIPLIER), this.DEFAULT_CAPACITY);
-        this.arrayBuffer = new ArrayBuffer(this.capacity * this.bytesPerElement);
-
-        const oldUint8Array = this.uint8;
-        this._refreshViews();
-        if (oldUint8Array) this.uint8.set(oldUint8Array);
-    }
-};
-
-/**
- * Create TypedArray views for the current ArrayBuffer.
- * @private
- */
-StructArray.prototype._refreshViews = function() {
-    for (let t = 0; t < this._usedTypes.length; t++) {
-        const type = this._usedTypes[t];
-        this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
-    }
-};
-
-/**
- * Output the `StructArray` between indices `startIndex` and `endIndex` as an array of `StructTypes` to enable sorting
- * @param {number} startIndex
- * @param {number} endIndex
- * @private
- */
-StructArray.prototype.toArray = function(startIndex, endIndex) {
-    const array = [];
-
-    for (let i = startIndex; i < endIndex; i++) {
-        const struct = this.get(i);
-        array.push(struct);
-    }
-
-    return array;
-};
