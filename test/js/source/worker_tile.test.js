@@ -35,7 +35,7 @@ test('WorkerTile#parse', (t) => {
     }]);
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerIndex.families, {}, (err, result) => {
+    tile.parse(createWrapper(), layerIndex, {}, (err, result) => {
         t.ifError(err);
         t.ok(result.buckets[0]);
         t.end();
@@ -55,7 +55,7 @@ test('WorkerTile#parse skips hidden layers', (t) => {
     }]);
 
     const tile = createWorkerTile();
-    tile.parse(createWrapper(), layerIndex.families, {}, (err, result) => {
+    tile.parse(createWrapper(), layerIndex, {}, (err, result) => {
         t.ifError(err);
         t.equal(Object.keys(result.buckets[0].arrays).length, 1);
         t.end();
@@ -71,7 +71,7 @@ test('WorkerTile#parse skips layers without a corresponding source layer', (t) =
     }]);
 
     const tile = createWorkerTile();
-    tile.parse({layers: {}}, layerIndex.families, {}, (err, result) => {
+    tile.parse({layers: {}}, layerIndex, {}, (err, result) => {
         t.ifError(err);
         t.equal(result.buckets.length, 0);
         t.end();
@@ -97,7 +97,7 @@ test('WorkerTile#parse warns once when encountering a v1 vector tile layer', (t)
     t.stub(util, 'warnOnce');
 
     const tile = createWorkerTile();
-    tile.parse(data, layerIndex.families, {}, (err) => {
+    tile.parse(data, layerIndex, {}, (err) => {
         t.ifError(err);
         t.ok(util.warnOnce.calledWithMatch(/does not use vector tile spec v2/));
         t.end();

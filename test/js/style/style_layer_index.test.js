@@ -53,3 +53,34 @@ test('StyleLayerIndex#update', (t) => {
 
     t.end();
 });
+
+test('StyleLayerIndex#familiesBySource', (t) => {
+    const index = new StyleLayerIndex([
+        { id: '0', 'source': 'A', 'source-layer': 'foo' },
+        { id: '1', 'ref': '0'},
+        { id: '2', 'source': 'A', 'source-layer': 'foo' },
+        { id: '3', 'source': 'A', 'source-layer': 'bar' },
+        { id: '4', 'source': 'B', 'source-layer': 'foo' },
+        { id: '5', 'source': 'geojson' },
+        { id: '6' }
+    ]);
+    const layers = index.layers;
+
+    t.deepEqual(index.familiesBySource, {
+        'A': {
+            'foo': [[layers['0'], layers['1']], [layers['2']]],
+            'bar': [[layers['3']]]
+        },
+        'B': {
+            'foo': [[layers['4']]]
+        },
+        'geojson': {
+            '_geojsonTileLayer': [[layers['5']]]
+        },
+        '': {
+            '_geojsonTileLayer': [[layers['6']]]
+        }
+    });
+
+    t.end();
+});
