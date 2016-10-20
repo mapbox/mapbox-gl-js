@@ -13,6 +13,7 @@ const SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
 const GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 const StyleLayer = require('../../../js/style/style_layer');
 const util = require('../../../js/util/util');
+const featureFilter = require('feature-filter');
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -37,10 +38,11 @@ function bucketSetup() {
     const layer = new StyleLayer({
         id: 'test',
         type: 'symbol',
-        layout: { 'text-font': ['Test'] }
+        layout: { 'text-font': ['Test'], 'text-field': 'abcde' },
+        filter: featureFilter()
     });
 
-    const bucket = new SymbolBucket({
+    return new SymbolBucket({
         buffers: buffers,
         overscaling: 1,
         zoom: 0,
@@ -51,26 +53,27 @@ function bucketSetup() {
         childLayers: [layer],
         tileExtent: 4096
     });
-    bucket.createArrays();
-    bucket.textFeatures = ['abcde'];
-    bucket.features = [feature];
-    return bucket;
 }
-
 
 test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
+    const dependencies = {icons: {}, stacks: {}};
 
     // add feature from bucket A
     const a = collision.grid.keys.length;
-    t.equal(bucketA.populateArrays(collision, stacks), undefined);
+    bucketA.populate([feature], dependencies);
+    bucketA.prepare(stacks, {});
+    bucketA.place(collision);
+
     const b = collision.grid.keys.length;
     t.notEqual(a, b, 'places feature');
 
     // add same feature from bucket B
     const a2 = collision.grid.keys.length;
-    t.equal(bucketB.populateArrays(collision, stacks), undefined);
+    bucketB.populate([feature], dependencies);
+    bucketB.prepare(stacks, {});
+    bucketB.place(collision);
     const b2 = collision.grid.keys.length;
     t.equal(a2, b2, 'detects collision and does not place feature');
     t.end();
@@ -78,21 +81,18 @@ test('SymbolBucket', (t) => {
 
 
 test('SymbolBucket integer overflow', (t) => {
+    t.stub(util, 'warnOnce');
+    t.stub(SymbolBucket, 'MAX_QUADS', 5);
+
     const bucket = bucketSetup();
-    let numWarnings = 0;
-    t.stub(util, 'warnOnce', (warning) => {
-        if (warning.includes('Too many symbols being rendered in a tile.') || warning.includes('Too many glyphs being rendered in a tile.')) numWarnings++;
-    });
-    // save correct value of MAX_QUADS
-    const maxquads = SymbolBucket.MAX_QUADS;
+    const dependencies = {icons: {}, stacks: {}};
 
-    // reduce MAX_QUADS to test warning
-    SymbolBucket.MAX_QUADS = 5;
-    bucket.populateArrays(collision, stacks);
-    t.equal(numWarnings, 2);
+    bucket.populate([feature], dependencies);
+    bucket.prepare(stacks, {});
+    bucket.place(collision);
 
-    // reset MAX_QUADS to its original value
-    SymbolBucket.MAX_QUADS = maxquads;
+    t.ok(util.warnOnce.calledTwice);
+    t.ok(util.warnOnce.getCall(0).calledWithMatch(/Too many (symbols|glyphs) being rendered in a tile./));
+    t.ok(util.warnOnce.getCall(1).calledWithMatch(/Too many (symbols|glyphs) being rendered in a tile./));
     t.end();
 });
-

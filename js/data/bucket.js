@@ -35,11 +35,11 @@ class Bucket {
         this.childLayers = options.childLayers;
 
         this.type = this.layer.type;
-        this.features = [];
         this.id = this.layer.id;
         this.index = options.index;
         this.sourceLayer = this.layer.sourceLayer;
         this.sourceLayerIndex = options.sourceLayerIndex;
+        this.featureIndex = options.featureIndex;
         this.minZoom = this.layer.minzoom;
         this.maxZoom = this.layer.maxzoom;
 
@@ -86,15 +86,15 @@ class Bucket {
         return new Classes[type](options);
     }
 
-    /**
-     * Build the arrays! Features are set directly to the `features` property.
-     */
-    populateArrays() {
+    populate(features) {
         this.createArrays();
         this.recalculateStyleLayers();
 
-        for (let i = 0; i < this.features.length; i++) {
-            this.addFeature(this.features[i]);
+        for (const feature of features) {
+            if (this.layer.filter(feature)) {
+                this.addFeature(feature);
+                this.featureIndex.insert(feature, feature.index, this.sourceLayerIndex, this.index);
+            }
         }
 
         this.trimArrays();
