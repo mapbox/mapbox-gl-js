@@ -107,7 +107,8 @@ module.exports = function placeShapedText(anchor, shapedText, boxScale, line, la
                 anchorAngle: anchorAngle, // The angle of the label at it's center, not the angle of this quad.
                 glyphAngle: glyphAngle, // The angle of the glyph to be positioned in the quad.
                 minScale: glyphMinScale, // The minimum scale, relative to the tile's intended scale, that the glyph can be shown at.
-                maxScale: placedShapedGlyph.maxScale // The maximum scale, relative to the tile's intended scale, that the glyph can be shown at.
+                maxScale: placedShapedGlyph.maxScale, // The maximum scale, relative to the tile's intended scale, that the glyph can be shown at.
+                writingMode: verticalOrientation
             });
         }
     }

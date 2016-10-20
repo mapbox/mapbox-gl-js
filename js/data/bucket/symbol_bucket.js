@@ -557,14 +557,13 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
             minZoom = Math.max(zoom + Math.log(symbol.minScale) / Math.LN2, placementZoom),
             maxZoom = Math.min(zoom + Math.log(symbol.maxScale) / Math.LN2, 25);
 
-        // drop upside down versions of glyphs
         var a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
-        if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
 
-        // drop vertical or horizontal orientation of labels
-        if (keepUpright && alongLine && tr.y < tl.y && (a > Math.PI / 4 && a <= Math.PI * 3 / 4)) continue;
-        if (alongLine && tr.y < tl.y && (a <= Math.PI / 4 || (a > Math.PI * 3 / 4 && a <= Math.PI * 5 / 4) || (a > Math.PI * 7 / 4 && a <= Math.PI * 2))) continue;
-        if (alongLine && tr.y === tl.y && ((a > Math.PI / 4 && a <= Math.PI * 3 / 4) || (a > Math.PI * 5 / 4 && a <= Math.PI * 7 / 4))) continue;
+        if (symbol.writingMode === 1) {
+            if (keepUpright && alongLine && a <= (Math.PI / 4) || a > (Math.PI * 3 / 4)) continue;
+        } else {
+            if (keepUpright && alongLine && a <= (Math.PI * 3 / 4) || a > (Math.PI * 5 / 4)) continue;
+        }
 
         if (maxZoom <= minZoom) continue;
 
@@ -728,5 +727,8 @@ SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
         symbolQuad.glyphAngle,
         // scales
         symbolQuad.maxScale,
-        symbolQuad.minScale);
+        symbolQuad.minScale,
+        // writing mode
+        symbolQuad.writingMode
+    );
 };

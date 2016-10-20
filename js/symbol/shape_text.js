@@ -31,6 +31,7 @@ module.exports = function shapeText(text, glyphs, maxWidth, lineHeight, horizont
         bottom: translate[1],
         left: translate[0],
         right: translate[0],
+        writingMode: verticalOrientation
     };
 
     // in the absense of proper vertical advance data, we approximate the y

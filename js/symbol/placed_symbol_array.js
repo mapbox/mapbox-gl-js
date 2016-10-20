@@ -44,7 +44,12 @@ var PlacedSymbolArray = module.exports = new StructArrayType({
 
         // quad is only valid for scales < maxScale && scale > minScale.
         { type: 'Float32', name: 'maxScale' },
-        { type: 'Float32', name: 'minScale' }
+        { type: 'Float32', name: 'minScale' },
+
+        // 0 if the text is in "horizantal" writing mode, 2 if the text is in
+        // "vertical-lr" writing mode
+        // https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode
+        { type: 'Uint8', name: 'writingMode' }
     ]
 });
 
@@ -63,7 +68,8 @@ util.extendAll(PlacedSymbolArray.prototype.StructType.prototype, {
             anchorAngle: this.anchorAngle,
             glyphAngle: this.glyphAngle,
             minScale: this.minScale,
-            maxScale: this.maxScale
+            maxScale: this.maxScale,
+            writingMode: this.writingMode
         };
     }
 });
