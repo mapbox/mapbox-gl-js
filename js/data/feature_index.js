@@ -2,7 +2,7 @@
 
 const Point = require('point-geometry');
 const loadGeometry = require('./load_geometry');
-const EXTENT = require('./bucket').EXTENT;
+const EXTENT = require('./extent');
 const featureFilter = require('feature-filter');
 const StructArrayType = require('../util/struct_array');
 const Grid = require('grid-index');

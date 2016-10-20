@@ -7,7 +7,7 @@ const TileCoord = require('./tile_coord');
 const Cache = require('../util/lru_cache');
 const Coordinate = require('../geo/coordinate');
 const util = require('../util/util');
-const EXTENT = require('../data/bucket').EXTENT;
+const EXTENT = require('../data/extent');
 
 /**
  * `SourceCache` is responsible for

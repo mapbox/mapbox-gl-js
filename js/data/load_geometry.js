@@ -1,7 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
-const EXTENT = require('./bucket').EXTENT;
+const EXTENT = require('./extent');
 const assert = require('assert');
 
 

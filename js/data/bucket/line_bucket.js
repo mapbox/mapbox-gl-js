@@ -2,6 +2,7 @@
 
 const Bucket = require('../bucket');
 const loadGeometry = require('../load_geometry');
+const EXTENT = require('../extent');
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -115,7 +116,7 @@ class LineBucket extends Bucket {
 
         if (join === 'bevel') miterLimit = 1.05;
 
-        const sharpCornerOffset = SHARP_CORNER_OFFSET * (Bucket.EXTENT / (512 * this.overscaling));
+        const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
         const firstVertex = vertices[0],
             lastVertex = vertices[len - 1],

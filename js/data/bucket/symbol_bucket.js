@@ -3,6 +3,7 @@
 const Point = require('point-geometry');
 
 const Bucket = require('../bucket');
+const EXTENT = require('../extent');
 const Anchor = require('../../symbol/anchor');
 const getAnchors = require('../../symbol/get_anchors');
 const resolveTokens = require('../../util/token');
@@ -21,8 +22,6 @@ const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
-
-const EXTENT = Bucket.EXTENT;
 
 const elementArrayType = new Bucket.ElementArrayType();
 const layoutVertexArrayType = new Bucket.VertexArrayType([{
