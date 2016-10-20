@@ -41,8 +41,8 @@ class WorkerTile {
         const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
         featureIndex.bucketLayerIDs = {};
 
-        const buckets = [];
-        const symbolBuckets = this.symbolBuckets = [];
+        const buckets = {};
+        let bucketIndex = 0;
 
         let icons = {};
         let stacks = {};
@@ -79,9 +79,9 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
-                const bucket = Bucket.create({
+                const bucket = buckets[layer.id] = Bucket.create({
                     layer: layer,
-                    index: buckets.length,
+                    index: bucketIndex++,
                     childLayers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
@@ -95,12 +95,6 @@ class WorkerTile {
 
                 bucket.populate(features, dependencies);
                 featureIndex.bucketLayerIDs[bucket.index] = family.map(getLayerId);
-
-                buckets.push(bucket);
-
-                if (bucket.type === 'symbol') {
-                    symbolBuckets.push(bucket);
-                }
             }
         }
 
@@ -117,7 +111,7 @@ class WorkerTile {
             const collisionBoxArray = this.collisionBoxArray.serialize();
             const symbolInstancesArray = this.symbolInstancesArray.serialize();
             const symbolQuadsArray = this.symbolQuadsArray.serialize();
-            const nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
+            const nonEmptyBuckets = util.values(buckets).filter(isBucketNonEmpty);
 
             callback(null, {
                 buckets: nonEmptyBuckets.map(serializeBucket),
@@ -131,7 +125,17 @@ class WorkerTile {
                 .concat(collisionTile_.transferables));
         };
 
-        if (symbolBuckets.length === 0) {
+        // Symbol buckets must be placed in reverse order.
+        this.symbolBuckets = [];
+        for (let i = layerIndex.order.length - 1; i >= 0; i--) {
+            const id = layerIndex.order[i];
+            const bucket = buckets[id];
+            if (bucket && bucket.type === 'symbol') {
+                this.symbolBuckets.push(bucket);
+            }
+        }
+
+        if (this.symbolBuckets.length === 0) {
             return done();
         }
 
@@ -141,9 +145,7 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
-                // all symbol bucket dependencies fetched; parse them in proper order
-                for (let i = symbolBuckets.length - 1; i >= 0; i--) {
-                    const bucket = symbolBuckets[i];
+                for (const bucket of this.symbolBuckets) {
                     bucket.prepare(stacks, icons);
                     bucket.place(collisionTile, this.showCollisionBoxes);
                 }
@@ -184,15 +186,12 @@ class WorkerTile {
         }
 
         const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
-
-        const buckets = this.symbolBuckets;
-
-        for (let i = buckets.length - 1; i >= 0; i--) {
-            buckets[i].place(collisionTile, showCollisionBoxes);
+        for (const bucket of this.symbolBuckets) {
+            bucket.place(collisionTile, showCollisionBoxes);
         }
 
         const collisionTile_ = collisionTile.serialize();
-        const nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
+        const nonEmptyBuckets = this.symbolBuckets.filter(isBucketNonEmpty);
 
         return {
             result: {
