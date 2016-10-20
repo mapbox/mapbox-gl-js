@@ -320,11 +320,6 @@
       "maximum": 22,
       "doc": "The maximum zoom level on which the layer gets parsed and appears on."
     },
-    "interactive": {
-      "type": "boolean",
-      "doc": "Enable querying of feature data from this layer for interactivity.",
-      "default": false
-    },
     "filter": {
       "type": "filter",
       "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."

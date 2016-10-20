@@ -92,6 +92,13 @@
       "id": "missing-source-layer",
       "type": "line",
       "source": "vector"
+    },
+    {
+      "id": "interactive-layer",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "interactive": true
     }
   ]
 }
