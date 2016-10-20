@@ -15,11 +15,18 @@ navigation:
     - title: zoom
     - title: bearing
     - title: pitch
+    - title: light
     - title: sources
     - title: sprite
     - title: glyphs
     - title: transition
     - title: layers
+  - title: Light
+    subnav:
+    - title: anchor
+    - title: position
+    - title: color
+    - title: intensity
   - title: Sources
     subnav:
     - title: Vector
@@ -122,6 +129,27 @@ navigation:
       <div class='pad2 keyline-all fill-white'>
         <% _(ref.$root).each(function(prop, name) { %>
         <%= item({prop: prop, id: "root-" + name, name: name}) %>
+        <% }); %>
+      </div>
+    </div>
+
+
+    <div class='pad2 prose'>
+      <a id='light' class='anchor'></a>
+      <h2><a href='#light' title='link to light'>Light</a></h2>
+      <p>
+        A style's <code>light</code> property provides global light source for that style.
+        <% if (ref.$root.light.example) { %>
+        <div class='space-bottom1 pad2x clearfix'>
+{% highlight json %}
+<%= '"light": ' + JSON.stringify(ref.$root.light.example, null, 2) %>
+{% endhighlight %}
+        </div>
+        <% } %>
+      </p>
+      <div class='pad2 keyline-all fill-white'>
+        <% _(ref.light).each(function(prop, name) { %>
+        <%= item({prop: prop, id: "light-" + name, name: name}) %>
         <% }); %>
       </div>
     </div>
