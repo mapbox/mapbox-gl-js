@@ -7,7 +7,7 @@ var CollisionBoxArray = require('../symbol/collision_box');
 var DictionaryCoder = require('../util/dictionary_coder');
 var util = require('../util/util');
 var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads_array');
+var PlacedSymbolArray = require('../symbol/placed_symbol_array');
 var assert = require('assert');
 
 module.exports = WorkerTile;
@@ -31,7 +31,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
 
     this.collisionBoxArray = new CollisionBoxArray();
     this.symbolInstancesArray = new SymbolInstancesArray();
-    this.symbolQuadsArray = new SymbolQuadsArray();
+    this.placedSymbolArray = new PlacedSymbolArray();
     var collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
     var featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
     var sourceLayerCoder = new DictionaryCoder(data.layers ? Object.keys(data.layers).sort() : ['_geojsonTileLayer']);
@@ -64,7 +64,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             overscaling: this.overscaling,
             showCollisionBoxes: this.showCollisionBoxes,
             collisionBoxArray: this.collisionBoxArray,
-            symbolQuadsArray: this.symbolQuadsArray,
+            placedSymbolArray: this.placedSymbolArray,
             symbolInstancesArray: this.symbolInstancesArray,
             sourceLayerIndex: sourceLayerCoder.encode(layer.sourceLayer || '_geojsonTileLayer')
         });
@@ -205,7 +205,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
         var collisionTile_ = collisionTile.serialize();
         var collisionBoxArray = tile.collisionBoxArray.serialize();
         var symbolInstancesArray = tile.symbolInstancesArray.serialize();
-        var symbolQuadsArray = tile.symbolQuadsArray.serialize();
+        var placedSymbolArray = tile.placedSymbolArray.serialize();
         var nonEmptyBuckets = buckets.filter(isBucketNonEmpty);
 
         callback(null, {
@@ -214,7 +214,7 @@ WorkerTile.prototype.parse = function(data, layerFamilies, actor, callback) {
             collisionTile: collisionTile_.data,
             collisionBoxArray: collisionBoxArray,
             symbolInstancesArray: symbolInstancesArray,
-            symbolQuadsArray: symbolQuadsArray
+            placedSymbolArray: placedSymbolArray
         }, getTransferables(nonEmptyBuckets)
             .concat(featureIndex_.transferables)
             .concat(collisionTile_.transferables));

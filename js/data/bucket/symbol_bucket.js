@@ -28,7 +28,7 @@ function SymbolBucket(options) {
     this.showCollisionBoxes = options.showCollisionBoxes;
     this.overscaling = options.overscaling;
     this.collisionBoxArray = options.collisionBoxArray;
-    this.symbolQuadsArray = options.symbolQuadsArray;
+    this.placedSymbolArray = options.placedSymbolArray;
     this.symbolInstancesArray = options.symbolInstancesArray;
 
     this.sdfIcons = options.sdfIcons;
@@ -545,7 +545,7 @@ SymbolBucket.prototype.addSymbols = function(programName, quadsStart, quadsEnd, 
 
     for (var k = quadsStart; k < quadsEnd; k++) {
 
-        var symbol = this.symbolQuadsArray.get(k).SymbolQuad;
+        var symbol = this.placedSymbolArray.get(k).SymbolQuad;
 
         var tl = symbol.tl,
             tr = symbol.tr,
@@ -658,7 +658,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
         textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedText, shapedTextVertical, textBoxScale, textPadding, textAlongLine, false);
     }
 
-    glyphQuadStartIndex = this.symbolQuadsArray.length;
+    glyphQuadStartIndex = this.placedSymbolArray.length;
     if (glyphQuads && glyphQuads.length) {
         for (var i = 0; i < glyphQuads.length; i++) {
             this.addSymbolQuad(glyphQuads[i]);
@@ -669,7 +669,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
             this.addSymbolQuad(glyphQuadsVertical[j]);
         }
     }
-    glyphQuadEndIndex = this.symbolQuadsArray.length;
+    glyphQuadEndIndex = this.placedSymbolArray.length;
 
     var textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
@@ -679,11 +679,11 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
         iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, null, iconBoxScale, iconPadding, iconAlongLine, true);
     }
 
-    iconQuadStartIndex = this.symbolQuadsArray.length;
+    iconQuadStartIndex = this.placedSymbolArray.length;
     if (iconQuads && iconQuads.length === 1) {
         this.addSymbolQuad(iconQuads[0]);
     }
-    iconQuadEndIndex = this.symbolQuadsArray.length;
+    iconQuadEndIndex = this.placedSymbolArray.length;
 
     var iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
     var iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
@@ -705,7 +705,7 @@ SymbolBucket.prototype.addSymbolInstance = function(anchor, line, shapedText, sh
 };
 
 SymbolBucket.prototype.addSymbolQuad = function(symbolQuad) {
-    return this.symbolQuadsArray.emplaceBack(
+    return this.placedSymbolArray.emplaceBack(
         // anchorPoints
         symbolQuad.anchorPoint.x,
         symbolQuad.anchorPoint.y,

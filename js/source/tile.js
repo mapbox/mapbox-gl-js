@@ -10,7 +10,7 @@ var featureFilter = require('feature-filter');
 var CollisionTile = require('../symbol/collision_tile');
 var CollisionBoxArray = require('../symbol/collision_box');
 var SymbolInstancesArray = require('../symbol/symbol_instances');
-var SymbolQuadsArray = require('../symbol/symbol_quads_array');
+var PlacedSymbolArray = require('../symbol/placed_symbol_array');
 
 module.exports = Tile;
 
@@ -71,7 +71,7 @@ Tile.prototype = {
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
-        this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
+        this.placedSymbolArray = new PlacedSymbolArray(data.placedSymbolArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = unserializeBuckets(data.buckets, painter.style);
     },
@@ -112,7 +112,7 @@ Tile.prototype = {
         }
 
         this.collisionBoxArray = null;
-        this.symbolQuadsArray = null;
+        this.placedSymbolArray = null;
         this.symbolInstancesArray = null;
         this.collisionTile = null;
         this.featureIndex = null;

@@ -9,7 +9,7 @@ var SymbolBucket = require('../../../js/data/bucket/symbol_bucket');
 var Collision = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
 var SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
-var SymbolQuadsArray = require('../../../js/symbol/symbol_quads_array');
+var PlacedSymbolArray = require('../../../js/symbol/placed_symbol_array');
 var GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 var StyleLayer = require('../../../js/style/style_layer');
 var util = require('../../../js/util/util');
@@ -22,7 +22,7 @@ var glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fo
 /*eslint new-cap: 0*/
 var buffers = {};
 var collisionBoxArray = new CollisionBoxArray();
-var symbolQuadsArray = new SymbolQuadsArray();
+var placedSymbolArray = new PlacedSymbolArray();
 var symbolInstancesArray = new SymbolInstancesArray();
 var collision = new Collision(0, 0, collisionBoxArray);
 var atlas = new GlyphAtlas();
@@ -46,7 +46,7 @@ function bucketSetup() {
         zoom: 0,
         collisionBoxArray: collisionBoxArray,
         symbolInstancesArray: symbolInstancesArray,
-        symbolQuadsArray: symbolQuadsArray,
+        placedSymbolArray: placedSymbolArray,
         layer: layer,
         childLayers: [layer],
         tileExtent: 4096

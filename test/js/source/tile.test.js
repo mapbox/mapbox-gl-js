@@ -11,7 +11,7 @@ var FeatureIndex = require('../../../js/data/feature_index');
 var CollisionTile = require('../../../js/symbol/collision_tile');
 var CollisionBoxArray = require('../../../js/symbol/collision_box');
 var SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
-var SymbolQuadsArray = require('../../../js/symbol/symbol_quads_array');
+var PlacedSymbolArray = require('../../../js/symbol/placed_symbol_array');
 var util = require('../../../js/util/util');
 
 test('querySourceFeatures', function(t) {
@@ -123,7 +123,7 @@ function createVectorData(options) {
         collisionBoxArray: collisionBoxArray.serialize(),
         collisionTile: (new CollisionTile(0, 0, collisionBoxArray)).serialize(),
         symbolInstancesArray: (new SymbolInstancesArray()).serialize(),
-        symbolQuadsArray: (new SymbolQuadsArray()).serialize(),
+        placedSymbolArray: (new PlacedSymbolArray()).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);

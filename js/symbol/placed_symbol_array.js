@@ -10,11 +10,11 @@ var Point = require('point-geometry');
  * this will allow glyph quads to be transferred between the worker and main threads along with the rest of
  * the symbolInstances
  *
- * @class SymbolQuadsArray
+ * @class PlacedSymbolArray
  * @private
  */
 
-var SymbolQuadsArray = module.exports = new StructArrayType({
+var PlacedSymbolArray = module.exports = new StructArrayType({
     members: [
         // the quad is centered around the anchor point
         { type: 'Int16', name: 'anchorPointX' },
@@ -48,7 +48,7 @@ var SymbolQuadsArray = module.exports = new StructArrayType({
     ]
 });
 
-util.extendAll(SymbolQuadsArray.prototype.StructType.prototype, {
+util.extendAll(PlacedSymbolArray.prototype.StructType.prototype, {
     get anchorPoint() {
         return new Point(this.anchorPointX, this.anchorPointY);
     },
