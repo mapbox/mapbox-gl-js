@@ -56,8 +56,6 @@
 <script>
 var map = window.map = new mapboxgl.Map({
     container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
     style: 'mapbox://styles/mapbox/streets-v9',
     hash: true
 });
@@ -67,32 +65,110 @@ map.addControl(new mapboxgl.GeolocateControl());
 map.addControl(new mapboxgl.ScaleControl());
 
 map.on('load', function() {
-    map.addSource('geojson', {
+    map.addSource('lines', {
         "type": "geojson",
-        "data": "/node_modules/mapbox-gl-test-suite/data/linestring.geojson"
+        "data": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "one"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -112.5,
+                    42.293564192170095
+                  ],
+                  [
+                    76.9921875,
+                    43.58039085560784
+                  ]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "two"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -17.2265625,
+                    83.23642648170203
+                  ],
+                  [
+                    -15.8203125,
+                    -51.39920565355377
+                  ]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "three"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -55.54687499999999,
+                    -47.5172006978394
+                  ],
+                  [
+                    24.609375,
+                    82.89698689394207
+                  ]
+                ]
+              }
+            },
+            {
+              "type": "Feature",
+              "properties": {
+                "name": "four"
+              },
+              "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                  [
+                    -107.9296875,
+                    62.431074232920906
+                  ],
+                  [
+                    71.3671875,
+                    14.604847155053898
+                  ]
+                ]
+              }
+            }
+          ]
+        }
     });
 
     map.addLayer({
-        "id": "route",
+        "id": "lines",
         "type": "line",
-        "source": "geojson",
+        "source": "lines",
         "paint": {
             "line-color": "#EC8D8D",
-            "line-width": {
-                "base": 1.5,
-                "stops": [
-                    [
-                        5,
-                        0.75
-                    ],
-                    [
-                        18,
-                        32
-                    ]
-                ]
-            }
+            "line-width": 5
         }
-    }, 'country-label-lg');
+    });
+
+    map.addLayer({
+        "id": "lines-symbol",
+        "type": "symbol",
+        "source": "lines",
+        "layout": {
+            "text-field": "{name}",
+            "symbol-placement": "line"
+        }
+    });
 
     var bufferTimes = {};
     map.on('tile.stats', function(bufferTimes) {
