@@ -159,7 +159,7 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
         getTile(url, (err, response) => {
             if (err) throw err;
             const data = new VT.VectorTile(new Protobuf(response));
-            workerTile.parse(data, layerIndex.families, actor, (err) => {
+            workerTile.parse(data, layerIndex, actor, (err) => {
                 if (err) return callback(err);
                 eachCallback();
             });

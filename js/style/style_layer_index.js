@@ -12,19 +12,19 @@ class StyleLayerIndex {
     }
 
     replace(layers) {
-        this._layers = {};
-        this._order = [];
+        this.layers = {};
+        this.order = [];
         this.update(layers);
     }
 
     _updateLayer(layer) {
-        const refLayer = layer.ref && this._layers[layer.ref];
+        const refLayer = layer.ref && this.layers[layer.ref];
 
-        let styleLayer = this._layers[layer.id];
+        let styleLayer = this.layers[layer.id];
         if (styleLayer) {
             styleLayer.set(layer, refLayer);
         } else {
-            styleLayer = this._layers[layer.id] = StyleLayer.create(layer, refLayer);
+            styleLayer = this.layers[layer.id] = StyleLayer.create(layer, refLayer);
         }
 
         styleLayer.updatePaintTransitions({}, {transition: false});
@@ -33,8 +33,8 @@ class StyleLayerIndex {
 
     update(layers) {
         for (const layer of layers) {
-            if (!this._layers[layer.id]) {
-                this._order.push(layer.id);
+            if (!this.layers[layer.id]) {
+                this.order.push(layer.id);
             }
         }
 
@@ -51,9 +51,9 @@ class StyleLayerIndex {
         this.families = [];
         const byParent = {};
 
-        for (const id of this._order) {
-            const layer = this._layers[id];
-            const parent = layer.ref ? this._layers[layer.ref] : layer;
+        for (const id of this.order) {
+            const layer = this.layers[id];
+            const parent = layer.ref ? this.layers[layer.ref] : layer;
 
             if (parent.layout && parent.layout.visibility === 'none') {
                 continue;
@@ -71,6 +71,26 @@ class StyleLayerIndex {
             } else {
                 family.unshift(layer);
             }
+        }
+
+        this.familiesBySource = {};
+
+        for (const family of this.families) {
+            const layer = family[0];
+
+            const sourceId = layer.source || '';
+            let sourceGroup = this.familiesBySource[sourceId];
+            if (!sourceGroup) {
+                sourceGroup = this.familiesBySource[sourceId] = {};
+            }
+
+            const sourceLayerId = layer.sourceLayer || '_geojsonTileLayer';
+            let sourceLayerFamilies = sourceGroup[sourceLayerId];
+            if (!sourceLayerFamilies) {
+                sourceLayerFamilies = sourceGroup[sourceLayerId] = [];
+            }
+
+            sourceLayerFamilies.push(family);
         }
     }
 }

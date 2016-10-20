@@ -58,7 +58,7 @@ class VectorTileWorkerSource {
             if (!vectorTile) return callback(null, null);
 
             workerTile.vectorTile = vectorTile;
-            workerTile.parse(vectorTile, this.layerIndex.families, this.actor, (err, result, transferrables) => {
+            workerTile.parse(vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
                 if (err) return callback(err);
 
                 // Not transferring rawTileData because the worker needs to retain its copy.
@@ -84,7 +84,7 @@ class VectorTileWorkerSource {
             uid = params.uid;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.parse(workerTile.vectorTile, this.layerIndex.families, this.actor, callback);
+            workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, callback);
         }
     }
 

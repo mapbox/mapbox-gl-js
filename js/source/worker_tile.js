@@ -23,7 +23,7 @@ class WorkerTile {
         this.showCollisionBoxes = params.showCollisionBoxes;
     }
 
-    parse(data, layerFamilies, actor, callback) {
+    parse(data, layerIndex, actor, callback) {
         // Normalize GeoJSON data.
         if (!data.layers) {
             data = { layers: { '_geojsonTileLayer': data } };
@@ -38,27 +38,6 @@ class WorkerTile {
         const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const layerFamiliesBySourceLayer = {};
-
-        for (const family of layerFamilies) {
-            const layer = family[0];
-            const sourceLayerId = layer.sourceLayer || '_geojsonTileLayer';
-
-            assert(!layer.ref);
-
-            if (layer.source !== this.source) continue;
-            if (layer.minzoom && this.zoom < layer.minzoom) continue;
-            if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
-            if (layer.layout && layer.layout.visibility === 'none') continue;
-            if (!data.layers[sourceLayerId]) continue;
-
-            let familyGroup = layerFamiliesBySourceLayer[sourceLayerId];
-            if (!familyGroup) {
-                familyGroup = layerFamiliesBySourceLayer[sourceLayerId] = [];
-            }
-            familyGroup.push(family);
-        }
-
         const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
         featureIndex.bucketLayerIDs = {};
 
@@ -69,10 +48,9 @@ class WorkerTile {
         let stacks = {};
         const dependencies = {icons, stacks};
 
-        for (const sourceLayerId in layerFamiliesBySourceLayer) {
-            const families = layerFamiliesBySourceLayer[sourceLayerId];
+        const layerFamilies = layerIndex.familiesBySource[this.source];
+        for (const sourceLayerId in layerFamilies) {
             const sourceLayer = data.layers[sourceLayerId];
-
             if (!sourceLayer) {
                 continue;
             }
@@ -92,9 +70,17 @@ class WorkerTile {
                 features.push(feature);
             }
 
-            for (const family of families) {
+            for (const family of layerFamilies[sourceLayerId]) {
+                const layer = family[0];
+
+                assert(layer.source === this.source);
+
+                if (layer.minzoom && this.zoom < layer.minzoom) continue;
+                if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
+                if (layer.layout && layer.layout.visibility === 'none') continue;
+
                 const bucket = Bucket.create({
-                    layer: family[0],
+                    layer: layer,
                     index: buckets.length,
                     childLayers: family,
                     zoom: this.zoom,
