@@ -33,15 +33,9 @@ class Bucket {
         this.layer = options.layer;
         this.childLayers = options.childLayers;
 
-        this.type = this.layer.type;
-        this.id = this.layer.id;
         this.index = options.index;
-        this.sourceLayer = this.layer.sourceLayer;
         this.sourceLayerIndex = options.sourceLayerIndex;
         this.featureIndex = options.featureIndex;
-        this.minZoom = this.layer.minzoom;
-        this.maxZoom = this.layer.maxzoom;
-
         this.programConfigurations = util.mapObject(this.programInterfaces, (programInterface) => {
             const result = {};
             for (const layer of options.childLayers) {
@@ -51,9 +45,8 @@ class Bucket {
         });
 
         if (options.arrays) {
-            const programInterfaces = this.programInterfaces;
             this.bufferGroups = util.mapObject(options.arrays, (programArrayGroups, programName) => {
-                const programInterface = programInterfaces[programName];
+                const programInterface = this.programInterfaces[programName];
                 const paintVertexArrayTypes = options.paintVertexArrayTypes[programName];
                 return programArrayGroups.map((arrayGroup) => {
                     return new BufferGroup(arrayGroup, {
