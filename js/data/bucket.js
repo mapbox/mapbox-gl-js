@@ -62,30 +62,6 @@ class Bucket {
         }
     }
 
-    /**
-     * Instantiate the appropriate subclass of `Bucket` for `options`.
-     * @param options See `Bucket` constructor options
-     * @returns {Bucket}
-     */
-    static create(options) {
-        const Classes = {
-            fill: require('./bucket/fill_bucket'),
-            fillextrusion: require('./bucket/fill_extrusion_bucket'),
-            line: require('./bucket/line_bucket'),
-            circle: require('./bucket/circle_bucket'),
-            symbol: require('./bucket/symbol_bucket')
-        };
-
-        let type = options.layer.type;
-        if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
-            !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
-            options.layer.getPaintValue('fill-extrude-height') !== 0)) {
-            type = 'fillextrusion';
-        }
-
-        return new Classes[type](options);
-    }
-
     populate(features) {
         this.createArrays();
         this.recalculateStyleLayers();
@@ -288,6 +264,29 @@ Bucket.ElementArrayType = function (components) {
 };
 
 module.exports = Bucket;
+
+const subclasses = {
+    fill: require('./bucket/fill_bucket'),
+    fillextrusion: require('./bucket/fill_extrusion_bucket'),
+    line: require('./bucket/line_bucket'),
+    circle: require('./bucket/circle_bucket'),
+    symbol: require('./bucket/symbol_bucket')
+};
+
+/**
+ * Instantiate the appropriate subclass of `Bucket` for `options`.
+ * @param options See `Bucket` constructor options
+ * @returns {Bucket}
+ */
+Bucket.create = function(options) {
+    let type = options.layer.type;
+    if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+        !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
+        options.layer.getPaintValue('fill-extrude-height') !== 0)) {
+        type = 'fillextrusion';
+    }
+    return new subclasses[type](options);
+};
 
 function createPaintAttributes(bucket) {
     const attributes = {};

@@ -10,26 +10,10 @@ const Evented = require('../util/evented');
 
 const TRANSITION_SUFFIX = '-transition';
 
-// false-positive prefer-const eslint violation here; we intentionally assign once but later
-let FillStyleLayer, LineStyleLayer, SymbolStyleLayer; // eslint-disable-line
-
 class StyleLayer extends Evented {
     constructor(layer, refLayer) {
         super();
         this.set(layer, refLayer);
-    }
-
-    static create(layer, refLayer) {
-        switch ((refLayer || layer).type) {
-        case 'fill':
-            return new FillStyleLayer(layer, refLayer);
-        case 'line':
-            return new LineStyleLayer(layer, refLayer);
-        case 'symbol':
-            return new SymbolStyleLayer(layer, refLayer);
-        default:
-            return new StyleLayer(layer, refLayer);
-        }
     }
 
     set(layer, refLayer) {
@@ -347,9 +331,16 @@ class StyleLayer extends Evented {
 
 module.exports = StyleLayer;
 
-FillStyleLayer = require('./style_layer/fill_style_layer');
-LineStyleLayer = require('./style_layer/line_style_layer');
-SymbolStyleLayer = require('./style_layer/symbol_style_layer');
+const subclasses = {
+    'fill': require('./style_layer/fill_style_layer'),
+    'line': require('./style_layer/line_style_layer'),
+    'symbol': require('./style_layer/symbol_style_layer')
+};
+
+StyleLayer.create = function(layer, refLayer) {
+    const LayerClass = subclasses[(refLayer || layer).type] || StyleLayer;
+    return new LayerClass(layer, refLayer);
+};
 
 function getDeclarationValue(declaration) {
     return declaration.value;
