@@ -1,7 +1,7 @@
 'use strict';
 
 const Point = require('point-geometry');
-const EXTENT = require('../data/bucket').EXTENT;
+const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
 
 /**

@@ -2,7 +2,7 @@
 
 const Point = require('point-geometry');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
-const EXTENT = require('../data/bucket').EXTENT;
+const EXTENT = require('../data/extent');
 
 class FeatureWrapper {
 

@@ -2,6 +2,7 @@
 
 const Bucket = require('../bucket');
 const loadGeometry = require('../load_geometry');
+const EXTENT = require('../extent');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
 const Point = require('point-geometry');
@@ -168,5 +169,5 @@ function isBoundaryEdge(v1, v2) {
 }
 
 function isOutside(coord) {
-    return coord < 0 || coord > Bucket.EXTENT;
+    return coord < 0 || coord > EXTENT;
 }

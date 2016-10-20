@@ -6,7 +6,7 @@ const LngLat = require('./lng_lat'),
     util = require('../util/util'),
     interp = require('../util/interpolate'),
     TileCoord = require('../source/tile_coord'),
-    EXTENT = require('../data/bucket').EXTENT,
+    EXTENT = require('../data/extent'),
     glmatrix = require('gl-matrix');
 
 const vec4 = glmatrix.vec4,

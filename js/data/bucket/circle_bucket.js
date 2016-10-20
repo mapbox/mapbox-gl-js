@@ -2,7 +2,7 @@
 
 const Bucket = require('../bucket');
 const loadGeometry = require('../load_geometry');
-const EXTENT = Bucket.EXTENT;
+const EXTENT = require('../extent');
 
 const circleInterfaces = {
     circle: {

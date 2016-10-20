@@ -1,6 +1,6 @@
 'use strict';
 
-const Bucket = require('../data/bucket');
+const EXTENT = require('../data/extent');
 
 /**
  * Converts a pixel value at a the given zoom level to tile units.
@@ -18,6 +18,5 @@ const Bucket = require('../data/bucket');
  * @private
  */
 module.exports = function(tile, pixelValue, z) {
-    return pixelValue * (Bucket.EXTENT / (tile.tileSize * Math.pow(2, z - tile.coord.z)));
+    return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.coord.z)));
 };
-
