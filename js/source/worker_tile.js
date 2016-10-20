@@ -63,10 +63,12 @@ class WorkerTile {
                 );
             }
 
+            const sourceLayerIndex = sourceLayerCoder.encode(sourceLayerId);
             const features = [];
             for (let i = 0; i < sourceLayer.length; i++) {
                 const feature = sourceLayer.feature(i);
                 feature.index = i;
+                feature.sourceLayerIndex = sourceLayerIndex;
                 features.push(feature);
             }
 
@@ -89,7 +91,6 @@ class WorkerTile {
                     collisionBoxArray: this.collisionBoxArray,
                     symbolQuadsArray: this.symbolQuadsArray,
                     symbolInstancesArray: this.symbolInstancesArray,
-                    sourceLayerIndex: sourceLayerCoder.encode(sourceLayerId),
                     featureIndex: featureIndex
                 });
 

@@ -50,9 +50,9 @@ class FeatureIndex {
         this.setCollisionTile(collisionTile);
     }
 
-    insert(feature, featureIndex, sourceLayerIndex, bucketIndex) {
+    insert(feature, bucketIndex) {
         const key = this.featureIndexArray.length;
-        this.featureIndexArray.emplaceBack(featureIndex, sourceLayerIndex, bucketIndex);
+        this.featureIndexArray.emplaceBack(feature.index, feature.sourceLayerIndex, bucketIndex);
         const geometry = loadGeometry(feature);
 
         for (let r = 0; r < geometry.length; r++) {
