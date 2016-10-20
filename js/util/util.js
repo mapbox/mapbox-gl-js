@@ -115,6 +115,20 @@ exports.asyncAll = function (array, fn, callback) {
 };
 
 /*
+ * Polyfill for Object.values. Not fully spec compliant, but we don't
+ * need it to be.
+ *
+ * @private
+ */
+exports.values = function (obj) {
+    const result = [];
+    for (const k in obj) {
+        result.push(obj[k]);
+    }
+    return result;
+};
+
+/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *
