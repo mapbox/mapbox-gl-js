@@ -95,8 +95,6 @@ class SymbolBucket extends Bucket {
     constructor(options) {
         super(options);
 
-        this.showCollisionBoxes = options.showCollisionBoxes;
-        this.overscaling = options.overscaling;
         this.collisionBoxArray = options.collisionBoxArray;
         this.symbolQuadsArray = options.symbolQuadsArray;
         this.symbolInstancesArray = options.symbolInstancesArray;
@@ -135,7 +133,7 @@ class SymbolBucket extends Bucket {
                 placementZoom * 10);
     }
 
-    populate(features, dependencies) {
+    populate(features, options) {
         this.recalculateStyleLayers();
 
         const layout = this.layer.layout;
@@ -152,8 +150,8 @@ class SymbolBucket extends Bucket {
             return;
         }
 
-        const icons = dependencies.icons;
-        const stacks = dependencies.stacks;
+        const icons = options.iconDependencies;
+        const stacks = options.glyphDependencies;
         const stack = stacks[textFont] = stacks[textFont] || {};
 
         for (const feature of features) {
