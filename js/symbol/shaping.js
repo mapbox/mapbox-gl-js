@@ -118,8 +118,6 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     const positionedGlyphs = shaping.positionedGlyphs;
 
     if (maxWidth) {
-        const wordLength = positionedGlyphs.length;
-
         if (allowsIdeographicBreaking) {
             const lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
             const estimatedLineCount = Math.max(1, Math.ceil(lastPositionedGlyph.x / maxWidth));
@@ -159,9 +157,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (allowsIdeographicBreaking) {
-                lastSafeBreak = i
-            } else if (breakable[positionedGlyph.codePoint]) {
+            if (allowsIdeographicBreaking || breakable[positionedGlyph.codePoint]) {
                 lastSafeBreak = i;
             }
         }
