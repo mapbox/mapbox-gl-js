@@ -2,6 +2,8 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Bucket = require('../../../js/data/bucket');
+const VertexArrayType = require('../../../js/data/vertex_array_type');
+const ElementArrayType = require('../../../js/data/element_array_type');
 const FeatureIndex = require('../../../js/data/feature_index');
 const StyleLayer = require('../../../js/style/style_layer');
 const featureFilter = require('feature-filter');
@@ -35,13 +37,13 @@ test('Bucket', (t) => {
             get programInterfaces() {
                 return {
                     test: {
-                        layoutVertexArrayType: new Bucket.VertexArrayType(options.layoutAttributes || [{
+                        layoutVertexArrayType: new VertexArrayType(options.layoutAttributes || [{
                             name: 'a_box',
                             components: 2,
                             type: 'Int16'
                         }]),
-                        elementArrayType: new Bucket.ElementArrayType(),
-                        elementArrayType2: new Bucket.ElementArrayType(2),
+                        elementArrayType: new ElementArrayType(),
+                        elementArrayType2: new ElementArrayType(2),
 
                         paintAttributes: options.paintAttributes || [{
                             name: 'a_map',
