@@ -19,8 +19,8 @@ const AttributeType = {
  */
 class Buffer {
     /**
-     * @param {object} array A serialized StructArray.
-     * @param {object} arrayType A serialized StructArrayType.
+     * @param {Object} array A serialized StructArray.
+     * @param {Object} arrayType A serialized StructArrayType.
      * @param {BufferType} type
      */
     constructor(array, arrayType, type) {

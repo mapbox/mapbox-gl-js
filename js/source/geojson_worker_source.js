@@ -66,7 +66,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * Defers to {@link GeoJSONWorkerSource#loadGeoJSON} for the fetching/parsing,
      * expecting `callback(error, data)` to be called with either an error or a
      * parsed GeoJSON object.
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.source The id of the source.
      * @param {Function} callback
      */
@@ -94,9 +94,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * GeoJSON is loaded and parsed from `params.url` if it exists, or else
      * expected as a literal (string or object) `params.data`.
      *
-     * @param {object} params
+     * @param {Object} params
      * @param {string} [params.url] A URL to the remote GeoJSON data.
-     * @param {object} [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
+     * @param {Object} [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
      */
     loadGeoJSON(params, callback) {
         // Because of same origin issues, urls must either include an explicit
@@ -119,7 +119,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     /**
      * Index the data using either geojson-vt or supercluster
      * @param {GeoJSON} data
-     * @param {object} params forwarded from loadTile.
+     * @param {Object} params forwarded from loadTile.
      * @param {callback} (err, indexedData)
      * @private
      */

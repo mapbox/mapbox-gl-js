@@ -132,7 +132,7 @@ exports.setType = function (name, type) {
  *
  * @method
  * @name loadTile
- * @param {object} params Parameters sent by the main-thread Source identifying the tile to load.
+ * @param {Object} params Parameters sent by the main-thread Source identifying the tile to load.
  * @param {Function} callback
  * @memberof WorkerSource
  * @instance
@@ -144,7 +144,7 @@ exports.setType = function (name, type) {
  *
  * @method
  * @name reloadTile
- * @param {object} params
+ * @param {Object} params
  * @param {Function} callback
  * @memberof WorkerSource
  * @instance
@@ -154,7 +154,7 @@ exports.setType = function (name, type) {
  * Aborts loading a tile that is in progress.
  * @method
  * @name abortTile
- * @param {object} params
+ * @param {Object} params
  * @memberof WorkerSource
  * @instance
  */

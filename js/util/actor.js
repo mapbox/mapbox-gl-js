@@ -27,7 +27,7 @@ class Actor {
      * a main-thread map instance.
      *
      * @param {string} type The name of the target method to invoke or '[source-type].name' for a method on a WorkerSource.
-     * @param {object} data
+     * @param {Object} data
      * @param {Function} [callback]
      * @param {Array} [buffers] A list of buffers to "transfer" (see https://developer.mozilla.org/en-US/docs/Web/API/Transferable)
      * @param {string} [targetMapId] A particular mapId to which to send this message.

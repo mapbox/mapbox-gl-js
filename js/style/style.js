@@ -21,6 +21,9 @@ const styleSpec = require('./style_spec');
 const StyleFunction = require('./style_function');
 const getWorkerPool = require('../global_worker_pool');
 
+/**
+ * @private
+ */
 class Style extends Evented {
 
     constructor(stylesheet, map, options) {
