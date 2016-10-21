@@ -2,9 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Camera = require('../../../js/ui/camera');
-const Evented = require('../../../js/util/evented');
 const Transform = require('../../../js/geo/transform');
-const util = require('../../../js/util/util');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;
@@ -12,11 +10,10 @@ const fixedNum = fixed.Num;
 
 test('camera', (t) => {
     function createCamera(options) {
-        const camera = new Evented();
-        util.extend(camera, Camera.prototype);
-
-        const transform = camera.transform = new Transform(0, 20);
+        const transform = new Transform(0, 20);
         transform.resize(512, 512);
+
+        const camera = new Camera(transform, {});
 
         if (options) {
             camera.jumpTo(options);
