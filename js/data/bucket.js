@@ -2,9 +2,8 @@
 
 const ArrayGroup = require('./array_group');
 const BufferGroup = require('./buffer_group');
-const VertexArrayType = require('./vertex_array_type');
+const ProgramConfiguration = require('./program_configuration');
 const util = require('../util/util');
-const assert = require('assert');
 
 const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
 
@@ -43,7 +42,13 @@ class Bucket {
         this.minZoom = this.layer.minzoom;
         this.maxZoom = this.layer.maxzoom;
 
-        this.paintAttributes = createPaintAttributes(this);
+        this.programConfigurations = util.mapObject(this.programInterfaces, (programInterface) => {
+            const result = {};
+            for (const layer of options.childLayers) {
+                result[layer.id] = ProgramConfiguration.createDynamic(programInterface.paintAttributes || [], layer, options);
+            }
+            return result;
+        });
 
         if (options.arrays) {
             const programInterfaces = this.programInterfaces;
@@ -119,13 +124,10 @@ class Bucket {
 
         for (const programName in this.programInterfaces) {
             this.arrayGroups[programName] = [];
-
-            const paintVertexArrayTypes = this.paintVertexArrayTypes[programName] = {};
-            const layerPaintAttributes = this.paintAttributes[programName];
-
-            for (const layerName in layerPaintAttributes) {
-                paintVertexArrayTypes[layerName] = new VertexArrayType(layerPaintAttributes[layerName].attributes);
-            }
+            this.paintVertexArrayTypes[programName] = util.mapObject(
+                this.programConfigurations[programName], (programConfiguration) => {
+                    return programConfiguration.paintVertexArrayType();
+                });
         }
     }
 
@@ -168,15 +170,6 @@ class Bucket {
         }
     }
 
-    setUniforms(gl, programName, program, layer, globalProperties) {
-        const uniforms = this.paintAttributes[programName][layer.id].uniforms;
-        for (let i = 0; i < uniforms.length; i++) {
-            const uniform = uniforms[i];
-            const uniformLocation = program[uniform.name];
-            gl[`uniform${uniform.components}fv`](uniformLocation, uniform.getValue(layer, globalProperties));
-        }
-    }
-
     serialize() {
         return {
             layerId: this.layer.id,
@@ -205,32 +198,25 @@ class Bucket {
     }
 
     populatePaintArrays(interfaceName, globalProperties, featureProperties, startGroup, startIndex) {
-        for (let l = 0; l < this.childLayers.length; l++) {
-            const layer = this.childLayers[l];
-            const groups = this.arrayGroups[interfaceName];
+        const groups = this.arrayGroups[interfaceName];
+        const programConfiguration = this.programConfigurations[interfaceName];
+
+        for (const layer of this.childLayers) {
             for (let g = startGroup.index; g < groups.length; g++) {
                 const group = groups[g];
+                const start = g === startGroup.index ? startIndex : 0;
                 const length = group.layoutVertexArray.length;
+
                 const paintArray = group.paintVertexArrays[layer.id];
                 paintArray.resize(length);
 
-                const attributes = this.paintAttributes[interfaceName][layer.id].attributes;
-                for (let m = 0; m < attributes.length; m++) {
-                    const attribute = attributes[m];
-
-                    const value = attribute.getValue(layer, globalProperties, featureProperties);
-                    const multiplier = attribute.multiplier || 1;
-                    const components = attribute.components || 1;
-
-                    const start = g === startGroup.index  ? startIndex : 0;
-                    for (let i = start; i < length; i++) {
-                        const vertex = paintArray.get(i);
-                        for (let c = 0; c < components; c++) {
-                            const memberName = components > 1 ? (attribute.name + c) : attribute.name;
-                            vertex[memberName] = value[c] * multiplier;
-                        }
-                    }
-                }
+                programConfiguration[layer.id].populatePaintArray(
+                    layer,
+                    paintArray,
+                    start,
+                    length,
+                    globalProperties,
+                    featureProperties);
             }
         }
     }
@@ -260,136 +246,3 @@ Bucket.create = function(options) {
     }
     return new subclasses[type](options);
 };
-
-function createPaintAttributes(bucket) {
-    const attributes = {};
-    for (const interfaceName in bucket.programInterfaces) {
-        attributes[interfaceName] = {};
-
-        for (const childLayer of bucket.childLayers) {
-            attributes[interfaceName][childLayer.id] = {
-                attributes: [],
-                uniforms: [],
-                defines: [],
-                vertexPragmas: { define: {}, initialize: {} },
-                fragmentPragmas: { define: {}, initialize: {} }
-            };
-        }
-
-        const interfacePaintAttributes = bucket.programInterfaces[interfaceName].paintAttributes;
-        if (!interfacePaintAttributes) continue;
-
-        // "{precision} {type} tokens are replaced by arguments to the pragma
-        // https://github.com/mapbox/mapbox-gl-shaders#pragmas
-
-        for (const attribute of interfacePaintAttributes) {
-            attribute.multiplier = attribute.multiplier || 1;
-
-            for (const layer of bucket.childLayers) {
-                const paintAttributes = attributes[interfaceName][layer.id];
-                const fragmentInit = paintAttributes.fragmentPragmas.initialize;
-                const fragmentDefine = paintAttributes.fragmentPragmas.define;
-                const vertexInit = paintAttributes.vertexPragmas.initialize;
-                const vertexDefine = paintAttributes.vertexPragmas.define;
-
-                const inputName = attribute.name;
-                assert(attribute.name.slice(0, 2) === 'a_');
-                const name = attribute.name.slice(2);
-                const multiplier = attribute.multiplier.toFixed(1);
-
-                fragmentInit[name] = '';
-
-                if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
-                    paintAttributes.uniforms.push(attribute);
-
-                    fragmentDefine[name] = vertexDefine[name] = `uniform {precision} {type} ${inputName};\n`;
-                    fragmentInit[name] = vertexInit[name] = `{precision} {type} ${name} = ${inputName};\n`;
-
-                } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
-                    paintAttributes.attributes.push(util.extend({}, attribute, {name: inputName}));
-
-                    fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
-                    vertexDefine[name] = `varying {precision} {type} ${name};\n attribute {precision} {type} ${inputName};\n`;
-                    vertexInit[name] = `${name} = ${inputName} / ${multiplier};\n`;
-
-                } else {
-                    // Pick the index of the first offset to add to the buffers.
-                    // Find the four closest stops, ideally with two on each side of the zoom level.
-                    let numStops = 0;
-                    const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
-                    while (numStops < zoomLevels.length && zoomLevels[numStops] < bucket.zoom) numStops++;
-                    const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
-
-                    const fourZoomLevels = [];
-                    for (let s = 0; s < 4; s++) {
-                        fourZoomLevels.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
-                    }
-
-                    const tName = `u_${name}_t`;
-
-                    fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
-                    vertexDefine[name] = `varying {precision} {type} ${name};\n uniform lowp float ${tName};\n`;
-
-                    paintAttributes.uniforms.push(util.extend({}, attribute, {
-                        name: tName,
-                        getValue: createGetUniform(attribute, stopOffset),
-                        components: 1
-                    }));
-
-                    if (attribute.components === 1) {
-                        paintAttributes.attributes.push(util.extend({}, attribute, {
-                            getValue: createFunctionGetValue(attribute, fourZoomLevels),
-                            isFunction: true,
-                            components: attribute.components * 4
-                        }));
-
-                        vertexDefine[name] += `attribute {precision} vec4 ${inputName};\n`;
-                        vertexInit[name] = `${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier};\n`;
-
-                    } else {
-                        const inputNames = [];
-                        for (let k = 0; k < 4; k++) {
-                            inputNames.push(inputName + k);
-                            paintAttributes.attributes.push(util.extend({}, attribute, {
-                                getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
-                                isFunction: true,
-                                name: inputName + k
-                            }));
-                            vertexDefine[name] += `attribute {precision} {type} ${inputName + k};\n`;
-                        }
-                        vertexInit[name] = `${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier};\n`;
-                    }
-                }
-            }
-        }
-    }
-    return attributes;
-}
-
-function createFunctionGetValue(attribute, stopZoomLevels) {
-    return function(layer, globalProperties, featureProperties) {
-        if (stopZoomLevels.length === 1) {
-            // return one multi-component value like color0
-            return attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevels[0] }), featureProperties);
-        } else {
-            // pack multiple single-component values into a four component attribute
-            const values = [];
-            for (let z = 0; z < stopZoomLevels.length; z++) {
-                const stopZoomLevel = stopZoomLevels[z];
-                values.push(attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevel }), featureProperties)[0]);
-            }
-            return values;
-        }
-    };
-}
-
-function createGetUniform(attribute, stopOffset) {
-    return function(layer, globalProperties) {
-        // stopInterp indicates which stops need to be interpolated.
-        // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-        const stopInterp = layer.getPaintInterpolationT(attribute.paintProperty, globalProperties.zoom);
-        // We can only store four stop values in the buffers. stopOffset is the number of stops that come
-        // before the stops that were added to the buffers.
-        return [Math.max(0, Math.min(4, stopInterp - stopOffset))];
-    };
-}

@@ -60,14 +60,9 @@ function drawFill(painter, sourceCache, layer, coord) {
 
     if (!image) {
 
-        const programOptions = bucket.paintAttributes.fill[layer.id];
-        program = painter.useProgram(
-            'fill',
-            programOptions.defines,
-            programOptions.vertexPragmas,
-            programOptions.fragmentPragmas
-        );
-        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
+        const programConfiguration = bucket.programConfigurations.fill[layer.id];
+        program = painter.useProgram('fill', programConfiguration);
+        programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     } else {
         // Draw texture fill
@@ -113,15 +108,10 @@ function drawStroke(painter, sourceCache, layer, coord) {
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     } else {
-        const programOptions = bucket.paintAttributes.fill[layer.id];
-        program = painter.useProgram(
-            'fillOutline',
-            programOptions.defines,
-            programOptions.vertexPragmas,
-            programOptions.fragmentPragmas
-        );
+        const programConfiguration = bucket.programConfigurations.fill[layer.id];
+        program = painter.useProgram('fillOutline', programConfiguration);
+        programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
-        bucket.setUniforms(gl, 'fill', program, layer, {zoom: painter.transform.zoom});
     }
 
     gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);

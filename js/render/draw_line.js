@@ -39,10 +39,10 @@ function drawLineTile(painter, sourceCache, layer, coord) {
     const gl = painter.gl;
     const dasharray = layer.paint['line-dasharray'];
     const image = layer.paint['line-pattern'];
-    const programOptions = bucket.paintAttributes.line[layer.id];
 
-    const program = painter.useProgram(dasharray ? 'lineSDF' : image ? 'linePattern' : 'line',
-            programOptions.defines, programOptions.vertexPragmas, programOptions.fragmentPragmas);
+    const programConfiguration = bucket.programConfigurations.line[layer.id];
+    const program = painter.useProgram(dasharray ? 'lineSDF' : image ? 'linePattern' : 'line', programConfiguration);
+    programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (!image) {
         gl.uniform4fv(program.u_color, layer.paint['line-color']);
@@ -119,8 +119,6 @@ function drawLineTile(painter, sourceCache, layer, coord) {
     }
 
     gl.uniform1f(program.u_ratio, 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom));
-
-    bucket.setUniforms(gl, 'line', program, layer, {zoom: painter.transform.zoom});
 
     for (let i = 0; i < bufferGroups.length; i++) {
         const group = bufferGroups[i];

@@ -156,7 +156,7 @@ test('Bucket', (t) => {
 
         t.equal(bucket.arrayGroups.test[0].layoutVertexArray.bytesPerElement, 0);
         t.deepEqual(
-            bucket.paintAttributes.test.one.uniforms[0].getValue.call(bucket),
+            bucket.programConfigurations.test.one.uniforms[0].getValue.call(bucket),
             [5]
         );
 
