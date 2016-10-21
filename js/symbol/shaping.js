@@ -56,7 +56,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreakingBreaking(text));
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreaking(text));
 
     return shaping;
 }
@@ -107,7 +107,7 @@ const breakable = {
 
 invisible[newLine] = breakable[newLine] = true;
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, allowsIdeographicBreakingBreaking) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, allowsIdeographicBreaking) {
     let lastSafeBreak = null;
     let lengthBeforeCurrentLine = 0;
     let lineStartIndex = 0;
@@ -119,6 +119,13 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
 
     if (maxWidth) {
         const wordLength = positionedGlyphs.length;
+
+        if (allowsIdeographicBreaking) {
+            const lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
+            const estimatedLineCount = Math.max(1, Math.ceil(lastPositionedGlyph.x / maxWidth));
+            maxWidth = lastPositionedGlyph.x / estimatedLineCount;
+        }
+
         for (let i = 0; i < positionedGlyphs.length; i++) {
             const positionedGlyph = positionedGlyphs[i];
 
@@ -152,7 +159,9 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (allowsIdeographicBreakingBreaking || breakable[positionedGlyph.codePoint]) {
+            if (allowsIdeographicBreaking) {
+                lastSafeBreak = i
+            } else if (breakable[positionedGlyph.codePoint]) {
                 lastSafeBreak = i;
             }
         }

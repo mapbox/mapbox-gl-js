@@ -13,6 +13,6 @@ const ideographicBreakingRegExp = new RegExp([
     '[ꀀ-꓆]'
 ].join('|'));
 
-module.exports.allowsIdeographicBreakingBreaking = function(input) {
+module.exports.allowsIdeographicBreaking = function(input) {
     return input.search(ideographicBreakingRegExp) !== -1;
 };
