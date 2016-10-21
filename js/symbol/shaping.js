@@ -56,7 +56,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsBalancedBreaking(text));
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreakingBreaking(text));
 
     return shaping;
 }
@@ -107,7 +107,7 @@ const breakable = {
 
 invisible[newLine] = breakable[newLine] = true;
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, allowsBalancedBreaking) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, allowsIdeographicBreakingBreaking) {
     let lastSafeBreak = null;
     let lengthBeforeCurrentLine = 0;
     let lineStartIndex = 0;
@@ -152,7 +152,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (allowsBalancedBreaking || breakable[positionedGlyph.codePoint]) {
+            if (allowsIdeographicBreakingBreaking || breakable[positionedGlyph.codePoint]) {
                 lastSafeBreak = i;
             }
         }

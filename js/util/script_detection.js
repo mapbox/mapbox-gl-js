@@ -1,6 +1,6 @@
 'use strict';
 
-const balancedRegExp = new RegExp([
+const ideographicBreakingRegExp = new RegExp([
     '[一-鿌]',
     '[㐀-䶵]',
     // eslint-disable-next-line no-irregular-whitespace
@@ -13,6 +13,6 @@ const balancedRegExp = new RegExp([
     '[ꀀ-꓆]'
 ].join('|'));
 
-module.exports.allowsBalancedBreaking = function(input) {
-    return input.search(balancedRegExp) !== -1;
+module.exports.allowsIdeographicBreakingBreaking = function(input) {
+    return input.search(ideographicBreakingRegExp) !== -1;
 };
