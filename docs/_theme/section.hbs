@@ -41,7 +41,7 @@
       <% section.params.forEach(function(param) { %>
         <div class='space-bottom0'>
           <div>
-            <span class='code strong'><%- param.name%></span> <code class='quiet'>(<%= formatType(param) %><% if (param.default) { %>
+            <span class='code strong'><%- param.name%></span> <code class='quiet'>(<%= formatType(param.type) %><% if (param.default) { %>
             (default <code><%- param.default %></code>)
             <% } %>)</code> <%= md(param.description, true) %>
           </div>
@@ -60,7 +60,7 @@
             <tbody class='space-top1'>
               <% param.properties.forEach(function(property) { %>
                 <tr>
-                  <td class='break-word'><span class='code strong'><%- property.name %></span> <code class='quiet'><%= formatType(property) %></code>
+                  <td class='break-word'><span class='code strong'><%- property.name %></span> <code class='quiet'><%= formatType(property.type) %></code>
                   <% if (property.default) { %>
                     (default <code><%- property.default %></code>)
                   <% } %></td>
@@ -80,7 +80,7 @@
     <div>
       <% section.properties.forEach(function(property) { %>
         <div class='space-bottom0'>
-          <span class='code strong'><%- property.name%></span> <code class='quiet'>(<%= formatType(property) %>)</code>
+          <span class='code strong'><%- property.name%></span> <code class='quiet'>(<%= formatType(property.type) %>)</code>
           <% if (property.default) { %>
             (default <code><%- property.default %></code>)
           <% } %><% if (property.description) {
@@ -89,7 +89,7 @@
           <% if (property.properties) { %>
             <ul>
               <% property.properties.forEach(function(property) { %>
-                <li><code><%- name%></code> <%= formatType(property) %>
+                <li><code><%- name%></code> <%= formatType(property.type) %>
                   <% if (property.default) { %>
                     (default <code><%- property.default %></code>)
                   <% } %>
@@ -105,7 +105,7 @@
   <% if (section.returns) { %>
     <% section.returns.forEach(function(ret) { %>
       <div class='pad1y quiet space-top2 prose-big'>Returns</div>
-      <code><%= formatType(ret) %></code><% if (ret.description) { %>:
+      <code><%= formatType(ret.type) %></code><% if (ret.description) { %>:
         <%= md(ret.description, true) %>
       <% }%>
     <% }) %>
@@ -115,7 +115,7 @@
     <div class='pad1y quiet space-top2 prose-big'>Throws</div>
     <ul>
       <% section.throws.forEach(function(throws) { %>
-        <li><%= formatType(throws) %>: <%= md(throws.description, true) %></li>
+        <li><%= formatType(throws.type) %>: <%= md(throws.description, true) %></li>
       <% }); %>
     </ul>
   <% } %>
