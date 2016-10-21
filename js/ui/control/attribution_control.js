@@ -5,7 +5,6 @@ const DOM = require('../../util/dom');
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
- * Extends [`Control`](#Control).
  *
  * @param {Object} [options]
  * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.

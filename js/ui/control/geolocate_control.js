@@ -9,7 +9,7 @@ const geoOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 
 /**
  * A `GeolocateControl` control provides a button that uses the browser's geolocation
- * API to locate the user on the map. Extends [`Control`](#Control).
+ * API to locate the user on the map.
  *
  * @param {Object} [options]
  * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.

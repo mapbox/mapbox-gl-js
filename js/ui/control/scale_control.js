@@ -5,9 +5,7 @@ const DOM = require('../../util/dom');
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
- * Extends [`Control`](#Control).
  *
- * @class ScaleControl
  * @param {Object} [options]
  * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
