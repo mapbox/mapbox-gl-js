@@ -45,7 +45,7 @@ class Camera extends Evented {
     /**
      * Returns the map's geographical centerpoint.
      *
-     * @memberof Map
+     * @memberof Map#
      * @returns {LngLat} The map's geographical centerpoint.
      */
     getCenter() { return this.transform.center; }
@@ -53,7 +53,7 @@ class Camera extends Evented {
     /**
      * Sets the map's geographical centerpoint. Equivalent to `jumpTo({center: center})`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {LngLatLike} center The centerpoint to set.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -71,7 +71,7 @@ class Camera extends Evented {
     /**
      * Pans the map by the specified offest.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {Array<number>} offset `x` and `y` coordinates by which to pan the map.
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -89,7 +89,7 @@ class Camera extends Evented {
     /**
      * Pans the map to the specified location, with an animated transition.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {LngLatLike} lnglat The location to pan the map to.
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -106,7 +106,7 @@ class Camera extends Evented {
     /**
      * Returns the map's current zoom level.
      *
-     * @memberof Map
+     * @memberof Map#
      * @returns {number} The map's current zoom level.
      */
     getZoom() { return this.transform.zoom; }
@@ -114,7 +114,7 @@ class Camera extends Evented {
     /**
      * Sets the map's zoom level. Equivalent to `jumpTo({zoom: zoom})`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {number} zoom The zoom level to set (0-20).
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -136,7 +136,7 @@ class Camera extends Evented {
     /**
      * Zooms the map to the specified zoom level, with an animated transition.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {number} zoom The zoom level to transition to.
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -157,7 +157,7 @@ class Camera extends Evented {
     /**
      * Increases the map's zoom level by 1.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -176,7 +176,7 @@ class Camera extends Evented {
     /**
      * Decreases the map's zoom level by 1.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -195,7 +195,7 @@ class Camera extends Evented {
     /**
      * Returns the map's current bearing (rotation).
      *
-     * @memberof Map
+     * @memberof Map#
      * @returns {number} The map's current bearing, measured in degrees counter-clockwise from north.
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
@@ -204,7 +204,7 @@ class Camera extends Evented {
     /**
      * Sets the maps' bearing (rotation). Equivalent to `jumpTo({bearing: bearing})`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {number} bearing The bearing to set, measured in degrees counter-clockwise from north.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -222,7 +222,7 @@ class Camera extends Evented {
     /**
      * Rotates the map to the specified bearing, with an animated transition.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {number} bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -239,7 +239,7 @@ class Camera extends Evented {
     /**
      * Rotates the map to a bearing of 0 (due north), with an animated transition.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -254,7 +254,7 @@ class Camera extends Evented {
     /**
      * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {AnimationOptions} [options]
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -271,7 +271,7 @@ class Camera extends Evented {
     /**
      * Returns the map's current pitch (tilt).
      *
-     * @memberof Map
+     * @memberof Map#
      * @returns {number} The map's current pitch, measured in degrees away from the plane of the screen.
      */
     getPitch() { return this.transform.pitch; }
@@ -279,7 +279,7 @@ class Camera extends Evented {
     /**
      * Sets the map's pitch (tilt). Equivalent to `jumpTo({pitch: pitch})`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -295,7 +295,7 @@ class Camera extends Evented {
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
@@ -343,7 +343,7 @@ class Camera extends Evented {
      * an animated transition. The map will retain its current values for any
      * details not specified in `options`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {CameraOptions} options
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -408,7 +408,7 @@ class Camera extends Evented {
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {CameraOptions|AnimationOptions} options Options describing the destination and animation of the transition.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
@@ -530,7 +530,7 @@ class Camera extends Evented {
      * evokes flight. The animation seamlessly incorporates zooming and panning to help
      * the user maintain her bearings even after traversing a great distance.
      *
-     * @memberof Map
+     * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
      *     Accepts [CameraOptions](#CameraOptions), [AnimationOptions](#AnimationOptions),
      *     and the following additional options.
@@ -744,7 +744,7 @@ class Camera extends Evented {
     /**
      * Stops any animated transition underway.
      *
-     * @memberof Map
+     * @memberof Map#
      * @returns {Map} `this`
      */
     stop() {
