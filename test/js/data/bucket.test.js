@@ -82,16 +82,18 @@ test('Bucket', (t) => {
 
         return new Class({
             layer: layers[0],
-            childLayers: layers,
-            buffers: {},
-            featureIndex: new FeatureIndex(new TileCoord(0, 0, 0), 0, null)
+            childLayers: layers
         });
+    }
+
+    function createOptions() {
+        return {featureIndex: new FeatureIndex(new TileCoord(0, 0, 0), 0, null)};
     }
 
     t.test('add features', (t) => {
         const bucket = create();
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);
@@ -125,7 +127,7 @@ test('Bucket', (t) => {
             { id: 'two', type: 'circle', paint: dataDrivenPaint }
         ]});
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const v0 = bucket.arrayGroups.test[0].layoutVertexArray.get(0);
         const a0 = bucket.arrayGroups.test[0].paintVertexArrays.one.get(0);
@@ -152,7 +154,7 @@ test('Bucket', (t) => {
             ]
         });
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         t.equal(bucket.arrayGroups.test[0].layoutVertexArray.bytesPerElement, 0);
         t.deepEqual(
@@ -172,7 +174,7 @@ test('Bucket', (t) => {
             }]
         });
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const v0 = bucket.arrayGroups.test[0].layoutVertexArray.get(0);
         t.equal(v0.a_map, 34);
@@ -183,7 +185,7 @@ test('Bucket', (t) => {
     t.test('reset buffers', (t) => {
         const bucket = create();
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         t.equal(bucket.arrayGroups.test.length, 1);
         bucket.createArrays();
@@ -214,7 +216,7 @@ test('Bucket', (t) => {
         bucket.createArrays();
         t.ok(bucket.isEmpty());
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
         t.ok(!bucket.isEmpty());
 
         t.end();
@@ -222,7 +224,7 @@ test('Bucket', (t) => {
 
     t.test('getTransferables', (t) => {
         const bucket = create();
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const transferables = [];
         bucket.getTransferables(transferables);
@@ -239,9 +241,9 @@ test('Bucket', (t) => {
     t.test('add features after resetting buffers', (t) => {
         const bucket = create();
 
-        bucket.populate([createFeature(1, 5)]);
+        bucket.populate([createFeature(1, 5)], createOptions());
         bucket.createArrays();
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);
@@ -278,7 +280,7 @@ test('Bucket', (t) => {
     t.test('add features', (t) => {
         const bucket = create();
 
-        bucket.populate([createFeature(17, 42)]);
+        bucket.populate([createFeature(17, 42)], createOptions());
 
         const testVertex = bucket.arrayGroups.test[0].layoutVertexArray;
         t.equal(testVertex.length, 1);

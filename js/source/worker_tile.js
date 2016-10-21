@@ -44,9 +44,11 @@ class WorkerTile {
         const buckets = {};
         let bucketIndex = 0;
 
-        let icons = {};
-        let stacks = {};
-        const dependencies = {icons, stacks};
+        const options = {
+            featureIndex: featureIndex,
+            iconDependencies: {},
+            glyphDependencies: {}
+        };
 
         const layerFamilies = layerIndex.familiesBySource[this.source];
         for (const sourceLayerId in layerFamilies) {
@@ -87,14 +89,12 @@ class WorkerTile {
                     childLayers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
-                    showCollisionBoxes: this.showCollisionBoxes,
                     collisionBoxArray: this.collisionBoxArray,
                     symbolQuadsArray: this.symbolQuadsArray,
-                    symbolInstancesArray: this.symbolInstancesArray,
-                    featureIndex: featureIndex
+                    symbolInstancesArray: this.symbolInstancesArray
                 });
 
-                bucket.populate(features, dependencies);
+                bucket.populate(features, options);
                 featureIndex.bucketLayerIDs[bucket.index] = family.map(getLayerId);
             }
         }
@@ -141,6 +141,8 @@ class WorkerTile {
         }
 
         let deps = 0;
+        let icons = Object.keys(options.iconDependencies);
+        let stacks = util.mapObject(options.glyphDependencies, (glyphs) => Object.keys(glyphs).map(Number));
 
         const gotDependency = (err) => {
             if (err) return callback(err);
@@ -154,10 +156,6 @@ class WorkerTile {
             }
         };
 
-        for (const fontName in stacks) {
-            stacks[fontName] = Object.keys(stacks[fontName]).map(Number);
-        }
-
         if (Object.keys(stacks).length) {
             actor.send('getGlyphs', {uid: this.uid, stacks: stacks}, (err, newStacks) => {
                 stacks = newStacks;
@@ -166,8 +164,6 @@ class WorkerTile {
         } else {
             gotDependency();
         }
-
-        icons = Object.keys(icons);
 
         if (icons.length) {
             actor.send('getIcons', {icons: icons}, (err, newIcons) => {

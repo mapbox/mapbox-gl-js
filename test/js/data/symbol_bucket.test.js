@@ -21,7 +21,6 @@ const feature = vt.layers.place_label.feature(10);
 const glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/fontstack-glyphs.json')));
 
 /*eslint new-cap: 0*/
-const buffers = {};
 const collisionBoxArray = new CollisionBoxArray();
 const symbolQuadsArray = new SymbolQuadsArray();
 const symbolInstancesArray = new SymbolInstancesArray();
@@ -43,26 +42,24 @@ function bucketSetup() {
     });
 
     return new SymbolBucket({
-        buffers: buffers,
         overscaling: 1,
         zoom: 0,
         collisionBoxArray: collisionBoxArray,
         symbolInstancesArray: symbolInstancesArray,
         symbolQuadsArray: symbolQuadsArray,
         layer: layer,
-        childLayers: [layer],
-        tileExtent: 4096
+        childLayers: [layer]
     });
 }
 
 test('SymbolBucket', (t) => {
     const bucketA = bucketSetup();
     const bucketB = bucketSetup();
-    const dependencies = {icons: {}, stacks: {}};
+    const options = {iconDependencies: {}, glyphDependencies: {}};
 
     // add feature from bucket A
     const a = collision.grid.keys.length;
-    bucketA.populate([feature], dependencies);
+    bucketA.populate([feature], options);
     bucketA.prepare(stacks, {});
     bucketA.place(collision);
 
@@ -71,7 +68,7 @@ test('SymbolBucket', (t) => {
 
     // add same feature from bucket B
     const a2 = collision.grid.keys.length;
-    bucketB.populate([feature], dependencies);
+    bucketB.populate([feature], options);
     bucketB.prepare(stacks, {});
     bucketB.place(collision);
     const b2 = collision.grid.keys.length;
@@ -85,9 +82,9 @@ test('SymbolBucket integer overflow', (t) => {
     t.stub(SymbolBucket, 'MAX_QUADS', 5);
 
     const bucket = bucketSetup();
-    const dependencies = {icons: {}, stacks: {}};
+    const options = {iconDependencies: {}, glyphDependencies: {}};
 
-    bucket.populate([feature], dependencies);
+    bucket.populate([feature], options);
     bucket.prepare(stacks, {});
     bucket.place(collision);
 
