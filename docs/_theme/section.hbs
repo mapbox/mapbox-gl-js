@@ -15,18 +15,12 @@
 
   <%= md(section.description) %>
 
+  <% if (section.augments) { %>
+    <p>Extends <%= section.augments.map(function(tag) { return autolink(tag.name); }).join(', ') %>.</p>
+  <% } %>
 
   <% if (section.kind === 'class' && !section.interface) { %>
     <div class='code pad1 small round fill-light'><%= signature(section, true) %></div>
-  <% } %>
-
-  <% if (section.augments) { %>
-    <p>
-      Extends
-      <% if (section.augments) { %>
-        <%= autolink(section.name) %>
-      <% } %>
-    </p>
   <% } %>
 
   <% if (section.version) { %><div>Version: <%- section.version %></div><% }%>

@@ -6,7 +6,6 @@ const window = require('../../util/window');
 
 /**
  * A `NavigationControl` control contains zoom buttons and a compass.
- * Extends [`Control`](#Control).
  *
  * @param {Object} [options]
  * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
