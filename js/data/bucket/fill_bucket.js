@@ -1,6 +1,8 @@
 'use strict';
 
 const Bucket = require('../bucket');
+const VertexArrayType = require('../vertex_array_type');
+const ElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
@@ -9,13 +11,13 @@ const EARCUT_MAX_RINGS = 500;
 
 const fillInterfaces = {
     fill: {
-        layoutVertexArrayType: new Bucket.VertexArrayType([{
+        layoutVertexArrayType: new VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
         }]),
-        elementArrayType: new Bucket.ElementArrayType(1),
-        elementArrayType2: new Bucket.ElementArrayType(2),
+        elementArrayType: new ElementArrayType(1),
+        elementArrayType2: new ElementArrayType(2),
 
         paintAttributes: [{
             name: 'a_color',

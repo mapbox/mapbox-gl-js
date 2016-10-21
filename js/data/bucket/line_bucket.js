@@ -1,6 +1,8 @@
 'use strict';
 
 const Bucket = require('../bucket');
+const VertexArrayType = require('../vertex_array_type');
+const ElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
@@ -39,7 +41,7 @@ const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DIST
 
 const lineInterfaces = {
     line: {
-        layoutVertexArrayType: new Bucket.VertexArrayType([{
+        layoutVertexArrayType: new VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -58,7 +60,7 @@ const lineInterfaces = {
             multiplier: 255,
             paintProperty: 'line-color'
         }],
-        elementArrayType: new Bucket.ElementArrayType()
+        elementArrayType: new ElementArrayType()
     }
 };
 

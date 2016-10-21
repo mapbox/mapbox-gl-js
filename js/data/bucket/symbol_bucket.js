@@ -3,6 +3,8 @@
 const Point = require('point-geometry');
 
 const Bucket = require('../bucket');
+const VertexArrayType = require('../vertex_array_type');
+const ElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
 const Anchor = require('../../symbol/anchor');
 const getAnchors = require('../../symbol/get_anchors');
@@ -23,8 +25,8 @@ const shapeIcon = Shaping.shapeIcon;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
-const elementArrayType = new Bucket.ElementArrayType();
-const layoutVertexArrayType = new Bucket.VertexArrayType([{
+const elementArrayType = new ElementArrayType();
+const layoutVertexArrayType = new VertexArrayType([{
     name: 'a_pos',
     components: 2,
     type: 'Int16'
@@ -52,7 +54,7 @@ const symbolInterfaces = {
         elementArrayType: elementArrayType
     },
     collisionBox: {
-        layoutVertexArrayType: new Bucket.VertexArrayType([{
+        layoutVertexArrayType: new VertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'

@@ -2,8 +2,8 @@
 
 const ArrayGroup = require('./array_group');
 const BufferGroup = require('./buffer_group');
+const VertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
-const StructArrayType = require('../util/struct_array');
 const assert = require('assert');
 
 const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
@@ -124,7 +124,7 @@ class Bucket {
             const layerPaintAttributes = this.paintAttributes[programName];
 
             for (const layerName in layerPaintAttributes) {
-                paintVertexArrayTypes[layerName] = new Bucket.VertexArrayType(layerPaintAttributes[layerName].attributes);
+                paintVertexArrayTypes[layerName] = new VertexArrayType(layerPaintAttributes[layerName].attributes);
             }
         }
     }
@@ -235,33 +235,6 @@ class Bucket {
         }
     }
 }
-
-/**
- * A vertex array stores data for each vertex in a geometry. Elements are aligned to 4 byte
- * boundaries for best performance in WebGL.
- * @private
- */
-Bucket.VertexArrayType = function (members) {
-    return new StructArrayType({
-        members: members,
-        alignment: 4
-    });
-};
-
-/**
- * An element array stores Uint16 indicies of vertexes in a corresponding vertex array. With no
- * arguments, it defaults to three components per element, forming triangles.
- * @private
- */
-Bucket.ElementArrayType = function (components) {
-    return new StructArrayType({
-        members: [{
-            type: 'Uint16',
-            name: 'vertices',
-            components: components || 3
-        }]
-    });
-};
 
 module.exports = Bucket;
 
