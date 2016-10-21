@@ -1,5 +1,7 @@
 'use strict';
 
+const scriptDetection = require('../util/script_detection');
+
 module.exports = {
     shapeText: shapeText,
     shapeIcon: shapeIcon
@@ -54,7 +56,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsBalancedBreaking(text));
 
     return shaping;
 }
@@ -105,7 +107,7 @@ const breakable = {
 
 invisible[newLine] = breakable[newLine] = true;
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, allowsBalancedBreaking) {
     let lastSafeBreak = null;
     let lengthBeforeCurrentLine = 0;
     let lineStartIndex = 0;
@@ -150,14 +152,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (positionedGlyph.codePoint > 19968) {
-                if (breakable[positionedGlyph.codePoint]) {
-                    lastSafeBreak = i - 1;
-                }
-                if (!(breakable[positionedGlyph.codePoint])) {
-                    lastSafeBreak = Math.round(wordLength / 3);
-                }
-            }   else if (breakable[positionedGlyph.codePoint]) {
+            if (allowsBalancedBreaking || breakable[positionedGlyph.codePoint]) {
                 lastSafeBreak = i;
             }
         }
