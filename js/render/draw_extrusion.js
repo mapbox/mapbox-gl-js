@@ -154,13 +154,9 @@ function drawExtrusion(painter, source, layer, coord) {
 
     const image = layer.paint['fill-pattern'];
 
-    const programOptions = bucket.paintAttributes.fillextrusion[layer.id];
-    const program = painter.useProgram(
-        image ? 'fillExtrudePattern' : 'fillExtrude',
-        programOptions.defines,
-        programOptions.vertexPragmas,
-        programOptions.fragmentPragmas
-    );
+    const programConfiguration = bucket.programConfigurations.fillextrusion[layer.id];
+    const program = painter.useProgram(image ? 'fillExtrudePattern' : 'fillExtrude', programConfiguration);
+    programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
         setPattern(image, tile, coord, painter, program, true);
@@ -168,8 +164,6 @@ function drawExtrusion(painter, source, layer, coord) {
 
     setMatrix(program, painter, coord, tile, layer);
     setLight(program, painter);
-
-    bucket.setUniforms(gl, 'fillextrusion', program, layer, {zoom: painter.transform.zoom});
 
     for (let i = 0; i < bufferGroups.length; i++) {
         const group = bufferGroups[i];
