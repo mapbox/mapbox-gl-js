@@ -31,7 +31,7 @@ class Dispatcher {
      * @method
      * @name broadcast
      * @param {string} type
-     * @param {object} data
+     * @param {Object} data
      * @param {Function} callback
      * @memberof Dispatcher
      * @instance
@@ -48,7 +48,7 @@ class Dispatcher {
      * @method
      * @name send
      * @param {string} type
-     * @param {object} data
+     * @param {Object} data
      * @param {Function} callback
      * @param {number|undefined} [targetID] The ID of the Worker to which to send this message. Omit to allow the dispatcher to choose.
      * @returns {number} The ID of the worker to which the message was sent.

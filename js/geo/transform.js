@@ -346,7 +346,7 @@ class Transform {
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
      * @param {TileCoord|Coordinate} coord
-     * @param {Number} maxZoom maximum source zoom to account for overscaling
+     * @param {number} maxZoom maximum source zoom to account for overscaling
      * @private
      */
     calculatePosMatrix(coord, maxZoom) {

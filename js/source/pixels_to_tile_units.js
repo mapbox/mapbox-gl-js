@@ -11,7 +11,7 @@ const EXTENT = require('../data/extent');
  * For example, a translation by 30 pixels at zoom 6.5 will be a
  * translation by pixelsToTileUnits(30, 6.5) tile units.
  *
- * @param {object} tile a {Tile object} will work well, but any object that follows the format {coord: {TileCord object}, tileSize: {number}} will work
+ * @param {Object} tile a {Tile object} will work well, but any object that follows the format {coord: {TileCord object}, tileSize: {number}} will work
  * @param {number} pixelValue
  * @param {number} z
  * @returns {number} value in tile units

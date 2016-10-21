@@ -31,7 +31,7 @@ class VectorTileWorkerSource {
     /**
      * Implements {@link WorkerSource#loadTile}.  Delegates to {@link VectorTileWorkerSource#loadVectorData} (which by default expects a `params.url` property) for fetching and producing a VectorTile object.
      *
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      * @param {TileCoord} params.coord
@@ -75,7 +75,7 @@ class VectorTileWorkerSource {
     /**
      * Implements {@link WorkerSource#reloadTile}.
      *
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
@@ -91,7 +91,7 @@ class VectorTileWorkerSource {
     /**
      * Implements {@link WorkerSource#abortTile}.
      *
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
@@ -107,7 +107,7 @@ class VectorTileWorkerSource {
     /**
      * Implements {@link WorkerSource#removeTile}.
      *
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.source The id of the source for which we're loading this tile.
      * @param {string} params.uid The UID for this tile.
      */
@@ -120,14 +120,13 @@ class VectorTileWorkerSource {
     }
 
     /**
-     * @class VectorTile
-     *
      * The result passed to the `loadVectorData` callback must conform to the interface established
      * by the `VectorTile` class from the [vector-tile](https://www.npmjs.com/package/vector-tile)
      * npm package. In addition, it must have a `rawData` property containing an `ArrayBuffer`
      * with protobuf data conforming to the
      * [Mapbox Vector Tile specification](https://github.com/mapbox/vector-tile-spec).
      *
+     * @class VectorTile
      * @property {ArrayBuffer} rawData
      * @private
      */
@@ -140,7 +139,7 @@ class VectorTileWorkerSource {
      */
 
     /**
-     * @param {object} params
+     * @param {Object} params
      * @param {string} params.url The URL of the tile PBF to load.
      * @param {LoadVectorDataCallback} callback
      */

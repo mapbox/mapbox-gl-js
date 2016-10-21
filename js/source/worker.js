@@ -7,6 +7,9 @@ const VectorTileWorkerSource = require('./vector_tile_worker_source');
 const GeoJSONWorkerSource = require('./geojson_worker_source');
 const assert = require('assert');
 
+/**
+ * @private
+ */
 class Worker {
     constructor(self) {
         this.self = self;
