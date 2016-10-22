@@ -6,7 +6,6 @@ const ElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
-const Point = require('point-geometry');
 const EARCUT_MAX_RINGS = 500;
 
 const fillInterfaces = {
@@ -55,71 +54,51 @@ class FillBucket extends Bucket {
         return fillInterfaces;
     }
 
-    addVertex(vertexArray, x, y) {
-        return vertexArray.emplaceBack(x, y);
-    }
-
     addFeature(feature) {
-        const lines = loadGeometry(feature);
-        const polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
-
-        this.factor = Math.pow(2, 13);
-
         const startGroup = this.prepareArrayGroup('fill', 0);
         const startIndex = startGroup.layoutVertexArray.length;
 
-        for (let i = 0; i < polygons.length; i++) {
-            this.addPolygon(polygons[i]);
+        for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
+            let numVertices = 0;
+            for (const ring of polygon) {
+                numVertices += ring.length;
+            }
+
+            const group = this.prepareArrayGroup('fill', numVertices);
+            const startIndex = group.layoutVertexArray.length;
+
+            const flattened = [];
+            const holeIndices = [];
+
+            for (let r = 0; r < polygon.length; r++) {
+                const ring = polygon[r];
+
+                if (r > 0) {
+                    holeIndices.push(flattened.length / 2);
+                }
+
+                for (let p = 0; p < ring.length; p++) {
+                    const point = ring[p];
+
+                    const index = group.layoutVertexArray.emplaceBack(point.x, point.y);
+
+                    if (p >= 1) {
+                        group.elementArray2.emplaceBack(index - 1, index);
+                    }
+
+                    // convert to format used by earcut
+                    flattened.push(point.x);
+                    flattened.push(point.y);
+                }
+            }
+
+            for (const index of earcut(flattened, holeIndices)) {
+                group.elementArray.emplaceBack(index + startIndex);
+            }
         }
 
         this.populatePaintArrays('fill', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
     }
-
-    addPolygon(polygon) {
-        let numVertices = 0;
-        for (let k = 0; k < polygon.length; k++) {
-            numVertices += polygon[k].length;
-        }
-
-        const group = this.prepareArrayGroup('fill', numVertices);
-        const flattened = [];
-        const holeIndices = [];
-        const startIndex = group.layoutVertexArray.length;
-
-        const indices = [];
-
-        for (let r = 0; r < polygon.length; r++) {
-            const ring = polygon[r];
-
-            if (r > 0) holeIndices.push(flattened.length / 2);
-
-            for (let v = 0; v < ring.length; v++) {
-                const v1 = ring[v];
-
-                const index = this.addVertex(group.layoutVertexArray, v1[0], v1[1], 0, 0, 1, 1, 0);
-                indices.push(index);
-
-                if (v >= 1) {
-                    group.elementArray2.emplaceBack(index - 1, index);
-                }
-
-                // convert to format used by earcut
-                flattened.push(v1[0]);
-                flattened.push(v1[1]);
-            }
-        }
-
-        const triangleIndices = earcut(flattened, holeIndices);
-
-        for (let i = 0; i < triangleIndices.length; i++) {
-            group.elementArray.emplaceBack(triangleIndices[i] + startIndex);
-        }
-    }
 }
 
 module.exports = FillBucket;
-
-function convertCoords(rings) {
-    if (rings instanceof Point) return [rings.x, rings.y];
-    return rings.map(convertCoords);
-}

@@ -58,6 +58,12 @@ const circleInterfaces = {
     }
 };
 
+function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
+    return layoutVertexArray.emplaceBack(
+        (x * 2) + ((extrudeX + 1) / 2),
+        (y * 2) + ((extrudeY + 1) / 2));
+}
+
 /**
  * Circles are represented by two triangles.
  *
@@ -67,28 +73,18 @@ const circleInterfaces = {
  */
 class CircleBucket extends Bucket {
 
-    addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
-        return layoutVertexArray.emplaceBack(
-                (x * 2) + ((extrudeX + 1) / 2),
-                (y * 2) + ((extrudeY + 1) / 2));
-    }
-
     get programInterfaces() {
         return circleInterfaces;
     }
 
     addFeature(feature) {
-        const globalProperties = {zoom: this.zoom};
-        const geometries = loadGeometry(feature);
-
         const startGroup = this.prepareArrayGroup('circle', 0);
         const startIndex = startGroup.layoutVertexArray.length;
 
-        for (let j = 0; j < geometries.length; j++) {
-            for (let k = 0; k < geometries[j].length; k++) {
-
-                const x = geometries[j][k].x;
-                const y = geometries[j][k].y;
+        for (const ring of loadGeometry(feature)) {
+            for (const point of ring) {
+                const x = point.x;
+                const y = point.y;
 
                 // Do not include points that are outside the tile boundaries.
                 if (x < 0 || x >= EXTENT || y < 0 || y >= EXTENT) continue;
@@ -105,17 +101,17 @@ class CircleBucket extends Bucket {
                 const group = this.prepareArrayGroup('circle', 4);
                 const layoutVertexArray = group.layoutVertexArray;
 
-                const index = this.addCircleVertex(layoutVertexArray, x, y, -1, -1);
-                this.addCircleVertex(layoutVertexArray, x, y, 1, -1);
-                this.addCircleVertex(layoutVertexArray, x, y, 1, 1);
-                this.addCircleVertex(layoutVertexArray, x, y, -1, 1);
+                const index = addCircleVertex(layoutVertexArray, x, y, -1, -1);
+                addCircleVertex(layoutVertexArray, x, y, 1, -1);
+                addCircleVertex(layoutVertexArray, x, y, 1, 1);
+                addCircleVertex(layoutVertexArray, x, y, -1, 1);
 
                 group.elementArray.emplaceBack(index, index + 1, index + 2);
                 group.elementArray.emplaceBack(index, index + 3, index + 2);
             }
         }
 
-        this.populatePaintArrays('circle', globalProperties, feature.properties, startGroup, startIndex);
+        this.populatePaintArrays('circle', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
     }
 }
 
