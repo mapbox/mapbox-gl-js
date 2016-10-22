@@ -142,14 +142,13 @@ ExtrusionTexture.prototype.renderToMap = function() {
 };
 
 function drawExtrusion(painter, source, layer, coord) {
+    if (painter.isOpaquePass) return;
+
     const tile = source.getTile(coord);
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    const bufferGroups = bucket.bufferGroups.fillextrusion;
-    if (!bufferGroups) return;
 
-    if (painter.isOpaquePass) return;
-
+    const buffers = bucket.bufferGroups.fillextrusion;
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
@@ -165,10 +164,9 @@ function drawExtrusion(painter, source, layer, coord) {
     setMatrix(program, painter, coord, tile, layer);
     setLight(program, painter);
 
-    for (let i = 0; i < bufferGroups.length; i++) {
-        const group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
-        gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
+    for (const segment of buffers.segments) {
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, buffers.paintVertexBuffers[layer.id], segment.vertexOffset);
+        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
 

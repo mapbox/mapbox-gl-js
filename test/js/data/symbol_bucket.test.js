@@ -47,8 +47,7 @@ function bucketSetup() {
         collisionBoxArray: collisionBoxArray,
         symbolInstancesArray: symbolInstancesArray,
         symbolQuadsArray: symbolQuadsArray,
-        layer: layer,
-        childLayers: [layer]
+        layers: [layer]
     });
 }
 

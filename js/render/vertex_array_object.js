@@ -8,10 +8,11 @@ class VertexArrayObject {
         this.boundVertexBuffer = null;
         this.boundVertexBuffer2 = null;
         this.boundElementBuffer = null;
+        this.boundVertexOffset = null;
         this.vao = null;
     }
 
-    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2) {
+    bind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset) {
 
         if (gl.extVertexArrayObject === undefined) {
             gl.extVertexArrayObject = gl.getExtension("OES_vertex_array_object");
@@ -22,18 +23,19 @@ class VertexArrayObject {
             this.boundProgram !== program ||
             this.boundVertexBuffer !== layoutVertexBuffer ||
             this.boundVertexBuffer2 !== vertexBuffer2 ||
-            this.boundElementBuffer !== elementBuffer
+            this.boundElementBuffer !== elementBuffer ||
+            this.boundVertexOffset !== vertexOffset
         );
 
         if (!gl.extVertexArrayObject || isFreshBindRequired) {
-            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2);
+            this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset);
             this.gl = gl;
         } else {
             gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
         }
     }
 
-    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2) {
+    freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2, vertexOffset) {
         let numPrevAttributes;
         const numNextAttributes = program.numAttributes;
 
@@ -48,6 +50,7 @@ class VertexArrayObject {
             this.boundVertexBuffer = layoutVertexBuffer;
             this.boundVertexBuffer2 = vertexBuffer2;
             this.boundElementBuffer = elementBuffer;
+            this.boundVertexOffset = vertexOffset;
 
         } else {
             numPrevAttributes = gl.currentNumAttributes || 0;
@@ -68,10 +71,10 @@ class VertexArrayObject {
         }
 
         layoutVertexBuffer.bind(gl);
-        layoutVertexBuffer.setVertexAttribPointers(gl, program);
+        layoutVertexBuffer.setVertexAttribPointers(gl, program, vertexOffset);
         if (vertexBuffer2) {
             vertexBuffer2.bind(gl);
-            vertexBuffer2.setVertexAttribPointers(gl, program);
+            vertexBuffer2.setVertexAttribPointers(gl, program, vertexOffset);
         }
         if (elementBuffer) {
             elementBuffer.bind(gl);

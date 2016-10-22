@@ -15,42 +15,38 @@ const feature = vt.layers.road.feature(0);
 
 test('LineBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
-    const bucket = new LineBucket({
-        buffers: {},
-        layer: layer,
-        childLayers: [layer]
-    });
+    const bucket = new LineBucket({ layers: [layer] });
     bucket.createArrays();
 
     const pointWithScale = new Point(0, 0);
     pointWithScale.scale = 10;
 
     // should throw in the future?
-    t.equal(bucket.addLine([
+    bucket.addLine([
         new Point(0, 0)
-    ], {}), undefined);
+    ], {});
 
     // should also throw in the future?
     // this is a closed single-segment line
-    t.equal(bucket.addLine([
+    bucket.addLine([
         new Point(0, 0),
         new Point(0, 0)
-    ], {}), undefined);
+    ], {});
 
-    t.equal(bucket.addLine([
+    bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20)
-    ], {}), undefined);
+    ], {});
 
-    t.equal(bucket.addLine([
+    bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20),
         new Point(0, 0)
-    ], {}), undefined);
+    ], {});
 
-    t.equal(bucket.addFeature(feature), undefined);
+    bucket.addFeature(feature);
 
     t.end();
 });

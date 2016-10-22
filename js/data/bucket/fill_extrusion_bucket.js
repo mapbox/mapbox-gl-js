@@ -7,6 +7,7 @@ const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
+const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillExtrusionInterfaces = {
@@ -62,7 +63,7 @@ const fillExtrusionInterfaces = {
 const FACTOR = Math.pow(2, 13);
 
 function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
-    return vertexArray.emplaceBack(
+    vertexArray.emplaceBack(
         // a_pos
         x,
         y,
@@ -82,33 +83,36 @@ class FillExtrusionBucket extends Bucket {
     }
 
     addFeature(feature) {
-        const startGroup = this.prepareArrayGroup('fillextrusion', 0);
-        const startIndex = startGroup.layoutVertexArray.length;
+        const arrays = this.arrays.fillextrusion;
 
         for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
             let numVertices = 0;
             for (const ring of polygon) {
                 numVertices += ring.length;
             }
-            numVertices *= 5;
 
-            const group = this.prepareArrayGroup('fillextrusion', numVertices);
+            const segment = arrays.prepareSegment(numVertices * 5);
+
             const flattened = [];
             const holeIndices = [];
             const indices = [];
 
-            for (let r = 0; r < polygon.length; r++) {
-                const ring = polygon[r];
+            for (const ring of polygon) {
+                if (ring.length === 0) {
+                    continue;
+                }
 
-                if (r > 0) holeIndices.push(flattened.length / 2);
+                if (ring !== polygon[0]) {
+                    holeIndices.push(flattened.length / 2);
+                }
 
                 let edgeDistance = 0;
 
                 for (let p = 0; p < ring.length; p++) {
                     const p1 = ring[p];
 
-                    const index = addVertex(group.layoutVertexArray, p1.x, p1.y, 0, 0, 1, 1, 0);
-                    indices.push(index);
+                    addVertex(arrays.layoutVertexArray, p1.x, p1.y, 0, 0, 1, 1, 0);
+                    indices.push(segment.vertexLength++);
 
                     if (p >= 1) {
                         const p2 = ring[p - 1];
@@ -116,16 +120,21 @@ class FillExtrusionBucket extends Bucket {
                         if (!isBoundaryEdge(p1, p2)) {
                             const perp = p1.sub(p2)._perp()._unit();
 
-                            const bottomRight = addVertex(group.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(group.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
+                            addVertex(arrays.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
+                            addVertex(arrays.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
 
                             edgeDistance += p2.dist(p1);
 
-                            addVertex(group.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
-                            addVertex(group.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
+                            addVertex(arrays.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
+                            addVertex(arrays.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
 
-                            group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                            group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                            const bottomRight = segment.vertexLength;
+
+                            arrays.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                            arrays.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+
+                            segment.vertexLength += 4;
+                            segment.primitiveLength += 2;
                         }
                     }
 
@@ -136,15 +145,19 @@ class FillExtrusionBucket extends Bucket {
             }
 
             const triangleIndices = earcut(flattened, holeIndices);
+            assert(triangleIndices.length % 3 === 0);
 
-            for (let j = 0; j < triangleIndices.length - 2; j += 3) {
-                group.elementArray.emplaceBack(indices[triangleIndices[j]],
+            for (let j = 0; j < triangleIndices.length; j += 3) {
+                arrays.elementArray.emplaceBack(
+                    indices[triangleIndices[j]],
                     indices[triangleIndices[j + 1]],
                     indices[triangleIndices[j + 2]]);
             }
+
+            segment.primitiveLength += triangleIndices.length / 3;
         }
 
-        this.populatePaintArrays('fillextrusion', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
+        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, feature.properties);
     }
 }
 
