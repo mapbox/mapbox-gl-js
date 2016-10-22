@@ -50,9 +50,8 @@ function drawFill(painter, sourceCache, layer, coord) {
     const tile = sourceCache.getTile(coord);
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    const bufferGroups = bucket.bufferGroups.fill;
-    if (!bufferGroups) return;
 
+    const buffers = bucket.bufferGroups.fill;
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
@@ -83,10 +82,9 @@ function drawFill(painter, sourceCache, layer, coord) {
 
     painter.enableTileClippingMask(coord);
 
-    for (let i = 0; i < bufferGroups.length; i++) {
-        const group = bufferGroups[i];
-        group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer, group.paintVertexBuffers[layer.id]);
-        gl.drawElements(gl.TRIANGLES, group.elementBuffer.length, gl.UNSIGNED_SHORT, 0);
+    for (const segment of buffers.segments) {
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, buffers.paintVertexBuffers[layer.id], segment.vertexOffset);
+        gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
 
@@ -94,9 +92,8 @@ function drawStroke(painter, sourceCache, layer, coord) {
     const tile = sourceCache.getTile(coord);
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
-    const bufferGroups = bucket.bufferGroups.fill;
-    if (!bufferGroups) return;
 
+    const buffers = bucket.bufferGroups.fill;
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
@@ -129,9 +126,8 @@ function drawStroke(painter, sourceCache, layer, coord) {
 
     painter.enableTileClippingMask(coord);
 
-    for (let k = 0; k < bufferGroups.length; k++) {
-        const group = bufferGroups[k];
-        group.secondVaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer2, group.paintVertexBuffers[layer.id]);
-        gl.drawElements(gl.LINES, group.elementBuffer2.length * 2, gl.UNSIGNED_SHORT, 0);
+    for (const segment of buffers.segments2) {
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, buffers.paintVertexBuffers[layer.id], segment.vertexOffset);
+        gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
     }
 }

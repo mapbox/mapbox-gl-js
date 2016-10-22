@@ -132,7 +132,10 @@ class ProgramConfiguration {
         return self;
     }
 
-    populatePaintArray(layer, paintArray, start, length, globalProperties, featureProperties) {
+    populatePaintArray(layer, paintArray, length, globalProperties, featureProperties) {
+        const start = paintArray.length;
+        paintArray.resize(length);
+
         for (const attribute of this.attributes) {
             const value = attribute.getValue(layer, globalProperties, featureProperties);
             const multiplier = attribute.multiplier || 1;

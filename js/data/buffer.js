@@ -56,8 +56,9 @@ class Buffer {
      * Set the attribute pointers in a WebGL context
      * @param gl The WebGL context
      * @param program The active WebGL program
+     * @param vertexOffset Index of the starting vertex of the segment
      */
-    setVertexAttribPointers(gl, program) {
+    setVertexAttribPointers(gl, program, vertexOffset) {
         for (let j = 0; j < this.attributes.length; j++) {
             const member = this.attributes[j];
             const attribIndex = program[member.name];
@@ -69,7 +70,7 @@ class Buffer {
                     gl[AttributeType[member.type]],
                     false,
                     this.arrayType.bytesPerElement,
-                    member.offset
+                    member.offset + (this.arrayType.bytesPerElement * vertexOffset || 0)
                 );
             }
         }

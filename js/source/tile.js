@@ -72,7 +72,7 @@ class Tile {
         this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
         this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
-        this.buckets = unserializeBuckets(data.buckets, painter.style);
+        this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
 
     /**
@@ -97,7 +97,7 @@ class Tile {
         }
 
         // Add new symbol buckets
-        util.extend(this.buckets, unserializeBuckets(data.buckets, style));
+        util.extend(this.buckets, Bucket.deserialize(data.buckets, style));
     }
 
     /**
@@ -182,27 +182,6 @@ class Tile {
     hasData() {
         return this.state === 'loaded' || this.state === 'reloading';
     }
-}
-
-function unserializeBuckets(input, style) {
-    // Guard against the case where the map's style has been set to null while
-    // this bucket has been parsing.
-    if (!style) return;
-
-    const output = {};
-    for (let i = 0; i < input.length; i++) {
-        const layer = style.getLayer(input[i].layerId);
-        if (!layer) continue;
-
-        const bucket = Bucket.create(util.extend({
-            layer: layer,
-            childLayers: input[i].childLayerIds
-                .map(style.getLayer.bind(style))
-                .filter((layer) => { return layer; })
-        }, input[i]));
-        output[layer.id] = bucket;
-    }
-    return output;
 }
 
 module.exports = Tile;

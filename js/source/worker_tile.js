@@ -84,9 +84,8 @@ class WorkerTile {
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
                 const bucket = buckets[layer.id] = Bucket.create({
-                    layer: layer,
                     index: bucketIndex++,
-                    childLayers: family,
+                    layers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
                     collisionBoxArray: this.collisionBoxArray,
@@ -131,7 +130,7 @@ class WorkerTile {
         for (let i = layerIndex.order.length - 1; i >= 0; i--) {
             const id = layerIndex.order[i];
             const bucket = buckets[id];
-            if (bucket && bucket.layer.type === 'symbol') {
+            if (bucket && bucket.layers[0].type === 'symbol') {
                 this.symbolBuckets.push(bucket);
             }
         }

@@ -59,7 +59,7 @@ const circleInterfaces = {
 };
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
-    return layoutVertexArray.emplaceBack(
+    layoutVertexArray.emplaceBack(
         (x * 2) + ((extrudeX + 1) / 2),
         (y * 2) + ((extrudeY + 1) / 2));
 }
@@ -78,8 +78,7 @@ class CircleBucket extends Bucket {
     }
 
     addFeature(feature) {
-        const startGroup = this.prepareArrayGroup('circle', 0);
-        const startIndex = startGroup.layoutVertexArray.length;
+        const arrays = this.arrays.circle;
 
         for (const ring of loadGeometry(feature)) {
             for (const point of ring) {
@@ -98,20 +97,23 @@ class CircleBucket extends Bucket {
                 // │ 0     1 │
                 // └─────────┘
 
-                const group = this.prepareArrayGroup('circle', 4);
-                const layoutVertexArray = group.layoutVertexArray;
+                const segment = arrays.prepareSegment(4);
+                const index = segment.vertexLength;
 
-                const index = addCircleVertex(layoutVertexArray, x, y, -1, -1);
-                addCircleVertex(layoutVertexArray, x, y, 1, -1);
-                addCircleVertex(layoutVertexArray, x, y, 1, 1);
-                addCircleVertex(layoutVertexArray, x, y, -1, 1);
+                addCircleVertex(arrays.layoutVertexArray, x, y, -1, -1);
+                addCircleVertex(arrays.layoutVertexArray, x, y, 1, -1);
+                addCircleVertex(arrays.layoutVertexArray, x, y, 1, 1);
+                addCircleVertex(arrays.layoutVertexArray, x, y, -1, 1);
 
-                group.elementArray.emplaceBack(index, index + 1, index + 2);
-                group.elementArray.emplaceBack(index, index + 3, index + 2);
+                arrays.elementArray.emplaceBack(index, index + 1, index + 2);
+                arrays.elementArray.emplaceBack(index, index + 3, index + 2);
+
+                segment.vertexLength += 4;
+                segment.primitiveLength += 2;
             }
         }
 
-        this.populatePaintArrays('circle', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
+        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, feature.properties);
     }
 }
 

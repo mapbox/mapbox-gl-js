@@ -66,12 +66,13 @@ const symbolInterfaces = {
             name: 'a_data',
             components: 2,
             type: 'Uint8'
-        }])
+        }]),
+        elementArrayType: new ElementArrayType(2)
     }
 };
 
 function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
-    return array.emplaceBack(
+    array.emplaceBack(
             // a_pos
             x,
             y,
@@ -91,6 +92,19 @@ function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, 
             Math.min(maxzoom || 25, 25) * 10); // maxzoom
 }
 
+function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, placementZoom) {
+    return layoutVertexArray.emplaceBack(
+        // pos
+        point.x,
+        point.y,
+        // extrude
+        Math.round(extrude.x),
+        Math.round(extrude.y),
+        // data
+        maxZoom * 10,
+        placementZoom * 10);
+}
+
 class SymbolBucket extends Bucket {
     constructor(options) {
         super(options);
@@ -104,6 +118,7 @@ class SymbolBucket extends Bucket {
         this.adjustedTextSize = options.adjustedTextSize;
         this.adjustedIconSize = options.adjustedIconSize;
         this.fontstack = options.fontstack;
+        this.layer = this.layers[0];
     }
 
     get programInterfaces() {
@@ -118,19 +133,6 @@ class SymbolBucket extends Bucket {
         serialized.adjustedIconSize = this.adjustedIconSize;
         serialized.fontstack = this.fontstack;
         return serialized;
-    }
-
-    addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, placementZoom) {
-        return layoutVertexArray.emplaceBack(
-                // pos
-                point.x,
-                point.y,
-                // extrude
-                Math.round(extrude.x),
-                Math.round(extrude.y),
-                // data
-                maxZoom * 10,
-                placementZoom * 10);
     }
 
     populate(features, options) {
@@ -524,11 +526,9 @@ class SymbolBucket extends Bucket {
     }
 
     addSymbols(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
-
-        const group = this.prepareArrayGroup(programName, 4 * (quadsEnd - quadsStart));
-
-        const elementArray = group.elementArray;
-        const layoutVertexArray = group.layoutVertexArray;
+        const arrays = this.arrays[programName];
+        const elementArray = arrays.elementArray;
+        const layoutVertexArray = arrays.layoutVertexArray;
 
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
@@ -559,19 +559,27 @@ class SymbolBucket extends Bucket {
             // Encode angle of glyph
             const glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 256);
 
-            const index = addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
+            const segment = arrays.prepareSegment(4);
+            const index = segment.vertexLength;
+
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, tex.x, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, tex.x + tex.w, tex.y, minZoom, maxZoom, placementZoom, glyphAngle);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, tex.x, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
             addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, tex.x + tex.w, tex.y + tex.h, minZoom, maxZoom, placementZoom, glyphAngle);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
+
+            segment.vertexLength += 4;
+            segment.primitiveLength += 2;
         }
     }
 
     addToDebugBuffers(collisionTile) {
-        const group = this.prepareArrayGroup('collisionBox', 0);
-        const layoutVertexArray = group.layoutVertexArray;
+        const arrays = this.arrays.collisionBox;
+        const layoutVertexArray = arrays.layoutVertexArray;
+        const elementArray = arrays.elementArray;
+
         const angle = -collisionTile.angle;
         const yStretch = collisionTile.yStretch;
 
@@ -596,14 +604,21 @@ class SymbolBucket extends Bucket {
                     const maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                     const placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
 
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
-                    this.addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
+                    const segment = arrays.prepareSegment(4);
+                    const index = segment.vertexLength;
+
+                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
+
+                    elementArray.emplaceBack(index, index + 1);
+                    elementArray.emplaceBack(index + 1, index + 2);
+                    elementArray.emplaceBack(index + 2, index + 3);
+                    elementArray.emplaceBack(index + 3, index);
+
+                    segment.vertexLength += 4;
+                    segment.primitiveLength += 4;
                 }
             }
         }

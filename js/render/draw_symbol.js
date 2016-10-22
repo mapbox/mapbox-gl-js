@@ -84,12 +84,11 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
         const tile = sourceCache.getTile(coords[j]);
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        const bothBufferGroups = bucket.bufferGroups;
-        const bufferGroups = isText ? bothBufferGroups.glyph : bothBufferGroups.icon;
-        if (!bufferGroups.length) continue;
+        const buffers = isText ? bucket.bufferGroups.glyph : bucket.bufferGroups.icon;
+        if (!buffers.segments.length) continue;
 
         painter.enableTileClippingMask(coords[j]);
-        drawSymbol(painter, layer, coords[j].posMatrix, tile, bucket, bufferGroups, isText,
+        drawSymbol(painter, layer, coords[j].posMatrix, tile, bucket, buffers, isText,
                 isText || bucket.sdfIcons, !isText && bucket.iconsNeedLinear,
                 isText ? bucket.adjustedTextSize : bucket.adjustedIconSize, bucket.fontstack,
                 translate,
@@ -107,7 +106,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
     gl.enable(gl.DEPTH_TEST);
 }
 
-function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isText, sdf, iconsNeedLinear, adjustedSize, fontstack,
+function drawSymbol(painter, layer, posMatrix, tile, bucket, buffers, isText, sdf, iconsNeedLinear, adjustedSize, fontstack,
         translate,
         translateAnchor,
         rotationAlignment,
@@ -174,8 +173,6 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
     painter.frameHistory.bind(gl);
     gl.uniform1i(program.u_fadetexture, 1);
 
-    let group;
-
     if (sdf) {
         const sdfPx = 8;
         const blurOffset = 1.19;
@@ -189,10 +186,9 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
             gl.uniform1f(program.u_opacity, opacity);
             gl.uniform1f(program.u_buffer, (haloOffset - haloWidth / fontScale) / sdfPx);
 
-            for (let j = 0; j < bufferGroups.length; j++) {
-                group = bufferGroups[j];
-                group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer);
-                gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
+            for (const segment of buffers.segments) {
+                segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
+                gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
             }
         }
 
@@ -204,18 +200,16 @@ function drawSymbol(painter, layer, posMatrix, tile, bucket, bufferGroups, isTex
         gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
 
-        for (let i = 0; i < bufferGroups.length; i++) {
-            group = bufferGroups[i];
-            group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer);
-            gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
+        for (const segment of buffers.segments) {
+            segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
+            gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
         }
 
     } else {
         gl.uniform1f(program.u_opacity, opacity);
-        for (let k = 0; k < bufferGroups.length; k++) {
-            group = bufferGroups[k];
-            group.vaos[layer.id].bind(gl, program, group.layoutVertexBuffer, group.elementBuffer);
-            gl.drawElements(gl.TRIANGLES, group.elementBuffer.length * 3, gl.UNSIGNED_SHORT, 0);
+        for (const segment of buffers.segments) {
+            segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
+            gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
         }
     }
 }
