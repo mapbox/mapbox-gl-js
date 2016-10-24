@@ -2,7 +2,7 @@
 Hello! Thanks for contributing. 
 
 If you are reporting a bug, please:
- - Make the issue an actionable verb phrase such as "Fix bug causing exception to thrown when rotating the map" (rather than "Map rotation is broken" or "Map rotation bug")
+ - Make the issue title a succinct but specific description of the problem you encountered. Bad: "Map rotation is broken". Good: "map.setBearing(...) throws a TypeError for negative values"
  - Include a link to a minimal demonstration of the bug. We recommend using https://jsbin.com
  - Ensure you can reproduce the bug using the latest release.
  - Check the console for relevant errors and warnings
@@ -10,6 +10,7 @@ If you are reporting a bug, please:
  
 If you are requesting a new feature or suggesting a big change, please:
  - Copy the Mapbox GL RFC template into this ticket and fill out as much as you can https://raw.githubusercontent.com/mapbox/mapbox-gl/master/RFC_TEMPLATE.md
+  - Make the issue title a succinct but specific description of your use case or the desired functionality. Bad: "More clustering options". Good: "Compute and expose aggregated values when clustering GeoJSON".
 -->
 
 **mapbox-gl-js version**:
