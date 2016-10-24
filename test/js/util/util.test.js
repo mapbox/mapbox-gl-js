@@ -17,21 +17,6 @@ test('util', (t) => {
     t.deepEqual(util.pick({a:1, b:2, c:3}, ['a', 'c', 'd']), {a:1, c:3}, 'pick');
     t.ok(typeof util.uniqueId() === 'number', 'uniqueId');
 
-    t.test('inherit', (t) => {
-        function Inheritance() { }
-        Inheritance.prototype.foo = function() { return 42; };
-        function Child() {}
-        Child.prototype = util.inherit(Inheritance, {
-            bar: function() {
-                return 20;
-            }
-        });
-        const c = new Child();
-        t.equal(c.foo(), 42);
-        t.equal(c.bar(), 20);
-        t.end();
-    });
-
     t.test('getCoordinatesCenter', (t) => {
         t.deepEqual(util.getCoordinatesCenter(
             [

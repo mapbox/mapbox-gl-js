@@ -14,18 +14,22 @@ const util = require('../../../js/util/util');
 function MockSourceType(id, sourceOptions) {
     // allow tests to override mocked methods/properties by providing
     // them in the source definition object that's given to Source.create()
-    let source = util.extend({
-        id: id,
-        minzoom: 0,
-        maxzoom: 22,
-        loadTile: function (tile, callback) {
+    class SourceMock extends Evented {
+        constructor() {
+            super();
+            this.id = id;
+            this.minzoom = 0;
+            this.maxzoom = 22;
+            util.extend(this, sourceOptions);
+        }
+        loadTile(tile, callback) {
             setTimeout(callback, 0);
-        },
-        abortTile: function () {},
-        unloadTile: function () {},
-        serialize: function () {}
-    }, sourceOptions);
-    source = util.inherit(Evented, source);
+        }
+        abortTile() {}
+        unloadTile() {}
+        serialize() {}
+    }
+    const source = new SourceMock();
 
     if (sourceOptions.noLoad) { return source; }
     setTimeout(() => {
