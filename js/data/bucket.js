@@ -58,8 +58,6 @@ class Bucket {
                 options.featureIndex.insert(feature, this.index);
             }
         }
-
-        this.trimArrays();
     }
 
     createArrays() {
@@ -74,12 +72,6 @@ class Bucket {
     destroy() {
         for (const programName in this.bufferGroups) {
             this.bufferGroups[programName].destroy();
-        }
-    }
-
-    trimArrays() {
-        for (const programName in this.arrays) {
-            this.arrays[programName].trim();
         }
     }
 
