@@ -80,16 +80,18 @@ class CollisionTile {
         ];
     }
 
-    serialize() {
-        const data = {
+    serialize(transferables) {
+        const grid = this.grid.toArrayBuffer();
+        const ignoredGrid = this.ignoredGrid.toArrayBuffer();
+        if (transferables) {
+            transferables.push(grid);
+            transferables.push(ignoredGrid);
+        }
+        return {
             angle: this.angle,
             pitch: this.pitch,
-            grid: this.grid.toArrayBuffer(),
-            ignoredGrid: this.ignoredGrid.toArrayBuffer()
-        };
-        return {
-            data: data,
-            transferables: [data.grid, data.ignoredGrid]
+            grid: grid,
+            ignoredGrid: ignoredGrid
         };
     }
 

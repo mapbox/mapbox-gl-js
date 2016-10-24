@@ -94,7 +94,7 @@ class WorkerTile {
                 });
 
                 bucket.populate(features, options);
-                featureIndex.bucketLayerIDs[bucket.index] = family.map(getLayerId);
+                featureIndex.bucketLayerIDs[bucket.index] = family.map((l) => l.id);
             }
         }
 
@@ -106,23 +106,17 @@ class WorkerTile {
                 this.redoPlacementAfterDone = false;
             }
 
-            const featureIndex_ = featureIndex.serialize();
-            const collisionTile_ = collisionTile.serialize();
-            const collisionBoxArray = this.collisionBoxArray.serialize();
-            const symbolInstancesArray = this.symbolInstancesArray.serialize();
-            const symbolQuadsArray = this.symbolQuadsArray.serialize();
-            const nonEmptyBuckets = util.values(buckets).filter(isBucketNonEmpty);
-
+            const transferables = [];
             callback(null, {
-                buckets: nonEmptyBuckets.map(serializeBucket),
-                featureIndex: featureIndex_.data,
-                collisionTile: collisionTile_.data,
-                collisionBoxArray: collisionBoxArray,
-                symbolInstancesArray: symbolInstancesArray,
-                symbolQuadsArray: symbolQuadsArray
-            }, getTransferables(nonEmptyBuckets)
-                .concat(featureIndex_.transferables)
-                .concat(collisionTile_.transferables));
+                buckets: util.values(buckets)
+                    .filter((b) => !b.isEmpty())
+                    .map((b) => b.serialize(transferables)),
+                featureIndex: featureIndex.serialize(transferables),
+                collisionTile: collisionTile.serialize(transferables),
+                collisionBoxArray: this.collisionBoxArray.serialize(),
+                symbolInstancesArray: this.symbolInstancesArray.serialize(),
+                symbolQuadsArray: this.symbolQuadsArray.serialize()
+            }, transferables);
         };
 
         // Symbol buckets must be placed in reverse order.
@@ -186,37 +180,17 @@ class WorkerTile {
             bucket.place(collisionTile, showCollisionBoxes);
         }
 
-        const collisionTile_ = collisionTile.serialize();
-        const nonEmptyBuckets = this.symbolBuckets.filter(isBucketNonEmpty);
-
+        const transferables = [];
         return {
             result: {
-                buckets: nonEmptyBuckets.map(serializeBucket),
-                collisionTile: collisionTile_.data
+                buckets: this.symbolBuckets
+                    .filter((b) => !b.isEmpty())
+                    .map((b) => b.serialize(transferables)),
+                collisionTile: collisionTile.serialize(transferables)
             },
-            transferables: getTransferables(nonEmptyBuckets).concat(collisionTile_.transferables)
+            transferables: transferables
         };
     }
-}
-
-function isBucketNonEmpty(bucket) {
-    return !bucket.isEmpty();
-}
-
-function serializeBucket(bucket) {
-    return bucket.serialize();
-}
-
-function getTransferables(buckets) {
-    const transferables = [];
-    for (const i in buckets) {
-        buckets[i].getTransferables(transferables);
-    }
-    return transferables;
-}
-
-function getLayerId(layer) {
-    return layer.id;
 }
 
 module.exports = WorkerTile;

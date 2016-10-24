@@ -82,8 +82,11 @@ class StructArray {
     /**
      * Serialize this StructArray instance
      */
-    serialize() {
+    serialize(transferables) {
         this.trim();
+        if (transferables) {
+            transferables.push(this.arrayBuffer);
+        }
         return {
             length: this.length,
             arrayBuffer: this.arrayBuffer

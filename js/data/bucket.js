@@ -92,17 +92,11 @@ class Bucket {
         return true;
     }
 
-    getTransferables(transferables) {
-        for (const programName in this.arrays) {
-            this.arrays[programName].getTransferables(transferables);
-        }
-    }
-
-    serialize() {
+    serialize(transferables) {
         return {
             zoom: this.zoom,
             layerIds: this.layers.map((l) => l.id),
-            arrays: util.mapObject(this.arrays, (a) => a.serialize())
+            arrays: util.mapObject(this.arrays, (a) => a.serialize(transferables))
         };
     }
 
