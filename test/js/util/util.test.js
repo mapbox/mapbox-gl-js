@@ -83,14 +83,6 @@ test('util', (t) => {
         t.end();
     });
 
-    t.test('coalesce', (t) => {
-        t.equal(util.coalesce(undefined, 1), 1);
-        t.equal(util.coalesce(2, 1), 2);
-        t.equal(util.coalesce(null, undefined, 4), 4);
-        t.equal(util.coalesce(), undefined);
-        t.end();
-    });
-
     t.test('clamp', (t) => {
         t.equal(util.clamp(0, 0, 1), 0);
         t.equal(util.clamp(1, 0, 1), 1);
@@ -128,25 +120,6 @@ test('util', (t) => {
         }, () => {
             t.end();
         });
-    });
-
-    t.test('debounce', (t) => {
-        const ender = function(number) {
-            t.equal(number, 3, 'passes argument');
-            t.pass('calls function');
-            t.end();
-        };
-        const debounced = util.debounce(ender, 100);
-        t.ok(debounced, 'creates function');
-        debounced(1);
-        debounced(2);
-        debounced(3);
-    });
-
-    t.test('startsWith', (t) => {
-        t.ok(util.startsWith('mapbox', 'map'));
-        t.notOk(util.startsWith('mapbox', 'box'));
-        t.end();
     });
 
     t.test('endsWith', (t) => {
