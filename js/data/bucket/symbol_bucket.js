@@ -521,8 +521,6 @@ class SymbolBucket extends Bucket {
         }
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
-
-        this.trimArrays();
     }
 
     addSymbols(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {

@@ -190,21 +190,6 @@ test('Bucket', (t) => {
         t.end();
     });
 
-    t.test('trimArrays', (t) => {
-        const bucket = create();
-
-        bucket.createArrays();
-        bucket.arrays.test.prepareSegment(10);
-        t.equal(0, bucket.arrays.test.layoutVertexArray.length);
-        t.notEqual(0, bucket.arrays.test.layoutVertexArray.capacity);
-
-        bucket.trimArrays();
-        t.equal(0, bucket.arrays.test.layoutVertexArray.length);
-        t.equal(0, bucket.arrays.test.layoutVertexArray.capacity);
-
-        t.end();
-    });
-
     t.test('isEmpty', (t) => {
         const bucket = create();
         t.ok(bucket.isEmpty());

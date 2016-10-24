@@ -86,22 +86,6 @@ class ArrayGroup {
         return this.layoutVertexArray.length === 0;
     }
 
-    trim() {
-        this.layoutVertexArray.trim();
-
-        if (this.elementArray) {
-            this.elementArray.trim();
-        }
-
-        if (this.elementArray2) {
-            this.elementArray2.trim();
-        }
-
-        for (const layerName in this.paintVertexArrays) {
-            this.paintVertexArrays[layerName].trim();
-        }
-    }
-
     serialize(transferables) {
         return {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
