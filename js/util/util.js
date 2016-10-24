@@ -77,19 +77,6 @@ exports.wrap = function (n, min, max) {
 };
 
 /*
- * return the first non-null and non-undefined argument to this function.
- * @returns {*} argument
- * @private
- */
-exports.coalesce = function() {
-    for (let i = 0; i < arguments.length; i++) {
-        const arg = arguments[i];
-        if (arg !== null && arg !== undefined)
-            return arg;
-    }
-};
-
-/*
  * Call an asynchronous function on an array of arguments,
  * calling `callback` with the completed results of all calls.
  *
@@ -206,28 +193,6 @@ exports.uniqueId = function () {
 };
 
 /**
- * Create a version of `fn` that is only called `time` milliseconds
- * after its last invocation
- *
- * @param {Function} fn the function to be debounced
- * @param {number} time millseconds after which the function will be invoked
- * @returns {Function} debounced function
- * @private
- */
-exports.debounce = function(fn, time) {
-    let timer, args;
-
-    return function() {
-        args = arguments;
-        clearTimeout(timer);
-
-        timer = setTimeout(() => {
-            fn.apply(null, args);
-        }, time);
-    };
-};
-
-/**
  * Given an array of member function names as strings, replace all of them
  * with bound versions that will always refer to `context` as `this`. This
  * is useful for classes where otherwise event bindings would reassign
@@ -291,17 +256,6 @@ exports.getCoordinatesCenter = function(coords) {
  */
 exports.endsWith = function(string, suffix) {
     return string.indexOf(suffix, string.length - suffix.length) !== -1;
-};
-
-/**
- * Determine if a string starts with a particular substring
- * @param {string} string
- * @param {string} prefix
- * @returns {boolean}
- * @private
- */
-exports.startsWith = function(string, prefix) {
-    return string.indexOf(prefix) === 0;
 };
 
 /**
