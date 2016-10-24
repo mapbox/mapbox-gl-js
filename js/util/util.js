@@ -183,22 +183,6 @@ exports.extendAll = function (dest, src) {
 };
 
 /**
- * Extend a parent's prototype with all properties in a properties
- * object.
- *
- * @param {Object} parent
- * @param {Object} props
- * @returns {Object}
- * @private
- */
-exports.inherit = function (parent, props) {
-    const parentProto = typeof parent === 'function' ? parent.prototype : parent,
-        proto = Object.create(parentProto);
-    exports.extendAll(proto, props);
-    return proto;
-};
-
-/**
  * Given an object and a number of properties as strings, return version
  * of that object with only those properties.
  *
