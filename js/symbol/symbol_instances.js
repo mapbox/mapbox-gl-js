@@ -1,7 +1,6 @@
 'use strict';
 
 const StructArrayType = require('../util/struct_array');
-const util = require('../util/util');
 const Point = require('point-geometry');
 
 /*
@@ -34,10 +33,8 @@ const SymbolInstancesArray = module.exports = new StructArrayType({
     ]
 });
 
-util.extendAll(SymbolInstancesArray.prototype.StructType.prototype, {
-    get anchorPoint() {
-        return new Point(this.anchorPointX, this.anchorPointY);
-    }
+Object.defineProperty(SymbolInstancesArray.prototype.StructType.prototype, 'anchorPoint', {
+    get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 
 
