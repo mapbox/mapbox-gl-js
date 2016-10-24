@@ -2,7 +2,6 @@
 
 const FeatureIndex = require('../data/feature_index');
 const CollisionTile = require('../symbol/collision_tile');
-const Bucket = require('../data/bucket');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
@@ -83,7 +82,7 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
-                const bucket = buckets[layer.id] = Bucket.create({
+                const bucket = buckets[layer.id] = layer.createBucket({
                     index: bucketIndex++,
                     layers: family,
                     zoom: this.zoom,

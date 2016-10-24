@@ -11,9 +11,8 @@ const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, l
  * The `Bucket` class is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
  *
- * `Bucket` is an abstract class. A subclass exists for each Mapbox GL
- * style spec layer type. Because `Bucket` is an abstract class,
- * instances should be created via the `Bucket.create` method.
+ * `Bucket` is an abstract class. A subclass exists for each style layer type.
+ * Create a bucket via the `StyleLayer#createBucket` method.
  *
  * @private
  */
@@ -101,30 +100,6 @@ class Bucket {
 
 module.exports = Bucket;
 
-const subclasses = {
-    fill: require('./bucket/fill_bucket'),
-    fillextrusion: require('./bucket/fill_extrusion_bucket'),
-    line: require('./bucket/line_bucket'),
-    circle: require('./bucket/circle_bucket'),
-    symbol: require('./bucket/symbol_bucket')
-};
-
-/**
- * Instantiate the appropriate subclass of `Bucket` for `options`.
- * @param options See `Bucket` constructor options
- * @returns {Bucket}
- */
-Bucket.create = function(options) {
-    const layer = options.layers[0];
-    let type = layer.type;
-    if (type === 'fill' && (!layer.isPaintValueFeatureConstant('fill-extrude-height') ||
-        !layer.isPaintValueZoomConstant('fill-extrude-height') ||
-        layer.getPaintValue('fill-extrude-height', {zoom: options.zoom}) !== 0)) {
-        type = 'fillextrusion';
-    }
-    return new subclasses[type](options);
-};
-
 Bucket.deserialize = function(input, style) {
     // Guard against the case where the map's style has been set to null while
     // this bucket has been parsing.
@@ -140,7 +115,7 @@ Bucket.deserialize = function(input, style) {
             continue;
         }
 
-        output[layers[0].id] = Bucket.create(util.extend({layers}, serialized));
+        output[layers[0].id] = layers[0].createBucket(util.extend({layers}, serialized));
     }
     return output;
 };

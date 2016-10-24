@@ -1,6 +1,7 @@
 'use strict';
 
 const StyleLayer = require('../style_layer');
+const SymbolBucket = require('../../data/bucket/symbol_bucket');
 
 class SymbolStyleLayer extends StyleLayer {
 
@@ -19,6 +20,10 @@ class SymbolStyleLayer extends StyleLayer {
         default:
             return value;
         }
+    }
+
+    createBucket(options) {
+        return new SymbolBucket(options);
     }
 }
 
