@@ -112,7 +112,7 @@ class FillBucket extends Bucket {
             triangleSegment.primitiveLength += indices.length / 3;
         }
 
-        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, feature.properties);
+        arrays.populatePaintArrays(feature.properties);
     }
 }
 

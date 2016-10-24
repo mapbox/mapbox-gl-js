@@ -157,7 +157,7 @@ class FillExtrusionBucket extends Bucket {
             segment.primitiveLength += triangleIndices.length / 3;
         }
 
-        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, feature.properties);
+        arrays.populatePaintArrays(feature.properties);
     }
 }
 

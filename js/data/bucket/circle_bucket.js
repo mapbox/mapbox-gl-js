@@ -113,7 +113,7 @@ class CircleBucket extends Bucket {
             }
         }
 
-        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, feature.properties);
+        arrays.populatePaintArrays(feature.properties);
     }
 }
 

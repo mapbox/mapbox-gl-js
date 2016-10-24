@@ -22,7 +22,7 @@ const assert = require('assert');
  * @private
  */
 class ProgramConfiguration {
-    static createDynamic(attributes, layer, options) {
+    static createDynamic(attributes, layer, zoom) {
         const self = new ProgramConfiguration();
 
         self.attributes = [];
@@ -61,7 +61,7 @@ class ProgramConfiguration {
                 // Find the four closest stops, ideally with two on each side of the zoom level.
                 let numStops = 0;
                 const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
-                while (numStops < zoomLevels.length && zoomLevels[numStops] < options.zoom) numStops++;
+                while (numStops < zoomLevels.length && zoomLevels[numStops] < zoom) numStops++;
                 const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
 
                 const fourZoomLevels = [];

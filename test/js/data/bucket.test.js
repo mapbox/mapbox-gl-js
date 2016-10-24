@@ -63,7 +63,7 @@ test('Bucket', (t) => {
                 arrays.layoutVertexArray.emplaceBack(point.x * 2, point.y * 2);
                 arrays.elementArray.emplaceBack(1, 2, 3);
                 arrays.elementArray2.emplaceBack(point.x, point.y);
-                arrays.populatePaintArrays(this.layers, {}, feature.properties);
+                arrays.populatePaintArrays(feature.properties);
             }
         }
 
@@ -96,7 +96,7 @@ test('Bucket', (t) => {
         const v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        const paintVertex = bucket.arrays.test.paintVertexArrays.layerid;
+        const paintVertex = bucket.arrays.test.layerData.layerid.paintVertexArray;
         t.equal(paintVertex.length, 1);
         const p0 = paintVertex.get(0);
         t.equal(p0.a_map, 17);
@@ -126,8 +126,8 @@ test('Bucket', (t) => {
         bucket.populate([createFeature(17, 42)], createOptions());
 
         const v0 = bucket.arrays.test.layoutVertexArray.get(0);
-        const a0 = bucket.arrays.test.paintVertexArrays.one.get(0);
-        const b0 = bucket.arrays.test.paintVertexArrays.two.get(0);
+        const a0 = bucket.arrays.test.layerData.one.paintVertexArray.get(0);
+        const b0 = bucket.arrays.test.layerData.two.paintVertexArray.get(0);
         t.equal(a0.a_map, 17);
         t.equal(b0.a_map, 17);
         t.equal(v0.a_box0, 34);
@@ -154,7 +154,7 @@ test('Bucket', (t) => {
 
         t.equal(bucket.arrays.test.layoutVertexArray.bytesPerElement, 0);
         t.deepEqual(
-            bucket.programConfigurations.test.one.uniforms[0].getValue.call(bucket),
+            bucket.arrays.test.layerData.one.programConfiguration.uniforms[0].getValue.call(bucket),
             [5]
         );
 
@@ -214,7 +214,7 @@ test('Bucket', (t) => {
         t.equal(bucket.arrays.test.layoutVertexArray.arrayBuffer, transferables[0]);
         t.equal(bucket.arrays.test.elementArray.arrayBuffer, transferables[1]);
         t.equal(bucket.arrays.test.elementArray2.arrayBuffer, transferables[2]);
-        t.equal(bucket.arrays.test.paintVertexArrays.layerid.arrayBuffer, transferables[3]);
+        t.equal(bucket.arrays.test.layerData.layerid.paintVertexArray.arrayBuffer, transferables[3]);
 
         t.end();
     });
@@ -231,7 +231,7 @@ test('Bucket', (t) => {
         const v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        const testPaintVertex = bucket.arrays.test.paintVertexArrays.layerid;
+        const testPaintVertex = bucket.arrays.test.layerData.layerid.paintVertexArray;
         t.equal(testPaintVertex.length, 1);
         const p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);
@@ -268,7 +268,7 @@ test('Bucket', (t) => {
         const v0 = testVertex.get(0);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
-        const testPaintVertex = bucket.arrays.test.paintVertexArrays.layerid;
+        const testPaintVertex = bucket.arrays.test.layerData.layerid.paintVertexArray;
         t.equal(testPaintVertex.length, 1);
         const p0 = testPaintVertex.get(0);
         t.equal(p0.a_map, 17);

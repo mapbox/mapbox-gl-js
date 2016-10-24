@@ -2,34 +2,40 @@
 
 const util = require('../util/util');
 const Buffer = require('./buffer');
+const ProgramConfiguration = require('./program_configuration');
 const VertexArrayObject = require('../render/vertex_array_object');
 
 class BufferGroup {
-
-    constructor(arrayGroup, programInterface) {
-        this.layoutVertexBuffer = new Buffer(arrayGroup.layoutVertexArray,
+    constructor(programInterface, layers, zoom, arrays) {
+        this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray,
             programInterface.layoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
 
-        if (arrayGroup.elementArray) {
-            this.elementBuffer = new Buffer(arrayGroup.elementArray,
+        if (arrays.elementArray) {
+            this.elementBuffer = new Buffer(arrays.elementArray,
                 programInterface.elementArrayType.serialize(), Buffer.BufferType.ELEMENT);
         }
 
-        if (arrayGroup.elementArray2) {
-            this.elementBuffer2 = new Buffer(arrayGroup.elementArray2,
+        if (arrays.elementArray2) {
+            this.elementBuffer2 = new Buffer(arrays.elementArray2,
                 programInterface.elementArrayType2.serialize(), Buffer.BufferType.ELEMENT);
         }
 
-        this.paintVertexBuffers = util.mapObject(arrayGroup.paintVertexArrays, (array) => {
-            return new Buffer(array.array, array.type, Buffer.BufferType.VERTEX);
-        });
+        this.layerData = {};
+        for (const layer of layers) {
+            const array = arrays.paintVertexArrays[layer.id];
+            this.layerData[layer.id] = {
+                programConfiguration: ProgramConfiguration.createDynamic(
+                    programInterface.paintAttributes || [], layer, zoom),
+                paintVertexBuffer: new Buffer(array.array, array.type, Buffer.BufferType.VERTEX)
+            };
+        }
 
-        this.segments = arrayGroup.segments;
-        this.segments2 = arrayGroup.segments2;
+        this.segments = arrays.segments;
+        this.segments2 = arrays.segments2;
 
         for (const segments of [this.segments, this.segments2]) {
             for (const segment of segments || []) {
-                segment.vaos = util.mapObject(arrayGroup.paintVertexArrays, () => {
+                segment.vaos = util.mapObject(arrays.paintVertexArrays, () => {
                     return new VertexArrayObject();
                 });
             }
@@ -44,8 +50,8 @@ class BufferGroup {
         if (this.elementBuffer2) {
             this.elementBuffer2.destroy();
         }
-        for (const n in this.paintVertexBuffers) {
-            this.paintVertexBuffers[n].destroy();
+        for (const n in this.layerData) {
+            this.layerData[n].paintVertexBuffer.destroy();
         }
         for (const segments of [this.segments, this.segments2]) {
             for (const segment of segments || []) {

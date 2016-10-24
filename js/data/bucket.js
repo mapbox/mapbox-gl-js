@@ -2,7 +2,6 @@
 
 const ArrayGroup = require('./array_group');
 const BufferGroup = require('./buffer_group');
-const ProgramConfiguration = require('./program_configuration');
 const util = require('../util/util');
 
 const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
@@ -32,17 +31,9 @@ class Bucket {
         this.layers = options.layers;
         this.index = options.index;
 
-        this.programConfigurations = util.mapObject(this.programInterfaces, (programInterface) => {
-            const result = {};
-            for (const layer of this.layers) {
-                result[layer.id] = ProgramConfiguration.createDynamic(programInterface.paintAttributes || [], layer, options);
-            }
-            return result;
-        });
-
         if (options.arrays) {
             this.bufferGroups = util.mapObject(options.arrays, (arrayGroup, programName) => {
-                return new BufferGroup(arrayGroup, this.programInterfaces[programName]);
+                return new BufferGroup(this.programInterfaces[programName], options.layers, options.zoom, arrayGroup);
             });
         }
     }
@@ -60,12 +51,9 @@ class Bucket {
     }
 
     createArrays() {
-        this.arrays = {};
-        for (const programName in this.programInterfaces) {
-            this.arrays[programName] = new ArrayGroup(
-                this.programInterfaces[programName],
-                this.programConfigurations[programName]);
-        }
+        this.arrays = util.mapObject(this.programInterfaces, (programInterface) => {
+            return new ArrayGroup(programInterface, this.layers, this.zoom);
+        });
     }
 
     destroy() {

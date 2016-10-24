@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
+const ProgramConfiguration = require('./program_configuration');
 
 class Segment {
     constructor(vertexOffset, primitiveOffset) {
@@ -31,7 +32,9 @@ class Segment {
  * @private
  */
 class ArrayGroup {
-    constructor(programInterface, programConfigurations) {
+    constructor(programInterface, layers, zoom) {
+        this.globalProperties = {zoom};
+
         const LayoutVertexArrayType = programInterface.layoutVertexArrayType;
         this.layoutVertexArray = new LayoutVertexArrayType();
 
@@ -41,12 +44,17 @@ class ArrayGroup {
         const ElementArrayType2 = programInterface.elementArrayType2;
         if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
-        this.paintVertexArrays = util.mapObject(programConfigurations, (programConfiguration) => {
+        this.layerData = {};
+        for (const layer of layers) {
+            const programConfiguration = ProgramConfiguration.createDynamic(
+                programInterface.paintAttributes || [], layer, zoom);
             const PaintVertexArrayType = programConfiguration.paintVertexArrayType();
-            const paintVertexArray = new PaintVertexArrayType();
-            paintVertexArray.programConfiguration = programConfiguration;
-            return paintVertexArray;
-        });
+            this.layerData[layer.id] = {
+                layer: layer,
+                programConfiguration: programConfiguration,
+                paintVertexArray: new PaintVertexArrayType()
+            };
+        }
 
         this.segments = [];
         this.segments2 = [];
@@ -70,14 +78,14 @@ class ArrayGroup {
         return segment;
     }
 
-    populatePaintArrays(layers, globalProperties, featureProperties) {
-        for (const layer of layers) {
-            const paintArray = this.paintVertexArrays[layer.id];
-            paintArray.programConfiguration.populatePaintArray(
-                layer,
-                paintArray,
+    populatePaintArrays(featureProperties) {
+        for (const key in this.layerData) {
+            const layerData = this.layerData[key];
+            layerData.programConfiguration.populatePaintArray(
+                layerData.layer,
+                layerData.paintVertexArray,
                 this.layoutVertexArray.length,
-                globalProperties,
+                this.globalProperties,
                 featureProperties);
         }
     }
@@ -91,10 +99,10 @@ class ArrayGroup {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
-            paintVertexArrays: util.mapObject(this.paintVertexArrays, (array) => {
+            paintVertexArrays: util.mapObject(this.layerData, (layerData) => {
                 return {
-                    array: array.serialize(transferables),
-                    type: array.constructor.serialize()
+                    array: layerData.paintVertexArray.serialize(transferables),
+                    type: layerData.paintVertexArray.constructor.serialize()
                 };
             }),
             segments: this.segments,

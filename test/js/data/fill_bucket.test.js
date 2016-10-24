@@ -103,9 +103,9 @@ test('FillBucket segmentation', (t) => {
         primitiveLength: 126
     });
 
-    t.equal(arrays.paintVertexArrays.test.length, 266);
-    for (let i = 0; i < arrays.paintVertexArrays.test.length; i++) {
-        const vertex = arrays.paintVertexArrays.test.get(i);
+    t.equal(arrays.layerData.test.paintVertexArray.length, 266);
+    for (let i = 0; i < arrays.layerData.test.paintVertexArray.length; i++) {
+        const vertex = arrays.layerData.test.paintVertexArray.get(i);
         t.deepEqual([
             vertex['a_color0'],
             vertex['a_color1'],

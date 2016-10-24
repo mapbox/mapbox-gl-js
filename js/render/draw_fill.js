@@ -55,11 +55,12 @@ function drawFill(painter, sourceCache, layer, coord) {
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
+    const layerData = buffers.layerData[layer.id];
+
     let program;
 
     if (!image) {
-
-        const programConfiguration = bucket.programConfigurations.fill[layer.id];
+        const programConfiguration = layerData.programConfiguration;
         program = painter.useProgram('fill', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
@@ -83,7 +84,7 @@ function drawFill(painter, sourceCache, layer, coord) {
     painter.enableTileClippingMask(coord);
 
     for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, buffers.paintVertexBuffers[layer.id], segment.vertexOffset);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
@@ -94,6 +95,7 @@ function drawStroke(painter, sourceCache, layer, coord) {
     if (!bucket) return;
 
     const buffers = bucket.bufferGroups.fill;
+    const layerData = buffers.layerData[layer.id];
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
@@ -105,7 +107,7 @@ function drawStroke(painter, sourceCache, layer, coord) {
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     } else {
-        const programConfiguration = bucket.programConfigurations.fill[layer.id];
+        const programConfiguration = layerData.programConfiguration;
         program = painter.useProgram('fillOutline', programConfiguration);
         programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
         gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -127,7 +129,7 @@ function drawStroke(painter, sourceCache, layer, coord) {
     painter.enableTileClippingMask(coord);
 
     for (const segment of buffers.segments2) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, buffers.paintVertexBuffers[layer.id], segment.vertexOffset);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer2, layerData.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);
     }
 }

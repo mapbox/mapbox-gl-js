@@ -356,7 +356,7 @@ class LineBucket extends Bucket {
             startOfLine = false;
         }
 
-        arrays.populatePaintArrays(this.layers, {zoom: this.zoom}, featureProperties);
+        arrays.populatePaintArrays(featureProperties);
     }
 
     /**
