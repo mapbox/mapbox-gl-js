@@ -69,40 +69,16 @@ const invisible = {
 const breakable = {
     0x0020: true, // space
     0x0022: true, // quotation mark
-    0x0024: true, // dollar sign
     0x0026: true, // ampersand
     0x0028: true, // left parenthesis
     0x002b: true, // plus sign
     0x002d: true, // hyphen-minus
-    0x002f: true, // solidus
-    0x00a3: true, // pound sign
-    0x00a5: true, // yen sign
     0x00ad: true, // soft hyphen
     0x00b7: true, // middle dot
     0x200b: true, // zero-width space
     0x2010: true, // hyphen
     0x2013: true, // en dash
-    0x2018: true, // left single quotation mark
-    0x3002: true, // ideographic full stop
-    0x3008: true, // left angle bracket
-    0x300a: true, // left double angle bracket
-    0x300c: true, // left corner bracket
-    0x300e: true, // left white corner bracket
-    0x3010: true, // left black lenticular bracket
-    0x3014: true, // left tortoise shell bracket
-    0x3016: true, // left white lenticular bracket
-    0x301d: true, // reversed double prime quotation mark
-    0x533a: true, // unknown
-    0xfe59: true, // small left parenthesis
-    0xfe5b: true, // small left curly bracket
-    0xff04: true, // fullwidth dollar sign
-    0xff08: true, // fullwidth left parenthesis
-    0xff0e: true, // fullwidth full stop
-    0xff3b: true, // fullwidth left square bracket
-    0xff5b: true, // fullwidth left curly bracket
-    0xff5e: true, // fullwidth tilde
-    0xffe1: true, // fullwidth pound sign
-    0xffe5: true  // fullwidth yen sign
+    0x2018: true  // left single quotation mark
 };
 
 invisible[newLine] = breakable[newLine] = true;
