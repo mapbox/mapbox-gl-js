@@ -1,6 +1,7 @@
 'use strict';
 
 const StyleLayer = require('../style_layer');
+const util = require('../../util/util');
 
 class LineStyleLayer extends StyleLayer {
 
@@ -13,7 +14,9 @@ class LineStyleLayer extends StyleLayer {
             const flooredZoom = Math.floor(globalProperties.zoom);
             if (this._flooredZoom !== flooredZoom) {
                 this._flooredZoom = flooredZoom;
-                this._flooredLineWidth = this.getPaintValue('line-width', globalProperties, featureProperties);
+                const flooredGlobalProperties = util.clone(globalProperties);
+                flooredGlobalProperties.zoom = flooredZoom;
+                this._flooredLineWidth = this.getPaintValue('line-width', flooredGlobalProperties, featureProperties);
             }
 
             value.fromScale *= this._flooredLineWidth;
