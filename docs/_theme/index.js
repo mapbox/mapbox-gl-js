@@ -4,7 +4,7 @@ var fs = require('fs'),
   path = require('path'),
   File = require('vinyl'),
   vfs = require('vinyl-fs'),
-  _ = require('lodash'),
+  template = require('lodash.template'),
   concat = require('concat-stream'),
   formatMarkdown = require('./lib/format_markdown'),
   formatParameters = require('./lib/format_parameters');
@@ -75,15 +75,15 @@ module.exports = function (comments, options, callback) {
     }
   };
 
-  var pageTemplate = _.template(fs.readFileSync(path.join(__dirname, 'index.hbs'), 'utf8'), {
+  var pageTemplate = template(fs.readFileSync(path.join(__dirname, 'index.hbs'), 'utf8'), {
     imports: {
-      renderSection: _.template(fs.readFileSync(path.join(__dirname, 'section.hbs'), 'utf8'), {
+      renderSection: template(fs.readFileSync(path.join(__dirname, 'section.hbs'), 'utf8'), {
         imports: imports
       }),
-      renderNote: _.template(fs.readFileSync(path.join(__dirname, 'note.hbs'), 'utf8'), {
+      renderNote: template(fs.readFileSync(path.join(__dirname, 'note.hbs'), 'utf8'), {
         imports: imports
       }),
-      renderSectionList: _.template(fs.readFileSync(path.join(__dirname, 'section_list.hbs'), 'utf8'), {
+      renderSectionList: template(fs.readFileSync(path.join(__dirname, 'section_list.hbs'), 'utf8'), {
         imports: imports
       }),
       highlight: function (str) {
