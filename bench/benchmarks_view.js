@@ -64,13 +64,28 @@ const BenchmarksView = React.createClass({
     },
 
     renderTextBenchmarks: function() {
-        let output = '# Benchmarks\n';
+        const versions = [];
         for (const name in this.state.results) {
-            output += `\n## ${name}\n\n`;
             for (const version in this.state.results[name]) {
-                const result = this.state.results[name][version];
-                output += `**${version}:** ${result.message || '...'}\n`;
+                if (versions.indexOf(version) < 0) {
+                    versions.push(version);
+                }
             }
+        }
+
+        let output = `benchmark | ${versions.join(' | ')}\n---`;
+        for (let i = 0; i < versions.length; i++) {
+            output += ' | ---';
+        }
+        output += '\n';
+
+        for (const name in this.state.results) {
+            output += `**${name}**`;
+            for (const version of versions) {
+                const result = this.state.results[name][version];
+                output += ` | ${result && result.message || 'n\/a'} `;
+            }
+            output += '\n';
         }
         return output;
     },
