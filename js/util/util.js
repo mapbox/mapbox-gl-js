@@ -168,21 +168,6 @@ exports.extend = function (dest) {
 };
 
 /**
- * Extend a destination object with all properties of the src object,
- * using defineProperty instead of simple assignment.
- * @param {Object} dest
- * @param {Object} src
- * @returns {Object} dest
- * @private
- */
-exports.extendAll = function (dest, src) {
-    for (const i in src) {
-        Object.defineProperty(dest, i, Object.getOwnPropertyDescriptor(src, i));
-    }
-    return dest;
-};
-
-/**
  * Given an object and a number of properties as strings, return version
  * of that object with only those properties.
  *

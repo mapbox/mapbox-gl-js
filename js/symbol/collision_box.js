@@ -1,7 +1,6 @@
 'use strict';
 
 const StructArrayType = require('../util/struct_array');
-const util = require('../util/util');
 const Point = require('point-geometry');
 
 /**
@@ -72,8 +71,6 @@ const CollisionBoxArray = module.exports = new StructArrayType({
         { type: 'Float32', name: 'placementScale' }
     ]});
 
-util.extendAll(CollisionBoxArray.prototype.StructType.prototype, {
-    get anchorPoint() {
-        return new Point(this.anchorPointX, this.anchorPointY);
-    }
+Object.defineProperty(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
+    get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });

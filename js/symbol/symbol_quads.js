@@ -1,7 +1,6 @@
 'use strict';
 
 const StructArrayType = require('../util/struct_array');
-const util = require('../util/util');
 const Point = require('point-geometry');
 const SymbolQuad = require('./quads').SymbolQuad;
 
@@ -52,11 +51,12 @@ const SymbolQuadsArray = module.exports = new StructArrayType({
     ]
 });
 
-util.extendAll(SymbolQuadsArray.prototype.StructType.prototype, {
-    get anchorPoint() {
-        return new Point(this.anchorPointX, this.anchorPointY);
-    },
-    get SymbolQuad() {
+Object.defineProperty(SymbolQuadsArray.prototype.StructType.prototype, 'anchorPoint', {
+    get() { return new Point(this.anchorPointX, this.anchorPointY); }
+});
+
+Object.defineProperty(SymbolQuadsArray.prototype.StructType.prototype, 'SymbolQuad', {
+    get() {
         return new SymbolQuad(this.anchorPoint,
             new Point(this.tlX, this.tlY),
             new Point(this.trX, this.trY),
@@ -69,4 +69,3 @@ util.extendAll(SymbolQuadsArray.prototype.StructType.prototype, {
             this.maxScale);
     }
 });
-
