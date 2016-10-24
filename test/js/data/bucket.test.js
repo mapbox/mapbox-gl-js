@@ -218,12 +218,12 @@ test('Bucket', (t) => {
         t.end();
     });
 
-    t.test('getTransferables', (t) => {
+    t.test('serialize', (t) => {
         const bucket = create();
         bucket.populate([createFeature(17, 42)], createOptions());
 
         const transferables = [];
-        bucket.getTransferables(transferables);
+        bucket.serialize(transferables);
 
         t.equal(4, transferables.length);
         t.equal(bucket.arrays.test.layoutVertexArray.arrayBuffer, transferables[0]);

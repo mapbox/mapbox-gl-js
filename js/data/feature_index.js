@@ -75,17 +75,17 @@ class FeatureIndex {
         this.collisionTile = collisionTile;
     }
 
-    serialize() {
-        const data = {
+    serialize(transferables) {
+        const grid = this.grid.toArrayBuffer();
+        if (transferables) {
+            transferables.push(grid);
+        }
+        return {
             coord: this.coord,
             overscaling: this.overscaling,
-            grid: this.grid.toArrayBuffer(),
-            featureIndexArray: this.featureIndexArray.serialize(),
+            grid: grid,
+            featureIndexArray: this.featureIndexArray.serialize(transferables),
             bucketLayerIDs: this.bucketLayerIDs
-        };
-        return {
-            data: data,
-            transferables: [data.grid, data.featureIndexArray.arrayBuffer]
         };
     }
 

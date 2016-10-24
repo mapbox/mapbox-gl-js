@@ -102,36 +102,20 @@ class ArrayGroup {
         }
     }
 
-    serialize() {
+    serialize(transferables) {
         return {
-            layoutVertexArray: this.layoutVertexArray.serialize(),
-            elementArray: this.elementArray && this.elementArray.serialize(),
-            elementArray2: this.elementArray2 && this.elementArray2.serialize(),
+            layoutVertexArray: this.layoutVertexArray.serialize(transferables),
+            elementArray: this.elementArray && this.elementArray.serialize(transferables),
+            elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
             paintVertexArrays: util.mapObject(this.paintVertexArrays, (array) => {
                 return {
-                    array: array.serialize(),
+                    array: array.serialize(transferables),
                     type: array.constructor.serialize()
                 };
             }),
             segments: this.segments,
             segments2: this.segments2
         };
-    }
-
-    getTransferables(transferables) {
-        transferables.push(this.layoutVertexArray.arrayBuffer);
-
-        if (this.elementArray) {
-            transferables.push(this.elementArray.arrayBuffer);
-        }
-
-        if (this.elementArray2) {
-            transferables.push(this.elementArray2.arrayBuffer);
-        }
-
-        for (const layerName in this.paintVertexArrays) {
-            transferables.push(this.paintVertexArrays[layerName].arrayBuffer);
-        }
     }
 }
 
