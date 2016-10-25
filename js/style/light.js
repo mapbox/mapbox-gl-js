@@ -35,9 +35,7 @@ class Light extends Evented {
             intensity: this._specifications.intensity.default
         }, lightOpts);
 
-        for (let p = 0; p < this.properties.length; p++) {
-            const prop = this.properties[p];
-
+        for (const prop of this.properties) {
             this._declarations[prop] = new StyleDeclaration(this._specifications[prop], lightOpts[prop]);
         }
 
