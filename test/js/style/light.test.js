@@ -2,7 +2,7 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Light = require('../../../js/style/light');
-const spec = require('../../../js/style/style_spec').$root.light;
+const spec = require('../../../js/style/style_spec').light;
 
 test('Light', (t) => {
     t.test('creates default light with no options', (t) => {
