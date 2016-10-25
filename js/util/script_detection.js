@@ -2,7 +2,7 @@
 
 module.exports.allowsIdeographicBreaking = function(input) {
     for (let i = 0; i < input.length; i++) {
-        if (!charAllowsIdeographicBreaking(input.charCodeAt(i), input.charCodeAt(i + 1))) {
+        if (!exports.charAllowsIdeographicBreaking(input.charCodeAt(i), input.charCodeAt(i + 1))) {
             return false;
         }
     }
@@ -10,7 +10,7 @@ module.exports.allowsIdeographicBreaking = function(input) {
 };
 
 
-function charAllowsIdeographicBreaking(char, nextChar) {
+module.exports.charAllowsIdeographicBreaking = function(char, nextChar) {
     // "一" to "鿌"
     if (char >= 0x4E00 && char <= 0x9FCC) return true;
 
@@ -42,4 +42,4 @@ function charAllowsIdeographicBreaking(char, nextChar) {
     if (char >= 0xA000 && char <= 0xA4C6) return true;
 
     return false;
-}
+};
