@@ -6,8 +6,23 @@ module.exports = {
     multiPolygonIntersectsBufferedMultiPoint: multiPolygonIntersectsBufferedMultiPoint,
     multiPolygonIntersectsMultiPolygon: multiPolygonIntersectsMultiPolygon,
     multiPolygonIntersectsBufferedMultiLine: multiPolygonIntersectsBufferedMultiLine,
+    polygonIntersectsPolygon: polygonIntersectsPolygon,
     distToSegmentSquared: distToSegmentSquared
 };
+
+function polygonIntersectsPolygon(polygonA, polygonB) {
+    for (let i = 0; i < polygonA.length; i++) {
+        if (polygonContainsPoint(polygonB, polygonA[i])) return true;
+    }
+
+    for (let i = 0; i < polygonB.length; i++) {
+        if (polygonContainsPoint(polygonA, polygonB[i])) return true;
+    }
+
+    if (lineIntersectsLine(polygonA, polygonB)) return true;
+
+    return false;
+}
 
 function multiPolygonIntersectsBufferedMultiPoint(multiPolygon, rings, radius) {
     for (let j = 0; j < multiPolygon.length; j++) {
@@ -89,6 +104,7 @@ function lineIntersectsBufferedLine(lineA, lineB, radius) {
 }
 
 function lineIntersectsLine(lineA, lineB) {
+    if (lineA.length === 0 || lineB.length === 0) return false;
     for (let i = 0; i < lineA.length - 1; i++) {
         const a0 = lineA[i];
         const a1 = lineA[i + 1];
