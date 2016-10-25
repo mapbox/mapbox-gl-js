@@ -56,8 +56,8 @@
     "eslint-config-mourner": "^2.0.0",
     "eslint-plugin-flowtype": "^2.20.0",
     "eslint-plugin-html": "^1.5.1",
+    "flow-bin": "^0.33.0",
     "github-slugger": "^1.1.1",
-    "flow-bin": "^0.2.3",
     "gl": "^4.0.1",
     "highlight.js": "9.3.0",
     "in-publish": "^2.0.0",
@@ -122,6 +122,6 @@
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
     "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
+    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   }
 }
