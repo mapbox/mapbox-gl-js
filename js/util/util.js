@@ -406,8 +406,8 @@ exports.isClosedPolygon = function(points: Array<Point>): boolean {
 
 exports.sphericalToCartesian = function(spherical: Array<number>): Array<number> {
     const r = spherical[0];
-    let azimuthal = spherical[1];
-    let polar = spherical[2];
+    let azimuthal = spherical[1],
+        polar = spherical[2];
     // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
     // correct for that here
     azimuthal += 90;
