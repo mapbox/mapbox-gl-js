@@ -64,6 +64,24 @@ const lineInterfaces = {
     }
 };
 
+function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofar) {
+    return layoutVertexBuffer.emplaceBack(
+        // a_pos
+        (point.x << 1) | tx,
+        (point.y << 1) | ty,
+        // a_data
+        // add 128 to store an byte in an unsigned byte
+        Math.round(EXTRUDE_SCALE * extrude.x) + 128,
+        Math.round(EXTRUDE_SCALE * extrude.y) + 128,
+        // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
+        // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
+        // room for the direction value). The upper 8 bits of `linesofar` are placed in
+        // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
+        // we can store longer distances while sacrificing precision.
+        ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
+        (linesofar * LINE_DISTANCE_SCALE) >> 6);
+}
+
 /**
  * @private
  */
@@ -73,35 +91,14 @@ class LineBucket extends Bucket {
         return lineInterfaces;
     }
 
-    addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofar) {
-        return layoutVertexBuffer.emplaceBack(
-                // a_pos
-                (point.x << 1) | tx,
-                (point.y << 1) | ty,
-                // a_data
-                // add 128 to store an byte in an unsigned byte
-                Math.round(EXTRUDE_SCALE * extrude.x) + 128,
-                Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-                // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
-                // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
-                // room for the direction value). The upper 8 bits of `linesofar` are placed in
-                // the `w` component. `linesofar` is scaled down by `LINE_DISTANCE_SCALE` so that
-                // we can store longer distances while sacrificing precision.
-                ((dir === 0 ? 0 : (dir < 0 ? -1 : 1)) + 1) | (((linesofar * LINE_DISTANCE_SCALE) & 0x3F) << 2),
-                (linesofar * LINE_DISTANCE_SCALE) >> 6);
-    }
-
     addFeature(feature) {
-        const lines = loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS);
-        for (let i = 0; i < lines.length; i++) {
-            this.addLine(
-                lines[i],
-                feature.properties,
-                this.layer.layout['line-join'],
-                this.layer.layout['line-cap'],
-                this.layer.layout['line-miter-limit'],
-                this.layer.layout['line-round-limit']
-            );
+        const join = this.layer.layout['line-join'];
+        const cap = this.layer.layout['line-cap'];
+        const miterLimit = this.layer.layout['line-miter-limit'];
+        const roundLimit = this.layer.layout['line-round-limit'];
+
+        for (const line of loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS)) {
+            this.addLine(line, feature.properties, join, cap, miterLimit, roundLimit);
         }
     }
 
@@ -384,7 +381,7 @@ class LineBucket extends Bucket {
 
         extrude = normal.clone();
         if (endLeft) extrude._sub(normal.perp()._mult(endLeft));
-        this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 0, endLeft, distance);
+        this.e3 = addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 0, endLeft, distance);
         if (this.e1 >= 0 && this.e2 >= 0) {
             elementArray.emplaceBack(this.e1, this.e2, this.e3);
         }
@@ -393,7 +390,7 @@ class LineBucket extends Bucket {
 
         extrude = normal.mult(-1);
         if (endRight) extrude._sub(normal.perp()._mult(endRight));
-        this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 1, -endRight, distance);
+        this.e3 = addLineVertex(layoutVertexArray, currentVertex, extrude, tx, 1, -endRight, distance);
         if (this.e1 >= 0 && this.e2 >= 0) {
             elementArray.emplaceBack(this.e1, this.e2, this.e3);
         }
@@ -427,7 +424,7 @@ class LineBucket extends Bucket {
         const layoutVertexArray = arrayGroup.layoutVertexArray;
         const elementArray = arrayGroup.elementArray;
 
-        this.e3 = this.addLineVertex(layoutVertexArray, currentVertex, extrude, 0, ty, 0, distance);
+        this.e3 = addLineVertex(layoutVertexArray, currentVertex, extrude, 0, ty, 0, distance);
 
         if (this.e1 >= 0 && this.e2 >= 0) {
             elementArray.emplaceBack(this.e1, this.e2, this.e3);

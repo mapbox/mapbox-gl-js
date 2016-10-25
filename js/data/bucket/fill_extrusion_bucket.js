@@ -7,7 +7,6 @@ const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
-const Point = require('point-geometry');
 const EARCUT_MAX_RINGS = 500;
 
 const fillExtrusionInterfaces = {
@@ -60,116 +59,98 @@ const fillExtrusionInterfaces = {
     }
 };
 
+const FACTOR = Math.pow(2, 13);
+
+function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
+    return vertexArray.emplaceBack(
+        // a_pos
+        x,
+        y,
+        // a_normal
+        Math.floor(nx * FACTOR) * 2 + t,
+        ny * FACTOR * 2,
+        nz * FACTOR * 2,
+
+        // a_edgedistance
+        Math.round(e)
+    );
+}
+
 class FillExtrusionBucket extends Bucket {
     get programInterfaces() {
         return fillExtrusionInterfaces;
     }
 
-    addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
-        return vertexArray.emplaceBack(
-            // a_pos
-            x,
-            y,
-            // a_normal
-            Math.floor(nx * this.factor) * 2 + t,
-            ny * this.factor * 2,
-            nz * this.factor * 2,
-
-            // a_edgedistance
-            Math.round(e)
-            );
-    }
-
     addFeature(feature) {
-        const lines = loadGeometry(feature);
-        const polygons = convertCoords(classifyRings(lines, EARCUT_MAX_RINGS));
-
-        this.factor = Math.pow(2, 13);
-
         const startGroup = this.prepareArrayGroup('fillextrusion', 0);
         const startIndex = startGroup.layoutVertexArray.length;
 
-        for (let i = 0; i < polygons.length; i++) {
-            this.addPolygon(polygons[i]);
-        }
+        for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
+            let numVertices = 0;
+            for (const ring of polygon) {
+                numVertices += ring.length;
+            }
+            numVertices *= 5;
 
-        this.populatePaintArrays('fillextrusion', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
-    }
+            const group = this.prepareArrayGroup('fillextrusion', numVertices);
+            const flattened = [];
+            const holeIndices = [];
+            const indices = [];
 
-    addPolygon(polygon) {
-        let numVertices = 0;
-        for (let k = 0; k < polygon.length; k++) {
-            numVertices += polygon[k].length;
-        }
-        numVertices *= 5;
+            for (let r = 0; r < polygon.length; r++) {
+                const ring = polygon[r];
 
-        const group = this.prepareArrayGroup('fillextrusion', numVertices);
-        const flattened = [];
-        const holeIndices = [];
+                if (r > 0) holeIndices.push(flattened.length / 2);
 
-        const indices = [];
+                let edgeDistance = 0;
 
-        for (let r = 0; r < polygon.length; r++) {
-            const ring = polygon[r];
+                for (let p = 0; p < ring.length; p++) {
+                    const p1 = ring[p];
 
-            if (r > 0) holeIndices.push(flattened.length / 2);
+                    const index = addVertex(group.layoutVertexArray, p1.x, p1.y, 0, 0, 1, 1, 0);
+                    indices.push(index);
 
-            let edgeDistance = 0;
+                    if (p >= 1) {
+                        const p2 = ring[p - 1];
 
-            for (let v = 0; v < ring.length; v++) {
-                const v1 = ring[v];
+                        if (!isBoundaryEdge(p1, p2)) {
+                            const perp = p1.sub(p2)._perp()._unit();
 
-                const index = this.addVertex(group.layoutVertexArray, v1[0], v1[1], 0, 0, 1, 1, 0);
-                indices.push(index);
+                            const bottomRight = addVertex(group.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
+                            addVertex(group.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 1, edgeDistance);
 
-                if (v >= 1) {
-                    const v2 = ring[v - 1];
+                            edgeDistance += p2.dist(p1);
 
-                    if (!isBoundaryEdge(v1, v2)) {
-                        const perp = Point.convert(v1)._sub(Point.convert(v2))._perp()._unit();
+                            addVertex(group.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 0, edgeDistance);
+                            addVertex(group.layoutVertexArray, p2.x, p2.y, perp.x, perp.y, 0, 1, edgeDistance);
 
-                        const bottomRight = this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 0, edgeDistance);
-                        this.addVertex(group.layoutVertexArray, v1[0], v1[1], perp.x, perp.y, 0, 1, edgeDistance);
-
-                        edgeDistance += Point.convert(v2).dist(Point.convert(v1));
-
-                        this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 0, edgeDistance);
-                        this.addVertex(group.layoutVertexArray, v2[0], v2[1], perp.x, perp.y, 0, 1, edgeDistance);
-
-                        group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
-                        group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                            group.elementArray.emplaceBack(bottomRight, bottomRight + 1, bottomRight + 2);
+                            group.elementArray.emplaceBack(bottomRight + 1, bottomRight + 2, bottomRight + 3);
+                        }
                     }
-                }
 
-                // convert to format used by earcut
-                flattened.push(v1[0]);
-                flattened.push(v1[1]);
+                    // convert to format used by earcut
+                    flattened.push(p1.x);
+                    flattened.push(p1.y);
+                }
+            }
+
+            const triangleIndices = earcut(flattened, holeIndices);
+
+            for (let j = 0; j < triangleIndices.length - 2; j += 3) {
+                group.elementArray.emplaceBack(indices[triangleIndices[j]],
+                    indices[triangleIndices[j + 1]],
+                    indices[triangleIndices[j + 2]]);
             }
         }
 
-        const triangleIndices = earcut(flattened, holeIndices);
-
-        for (let j = 0; j < triangleIndices.length - 2; j += 3) {
-            group.elementArray.emplaceBack(indices[triangleIndices[j]],
-                indices[triangleIndices[j + 1]],
-                indices[triangleIndices[j + 2]]);
-        }
+        this.populatePaintArrays('fillextrusion', {zoom: this.zoom}, feature.properties, startGroup, startIndex);
     }
 }
 
 module.exports = FillExtrusionBucket;
 
-function convertCoords(rings) {
-    if (rings instanceof Point) return [rings.x, rings.y];
-    return rings.map(convertCoords);
-}
-
-function isBoundaryEdge(v1, v2) {
-    return v1.some((a, i) => {
-        return isOutside(v2[i]) && v2[i] === a;
-    });
-}
-
-function isOutside(coord) {
-    return coord < 0 || coord > EXTENT;
+function isBoundaryEdge(p1, p2) {
+    return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||
+        (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
 }
