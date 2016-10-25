@@ -57,7 +57,7 @@
     "eslint-plugin-flowtype": "^2.20.0",
     "eslint-plugin-html": "^1.5.1",
     "github-slugger": "^1.1.1",
-    "flow": "^0.2.3",
+    "flow-bin": "^0.2.3",
     "gl": "^4.0.1",
     "highlight.js": "9.3.0",
     "in-publish": "^2.0.0",
