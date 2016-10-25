@@ -67,18 +67,16 @@ const invisible = {
 };
 
 const breakable = {
-    0x0020: true, // space
-    0x0022: true, // quotation mark
-    0x0026: true, // ampersand
-    0x0028: true, // left parenthesis
-    0x002b: true, // plus sign
-    0x002d: true, // hyphen-minus
-    0x00ad: true, // soft hyphen
-    0x00b7: true, // middle dot
+    0x20:   true, // space
+    0x26:   true, // ampersand
+    0x2b:   true, // plus sign
+    0x2d:   true, // hyphen-minus
+    0x2f:   true, // solidus
+    0xad:   true, // soft hyphen
+    0xb7:   true, // middle dot
     0x200b: true, // zero-width space
     0x2010: true, // hyphen
-    0x2013: true, // en dash
-    0x2018: true  // left single quotation mark
+    0x2013: true  // en dash
 };
 
 invisible[newLine] = breakable[newLine] = true;
