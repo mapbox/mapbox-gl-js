@@ -17,7 +17,7 @@ class Light extends Evented {
     constructor(lightOptions) {
         super();
         this.properties = ['anchor', 'color', 'position', 'intensity'];
-        this._specifications = styleSpec.$root.light;
+        this._specifications = styleSpec.light;
         this.set(lightOptions);
     }
 
