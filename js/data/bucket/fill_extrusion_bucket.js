@@ -32,7 +32,7 @@ const fillExtrusionInterfaces = {
             components: 1,
             type: 'Uint16',
             getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("fill-extrude-base", globalProperties, featureProperties)];
+                return [Math.max(layer.getPaintValue("fill-extrude-base", globalProperties, featureProperties), 0)];
             },
             multiplier: 1,
             paintProperty: 'fill-extrude-base'
@@ -41,7 +41,7 @@ const fillExtrusionInterfaces = {
             components: 1,
             type: 'Uint16',
             getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("fill-extrude-height", globalProperties, featureProperties)];
+                return [Math.max(layer.getPaintValue("fill-extrude-height", globalProperties, featureProperties), 0)];
             },
             multiplier: 1,
             paintProperty: 'fill-extrude-height'
