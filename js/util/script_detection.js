@@ -1,6 +1,6 @@
 'use strict';
 
-const ideographicBreakingRegExp = new RegExp([
+const ideographicBreakingRegExp = new RegExp(`^(${[
     '[一-鿌]',
     '[㐀-䶵]',
     // eslint-disable-next-line no-irregular-whitespace
@@ -11,7 +11,7 @@ const ideographicBreakingRegExp = new RegExp([
     '[゠-ヿ]',
     '[ㇰ-ㇿ]',
     '[ꀀ-꓆]'
-].join('|'));
+].join('|')})+$`);
 
 module.exports.allowsIdeographicBreaking = function(input) {
     return input.search(ideographicBreakingRegExp) !== -1;
