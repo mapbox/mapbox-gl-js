@@ -4,6 +4,8 @@ const Point = require('point-geometry');
 const EXTENT = require('../data/extent');
 const Grid = require('grid-index');
 
+const intersectionTests = require('../util/intersection_tests');
+
 /**
  * A collision tile used to prevent symbols from overlapping. It keep tracks of
  * where previous symbols have been placed and is used to check if a new
@@ -25,7 +27,7 @@ class CollisionTile {
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
         }
 
-        this.minScale = 0.25;
+        this.minScale = 0.5;
         this.maxScale = 2;
 
         this.angle = angle;
@@ -173,56 +175,76 @@ class CollisionTile {
         return minPlacementScale;
     }
 
-    queryRenderedSymbols(minX, minY, maxX, maxY, scale) {
+    queryRenderedSymbols(queryGeometry, scale) {
         const sourceLayerFeatures = {};
         const result = [];
 
-        const collisionBoxArray = this.collisionBoxArray;
-        const rotationMatrix = this.rotationMatrix;
-        const anchorPoint = new Point(minX, minY)._matMult(rotationMatrix);
-
-        const queryBox = this.tempCollisionBox;
-        queryBox.anchorX = anchorPoint.x;
-        queryBox.anchorY = anchorPoint.y;
-        queryBox.x1 = 0;
-        queryBox.y1 = 0;
-        queryBox.x2 = maxX - minX;
-        queryBox.y2 = maxY - minY;
-        queryBox.maxScale = scale;
-
-        // maxScale is stored using a Float32. Convert `scale` to the stored Float32 value.
-        scale = queryBox.maxScale;
-
-        const searchBox = [
-            anchorPoint.x + queryBox.x1 / scale,
-            anchorPoint.y + queryBox.y1 / scale * this.yStretch,
-            anchorPoint.x + queryBox.x2 / scale,
-            anchorPoint.y + queryBox.y2 / scale * this.yStretch
-        ];
-
-        const blockingBoxKeys = this.grid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
-        const blockingBoxKeys2 = this.ignoredGrid.query(searchBox[0], searchBox[1], searchBox[2], searchBox[3]);
-        for (let k = 0; k < blockingBoxKeys2.length; k++) {
-            blockingBoxKeys.push(blockingBoxKeys2[k]);
+        if (queryGeometry.length === 0 || (this.grid.length === 0 && this.ignoredGrid.length === 0)) {
+            return result;
         }
 
-        for (let i = 0; i < blockingBoxKeys.length; i++) {
-            const blocking = collisionBoxArray.get(blockingBoxKeys[i]);
+        const collisionBoxArray = this.collisionBoxArray;
+        const rotationMatrix = this.rotationMatrix;
+        const yStretch = this.yStretch;
 
+        // Generate a rotated geometry out of the original query geometry.
+        // Scale has already been handled by the prior conversions.
+        const rotatedQuery = [];
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        for (let i = 0; i < queryGeometry.length; i++) {
+            const ring = queryGeometry[i];
+            for (let k = 0; k < ring.length; k++) {
+                const p = ring[k].matMult(rotationMatrix);
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+                rotatedQuery.push(p);
+            }
+        }
+
+        const features = this.grid.query(minX, minY, maxX, maxY);
+        const ignoredFeatures = this.ignoredGrid.query(minX, minY, maxX, maxY);
+        for (let i = 0; i < ignoredFeatures.length; i++) {
+            features.push(ignoredFeatures[i]);
+        }
+
+        // Account for the rounding done when updating symbol shader variables.
+        const roundedScale = Math.pow(2, Math.ceil(Math.log(scale) / Math.LN2 * 10) / 10);
+
+        for (let i = 0; i < features.length; i++) {
+            const blocking = collisionBoxArray.get(features[i]);
             const sourceLayer = blocking.sourceLayerIndex;
             const featureIndex = blocking.featureIndex;
+
+            // Skip already seen features.
             if (sourceLayerFeatures[sourceLayer] === undefined) {
                 sourceLayerFeatures[sourceLayer] = {};
             }
+            if (sourceLayerFeatures[sourceLayer][featureIndex]) continue;
 
-            if (!sourceLayerFeatures[sourceLayer][featureIndex]) {
-                const blockingAnchorPoint = blocking.anchorPoint.matMult(rotationMatrix);
-                const minPlacementScale = this.getPlacementScale(this.minScale, anchorPoint, queryBox, blockingAnchorPoint, blocking);
-                if (minPlacementScale >= scale) {
-                    sourceLayerFeatures[sourceLayer][featureIndex] = true;
-                    result.push(blockingBoxKeys[i]);
-                }
-            }
+            // Check if feature is rendered (collision free) at current scale.
+            if (roundedScale < blocking.placementScale || roundedScale > blocking.maxScale) continue;
+
+            // Check if query intersects with the feature box at current scale.
+            const anchor = blocking.anchorPoint.matMult(rotationMatrix);
+            const x1 = anchor.x + blocking.x1 / scale;
+            const y1 = anchor.y + blocking.y1 / scale * yStretch;
+            const x2 = anchor.x + blocking.x2 / scale;
+            const y2 = anchor.y + blocking.y2 / scale * yStretch;
+            const bbox = [
+                new Point(x1, y1),
+                new Point(x2, y1),
+                new Point(x2, y2),
+                new Point(x1, y2)
+            ];
+            if (!intersectionTests.polygonIntersectsPolygon(rotatedQuery, bbox)) continue;
+
+            sourceLayerFeatures[sourceLayer][featureIndex] = true;
+            result.push(features[i]);
         }
 
         return result;

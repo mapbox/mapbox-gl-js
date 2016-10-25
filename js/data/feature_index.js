@@ -146,7 +146,7 @@ class FeatureIndex {
         matching.sort(topDownFeatureComparator);
         this.filterMatching(result, matching, this.featureIndexArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
-        const matchingSymbols = this.collisionTile.queryRenderedSymbols(minX, minY, maxX, maxY, args.scale);
+        const matchingSymbols = this.collisionTile.queryRenderedSymbols(queryGeometry, args.scale);
         matchingSymbols.sort();
         this.filterMatching(result, matchingSymbols, this.collisionTile.collisionBoxArray, queryGeometry, filter, params.layers, styleLayers, args.bearing, pixelsToTileUnits);
 
