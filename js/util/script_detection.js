@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports.allowsIdeographicBreaking = function(input) {
-    for (let i = 0; i < input.length; i++) {
-        if (!exports.charAllowsIdeographicBreaking(input.charCodeAt(i), input.charCodeAt(i + 1))) {
+module.exports.allowsIdeographicBreaking = function(chars) {
+    for (const char of chars) {
+        if (!exports.charAllowsIdeographicBreaking(char.charCodeAt(0))) {
             return false;
         }
     }
@@ -10,7 +10,10 @@ module.exports.allowsIdeographicBreaking = function(input) {
 };
 
 
-module.exports.charAllowsIdeographicBreaking = function(char, nextChar) {
+module.exports.charAllowsIdeographicBreaking = function(char) {
+    // early termination for characters outside all ideographic ranges
+    if (char < 0x3000) return false;
+
     // "一" to "鿌"
     if (char >= 0x4E00 && char <= 0x9FCC) return true;
 
@@ -20,11 +23,6 @@ module.exports.charAllowsIdeographicBreaking = function(char, nextChar) {
     // eslint-disable-next-line no-irregular-whitespace
     // "　" to "〿"
     if (char >= 0x3000 && char <= 0x303F) return true;
-
-    // "𠀀" to "𬺯"
-    if (char === 0xD840 && nextChar >= 0xDC00) return true;
-    if (char >= 0xD841 && char <= 0xD872) return true;
-    if (char === 0xD873 && nextChar <= 0xDEAF) return true;
 
     // "！" to "￮"
     if (char >= 0xFF01 && char <= 0xFFEE) return true;
