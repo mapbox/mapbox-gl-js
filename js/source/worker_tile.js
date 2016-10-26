@@ -108,9 +108,7 @@ class WorkerTile {
 
             const transferables = [];
             callback(null, {
-                buckets: util.values(buckets)
-                    .filter((b) => !b.isEmpty())
-                    .map((b) => b.serialize(transferables)),
+                buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),
                 collisionTile: collisionTile.serialize(transferables),
                 collisionBoxArray: this.collisionBoxArray.serialize(),
@@ -183,14 +181,18 @@ class WorkerTile {
         const transferables = [];
         return {
             result: {
-                buckets: this.symbolBuckets
-                    .filter((b) => !b.isEmpty())
-                    .map((b) => b.serialize(transferables)),
+                buckets: serializeBuckets(this.symbolBuckets, transferables),
                 collisionTile: collisionTile.serialize(transferables)
             },
             transferables: transferables
         };
     }
+}
+
+function serializeBuckets(buckets, transferables) {
+    return buckets
+        .filter((b) => !b.isEmpty())
+        .map((b) => b.serialize(transferables));
 }
 
 module.exports = WorkerTile;
