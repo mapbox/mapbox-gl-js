@@ -1194,6 +1194,34 @@ test('Style defers expensive methods', (t) => {
     });
 });
 
+test('Style updates source to switch fill[-extrusion] bucket types', (t) => {
+    // Runtime switching between non-extruded and extruded fills requires
+    // switching bucket types, so setPaintProperty in this case should trigger
+    // a worker roundtrip (as also happens when setting property functions)
+
+    const style = new Style(createStyleJSON({
+        "sources": {
+            "streets": createGeoJSONSource(),
+            "terrain": createGeoJSONSource()
+        }
+    }));
+
+    style.on('style.load', () => {
+        style.addLayer({ id: 'fill', type: 'fill', source: 'streets', paint: {}});
+        style.update();
+
+        t.notOk(style._updates.sources.streets);
+
+        style.setPaintProperty('fill', 'fill-color', 'green');
+        t.notOk(style._updates.sources.streets);
+
+        style.setPaintProperty('fill', 'fill-extrude-height', 10);
+        t.ok(style._updates.sources.streets);
+
+        t.end();
+    });
+});
+
 test('Style#query*Features', (t) => {
 
     // These tests only cover filter validation. Most tests for these methods
