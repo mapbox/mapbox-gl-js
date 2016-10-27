@@ -1,8 +1,8 @@
 'use strict';
 
 const Point = require('point-geometry');
-
-const Bucket = require('../bucket');
+const ArrayGroup = require('../array_group');
+const BufferGroup = require('../buffer_group');
 const VertexArrayType = require('../vertex_array_type');
 const ElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
@@ -105,40 +105,30 @@ function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, place
         placementZoom * 10);
 }
 
-class SymbolBucket extends Bucket {
+class SymbolBucket {
     constructor(options) {
-        super(options);
-
         this.collisionBoxArray = options.collisionBoxArray;
         this.symbolQuadsArray = options.symbolQuadsArray;
         this.symbolInstancesArray = options.symbolInstancesArray;
 
+        this.zoom = options.zoom;
+        this.overscaling = options.overscaling;
+        this.layers = options.layers;
         this.sdfIcons = options.sdfIcons;
         this.iconsNeedLinear = options.iconsNeedLinear;
         this.adjustedTextSize = options.adjustedTextSize;
         this.adjustedIconSize = options.adjustedIconSize;
         this.fontstack = options.fontstack;
-        this.layer = this.layers[0];
-    }
 
-    get programInterfaces() {
-        return symbolInterfaces;
-    }
-
-    serialize() {
-        const serialized = Bucket.prototype.serialize.apply(this);
-        serialized.sdfIcons = this.sdfIcons;
-        serialized.iconsNeedLinear = this.iconsNeedLinear;
-        serialized.adjustedTextSize = this.adjustedTextSize;
-        serialized.adjustedIconSize = this.adjustedIconSize;
-        serialized.fontstack = this.fontstack;
-        return serialized;
+        if (options.arrays) {
+            this.buffers = util.mapObject(options.arrays, (arrays, key) => {
+                return new BufferGroup(symbolInterfaces[key], options.layers, options.zoom, options.arrays[key]);
+            });
+        }
     }
 
     populate(features, options) {
-        this.recalculateStyleLayers();
-
-        const layout = this.layer.layout;
+        const layout = this.layers[0].layout;
         const textField = layout['text-field'];
         const textFont = layout['text-font'];
         const iconImage = layout['icon-image'];
@@ -157,7 +147,7 @@ class SymbolBucket extends Bucket {
         const stack = stacks[textFont] = stacks[textFont] || {};
 
         for (const feature of features) {
-            if (!this.layer.filter(feature)) {
+            if (!this.layers[0].filter(feature)) {
                 continue;
             }
 
@@ -202,16 +192,49 @@ class SymbolBucket extends Bucket {
         }
     }
 
+    isEmpty() {
+        return this.arrays.icon.isEmpty() &&
+            this.arrays.glyph.isEmpty() &&
+            this.arrays.collisionBox.isEmpty();
+    }
+
+    serialize(transferables) {
+        return {
+            zoom: this.zoom,
+            layerIds: this.layers.map((l) => l.id),
+            sdfIcons: this.sdfIcons,
+            iconsNeedLinear: this.iconsNeedLinear,
+            adjustedTextSize: this.adjustedTextSize,
+            adjustedIconSize: this.adjustedIconSize,
+            fontstack: this.fontstack,
+            arrays: util.mapObject(this.arrays, (a) => a.serialize(transferables))
+        };
+    }
+
+    destroy() {
+        this.buffers.icon.destroy();
+        this.buffers.glyph.destroy();
+        this.buffers.collisionBox.destroy();
+    }
+
+    createArrays() {
+        this.arrays = util.mapObject(symbolInterfaces, (programInterface) => {
+            return new ArrayGroup(programInterface, this.layers, this.zoom);
+        });
+    }
+
     prepare(stacks, icons) {
+        this.createArrays();
+
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
         // use the same value when calculating anchor positions.
         const zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-        this.adjustedTextMaxSize = this.layer.getLayoutValue('text-size', {zoom: 18, zoomHistory: zoomHistory});
-        this.adjustedTextSize = this.layer.getLayoutValue('text-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
-        this.adjustedIconMaxSize = this.layer.getLayoutValue('icon-size', {zoom: 18, zoomHistory: zoomHistory});
-        this.adjustedIconSize = this.layer.getLayoutValue('icon-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
+        this.adjustedTextMaxSize = this.layers[0].getLayoutValue('text-size', {zoom: 18, zoomHistory: zoomHistory});
+        this.adjustedTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
+        this.adjustedIconMaxSize = this.layers[0].getLayoutValue('icon-size', {zoom: 18, zoomHistory: zoomHistory});
+        this.adjustedIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
 
         const tileSize = 512 * this.overscaling;
         this.tilePixelRatio = EXTENT / tileSize;
@@ -219,7 +242,7 @@ class SymbolBucket extends Bucket {
         this.iconsNeedLinear = false;
         this.symbolInstancesStartIndex = this.symbolInstancesArray.length;
 
-        const layout = this.layer.layout;
+        const layout = this.layers[0].layout;
 
         let horizontalAlign = 0.5,
             verticalAlign = 0.5;
@@ -281,7 +304,7 @@ class SymbolBucket extends Bucket {
                     }
                     if (image.pixelRatio !== 1) {
                         this.iconsNeedLinear = true;
-                    } else if (layout['icon-rotate'] !== 0 || !this.layer.isLayoutValueFeatureConstant('icon-rotate')) {
+                    } else if (layout['icon-rotate'] !== 0 || !this.layers[0].isLayoutValueFeatureConstant('icon-rotate')) {
                         this.iconsNeedLinear = true;
                     }
                 }
@@ -296,7 +319,7 @@ class SymbolBucket extends Bucket {
 
     addFeature(feature, shapedText, shapedIcon) {
         const lines = feature.geometry;
-        const layout = this.layer.layout;
+        const layout = this.layers[0].layout;
 
         const glyphSize = 24;
 
@@ -378,7 +401,7 @@ class SymbolBucket extends Bucket {
                 // be drawn across tile boundaries. Instead they need to be included in
                 // the buffers for both tiles and clipped to tile boundaries at draw time.
                 const addToBuffers = inside || mayOverlap;
-                this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layer,
+                this.addSymbolInstance(anchor, line, shapedText, shapedIcon, this.layers[0],
                     addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
                     textBoxScale, textPadding, textAlongLine,
                     iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
@@ -422,14 +445,12 @@ class SymbolBucket extends Bucket {
     }
 
     place(collisionTile, showCollisionBoxes) {
-        this.recalculateStyleLayers();
-
         // Calculate which labels can be shown and when they can be shown and
         // create the bufers used for rendering.
 
         this.createArrays();
 
-        const layout = this.layer.layout;
+        const layout = this.layers[0].layout;
 
         const maxScale = collisionTile.maxScale;
 
@@ -507,14 +528,14 @@ class SymbolBucket extends Bucket {
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
-                    this.addSymbols('glyph', symbolInstance.glyphQuadStartIndex, symbolInstance.glyphQuadEndIndex, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle);
+                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuadStartIndex, symbolInstance.glyphQuadEndIndex, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle);
                 }
             }
 
             if (hasIcon) {
                 collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
                 if (iconScale <= maxScale) {
-                    this.addSymbols('icon', symbolInstance.iconQuadStartIndex, symbolInstance.iconQuadEndIndex, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
+                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuadStartIndex, symbolInstance.iconQuadEndIndex, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
                 }
             }
 
@@ -523,8 +544,7 @@ class SymbolBucket extends Bucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(programName, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
-        const arrays = this.arrays[programName];
+    addSymbols(arrays, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 

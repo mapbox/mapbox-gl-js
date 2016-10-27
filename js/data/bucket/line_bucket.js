@@ -39,29 +39,27 @@ const LINE_DISTANCE_SCALE = 1 / 2;
 // The maximum line distance, in tile units, that fits in the buffer.
 const MAX_LINE_DISTANCE = Math.pow(2, LINE_DISTANCE_BUFFER_BITS - 1) / LINE_DISTANCE_SCALE;
 
-const lineInterfaces = {
-    line: {
-        layoutVertexArrayType: new VertexArrayType([{
-            name: 'a_pos',
-            components: 2,
-            type: 'Int16'
-        }, {
-            name: 'a_data',
-            components: 4,
-            type: 'Uint8'
-        }]),
-        paintAttributes: [{
-            name: 'a_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return layer.getPaintValue("line-color", globalProperties, featureProperties);
-            },
-            multiplier: 255,
-            paintProperty: 'line-color'
-        }],
-        elementArrayType: new ElementArrayType()
-    }
+const lineInterface = {
+    layoutVertexArrayType: new VertexArrayType([{
+        name: 'a_pos',
+        components: 2,
+        type: 'Int16'
+    }, {
+        name: 'a_data',
+        components: 4,
+        type: 'Uint8'
+    }]),
+    paintAttributes: [{
+        name: 'a_color',
+        components: 4,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return layer.getPaintValue("line-color", globalProperties, featureProperties);
+        },
+        multiplier: 255,
+        paintProperty: 'line-color'
+    }],
+    elementArrayType: new ElementArrayType()
 };
 
 function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofar) {
@@ -86,9 +84,8 @@ function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofa
  * @private
  */
 class LineBucket extends Bucket {
-
-    get programInterfaces() {
-        return lineInterfaces;
+    constructor(options) {
+        super(options, lineInterface);
     }
 
     addFeature(feature) {
@@ -122,7 +119,7 @@ class LineBucket extends Bucket {
             lastVertex = vertices[len - 1],
             closed = firstVertex.equals(lastVertex);
 
-        const arrays = this.arrays.line;
+        const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
         const segment = arrays.prepareSegment('line', len * 10);
@@ -372,7 +369,7 @@ class LineBucket extends Bucket {
     addCurrentVertex(currentVertex, distance, normal, endLeft, endRight, round, segment) {
         const tx = round ? 1 : 0;
         let extrude;
-        const arrays = this.arrays.line;
+        const arrays = this.arrays;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
 
@@ -421,7 +418,7 @@ class LineBucket extends Bucket {
     addPieSliceVertex(currentVertex, distance, extrude, lineTurnsLeft, segment) {
         const ty = lineTurnsLeft ? 1 : 0;
         extrude = extrude.mult(lineTurnsLeft ? -1 : 1);
-        const arrays = this.arrays.line;
+        const arrays = this.arrays;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
 

@@ -33,7 +33,6 @@ function createPolygon(numPoints) {
 test('FillBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'fill', layout: {} });
     const bucket = new FillBucket({ layers: [layer] });
-    bucket.createArrays();
 
     bucket.addFeature(createFeature([[
         new Point(0, 0),
@@ -71,7 +70,6 @@ test('FillBucket segmentation', (t) => {
     layer.updatePaintTransition('fill-color', [], {});
 
     const bucket = new FillBucket({ layers: [layer] });
-    bucket.createArrays();
 
     // first add an initial, small feature to make sure the next one starts at
     // a non-zero offset
@@ -83,7 +81,7 @@ test('FillBucket segmentation', (t) => {
         createPolygon(128)
     ]));
 
-    const arrays = bucket.arrays.fill;
+    const arrays = bucket.arrays;
 
     // Each polygon must fit entirely within a segment, so we expect the
     // first segment to include the first feature and the first polygon

@@ -10,54 +10,52 @@ const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
-const fillExtrusionInterfaces = {
-    fillextrusion: {
-        layoutVertexArrayType: new VertexArrayType([{
-            name: 'a_pos',
-            components: 2,
-            type: 'Int16'
-        }, {
-            name: 'a_normal',
-            components: 3,
-            type: 'Int16'
-        }, {
-            name: 'a_edgedistance',
-            components: 1,
-            type: 'Int16'
-        }]),
-        elementArrayType: new ElementArrayType(3),
+const fillExtrusionInterface = {
+    layoutVertexArrayType: new VertexArrayType([{
+        name: 'a_pos',
+        components: 2,
+        type: 'Int16'
+    }, {
+        name: 'a_normal',
+        components: 3,
+        type: 'Int16'
+    }, {
+        name: 'a_edgedistance',
+        components: 1,
+        type: 'Int16'
+    }]),
+    elementArrayType: new ElementArrayType(3),
 
-        paintAttributes: [{
-            name: 'a_minH',
-            components: 1,
-            type: 'Uint16',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [Math.max(layer.getPaintValue("fill-extrude-base", globalProperties, featureProperties), 0)];
-            },
-            multiplier: 1,
-            paintProperty: 'fill-extrude-base'
-        }, {
-            name: 'a_maxH',
-            components: 1,
-            type: 'Uint16',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [Math.max(layer.getPaintValue("fill-extrude-height", globalProperties, featureProperties), 0)];
-            },
-            multiplier: 1,
-            paintProperty: 'fill-extrude-height'
-        }, {
-            name: 'a_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                const color = layer.getPaintValue("fill-color", globalProperties, featureProperties);
-                color[3] = 1.0;
-                return color;
-            },
-            multiplier: 255,
-            paintProperty: 'fill-color'
-        }]
-    }
+    paintAttributes: [{
+        name: 'a_minH',
+        components: 1,
+        type: 'Uint16',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [Math.max(layer.getPaintValue("fill-extrude-base", globalProperties, featureProperties), 0)];
+        },
+        multiplier: 1,
+        paintProperty: 'fill-extrude-base'
+    }, {
+        name: 'a_maxH',
+        components: 1,
+        type: 'Uint16',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [Math.max(layer.getPaintValue("fill-extrude-height", globalProperties, featureProperties), 0)];
+        },
+        multiplier: 1,
+        paintProperty: 'fill-extrude-height'
+    }, {
+        name: 'a_color',
+        components: 4,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            const color = layer.getPaintValue("fill-color", globalProperties, featureProperties);
+            color[3] = 1.0;
+            return color;
+        },
+        multiplier: 255,
+        paintProperty: 'fill-color'
+    }]
 };
 
 const FACTOR = Math.pow(2, 13);
@@ -78,12 +76,12 @@ function addVertex(vertexArray, x, y, nx, ny, nz, t, e) {
 }
 
 class FillExtrusionBucket extends Bucket {
-    get programInterfaces() {
-        return fillExtrusionInterfaces;
+    constructor(options) {
+        super(options, fillExtrusionInterface);
     }
 
     addFeature(feature) {
-        const arrays = this.arrays.fillextrusion;
+        const arrays = this.arrays;
 
         for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
             let numVertices = 0;

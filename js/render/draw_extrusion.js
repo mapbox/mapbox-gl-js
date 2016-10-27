@@ -148,7 +148,7 @@ function drawExtrusion(painter, source, layer, coord) {
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
 
-    const buffers = bucket.bufferGroups.fillextrusion;
+    const buffers = bucket.buffers;
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];

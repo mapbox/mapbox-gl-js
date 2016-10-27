@@ -16,7 +16,6 @@ const feature = vt.layers.road.feature(0);
 test('LineBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'line', layout: {} });
     const bucket = new LineBucket({ layers: [layer] });
-    bucket.createArrays();
 
     const pointWithScale = new Point(0, 0);
     pointWithScale.scale = 10;

@@ -23,7 +23,7 @@ function drawCircles(painter, sourceCache, layer, coords) {
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
 
-        const buffers = bucket.bufferGroups.circle;
+        const buffers = bucket.buffers;
         const layerData = buffers.layerData[layer.id];
         const programConfiguration = layerData.programConfiguration;
         const program = painter.useProgram('circle', programConfiguration);

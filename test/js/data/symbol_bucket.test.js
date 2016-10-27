@@ -92,3 +92,15 @@ test('SymbolBucket integer overflow', (t) => {
     t.ok(util.warnOnce.getCall(1).calledWithMatch(/Too many (symbols|glyphs) being rendered in a tile./));
     t.end();
 });
+
+test('SymbolBucket redo placement', (t) => {
+    const bucket = bucketSetup();
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+
+    bucket.populate([feature], options);
+    bucket.prepare(stacks, {});
+    bucket.place(collision);
+    bucket.place(collision);
+
+    t.end();
+});

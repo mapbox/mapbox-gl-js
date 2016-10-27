@@ -84,7 +84,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText,
         const tile = sourceCache.getTile(coords[j]);
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
-        const buffers = isText ? bucket.bufferGroups.glyph : bucket.bufferGroups.icon;
+        const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
         if (!buffers.segments.length) continue;
 
         painter.enableTileClippingMask(coords[j]);

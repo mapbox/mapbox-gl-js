@@ -44,10 +44,6 @@ test('WorkerTile#parse', (t) => {
 
 test('WorkerTile#parse skips hidden layers', (t) => {
     const layerIndex = new StyleLayerIndex([{
-        id: 'test',
-        source: 'source',
-        type: 'circle'
-    }, {
         id: 'test-hidden',
         source: 'source',
         type: 'fill',
@@ -57,7 +53,7 @@ test('WorkerTile#parse skips hidden layers', (t) => {
     const tile = createWorkerTile();
     tile.parse(createWrapper(), layerIndex, {}, (err, result) => {
         t.ifError(err);
-        t.equal(Object.keys(result.buckets[0].arrays).length, 1);
+        t.equal(result.buckets.length, 0);
         t.end();
     });
 });

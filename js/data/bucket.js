@@ -4,8 +4,6 @@ const ArrayGroup = require('./array_group');
 const BufferGroup = require('./buffer_group');
 const util = require('../util/util');
 
-const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-
 /**
  * The `Bucket` class is the single point of knowledge about turning vector
  * tiles into WebGL buffers.
@@ -25,23 +23,20 @@ class Bucket {
      *     built for this tile. This object facilitates sharing of `Buffer`s be
            between `Bucket`s.
      */
-    constructor (options) {
+    constructor (options, programInterface) {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
         this.index = options.index;
 
         if (options.arrays) {
-            this.bufferGroups = util.mapObject(options.arrays, (arrayGroup, programName) => {
-                return new BufferGroup(this.programInterfaces[programName], options.layers, options.zoom, arrayGroup);
-            });
+            this.buffers = new BufferGroup(programInterface, options.layers, options.zoom, options.arrays);
+        } else {
+            this.arrays = new ArrayGroup(programInterface, options.layers, options.zoom);
         }
     }
 
     populate(features, options) {
-        this.createArrays();
-        this.recalculateStyleLayers();
-
         for (const feature of features) {
             if (this.layers[0].filter(feature)) {
                 this.addFeature(feature);
@@ -50,39 +45,20 @@ class Bucket {
         }
     }
 
-    createArrays() {
-        this.arrays = util.mapObject(this.programInterfaces, (programInterface) => {
-            return new ArrayGroup(programInterface, this.layers, this.zoom);
-        });
-    }
-
-    destroy() {
-        for (const programName in this.bufferGroups) {
-            this.bufferGroups[programName].destroy();
-        }
-    }
-
     isEmpty() {
-        for (const programName in this.arrays) {
-            if (!this.arrays[programName].isEmpty()) {
-                return false;
-            }
-        }
-        return true;
+        return this.arrays.isEmpty();
     }
 
     serialize(transferables) {
         return {
             zoom: this.zoom,
             layerIds: this.layers.map((l) => l.id),
-            arrays: util.mapObject(this.arrays, (a) => a.serialize(transferables))
+            arrays: this.arrays.serialize(transferables)
         };
     }
 
-    recalculateStyleLayers() {
-        for (const layer of this.layers) {
-            layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
-        }
+    destroy() {
+        this.buffers.destroy();
     }
 }
 

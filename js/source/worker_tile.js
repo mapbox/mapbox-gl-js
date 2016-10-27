@@ -9,6 +9,8 @@ const SymbolInstancesArray = require('../symbol/symbol_instances');
 const SymbolQuadsArray = require('../symbol/symbol_quads');
 const assert = require('assert');
 
+const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
+
 class WorkerTile {
     constructor(params) {
         this.coord = params.coord;
@@ -82,8 +84,12 @@ class WorkerTile {
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
+                for (const layer of family) {
+                    layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+                }
+
                 const bucket = buckets[layer.id] = layer.createBucket({
-                    index: bucketIndex++,
+                    index: bucketIndex,
                     layers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
@@ -93,7 +99,9 @@ class WorkerTile {
                 });
 
                 bucket.populate(features, options);
-                featureIndex.bucketLayerIDs[bucket.index] = family.map((l) => l.id);
+                featureIndex.bucketLayerIDs[bucketIndex] = family.map((l) => l.id);
+
+                bucketIndex++;
             }
         }
 
@@ -139,6 +147,11 @@ class WorkerTile {
             deps++;
             if (deps === 2) {
                 for (const bucket of this.symbolBuckets) {
+                    // Layers are shared and may have been used by a WorkerTile with a different zoom.
+                    for (const layer of bucket.layers) {
+                        layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+                    }
+
                     bucket.prepare(stacks, icons);
                     bucket.place(collisionTile, this.showCollisionBoxes);
                 }
@@ -173,7 +186,13 @@ class WorkerTile {
         }
 
         const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
+
         for (const bucket of this.symbolBuckets) {
+            // Layers are shared and may have been used by a WorkerTile with a different zoom.
+            for (const layer of bucket.layers) {
+                layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+            }
+
             bucket.place(collisionTile, showCollisionBoxes);
         }
 

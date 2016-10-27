@@ -22,7 +22,7 @@ function drawCollisionDebug(painter, sourceCache, layer, coords) {
         gl.uniform1f(program.u_zoom, painter.transform.zoom * 10);
         gl.uniform1f(program.u_maxzoom, (tile.coord.z + 1) * 10);
 
-        const buffers = bucket.bufferGroups.collisionBox;
+        const buffers = bucket.buffers.collisionBox;
         for (const segment of buffers.segments) {
             segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
             gl.drawElements(gl.LINES, segment.primitiveLength * 2, gl.UNSIGNED_SHORT, segment.primitiveOffset * 2 * 2);

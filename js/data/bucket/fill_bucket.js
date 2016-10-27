@@ -9,54 +9,52 @@ const classifyRings = require('../../util/classify_rings');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
-const fillInterfaces = {
-    fill: {
-        layoutVertexArrayType: new VertexArrayType([{
-            name: 'a_pos',
-            components: 2,
-            type: 'Int16'
-        }]),
-        elementArrayType: new ElementArrayType(3),
-        elementArrayType2: new ElementArrayType(2),
+const fillInterface = {
+    layoutVertexArrayType: new VertexArrayType([{
+        name: 'a_pos',
+        components: 2,
+        type: 'Int16'
+    }]),
+    elementArrayType: new ElementArrayType(3),
+    elementArrayType2: new ElementArrayType(2),
 
-        paintAttributes: [{
-            name: 'a_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return layer.getPaintValue("fill-color", globalProperties, featureProperties);
-            },
-            multiplier: 255,
-            paintProperty: 'fill-color'
-        }, {
-            name: 'a_outline_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return layer.getPaintValue("fill-outline-color", globalProperties, featureProperties);
-            },
-            multiplier: 255,
-            paintProperty: 'fill-outline-color'
-        }, {
-            name: 'a_opacity',
-            components: 1,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("fill-opacity", globalProperties, featureProperties)];
-            },
-            multiplier: 255,
-            paintProperty: 'fill-opacity'
-        }]
-    }
+    paintAttributes: [{
+        name: 'a_color',
+        components: 4,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return layer.getPaintValue("fill-color", globalProperties, featureProperties);
+        },
+        multiplier: 255,
+        paintProperty: 'fill-color'
+    }, {
+        name: 'a_outline_color',
+        components: 4,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return layer.getPaintValue("fill-outline-color", globalProperties, featureProperties);
+        },
+        multiplier: 255,
+        paintProperty: 'fill-outline-color'
+    }, {
+        name: 'a_opacity',
+        components: 1,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [layer.getPaintValue("fill-opacity", globalProperties, featureProperties)];
+        },
+        multiplier: 255,
+        paintProperty: 'fill-opacity'
+    }]
 };
 
 class FillBucket extends Bucket {
-    get programInterfaces() {
-        return fillInterfaces;
+    constructor(options) {
+        super(options, fillInterface);
     }
 
     addFeature(feature) {
-        const arrays = this.arrays.fill;
+        const arrays = this.arrays;
 
         for (const polygon of classifyRings(loadGeometry(feature), EARCUT_MAX_RINGS)) {
             let numVertices = 0;

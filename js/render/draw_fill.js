@@ -51,7 +51,7 @@ function drawFill(painter, sourceCache, layer, coord) {
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
 
-    const buffers = bucket.bufferGroups.fill;
+    const buffers = bucket.buffers;
     const gl = painter.gl;
 
     const image = layer.paint['fill-pattern'];
@@ -94,7 +94,7 @@ function drawStroke(painter, sourceCache, layer, coord) {
     const bucket = tile.getBucket(layer);
     if (!bucket) return;
 
-    const buffers = bucket.bufferGroups.fill;
+    const buffers = bucket.buffers;
     const layerData = buffers.layerData[layer.id];
     const gl = painter.gl;
 

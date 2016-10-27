@@ -6,56 +6,54 @@ const ElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
-const circleInterfaces = {
-    circle: {
-        layoutVertexArrayType: new VertexArrayType([{
-            name: 'a_pos',
-            components: 2,
-            type: 'Int16'
-        }]),
-        elementArrayType: new ElementArrayType(),
+const circleInterface = {
+    layoutVertexArrayType: new VertexArrayType([{
+        name: 'a_pos',
+        components: 2,
+        type: 'Int16'
+    }]),
+    elementArrayType: new ElementArrayType(),
 
-        paintAttributes: [{
-            name: 'a_color',
-            components: 4,
-            type: 'Uint8',
-            getValue: (layer, globalProperties, featureProperties) => {
-                return layer.getPaintValue("circle-color", globalProperties, featureProperties);
-            },
-            multiplier: 255,
-            paintProperty: 'circle-color'
-        }, {
-            name: 'a_radius',
-            components: 1,
-            type: 'Uint16',
-            isLayerConstant: false,
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("circle-radius", globalProperties, featureProperties)];
-            },
-            multiplier: 10,
-            paintProperty: 'circle-radius'
-        }, {
-            name: 'a_blur',
-            components: 1,
-            type: 'Uint16',
-            isLayerConstant: false,
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("circle-blur", globalProperties, featureProperties)];
-            },
-            multiplier: 10,
-            paintProperty: 'circle-blur'
-        }, {
-            name: 'a_opacity',
-            components: 1,
-            type: 'Uint16',
-            isLayerConstant: false,
-            getValue: (layer, globalProperties, featureProperties) => {
-                return [layer.getPaintValue("circle-opacity", globalProperties, featureProperties)];
-            },
-            multiplier: 255,
-            paintProperty: 'circle-opacity'
-        }]
-    }
+    paintAttributes: [{
+        name: 'a_color',
+        components: 4,
+        type: 'Uint8',
+        getValue: (layer, globalProperties, featureProperties) => {
+            return layer.getPaintValue("circle-color", globalProperties, featureProperties);
+        },
+        multiplier: 255,
+        paintProperty: 'circle-color'
+    }, {
+        name: 'a_radius',
+        components: 1,
+        type: 'Uint16',
+        isLayerConstant: false,
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [layer.getPaintValue("circle-radius", globalProperties, featureProperties)];
+        },
+        multiplier: 10,
+        paintProperty: 'circle-radius'
+    }, {
+        name: 'a_blur',
+        components: 1,
+        type: 'Uint16',
+        isLayerConstant: false,
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [layer.getPaintValue("circle-blur", globalProperties, featureProperties)];
+        },
+        multiplier: 10,
+        paintProperty: 'circle-blur'
+    }, {
+        name: 'a_opacity',
+        components: 1,
+        type: 'Uint16',
+        isLayerConstant: false,
+        getValue: (layer, globalProperties, featureProperties) => {
+            return [layer.getPaintValue("circle-opacity", globalProperties, featureProperties)];
+        },
+        multiplier: 255,
+        paintProperty: 'circle-opacity'
+    }]
 };
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
@@ -72,13 +70,12 @@ function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {
  * @private
  */
 class CircleBucket extends Bucket {
-
-    get programInterfaces() {
-        return circleInterfaces;
+    constructor(options) {
+        super(options, circleInterface);
     }
 
     addFeature(feature) {
-        const arrays = this.arrays.circle;
+        const arrays = this.arrays;
 
         for (const ring of loadGeometry(feature)) {
             for (const point of ring) {
