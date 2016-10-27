@@ -53,7 +53,7 @@ class FillStyleLayer extends StyleLayer {
     }
 
     createBucket(options) {
-        if (isExtruded({zoom: options.zoom})) {
+        if (this.isExtruded({zoom: options.zoom})) {
             return new FillExtrusionBucket(options);
         }
         return new FillBucket(options);
