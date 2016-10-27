@@ -46,10 +46,14 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    createBucket(options) {
-        if (!this.isPaintValueFeatureConstant('fill-extrude-height') ||
+    isExtruded(globalProperties) {
+        return !this.isPaintValueFeatureConstant('fill-extrude-height') ||
             !this.isPaintValueZoomConstant('fill-extrude-height') ||
-            this.getPaintValue('fill-extrude-height', {zoom: options.zoom}) !== 0) {
+            this.getPaintValue('fill-extrude-height', globalProperties) !== 0;
+    }
+
+    createBucket(options) {
+        if (this.isExtruded({zoom: options.zoom})) {
             return new FillExtrusionBucket(options);
         }
         return new FillBucket(options);
