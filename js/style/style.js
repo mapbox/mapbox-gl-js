@@ -570,7 +570,7 @@ class Style extends Evented {
         const switchBuckets = (
             layer.type === 'fill' &&
             name === 'fill-extrude-height' &&
-            (!wasExtruded && value) ||
+            (!wasExtruded && !!value) ||
             (wasExtruded && value === 0)
         );
 
