@@ -30,6 +30,11 @@
 
 ## 0.25.0 (September 29 2016)
 
+#### Breaking Changes
+
+  * `Evented#off` now require two arguments; omitting the second argument in order to unbind all listeners for an event
+     type is no longer supported, as it could cause unintended unbinding of internal listeners.
+
 #### New Features & Improvements
 
   * Consolidate undocumented data lifecycle events into `data` and `dataloading` events (#3255)
