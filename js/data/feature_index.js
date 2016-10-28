@@ -115,6 +115,8 @@ class FeatureIndex {
                 styleLayerDistance = getLineWidth(paint) / 2 + Math.abs(paint['line-offset']) + translateDistance(paint['line-translate']);
             } else if (styleLayer.type === 'fill') {
                 styleLayerDistance = translateDistance(paint['fill-translate']);
+            } else if (styleLayer.type === 'fill-extrusion') {
+                styleLayerDistance = translateDistance(paint['fill-extrusion-translate']);
             } else if (styleLayer.type === 'circle') {
                 styleLayerDistance = paint['circle-radius'] + translateDistance(paint['circle-translate']);
             }
@@ -203,9 +205,10 @@ class FeatureIndex {
                         }
                         if (!multiPolygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
-                    } else if (styleLayer.type === 'fill') {
+                    } else if (styleLayer.type === 'fill' || styleLayer.type === 'fill-extrusion') {
+                        const typePrefix = styleLayer.type;
                         translatedPolygon = translate(queryGeometry,
-                                paint['fill-translate'], paint['fill-translate-anchor'],
+                                paint[`${typePrefix}-translate`], paint[`${typePrefix}-translate-anchor`],
                                 bearing, pixelsToTileUnits);
                         if (!multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
 

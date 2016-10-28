@@ -557,7 +557,6 @@ class Style extends Evented {
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
 
         const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
-        const wasExtruded = layer.type === 'fill' && layer.isExtruded({ zoom: this.zoom });
         layer.setPaintProperty(name, value, klass);
 
         const isFeatureConstant = !(
@@ -567,14 +566,7 @@ class Style extends Evented {
             value.property !== undefined
         );
 
-        const switchBuckets = (
-            layer.type === 'fill' &&
-            name === 'fill-extrude-height' &&
-            (!wasExtruded && !!value) ||
-            (wasExtruded && value === 0)
-        );
-
-        if (!isFeatureConstant || !wasFeatureConstant || switchBuckets) {
+        if (!isFeatureConstant || !wasFeatureConstant) {
             this._updates.layers[layerId] = true;
             if (layer.source) {
                 this._updates.sources[layer.source] = true;
