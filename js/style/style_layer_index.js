@@ -1,82 +1,58 @@
 'use strict';
 
 const StyleLayer = require('./style_layer');
+const util = require('../util/util');
 const featureFilter = require('feature-filter');
+const stringify = require('json-stable-stringify');
+
+function groupByLayout(layers) {
+    const groups = {};
+
+    for (const layer of layers) {
+        const key = stringify([layer.type, layer.source, layer['source-layer'], layer.minzoom, layer.maxzoom, layer.filter, layer.layout]);
+        let group = groups[key];
+        if (!group) {
+            group = groups[key] = [];
+        }
+        group.push(layer);
+    }
+
+    return util.values(groups);
+}
 
 class StyleLayerIndex {
     constructor(layers) {
-        this.families = [];
         if (layers) {
             this.replace(layers);
         }
     }
 
     replace(layers) {
-        this.layers = {};
-        this.order = [];
+        this.order = layers.map((layer) => layer.id);
+        this._layers = {};
         this.update(layers);
-    }
-
-    _updateLayer(layer) {
-        const refLayer = layer.ref && this.layers[layer.ref];
-
-        let styleLayer = this.layers[layer.id];
-        if (styleLayer) {
-            styleLayer.set(layer, refLayer);
-        } else {
-            styleLayer = this.layers[layer.id] = StyleLayer.create(layer, refLayer);
-        }
-
-        styleLayer.updatePaintTransitions({}, {transition: false});
-        styleLayer.filter = featureFilter(styleLayer.filter);
     }
 
     update(layers) {
         for (const layer of layers) {
-            if (!this.layers[layer.id]) {
-                this.order.push(layer.id);
-            }
-        }
-
-        // Update ref parents
-        for (const layer of layers) {
-            if (!layer.ref) this._updateLayer(layer);
-        }
-
-        // Update ref children
-        for (const layer of layers) {
-            if (layer.ref) this._updateLayer(layer);
-        }
-
-        this.families = [];
-        const byParent = {};
-
-        for (const id of this.order) {
-            const layer = this.layers[id];
-            const parent = layer.ref ? this.layers[layer.ref] : layer;
-
-            if (parent.layout && parent.layout.visibility === 'none') {
-                continue;
-            }
-
-            let family = byParent[parent.id];
-            if (!family) {
-                family = [];
-                this.families.push(family);
-                byParent[parent.id] = family;
-            }
-
-            if (layer.ref) {
-                family.push(layer);
-            } else {
-                family.unshift(layer);
-            }
+            this._layers[layer.id] = layer;
         }
 
         this.familiesBySource = {};
 
-        for (const family of this.families) {
-            const layer = family[0];
+        const groups = groupByLayout(util.values(this._layers));
+        for (let layers of groups) {
+            layers = layers.map((layer) => {
+                layer = StyleLayer.create(layer);
+                layer.updatePaintTransitions({}, {transition: false});
+                layer.filter = featureFilter(layer.filter);
+                return layer;
+            });
+
+            const layer = layers[0];
+            if (layer.layout && layer.layout.visibility === 'none') {
+                continue;
+            }
 
             const sourceId = layer.source || '';
             let sourceGroup = this.familiesBySource[sourceId];
@@ -90,7 +66,7 @@ class StyleLayerIndex {
                 sourceLayerFamilies = sourceGroup[sourceLayerId] = [];
             }
 
-            sourceLayerFamilies.push(family);
+            sourceLayerFamilies.push(layers);
         }
     }
 }

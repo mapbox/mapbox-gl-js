@@ -213,9 +213,12 @@ class SymbolBucket {
     }
 
     destroy() {
-        this.buffers.icon.destroy();
-        this.buffers.glyph.destroy();
-        this.buffers.collisionBox.destroy();
+        if (this.buffers) {
+            this.buffers.icon.destroy();
+            this.buffers.glyph.destroy();
+            this.buffers.collisionBox.destroy();
+            this.buffers = null;
+        }
     }
 
     createArrays() {
