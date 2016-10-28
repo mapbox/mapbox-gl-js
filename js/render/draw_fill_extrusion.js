@@ -11,7 +11,7 @@ const pattern = require('./pattern');
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
-    if (layer.paint['fill-opacity'] === 0) return;
+    if (layer.paint['fill-extrusion-opacity'] === 0) return;
     const gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
     painter.depthMask(true);
@@ -104,12 +104,12 @@ ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
 ExtrusionTexture.prototype.renderToMap = function() {
     const gl = this.gl;
     const painter = this.painter;
-    const program = painter.useProgram('fillExtrudeTexture');
+    const program = painter.useProgram('extrusionTexture');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.paint['fill-opacity']);
+    gl.uniform1f(program.u_opacity, this.layer.paint['fill-extrusion-opacity']);
     gl.uniform1i(program.u_texture, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
@@ -151,11 +151,11 @@ function drawExtrusion(painter, source, layer, coord) {
     const buffers = bucket.buffers;
     const gl = painter.gl;
 
-    const image = layer.paint['fill-pattern'];
+    const image = layer.paint['fill-extrusion-pattern'];
 
     const layerData = buffers.layerData[layer.id];
     const programConfiguration = layerData.programConfiguration;
-    const program = painter.useProgram(image ? 'fillExtrudePattern' : 'fillExtrude', programConfiguration);
+    const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
@@ -181,8 +181,8 @@ function setMatrix(program, painter, coord, tile, layer) {
         painter.translatePosMatrix(
             coord.posMatrix,
             tile,
-            layer.paint['fill-translate'],
-            layer.paint['fill-translate-anchor']
+            layer.paint['fill-extrusion-translate'],
+            layer.paint['fill-extrusion-translate-anchor']
         ),
         [1, 1, zScale, 1])
     );
