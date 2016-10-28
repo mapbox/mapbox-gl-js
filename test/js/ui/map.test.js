@@ -684,46 +684,6 @@ test('Map', (t) => {
             });
         });
 
-        t.test('sets property on parent layer', (t) => {
-            const map = createMap({
-                style: {
-                    "version": 8,
-                    "sources": {
-                        "geojson": {
-                            "type": "geojson",
-                            "data": {
-                                "type": "FeatureCollection",
-                                "features": []
-                            }
-                        }
-                    },
-                    "layers": [{
-                        "id": "symbol",
-                        "type": "symbol",
-                        "source": "geojson",
-                        "layout": {
-                            "text-transform": "uppercase"
-                        }
-                    }, {
-                        "id": "symbol-ref",
-                        "ref": "symbol"
-                    }]
-                }
-            });
-
-            map.on('style.load', () => {
-                map.style.dispatcher.broadcast = function(key, value) {
-                    t.equal(key, 'updateLayers');
-                    t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
-                };
-
-                map.setLayoutProperty('symbol-ref', 'text-transform', 'lowercase');
-                map.style.update();
-                t.deepEqual(map.getLayoutProperty('symbol', 'text-transform'), 'lowercase');
-                t.end();
-            });
-        });
-
         t.test('throw before loaded', (t) => {
             const map = createMap({
                 style: {

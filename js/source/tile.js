@@ -109,13 +109,13 @@ class Tile {
         for (const id in this.buckets) {
             this.buckets[id].destroy();
         }
+        this.buckets = {};
 
         this.collisionBoxArray = null;
         this.symbolQuadsArray = null;
         this.symbolInstancesArray = null;
         this.collisionTile = null;
         this.featureIndex = null;
-        this.buckets = null;
         this.state = 'unloaded';
     }
 
@@ -152,7 +152,7 @@ class Tile {
     }
 
     getBucket(layer) {
-        return this.buckets && this.buckets[layer.ref || layer.id];
+        return this.buckets[layer.id];
     }
 
     querySourceFeatures(result, params) {

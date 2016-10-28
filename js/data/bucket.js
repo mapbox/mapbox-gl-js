@@ -57,8 +57,18 @@ class Bucket {
         };
     }
 
+    /**
+     * Release the WebGL resources associated with the buffers. Note that because
+     * buckets are shared between layers having the same layout properties, they
+     * must be destroyed in groups (all buckets for a tile, or all symbol buckets).
+     *
+     * @private
+     */
     destroy() {
-        this.buffers.destroy();
+        if (this.buffers) {
+            this.buffers.destroy();
+            this.buffers = null;
+        }
     }
 }
 
@@ -70,6 +80,7 @@ Bucket.deserialize = function(input, style) {
     if (!style) return;
 
     const output = {};
+
     for (const serialized of input) {
         const layers = serialized.layerIds
             .map((id) => style.getLayer(id))
@@ -79,7 +90,11 @@ Bucket.deserialize = function(input, style) {
             continue;
         }
 
-        output[layers[0].id] = layers[0].createBucket(util.extend({layers}, serialized));
+        const bucket = layers[0].createBucket(util.extend({layers}, serialized));
+        for (const layer of layers) {
+            output[layer.id] = bucket;
+        }
     }
+
     return output;
 };

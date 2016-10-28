@@ -6,16 +6,6 @@ const FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer')
 const util = require('../../../js/util/util');
 
 test('StyleLayer', (t) => {
-    t.test('sets properties from ref', (t) => {
-        const layer = StyleLayer.create(
-            {ref: 'ref'},
-            StyleLayer.create({type: 'fill'})
-        );
-
-        t.equal(layer.type, 'fill');
-        t.end();
-    });
-
     t.test('instantiates the correct subclass', (t) => {
         const layer = StyleLayer.create({type: 'fill'});
 
@@ -364,16 +354,6 @@ test('StyleLayer#serialize', (t) => {
         }, layer);
     }
 
-    function createRefedSymbolLayer(layer) {
-        return util.extend({
-            id: 'symbol',
-            ref: 'symbol',
-            paint: {
-                'text-color': 'red'
-            }
-        }, layer);
-    }
-
     t.test('serializes layers', (t) => {
         t.deepEqual(
             StyleLayer.create(createSymbolLayer()).serialize(),
@@ -391,34 +371,6 @@ test('StyleLayer#serialize', (t) => {
         t.deepEqual(
             StyleLayer.create(layer).serialize(),
             layer
-        );
-        t.end();
-    });
-
-    t.test('serializes refed layers', (t) => {
-        t.deepEqual(
-            StyleLayer.create(
-                createRefedSymbolLayer(),
-                StyleLayer.create(createSymbolLayer())
-            ).serialize(),
-            createRefedSymbolLayer()
-        );
-        t.end();
-    });
-
-    t.test('serializes refed layers with ref properties', (t) => {
-        t.deepEqual(
-            StyleLayer.create(
-                createRefedSymbolLayer(),
-                StyleLayer.create(createSymbolLayer())
-            ).serialize({includeRefProperties: true}),
-            {
-                id: "symbol",
-                type: "symbol",
-                paint: { "text-color": "red" },
-                layout: { "text-transform": "uppercase" },
-                ref: "symbol"
-            }
         );
         t.end();
     });
@@ -476,47 +428,10 @@ test('StyleLayer#serialize', (t) => {
         }, layer);
     }
 
-    function createRefedSymbolLayer(layer) {
-        return util.extend({
-            id: 'symbol',
-            ref: 'symbol',
-            paint: {
-                'text-color': 'red'
-            }
-        }, layer);
-    }
-
     t.test('serializes layers', (t) => {
         t.deepEqual(
             StyleLayer.create(createSymbolLayer()).serialize(),
             createSymbolLayer()
-        );
-        t.end();
-    });
-
-    t.test('serializes refed layers', (t) => {
-        t.deepEqual(
-            StyleLayer.create(
-                createRefedSymbolLayer(),
-                StyleLayer.create(createSymbolLayer())).serialize(),
-            createRefedSymbolLayer()
-        );
-        t.end();
-    });
-
-    t.test('serializes refed layers with ref properties', (t) => {
-        t.deepEqual(
-            StyleLayer.create(
-                createRefedSymbolLayer(),
-                StyleLayer.create(createSymbolLayer())
-            ).serialize({includeRefProperties: true}),
-            {
-                id: "symbol",
-                type: "symbol",
-                paint: { "text-color": "red" },
-                layout: { "text-transform": "uppercase" },
-                ref: "symbol"
-            }
         );
         t.end();
     });

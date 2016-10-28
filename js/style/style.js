@@ -20,6 +20,7 @@ const SourceCache = require('../source/source_cache');
 const styleSpec = require('./style_spec');
 const MapboxGLFunction = require('mapbox-gl-function');
 const getWorkerPool = require('../global_worker_pool');
+const deref = require('mapbox-gl-style-spec/lib/deref');
 
 /**
  * @private
@@ -136,28 +137,15 @@ class Style extends Evented {
     }
 
     _resolve() {
-        let layer, layerJSON;
+        const layers = deref(this.stylesheet.layers);
 
-        this._layers = {};
-        this._order  = this.stylesheet.layers.map((layer) => {
+        this._order = layers.map((layer) => {
             return layer.id;
         });
 
-        // resolve all layers WITHOUT a ref
-        for (let i = 0; i < this.stylesheet.layers.length; i++) {
-            layerJSON = this.stylesheet.layers[i];
-            if (layerJSON.ref) continue;
-            layer = StyleLayer.create(layerJSON);
-            this._layers[layer.id] = layer;
-            layer.setEventedParent(this, {layer: {id: layer.id}});
-        }
-
-        // resolve all layers WITH a ref
-        for (let j = 0; j < this.stylesheet.layers.length; j++) {
-            layerJSON = this.stylesheet.layers[j];
-            if (!layerJSON.ref) continue;
-            const refLayer = this.getLayer(layerJSON.ref);
-            layer = StyleLayer.create(layerJSON, refLayer);
+        this._layers = {};
+        for (let layer of layers) {
+            layer = StyleLayer.create(layer);
             this._layers[layer.id] = layer;
             layer.setEventedParent(this, {layer: {id: layer.id}});
         }
@@ -194,9 +182,8 @@ class Style extends Evented {
     _serializeLayers(ids) {
         ids = ids || this._order;
         const serialized = [];
-        const options = {includeRefProperties: true};
         for (let i = 0; i < ids.length; i++) {
-            serialized.push(this._layers[ids[i]].serialize(options));
+            serialized.push(this._layers[ids[i]].serialize());
         }
         return serialized;
     }
@@ -410,8 +397,7 @@ class Style extends Evented {
             if (this._validate(validateStyle.layer,
                     `layers.${layer.id}`, layer, {arrayIndex: -1}, options)) return this;
 
-            const refLayer = layer.ref && this.getLayer(layer.ref);
-            layer = StyleLayer.create(layer, refLayer);
+            layer = StyleLayer.create(layer);
         }
         this._validateLayer(layer);
 
@@ -442,11 +428,6 @@ class Style extends Evented {
         if (layer === undefined) {
             throw new Error('There is no layer with this ID');
         }
-        for (const i in this._layers) {
-            if (this._layers[i].ref === id) {
-                this.removeLayer(i);
-            }
-        }
 
         layer.setEventedParent(null);
 
@@ -472,26 +453,10 @@ class Style extends Evented {
         return this._layers[id];
     }
 
-    /**
-     * If a layer has a `ref` property that makes it derive some values
-     * from another layer, return that referent layer. Otherwise,
-     * returns the layer itself.
-     * @param {string} id the layer's id
-     * @returns {Layer} the referent layer or the layer itself
-     * @private
-     */
-    getReferentLayer(id) {
-        let layer = this.getLayer(id);
-        if (layer.ref) {
-            layer = this.getLayer(layer.ref);
-        }
-        return layer;
-    }
-
     setLayerZoomRange(layerId, minzoom, maxzoom) {
         this._checkLoaded();
 
-        const layer = this.getReferentLayer(layerId);
+        const layer = this.getLayer(layerId);
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
 
@@ -507,7 +472,7 @@ class Style extends Evented {
     setFilter(layerId, filter) {
         this._checkLoaded();
 
-        const layer = this.getReferentLayer(layerId);
+        const layer = this.getLayer(layerId);
 
         if (filter !== null && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return this;
 
@@ -524,13 +489,13 @@ class Style extends Evented {
      * @private
      */
     getFilter(layer) {
-        return util.clone(this.getReferentLayer(layer).filter);
+        return util.clone(this.getLayer(layer).filter);
     }
 
     setLayoutProperty(layerId, name, value) {
         this._checkLoaded();
 
-        const layer = this.getReferentLayer(layerId);
+        const layer = this.getLayer(layerId);
 
         if (util.deepEqual(layer.getLayoutProperty(name), value)) return this;
 
@@ -546,7 +511,7 @@ class Style extends Evented {
      * @private
      */
     getLayoutProperty(layer, name) {
-        return this.getReferentLayer(layer).getLayoutProperty(name);
+        return this.getLayer(layer).getLayoutProperty(name);
     }
 
     setPaintProperty(layerId, name, value, klass) {

@@ -1,55 +1,52 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
+const util = require('../../../js/util/util');
 const StyleLayerIndex = require('../../../js/style/style_layer_index');
-
-test('StyleLayerIndex', (t) => {
-    const index = new StyleLayerIndex();
-    t.deepEqual(index.families, []);
-    t.end();
-});
 
 test('StyleLayerIndex#replace', (t) => {
     const index = new StyleLayerIndex([
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }  },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }  },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
+        { id: '1', type: 'fill', source: 'source', 'source-layer': 'layer', paint: { 'fill-color': 'red' }  },
+        { id: '2', type: 'circle', source: 'source', 'source-layer': 'layer', paint: { 'circle-color': 'green' }  },
+        { id: '3', type: 'circle', source: 'source', 'source-layer': 'layer', paint: { 'circle-color': 'blue' } }
     ]);
 
-    t.equal(index.families.length, 2);
-    t.equal(index.families[0].length, 1);
-    t.equal(index.families[0][0].id, 'one');
-    t.equal(index.families[1].length, 2);
-    t.equal(index.families[1][0].id, 'two');
-    t.equal(index.families[1][1].id, 'three');
+    const families = index.familiesBySource['source']['layer'];
+    t.equal(families.length, 2);
+    t.equal(families[0].length, 1);
+    t.equal(families[0][0].id, '1');
+    t.equal(families[1].length, 2);
+    t.equal(families[1][0].id, '2');
+    t.equal(families[1][1].id, '3');
 
     index.replace([]);
-    t.deepEqual(index.families, []);
+    t.deepEqual(index.familiesBySource, {});
 
     t.end();
 });
 
 test('StyleLayerIndex#update', (t) => {
     const index = new StyleLayerIndex([
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'red' }, 'source': 'foo' },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'green' }, 'source': 'foo' },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'blue' } }
+        { id: '1', type: 'fill', source: 'foo', 'source-layer': 'layer', paint: { 'fill-color': 'red' } },
+        { id: '2', type: 'circle', source: 'foo', 'source-layer': 'layer', paint: { 'circle-color': 'green' } },
+        { id: '3', type: 'circle', source: 'foo', 'source-layer': 'layer', paint: { 'circle-color': 'blue' } }
     ]);
 
     index.update([
-        { id: 'one', type: 'circle', paint: { 'circle-color': 'cyan' }, 'source': 'bar' },
-        { id: 'two', type: 'circle', paint: { 'circle-color': 'magenta' }, 'source': 'bar' },
-        { id: 'three', ref: 'two', type: 'circle', paint: { 'circle-color': 'yellow' } }
+        { id: '1', type: 'fill', source: 'bar', 'source-layer': 'layer', paint: { 'fill-color': 'cyan' } },
+        { id: '2', type: 'circle', source: 'bar', 'source-layer': 'layer', paint: { 'circle-color': 'magenta' } },
+        { id: '3', type: 'circle', source: 'bar', 'source-layer': 'layer', paint: { 'circle-color': 'yellow' } }
     ]);
 
-    t.equal(index.families.length, 2);
-    t.equal(index.families[0].length, 1);
-    t.equal(index.families[0][0].getPaintProperty('circle-color'), 'cyan');
-    t.equal(index.families[1].length, 2);
-    t.equal(index.families[1][0].getPaintProperty('circle-color'), 'magenta');
-    t.equal(index.families[1][0].source, 'bar');
-    t.equal(index.families[1][1].getPaintProperty('circle-color'), 'yellow');
-    t.equal(index.families[1][1].source, 'bar');
+    const families = index.familiesBySource['bar']['layer'];
+    t.equal(families.length, 2);
+    t.equal(families[0].length, 1);
+    t.equal(families[0][0].getPaintProperty('fill-color'), 'cyan');
+    t.equal(families[1].length, 2);
+    t.equal(families[1][0].getPaintProperty('circle-color'), 'magenta');
+    t.equal(families[1][0].source, 'bar');
+    t.equal(families[1][1].getPaintProperty('circle-color'), 'yellow');
+    t.equal(families[1][1].source, 'bar');
 
     t.end();
 });
@@ -57,30 +54,51 @@ test('StyleLayerIndex#update', (t) => {
 test('StyleLayerIndex#familiesBySource', (t) => {
     const index = new StyleLayerIndex([
         { id: '0', 'source': 'A', 'source-layer': 'foo' },
-        { id: '1', 'ref': '0'},
-        { id: '2', 'source': 'A', 'source-layer': 'foo' },
+        { id: '1', 'source': 'A', 'source-layer': 'foo' },
+        { id: '2', 'source': 'A', 'source-layer': 'foo', 'minzoom': 1 },
         { id: '3', 'source': 'A', 'source-layer': 'bar' },
         { id: '4', 'source': 'B', 'source-layer': 'foo' },
         { id: '5', 'source': 'geojson' },
         { id: '6' }
     ]);
-    const layers = index.layers;
 
-    t.deepEqual(index.familiesBySource, {
+    const ids = util.mapObject(index.familiesBySource, (bySource) => {
+        return util.mapObject(bySource, (families) => {
+            return families.map((family) => {
+                return family.map((layer) => layer.id);
+            });
+        });
+    });
+
+    t.deepEqual(ids, {
         'A': {
-            'foo': [[layers['0'], layers['1']], [layers['2']]],
-            'bar': [[layers['3']]]
+            'foo': [['0', '1'], ['2']],
+            'bar': [['3']]
         },
         'B': {
-            'foo': [[layers['4']]]
+            'foo': [['4']]
         },
         'geojson': {
-            '_geojsonTileLayer': [[layers['5']]]
+            '_geojsonTileLayer': [['5']]
         },
         '': {
-            '_geojsonTileLayer': [[layers['6']]]
+            '_geojsonTileLayer': [['6']]
         }
     });
+
+    t.end();
+});
+
+test('StyleLayerIndex groups families even if layout key order differs', (t) => {
+    const index = new StyleLayerIndex([
+        { id: '0', type: 'line', 'source': 'source', 'source-layer': 'layer',
+            'layout': {'line-cap': 'butt', 'line-join': 'miter'} },
+        { id: '1', type: 'line', 'source': 'source', 'source-layer': 'layer',
+            'layout': {'line-join': 'miter', 'line-cap': 'butt'} }
+    ]);
+
+    const families = index.familiesBySource['source']['layer'];
+    t.equal(families[0].length, 2);
 
     t.end();
 });

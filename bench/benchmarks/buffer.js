@@ -14,6 +14,7 @@ const config = require('../../js/util/config');
 const coordinates = require('../lib/coordinates');
 const formatNumber = require('../lib/format_number');
 const accessToken = require('../lib/access_token');
+const deref = require('mapbox-gl-style-spec/lib/deref');
 
 const SAMPLE_COUNT = 10;
 
@@ -125,7 +126,7 @@ function preloadAssets(stylesheet, callback) {
 }
 
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
-    const layerIndex = new StyleLayerIndex(stylesheet.layers);
+    const layerIndex = new StyleLayerIndex(deref(stylesheet.layers));
 
     const timeStart = performance.now();
 

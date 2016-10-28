@@ -52,9 +52,7 @@ test('isolates different instances\' data', (t) => {
         { id: 'two', type: 'circle' },
     ]);
 
-    t.equal(worker.layerIndexes[0].families.length, 1);
-    t.equal(worker.layerIndexes[1].families.length, 2);
-
+    t.notEqual(worker.layerIndexes[0], worker.layerIndexes[1]);
     t.end();
 });
 
