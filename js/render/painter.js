@@ -367,10 +367,9 @@ class Painter {
 
     _createProgramCached(name, paintAttributeSet) {
         this.cache = this.cache || {};
-        const defines = this._showOverdrawInspector ? ['OVERDRAW_INSPECTOR'] : [];
-        const key = paintAttributeSet.programCacheKey(name, defines);
+        const key = paintAttributeSet.programCacheKey(name, this._showOverdrawInspector);
         if (!this.cache[key]) {
-            this.cache[key] = paintAttributeSet.createProgram(name, defines, this.gl);
+            this.cache[key] = paintAttributeSet.createProgram(name, this._showOverdrawInspector, this.gl);
         }
         return this.cache[key];
     }
