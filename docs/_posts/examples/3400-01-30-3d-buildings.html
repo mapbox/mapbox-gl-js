@@ -1,9 +1,9 @@
---- 
-layout: example 
-category: example 
-title: Display buildings in 3D 
-description: Use extrusions to display buildings' height in 3D 
-tags: 
+---
+layout: example
+category: example
+title: Display buildings in 3D
+description: Use extrusions to display buildings' heights in 3D.
+tags:
   - layers
 ---
 <div id='map'></div>
@@ -25,19 +25,19 @@ map.on('load', function() {
         'source': 'composite',
         'source-layer': 'building',
         'filter': ['==', 'extrude', 'true'],
-        'type': 'fill',
+        'type': 'fill-extrusion',
         'minzoom': 15,
         'paint': {
-            'fill-color': '#aaa',
-            'fill-extrude-height': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': {
                 'type': 'identity',
                 'property': 'height'
             },
-            'fill-extrude-base': {
+            'fill-extrusion-base': {
                 'type': 'identity',
                 'property': 'min_height'
             },
-            'fill-opacity': .6
+            'fill-extrusion-opacity': .6
         }
     });
 });
