@@ -37,7 +37,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.NavigationControl());
 
 map.on('load', function () {
     map.addSource("points", {
