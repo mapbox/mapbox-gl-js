@@ -134,8 +134,8 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.addControl(new mapboxgl.Navigation());
-map.addControl(new mapboxgl.Geolocate());
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl());
 
 document.getElementById('show-tile-boundaries-checkbox').onclick = function() {
     map.showTileBoundaries = !!this.checked;

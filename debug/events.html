@@ -106,7 +106,7 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.NavigationControl());
 
 var consoleContainer = document.querySelector('#console');
 ['info','log','warn','error'].forEach(function (verb) {
