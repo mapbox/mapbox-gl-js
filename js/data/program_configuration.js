@@ -27,7 +27,6 @@ class ProgramConfiguration {
 
         self.attributes = [];
         self.uniforms = [];
-        self.defines = [];
         self.vertexPragmas = { define: {}, initialize: {} };
         self.fragmentPragmas = { define: {}, initialize: {} };
 
@@ -117,7 +116,6 @@ class ProgramConfiguration {
 
         self.attributes = [];
         self.uniforms = [];
-        self.defines = [];
         self.vertexPragmas = pragmas;
         self.fragmentPragmas = pragmas;
 
@@ -155,24 +153,22 @@ class ProgramConfiguration {
         return new VertexArrayType(this.attributes);
     }
 
-    programCacheKey(name, defines) {
+    programCacheKey(name, showOverdraw) {
         return JSON.stringify({
             name: name,
-            defines: this.defines.concat(defines),
             vertexPragmas: this.vertexPragmas,
-            fragmentPragmas: this.fragmentPragmas
+            fragmentPragmas: this.fragmentPragmas,
+            overdraw: showOverdraw
         });
     }
 
-    createProgram(name, defines, gl) {
+    createProgram(name, showOverdraw, gl) {
         const program = gl.createProgram();
         const definition = shaders[name];
 
-        defines = this.defines.concat(defines);
-
         let definesSource = '#define MAPBOX_GL_JS;\n';
-        for (let j = 0; j < defines.length; j++) {
-            definesSource += `#define ${defines[j]};\n`;
+        if (showOverdraw) {
+            definesSource += '#define OVERDRAW_INSPECTOR;\n';
         }
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
