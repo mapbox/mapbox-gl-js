@@ -29,22 +29,25 @@ module.exports = function drawLine(painter, sourceCache, layer, coords) {
         layer.paint['line-pattern'] ? 'linePattern' : 'line';
 
     let prevTileZoom;
-    for (let k = 0; k < coords.length; k++) {
-        const tile = sourceCache.getTile(coords[k]);
+    let firstTile = true;
+
+    for (const coord of coords) {
+        const tile = sourceCache.getTile(coord);
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
 
         const layerData = bucket.buffers.layerData[layer.id];
         const prevProgram = painter.currentProgram;
         const program = painter.useProgram(programId, layerData.programConfiguration);
-        const programChanged = k === 0 || program !== prevProgram;
+        const programChanged = firstTile || program !== prevProgram;
         const tileRatioChanged = prevTileZoom !== tile.coord.z;
 
         if (programChanged) {
             layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
         }
-        drawLineTile(program, painter, tile, bucket.buffers, layer, coords[k], layerData, programChanged, tileRatioChanged);
+        drawLineTile(program, painter, tile, bucket.buffers, layer, coord, layerData, programChanged, tileRatioChanged);
         prevTileZoom = tile.coord.z;
+        firstTile = false;
     }
 };
 
