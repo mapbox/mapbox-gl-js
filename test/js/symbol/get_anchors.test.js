@@ -31,18 +31,10 @@ test('getAnchors', (t) => {
     test('non-continued line with short labels', (t) => {
         const anchors = getAnchors(nonContinuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
-        t.deepEqual(anchors, [ { x: 1,
-            y: 2,
-            angle: 1.5707963267948966,
-            segment: 1 },
-            { x: 1,
-                y: 5,
-            angle: 1.5707963267948966,
-            segment: 4 },
-            { x: 1,
-                y: 8,
-            angle: 1.5707963267948966,
-            segment: 7 } ]);
+        t.deepEqual(anchors, [
+            { x: 1, y: 2, angle: 1.5707963267948966, segment: 1 },
+            { x: 1, y: 5, angle: 1.5707963267948966, segment: 4 },
+            { x: 1, y: 8, angle: 1.5707963267948966, segment: 7 } ]);
 
         t.ok(labelLength / 2 + 1 <= anchors[0].y && anchors[0].y < labelLength / 2 + 3 * glyphSize + 1,
                 'first label is placed as close to the beginning as possible');
@@ -53,18 +45,10 @@ test('getAnchors', (t) => {
     test('non-continued line with long labels', (t) => {
         const anchors = getAnchors(nonContinuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
-        t.deepEqual(anchors, [ { x: 1,
-            y: 2,
-            angle: 1.5707963267948966,
-            segment: 1 },
-            { x: 1,
-                y: 5,
-            angle: 1.5707963267948966,
-            segment: 3 },
-            { x: 1,
-                y: 7,
-            angle: 1.5707963267948966,
-            segment: 6 } ]);
+        t.deepEqual(anchors, [
+            { x: 1, y: 2, angle: 1.5707963267948966, segment: 1 },
+            { x: 1, y: 5, angle: 1.5707963267948966, segment: 3 },
+            { x: 1, y: 7, angle: 1.5707963267948966, segment: 6 } ]);
 
         t.end();
     });
@@ -72,18 +56,10 @@ test('getAnchors', (t) => {
     test('continued line with short labels', (t) => {
         const anchors = getAnchors(continuedLine, bigSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
-        t.deepEqual(anchors, [ { x: 1,
-            y: 2,
-            angle: 1.5707963267948966,
-            segment: 1 },
-            { x: 1,
-                y: 5,
-            angle: 1.5707963267948966,
-            segment: 4 },
-            { x: 1,
-                y: 8,
-            angle: 1.5707963267948966,
-            segment: 7 } ]);
+        t.deepEqual(anchors, [
+            { x: 1, y: 2, angle: 1.5707963267948966, segment: 1 },
+            { x: 1, y: 5, angle: 1.5707963267948966, segment: 4 },
+            { x: 1, y: 8, angle: 1.5707963267948966, segment: 7 } ]);
 
         t.end();
     });
@@ -91,18 +67,10 @@ test('getAnchors', (t) => {
     test('continued line with long labels', (t) => {
         const anchors = getAnchors(continuedLine, smallSpacing, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
 
-        t.deepEqual(anchors, [ { x: 1,
-            y: 1,
-            angle: 1.5707963267948966,
-            segment: 1 },
-            { x: 1,
-                y: 4,
-            angle: 1.5707963267948966,
-            segment: 3 },
-            { x: 1,
-                y: 6,
-            angle: 1.5707963267948966,
-            segment: 6 } ]);
+        t.deepEqual(anchors, [
+            { x: 1, y: 1, angle: 1.5707963267948966, segment: 1 },
+            { x: 1, y: 4, angle: 1.5707963267948966, segment: 3 },
+            { x: 1, y: 6, angle: 1.5707963267948966, segment: 6 } ]);
 
         t.end();
     });
@@ -129,10 +97,7 @@ test('getAnchors', (t) => {
         const line = [new Point(1, 1), new Point(1, 3.1)];
         const anchors = getAnchors(line, 2, Math.PI, shapedText, shapedIcon, glyphSize, 1, 1, TILE_EXTENT);
         t.deepEqual(anchors, [
-            { x: 1,
-            y: 2,
-            angle: 1.5707963267948966,
-            segment: 0 }]);
+            { x: 1, y: 2, angle: 1.5707963267948966, segment: 0 }]);
         t.end();
     });
     t.end();

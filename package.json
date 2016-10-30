@@ -48,7 +48,7 @@
     "coveralls": "^2.11.8",
     "documentation": "4.0.0-beta11",
     "envify": "^3.4.0",
-    "eslint": "^3.3.1",
+    "eslint": "^3.9.0",
     "eslint-config-mourner": "^2.0.0",
     "eslint-plugin-html": "^1.5.1",
     "github-slugger": "^1.1.1",
