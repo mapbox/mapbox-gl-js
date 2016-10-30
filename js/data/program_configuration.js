@@ -106,6 +106,8 @@ class ProgramConfiguration {
             }
         }
 
+        self.cacheKey = JSON.stringify([self.vertexPragmas, self.fragmentPragmas]);
+
         return self;
     }
 
@@ -126,6 +128,8 @@ class ProgramConfiguration {
             pragmas.define[uniform.name.slice(2)] = `uniform ${type} ${uniform.name};\n`;
             pragmas.initialize[uniform.name.slice(2)] = `${type} ${uniform.name.slice(2)} = ${uniform.name};\n`;
         }
+
+        self.cacheKey = JSON.stringify(pragmas);
 
         return self;
     }
@@ -151,15 +155,6 @@ class ProgramConfiguration {
 
     paintVertexArrayType() {
         return new VertexArrayType(this.attributes);
-    }
-
-    programCacheKey(name, showOverdraw) {
-        return JSON.stringify({
-            name: name,
-            vertexPragmas: this.vertexPragmas,
-            fragmentPragmas: this.fragmentPragmas,
-            overdraw: showOverdraw
-        });
     }
 
     createProgram(name, showOverdraw, gl) {
