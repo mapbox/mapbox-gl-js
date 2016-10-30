@@ -48,6 +48,11 @@ class Painter {
         this.depthEpsilon = 1 / Math.pow(2, 16);
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
+
+        this.basicFillProgramConfiguration = ProgramConfiguration.createStatic([
+            {name: 'u_color', components: 4},
+            {name: 'u_opacity', components: 1}
+        ]);
     }
 
     /*
@@ -152,16 +157,13 @@ class Painter {
 
         let idNext = 1;
         this._tileClippingMaskIDs = {};
-        for (let i = 0; i < coords.length; i++) {
-            const coord = coords[i];
+
+        for (const coord of coords) {
             const id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
 
             gl.stencilFunc(gl.ALWAYS, id, 0xF8);
 
-            const program = this.useProgram('fill', ProgramConfiguration.createStatic([
-                {name: 'u_color', components: 4},
-                {name: 'u_opacity', components: 1}
-            ]));
+            const program = this.useProgram('fill', this.basicFillProgramConfiguration);
             gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
 
             // Draw the clipping mask
