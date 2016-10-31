@@ -3,6 +3,7 @@
 const MapboxGLFunction = require('./style_function');
 const parseColor = require('./parse_color');
 const util = require('../util/util');
+const interpolate = require('../util/interpolate');
 
 module.exports = StyleDeclaration;
 
@@ -62,34 +63,17 @@ function wrapTransitionedCalculate(calculate) {
         const z = globalProperties.zoom;
         const zh = globalProperties.zoomHistory;
 
-        const fraction = z % 1;
-        const t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
-        let fromScale = 1;
-        const toScale = 1;
-        let mix, from, to;
+        const fromScale = z > zh.lastIntegerZoom ? 2 : 0.5;
+        const from = calculate({zoom: z > zh.lastIntegerZoom ? z - 1 : z + 1}, featureProperties);
+        const to = calculate({zoom: z}, featureProperties);
 
-        if (z > zh.lastIntegerZoom) {
-            mix = fraction + (1 - fraction) * t;
-            fromScale *= 2;
-            from = calculate({zoom: z - 1}, featureProperties);
-            to = calculate({zoom: z}, featureProperties);
-        } else {
-            mix = 1 - (1 - t) * fraction;
-            to = calculate({zoom: z}, featureProperties);
-            from = calculate({zoom: z + 1}, featureProperties);
-            fromScale /= 2;
-        }
+        const timeFraction = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
+        const zoomFraction = Math.abs(z - zh.lastIntegerZoom);
+        const t = interpolate(timeFraction, 1, zoomFraction);
 
-        if (from === undefined || to === undefined) {
+        if (from === undefined || to === undefined)
             return undefined;
-        } else {
-            return {
-                from: from,
-                fromScale: fromScale,
-                to: to,
-                toScale: toScale,
-                t: mix
-            };
-        }
+
+        return { from, fromScale, to, toScale: 1, t };
     };
 }
