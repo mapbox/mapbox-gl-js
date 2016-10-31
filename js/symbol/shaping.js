@@ -1,5 +1,7 @@
 'use strict';
 
+const scriptDetection = require('../util/script_detection');
+
 module.exports = {
     shapeText: shapeText,
     shapeIcon: shapeIcon
@@ -54,7 +56,7 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate);
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreaking(text));
 
     return shaping;
 }
@@ -79,7 +81,7 @@ const breakable = {
 
 invisible[newLine] = breakable[newLine] = true;
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, useBalancedIdeographicBreaking) {
     let lastSafeBreak = null;
     let lengthBeforeCurrentLine = 0;
     let lineStartIndex = 0;
@@ -90,6 +92,12 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
     const positionedGlyphs = shaping.positionedGlyphs;
 
     if (maxWidth) {
+        if (useBalancedIdeographicBreaking) {
+            const lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
+            const estimatedLineCount = Math.max(1, Math.ceil(lastPositionedGlyph.x / maxWidth));
+            maxWidth = lastPositionedGlyph.x / estimatedLineCount;
+        }
+
         for (let i = 0; i < positionedGlyphs.length; i++) {
             const positionedGlyph = positionedGlyphs[i];
 
@@ -123,7 +131,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                 line++;
             }
 
-            if (breakable[positionedGlyph.codePoint]) {
+            if (useBalancedIdeographicBreaking || breakable[positionedGlyph.codePoint] || scriptDetection.charAllowsIdeographicBreaking(positionedGlyph.codePoint)) {
                 lastSafeBreak = i;
             }
         }
@@ -164,7 +172,6 @@ function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLin
         positionedGlyphs[j].y += shiftY;
     }
 }
-
 
 function shapeIcon(image, layout) {
     if (!image || !image.rect) return null;
