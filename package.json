@@ -54,6 +54,7 @@
     "github-slugger": "^1.1.1",
     "gl": "^4.0.1",
     "highlight.js": "9.3.0",
+    "in-publish": "^2.0.0",
     "jsdom": "^9.4.2",
     "lodash.template": "^4.4.0",
     "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#e3c236991ca1c6e3bd07491284b3b216d03cd285",
@@ -113,6 +114,6 @@
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query",
-    "prepublish": "run-s build-dev build-min"
+    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   }
 }
