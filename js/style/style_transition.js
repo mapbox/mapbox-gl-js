@@ -38,15 +38,10 @@ class StyleTransition {
     }
 
     /*
-     * Return the value of the transitioning property at zoom level `z` and optional time `t`
+     * Return the value of the transitioning property.
      */
     calculate(globalProperties, featureProperties, time) {
-        let value;
-        if (this.zoomTransitioned) {
-            value = this._calculateZoomTransitioned(globalProperties, featureProperties);
-        } else {
-            value = this.declaration.calculate(globalProperties, featureProperties);
-        }
+        const value = this._calculateTargetValue(globalProperties, featureProperties);
 
         if (this.instant())
             return value;
@@ -61,9 +56,11 @@ class StyleTransition {
         return this.interp(oldValue, value, t);
     }
 
-    // This function is used to smoothly transition between discrete values, such
-    // as images and dasharrays.
-    _calculateZoomTransitioned(globalProperties, featureProperties) {
+    _calculateTargetValue(globalProperties, featureProperties) {
+        if (!this.zoomTransitioned)
+            return this.declaration.calculate(globalProperties, featureProperties);
+
+        // calculate zoom transition between discrete values, such as images and dasharrays.
         const z = globalProperties.zoom;
         const lastIntegerZoom = this.zoomHistory.lastIntegerZoom;
 
@@ -84,8 +81,7 @@ class StyleTransition {
 
 module.exports = StyleTransition;
 
-// This function is used to smoothly transition between discrete values, such
-// as images and dasharrays.
+// interpolate between two values that transition with zoom, such as images and dasharrays
 function interpZoomTransitioned(from, to, t) {
     if (from === undefined || to === undefined)
         return undefined;

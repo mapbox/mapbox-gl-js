@@ -18,7 +18,7 @@ const Source = require('../source/source');
 const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
 const styleSpec = require('./style_spec');
-const StyleFunction = require('./style_function');
+const MapboxGLFunction = require('mapbox-gl-function');
 const getWorkerPool = require('../global_worker_pool');
 
 /**
@@ -562,7 +562,7 @@ class Style extends Evented {
 
         const isFeatureConstant = !(
             value &&
-            StyleFunction.isFunctionDefinition(value) &&
+            MapboxGLFunction.isFunctionDefinition(value) &&
             value.property !== '$zoom' &&
             value.property !== undefined
         );

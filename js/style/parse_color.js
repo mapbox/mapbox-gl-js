@@ -2,13 +2,13 @@
 
 const parseColorString = require('csscolorparser').parseCSSColor;
 const util = require('../util/util');
-const StyleFunction = require('./style_function');
+const MapboxGLFunction = require('mapbox-gl-function');
 
 const cache = {};
 
 module.exports = function parseColor(input) {
 
-    if (input && StyleFunction.isFunctionDefinition(input)) {
+    if (input && MapboxGLFunction.isFunctionDefinition(input)) {
 
         if (!input.stops) return input;
         else return util.extend({}, input, {
