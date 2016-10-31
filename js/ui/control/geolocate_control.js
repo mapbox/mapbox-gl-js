@@ -33,6 +33,7 @@ class GeolocateControl extends Control {
 
         this._geolocateButton = DOM.create('button', (`${className}-icon ${className}-geolocate`), this._container);
         this._geolocateButton.type = 'button';
+        this._geolocateButton.setAttribute('aria-label', 'Geolocate');
         this._geolocateButton.addEventListener('click', this._onClickGeolocate.bind(this));
         return container;
     }
