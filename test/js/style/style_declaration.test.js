@@ -38,7 +38,7 @@ test('StyleDeclaration', (t) => {
 
         const constant = new StyleDeclaration(reference, 'a.png');
         t.deepEqual(
-            constant.calculate({zoom: 0, zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }, duration: 300}),
+            constant.calculate({zoom: 0, zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }}, {}, 300),
             { to: 'a.png', toScale: 1, from: 'a.png', fromScale: 0.5, t: 1 }
         );
 
@@ -46,9 +46,8 @@ test('StyleDeclaration', (t) => {
         t.deepEqual(
             variable.calculate({
                 zoom: 1,
-                zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 },
-                duration: 300
-            }),
+                zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }
+            }, {}, 300),
             { to: 'b.png', toScale: 1, from: 'a.png', fromScale: 2, t: 1 }
         );
 
@@ -56,9 +55,8 @@ test('StyleDeclaration', (t) => {
         t.deepEqual(
             unset.calculate({
                 zoom: 1,
-                zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 },
-                duration: 300
-            }),
+                zoomHistory: { lastIntegerZoomTime: 0, lastIntegerZoom: 0 }
+            }, {}, 300),
             undefined
         );
 
