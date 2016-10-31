@@ -1,46 +1,49 @@
 'use strict';
 
-const Control = require('./control');
 const DOM = require('../../util/dom');
+
+const className = 'mapboxgl-ctrl-scale';
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
  *
  * @param {Object} [options]
- * @param {string} [options.position='bottom-left'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
  * @example
  * map.addControl(new mapboxgl.ScaleControl({
- *     position: 'top-left',
  *     maxWidth: 80,
  *     unit: 'imperial'
  * }));
  */
-class ScaleControl extends Control {
+class ScaleControl {
 
     constructor(options) {
-        super();
-        this._position = options && options.position || 'bottom-left';
+        this.options = options;
     }
 
     onAdd(map) {
-        const className = 'mapboxgl-ctrl-scale',
-            container = this._container = DOM.create('div', className, map.getContainer()),
-            options = this.options;
+        this._map = map;
+        this._container = DOM.create('div', className, map.getContainer()),
 
-        updateScale(map, container, options);
-        map.on('move', () => {
-            updateScale(map, container, options);
-        });
+        const onMove = () => {
+            updateScale(this._map, this._container, this.options);
+        };
+        this._map.on('move', onMove);
+        onMove();
 
-        return container;
+        return this._container;
+    }
+
+    onRemove(map) {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
     }
 }
 
 module.exports = ScaleControl;
 
-function updateScale(map, scale, options) {
+function updateScale(map, container, options) {
     // A horizontal scale is imagined to be present at center of the map
     // container with maximum length (Default) as 100px.
     // Using spherical law of cosines approximation, the real distance is
@@ -56,16 +59,16 @@ function updateScale(map, scale, options) {
         const maxFeet = 3.2808 * maxMeters;
         if (maxFeet > 5280) {
             const maxMiles = maxFeet / 5280;
-            setScale(scale, maxWidth, maxMiles, 'mi');
+            setScale(container, maxWidth, maxMiles, 'mi');
         } else {
-            setScale(scale, maxWidth, maxFeet, 'ft');
+            setScale(container, maxWidth, maxFeet, 'ft');
         }
     } else {
-        setScale(scale, maxWidth, maxMeters, 'm');
+        setScale(container, maxWidth, maxMeters, 'm');
     }
 }
 
-function setScale(scale, maxWidth, maxDistance, unit) {
+function setScale(container, maxWidth, maxDistance, unit) {
     let distance = getRoundNum(maxDistance);
     const ratio = distance / maxDistance;
 
@@ -74,8 +77,8 @@ function setScale(scale, maxWidth, maxDistance, unit) {
         unit = 'km';
     }
 
-    scale.style.width = `${maxWidth * ratio}px`;
-    scale.innerHTML = distance + unit;
+    container.style.width = `${maxWidth * ratio}px`;
+    container.innerHTML = distance + unit;
 }
 
 function getDistance(latlng1, latlng2) {

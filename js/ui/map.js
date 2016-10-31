@@ -193,7 +193,7 @@ class Map extends Camera {
         if (options.classes) this.setClasses(options.classes);
         if (options.style) this.setStyle(options.style);
 
-        if (options.attributionControl) this.addControl(new AttributionControl(options.attributionControl));
+        if (options.attributionControl) this.addControl(new AttributionControl());
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
@@ -212,14 +212,34 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a [`Control`](#Control) to the map, calling `control.addTo(this)`.
+     * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
      *
      * @param {Control} control The [`Control`](#Control) to add.
+     * @param {string} corner corner of the map to which the control will be added
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control) {
-        control.addTo(this);
+    addControl(control, corner) {
+        const controlElement = control.onAdd(this);
+        if (corner && this._controlCorners[corner]) {
+            const cornerContainer = this._controlCorners[corner];
+            if (corner.indexOf('bottom') !== -1) {
+                cornerContainer.insertBefore(container, cornerContainer.firstChild);
+            } else {
+                cornerContainer.appendChild(container);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Removes the control from the map.
+     *
+     * @param {Control} control The [`Control`](#Control) to add.
+     * @returns {Map} `this`
+     */
+    removeControl(control) {
+        control.onRemove(this);
         return this;
     }
 

@@ -506,7 +506,7 @@ test('Map', (t) => {
     t.test('#addControl', (t) => {
         const map = createMap();
         const control = {
-            addTo: function(_) {
+            onAdd: function(_) {
                 t.equal(map, _, 'addTo() called with map');
                 t.end();
             }

@@ -1,31 +1,26 @@
 'use strict';
 
-const Control = require('./control');
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
+
+const className = 'mapboxgl-ctrl';
 
 /**
  * A `NavigationControl` control contains zoom buttons and a compass.
  *
- * @param {Object} [options]
- * @param {string} [options.position='top-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
- * var nav = new mapboxgl.NavigationControl({position: 'top-left'}); // position is optional
- * map.addControl(nav);
+ * var nav = new mapboxgl.NavigationControl();
+ * map.addControl(nav, 'top-left');
  * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
  * @see [Add a third party vector tile source](https://www.mapbox.com/mapbox-gl-js/example/third-party/)
  */
-class NavigationControl extends Control {
-
-    constructor(options) {
-        super();
-        this._position = options && options.position || 'top-right';
-    }
+class NavigationControl {
 
     onAdd(map) {
-        const className = 'mapboxgl-ctrl';
+        this._map = map;
+        this._el = map.getCanvasContainer();
 
-        const container = this._container = DOM.create('div', `${className}-group`, map.getContainer());
+        this._container = DOM.create('div', `${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, 'Zoom In', map.zoomIn.bind(map));
@@ -38,12 +33,15 @@ class NavigationControl extends Control {
         this._onCompassMove = this._onCompassMove.bind(this);
         this._onCompassUp = this._onCompassUp.bind(this);
 
-        map.on('rotate', this._rotateCompassArrow.bind(this));
+        this._map.on('rotate', this._rotateCompassArrow.bind(this));
         this._rotateCompassArrow();
 
-        this._el = map.getCanvasContainer();
+        return this._container;
+    }
 
-        return container;
+    onRemove(map) {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
     }
 
     _onContextMenu(e) {

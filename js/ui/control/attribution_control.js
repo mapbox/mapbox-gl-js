@@ -1,41 +1,37 @@
 'use strict';
 
-const Control = require('./control');
 const DOM = require('../../util/dom');
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
  *
- * @param {Object} [options]
- * @param {string} [options.position='bottom-right'] A string indicating the control's position on the map. Options are `'top-right'`, `'top-left'`, `'bottom-right'`, and `'bottom-left'`.
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
- *     .addControl(new mapboxgl.AttributionControl({position: 'top-left'}));
+ *     .addControl(new mapboxgl.AttributionControl());
  */
-class AttributionControl extends Control {
-
-    constructor(options) {
-        super();
-        this._position = options && options.position || 'bottom-right';
-    }
+class AttributionControl {
 
     onAdd(map) {
-        const className = 'mapboxgl-ctrl-attrib',
-            container = this._container = DOM.create('div', className, map.getContainer());
+        this._map = map;
+        this._container = DOM.create('div', 'mapboxgl-ctrl-attrib');
 
         this._updateAttributions();
         this._updateEditLink();
 
-        map.on('data', (event) => {
+        this._map.on('data', (event) => {
             if (event.dataType === 'source') {
                 this._updateAttributions();
                 this._updateEditLink();
             }
         });
+        this._map.on('moveend', this._updateEditLink.bind(this));
 
-        map.on('moveend', this._updateEditLink.bind(this));
+        return this._container;
+    }
 
-        return container;
+    onRemove(map) {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
     }
 
     _updateAttributions() {
