@@ -28,9 +28,9 @@ class NavigationControl extends Control {
         const container = this._container = DOM.create('div', `${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
-        this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, map.zoomOut.bind(map));
-        this._compass = this._createButton(`${className}-icon ${className}-compass`, map.resetNorth.bind(map));
+        this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, 'Zoom In', map.zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, 'Zoom Out', map.zoomOut.bind(map));
+        this._compass = this._createButton(`${className}-icon ${className}-compass`, 'Reset North', map.resetNorth.bind(map));
 
         this._compassArrow = DOM.create('span', 'arrow', this._compass);
 
@@ -79,9 +79,10 @@ class NavigationControl extends Control {
         e.stopPropagation();
     }
 
-    _createButton(className, fn) {
+    _createButton(className, ariaLabel, fn) {
         const a = DOM.create('button', className, this._container);
         a.type = 'button';
+        a.setAttribute('aria-label', ariaLabel);
         a.addEventListener('click', () => { fn(); });
         return a;
     }
