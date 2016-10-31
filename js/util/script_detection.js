@@ -11,33 +11,44 @@ module.exports.allowsIdeographicBreaking = function(chars) {
 
 
 module.exports.charAllowsIdeographicBreaking = function(char) {
-    // early termination for characters outside all ideographic ranges
-    if (char < 0x3000) return false;
+    // Return early for characters outside all ideographic ranges.
+    if (char < 0x2E80) return false;
 
-    // "一" to "鿌"
-    if (char >= 0x4E00 && char <= 0x9FCC) return true;
+    // CJK Radicals Supplement, Kangxi Radicals, Ideographic Description Characters, CJK Symbols and Punctuation: “⺀” to “〿”
+    if (char >= 0x2E80 && char <= 0x303F) return true;
 
-    // "㐀" to "䶵"
-    if (char >= 0x3400 && char <= 0x4DB5) return true;
+    // Hiragana: before “ぁ” to “ゟ”
+    if (char >= 0x3040 && char <= 0x309F) return true;
 
-    // eslint-disable-next-line no-irregular-whitespace
-    // "　" to "〿"
-    if (char >= 0x3000 && char <= 0x303F) return true;
-
-    // "！" to "￮"
-    if (char >= 0xFF01 && char <= 0xFFEE) return true;
-
-    // "ぁ" to "ゟ"
-    if (char >= 0x3041 && char <= 0x309F) return true;
-
-    // "゠" to "ヿ"
+    // Katakana: “゠” to “ヿ”
     if (char >= 0x30A0 && char <= 0x30FF) return true;
 
-    // "ㇰ" to "ㇿ"
+    // CJK Strokes: “㇀” to past “㇣”
+    if (char >= 0x31C0 && char <= 0x31EF) return true;
+
+    // Katakana Phonetic Extensions: “ㇰ” to “ㇿ”
     if (char >= 0x31F0 && char <= 0x31FF) return true;
 
-    // "ꀀ" to "꓆"
-    if (char >= 0xA000 && char <= 0xA4C6) return true;
+    // Enclosed CJK Letters and Months, CJK Compatibility: “㈀” to “㏿”
+    if (char >= 0x3200 && char <= 0x33FF) return true;
+
+    // CJK Unified Ideographs Extension A: “㐀” to past “䶵”
+    if (char >= 0x3400 && char <= 0x4DBF) return true;
+
+    // CJK Unified Ideographs: “一” to past “鿕”
+    if (char >= 0x4E00 && char <= 0x9FFF) return true;
+
+    // Yi Syllables, Yi Radicals: “ꀀ” to past “꓆”
+    if (char >= 0xA000 && char <= 0xA4CF) return true;
+
+    // CJK Compatibility Forms: “︰” to “﹏”
+    if (char >= 0xFE30 && char <= 0xFE4F) return true;
+
+    // CJK Compatibility Ideographs: “豈” to past “龎”
+    if (char >= 0xF900 && char <= 0xFAFF) return true;
+
+    // Halfwidth and Fullwidth Forms: before “！” to past “￮”
+    if (char >= 0xFF00 && char <= 0xFFEF) return true;
 
     return false;
 };
