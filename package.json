@@ -112,6 +112,7 @@
     "test-unit": "tap --reporter dot --no-coverage test/js",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
-    "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query"
+    "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query",
+    "prepublish": "run-s build-dev build-min"
   }
 }
