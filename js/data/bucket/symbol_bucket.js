@@ -230,11 +230,10 @@ class SymbolBucket {
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
         // use the same value when calculating anchor positions.
-        const zoomHistory = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-        this.adjustedTextMaxSize = this.layers[0].getLayoutValue('text-size', {zoom: 18, zoomHistory: zoomHistory});
-        this.adjustedTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
-        this.adjustedIconMaxSize = this.layers[0].getLayoutValue('icon-size', {zoom: 18, zoomHistory: zoomHistory});
-        this.adjustedIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1, zoomHistory: zoomHistory});
+        this.adjustedTextMaxSize = this.layers[0].getLayoutValue('text-size', {zoom: 18});
+        this.adjustedTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1});
+        this.adjustedIconMaxSize = this.layers[0].getLayoutValue('icon-size', {zoom: 18});
+        this.adjustedIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1});
 
         const tileSize = 512 * this.overscaling;
         this.tilePixelRatio = EXTENT / tileSize;

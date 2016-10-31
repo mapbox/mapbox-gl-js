@@ -9,8 +9,6 @@ const SymbolInstancesArray = require('../symbol/symbol_instances');
 const SymbolQuadsArray = require('../symbol/symbol_quads');
 const assert = require('assert');
 
-const FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };
-
 class WorkerTile {
     constructor(params) {
         this.coord = params.coord;
@@ -85,7 +83,7 @@ class WorkerTile {
                 if (layer.layout && layer.layout.visibility === 'none') continue;
 
                 for (const layer of family) {
-                    layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+                    layer.recalculate(this.zoom);
                 }
 
                 const bucket = buckets[layer.id] = layer.createBucket({
@@ -149,7 +147,7 @@ class WorkerTile {
                 for (const bucket of this.symbolBuckets) {
                     // Layers are shared and may have been used by a WorkerTile with a different zoom.
                     for (const layer of bucket.layers) {
-                        layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+                        layer.recalculate(this.zoom);
                     }
 
                     bucket.prepare(stacks, icons);
@@ -190,7 +188,7 @@ class WorkerTile {
         for (const bucket of this.symbolBuckets) {
             // Layers are shared and may have been used by a WorkerTile with a different zoom.
             for (const layer of bucket.layers) {
-                layer.recalculate(this.zoom, FAKE_ZOOM_HISTORY);
+                layer.recalculate(this.zoom);
             }
 
             bucket.place(collisionTile, showCollisionBoxes);

@@ -215,10 +215,10 @@ class Style extends Evented {
             const props = this._updates.paintProps[id];
 
             if (this._updates.allPaintProps || props.all) {
-                layer.updatePaintTransitions(classes, options, transition, this.animationLoop);
+                layer.updatePaintTransitions(classes, options, transition, this.animationLoop, this.zoomHistory);
             } else {
                 for (const paintName in props) {
-                    this._layers[id].updatePaintTransition(paintName, classes, options, transition, this.animationLoop);
+                    this._layers[id].updatePaintTransition(paintName, classes, options, transition, this.animationLoop, this.zoomHistory);
                 }
             }
         }
@@ -238,13 +238,13 @@ class Style extends Evented {
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
 
-            layer.recalculate(z, this.zoomHistory);
+            layer.recalculate(z);
             if (!layer.isHidden(z) && layer.source) {
                 this.sourceCaches[layer.source].used = true;
             }
         }
 
-        this.light.recalculate(z, this.zoomHistory);
+        this.light.recalculate(z);
 
         const maxZoomTransitionDuration = 300;
         if (Math.floor(this.z) !== Math.floor(z)) {
