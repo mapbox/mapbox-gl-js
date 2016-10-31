@@ -3,12 +3,14 @@
 const util = require('../util/util');
 const interpolate = require('../util/interpolate');
 
+const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
+
 /*
  * Represents a transition between two declarations
  */
 class StyleTransition {
 
-    constructor(reference, declaration, oldTransition, options) {
+    constructor(reference, declaration, oldTransition, options, zoomHistory) {
         this.declaration = declaration;
         this.startTime = this.endTime = (new Date()).getTime();
 
@@ -18,6 +20,7 @@ class StyleTransition {
 
         this.zoomTransitioned = reference.function === 'piecewise-constant' && reference.transition;
         this.interp = this.zoomTransitioned ? interpZoomTransitioned : interpolate[reference.type];
+        this.zoomHistory = zoomHistory || fakeZoomHistory;
 
         if (!this.instant()) {
             this.endTime = this.startTime + this.duration + this.delay;
@@ -62,14 +65,14 @@ class StyleTransition {
     // as images and dasharrays.
     _calculateZoomTransitioned(globalProperties, featureProperties) {
         const z = globalProperties.zoom;
-        const zh = globalProperties.zoomHistory;
+        const lastIntegerZoom = this.zoomHistory.lastIntegerZoom;
 
-        const fromScale = z > zh.lastIntegerZoom ? 2 : 0.5;
-        const from = this.declaration.calculate({zoom: z > zh.lastIntegerZoom ? z - 1 : z + 1}, featureProperties);
+        const fromScale = z > lastIntegerZoom ? 2 : 0.5;
+        const from = this.declaration.calculate({zoom: z > lastIntegerZoom ? z - 1 : z + 1}, featureProperties);
         const to = this.declaration.calculate({zoom: z}, featureProperties);
 
-        const timeFraction = Math.min((Date.now() - zh.lastIntegerZoomTime) / this.duration, 1);
-        const zoomFraction = Math.abs(z - zh.lastIntegerZoom);
+        const timeFraction = Math.min((Date.now() - this.zoomHistory.lastIntegerZoomTime) / this.duration, 1);
+        const zoomFraction = Math.abs(z - lastIntegerZoom);
         const t = interpolate(timeFraction, 1, zoomFraction);
 
         if (from === undefined || to === undefined)

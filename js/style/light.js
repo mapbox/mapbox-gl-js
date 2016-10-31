@@ -94,9 +94,9 @@ class Light extends Evented {
         }
     }
 
-    recalculate(zoom, zoomHistory) {
+    recalculate(zoom) {
         for (const property in this._declarations) {
-            this.calculated[property] = this.getLightValue(property, {zoom: zoom, zoomHistory: zoomHistory});
+            this.calculated[property] = this.getLightValue(property, {zoom: zoom});
         }
     }
 

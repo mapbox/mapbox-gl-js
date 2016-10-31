@@ -208,7 +208,7 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    updatePaintTransitions(classes, options, globalOptions, animationLoop) {
+    updatePaintTransitions(classes, options, globalOptions, animationLoop, zoomHistory) {
         const declarations = util.extend({}, this._paintDeclarations['']);
         for (let i = 0; i < classes.length; i++) {
             util.extend(declarations, this._paintDeclarations[classes[i]]);
@@ -216,15 +216,15 @@ class StyleLayer extends Evented {
 
         let name;
         for (name in declarations) { // apply new declarations
-            this._applyPaintDeclaration(name, declarations[name], options, globalOptions, animationLoop);
+            this._applyPaintDeclaration(name, declarations[name], options, globalOptions, animationLoop, zoomHistory);
         }
         for (name in this._paintTransitions) {
             if (!(name in declarations)) // apply removed declarations
-                this._applyPaintDeclaration(name, null, options, globalOptions, animationLoop);
+                this._applyPaintDeclaration(name, null, options, globalOptions, animationLoop, zoomHistory);
         }
     }
 
-    updatePaintTransition(name, classes, options, globalOptions, animationLoop) {
+    updatePaintTransition(name, classes, options, globalOptions, animationLoop, zoomHistory) {
         let declaration = this._paintDeclarations[''][name];
         for (let i = 0; i < classes.length; i++) {
             const classPaintDeclarations = this._paintDeclarations[classes[i]];
@@ -232,16 +232,16 @@ class StyleLayer extends Evented {
                 declaration = classPaintDeclarations[name];
             }
         }
-        this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop);
+        this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
     }
 
     // update all zoom-dependent layout/paint values
-    recalculate(zoom, zoomHistory) {
+    recalculate(zoom) {
         for (const paintName in this._paintTransitions) {
-            this.paint[paintName] = this.getPaintValue(paintName, {zoom: zoom, zoomHistory: zoomHistory});
+            this.paint[paintName] = this.getPaintValue(paintName, {zoom: zoom});
         }
         for (const layoutName in this._layoutFunctions) {
-            this.layout[layoutName] = this.getLayoutValue(layoutName, {zoom: zoom, zoomHistory: zoomHistory});
+            this.layout[layoutName] = this.getLayoutValue(layoutName, {zoom: zoom});
         }
     }
 
@@ -275,7 +275,7 @@ class StyleLayer extends Evented {
     }
 
     // set paint transition based on a given paint declaration
-    _applyPaintDeclaration (name, declaration, options, globalOptions, animationLoop) {
+    _applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory) {
         const oldTransition = options.transition ? this._paintTransitions[name] : undefined;
         const spec = this._paintSpecifications[name];
 
@@ -291,7 +291,7 @@ class StyleLayer extends Evented {
         }, globalOptions, this.getPaintProperty(name + TRANSITION_SUFFIX));
 
         const newTransition = this._paintTransitions[name] =
-            new StyleTransition(spec, declaration, oldTransition, transitionOptions);
+            new StyleTransition(spec, declaration, oldTransition, transitionOptions, zoomHistory);
 
         if (!newTransition.instant()) {
             newTransition.loopID = animationLoop.set(newTransition.endTime - Date.now());
