@@ -42,21 +42,15 @@ class StyleTransition {
     /*
      * Return the value of the transitioning property at zoom level `z` and optional time `t`
      */
-    calculate(globalProperties, featureProperties) {
-        let value = this.declaration.calculate(
-            util.extend({}, globalProperties, {duration: this.duration}),
-            featureProperties
-        );
+    calculate(globalProperties, featureProperties, time) {
+        let value = this.declaration.calculate(globalProperties, featureProperties, this.duration);
 
         if (this.instant()) return value;
 
-        const t = globalProperties.time || Date.now();
+        const t = time || Date.now();
 
         if (t < this.endTime) {
-            const oldValue = this.oldTransition.calculate(
-                util.extend({}, globalProperties, {time: this.startTime}),
-                featureProperties
-            );
+            const oldValue = this.oldTransition.calculate(globalProperties, featureProperties, this.startTime);
             const eased = this.ease((t - this.startTime - this.delay) / this.duration);
             value = this.interp(oldValue, value, eased);
         }

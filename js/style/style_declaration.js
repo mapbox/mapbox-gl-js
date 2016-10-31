@@ -58,10 +58,9 @@ function wrapColorCalculate(calculate) {
 // This function is used to smoothly transition between discrete values, such
 // as images and dasharrays.
 function wrapTransitionedCalculate(calculate) {
-    return function(globalProperties, featureProperties) {
+    return function(globalProperties, featureProperties, duration) {
         const z = globalProperties.zoom;
         const zh = globalProperties.zoomHistory;
-        const duration = globalProperties.duration;
 
         const fraction = z % 1;
         const t = Math.min((Date.now() - zh.lastIntegerZoomTime) / duration, 1);
