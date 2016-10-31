@@ -53,6 +53,7 @@ class Painter {
             {name: 'u_color', components: 4},
             {name: 'u_opacity', components: 1}
         ]);
+        this.emptyProgramConfiguration = ProgramConfiguration.createStatic([]);
     }
 
     /*
@@ -369,7 +370,7 @@ class Painter {
 
     _createProgramCached(name, paintAttributeSet) {
         this.cache = this.cache || {};
-        const key = `${name}:${paintAttributeSet.cacheKey}:${this._showOverdrawInspector}`;
+        const key = `${name}${paintAttributeSet.cacheKey}${!!this._showOverdrawInspector}`;
         if (!this.cache[key]) {
             this.cache[key] = paintAttributeSet.createProgram(name, this._showOverdrawInspector, this.gl);
         }
@@ -380,7 +381,7 @@ class Painter {
         const gl = this.gl;
 
         const nextProgram = this._createProgramCached(name,
-            paintAttributeSet || ProgramConfiguration.createStatic([]));
+            paintAttributeSet || this.emptyProgramConfiguration);
         const previousProgram = this.currentProgram;
 
         if (previousProgram !== nextProgram) {
