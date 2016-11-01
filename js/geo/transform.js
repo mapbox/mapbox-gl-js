@@ -453,9 +453,14 @@ class Transform {
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);
+
+        const circumferenceOfEarth = 2 * Math.PI * 6378137;
+
         mat4.scale(m, m, [1, 1,
-            // scale vertically to meters per pixel (inverse of ground resolution)
-            (Math.pow(2, this.zoom) * 512) / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180)))),
+            // scale vertically to meters per pixel (inverse of ground resolution):
+            // (2^z * tileSize) / (circumferenceOfEarth * cos(lat * π / 180))
+            (Math.pow(2, this.zoom) * this.tileSize) /
+            (circumferenceOfEarth * Math.abs(Math.cos(this.center.lat * (Math.PI / 180)))),
             1]);
 
         this.projMatrix = m;
