@@ -1,4 +1,5 @@
 'use strict';
+// @flow
 
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../js/geo/coordinate');
@@ -214,28 +215,6 @@ test('util', (t) => {
 
         t.end();
     });
-
-    if (process.browser) {
-        t.test('timed: no duration', (t) => {
-            const context = { foo: 'bar' };
-            util.timed(function(step) {
-                t.deepEqual(this, context);
-                t.equal(step, 1);
-                t.end();
-            }, 0, context);
-        });
-        t.test('timed: duration', (t) => {
-            const context = { foo: 'bax' };
-            util.timed(function(step) {
-                t.deepEqual(this, context);
-                if (step === 1) {
-                    t.end();
-                } else {
-                    t.ok(step < 1);
-                }
-            }, 100, context);
-        });
-    }
 
     t.end();
 });

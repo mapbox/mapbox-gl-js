@@ -8,7 +8,7 @@ const cache = {};
 
 module.exports = function parseColor(input) {
 
-    if (StyleFunction.isFunctionDefinition(input)) {
+    if (input && StyleFunction.isFunctionDefinition(input)) {
 
         if (!input.stops) return input;
         else return util.extend({}, input, {
