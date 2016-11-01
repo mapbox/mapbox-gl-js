@@ -7,10 +7,10 @@ const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const util = require('../util/util');
-const StructArrayType = require('../util/struct_array');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
-const RasterBoundsArray = require('./draw_raster').RasterBoundsArray;
+const RasterBoundsArray = require('../data/raster_bounds_array');
+const PosArray = require('../data/pos_array');
 const ProgramConfiguration = require('../data/program_configuration');
 
 const draw = {
@@ -85,10 +85,6 @@ class Painter {
 
         this._depthMask = false;
         gl.depthMask(false);
-
-        const PosArray = this.PosArray = new StructArrayType({
-            members: [{ name: 'a_pos', type: 'Int16', components: 2 }]
-        });
 
         const tileExtentArray = new PosArray();
         tileExtentArray.emplaceBack(0, 0);
