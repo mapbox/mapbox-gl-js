@@ -47,7 +47,7 @@ class GeolocateControl extends Control {
     }
 
     _success(position) {
-        this._map.jumpTo({
+        this._map.setCamera({
             center: [position.coords.longitude, position.coords.latitude],
             zoom: 17,
             bearing: 0,

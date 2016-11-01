@@ -9,7 +9,7 @@ const Point = require('point-geometry');
 const Evented = require('../util/evented');
 
 /**
- * Options common to {@link Map#jumpTo}, {@link Map#easeTo}, and {@link Map#flyTo},
+ * Options common to {@link Map#setCamera}, {@link Map#zoomTo}, and {@link Map#setBearing},
  * controlling the destination's location, zoom level, bearing, and pitch.
  * All properties are optional. Unspecified
  * options will default to the map's current value for that property.
@@ -23,14 +23,15 @@ const Evented = require('../util/evented');
  */
 
 /**
- * Options common to map movement methods that involve animation, such as {@link Map#panBy} and
- * {@link Map#easeTo}, controlling the duration and easing function of the animation. All properties
+ * Options common to map movement methods that involve animation, such as {@link Map#setCamera} and
+ * {@link Map#zoomTo}, controlling the duration and easing function of the animation. All properties
  * are optional.
  *
  * @typedef {Object} AnimationOptions
+ * @property {string} [type='none'] The type of animation used to transition between two camera states. Available values are `ease`, `fly`, and `none`.
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing The animation's easing function.
- * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
+ * @property {PointLike} offset `x` and `y` screen coordinates representing the animation's origin of movement relative to the map's center.
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
@@ -64,43 +65,8 @@ class Camera extends Evented {
      * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter(center, eventData) {
-        this.jumpTo({center: center}, eventData);
+        this.setCamera({center: center}, {type: 'none'}, eventData);
         return this;
-    }
-
-    /**
-     * Pans the map by the specified offest.
-     *
-     * @memberof Map#
-     * @param {Array<number>} offset `x` and `y` coordinates by which to pan the map.
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
-     */
-    panBy(offset, options, eventData) {
-        this.panTo(this.transform.center,
-            util.extend({offset: Point.convert(offset).mult(-1)}, options), eventData);
-        return this;
-    }
-
-    /**
-     * Pans the map to the specified location, with an animated transition.
-     *
-     * @memberof Map#
-     * @param {LngLatLike} lnglat The location to pan the map to.
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    panTo(lnglat, options, eventData) {
-        return this.easeTo(util.extend({
-            center: lnglat
-        }, options), eventData);
     }
 
     /**
@@ -112,7 +78,7 @@ class Camera extends Evented {
     getZoom() { return this.transform.zoom; }
 
     /**
-     * Sets the map's zoom level. Equivalent to `jumpTo({zoom: zoom})`.
+     * Sets the map's zoom level. Equivalent to `setCamera({zoom: zoom})`.
      *
      * @memberof Map#
      * @param {number} zoom The zoom level to set (0-20).
@@ -129,66 +95,7 @@ class Camera extends Evented {
      * map.setZoom(5);
      */
     setZoom(zoom, eventData) {
-        this.jumpTo({zoom: zoom}, eventData);
-        return this;
-    }
-
-    /**
-     * Zooms the map to the specified zoom level, with an animated transition.
-     *
-     * @memberof Map#
-     * @param {number} zoom The zoom level to transition to.
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
-     * @returns {Map} `this`
-     */
-    zoomTo(zoom, options, eventData) {
-        return this.easeTo(util.extend({
-            zoom: zoom
-        }, options), eventData);
-    }
-
-    /**
-     * Increases the map's zoom level by 1.
-     *
-     * @memberof Map#
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
-     * @returns {Map} `this`
-     */
-    zoomIn(options, eventData) {
-        this.zoomTo(this.getZoom() + 1, options, eventData);
-        return this;
-    }
-
-    /**
-     * Decreases the map's zoom level by 1.
-     *
-     * @memberof Map#
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires moveend
-     * @fires zoomend
-     * @returns {Map} `this`
-     */
-    zoomOut(options, eventData) {
-        this.zoomTo(this.getZoom() - 1, options, eventData);
+        this.setCamera({zoom: zoom}, {type: 'none'}, eventData);
         return this;
     }
 
@@ -215,56 +122,7 @@ class Camera extends Evented {
      * map.setBearing(90);
      */
     setBearing(bearing, eventData) {
-        this.jumpTo({bearing: bearing}, eventData);
-        return this;
-    }
-
-    /**
-     * Rotates the map to the specified bearing, with an animated transition.
-     *
-     * @memberof Map#
-     * @param {number} bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    rotateTo(bearing, options, eventData) {
-        return this.easeTo(util.extend({
-            bearing: bearing
-        }, options), eventData);
-    }
-
-    /**
-     * Rotates the map to a bearing of 0 (due north), with an animated transition.
-     *
-     * @memberof Map#
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    resetNorth(options, eventData) {
-        this.rotateTo(0, util.extend({duration: 1000}, options), eventData);
-        return this;
-    }
-
-    /**
-     * Snaps the map's bearing to 0 (due north), if the current bearing is close enough to it (i.e. within the `bearingSnap` threshold).
-     *
-     * @memberof Map#
-     * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     */
-    snapToNorth(options, eventData) {
-        if (Math.abs(this.getBearing()) < this._bearingSnap) {
-            return this.resetNorth(options, eventData);
-        }
+        this.setCamera({bearing: bearing}, {type: 'none'}, eventData);
         return this;
     }
 
@@ -287,55 +145,91 @@ class Camera extends Evented {
      * @returns {Map} `this`
      */
     setPitch(pitch, eventData) {
-        this.jumpTo({pitch: pitch}, eventData);
+        this.setCamera({pitch: pitch}, {type: 'none'}, eventData);
         return this;
     }
 
-
     /**
-     * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     *
+     * Generates a CameraOptions object based on geometry input. Typically used in conjuction with
+     * {@link Map#setCamera} to interpolate the zoom level based on a bounding box input.
+     * 
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
-     * @param {Object} [options]
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     *     {@link Map#flyTo} for information about the options specific to that animated transition.
-     * @param {Function} [options.easing] An easing function for the animated transition.
+     * @param {LngLatBoundsLike} bounds Bounding box to fit within the camera state.
+     * @param {CameraOptions} [options]
+     * @param {PointLike} [options.offset=[0,0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires moveend
-     * @returns {Map} `this`
-     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
+     * @returns {CameraOptions} CameraOptions An extended `CameraOptions` object
+     * @example
+     * // pass in a bounding box, specify bearing north
+     * var options = map.cameraForBounds([[32.958984, -5.353521 ], [43.50585, 5.615985]], {bearing: 0});
+     *
+     * map.setCamera(options);
      */
-    fitBounds(bounds, options, eventData) {
-
-        options = util.extend({
+    cameraForBounds(bounds, cameraOptions) {
+    /* alternative names */
+    // optionsFromBounds
+    // cameraOptionsFromGeometry
+    // cameraOptionsFor
+    // generateCameraOptions
+        cameraOptions = util.extend({
             padding: 0,
-            offset: [0, 0],
-            maxZoom: Infinity
-        }, options);
-
+            offset: [0, 0]
+        }, cameraOptions);
+        
         bounds = LngLatBounds.convert(bounds);
-
-        const offset = Point.convert(options.offset),
+        
+        const offset = Point.convert(cameraOptions.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - cameraOptions.padding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - cameraOptions.padding * 2 - Math.abs(offset.y) * 2) / size.y;
 
-        options.center = tr.unproject(nw.add(se).div(2));
-        options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = 0;
+        cameraOptions.center = tr.unproject(nw.add(se).div(2));
+        cameraOptions.zoom = tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY));
+        cameraOptions.bearing = 0;
 
-        return options.linear ?
-            this.easeTo(options, eventData) :
-            this.flyTo(options, eventData);
+        return cameraOptions;
+    }
+
+    /**
+     * Returns the map's geographical bounds.
+     *
+     * @memberof Map#
+     * @returns {LngLatBounds} The map's geographical bounds.
+     */
+    getBounds() {
+        const bounds = new LngLatBounds(
+            this.transform.pointLocation(new Point(0, this.transform.height)),
+            this.transform.pointLocation(new Point(this.transform.width, 0)));
+
+        if (this.transform.angle || this.transform.pitch) {
+            bounds.extend(this.transform.pointLocation(new Point(this.transform.size.x, 0)));
+            bounds.extend(this.transform.pointLocation(new Point(0, this.transform.size.y)));
+        }
+
+        return bounds;
+    }
+
+    /**
+     * Moves and zooms the map to contain its visible area within the specified geographical bounds.
+     * This is a wrapper around {@link Map#cameraForBounds} and {@link Map#setCamera}.
+     *
+     * @memberof Map#
+     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
+     * @param {CameraOptions} cameraOptions With additional options `padding` and `offset`. Does not take `bearing` into account.
+     * @param {AnimationOptions} animationOptions specify how to animate the transition between the current camera state and the final state. Defaults to no animation.
+     * @param {PointLike} [cameraOptions.offset=[0,0]] The center of the given bounds relative to the map's center, measured in pixels.
+     * @param {number} [cameraOptions.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
+     * @param {AnimationOptions} [animationOptions] `zoom` will be ignored.
+     * @param {Object} [eventData] Data to propagate to any event listeners.
+     */
+    fitBounds(bounds, cameraOptions, animationOptions, eventData) {
+        animationOptions = util.extend({
+            type: 'none'
+        }, animationOptions);
+        this.setCamera(this.cameraForBounds(bounds, cameraOptions), animationOptions, eventData);
     }
 
     /**
@@ -344,7 +238,8 @@ class Camera extends Evented {
      * details not specified in `options`.
      *
      * @memberof Map#
-     * @param {CameraOptions} options
+     * @param {CameraOptions} cameraOptions
+     * @param {AnimationOptions} animationOptions
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
@@ -356,35 +251,123 @@ class Camera extends Evented {
      * @fires moveend
      * @returns {Map} `this`
      */
-    jumpTo(options, eventData) {
-        this.stop();
+    setCamera(cameraOptions, animationOptions, eventData) {
+        this.stop(); // stop all previous animations
 
+        animationOptions = util.extend({
+            type: 'none',
+            offset: [0 ,0]
+        }, animationOptions);
+
+        cameraOptions = util.extend({}, cameraOptions);
+
+        // throw duration: 0 into non animation (this is not a good final solution)
+        if (animationOptions.duration === 0) animationOptions.type = 'none';
+
+        switch(animationOptions.type) {
+            case 'fly':
+                animationOptions = util.extend({
+                    speed: 1.2,
+                    curve: 1.42,
+                    easing: util.ease
+                }, animationOptions);
+                this._animateFly(cameraOptions, animationOptions, eventData);
+                break;
+            case 'ease':
+                animationOptions = util.extend({
+                    duration: 500,
+                    easing: util.ease
+                }, animationOptions);
+                this._animateEase(cameraOptions, animationOptions, eventData);
+                break;
+            case 'none':
+            default:
+                this._animateNone(cameraOptions, animationOptions, eventData);
+                break;
+        }
+    }
+
+    /**
+     * Returns the camera's current state: `center`, `zoom`, `bearing`, `pitch`, and `bounds`.
+     *
+     * @returns {object} state The value of each {@link CameraOptions} value, plus the bounds ({@LngLatBounds}) of the current camera view.
+     *
+     */
+    getCamera() {
+        return {
+            center: this.getCenter(),
+            zoom: this.getZoom(),
+            bearing: this.getBearing(),
+            pitch: this.getPitch()
+        };
+    }
+
+    /**
+     * Pans the map by the specified offest.
+     *
+     * @memberof Map#
+     * @param {Array<number>} offset `x` and `y` coordinates by which to pan the map.
+     * @param {AnimationOptions} [options]
+     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @fires movestart
+     * @fires moveend
+     * @returns {Map} `this`
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
+     */
+    panBy(offset, animationOptions, eventData) {
+        if (animationOptions.type === 'none') throw new Error('#panBy must include a valid animation type "ease" or "fly".');
+        const o = Point.convert(offset).mult(-1);
+        this.setCamera({
+            center: this.transform.center
+        }, util.extend({ type: 'ease', offset: o }, animationOptions), eventData );
+        return this;
+    }
+
+    /**
+     * Stops any animated camera transition underway.
+     *
+     * @memberof Map#
+     * @returns {Map} `this`
+     */
+    stop() {
+        if (this._abortFn) {
+            this._abortFn();
+            this._finishEase();
+        }
+        return this;
+    }
+
+    // no animation, just update the camera and events (this is the default animation for setCamera)
+    _animateNone(cameraOptions, animationOptions, eventData) {
         const tr = this.transform;
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
 
-        if ('zoom' in options && tr.zoom !== +options.zoom) {
+        if ('zoom' in cameraOptions && tr.zoom !== +cameraOptions.zoom) {
             zoomChanged = true;
-            tr.zoom = +options.zoom;
+            tr.zoom = +cameraOptions.zoom;
         }
 
-        if ('center' in options) {
-            tr.center = LngLat.convert(options.center);
+        if ('center' in cameraOptions) {
+            tr.center = LngLat.convert(cameraOptions.center);
         }
 
-        if ('bearing' in options && tr.bearing !== +options.bearing) {
+        if ('bearing' in cameraOptions && tr.bearing !== +cameraOptions.bearing) {
             bearingChanged = true;
-            tr.bearing = +options.bearing;
+            tr.bearing = +cameraOptions.bearing;
         }
 
-        if ('pitch' in options && tr.pitch !== +options.pitch) {
+        if ('pitch' in cameraOptions && tr.pitch !== +cameraOptions.pitch) {
             pitchChanged = true;
-            tr.pitch = +options.pitch;
+            tr.pitch = +cameraOptions.pitch;
         }
 
-        this.fire('movestart', eventData)
-            .fire('move', eventData);
+        if (!animationOptions.noMoveStart) {
+            this.fire('movestart', eventData);
+        }
+
+        this.fire('move', eventData);
 
         if (zoomChanged) {
             this.fire('zoomstart', eventData)
@@ -403,52 +386,27 @@ class Camera extends Evented {
         return this.fire('moveend', eventData);
     }
 
-    /**
-     * Changes any combination of center, zoom, bearing, and pitch, with an animated transition
-     * between old and new values. The map will retain its current values for any
-     * details not specified in `options`.
-     *
-     * @memberof Map#
-     * @param {CameraOptions|AnimationOptions} options Options describing the destination and animation of the transition.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires rotate
-     * @fires pitch
-     * @fires zoomend
-     * @fires moveend
-     * @returns {Map} `this`
-     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
-     */
-    easeTo(options, eventData) {
-        this.stop();
-
-        options = util.extend({
-            offset: [0, 0],
-            duration: 500,
-            easing: util.ease
-        }, options);
+    // ease animation
+    _animateEase(cameraOptions, animationOptions, eventData) {
 
         const tr = this.transform,
-            offset = Point.convert(options.offset),
+            offset = Point.convert(animationOptions.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
 
-            zoom = 'zoom' in options ? +options.zoom : startZoom,
-            bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
-            pitch = 'pitch' in options ? +options.pitch : startPitch;
+            zoom = 'zoom' in cameraOptions ? +cameraOptions.zoom : startZoom,
+            bearing = 'bearing' in cameraOptions ? this._normalizeBearing(cameraOptions.bearing, startBearing) : startBearing,
+            pitch = 'pitch' in cameraOptions ? +cameraOptions.pitch : startPitch;
 
         let toLngLat,
             toPoint;
 
-        if ('center' in options) {
-            toLngLat = LngLat.convert(options.center);
+        if ('center' in cameraOptions) {
+            toLngLat = LngLat.convert(cameraOptions.center);
             toPoint = tr.centerPoint.add(offset);
-        } else if ('around' in options) {
-            toLngLat = LngLat.convert(options.around);
+        } else if ('around' in cameraOptions) {
+            toLngLat = LngLat.convert(cameraOptions.around);
             toPoint = tr.locationPoint(toLngLat);
         } else {
             toPoint = tr.centerPoint.add(offset);
@@ -457,17 +415,15 @@ class Camera extends Evented {
 
         const fromPoint = tr.locationPoint(toLngLat);
 
-        if (options.animate === false) options.duration = 0;
-
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
 
-        if (options.smoothEasing && options.duration !== 0) {
-            options.easing = this._smoothOutEasing(options.duration);
+        if (animationOptions.smoothEasing) {
+            animationOptions.easing = this._smoothOutEasing(animationOptions.duration);
         }
 
-        if (!options.noMoveStart) {
+        if (!animationOptions.noMoveStart) {
             this.fire('movestart', eventData);
         }
         if (this.zooming) {
@@ -488,7 +444,6 @@ class Camera extends Evented {
             if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-
             tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
 
             this.fire('move', eventData);
@@ -502,12 +457,12 @@ class Camera extends Evented {
                 this.fire('pitch', eventData);
             }
         }, () => {
-            if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), options.delayEndEvents);
+            if (animationOptions.delayEndEvents) {
+                this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), animationOptions.delayEndEvents);
             } else {
                 this._easeToEnd(eventData);
             }
-        }, options);
+        }, animationOptions);
 
         return this;
     }
@@ -522,62 +477,10 @@ class Camera extends Evented {
             this.fire('zoomend', eventData);
         }
         this.fire('moveend', eventData);
-
     }
 
-    /**
-     * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
-     * evokes flight. The animation seamlessly incorporates zooming and panning to help
-     * the user maintain her bearings even after traversing a great distance.
-     *
-     * @memberof Map#
-     * @param {Object} options Options describing the destination and animation of the transition.
-     *     Accepts [CameraOptions](#CameraOptions), [AnimationOptions](#AnimationOptions),
-     *     and the following additional options.
-     * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
-     *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
-     *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
-     *     value selected by participants in the user study discussed in
-     *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
-     *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
-     *     value of 1 would produce a circular motion.
-     * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
-     *     `options.curve` is specified, this option is ignored.
-     * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
-     *     `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
-     *     by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
-     *     It does not correspond to a fixed physical distance, but varies by zoom level.
-     * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
-     *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
-     * @fires movestart
-     * @fires zoomstart
-     * @fires move
-     * @fires zoom
-     * @fires rotate
-     * @fires pitch
-     * @fires zoomend
-     * @fires moveend
-     * @returns {Map} `this`
-     * @example
-     * // fly with default options to null island
-     * map.flyTo({center: [0, 0], zoom: 9});
-     * // using flyTo options
-     * map.flyTo({
-     *   center: [0, 0],
-     *   zoom: 9,
-     *   speed: 0.2,
-     *   curve: 1,
-     *   easing(t) {
-     *     return t;
-     *   }
-     * });
-     * @see [Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
-     * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
-     * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
-     */
-    flyTo(options, eventData) {
+    // `fly` animation type to evoke flight
+    _animateFly(cameraOptions, animationOptions, eventData) {
         // This method implements an “optimal path” animation, as detailed in:
         //
         // Van Wijk, Jarke J.; Nuij, Wim A. A. “Smooth and efficient zooming and panning.” INFOVIS
@@ -585,29 +488,19 @@ class Camera extends Evented {
         //
         // Where applicable, local variable documentation begins with the associated variable or
         // function in van Wijk (2003).
-
-        this.stop();
-
-        options = util.extend({
-            offset: [0, 0],
-            speed: 1.2,
-            curve: 1.42,
-            easing: util.ease
-        }, options);
-
         const tr = this.transform,
-            offset = Point.convert(options.offset),
+            offset = Point.convert(animationOptions.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        const center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
-        const zoom = 'zoom' in options ?  +options.zoom : startZoom;
-        const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
-        const pitch = 'pitch' in options ? +options.pitch : startPitch;
+        const center = 'center' in cameraOptions ? LngLat.convert(cameraOptions.center) : this.getCenter();
+        const zoom = 'zoom' in cameraOptions ?  +cameraOptions.zoom : startZoom;
+        const bearing = 'bearing' in cameraOptions ? this._normalizeBearing(cameraOptions.bearing, startBearing) : startBearing;
+        const pitch = 'pitch' in cameraOptions ? +cameraOptions.pitch : startPitch;
 
         // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
-        // interpolating between the two endpoints will cross it.
+        // interpolating between the two endpoints will crosoffs it.
         if (Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
             if (tr.center.lng > 0 && center.lng < 0) {
                 center.lng += 360;
@@ -618,10 +511,10 @@ class Camera extends Evented {
 
         const scale = tr.zoomScale(zoom - startZoom),
             from = tr.point,
-            to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
+            to = 'center' in cameraOptions ? tr.project(center).sub(offset.div(scale)) : from;
 
         const startWorldSize = tr.worldSize;
-        let rho = options.curve;
+        let rho = animationOptions.curve;
 
             // w₀: Initial visible span, measured in pixels at the initial scale.
         const w0 = Math.max(tr.width, tr.height),
@@ -631,8 +524,8 @@ class Camera extends Evented {
             // the world image origin at the initial scale.
             u1 = to.sub(from).mag();
 
-        if ('minZoom' in options) {
-            const minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
+        if ('minZoom' in animationOptions) {
+            const minZoom = util.clamp(Math.min(animationOptions.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
             // w<sub>m</sub>: Maximum visible span, measured in pixels with respect to the initial
             // scale.
             const wMax = w0 / tr.zoomScale(minZoom - startZoom);
@@ -679,7 +572,7 @@ class Camera extends Evented {
         // When u₀ = u₁, the optimal path doesn’t require both ascent and descent.
         if (Math.abs(u1) < 0.000001) {
             // Perform a more or less instantaneous transition if the path is too short.
-            if (Math.abs(w0 - w1) < 0.000001) return this.easeTo(options);
+            if (Math.abs(w0 - w1) < 0.000001) return this.setCamera(cameraOptions, util.extend({type: 'ease'}, animationOptions)); // TODO: this creates an endless loop
 
             const k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
@@ -688,18 +581,20 @@ class Camera extends Evented {
             w = function(s) { return Math.exp(k * rho * s); };
         }
 
-        if ('duration' in options) {
-            options.duration = +options.duration;
+        if ('duration' in animationOptions) {
+            animationOptions.duration = +animationOptions.duration;
         } else {
-            const V = 'screenSpeed' in options ? +options.screenSpeed / rho : +options.speed;
-            options.duration = 1000 * S / V;
+            const V = 'screenSpeed' in animationOptions ? +animationOptions.screenSpeed / rho : +animationOptions.speed;
+            animationOptions.duration = 1000 * S / V;
         }
 
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
         if (startPitch !== pitch) this.pitching = true;
 
-        this.fire('movestart', eventData);
+        if (!animationOptions.noMoveStart) {
+            this.fire('movestart', eventData);
+        }
         this.fire('zoomstart', eventData);
 
         this._ease(function (k) {
@@ -732,7 +627,7 @@ class Camera extends Evented {
 
             this.fire('zoomend', eventData);
             this.fire('moveend', eventData);
-        }, options);
+        }, animationOptions);
 
         return this;
     }
@@ -741,28 +636,16 @@ class Camera extends Evented {
         return !!this._abortFn;
     }
 
-    /**
-     * Stops any animated transition underway.
-     *
-     * @memberof Map#
-     * @returns {Map} `this`
-     */
-    stop() {
-        if (this._abortFn) {
-            this._abortFn();
-            this._finishEase();
-        }
-        return this;
-    }
+    // used to calculate camera options based on a LatLngBounds object
 
-    _ease(frame, finish, options) {
+    _ease(frame, finish, animationOptions) {
         this._finishFn = finish;
         this._abortFn = browser.timed(function (t) {
-            frame.call(this, options.easing(t));
+            frame.call(this, animationOptions.easing(t));
             if (t === 1) {
                 this._finishEase();
             }
-        }, options.animate === false ? 0 : options.duration, this);
+        }, animationOptions.duration, this);
     }
 
     _finishEase() {
@@ -807,6 +690,7 @@ class Camera extends Evented {
 
         return easing;
     }
+
 }
 
 /**

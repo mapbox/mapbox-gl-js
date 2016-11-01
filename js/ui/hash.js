@@ -45,11 +45,13 @@ class Hash {
     _onHashChange() {
         const loc = window.location.hash.replace('#', '').split('/');
         if (loc.length >= 3) {
-            this._map.jumpTo({
+            this._map.setCamera({
                 center: [+loc[2], +loc[1]],
                 zoom: +loc[0],
                 bearing: +(loc[3] || 0),
                 pitch: +(loc[4] || 0)
+            },{
+                type: 'none'
             });
             return true;
         }

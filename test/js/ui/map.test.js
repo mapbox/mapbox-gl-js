@@ -360,34 +360,6 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('#getBounds', (t) => {
-        const map = createMap({ zoom: 0 });
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lng.toFixed(10)), 0, 'getBounds');
-        t.deepEqual(parseFloat(map.getBounds().getCenter().lat.toFixed(10)), 0, 'getBounds');
-
-        t.deepEqual(toFixed(map.getBounds().toArray()), toFixed([
-            [ -70.31249999999976, -57.326521225216965 ],
-            [ 70.31249999999977, 57.32652122521695 ] ]));
-
-        t.test('rotated bounds', (t) => {
-            const map = createMap({ zoom: 1, bearing: 45 });
-            t.deepEqual(
-                toFixed([[-49.718445552178764, 0], [49.7184455522, 0]]),
-                toFixed(map.getBounds().toArray())
-            );
-            t.end();
-        });
-        t.end();
-
-        function toFixed(bounds) {
-            const n = 10;
-            return [
-                [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
-                [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
-            ];
-        }
-    });
-
     t.test('#setMaxBounds', (t) => {
         t.test('constrains map bounds', (t) => {
             const map = createMap({zoom:0});

@@ -124,11 +124,8 @@ class KeyboardHandler {
         const map = this._map;
         const zoom = map.getZoom();
 
-        const easeOptions = {
-            duration: 300,
-            delayEndEvents: 500,
-            easing: easeOut,
 
+        const cameraOptions = {
             zoom: zoomDir ? Math.round(zoom) + zoomDir * (e.shiftKey ? 2 : 1) : zoom,
             bearing: map.getBearing() + bearingDir * bearingStep,
             pitch: map.getPitch() + pitchDir * pitchStep,
@@ -136,7 +133,14 @@ class KeyboardHandler {
             center: map.getCenter()
         };
 
-        map.easeTo(easeOptions, {originalEvent: e});
+        const animationOptions = {
+            type: 'ease',
+            duration: 300,
+            delayEndEvents: 500,
+            easing: easeOut
+        };
+
+        map.setCamera(cameraOptions, animationOptions, {originalEvent: e});
     }
 }
 

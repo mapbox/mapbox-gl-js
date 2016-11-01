@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+        #buttons {
+            position: absolute;
+            top:0;
+            left:0;
+            padding:10px;
+        }
+        button {
+            background: white;
+            display: block;
+            width: 150px;
+            border: 1px solid #333;
+            color: #333;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+        #buffer {
+            position: absolute;
+            top:100px;
+            left:0;
+            pointer-events: none;
+        }
+        #buffer div {
+            background-color: #fff;
+            padding: 5px 0;
+            text-indent: 10px;
+            white-space: nowrap;
+            text-shadow:
+               -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                 1px 1px 0 #fff;
+        }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+<div id='buttons'>
+<!--     <button id="fitBoundsNone">fitBounds [none]</button>
+    <button id="fitBoundsEase">fitBounds [ease]</button>
+    <button id="fitBoundsFly">fitBounds [fly]</button> -->
+    <button id="setCameraNone">setCamera [none]</button>
+    <button id="setCameraEase">setCamera [ease]</button>
+    <button id="setCameraFly">setCamera [fly]</button>
+    <button id="panBy">panBy</button>
+    <button id="getCamera">getCamera [log to console]</button>
+    <button id="fitBounds">fitBounds [none]</button>
+    <button id="rotate10">rotate 10 degrees</button>
+</div>
+
+<div id='buffer' style="display:none">
+    <em>Waiting for data...</em>
+</div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+
+<script>
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v9',
+    hash: true
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+map.addControl(new mapboxgl.GeolocateControl());
+map.addControl(new mapboxgl.ScaleControl());
+
+var MSP = [-93.27180839989352, 44.9676697084098];
+var bounds = [[-93.07408655538306, 44.925490471831495], [-93.04896352361918, 44.94316162786302]];
+
+document.getElementById('setCameraNone').onclick = function() {
+    map.setCamera({ center: MSP }, { type: 'none' });
+};
+
+document.getElementById('setCameraEase').onclick = function() {
+    map.setCamera({ center: MSP }, { type: 'ease' });
+};
+
+document.getElementById('setCameraFly').onclick = function() {
+    map.setCamera({ center: MSP }, { type: 'fly' });
+};
+
+document.getElementById('panBy').onclick = function() {
+    map.panBy([200, 0]);
+};
+
+document.getElementById('getCamera').onclick = function() {
+    console.log(map.getCamera());
+};
+
+document.getElementById('fitBounds').onclick = function() {
+    map.fitBounds(bounds);
+};
+
+document.getElementById('rotate10').onclick = function() {
+    map.setCamera({bearing: map.getBearing() + 10}, {type: 'ease'});
+};
+</script>
+
+</body>
+</html>

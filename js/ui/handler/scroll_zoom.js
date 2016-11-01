@@ -135,9 +135,12 @@ class ScrollZoomHandler {
         const fromScale = map.ease ? map.ease.to : map.transform.scale,
             targetZoom = map.transform.scaleZoom(fromScale * scale);
 
-        map.zoomTo(targetZoom, {
-            duration: this._type === 'wheel' ? 200 : 0,
-            around: map.unproject(this._pos),
+        map.setCamera({
+            zoom: targetZoom,
+            around: map.unproject(this._pos)
+        }, {
+            type: 'ease',
+            duration: this._type === 'wheel' ? 200 : 1,
             delayEndEvents: 200,
             smoothEasing: true
         }, { originalEvent: e });
@@ -148,7 +151,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired just before the map begins a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#setCamera](#Map#setCamera).
  *
  * @event zoomstart
  * @memberof Map
@@ -158,7 +161,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired repeatedly during an animated transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#setCamera](#Map#setCamera).
  *
  * @event zoom
  * @memberof Map
@@ -169,7 +172,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired just after the map completes a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as [Map#setCamera](#Map#setCamera).
  *
  * @event zoomend
  * @memberof Map

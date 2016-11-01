@@ -238,6 +238,12 @@ class Transform {
         this.center = this.pointLocation(point);
     }
 
+    /**
+     * Place a lnglat point at a specified screen point
+     *
+     * @param {LngLat} lnglat location
+     * @param {Point} screen point
+     */
     setLocationAtPoint(lnglat, point) {
         const c = this.locationCoordinate(lnglat);
         const coordAtPoint = this.pointCoordinate(point);

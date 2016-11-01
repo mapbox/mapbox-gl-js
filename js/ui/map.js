@@ -178,12 +178,12 @@ class Map extends Camera {
         this._hash = options.hash && (new Hash()).addTo(this);
         // don't set position from options if set through hash
         if (!this._hash || !this._hash._onHashChange()) {
-            this.jumpTo({
+            this.setCamera({
                 center: options.center,
                 zoom: options.zoom,
                 bearing: options.bearing,
                 pitch: options.pitch
-            });
+            }, {});
         }
 
         this._classes = [];
@@ -197,7 +197,7 @@ class Map extends Camera {
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
-                this.jumpTo(this.style.stylesheet);
+                this.setCamera(this.style.stylesheet);
             }
             this.style.update(this._classes, {transition: false});
         });
@@ -325,24 +325,6 @@ class Map extends Camera {
             .fire('move')
             .fire('resize')
             .fire('moveend');
-    }
-
-    /**
-     * Returns the map's geographical bounds.
-     *
-     * @returns {LngLatBounds} The map's geographical bounds.
-     */
-    getBounds() {
-        const bounds = new LngLatBounds(
-            this.transform.pointLocation(new Point(0, this.transform.height)),
-            this.transform.pointLocation(new Point(this.transform.width, 0)));
-
-        if (this.transform.angle || this.transform.pitch) {
-            bounds.extend(this.transform.pointLocation(new Point(this.transform.size.x, 0)));
-            bounds.extend(this.transform.pointLocation(new Point(0, this.transform.size.y)));
-        }
-
-        return bounds;
     }
 
     /**

@@ -130,20 +130,21 @@ class TouchZoomRotateHandler {
             }
 
         } else {
-            const param = { duration: 0, around: map.unproject(p) };
+            const cameraParams = { around: map.unproject(p) };
+            const animationParams = { type: 'ease', duration: 0 };
 
             if (this._gestureIntent === 'rotate') {
-                param.bearing = this._startBearing + bearing;
+                cameraParam.bearing = this._startBearing + bearing;
             }
             if (this._gestureIntent === 'zoom' || this._gestureIntent === 'rotate') {
-                param.zoom = map.transform.scaleZoom(this._startScale * scale);
+                cameraParam.zoom = map.transform.scaleZoom(this._startScale * scale);
             }
 
             map.stop();
             this._drainInertiaBuffer();
             this._inertia.push([Date.now(), scale, p]);
 
-            map.easeTo(param, { originalEvent: e });
+            map.setCamera(cameraParams, animationParams, { originalEvent: e });
         }
 
         e.preventDefault();
@@ -193,11 +194,13 @@ class TouchZoomRotateHandler {
             targetScale = 0;
         }
 
-        map.easeTo({
+        map.setCamera({
             zoom: targetScale,
-            duration: duration,
-            easing: inertiaEasing,
             around: map.unproject(p)
+        },{
+            type: 'ease',
+            duration: duration,
+            easing: inertiaEasing
         }, { originalEvent: e });
     }
 

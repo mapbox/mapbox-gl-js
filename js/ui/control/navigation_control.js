@@ -28,9 +28,9 @@ class NavigationControl extends Control {
         const container = this._container = DOM.create('div', `${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
-        this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, 'Zoom In', map.zoomIn.bind(map));
-        this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, 'Zoom Out', map.zoomOut.bind(map));
-        this._compass = this._createButton(`${className}-icon ${className}-compass`, 'Reset North', map.resetNorth.bind(map));
+        this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, 'Zoom In', this._zoomIn.bind(map));
+        this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, 'Zoom Out', this._zoomOut.bind(map));
+        this._compass = this._createButton(`${className}-icon ${className}-compass`, 'Reset North', this._setNorth.bind(map));
 
         this._compassArrow = DOM.create('span', 'arrow', this._compass);
 
@@ -45,6 +45,10 @@ class NavigationControl extends Control {
 
         return container;
     }
+
+    _zoomIn() { map.setCamera({zoom: map.getZoom() + 1}, {type: 'ease'}); }
+    _zoomOut() { map.setCamera({zoom: map.getZoom() - 1}, {type: 'ease'}); }
+    _setNorth() { map.setCamera({bearing: 0}, {type: 'ease'}); }
 
     _onContextMenu(e) {
         e.preventDefault();

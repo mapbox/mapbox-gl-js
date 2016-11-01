@@ -46,11 +46,10 @@ class DoubleClickZoomHandler {
     }
 
     _onDblClick(e) {
-        this._map.zoomTo(
-            this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1),
-            {around: e.lngLat},
-            e
-        );
+        this._map.setCamera({
+            zoom: this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1), 
+            around: e.lngLat
+        }, {type: 'ease'}, e);
     }
 }
 
