@@ -164,28 +164,19 @@ function drawExtrusion(painter, source, layer, coord) {
         gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);
     }
 
-    setMatrix(program, painter, coord, tile, layer);
+    painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+        coord.posMatrix,
+        tile,
+        layer.paint['fill-extrusion-translate'],
+        layer.paint['fill-extrusion-translate-anchor']
+    ));
+
     setLight(program, painter);
 
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
-}
-
-function setMatrix(program, painter, coord, tile, layer) {
-    const zScale = Math.pow(2, painter.transform.zoom) / 50000;
-
-    painter.gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
-        mat4.create(),
-        painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['fill-extrusion-translate'],
-            layer.paint['fill-extrusion-translate-anchor']
-        ),
-        [1, 1, zScale, 1])
-    );
 }
 
 function setLight(program, painter) {

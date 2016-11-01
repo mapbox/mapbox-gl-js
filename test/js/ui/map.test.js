@@ -382,9 +382,14 @@ test('Map', (t) => {
         function toFixed(bounds) {
             const n = 10;
             return [
-                [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
-                [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
+                [normalizeFixed(bounds[0][0], n), normalizeFixed(bounds[0][1], n)],
+                [normalizeFixed(bounds[1][0], n), normalizeFixed(bounds[1][1], n)]
             ];
+        }
+
+        function normalizeFixed(num, n) {
+            // workaround for "-0.0000000000" ≠ "0.0000000000"
+            return parseFloat(num.toFixed(n)).toFixed(n);
         }
     });
 
