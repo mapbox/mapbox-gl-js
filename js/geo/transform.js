@@ -456,7 +456,7 @@ class Transform {
         mat4.scale(m, m, [1, 1,
             // scale vertically to meters per pixel (inverse of ground resolution)
             (Math.pow(2, this.zoom) * 512) / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180)))),
-        1]);
+            1]);
 
         this.projMatrix = m;
 
