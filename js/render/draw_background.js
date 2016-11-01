@@ -1,6 +1,6 @@
 'use strict';
 
-const setPattern = require('./set_pattern');
+const pattern = require('./pattern');
 
 module.exports = drawBackground;
 
@@ -21,7 +21,7 @@ function drawBackground(painter, sourceCache, layer) {
     let program;
     if (image) {
         program = painter.useProgram('fillPattern');
-        setPattern(image, painter, program);
+        pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
     } else {
         program = painter.useProgram('fill', painter.basicFillProgramConfiguration);
@@ -35,7 +35,7 @@ function drawBackground(painter, sourceCache, layer) {
 
     for (const coord of coords) {
         if (image) {
-            setPattern.setTile({coord, tileSize}, painter, program, true);
+            pattern.setTile({coord, tileSize}, painter, program);
         }
         gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
