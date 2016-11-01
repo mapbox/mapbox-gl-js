@@ -7,7 +7,7 @@ const Point = require('point-geometry');
 const Evented = require('../util/evented');
 const ajax = require('../util/ajax');
 const EXTENT = require('../data/extent');
-const RasterBoundsArray = require('../render/draw_raster').RasterBoundsArray;
+const RasterBoundsArray = require('../data/raster_bounds_array');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('../render/vertex_array_object');
 

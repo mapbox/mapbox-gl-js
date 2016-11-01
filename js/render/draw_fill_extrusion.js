@@ -5,7 +5,7 @@ const mat4 = require('gl-matrix').mat4;
 const vec3 = require('gl-matrix').vec3;
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
-const StructArrayType = require('../util/struct_array');
+const PosArray = require('../data/pos_array');
 const pattern = require('./pattern');
 
 module.exports = draw;
@@ -96,12 +96,6 @@ ExtrusionTexture.prototype.unbindFramebuffer = function() {
     this.painter.saveViewportTexture(this.texture);
 };
 
-ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
-    members: [
-        { name: 'a_pos', type: 'Int16', components: 2 }
-    ]
-});
-
 ExtrusionTexture.prototype.renderToMap = function() {
     const gl = this.gl;
     const painter = this.painter;
@@ -128,12 +122,12 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.uniform1i(program.u_xdim, painter.width);
     gl.uniform1i(program.u_ydim, painter.height);
 
-    const array = new this.TextureBoundsArray();
+    const array = new PosArray();
     array.emplaceBack(0, 0);
     array.emplaceBack(painter.width, 0);
     array.emplaceBack(0, painter.height);
     array.emplaceBack(painter.width, painter.height);
-    const buffer = new Buffer(array.serialize(), this.TextureBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+    const buffer = new Buffer(array.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
 
     const vao = new VertexArrayObject();
     vao.bind(gl, program, buffer);

@@ -1,7 +1,6 @@
 'use strict';
 
 const util = require('../util/util');
-const StructArrayType = require('../util/struct_array');
 
 module.exports = drawRaster;
 
@@ -27,13 +26,6 @@ function drawRaster(painter, sourceCache, layer, coords) {
 
     gl.depthFunc(gl.LEQUAL);
 }
-
-drawRaster.RasterBoundsArray = new StructArrayType({
-    members: [
-        { name: 'a_pos', type: 'Int16', components: 2 },
-        { name: 'a_texture_pos', type: 'Int16', components: 2 }
-    ]
-});
 
 function drawRasterTile(painter, sourceCache, layer, coord) {
 

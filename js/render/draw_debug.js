@@ -6,6 +6,7 @@ const mat4 = require('gl-matrix').mat4;
 const EXTENT = require('../data/extent');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
+const PosArray = require('../data/pos_array');
 
 module.exports = drawDebug;
 
@@ -33,11 +34,11 @@ function drawDebugTile(painter, sourceCache, coord) {
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
     const vertices = textVertices(coord.toString(), 50, 200, 5);
-    const debugTextArray = new painter.PosArray();
+    const debugTextArray = new PosArray();
     for (let v = 0; v < vertices.length; v += 2) {
         debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
     }
-    const debugTextBuffer = new Buffer(debugTextArray.serialize(), painter.PosArray.serialize(), Buffer.BufferType.VERTEX);
+    const debugTextBuffer = new Buffer(debugTextArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
     const debugTextVAO = new VertexArrayObject();
     debugTextVAO.bind(gl, program, debugTextBuffer);
     gl.uniform4f(program.u_color, 1, 1, 1, 1);
