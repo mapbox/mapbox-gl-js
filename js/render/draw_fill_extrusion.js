@@ -14,6 +14,7 @@ function draw(painter, source, layer, coords) {
     if (layer.paint['fill-extrusion-opacity'] === 0) return;
     const gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
+    gl.enable(gl.DEPTH_TEST);
     painter.depthMask(true);
 
     // Create a new texture to which to render the extrusion layer. This approach
