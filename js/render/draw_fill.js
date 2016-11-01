@@ -91,7 +91,10 @@ function setFillProgram(programId, usePattern, painter, layerData, layer, tile, 
     } else {
         program = painter.useProgram(`${programId}Pattern`);
         painter.gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
-        setPattern(layer.paint['fill-pattern'], tile, coord, painter, program, false);
+        if (firstTile || program !== prevProgram) {
+            setPattern(layer.paint['fill-pattern'], painter, program);
+        }
+        setPattern.setTile(tile, painter, program, false);
     }
     painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,

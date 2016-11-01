@@ -4,7 +4,7 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = setPattern;
 
-function setPattern(image, tile, coord, painter, program, includeHeightFactor) {
+function setPattern(image, painter, program) {
     const gl = painter.gl;
 
     const imagePosA = painter.spriteAtlas.getPosition(image.from, true);
@@ -17,25 +17,31 @@ function setPattern(image, tile, coord, painter, program, includeHeightFactor) {
     gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
     gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
     gl.uniform1f(program.u_mix, image.t);
-
-    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
     gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
     gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
     gl.uniform1f(program.u_scale_a, image.fromScale);
     gl.uniform1f(program.u_scale_b, image.toScale);
 
-    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom - tile.coord.z);
+    gl.activeTexture(gl.TEXTURE0);
+    painter.spriteAtlas.bind(gl, true);
+}
 
-    const pixelX = tileSizeAtNearestZoom * (tile.coord.x + coord.w * Math.pow(2, tile.coord.z));
+setPattern.setTile = function (tile, painter, program, isExtruded) {
+    const gl = painter.gl;
+
+    gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
+
+    const numTiles = Math.pow(2, tile.coord.z);
+    const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
+
+    const pixelX = tileSizeAtNearestZoom * (tile.coord.x + tile.coord.w * numTiles);
     const pixelY = tileSizeAtNearestZoom * tile.coord.y;
+
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
 
-    if (includeHeightFactor) {
-        gl.uniform1f(program.u_height_factor, -Math.pow(2, painter.transform.tileZoom) / tileSizeAtNearestZoom >> 3);
+    if (isExtruded) {
+        gl.uniform1f(program.u_height_factor, -numTiles / tile.tileSize / 8);
     }
-
-    gl.activeTexture(gl.TEXTURE0);
-    painter.spriteAtlas.bind(gl, true);
-}
+};

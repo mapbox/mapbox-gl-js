@@ -159,7 +159,8 @@ function drawExtrusion(painter, source, layer, coord) {
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
-        setPattern(image, tile, coord, painter, program, true);
+        setPattern(image, painter, program);
+        setPattern.setTile(tile, painter, program, true);
     }
 
     setMatrix(program, painter, coord, tile, layer);
