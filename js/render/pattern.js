@@ -2,9 +2,7 @@
 
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
-module.exports = setPattern;
-
-function setPattern(image, painter, program) {
+exports.prepare = function (image, painter, program) {
     const gl = painter.gl;
 
     const imagePosA = painter.spriteAtlas.getPosition(image.from, true);
@@ -24,9 +22,9 @@ function setPattern(image, painter, program) {
 
     gl.activeTexture(gl.TEXTURE0);
     painter.spriteAtlas.bind(gl, true);
-}
+};
 
-setPattern.setTile = function (tile, painter, program, isExtruded) {
+exports.setTile = function (tile, painter, program) {
     const gl = painter.gl;
 
     gl.uniform1f(program.u_tile_units_to_pixels, 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom));
@@ -40,8 +38,4 @@ setPattern.setTile = function (tile, painter, program, isExtruded) {
     // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
     gl.uniform2f(program.u_pixel_coord_upper, pixelX >> 16, pixelY >> 16);
     gl.uniform2f(program.u_pixel_coord_lower, pixelX & 0xFFFF, pixelY & 0xFFFF);
-
-    if (isExtruded) {
-        gl.uniform1f(program.u_height_factor, -numTiles / tile.tileSize / 8);
-    }
 };

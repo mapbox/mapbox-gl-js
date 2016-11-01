@@ -6,7 +6,7 @@ const vec3 = require('gl-matrix').vec3;
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
 const StructArrayType = require('../util/struct_array');
-const setPattern = require('./set_pattern');
+const pattern = require('./pattern');
 
 module.exports = draw;
 
@@ -159,8 +159,9 @@ function drawExtrusion(painter, source, layer, coord) {
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
-        setPattern(image, painter, program);
-        setPattern.setTile(tile, painter, program, true);
+        pattern.prepare(image, painter, program);
+        pattern.setTile(tile, painter, program);
+        gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);
     }
 
     setMatrix(program, painter, coord, tile, layer);

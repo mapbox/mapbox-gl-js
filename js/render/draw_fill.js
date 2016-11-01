@@ -1,6 +1,6 @@
 'use strict';
 
-const setPattern = require('./set_pattern');
+const pattern = require('./pattern');
 
 module.exports = drawFill;
 
@@ -92,9 +92,9 @@ function setFillProgram(programId, usePattern, painter, layerData, layer, tile, 
         program = painter.useProgram(`${programId}Pattern`);
         painter.gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
         if (firstTile || program !== prevProgram) {
-            setPattern(layer.paint['fill-pattern'], painter, program);
+            pattern.prepare(layer.paint['fill-pattern'], painter, program);
         }
-        setPattern.setTile(tile, painter, program, false);
+        pattern.setTile(tile, painter, program);
     }
     painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
         coord.posMatrix, tile,
