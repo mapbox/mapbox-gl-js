@@ -23,6 +23,9 @@ npm run lint-docs
 npm run build-min
 npm run build-dev
 
+# run flow to check types
+npm run test-flow
+
 # run unit, render & query tests with coverage
 npm run test-cov
 
