@@ -42,22 +42,23 @@ function drawFill(painter, sourceCache, layer, coords) {
 }
 
 function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
+    let firstTile = true;
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
 
         painter.enableTileClippingMask(coord);
-
-        drawFn(painter, sourceCache, layer, tile, coord, bucket.buffers);
+        drawFn(painter, sourceCache, layer, tile, coord, bucket.buffers, firstTile);
+        firstTile = false;
     }
 }
 
-function drawFillTile(painter, sourceCache, layer, tile, coord, buffers) {
+function drawFillTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
     const gl = painter.gl;
     const layerData = buffers.layerData[layer.id];
 
-    const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, layerData, layer, tile, coord);
+    const program = setFillProgram('fill', layer.paint['fill-pattern'], painter, layerData, layer, tile, coord, firstTile);
 
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
@@ -65,12 +66,12 @@ function drawFillTile(painter, sourceCache, layer, tile, coord, buffers) {
     }
 }
 
-function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers) {
+function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers, firstTile) {
     const gl = painter.gl;
     const layerData = buffers.layerData[layer.id];
     const usePattern = layer.paint['fill-pattern'] && !layer.getPaintProperty('fill-outline-color');
 
-    const program = setFillProgram('fillOutline', usePattern, painter, layerData, layer, tile, coord);
+    const program = setFillProgram('fillOutline', usePattern, painter, layerData, layer, tile, coord, firstTile);
     gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     for (const segment of buffers.segments2) {
@@ -79,11 +80,14 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, buffers) {
     }
 }
 
-function setFillProgram(programId, usePattern, painter, layerData, layer, tile, coord) {
+function setFillProgram(programId, usePattern, painter, layerData, layer, tile, coord, firstTile) {
     let program;
+    const prevProgram = painter.currentProgram;
     if (!usePattern) {
         program = painter.useProgram(programId, layerData.programConfiguration);
-        layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+        if (firstTile || program !== prevProgram) {
+            layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
+        }
     } else {
         program = painter.useProgram(`${programId}Pattern`);
         painter.gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
