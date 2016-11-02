@@ -56,7 +56,7 @@
     "line": 74
   },
   {
-    "message": "layers[12].type: expected one of [fill, line, symbol, circle, raster, background], invalid found",
+    "message": "layers[12].type: expected one of [fill, line, symbol, circle, fill-extrusion, raster, background], invalid found",
     "line": 81
   },
   {

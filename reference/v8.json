@@ -65,7 +65,7 @@
     },
     "sprite": {
       "type": "string",
-      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended. This property is required if any layer uses the `background-pattern`, `fill-pattern`, `line-pattern`, or `icon-image` properties.",
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended. This property is required if any layer uses the `background-pattern`, `fill-pattern`, `line-pattern`, `fill-extrusion-pattern`, or `icon-image` properties.",
       "example": "mapbox://sprites/mapbox/bright-v8"
     },
     "glyphs": {
@@ -283,6 +283,9 @@
         "circle": {
             "doc": "A filled circle."
         },
+        "fill-extrusion": {
+            "doc": "An extruded (3D) polygon."
+        },
         "raster": {
             "doc": "Raster map textures such as satellite imagery."
         },
@@ -341,6 +344,7 @@
     "layout_fill",
     "layout_line",
     "layout_circle",
+    "layout_fill-extrusion",
     "layout_symbol",
     "layout_raster",
     "layout_background"
@@ -413,6 +417,28 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        }
+      }
+    }
+  },
+  "layout_fill-extrusion": {
+    "visibility": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
         }
       }
     }
@@ -1544,6 +1570,7 @@
     "paint_fill",
     "paint_line",
     "paint_circle",
+    "paint_fill-extrusion",
     "paint_symbol",
     "paint_raster",
     "paint_background"
@@ -1697,23 +1724,120 @@
           "android": "2.0.1"
         }
       }
+    }
+  },
+  "paint_fill-extrusion": {
+    "fill-extrusion-opacity": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
     },
-    "fill-extrude-height": {
+    "fill-extrusion-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The base color of the extruded fill. The extrusion's surfaces will be shaded differently based on this color in combination with the root `light` settings. If this color is specified as `rgba` with an alpha component, the alpha component will be ignored; use `fill-extrusion-opacity` to set layer opacity.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up (on the flat plane), respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": false,
+      "values": {
+        "map": {
+            "doc": "The fill extrusion is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The fill extrusion is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "fill-extrusion-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-pattern": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-height": {
       "type": "number",
       "function": "interpolated",
       "zoom-function": true,
       "property-function": true,
       "default": 0,
       "minimum": 0,
-      "doc": "The height with which to extrude this fill layer.",
+      "doc": "The height with which to extrude this layer.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.26.0"
+          "js": "0.27.0"
         }
       }
     },
-    "fill-extrude-base": {
+    "fill-extrusion-base": {
       "type": "number",
       "function": "interpolated",
       "zoom-function": true,
@@ -1729,7 +1853,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.26.0"
+          "js": "0.27.0"
         }
       }
     }
