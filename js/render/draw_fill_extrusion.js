@@ -127,7 +127,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
     array.emplaceBack(painter.width, 0);
     array.emplaceBack(0, painter.height);
     array.emplaceBack(painter.width, painter.height);
-    const buffer = new Buffer(array.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+    const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
 
     const vao = new VertexArrayObject();
     vao.bind(gl, program, buffer);

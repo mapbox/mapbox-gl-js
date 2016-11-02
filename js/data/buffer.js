@@ -32,6 +32,10 @@ class Buffer {
         this.arrayType = arrayType;
     }
 
+    static fromStructArray(array, type) {
+        return new Buffer(array.serialize(), array.constructor.serialize(), type);
+    }
+
     /**
      * Bind this buffer to a WebGL context.
      * @param gl The WebGL context

@@ -38,7 +38,7 @@ function drawDebugTile(painter, sourceCache, coord) {
     for (let v = 0; v < vertices.length; v += 2) {
         debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
     }
-    const debugTextBuffer = new Buffer(debugTextArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+    const debugTextBuffer = Buffer.fromStructArray(debugTextArray, Buffer.BufferType.VERTEX);
     const debugTextVAO = new VertexArrayObject();
     debugTextVAO.bind(gl, program, debugTextBuffer);
     gl.uniform4f(program.u_color, 1, 1, 1, 1);

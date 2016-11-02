@@ -21,7 +21,7 @@ test('Buffer', (t) => {
         array.emplaceBack(1, 1, 1);
         array.emplaceBack(1, 1, 1);
 
-        const buffer = new Buffer(array.serialize(), TestArray.serialize(), Buffer.BufferType.VERTEX);
+        const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
 
         t.deepEqual(buffer.attributes, [
             {
