@@ -91,7 +91,7 @@ class Painter {
         tileExtentArray.emplaceBack(EXTENT, 0);
         tileExtentArray.emplaceBack(0, EXTENT);
         tileExtentArray.emplaceBack(EXTENT, EXTENT);
-        this.tileExtentBuffer = new Buffer(tileExtentArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+        this.tileExtentBuffer = Buffer.fromStructArray(tileExtentArray, Buffer.BufferType.VERTEX);
         this.tileExtentVAO = new VertexArrayObject();
         this.tileExtentPatternVAO = new VertexArrayObject();
 
@@ -101,7 +101,7 @@ class Painter {
         debugArray.emplaceBack(EXTENT, EXTENT);
         debugArray.emplaceBack(0, EXTENT);
         debugArray.emplaceBack(0, 0);
-        this.debugBuffer = new Buffer(debugArray.serialize(), PosArray.serialize(), Buffer.BufferType.VERTEX);
+        this.debugBuffer = Buffer.fromStructArray(debugArray, Buffer.BufferType.VERTEX);
         this.debugVAO = new VertexArrayObject();
 
         const rasterBoundsArray = new RasterBoundsArray();
@@ -109,7 +109,7 @@ class Painter {
         rasterBoundsArray.emplaceBack(EXTENT, 0, 32767, 0);
         rasterBoundsArray.emplaceBack(0, EXTENT, 0, 32767);
         rasterBoundsArray.emplaceBack(EXTENT, EXTENT, 32767, 32767);
-        this.rasterBoundsBuffer = new Buffer(rasterBoundsArray.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+        this.rasterBoundsBuffer = Buffer.fromStructArray(rasterBoundsArray, Buffer.BufferType.VERTEX);
         this.rasterBoundsVAO = new VertexArrayObject();
     }
 

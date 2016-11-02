@@ -138,7 +138,7 @@ class ImageSource extends Evented {
 
         this.tile.buckets = {};
 
-        this.tile.boundsBuffer = new Buffer(array.serialize(), RasterBoundsArray.serialize(), Buffer.BufferType.VERTEX);
+        this.tile.boundsBuffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
         this.tile.state = 'loaded';
     }
