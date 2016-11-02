@@ -112,8 +112,8 @@ class Transform {
         this.scale = this.zoomScale(z);
         this.tileZoom = Math.floor(z);
         this.zoomFraction = z - this.tileZoom;
-        this._calcMatrices();
         this._constrain();
+        this._calcMatrices();
     }
 
     get center() { return this._center; }
@@ -121,8 +121,8 @@ class Transform {
         if (center.lat === this._center.lat && center.lng === this._center.lng) return;
         this._unmodified = false;
         this._center = center;
-        this._calcMatrices();
         this._constrain();
+        this._calcMatrices();
     }
 
     /**
@@ -177,8 +177,8 @@ class Transform {
         this.height = height;
 
         this.pixelsToGLUnits = [2 / width, -2 / height];
-        this._calcMatrices();
         this._constrain();
+        this._calcMatrices();
     }
 
     get unmodified() { return this._unmodified; }

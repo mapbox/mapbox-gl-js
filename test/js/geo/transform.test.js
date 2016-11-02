@@ -45,6 +45,13 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('does not throw on bad center', (t) => {
+        const transform = new Transform();
+        transform.resize(500, 500);
+        transform.center = {lng: 50, lat: -90};
+        t.end();
+    });
+
     t.test('panBy', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);
