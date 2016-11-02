@@ -1462,7 +1462,7 @@ function removeNode(node) {
 
  /**
   * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
-  * and [`Map#data`](#Map.event:dataloading) events. Possible values for
+  * and [`Map#dataloading`](#Map.event:dataloading) events. Possible values for
   * `dataType`s are:
   *
   * - `'source'`: The non-tile data associated with any source

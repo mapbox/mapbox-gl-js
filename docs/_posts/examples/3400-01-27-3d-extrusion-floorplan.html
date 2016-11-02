@@ -1,0 +1,57 @@
+---
+layout: example
+category: example
+title: Extrude polygons for 3D indoor mapping.
+description: Create a 3D indoor map with the fill-extrusion type.
+tags:
+  - layers
+---
+<div id='map'>
+</div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-87.61694, 41.86625],
+    zoom: 15.99,
+    pitch: 40,
+    bearing: 20
+});
+
+map.on('load', function() {
+
+    // Geojson Data source used in vector tiles, documented at
+    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+    map.addSource("museumData", {
+        'type': 'geojson',
+        'data': '{{site.baseurl}}/assets/data/indoor-3d-map.geojson'
+    });
+
+    map.addLayer({
+        'id': 'room-extrusion',
+        'type': 'fill-extrusion',
+        'source': 'museumData',
+        'paint': {
+            // See the Mapbox Style Spec for details on property functions
+            // https://www.mapbox.com/mapbox-gl-style-spec/#types-function
+            'fill-extrusion-color': {
+                // Get the fill-extrusion-color from the source 'color' property.
+                'property': 'color',
+                'type': 'identity'
+            },
+            'fill-extrusion-height': {
+                // Get fill-extrusion-height from the source 'height' property.
+                'property': 'height',
+                'type': 'identity'
+            },
+            'fill-extrusion-base': {
+                // Get fill-extrusion-base from the source 'base_height' property.
+                'property': 'base_height',
+                'type': 'identity'
+            },
+            // Make extrusions slightly opaque for see through indoor walls.
+            'fill-extrusion-opacity': 0.5
+        }
+    });
+});
+</script>
