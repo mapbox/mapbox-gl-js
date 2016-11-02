@@ -42,14 +42,11 @@ class ImageSprite extends Evented {
             }
 
             // premultiply the sprite
-            const data = img.getData();
-            const newdata = img.data = new Uint8Array(data.length);
-            for (let i = 0; i < data.length; i += 4) {
-                const alpha = data[i + 3] / 255;
-                newdata[i + 0] = data[i + 0] * alpha;
-                newdata[i + 1] = data[i + 1] * alpha;
-                newdata[i + 2] = data[i + 2] * alpha;
-                newdata[i + 3] = data[i + 3];
+            for (let i = 0; i < img.data.length; i += 4) {
+                const alpha = img.data[i + 3] / 255;
+                img.data[i + 0] *= alpha;
+                img.data[i + 1] *= alpha;
+                img.data[i + 2] *= alpha;
             }
 
             this.img = img;

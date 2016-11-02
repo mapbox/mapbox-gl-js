@@ -104,9 +104,8 @@ function fakeImage(png) {
     return {
         width: png.width,
         height: png.height,
-        data: png.data.slice(),
-        complete: true,
-        getData: function() { return this.data; }
+        data: new Uint8Array(png.data),
+        complete: true
     };
 }
 
@@ -140,13 +139,8 @@ sinon.stub(ajax, 'getArrayBuffer', (url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            const ab = new ArrayBuffer(body.length);
-            const view = new Uint8Array(ab);
-            for (let i = 0; i < body.length; ++i) {
-                view[i] = body[i];
-            }
-            cache[url] = ab;
-            callback(null, ab);
+            cache[url] = body;
+            callback(null, body);
         } else {
             callback(error || new Error(response.statusCode));
         }
