@@ -1,8 +1,8 @@
 'use strict';
 
-const StructArrayType = require('../util/struct_array');
+const createStructArrayType = require('../util/struct_array');
 
-const PosArray = new StructArrayType({
+const PosArray = createStructArrayType({
     members: [{ name: 'a_pos', type: 'Int16', components: 2 }]
 });
 

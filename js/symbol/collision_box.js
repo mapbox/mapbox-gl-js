@@ -1,6 +1,6 @@
 'use strict';
 
-const StructArrayType = require('../util/struct_array');
+const createStructArrayType = require('../util/struct_array');
 const Point = require('point-geometry');
 
 /**
@@ -39,7 +39,7 @@ const Point = require('point-geometry');
  * @private
  */
 
-const CollisionBoxArray = module.exports = new StructArrayType({
+const CollisionBoxArray = createStructArrayType({
     members: [
         // the box is centered around the anchor point
         { type: 'Int16', name: 'anchorPointX' },
@@ -69,8 +69,11 @@ const CollisionBoxArray = module.exports = new StructArrayType({
         { type: 'Int16', name: 'bbox3' },
 
         { type: 'Float32', name: 'placementScale' }
-    ]});
+    ]
+});
 
 Object.defineProperty(CollisionBoxArray.prototype.StructType.prototype, 'anchorPoint', {
     get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
+
+module.exports = CollisionBoxArray;

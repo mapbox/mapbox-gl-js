@@ -1,6 +1,6 @@
 'use strict';
 
-const StructArrayType = require('../util/struct_array');
+const createStructArrayType = require('../util/struct_array');
 const Point = require('point-geometry');
 
 /*
@@ -12,7 +12,7 @@ const Point = require('point-geometry');
  * @private
  */
 
-const SymbolInstancesArray = module.exports = new StructArrayType({
+const SymbolInstancesArray = createStructArrayType({
     members: [
 
         { type: 'Uint16', name: 'textBoxStartIndex' },
@@ -37,4 +37,4 @@ Object.defineProperty(SymbolInstancesArray.prototype.StructType.prototype, 'anch
     get() { return new Point(this.anchorPointX, this.anchorPointY); }
 });
 
-
+module.exports = SymbolInstancesArray;
