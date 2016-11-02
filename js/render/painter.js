@@ -18,7 +18,7 @@ const draw = {
     circle: require('./draw_circle'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
-    extrusion: require('./draw_extrusion'),
+    'fill-extrusion': require('./draw_fill_extrusion'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug')
@@ -274,12 +274,7 @@ class Painter {
         if (layer.type !== 'background' && !coords.length) return;
         this.id = layer.id;
 
-        let type = layer.type;
-        if (type === 'fill' && layer.isExtruded({zoom: this.transform.zoom})) {
-            type = 'extrusion';
-        }
-
-        draw[type](painter, sourceCache, layer, coords);
+        draw[layer.type](painter, sourceCache, layer, coords);
     }
 
     setDepthSublayer(n) {

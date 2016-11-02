@@ -11,9 +11,10 @@ const pattern = require('./pattern');
 module.exports = draw;
 
 function draw(painter, source, layer, coords) {
-    if (layer.paint['fill-opacity'] === 0) return;
+    if (layer.paint['fill-extrusion-opacity'] === 0) return;
     const gl = painter.gl;
     gl.disable(gl.STENCIL_TEST);
+    gl.enable(gl.DEPTH_TEST);
     painter.depthMask(true);
 
     // Create a new texture to which to render the extrusion layer. This approach
@@ -104,12 +105,12 @@ ExtrusionTexture.prototype.TextureBoundsArray = new StructArrayType({
 ExtrusionTexture.prototype.renderToMap = function() {
     const gl = this.gl;
     const painter = this.painter;
-    const program = painter.useProgram('fillExtrudeTexture');
+    const program = painter.useProgram('extrusionTexture');
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
-    gl.uniform1f(program.u_opacity, this.layer.paint['fill-opacity']);
+    gl.uniform1f(program.u_opacity, this.layer.paint['fill-extrusion-opacity']);
     gl.uniform1i(program.u_texture, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
@@ -151,11 +152,11 @@ function drawExtrusion(painter, source, layer, coord) {
     const buffers = bucket.buffers;
     const gl = painter.gl;
 
-    const image = layer.paint['fill-pattern'];
+    const image = layer.paint['fill-extrusion-pattern'];
 
     const layerData = buffers.layerData[layer.id];
     const programConfiguration = layerData.programConfiguration;
-    const program = painter.useProgram(image ? 'fillExtrudePattern' : 'fillExtrude', programConfiguration);
+    const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
     programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
     if (image) {
@@ -164,28 +165,19 @@ function drawExtrusion(painter, source, layer, coord) {
         gl.uniform1f(program.u_height_factor, -Math.pow(2, coord.z) / tile.tileSize / 8);
     }
 
-    setMatrix(program, painter, coord, tile, layer);
+    painter.gl.uniformMatrix4fv(program.u_matrix, false, painter.translatePosMatrix(
+        coord.posMatrix,
+        tile,
+        layer.paint['fill-extrusion-translate'],
+        layer.paint['fill-extrusion-translate-anchor']
+    ));
+
     setLight(program, painter);
 
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, layerData.paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
-}
-
-function setMatrix(program, painter, coord, tile, layer) {
-    const zScale = Math.pow(2, painter.transform.zoom) / 50000;
-
-    painter.gl.uniformMatrix4fv(program.u_matrix, false, mat4.scale(
-        mat4.create(),
-        painter.translatePosMatrix(
-            coord.posMatrix,
-            tile,
-            layer.paint['fill-translate'],
-            layer.paint['fill-translate-anchor']
-        ),
-        [1, 1, zScale, 1])
-    );
 }
 
 function setLight(program, painter) {
