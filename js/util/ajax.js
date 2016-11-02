@@ -59,15 +59,7 @@ exports.getImage = function(url, callback) {
     return exports.getArrayBuffer(url, (err, imgData) => {
         if (err) return callback(err);
         const img = new window.Image();
-        img.onload = () => {
-            const canvas = window.document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            context.drawImage(img, 0, 0);
-            img.data = context.getImageData(0, 0, img.width, img.height).data;
-            callback(null, img);
-        };
+        img.onload = () => callback(null, img);
         if (!sameOrigin(url)) {
             img.crossOrigin = "Anonymous";
         }

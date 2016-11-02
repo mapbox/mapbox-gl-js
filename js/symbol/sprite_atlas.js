@@ -109,8 +109,8 @@ class SpriteAtlas {
     }
 
     copy(dst, src, wrap) {
-        if (!this.sprite.img.data) return;
-        const srcImg = new Uint32Array(this.sprite.img.data.buffer);
+        if (!this.sprite.imgData) return;
+        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
 
         this.allocate();
         const dstImg = this.data;
@@ -119,7 +119,7 @@ class SpriteAtlas {
 
         copyBitmap(
             /* source buffer */  srcImg,
-            /* source stride */  this.sprite.img.width,
+            /* source stride */  this.sprite.width,
             /* source x */       src.x,
             /* source y */       src.y,
             /* dest buffer */    dstImg,

@@ -6,6 +6,7 @@ const request = require('request');
 const PNG = require('pngjs').PNG;
 const Map = require('../js/ui/map');
 const window = require('../js/util/window');
+const browser = require('../js/util/browser');
 
 module.exports = function(style, options, _callback) {
     let wasCallbackCalled = false;
@@ -100,15 +101,6 @@ function applyOperations(map, operations, callback) {
     }
 }
 
-function fakeImage(png) {
-    return {
-        width: png.width,
-        height: png.height,
-        data: new Uint8Array(png.data),
-        complete: true
-    };
-}
-
 const cache = {};
 
 function cached(data, callback) {
@@ -148,18 +140,22 @@ sinon.stub(ajax, 'getArrayBuffer', (url, callback) => {
 });
 
 sinon.stub(ajax, 'getImage', (url, callback) => {
-    if (cache[url]) return cached(fakeImage(cache[url]), callback);
+    if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             new PNG().parse(body, (err, png) => {
                 if (err) return callback(err);
                 cache[url] = png;
-                callback(null, fakeImage(png));
+                callback(null, png);
             });
         } else {
             callback(error || new Error(response.statusCode));
         }
     });
+});
+
+sinon.stub(browser, 'getImageData', (img) => {
+    return new Uint8Array(img.data);
 });
 
 // Hack: since node doesn't have any good video codec modules, just grab a png with
