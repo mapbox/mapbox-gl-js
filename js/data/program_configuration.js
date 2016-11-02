@@ -1,6 +1,6 @@
 'use strict';
 
-const VertexArrayType = require('./vertex_array_type');
+const createVertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
 const shaders = require('mapbox-gl-shaders');
 const assert = require('assert');
@@ -154,7 +154,7 @@ class ProgramConfiguration {
     }
 
     paintVertexArrayType() {
-        return new VertexArrayType(this.attributes);
+        return createVertexArrayType(this.attributes);
     }
 
     createProgram(name, showOverdraw, gl) {

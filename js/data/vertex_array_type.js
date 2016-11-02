@@ -1,15 +1,17 @@
 'use strict';
 
-const StructArrayType = require('../util/struct_array');
+const createStructArrayType = require('../util/struct_array');
+
+module.exports = createVertexArrayType;
 
 /**
  * A vertex array stores data for each vertex in a geometry. Elements are aligned to 4 byte
  * boundaries for best performance in WebGL.
  * @private
  */
-module.exports = function VertexArrayType(members) {
-    return new StructArrayType({
+function createVertexArrayType(members) {
+    return createStructArrayType({
         members: members,
         alignment: 4
     });
-};
+}

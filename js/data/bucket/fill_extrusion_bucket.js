@@ -1,8 +1,8 @@
 'use strict';
 
 const Bucket = require('../bucket');
-const VertexArrayType = require('../vertex_array_type');
-const ElementArrayType = require('../element_array_type');
+const createVertexArrayType = require('../vertex_array_type');
+const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const earcut = require('earcut');
@@ -11,7 +11,7 @@ const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillExtrusionInterface = {
-    layoutVertexArrayType: new VertexArrayType([{
+    layoutVertexArrayType: createVertexArrayType([{
         name: 'a_pos',
         components: 2,
         type: 'Int16'
@@ -24,7 +24,7 @@ const fillExtrusionInterface = {
         components: 1,
         type: 'Int16'
     }]),
-    elementArrayType: new ElementArrayType(3),
+    elementArrayType: createElementArrayType(3),
 
     paintAttributes: [{
         name: 'a_minH',

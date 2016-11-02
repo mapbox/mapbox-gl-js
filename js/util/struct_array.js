@@ -4,7 +4,7 @@
 
 const assert = require('assert');
 
-module.exports = StructArrayType;
+module.exports = createStructArrayType;
 
 const viewTypes = {
     'Int8': Int8Array,
@@ -49,7 +49,7 @@ const RESIZE_MULTIPLIER = 5;
 
 /**
  * The StructArray class is inherited by the custom StructArrayType classes created with
- * `new StructArrayType(members, options)`.
+ * `createStructArrayType(members, options)`.
  * @private
  */
 class StructArray {
@@ -159,7 +159,7 @@ class StructArray {
 const structArrayTypeCache = {};
 
 /**
- * `StructArrayType` is used to create new `StructArray` types.
+ * `createStructArrayType` is used to create new `StructArray` types.
  *
  * `StructArray` provides an abstraction over `ArrayBuffer` and `TypedArray` making it behave like
  * an array of typed structs. A StructArray is comprised of elements. Each element has a set of
@@ -177,7 +177,7 @@ const structArrayTypeCache = {};
  * @param {Array<StructMember>} options.members
  * @example
  *
- * var PointArrayType = new StructArrayType({
+ * var PointArrayType = createStructArrayType({
  *  members: [
  *      { type: 'Int16', name: 'x' },
  *      { type: 'Int16', name: 'y' }
@@ -193,7 +193,7 @@ const structArrayTypeCache = {};
  *
  * @private
  */
-function StructArrayType(options) {
+function createStructArrayType(options) {
 
     const key = JSON.stringify(options);
 

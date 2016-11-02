@@ -1,8 +1,8 @@
 'use strict';
 
 const Bucket = require('../bucket');
-const VertexArrayType = require('../vertex_array_type');
-const ElementArrayType = require('../element_array_type');
+const createVertexArrayType = require('../vertex_array_type');
+const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
@@ -10,13 +10,13 @@ const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillInterface = {
-    layoutVertexArrayType: new VertexArrayType([{
+    layoutVertexArrayType: createVertexArrayType([{
         name: 'a_pos',
         components: 2,
         type: 'Int16'
     }]),
-    elementArrayType: new ElementArrayType(3),
-    elementArrayType2: new ElementArrayType(2),
+    elementArrayType: createElementArrayType(3),
+    elementArrayType2: createElementArrayType(2),
 
     paintAttributes: [{
         name: 'a_color',

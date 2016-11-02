@@ -3,8 +3,8 @@
 const Point = require('point-geometry');
 const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
-const VertexArrayType = require('../vertex_array_type');
-const ElementArrayType = require('../element_array_type');
+const createVertexArrayType = require('../vertex_array_type');
+const createElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
 const Anchor = require('../../symbol/anchor');
 const getAnchors = require('../../symbol/get_anchors');
@@ -25,8 +25,9 @@ const shapeIcon = Shaping.shapeIcon;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
-const elementArrayType = new ElementArrayType();
-const layoutVertexArrayType = new VertexArrayType([{
+const elementArrayType = createElementArrayType();
+
+const layoutVertexArrayType = createVertexArrayType([{
     name: 'a_pos',
     components: 2,
     type: 'Int16'
@@ -54,7 +55,7 @@ const symbolInterfaces = {
         elementArrayType: elementArrayType
     },
     collisionBox: {
-        layoutVertexArrayType: new VertexArrayType([{
+        layoutVertexArrayType: createVertexArrayType([{
             name: 'a_pos',
             components: 2,
             type: 'Int16'
@@ -67,7 +68,7 @@ const symbolInterfaces = {
             components: 2,
             type: 'Uint8'
         }]),
-        elementArrayType: new ElementArrayType(2)
+        elementArrayType: createElementArrayType(2)
     }
 };
 

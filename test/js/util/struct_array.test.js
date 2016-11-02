@@ -1,11 +1,11 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const StructArrayType = require('../../../js/util/struct_array');
+const createStructArrayType = require('../../../js/util/struct_array');
 
 test('StructArray', (t) => {
 
-    const TestArray = new StructArrayType({
+    const TestArray = createStructArrayType({
         members: [
             { type: 'Int16', name: 'map' },
             { type: 'Int16', name: 'box', components: 2 }
