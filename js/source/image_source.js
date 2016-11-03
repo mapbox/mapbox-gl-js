@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
+const window = require('../util/window');
 const TileCoord = require('./tile_coord');
 const LngLat = require('../geo/lng_lat');
 const Point = require('point-geometry');
@@ -158,7 +159,7 @@ class ImageSource extends Evented {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else {
+        } else if (image instanceof window.HTMLVideoElement) {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }
