@@ -6,13 +6,15 @@ module.exports = drawBackground;
 
 function drawBackground(painter, sourceCache, layer) {
     const gl = painter.gl;
-    const transform = painter.transform;
-    const tileSize = transform.tileSize;
     const color = layer.paint['background-color'];
     const image = layer.paint['background-pattern'];
     const opacity = layer.paint['background-opacity'];
 
     if (painter.isOpaquePass !== (!image && color[3] === 1)) return;
+
+    // if the background layer is bottommost and not patterned,
+    // we render it with gl.clearColor earlier
+    if (!image && painter.currentLayer === 0) return;
 
     gl.disable(gl.STENCIL_TEST);
 
@@ -31,6 +33,8 @@ function drawBackground(painter, sourceCache, layer) {
 
     gl.uniform1f(program.u_opacity, opacity);
 
+    const transform = painter.transform;
+    const tileSize = transform.tileSize;
     const coords = transform.coveringTiles({tileSize});
 
     for (const coord of coords) {
