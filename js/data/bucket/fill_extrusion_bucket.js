@@ -29,17 +29,14 @@ const fillExtrusionInterface = {
     paintAttributes: [{
         name: 'a_base',
         type: 'Uint16',
-        multiplier: 1,
         paintProperty: 'fill-extrusion-base'
     }, {
         name: 'a_height',
         type: 'Uint16',
-        multiplier: 1,
         paintProperty: 'fill-extrusion-height'
     }, {
         name: 'a_color',
         type: 'Uint8',
-        multiplier: 255,
         paintProperty: 'fill-extrusion-color'
     }]
 };

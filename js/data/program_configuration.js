@@ -41,7 +41,7 @@ class ProgramConfiguration {
             const inputName = attribute.name;
             assert(attribute.name.slice(0, 2) === 'a_');
             const name = attribute.name.slice(2);
-            const multiplier = (attribute.multiplier || 1).toFixed(1);
+            const multiplier = attribute.multiplier || (isColor ? 255 : 1);
 
             fragmentInit[name] = '';
 
@@ -52,11 +52,11 @@ class ProgramConfiguration {
                 fragmentInit[name] = vertexInit[name] = `{precision} {type} ${name} = ${inputName};\n`;
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
-                self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1}));
+                self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1, multiplier}));
 
                 fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
                 vertexDefine[name] = `varying {precision} {type} ${name};\n attribute {precision} {type} ${inputName};\n`;
-                vertexInit[name] = `${name} = ${inputName} / ${multiplier};\n`;
+                vertexInit[name] = `${name} = ${inputName} / ${multiplier}.0;\n`;
 
             } else {
                 // Pick the index of the first offset to add to the buffers.
@@ -85,11 +85,12 @@ class ProgramConfiguration {
                 if (!isColor) {
                     self.attributes.push(util.extend({}, attribute, {
                         getValue: createFunctionGetValue(attribute, fourZoomLevels),
-                        components: 4
+                        components: 4,
+                        multiplier
                     }));
 
                     vertexDefine[name] += `attribute {precision} vec4 ${inputName};\n`;
-                    vertexInit[name] = `${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier};\n`;
+                    vertexInit[name] = `${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier}.0;\n`;
 
                 } else {
                     const inputNames = [];
@@ -98,11 +99,12 @@ class ProgramConfiguration {
                         self.attributes.push(util.extend({}, attribute, {
                             getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
                             name: inputName + k,
-                            components: 4
+                            components: 4,
+                            multiplier
                         }));
                         vertexDefine[name] += `attribute {precision} {type} ${inputName + k};\n`;
                     }
-                    vertexInit[name] = `${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier};\n`;
+                    vertexInit[name] = `${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier}.0;\n`;
                 }
             }
         }
@@ -144,7 +146,7 @@ class ProgramConfiguration {
                 attribute.getValue(layer, globalProperties, featureProperties) :
                 layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
 
-            const multiplier = attribute.multiplier || 1;
+            const multiplier = attribute.multiplier;
             const components = attribute.components || 1;
 
             for (let i = start; i < length; i++) {

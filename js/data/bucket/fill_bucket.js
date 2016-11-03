@@ -21,12 +21,10 @@ const fillInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        multiplier: 255,
         paintProperty: 'fill-color'
     }, {
         name: 'a_outline_color',
         type: 'Uint8',
-        multiplier: 255,
         paintProperty: 'fill-outline-color'
     }, {
         name: 'a_opacity',

@@ -17,7 +17,6 @@ const circleInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        multiplier: 255,
         paintProperty: 'circle-color'
     }, {
         name: 'a_radius',

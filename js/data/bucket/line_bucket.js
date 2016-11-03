@@ -52,7 +52,6 @@ const lineInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        multiplier: 255,
         paintProperty: 'line-color'
     }],
     elementArrayType: createElementArrayType()
