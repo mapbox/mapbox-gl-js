@@ -17,33 +17,21 @@ const circleInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return layer.getPaintValue("circle-color", globalProperties, featureProperties);
-        },
         multiplier: 255,
         paintProperty: 'circle-color'
     }, {
         name: 'a_radius',
         type: 'Uint16',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [layer.getPaintValue("circle-radius", globalProperties, featureProperties)];
-        },
         multiplier: 10,
         paintProperty: 'circle-radius'
     }, {
         name: 'a_blur',
         type: 'Uint16',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [layer.getPaintValue("circle-blur", globalProperties, featureProperties)];
-        },
         multiplier: 10,
         paintProperty: 'circle-blur'
     }, {
         name: 'a_opacity',
         type: 'Uint16',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [layer.getPaintValue("circle-opacity", globalProperties, featureProperties)];
-        },
         multiplier: 255,
         paintProperty: 'circle-opacity'
     }]

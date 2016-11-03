@@ -52,9 +52,6 @@ const lineInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return layer.getPaintValue("line-color", globalProperties, featureProperties);
-        },
         multiplier: 255,
         paintProperty: 'line-color'
     }],

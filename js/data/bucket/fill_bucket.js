@@ -21,25 +21,16 @@ const fillInterface = {
     paintAttributes: [{
         name: 'a_color',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return layer.getPaintValue("fill-color", globalProperties, featureProperties);
-        },
         multiplier: 255,
         paintProperty: 'fill-color'
     }, {
         name: 'a_outline_color',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return layer.getPaintValue("fill-outline-color", globalProperties, featureProperties);
-        },
         multiplier: 255,
         paintProperty: 'fill-outline-color'
     }, {
         name: 'a_opacity',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [layer.getPaintValue("fill-opacity", globalProperties, featureProperties)];
-        },
         multiplier: 255,
         paintProperty: 'fill-opacity'
     }]

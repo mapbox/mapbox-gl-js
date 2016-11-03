@@ -29,27 +29,16 @@ const fillExtrusionInterface = {
     paintAttributes: [{
         name: 'a_base',
         type: 'Uint16',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [Math.max(layer.getPaintValue("fill-extrusion-base", globalProperties, featureProperties), 0)];
-        },
         multiplier: 1,
         paintProperty: 'fill-extrusion-base'
     }, {
         name: 'a_height',
         type: 'Uint16',
-        getValue: (layer, globalProperties, featureProperties) => {
-            return [Math.max(layer.getPaintValue("fill-extrusion-height", globalProperties, featureProperties), 0)];
-        },
         multiplier: 1,
         paintProperty: 'fill-extrusion-height'
     }, {
         name: 'a_color',
         type: 'Uint8',
-        getValue: (layer, globalProperties, featureProperties) => {
-            const color = layer.getPaintValue("fill-extrusion-color", globalProperties, featureProperties);
-            color[3] = 1.0;
-            return color;
-        },
         multiplier: 255,
         paintProperty: 'fill-extrusion-color'
     }]

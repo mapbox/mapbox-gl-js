@@ -140,15 +140,21 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const value = attribute.getValue(layer, globalProperties, featureProperties);
+            const value = attribute.getValue ?
+                attribute.getValue(layer, globalProperties, featureProperties) :
+                layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
+
             const multiplier = attribute.multiplier || 1;
             const components = attribute.components || 1;
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
-                for (let c = 0; c < components; c++) {
-                    const memberName = components > 1 ? (attribute.name + c) : attribute.name;
-                    vertex[memberName] = value[c] * multiplier;
+                if (components > 1) {
+                    for (let c = 0; c < components; c++) {
+                        vertex[attribute.name + c] = value[c] * multiplier;
+                    }
+                } else {
+                    vertex[attribute.name] = value * multiplier;
                 }
             }
         }
@@ -206,12 +212,14 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const uniformLocation = program[uniform.name];
-            const value = uniform.getValue(layer, globalProperties);
+            const value = uniform.getValue ?
+                uniform.getValue(layer, globalProperties) :
+                layer.getPaintValue(uniform.paintProperty, globalProperties);
+
             if (uniform.isColor) {
-                gl.uniform4fv(uniformLocation, value);
+                gl.uniform4fv(program[uniform.name], value);
             } else {
-                gl.uniform1fv(uniformLocation, value);
+                gl.uniform1f(program[uniform.name], value);
             }
         }
     }
@@ -221,13 +229,13 @@ function createFunctionGetValue(attribute, stopZoomLevels) {
     return function(layer, globalProperties, featureProperties) {
         if (stopZoomLevels.length === 1) {
             // return one multi-component value like color0
-            return attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevels[0] }), featureProperties);
+            return layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, { zoom: stopZoomLevels[0] }), featureProperties);
         } else {
             // pack multiple single-component values into a four component attribute
             const values = [];
             for (let z = 0; z < stopZoomLevels.length; z++) {
                 const stopZoomLevel = stopZoomLevels[z];
-                values.push(attribute.getValue(layer, util.extend({}, globalProperties, { zoom: stopZoomLevel }), featureProperties)[0]);
+                values.push(layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, { zoom: stopZoomLevel }), featureProperties));
             }
             return values;
         }
