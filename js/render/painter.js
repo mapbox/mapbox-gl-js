@@ -240,12 +240,12 @@ class Painter {
             let j;
             let coords = [];
             if (sourceCache) {
+                if (sourceCache.prepare) sourceCache.prepare();
                 coords = sourceCache.getVisibleCoordinates();
                 for (j = 0; j < coords.length; j++) {
                     coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.getSource().maxzoom);
                 }
                 this.clearStencil();
-                if (sourceCache.prepare) sourceCache.prepare();
                 if (sourceCache.getSource().isTileClipped) {
                     this._renderTileClippingMasks(coords);
                 }

@@ -1,6 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
+const window = require('../util/window');
 const TileCoord = require('./tile_coord');
 const LngLat = require('../geo/lng_lat');
 const Point = require('point-geometry');
@@ -66,7 +67,6 @@ class ImageSource extends Evented {
             if (err) return this.fire('error', {error: err});
 
             this.image = image;
-            this._loaded = true;
 
             this._finishLoading();
         });
@@ -127,7 +127,6 @@ class ImageSource extends Evented {
     }
 
     _setTile(tile) {
-        this._prepared = false;
         this.tile = tile;
         const maxInt16 = 32767;
         const array = new RasterBoundsArray();
@@ -140,17 +139,16 @@ class ImageSource extends Evented {
 
         this.tile.boundsBuffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
         this.tile.boundsVAO = new VertexArrayObject();
-        this.tile.state = 'loaded';
     }
 
     prepare() {
-        if (!this.tile || !this._loaded || !this.image || !this.image.complete) return;
+        if (!this.tile || !this.image || !this.image.complete) return;
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
     _prepareImage(gl, image) {
-        if (!this._prepared) {
-            this._prepared = true;
+        if (this.tile.state !== 'loaded') {
+            this.tile.state = 'loaded';
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -158,7 +156,7 @@ class ImageSource extends Evented {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else {
+        } else if (image instanceof window.HTMLVideoElement) {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }
