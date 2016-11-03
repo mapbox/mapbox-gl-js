@@ -7,17 +7,13 @@ precision mediump float;
 #endif
 
 varying vec4 v_color;
-#ifdef MAPBOX_GL_JS
-#pragma mapbox: define lowp float minH
-#pragma mapbox: define lowp float maxH
-#endif
+#pragma mapbox: define lowp float base
+#pragma mapbox: define lowp float height
 #pragma mapbox: define lowp vec4 color
 
 void main() {
-#ifdef MAPBOX_GL_JS
-    #pragma mapbox: initialize lowp float minH
-    #pragma mapbox: initialize lowp float maxH
-#endif
+    #pragma mapbox: initialize lowp float base
+    #pragma mapbox: initialize lowp float height
     #pragma mapbox: initialize lowp vec4 color
 
     gl_FragColor = v_color;

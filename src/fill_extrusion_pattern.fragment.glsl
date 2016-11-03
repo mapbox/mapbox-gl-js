@@ -18,18 +18,12 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
 
-#ifdef MAPBOX_GL_JS
-#pragma mapbox: define lowp float minH
-#pragma mapbox: define lowp float maxH
-#endif
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define lowp float base
+#pragma mapbox: define lowp float height
 
 void main() {
-#ifdef MAPBOX_GL_JS
-    #pragma mapbox: initialize lowp float minH
-    #pragma mapbox: initialize lowp float maxH
-#endif
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize lowp float base
+    #pragma mapbox: initialize lowp float height
 
     vec2 imagecoord = mod(v_pos_a, 1.0);
     vec2 pos = mix(u_pattern_tl_a, u_pattern_br_a, imagecoord);

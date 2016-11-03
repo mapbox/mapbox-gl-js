@@ -29,25 +29,15 @@ varying vec2 v_pos_b;
 varying vec4 v_lighting;
 varying float v_directional;
 
-#ifndef MAPBOX_GL_JS
-attribute float minH;
-attribute float maxH;
-#else
-#pragma mapbox: define lowp float minH
-#pragma mapbox: define lowp float maxH
-#endif
-
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define lowp float base
+#pragma mapbox: define lowp float height
 
 void main() {
-#ifdef MAPBOX_GL_JS
-    #pragma mapbox: initialize lowp float minH
-    #pragma mapbox: initialize lowp float maxH
-#endif
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize lowp float base
+    #pragma mapbox: initialize lowp float height
 
     float t = mod(a_normal.x, 2.0);
-    float z = t > 0.0 ? maxH : minH;
+    float z = t > 0.0 ? height : base;
 
     gl_Position = u_matrix * vec4(a_pos, z, 1);
 
@@ -75,7 +65,7 @@ void main() {
     directional = mix((1.0 - u_lightintensity), max((0.5 + u_lightintensity), 1.0), directional);
 
     if (a_normal.y != 0.0) {
-        directional *= clamp((t + minH) * pow(maxH / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0);
+        directional *= clamp((t + base) * pow(height / 150.0, 0.5), mix(0.7, 0.98, 1.0 - u_lightintensity), 1.0);
     }
 
     v_lighting.rgb += clamp(directional * u_lightcolor, mix(vec3(0.0), vec3(0.3), 1.0 - u_lightcolor), vec3(1.0));
