@@ -12,6 +12,12 @@ test('StyleDeclaration', (t) => {
         t.end();
     });
 
+    t.test('with minimum value', (t) => {
+        t.equal((new StyleDeclaration({type: "number", minimum: -2}, -5)).calculate({zoom: 0}), -2);
+        t.equal((new StyleDeclaration({type: "number", minimum: -2}, 5)).calculate({zoom: 0}), 5);
+        t.end();
+    });
+
     t.test('interpolated functions', (t) => {
         const reference = {type: "number", function: "interpolated"};
         t.equal((new StyleDeclaration(reference, { stops: [[0, 1]] })).calculate({zoom: 0}), 1);

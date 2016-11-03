@@ -13,6 +13,7 @@ class StyleDeclaration {
         // immutable representation of value. used for comparison
         this.json = JSON.stringify(this.value);
 
+        this.minimum = reference.minimum;
         this.isColor = reference.type === 'color';
 
         const parsedValue = this.isColor && this.value ? parseColor(this.value) : value;
@@ -46,6 +47,9 @@ class StyleDeclaration {
         const value = this.function(globalProperties && globalProperties.zoom, featureProperties || {});
         if (this.isColor && value) {
             return parseColor(value);
+        }
+        if (this.minimum !== undefined && value < this.minimum) {
+            return this.minimum;
         }
         return value;
     }
