@@ -82,8 +82,6 @@ class RasterTileSource extends Evented {
             }
             gl.generateMipmap(gl.TEXTURE_2D);
 
-            this.map.animationLoop.set(this.map.style.rasterFadeDuration);
-
             tile.state = 'loaded';
 
             callback(null);

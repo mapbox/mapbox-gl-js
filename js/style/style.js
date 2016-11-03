@@ -221,7 +221,6 @@ class Style extends Evented {
 
         this._updateZoomHistory(z);
 
-        this.rasterFadeDuration = 300;
         for (const layerId in this._layers) {
             const layer = this._layers[layerId];
 
