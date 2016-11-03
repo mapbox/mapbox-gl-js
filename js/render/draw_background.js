@@ -10,7 +10,8 @@ function drawBackground(painter, sourceCache, layer) {
     const image = layer.paint['background-pattern'];
     const opacity = layer.paint['background-opacity'];
 
-    if (painter.isOpaquePass !== (!image && color[3] === 1)) return;
+    const isOpaque = !image && color[3] === 1 && opacity === 1;
+    if (painter.isOpaquePass !== isOpaque) return;
 
     // if the background layer is bottommost and not patterned,
     // we render it with gl.clearColor earlier
