@@ -41,6 +41,14 @@ class Tile {
         this.state = 'loading';
     }
 
+    setAnimationLoop(animationLoop, t) {
+        this.animationLoopEndTime = t + Date.now();
+        if (this.animationLoopId !== undefined) {
+            animationLoop.cancel(this.animationLoopId);
+        }
+        this.animationLoopId = animationLoop.set(t);
+    }
+
     /**
      * Given a data object with a 'buffers' property, load it into
      * this tile's elementGroups and buffers properties and set loaded

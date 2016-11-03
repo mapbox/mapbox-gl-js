@@ -42,7 +42,7 @@ class SourceCache extends Evented {
             if (this._sourceLoaded && event.dataType === 'source') {
                 this.reload();
                 if (this.transform) {
-                    this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+                    this.update(this.transform);
                 }
             }
         });
@@ -278,7 +278,7 @@ class SourceCache extends Evented {
      * are inside the viewport.
      * @private
      */
-    update(transform, fadeDuration) {
+    update(transform) {
         if (!this._sourceLoaded) { return; }
         let i;
         let coord;
@@ -295,7 +295,6 @@ class SourceCache extends Evented {
         // the most ideal tile for the current viewport. This may include tiles like
         // parent or child tiles that are *already* loaded.
         const retain = {};
-        const now = new Date().getTime();
 
         // Covered is a list of retained tiles who's areas are full covered by other,
         // better, retained tiles. They are not drawn separately.
@@ -339,7 +338,7 @@ class SourceCache extends Evented {
             const id = ids[k];
             coord = TileCoord.fromID(id);
             tile = this._tiles[id];
-            if (tile && tile.timeAdded > now - (fadeDuration || 0)) {
+            if (tile && tile.animationLoopEndTime >= Date.now()) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
                     retain[id] = true;

@@ -36,6 +36,8 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     const tile = sourceCache.getTile(coord);
     const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
+    tile.setAnimationLoop(painter.style.animationLoop, layer.paint['raster-fade-duration']);
+
     const program = painter.useProgram('raster');
     gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
