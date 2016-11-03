@@ -36,6 +36,8 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     const tile = sourceCache.getTile(coord);
     const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
+    if (!tile.texture) return;
+
     const program = painter.useProgram('raster');
     gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
 
@@ -56,7 +58,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
 
     gl.activeTexture(gl.TEXTURE1);
 
-    if (parentTile) {
+    if (parentTile && parentTile.texture) {
         gl.bindTexture(gl.TEXTURE_2D, parentTile.texture);
         parentScaleBy = Math.pow(2, parentTile.coord.z - tile.coord.z);
         parentTL = [tile.coord.x * parentScaleBy % 1, tile.coord.y * parentScaleBy % 1];
