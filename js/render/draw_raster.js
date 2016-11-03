@@ -47,7 +47,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
     const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
-        opacities = getOpacities(tile, parentTile, layer, painter.transform);
+        opacities = getOpacities(tile, parentTile, layer, painter.transform, painter.style.rasterFadeDuration);
 
     let parentScaleBy, parentTL;
 
@@ -103,9 +103,8 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getOpacities(tile, parentTile, layer, transform) {
+function getOpacities(tile, parentTile, layer, transform, fadeDuration) {
     const opacities = [1, 0];
-    const fadeDuration = layer.paint['raster-fade-duration'];
 
     if (tile.sourceCache && fadeDuration > 0) {
         const now = Date.now();
