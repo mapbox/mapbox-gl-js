@@ -115,6 +115,7 @@ class SymbolBucket {
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
         this.layers = options.layers;
+        this.index = options.index;
         this.sdfIcons = options.sdfIcons;
         this.iconsNeedLinear = options.iconsNeedLinear;
         this.adjustedTextSize = options.adjustedTextSize;
