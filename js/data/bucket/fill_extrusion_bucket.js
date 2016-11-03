@@ -27,7 +27,7 @@ const fillExtrusionInterface = {
     elementArrayType: createElementArrayType(3),
 
     paintAttributes: [{
-        name: 'a_minH',
+        name: 'a_base',
         components: 1,
         type: 'Uint16',
         getValue: (layer, globalProperties, featureProperties) => {
@@ -36,7 +36,7 @@ const fillExtrusionInterface = {
         multiplier: 1,
         paintProperty: 'fill-extrusion-base'
     }, {
-        name: 'a_maxH',
+        name: 'a_height',
         components: 1,
         type: 'Uint16',
         getValue: (layer, globalProperties, featureProperties) => {
