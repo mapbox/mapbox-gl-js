@@ -32,7 +32,7 @@ class ImageSprite extends Evented {
             }
 
             this.data = data;
-            if (this.img) this.fire('data', {dataType: 'style'});
+            if (this.imgData) this.fire('data', {dataType: 'style'});
         });
 
         ajax.getImage(normalizeURL(base, format, '.png'), (err, img) => {
@@ -41,18 +41,18 @@ class ImageSprite extends Evented {
                 return;
             }
 
+            this.imgData = browser.getImageData(img);
+
             // premultiply the sprite
-            const data = img.getData();
-            const newdata = img.data = new Uint8Array(data.length);
-            for (let i = 0; i < data.length; i += 4) {
-                const alpha = data[i + 3] / 255;
-                newdata[i + 0] = data[i + 0] * alpha;
-                newdata[i + 1] = data[i + 1] * alpha;
-                newdata[i + 2] = data[i + 2] * alpha;
-                newdata[i + 3] = data[i + 3];
+            for (let i = 0; i < this.imgData.length; i += 4) {
+                const alpha = this.imgData[i + 3] / 255;
+                this.imgData[i + 0] *= alpha;
+                this.imgData[i + 1] *= alpha;
+                this.imgData[i + 2] *= alpha;
             }
 
-            this.img = img;
+            this.width = img.width;
+
             if (this.data) this.fire('data', {dataType: 'style'});
         });
     }
@@ -62,15 +62,16 @@ class ImageSprite extends Evented {
     }
 
     loaded() {
-        return !!(this.data && this.img);
+        return !!(this.data && this.imgData);
     }
 
     resize(/*gl*/) {
         if (browser.devicePixelRatio > 1 !== this.retina) {
             const newSprite = new ImageSprite(this.base);
             newSprite.on('data', () => {
-                this.img = newSprite.img;
                 this.data = newSprite.data;
+                this.imgData = newSprite.imgData;
+                this.width = newSprite.width;
                 this.retina = newSprite.retina;
             });
         }
@@ -80,7 +81,7 @@ class ImageSprite extends Evented {
         if (!this.loaded()) return new SpritePosition();
 
         const pos = this.data && this.data[name];
-        if (pos && this.img) return pos;
+        if (pos && this.imgData) return pos;
 
         return new SpritePosition();
     }
