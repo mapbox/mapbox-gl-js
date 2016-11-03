@@ -1829,10 +1829,14 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "units": "meters",
       "doc": "The height with which to extrude this layer.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
           "js": "0.27.0"
         }
       }
@@ -1844,15 +1848,19 @@
       "property-function": true,
       "default": 0,
       "minimum": 0,
+      "units": "meters",
       "doc": "The height with which to extrude the base of this layer.",
       "transition": true,
       "requires": [
         {
-          "<=": "fill-extrude-height"
+          "<=": "fill-extrusion-height"
         }
       ],
       "sdk-support": {
         "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
           "js": "0.27.0"
         }
       }
