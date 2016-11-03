@@ -22,8 +22,8 @@ test('Bucket', (t) => {
     }
 
     const dataDrivenPaint = {
-        'circle-color': {
-            stops: [[0, 'red'], [100, 'violet']],
+        'circle-opacity': {
+            stops: [[0, 0], [100, 1.0]],
             property: 'mapbox'
         }
     };
@@ -48,7 +48,7 @@ test('Bucket', (t) => {
                 getValue: function(layer, globalProperties, featureProperties) {
                     return [featureProperties.x];
                 },
-                paintProperty: 'circle-color'
+                paintProperty: 'circle-opacity'
             }]
         };
 
@@ -142,7 +142,7 @@ test('Bucket', (t) => {
                 name: 'a_map',
                 type: 'Int16',
                 getValue: function() { return [5]; },
-                paintProperty: 'circle-color'
+                paintProperty: 'circle-opacity'
             }],
             layoutAttributes: [],
             layers: [

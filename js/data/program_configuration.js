@@ -36,6 +36,8 @@ class ProgramConfiguration {
         const vertexDefine = self.vertexPragmas.define;
 
         for (const attribute of attributes) {
+            const specification = layer._paintSpecifications[attribute.paintProperty];
+            const isColor = specification.type === 'color';
             const inputName = attribute.name;
             assert(attribute.name.slice(0, 2) === 'a_');
             const name = attribute.name.slice(2);
@@ -44,13 +46,13 @@ class ProgramConfiguration {
             fragmentInit[name] = '';
 
             if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
-                self.uniforms.push(attribute);
+                self.uniforms.push(util.extend({}, attribute, {isColor}));
 
                 fragmentDefine[name] = vertexDefine[name] = `uniform {precision} {type} ${inputName};\n`;
                 fragmentInit[name] = vertexInit[name] = `{precision} {type} ${name} = ${inputName};\n`;
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
-                self.attributes.push(util.extend({}, attribute, {name: inputName}));
+                self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1}));
 
                 fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
                 vertexDefine[name] = `varying {precision} {type} ${name};\n attribute {precision} {type} ${inputName};\n`;
@@ -74,17 +76,16 @@ class ProgramConfiguration {
                 fragmentDefine[name] = `varying {precision} {type} ${name};\n`;
                 vertexDefine[name] = `varying {precision} {type} ${name};\n uniform lowp float ${tName};\n`;
 
-                self.uniforms.push(util.extend({}, attribute, {
+                self.uniforms.push({
                     name: tName,
                     getValue: createGetUniform(attribute, stopOffset),
-                    components: 1
-                }));
+                    isColor: false
+                });
 
-                if (attribute.components === 1) {
+                if (!isColor) {
                     self.attributes.push(util.extend({}, attribute, {
                         getValue: createFunctionGetValue(attribute, fourZoomLevels),
-                        isFunction: true,
-                        components: attribute.components * 4
+                        components: 4
                     }));
 
                     vertexDefine[name] += `attribute {precision} vec4 ${inputName};\n`;
@@ -96,8 +97,8 @@ class ProgramConfiguration {
                         inputNames.push(inputName + k);
                         self.attributes.push(util.extend({}, attribute, {
                             getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
-                            isFunction: true,
-                            name: inputName + k
+                            name: inputName + k,
+                            components: 4
                         }));
                         vertexDefine[name] += `attribute {precision} {type} ${inputName + k};\n`;
                     }
@@ -206,7 +207,12 @@ class ProgramConfiguration {
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
             const uniformLocation = program[uniform.name];
-            gl[`uniform${uniform.components}fv`](uniformLocation, uniform.getValue(layer, globalProperties));
+            const value = uniform.getValue(layer, globalProperties);
+            if (uniform.isColor) {
+                gl.uniform4fv(uniformLocation, value);
+            } else {
+                gl.uniform1fv(uniformLocation, value);
+            }
         }
     }
 }
