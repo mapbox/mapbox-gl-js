@@ -35,22 +35,22 @@ test("mapbox", (t) => {
 
     t.test('.normalizeSourceURL', (t) => {
         t.test('returns a v4 URL with access_token parameter', (t) => {
-            t.equal(mapbox.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?access_token=key&secure');
+            t.equal(mapbox.normalizeSourceURL(mapboxSource), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=key');
             t.end();
         });
 
         t.test('uses provided access token', (t) => {
-            t.equal(mapbox.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?access_token=token&secure');
+            t.equal(mapbox.normalizeSourceURL(mapboxSource, 'token'), 'https://api.mapbox.com/v4/user.map.json?secure&access_token=token');
             t.end();
         });
 
         t.test('uses provided query parameters', (t) => {
-            t.equal(mapbox.normalizeSourceURL(`${mapboxSource}?foo=bar`, 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&access_token=token&secure');
+            t.equal(mapbox.normalizeSourceURL(`${mapboxSource}?foo=bar`, 'token'), 'https://api.mapbox.com/v4/user.map.json?foo=bar&secure&access_token=token');
             t.end();
         });
 
         t.test('works with composite sources', (t) => {
-            t.equal(mapbox.normalizeSourceURL('mapbox://one.a,two.b,three.c'), 'https://api.mapbox.com/v4/one.a,two.b,three.c.json?access_token=key&secure');
+            t.equal(mapbox.normalizeSourceURL('mapbox://one.a,two.b,three.c'), 'https://api.mapbox.com/v4/one.a,two.b,three.c.json?secure&access_token=key');
             t.end();
         });
 

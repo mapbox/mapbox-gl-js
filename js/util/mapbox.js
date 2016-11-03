@@ -2,128 +2,105 @@
 
 const config = require('./config');
 const browser = require('./browser');
-const URL = require('url');
-const util = require('./util');
 
-function makeAPIURL(path, query, accessToken) {
+const help = 'See https://www.mapbox.com/developers/api/#access-tokens';
+
+function makeAPIURL(urlObject, accessToken) {
+    const apiUrlObject = parseUrl(config.API_URL);
+    urlObject.protocol = apiUrlObject.protocol;
+    urlObject.authority = apiUrlObject.authority;
+
+    if (!config.REQUIRE_ACCESS_TOKEN) return formatUrl(urlObject);
+
     accessToken = accessToken || config.ACCESS_TOKEN;
+    if (!accessToken)
+        throw new Error(`An API access token is required to use Mapbox GL. ${help}`);
+    if (accessToken[0] === 's')
+        throw new Error(`Use a public access token (pk.*) with Mapbox GL, not a secret access token (sk.*). ${help}`);
 
-    if (!accessToken && config.REQUIRE_ACCESS_TOKEN) {
-        throw new Error('An API access token is required to use Mapbox GL. ' +
-            'See https://www.mapbox.com/developers/api/#access-tokens');
-    }
-
-    let url = config.API_URL + path + (query ? `?${query}` : '');
-
-    if (config.REQUIRE_ACCESS_TOKEN) {
-        if (accessToken[0] === 's') {
-            throw new Error('Use a public access token (pk.*) with Mapbox GL JS, not a secret access token (sk.*). ' +
-                'See https://www.mapbox.com/developers/api/#access-tokens');
-        }
-
-        url += `${query ? '&' : '?'}access_token=${accessToken}`;
-    }
-
-    return url;
+    urlObject.params.push(`access_token=${accessToken}`);
+    return formatUrl(urlObject);
 }
 
-module.exports.isMapboxURL = function(url) {
-    return URL.parse(url).protocol === 'mapbox:';
+function isMapboxURL(url) {
+    return url.indexOf('mapbox:') === 0;
+}
+
+exports.isMapboxURL = isMapboxURL;
+
+exports.normalizeStyleURL = function(url, accessToken) {
+    if (!isMapboxURL(url)) return url;
+    const urlObject = parseUrl(url);
+    urlObject.path = `/styles/v1${urlObject.path}`;
+    return makeAPIURL(urlObject, accessToken);
 };
 
-module.exports.normalizeStyleURL = function(url, accessToken) {
-    const urlObject = URL.parse(url);
+exports.normalizeGlyphsURL = function(url, accessToken) {
+    if (!isMapboxURL(url)) return url;
+    const urlObject = parseUrl(url);
+    urlObject.path = `/fonts/v1${urlObject.path}`;
+    return makeAPIURL(urlObject, accessToken);
+};
 
-    if (urlObject.protocol !== 'mapbox:') {
-        return url;
-    } else {
-        return makeAPIURL(
-            `/styles/v1${urlObject.pathname}`,
-            urlObject.query,
-            accessToken
-        );
+exports.normalizeSourceURL = function(url, accessToken) {
+    if (!isMapboxURL(url)) return url;
+    const urlObject = parseUrl(url);
+    urlObject.path = `/v4/${urlObject.authority}.json`;
+    // TileJSON requests need a secure flag appended to their URLs so
+    // that the server knows to send SSL-ified resource references.
+    urlObject.params.push('secure');
+    return makeAPIURL(urlObject, accessToken);
+};
+
+exports.normalizeSpriteURL = function(url, format, extension, accessToken) {
+    const urlObject = parseUrl(url);
+    if (!isMapboxURL(url)) {
+        urlObject.path += `${format}${extension}`;
+        return formatUrl(urlObject);
     }
+    urlObject.path = `/styles/v1${urlObject.path}/sprite${format}${extension}`;
+    return makeAPIURL(urlObject, accessToken);
 };
 
-module.exports.normalizeSourceURL = function(url, accessToken) {
-    const urlObject = URL.parse(url);
+const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-    if (urlObject.protocol !== 'mapbox:') {
-        return url;
-    } else {
-        // We parse the URL with a regex because the URL module does not handle
-        // URLs with commas in the hostname
-        const sources = url.match(/mapbox:\/\/([^?]+)/)[1];
+exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
+    if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
-        // TileJSON requests need a secure flag appended to their URLs so
-        // that the server knows to send SSL-ified resource references.
-        return `${makeAPIURL(
-            `/v4/${sources}.json`,
-            urlObject.query,
-            accessToken
-        )}&secure`;
-    }
-
-};
-
-module.exports.normalizeGlyphsURL = function(url, accessToken) {
-    const urlObject = URL.parse(url);
-
-    if (urlObject.protocol !== 'mapbox:') {
-        return url;
-    } else {
-        const user = urlObject.pathname.split('/')[1];
-        return makeAPIURL(
-            `/fonts/v1/${user}/{fontstack}/{range}.pbf`,
-            urlObject.query,
-            accessToken
-        );
-    }
-};
-
-module.exports.normalizeSpriteURL = function(url, format, extension, accessToken) {
-    const urlObject = URL.parse(url);
-
-    if (urlObject.protocol !== 'mapbox:') {
-        urlObject.pathname += format + extension;
-        return URL.format(urlObject);
-    } else {
-        return makeAPIURL(
-            `/styles/v1${urlObject.pathname}/sprite${format}${extension}`,
-            urlObject.query,
-            accessToken
-        );
-    }
-};
-
-module.exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
-    const tileURLObject = URL.parse(tileURL, true);
-    if (!sourceURL) return tileURL;
-    const sourceURLObject = URL.parse(sourceURL);
-    if (sourceURLObject.protocol !== 'mapbox:') return tileURL;
+    const urlObject = parseUrl(tileURL);
 
     // The v4 mapbox tile API supports 512x512 image tiles only when @2x
     // is appended to the tile URL. If `tileSize: 512` is specified for
-    // a Mapbox raster source force the @2x suffix even if a non hidpi
-    // device.
-
+    // a Mapbox raster source force the @2x suffix even if a non hidpi device.
+    const suffix = browser.devicePixelRatio >= 2 || tileSize === 512 ? '@2x' : '';
     const extension = browser.supportsWebp ? '.webp' : '$1';
-    const resolution = (browser.devicePixelRatio >= 2 || tileSize === 512) ? '@2x' : '';
+    urlObject.path = urlObject.path.replace(imageExtensionRe, `${suffix}${extension}`);
 
-    return URL.format({
-        protocol: tileURLObject.protocol,
-        hostname: tileURLObject.hostname,
-        pathname: tileURLObject.pathname.replace(/(\.(?:png|jpg)\d*)/, resolution + extension),
-        query: replaceTempAccessToken(tileURLObject.query)
-    });
+    replaceTempAccessToken(urlObject.params);
+    return formatUrl(urlObject);
 };
 
-function replaceTempAccessToken(query) {
-    if (query.access_token && query.access_token.slice(0, 3) === 'tk.') {
-        return util.extend({}, query, {
-            'access_token': config.ACCESS_TOKEN
-        });
-    } else {
-        return query;
+function replaceTempAccessToken(params) {
+    for (let i = 0; i < params.length; i++) {
+        if (params[i].indexOf('access_token=tk.') === 0) {
+            params[i] = `access_token=${config.ACCESS_TOKEN}`;
+        }
     }
+}
+
+const urlRe = /^(\w+):\/\/([^/?]+)(\/[^?]+)?\??(.+)?/;
+
+function parseUrl(url) {
+    const parts = url.match(urlRe);
+    return {
+        protocol: parts[1],
+        authority: parts[2],
+        path: parts[3] || '/',
+        params: parts[4] ? parts[4].split('&') : []
+    };
+}
+
+function formatUrl(obj) {
+    const params = obj.params.length ? `?${obj.params.join('&')}` : '';
+    return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
