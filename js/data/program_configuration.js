@@ -41,17 +41,12 @@ class ProgramConfiguration {
             const name = attribute.name.slice(2);
             const multiplier = attribute.multiplier || (isColor ? 255 : 1);
 
-            const frag = self.fragmentPragmas[name] = {define: [], initialize: []};
-            const vert = self.vertexPragmas[name] = {define: [], initialize: []};
+            const frag = self.getFragmentPragmas(name);
+            const vert = self.getVertexPragmas(name);
 
             if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                 self.uniforms.push(util.extend({}, attribute, {isColor}));
-
-                frag.define.push(`uniform {precision} {type} ${inputName};`);
-                vert.define.push(`uniform {precision} {type} ${inputName};`);
-
-                frag.initialize.push(`{precision} {type} ${name} = ${inputName};`);
-                vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+                self.addUniform(name, inputName);
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
                 self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1, multiplier}));
@@ -80,6 +75,7 @@ class ProgramConfiguration {
 
                 frag.define.push(`varying {precision} {type} ${name};`);
                 vert.define.push(`varying {precision} {type} ${name};`);
+
                 vert.define.push(`uniform lowp float ${tName};`);
 
                 self.uniforms.push({
@@ -120,28 +116,36 @@ class ProgramConfiguration {
         return self;
     }
 
-    static createStatic(uniforms) {
+    static createStatic(uniformNames) {
         const self = new ProgramConfiguration();
 
-        for (const uniform of uniforms) {
-            assert(uniform.name.indexOf('u_') === 0);
-            const name = uniform.name.slice(2);
-
-            const frag = self.fragmentPragmas[name] = {define: [], initialize: []};
-            const vert = self.vertexPragmas[name] = {define: [], initialize: []};
-
-            const type = `${uniform.components === 1 ? 'float' : `vec${uniform.components}`}`;
-
-            frag.define.push(`uniform {precision} ${type} u_${name};`);
-            vert.define.push(`uniform {precision} ${type} u_${name};`);
-
-            frag.initialize.push(`{precision} ${type} ${name} = u_${name};`);
-            vert.initialize.push(`{precision} ${type} ${name} = u_${name};`);
+        for (const name of uniformNames) {
+            self.addUniform(name, `u_${name}`);
         }
-
         self.cacheKey = JSON.stringify(self.fragmentPragmas);
 
         return self;
+    }
+
+    addUniform(name, inputName) {
+        const frag = this.getFragmentPragmas(name);
+        const vert = this.getVertexPragmas(name);
+
+        frag.define.push(`uniform {precision} {type} ${inputName};`);
+        vert.define.push(`uniform {precision} {type} ${inputName};`);
+
+        frag.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+        vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+    }
+
+    getFragmentPragmas(name) {
+        this.fragmentPragmas[name] = this.fragmentPragmas[name] || {define: [], initialize: []};
+        return this.fragmentPragmas[name];
+    }
+
+    getVertexPragmas(name) {
+        this.vertexPragmas[name] = this.vertexPragmas[name] || {define: [], initialize: []};
+        return this.vertexPragmas[name];
     }
 
     populatePaintArray(layer, paintArray, length, globalProperties, featureProperties) {

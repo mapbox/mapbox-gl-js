@@ -49,10 +49,7 @@ class Painter {
 
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
-        this.basicFillProgramConfiguration = ProgramConfiguration.createStatic([
-            {name: 'u_color', components: 4},
-            {name: 'u_opacity', components: 1}
-        ]);
+        this.basicFillProgramConfiguration = ProgramConfiguration.createStatic(['color', 'opacity']);
         this.emptyProgramConfiguration = ProgramConfiguration.createStatic([]);
     }
 
@@ -359,20 +356,19 @@ class Painter {
         }
     }
 
-    _createProgramCached(name, paintAttributeSet) {
+    _createProgramCached(name, programConfiguration) {
         this.cache = this.cache || {};
-        const key = `${name}${paintAttributeSet.cacheKey}${!!this._showOverdrawInspector}`;
+        const key = `${name}${programConfiguration.cacheKey}${!!this._showOverdrawInspector}`;
         if (!this.cache[key]) {
-            this.cache[key] = paintAttributeSet.createProgram(name, this._showOverdrawInspector, this.gl);
+            this.cache[key] = programConfiguration.createProgram(name, this._showOverdrawInspector, this.gl);
         }
         return this.cache[key];
     }
 
-    useProgram(name, paintAttributeSet) {
+    useProgram(name, programConfiguration) {
         const gl = this.gl;
 
-        const nextProgram = this._createProgramCached(name,
-            paintAttributeSet || this.emptyProgramConfiguration);
+        const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
         const previousProgram = this.currentProgram;
 
         if (previousProgram !== nextProgram) {
