@@ -35,6 +35,9 @@ test('querySourceFeatures', (t) => {
         tile.rawTileData = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
 
         result = [];
+        tile.querySourceFeatures(result);
+        t.equal(result.length, 1);
+        result = [];
         tile.querySourceFeatures(result, {});
         t.equal(result.length, 1);
         t.deepEqual(result[0].properties, features[0].tags);
