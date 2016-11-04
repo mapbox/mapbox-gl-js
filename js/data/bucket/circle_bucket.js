@@ -16,7 +16,7 @@ const circleInterface = {
         {name: 'a_color',   paintProperty: 'circle-color',   type: 'Uint8'},
         {name: 'a_radius',  paintProperty: 'circle-radius',  type: 'Uint16', multiplier: 10},
         {name: 'a_blur',    paintProperty: 'circle-blur',    type: 'Uint16', multiplier: 10},
-        {name: 'a_opacity', paintProperty: 'circle-opacity', type: 'Uint16', multiplier: 255}
+        {name: 'a_opacity', paintProperty: 'circle-opacity', type: 'Uint8',  multiplier: 255}
     ]
 };
 
