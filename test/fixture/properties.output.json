@@ -25,5 +25,13 @@
   },
   {
     "message": "layers[2].paint.fill-opacity: number expected, null found"
+  },
+  {
+    "message": "layers[3].paint.fill-opacity: unknown property \"foo\"",
+    "line": 56
+  },
+  {
+    "message": "layers[3].paint.bad: unknown property \"bad\"",
+    "line": 58
   }
 ]
