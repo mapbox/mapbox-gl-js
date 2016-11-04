@@ -27,23 +27,12 @@ const getIconQuads = Quads.getIconQuads;
 
 const elementArrayType = createElementArrayType();
 
-const layoutVertexArrayType = createVertexArrayType([{
-    name: 'a_pos',
-    components: 2,
-    type: 'Int16'
-}, {
-    name: 'a_offset',
-    components: 2,
-    type: 'Int16'
-}, {
-    name: 'a_texture_pos',
-    components: 2,
-    type: 'Uint16'
-}, {
-    name: 'a_data',
-    components: 4,
-    type: 'Uint8'
-}]);
+const layoutVertexArrayType = createVertexArrayType([
+    {name: 'a_pos',         components: 2, type: 'Int16'},
+    {name: 'a_offset',      components: 2, type: 'Int16'},
+    {name: 'a_texture_pos', components: 2, type: 'Uint16'},
+    {name: 'a_data',        components: 4, type: 'Uint8'}
+]);
 
 const symbolInterfaces = {
     glyph: {
@@ -55,19 +44,11 @@ const symbolInterfaces = {
         elementArrayType: elementArrayType
     },
     collisionBox: {
-        layoutVertexArrayType: createVertexArrayType([{
-            name: 'a_pos',
-            components: 2,
-            type: 'Int16'
-        }, {
-            name: 'a_extrude',
-            components: 2,
-            type: 'Int16'
-        }, {
-            name: 'a_data',
-            components: 2,
-            type: 'Uint8'
-        }]),
+        layoutVertexArrayType: createVertexArrayType([
+            {name: 'a_pos',     components: 2, type: 'Int16'},
+            {name: 'a_extrude', components: 2, type: 'Int16'},
+            {name: 'a_data',    components: 2, type: 'Uint8'}
+        ]),
         elementArrayType: createElementArrayType(2)
     }
 };

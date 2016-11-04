@@ -11,34 +11,18 @@ const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillExtrusionInterface = {
-    layoutVertexArrayType: createVertexArrayType([{
-        name: 'a_pos',
-        components: 2,
-        type: 'Int16'
-    }, {
-        name: 'a_normal',
-        components: 3,
-        type: 'Int16'
-    }, {
-        name: 'a_edgedistance',
-        components: 1,
-        type: 'Int16'
-    }]),
+    layoutVertexArrayType: createVertexArrayType([
+        {name: 'a_pos',          components: 2, type: 'Int16'},
+        {name: 'a_normal',       components: 3, type: 'Int16'},
+        {name: 'a_edgedistance', components: 1, type: 'Int16'}
+    ]),
     elementArrayType: createElementArrayType(3),
 
-    paintAttributes: [{
-        name: 'a_base',
-        type: 'Uint16',
-        paintProperty: 'fill-extrusion-base'
-    }, {
-        name: 'a_height',
-        type: 'Uint16',
-        paintProperty: 'fill-extrusion-height'
-    }, {
-        name: 'a_color',
-        type: 'Uint8',
-        paintProperty: 'fill-extrusion-color'
-    }]
+    paintAttributes: [
+        {name: 'a_base',   paintProperty: 'fill-extrusion-base',   type: 'Uint16'},
+        {name: 'a_height', paintProperty: 'fill-extrusion-height', type: 'Uint16'},
+        {name: 'a_color',  paintProperty: 'fill-extrusion-color',  type: 'Uint8'}
+    ]
 };
 
 const FACTOR = Math.pow(2, 13);

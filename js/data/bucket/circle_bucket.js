@@ -7,33 +7,17 @@ const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
 const circleInterface = {
-    layoutVertexArrayType: createVertexArrayType([{
-        name: 'a_pos',
-        components: 2,
-        type: 'Int16'
-    }]),
+    layoutVertexArrayType: createVertexArrayType([
+        {name: 'a_pos', components: 2, type: 'Int16'}
+    ]),
     elementArrayType: createElementArrayType(),
 
-    paintAttributes: [{
-        name: 'a_color',
-        type: 'Uint8',
-        paintProperty: 'circle-color'
-    }, {
-        name: 'a_radius',
-        type: 'Uint16',
-        multiplier: 10,
-        paintProperty: 'circle-radius'
-    }, {
-        name: 'a_blur',
-        type: 'Uint16',
-        multiplier: 10,
-        paintProperty: 'circle-blur'
-    }, {
-        name: 'a_opacity',
-        type: 'Uint16',
-        multiplier: 255,
-        paintProperty: 'circle-opacity'
-    }]
+    paintAttributes: [
+        {name: 'a_color',   paintProperty: 'circle-color',   type: 'Uint8'},
+        {name: 'a_radius',  paintProperty: 'circle-radius',  type: 'Uint16', multiplier: 10},
+        {name: 'a_blur',    paintProperty: 'circle-blur',    type: 'Uint16', multiplier: 10},
+        {name: 'a_opacity', paintProperty: 'circle-opacity', type: 'Uint16', multiplier: 255}
+    ]
 };
 
 function addCircleVertex(layoutVertexArray, x, y, extrudeX, extrudeY) {

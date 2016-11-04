@@ -10,28 +10,17 @@ const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
 const fillInterface = {
-    layoutVertexArrayType: createVertexArrayType([{
-        name: 'a_pos',
-        components: 2,
-        type: 'Int16'
-    }]),
+    layoutVertexArrayType: createVertexArrayType([
+        {name: 'a_pos', components: 2, type: 'Int16'}
+    ]),
     elementArrayType: createElementArrayType(3),
     elementArrayType2: createElementArrayType(2),
 
-    paintAttributes: [{
-        name: 'a_color',
-        type: 'Uint8',
-        paintProperty: 'fill-color'
-    }, {
-        name: 'a_outline_color',
-        type: 'Uint8',
-        paintProperty: 'fill-outline-color'
-    }, {
-        name: 'a_opacity',
-        type: 'Uint8',
-        multiplier: 255,
-        paintProperty: 'fill-opacity'
-    }]
+    paintAttributes: [
+        {name: 'a_color',         paintProperty: 'fill-color',         type: 'Uint8'},
+        {name: 'a_outline_color', paintProperty: 'fill-outline-color', type: 'Uint8'},
+        {name: 'a_opacity',       paintProperty: 'fill-opacity',       type: 'Uint8', multiplier: 255}
+    ]
 };
 
 class FillBucket extends Bucket {
