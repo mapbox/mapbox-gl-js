@@ -122,7 +122,7 @@
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
-    "test-cov": "nyc --reporter=text-summary --cache run-s test-unit test-render test-query",
+    "test-cov": "nyc --require flow-remove-types/register --reporter=text-summary --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish"
   }
 }
