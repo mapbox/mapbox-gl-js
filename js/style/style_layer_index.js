@@ -3,7 +3,7 @@
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');
 const featureFilter = require('feature-filter');
-const stringify = require('json-stable-stringify');
+const stringify = require('fast-stable-stringify');
 
 function groupByLayout(layers) {
     const groups = {};
