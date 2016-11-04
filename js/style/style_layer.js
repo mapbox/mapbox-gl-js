@@ -13,10 +13,7 @@ const TRANSITION_SUFFIX = '-transition';
 class StyleLayer extends Evented {
     constructor(layer) {
         super();
-        this.set(layer);
-    }
 
-    set(layer) {
         this.id = layer.id;
         this.metadata = layer.metadata;
         this.type = layer.type;
