@@ -2,7 +2,6 @@
 
 const createVertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
-const assert = require('assert');
 
 /**
  * ProgramConfiguration contains the logic for binding style layer properties and tile
@@ -34,14 +33,12 @@ class ProgramConfiguration {
         const self = new ProgramConfiguration();
 
         for (const attributeConfig of attributes) {
-
-            const attribute = normalizeAttribute(attributeConfig, layer);
-            assert(attribute.name.indexOf('a_') === 0);
+            const attribute = normalizePaintAttribute(attributeConfig, layer);
             const name = attribute.name.slice(2);
 
-            if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
+            if (layer.isPaintValueFeatureConstant(attribute.property)) {
                 self.addZoomDrivenAttribute(name, attribute);
-            } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
+            } else if (layer.isPaintValueZoomConstant(attribute.property)) {
                 self.addDataDrivenAttribute(name, attribute);
             } else {
                 self.addDataAndZoomDrivenAttribute(name, attribute, layer, zoom);
@@ -102,7 +99,7 @@ class ProgramConfiguration {
 
         // Pick the index of the first offset to add to the buffers.
         let numStops = 0;
-        const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
+        const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.property);
         while (numStops < zoomLevels.length && zoomLevels[numStops] < zoom) numStops++;
         const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
 
@@ -111,7 +108,7 @@ class ProgramConfiguration {
         vert.define.push(`uniform lowp float ${tName};`);
         this.interpolationUniforms.push({
             name: tName,
-            paintProperty: attribute.paintProperty,
+            property: attribute.property,
             stopOffset
         });
 
@@ -166,10 +163,10 @@ class ProgramConfiguration {
             let value;
             if (attribute.zoomStops) {
                 // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
-                const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, {zoom}), featureProperties));
+                const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
                 value = values.length === 1 ? values[0] : values;
             } else {
-                value = layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
+                value = layer.getPaintValue(attribute.property, globalProperties, featureProperties);
             }
 
             for (let i = start; i < length; i++) {
@@ -191,7 +188,7 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const value = layer.getPaintValue(uniform.paintProperty, globalProperties);
+            const value = layer.getPaintValue(uniform.property, globalProperties);
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
@@ -201,7 +198,7 @@ class ProgramConfiguration {
         for (const uniform of this.interpolationUniforms) {
             // stopInterp indicates which stops need to be interpolated.
             // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-            const stopInterp = layer.getPaintInterpolationT(uniform.paintProperty, globalProperties);
+            const stopInterp = layer.getPaintInterpolationT(uniform.property, globalProperties);
             // We can only store four stop values in the buffers. stopOffset is the number of stops that come
             // before the stops that were added to the buffers.
             gl.uniform1f(program[uniform.name], Math.max(0, Math.min(4, stopInterp - uniform.stopOffset)));
@@ -209,9 +206,12 @@ class ProgramConfiguration {
     }
 }
 
-function normalizeAttribute(attribute, layer) {
-    const isColor = layer._paintSpecifications[attribute.paintProperty].type === 'color';
+function normalizePaintAttribute(attribute, layer) {
+    const name = attribute.property.replace(`${layer.type}-`, '').replace(/-/g, '_');
+    const isColor = layer._paintSpecifications[attribute.property].type === 'color';
+
     return util.extend({
+        name: `a_${name}`,
         components: isColor ? 4 : 1,
         multiplier: isColor ? 255 : 1
     }, attribute);

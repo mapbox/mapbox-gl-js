@@ -43,9 +43,8 @@ test('Bucket', (t) => {
             elementArrayType2: createElementArrayType(2),
 
             paintAttributes: options.paintAttributes || [{
-                name: 'a_map',
-                type: 'Int16',
-                paintProperty: 'circle-opacity'
+                property: 'circle-opacity',
+                type: 'Int16'
             }]
         };
 
@@ -96,7 +95,7 @@ test('Bucket', (t) => {
         const paintVertex = bucket.arrays.layerData.layerid.paintVertexArray;
         t.equal(paintVertex.length, 1);
         const p0 = paintVertex.get(0);
-        t.equal(p0.a_map, 17);
+        t.equal(p0.a_opacity, 17);
 
         const testElement = bucket.arrays.elementArray;
         t.equal(testElement.length, 1);
@@ -125,8 +124,8 @@ test('Bucket', (t) => {
         const v0 = bucket.arrays.layoutVertexArray.get(0);
         const a0 = bucket.arrays.layerData.one.paintVertexArray.get(0);
         const b0 = bucket.arrays.layerData.two.paintVertexArray.get(0);
-        t.equal(a0.a_map, 17);
-        t.equal(b0.a_map, 17);
+        t.equal(a0.a_opacity, 17);
+        t.equal(b0.a_opacity, 17);
         t.equal(v0.a_box0, 34);
         t.equal(v0.a_box1, 84);
 
@@ -136,9 +135,8 @@ test('Bucket', (t) => {
     t.test('add features, disabled attribute', (t) => {
         const bucket = create({
             paintAttributes: [{
-                name: 'a_map',
-                type: 'Int16',
-                paintProperty: 'circle-opacity'
+                property: 'circle-opacity',
+                type: 'Int16'
             }],
             layoutAttributes: [],
             layers: [

@@ -45,7 +45,7 @@ const lineInterface = {
         {name: 'a_data', components: 4, type: 'Uint8'}
     ]),
     paintAttributes: [
-        {name: 'a_color', paintProperty: 'line-color', type: 'Uint8'}
+        {property: 'line-color', type: 'Uint8'}
     ],
     elementArrayType: createElementArrayType()
 };

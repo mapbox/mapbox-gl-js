@@ -13,10 +13,10 @@ const circleInterface = {
     elementArrayType: createElementArrayType(),
 
     paintAttributes: [
-        {name: 'a_color',   paintProperty: 'circle-color',   type: 'Uint8'},
-        {name: 'a_radius',  paintProperty: 'circle-radius',  type: 'Uint16', multiplier: 10},
-        {name: 'a_blur',    paintProperty: 'circle-blur',    type: 'Uint16', multiplier: 10},
-        {name: 'a_opacity', paintProperty: 'circle-opacity', type: 'Uint8',  multiplier: 255}
+        {property: 'circle-color',   type: 'Uint8'},
+        {property: 'circle-radius',  type: 'Uint16', multiplier: 10},
+        {property: 'circle-blur',    type: 'Uint16', multiplier: 10},
+        {property: 'circle-opacity', type: 'Uint8',  multiplier: 255}
     ]
 };
 
