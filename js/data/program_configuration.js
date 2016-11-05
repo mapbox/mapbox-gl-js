@@ -41,7 +41,6 @@ class ProgramConfiguration {
             const name = attribute.name.slice(2);
             const multiplier = attribute.multiplier || (isColor ? 255 : 1);
 
-            const frag = self.getFragmentPragmas(name);
             const vert = self.getVertexPragmas(name);
 
             if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
@@ -50,12 +49,9 @@ class ProgramConfiguration {
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
                 self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1, multiplier}));
-
-                frag.define.push(`varying {precision} {type} ${name};`);
-                vert.define.push(`varying {precision} {type} ${name};`);
+                self.addVarying(name);
 
                 vert.define.push(`attribute {precision} {type} ${inputName};`);
-
                 vert.initialize.push(`${name} = ${inputName} / ${multiplier}.0;`);
 
             } else {
@@ -73,8 +69,7 @@ class ProgramConfiguration {
 
                 const tName = `u_${name}_t`;
 
-                frag.define.push(`varying {precision} {type} ${name};`);
-                vert.define.push(`varying {precision} {type} ${name};`);
+                self.addVarying(name);
 
                 vert.define.push(`uniform lowp float ${tName};`);
 
@@ -136,6 +131,14 @@ class ProgramConfiguration {
 
         frag.initialize.push(`{precision} {type} ${name} = ${inputName};`);
         vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+    }
+
+    addVarying(name) {
+        const frag = this.getFragmentPragmas(name);
+        const vert = this.getVertexPragmas(name);
+
+        frag.define.push(`varying {precision} {type} ${name};`);
+        vert.define.push(`varying {precision} {type} ${name};`);
     }
 
     getFragmentPragmas(name) {
