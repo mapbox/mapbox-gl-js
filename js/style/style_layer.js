@@ -157,9 +157,9 @@ class StyleLayer extends Evented {
         }
     }
 
-    getPaintInterpolationT(name, zoom) {
+    getPaintInterpolationT(name, globalProperties) {
         const transition = this._paintTransitions[name];
-        return transition.declaration.calculateInterpolationT({ zoom: zoom });
+        return transition.declaration.calculateInterpolationT(globalProperties);
     }
 
     isPaintValueFeatureConstant(name) {

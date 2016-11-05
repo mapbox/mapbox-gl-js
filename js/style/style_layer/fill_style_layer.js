@@ -21,11 +21,11 @@ class FillStyleLayer extends StyleLayer {
         }
     }
 
-    getPaintInterpolationT(name, zoom) {
+    getPaintInterpolationT(name, globalProperties) {
         if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintInterpolationT('fill-color', zoom);
+            return super.getPaintInterpolationT('fill-color', globalProperties);
         } else {
-            return super.getPaintInterpolationT(name, zoom);
+            return super.getPaintInterpolationT(name, globalProperties);
         }
     }
 

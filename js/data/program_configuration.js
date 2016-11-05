@@ -26,6 +26,7 @@ class ProgramConfiguration {
     constructor() {
         this.attributes = [];
         this.uniforms = [];
+        this.interpolationUniforms = [];
         this.vertexPragmas = {};
         this.fragmentPragmas = {};
     }
@@ -73,10 +74,10 @@ class ProgramConfiguration {
 
                 vert.define.push(`uniform lowp float ${tName};`);
 
-                self.uniforms.push({
+                self.interpolationUniforms.push({
                     name: tName,
-                    getValue: createGetUniform(attribute, stopOffset),
-                    components: 1
+                    paintProperty: attribute.paintProperty,
+                    stopOffset
                 });
 
                 if (attribute.components === 1) {
@@ -228,15 +229,20 @@ class ProgramConfiguration {
 
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
-            const value = uniform.getValue ?
-                uniform.getValue(layer, globalProperties) :
-                layer.getPaintValue(uniform.paintProperty, globalProperties);
-
+            const value = layer.getPaintValue(uniform.paintProperty, globalProperties);
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
                 gl.uniform1f(program[uniform.name], value);
             }
+        }
+        for (const uniform of this.interpolationUniforms) {
+            // stopInterp indicates which stops need to be interpolated.
+            // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
+            const stopInterp = layer.getPaintInterpolationT(uniform.paintProperty, globalProperties);
+            // We can only store four stop values in the buffers. stopOffset is the number of stops that come
+            // before the stops that were added to the buffers.
+            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(4, stopInterp - uniform.stopOffset)));
         }
     }
 }
@@ -266,17 +272,6 @@ function createFunctionGetValue(attribute, stopZoomLevels) {
             }
             return values;
         }
-    };
-}
-
-function createGetUniform(attribute, stopOffset) {
-    return function(layer, globalProperties) {
-        // stopInterp indicates which stops need to be interpolated.
-        // If stopInterp is 3.5 then interpolate half way between stops 3 and 4.
-        const stopInterp = layer.getPaintInterpolationT(attribute.paintProperty, globalProperties.zoom);
-        // We can only store four stop values in the buffers. stopOffset is the number of stops that come
-        // before the stops that were added to the buffers.
-        return [Math.max(0, Math.min(4, stopInterp - stopOffset))];
     };
 }
 
