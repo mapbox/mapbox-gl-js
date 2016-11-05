@@ -2,7 +2,6 @@
 
 const createVertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
-const shaders = require('mapbox-gl-shaders');
 const assert = require('assert');
 
 /**
@@ -181,45 +180,6 @@ class ProgramConfiguration {
         return createVertexArrayType(this.attributes);
     }
 
-    createProgram(name, showOverdraw, gl) {
-        const program = gl.createProgram();
-        const definition = shaders[name];
-
-        let definesSource = '#define MAPBOX_GL_JS;\n';
-        if (showOverdraw) {
-            definesSource += '#define OVERDRAW_INSPECTOR;\n';
-        }
-
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, applyPragmas(definesSource + definition.fragmentSource, this.fragmentPragmas));
-        gl.compileShader(fragmentShader);
-        assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
-        gl.attachShader(program, fragmentShader);
-
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, applyPragmas(definesSource + shaders.util + definition.vertexSource, this.vertexPragmas));
-        gl.compileShader(vertexShader);
-        assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
-        gl.attachShader(program, vertexShader);
-
-        gl.linkProgram(program);
-        assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
-
-        const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-        const result = {program, numAttributes};
-
-        for (let i = 0; i < numAttributes; i++) {
-            const attribute = gl.getActiveAttrib(program, i);
-            result[attribute.name] = gl.getAttribLocation(program, attribute.name);
-        }
-        const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-        for (let i = 0; i < numUniforms; i++) {
-            const uniform = gl.getActiveUniform(program, i);
-            result[uniform.name] = gl.getUniformLocation(program, uniform.name);
-        }
-        return result;
-    }
-
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
             const value = layer.getPaintValue(uniform.paintProperty, globalProperties);
@@ -266,15 +226,6 @@ function createFunctionGetValue(attribute, stopZoomLevels) {
             return values;
         }
     };
-}
-
-function applyPragmas(source, pragmas) {
-    return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
-        return pragmas[name][operation]
-            .join('\n')
-            .replace(/{type}/g, type)
-            .replace(/{precision}/g, precision);
-    });
 }
 
 module.exports = ProgramConfiguration;
