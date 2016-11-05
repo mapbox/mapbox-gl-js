@@ -33,22 +33,22 @@ class ProgramConfiguration {
     static createDynamic(attributes, layer, zoom) {
         const self = new ProgramConfiguration();
 
-        for (const attribute of attributes) {
-            const specification = layer._paintSpecifications[attribute.paintProperty];
-            const isColor = specification.type === 'color';
+        for (const attributeConfig of attributes) {
+
+            const attribute = normalizeAttribute(attributeConfig, layer);
             const inputName = attribute.name;
-            assert(attribute.name.slice(0, 2) === 'a_');
-            const name = attribute.name.slice(2);
-            const multiplier = attribute.multiplier || (isColor ? 255 : 1);
+            assert(inputName.indexOf('a_') === 0);
+            const name = inputName.slice(2);
+            const multiplier = attribute.multiplier;
 
             const vert = self.getVertexPragmas(name);
 
             if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
-                self.uniforms.push(util.extend({}, attribute, {isColor}));
+                self.uniforms.push(attribute);
                 self.addUniform(name, inputName);
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
-                self.attributes.push(util.extend({}, attribute, {components: isColor ? 4 : 1, multiplier}));
+                self.attributes.push(attribute);
                 self.addVarying(name);
 
                 vert.define.push(`attribute {precision} {type} ${inputName};`);
@@ -76,15 +76,17 @@ class ProgramConfiguration {
                 self.uniforms.push({
                     name: tName,
                     getValue: createGetUniform(attribute, stopOffset),
-                    isColor: false
+                    components: 1
                 });
 
-                if (!isColor) {
-                    self.attributes.push(util.extend({}, attribute, {
-                        getValue: createFunctionGetValue(attribute, fourZoomLevels),
+                if (attribute.components === 1) {
+                    self.attributes.push({
+                        name: inputName,
+                        type: attribute.type,
                         components: 4,
-                        multiplier
-                    }));
+                        multiplier,
+                        getValue: createFunctionGetValue(attribute, fourZoomLevels)
+                    });
 
                     vert.define.push(`attribute {precision} vec4 ${inputName};`);
                     vert.initialize.push(`${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier}.0;`);
@@ -93,12 +95,13 @@ class ProgramConfiguration {
                     const inputNames = [];
                     for (let k = 0; k < 4; k++) {
                         inputNames.push(inputName + k);
-                        self.attributes.push(util.extend({}, attribute, {
-                            getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]]),
+                        self.attributes.push({
                             name: inputName + k,
+                            type: attribute.type,
                             components: 4,
-                            multiplier
-                        }));
+                            multiplier,
+                            getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]])
+                        });
                         vert.define.push(`attribute {precision} {type} ${inputName + k};`);
                     }
                     vert.initialize.push(`${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier}.0;`);
@@ -160,17 +163,14 @@ class ProgramConfiguration {
                 attribute.getValue(layer, globalProperties, featureProperties) :
                 layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
 
-            const multiplier = attribute.multiplier;
-            const components = attribute.components || 1;
-
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
-                if (components > 1) {
-                    for (let c = 0; c < components; c++) {
-                        vertex[attribute.name + c] = value[c] * multiplier;
+                if (attribute.components === 4) {
+                    for (let c = 0; c < 4; c++) {
+                        vertex[attribute.name + c] = value[c] * attribute.multiplier;
                     }
                 } else {
-                    vertex[attribute.name] = value * multiplier;
+                    vertex[attribute.name] = value * attribute.multiplier;
                 }
             }
         }
@@ -232,13 +232,24 @@ class ProgramConfiguration {
                 uniform.getValue(layer, globalProperties) :
                 layer.getPaintValue(uniform.paintProperty, globalProperties);
 
-            if (uniform.isColor) {
+            if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {
                 gl.uniform1f(program[uniform.name], value);
             }
         }
     }
+}
+
+function normalizeAttribute(attribute, layer) {
+    const specification = layer._paintSpecifications[attribute.paintProperty];
+    const isColor = specification.type === 'color';
+
+    attribute = util.extend({}, attribute);
+    attribute.components = isColor ? 4 : 1;
+    attribute.multiplier = attribute.multiplier || (isColor ? 255 : 1);
+
+    return attribute;
 }
 
 function createFunctionGetValue(attribute, stopZoomLevels) {
