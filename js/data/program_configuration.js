@@ -25,8 +25,7 @@ class ProgramConfiguration {
         this.attributes = [];
         this.uniforms = [];
         this.interpolationUniforms = [];
-        this.vertexPragmas = {};
-        this.fragmentPragmas = {};
+        this.pragmas = {vertex: {}, fragment: {}};
         this.cacheKey = '';
     }
 
@@ -60,14 +59,10 @@ class ProgramConfiguration {
     }
 
     addUniform(name, inputName) {
-        const frag = this.getFragmentPragmas(name);
-        const vert = this.getVertexPragmas(name);
+        const pragmas = this.getPragmas(name);
 
-        frag.define.push(`uniform {precision} {type} ${inputName};`);
-        vert.define.push(`uniform {precision} {type} ${inputName};`);
-
-        frag.initialize.push(`{precision} {type} ${name} = ${inputName};`);
-        vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+        pragmas.define.push(`uniform {precision} {type} ${inputName};`);
+        pragmas.initialize.push(`{precision} {type} ${name} = ${inputName};`);
 
         this.cacheKey += `/u_${name}`;
     }
@@ -78,26 +73,22 @@ class ProgramConfiguration {
     }
 
     addDataDrivenAttribute(name, attribute) {
-        const vert = this.getVertexPragmas(name);
-        const frag = this.getFragmentPragmas(name);
+        const pragmas = this.getPragmas(name);
 
         this.attributes.push(attribute);
 
-        frag.define.push(`varying {precision} {type} ${name};`);
-        vert.define.push(`varying {precision} {type} ${name};`);
+        pragmas.define.push(`varying {precision} {type} ${name};`);
 
-        vert.define.push(`attribute {precision} {type} ${attribute.name};`);
-        vert.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
+        pragmas.vertex.define.push(`attribute {precision} {type} ${attribute.name};`);
+        pragmas.vertex.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
 
         this.cacheKey += `/a_${name}`;
     }
 
     addDataAndZoomDrivenAttribute(name, attribute, layer, zoom) {
-        const vert = this.getVertexPragmas(name);
-        const frag = this.getFragmentPragmas(name);
+        const pragmas = this.getPragmas(name);
 
-        frag.define.push(`varying {precision} {type} ${name};`);
-        vert.define.push(`varying {precision} {type} ${name};`);
+        pragmas.define.push(`varying {precision} {type} ${name};`);
 
         // Pick the index of the first offset to add to the buffers.
         let numStops = 0;
@@ -107,7 +98,8 @@ class ProgramConfiguration {
 
         const tName = `u_${name}_t`;
 
-        vert.define.push(`uniform lowp float ${tName};`);
+        pragmas.vertex.define.push(`uniform lowp float ${tName};`);
+
         this.interpolationUniforms.push({
             name: tName,
             property: attribute.property,
@@ -127,7 +119,7 @@ class ProgramConfiguration {
                 components: 4,
                 zoomStops
             }));
-            vert.define.push(`attribute {precision} vec4 ${attribute.name};`);
+            pragmas.vertex.define.push(`attribute {precision} vec4 ${attribute.name};`);
             componentNames.push(attribute.name);
 
         } else {
@@ -139,23 +131,31 @@ class ProgramConfiguration {
                     name: componentName,
                     zoomStops: [zoomStops[k]]
                 }));
-                vert.define.push(`attribute {precision} {type} ${componentName};`);
+                pragmas.vertex.define.push(`attribute {precision} {type} ${componentName};`);
             }
         }
-        vert.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
+        pragmas.vertex.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
             ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
 
         this.cacheKey += `/z_${name}`;
     }
 
-    getFragmentPragmas(name) {
-        this.fragmentPragmas[name] = this.fragmentPragmas[name] || {define: [], initialize: []};
-        return this.fragmentPragmas[name];
+    getPragmas(name) {
+        if (!this.pragmas[name]) {
+            this.pragmas[name]          = {define: [], initialize: []};
+            this.pragmas[name].fragment = {define: [], initialize: []};
+            this.pragmas[name].vertex   = {define: [], initialize: []};
+        }
+        return this.pragmas[name];
     }
 
-    getVertexPragmas(name) {
-        this.vertexPragmas[name] = this.vertexPragmas[name] || {define: [], initialize: []};
-        return this.vertexPragmas[name];
+    applyPragmas(source, shaderType) {
+        return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
+            return this.pragmas[name][operation].concat(this.pragmas[name][shaderType][operation])
+                .join('\n')
+                .replace(/{type}/g, type)
+                .replace(/{precision}/g, precision);
+        });
     }
 
     populatePaintArray(layer, paintArray, length, globalProperties, featureProperties) {

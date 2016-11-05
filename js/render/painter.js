@@ -52,6 +52,7 @@ class Painter {
         this.lineWidthRange = gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE);
 
         this.basicFillProgramConfiguration = ProgramConfiguration.createStatic(['color', 'opacity']);
+        this.emptyProgramConfiguration = new ProgramConfiguration();
     }
 
     /*
@@ -368,13 +369,13 @@ class Painter {
         }
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, applyPragmas(definesSource + definition.fragmentSource, configuration.fragmentPragmas));
+        gl.shaderSource(fragmentShader, configuration.applyPragmas(definesSource + definition.fragmentSource, 'fragment'));
         gl.compileShader(fragmentShader);
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
         gl.attachShader(program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, applyPragmas(definesSource + shaders.util + definition.vertexSource, configuration.vertexPragmas));
+        gl.shaderSource(vertexShader, configuration.applyPragmas(definesSource + shaders.util + definition.vertexSource, 'vertex'));
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
@@ -408,7 +409,7 @@ class Painter {
 
     useProgram(name, programConfiguration) {
         const gl = this.gl;
-        const nextProgram = this._createProgramCached(name, programConfiguration || {});
+        const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
 
         if (this.currentProgram !== nextProgram) {
             gl.useProgram(nextProgram.program);
@@ -417,15 +418,6 @@ class Painter {
 
         return nextProgram;
     }
-}
-
-function applyPragmas(source, pragmas) {
-    return source.replace(/#pragma mapbox: ([\w]+) ([\w]+) ([\w]+) ([\w]+)/g, (match, operation, precision, type, name) => {
-        return pragmas[name][operation]
-            .join('\n')
-            .replace(/{type}/g, type)
-            .replace(/{precision}/g, precision);
-    });
 }
 
 module.exports = Painter;
