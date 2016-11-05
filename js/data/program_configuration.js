@@ -205,26 +205,19 @@ class ProgramConfiguration {
         gl.linkProgram(program);
         assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
 
-        const attributes = {};
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+        const result = {program, numAttributes};
+
         for (let i = 0; i < numAttributes; i++) {
             const attribute = gl.getActiveAttrib(program, i);
-            attributes[attribute.name] = gl.getAttribLocation(program, attribute.name);
+            result[attribute.name] = gl.getAttribLocation(program, attribute.name);
         }
-
-        const uniforms = {};
         const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-        for (let ui = 0; ui < numUniforms; ui++) {
-            const uniform = gl.getActiveUniform(program, ui);
-            uniforms[uniform.name] = gl.getUniformLocation(program, uniform.name);
+        for (let i = 0; i < numUniforms; i++) {
+            const uniform = gl.getActiveUniform(program, i);
+            result[uniform.name] = gl.getUniformLocation(program, uniform.name);
         }
-
-        return util.extend({
-            program: program,
-            definition: definition,
-            attributes: attributes,
-            numAttributes: numAttributes
-        }, attributes, uniforms);
+        return result;
     }
 
     setUniforms(gl, program, layer, globalProperties) {

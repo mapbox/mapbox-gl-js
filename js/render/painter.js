@@ -367,11 +367,9 @@ class Painter {
 
     useProgram(name, programConfiguration) {
         const gl = this.gl;
-
         const nextProgram = this._createProgramCached(name, programConfiguration || this.emptyProgramConfiguration);
-        const previousProgram = this.currentProgram;
 
-        if (previousProgram !== nextProgram) {
+        if (this.currentProgram !== nextProgram) {
             gl.useProgram(nextProgram.program);
             this.currentProgram = nextProgram;
         }
