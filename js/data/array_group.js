@@ -48,11 +48,10 @@ class ArrayGroup {
         for (const layer of layers) {
             const programConfiguration = ProgramConfiguration.createDynamic(
                 programInterface.paintAttributes || [], layer, zoom);
-            const PaintVertexArrayType = programConfiguration.paintVertexArrayType();
             this.layerData[layer.id] = {
                 layer: layer,
                 programConfiguration: programConfiguration,
-                paintVertexArray: new PaintVertexArrayType()
+                paintVertexArray: new programConfiguration.PaintVertexArray()
             };
         }
 

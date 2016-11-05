@@ -398,7 +398,7 @@ class Painter {
 
     _createProgramCached(name, programConfiguration) {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration.cacheKey}${!!this._showOverdrawInspector}`;
+        const key = `${name}${programConfiguration.cacheKey || ''}/${!!this._showOverdrawInspector}`;
         if (!this.cache[key]) {
             this.cache[key] = this.createProgram(name, this._showOverdrawInspector, this.gl, programConfiguration);
         }

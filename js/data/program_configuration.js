@@ -27,6 +27,7 @@ class ProgramConfiguration {
         this.interpolationUniforms = [];
         this.vertexPragmas = {};
         this.fragmentPragmas = {};
+        this.cacheKey = '';
     }
 
     static createDynamic(attributes, layer, zoom) {
@@ -44,8 +45,7 @@ class ProgramConfiguration {
                 self.addDataAndZoomDrivenAttribute(name, attribute, layer, zoom);
             }
         }
-
-        self.cacheKey = JSON.stringify([self.vertexPragmas, self.fragmentPragmas]);
+        self.PaintVertexArray = createVertexArrayType(self.attributes);
 
         return self;
     }
@@ -56,8 +56,6 @@ class ProgramConfiguration {
         for (const name of uniformNames) {
             self.addUniform(name, `u_${name}`);
         }
-        self.cacheKey = JSON.stringify(self.fragmentPragmas);
-
         return self;
     }
 
@@ -70,6 +68,8 @@ class ProgramConfiguration {
 
         frag.initialize.push(`{precision} {type} ${name} = ${inputName};`);
         vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
+
+        this.cacheKey += `/u_${name}`;
     }
 
     addZoomDrivenAttribute(name, attribute) {
@@ -88,6 +88,8 @@ class ProgramConfiguration {
 
         vert.define.push(`attribute {precision} {type} ${attribute.name};`);
         vert.initialize.push(`${name} = ${attribute.name} / ${attribute.multiplier}.0;`);
+
+        this.cacheKey += `/a_${name}`;
     }
 
     addDataAndZoomDrivenAttribute(name, attribute, layer, zoom) {
@@ -143,6 +145,8 @@ class ProgramConfiguration {
         }
         vert.initialize.push(`${name} = evaluate_zoom_function_${attribute.components}(\
             ${componentNames.join(', ')}, ${tName}) / ${attribute.multiplier}.0;`);
+
+        this.cacheKey += `/z_${name}`;
     }
 
     getFragmentPragmas(name) {
@@ -180,10 +184,6 @@ class ProgramConfiguration {
                 }
             }
         }
-    }
-
-    paintVertexArrayType() {
-        return createVertexArrayType(this.attributes);
     }
 
     setUniforms(gl, program, layer, globalProperties) {
