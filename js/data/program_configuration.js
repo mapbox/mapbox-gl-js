@@ -42,6 +42,7 @@ class ProgramConfiguration {
             const multiplier = attribute.multiplier;
 
             const vert = self.getVertexPragmas(name);
+            const frag = self.getFragmentPragmas(name);
 
             if (layer.isPaintValueFeatureConstant(attribute.paintProperty)) {
                 self.uniforms.push(attribute);
@@ -49,62 +50,60 @@ class ProgramConfiguration {
 
             } else if (layer.isPaintValueZoomConstant(attribute.paintProperty)) {
                 self.attributes.push(attribute);
-                self.addVarying(name);
+
+                frag.define.push(`varying {precision} {type} ${name};`);
+                vert.define.push(`varying {precision} {type} ${name};`);
 
                 vert.define.push(`attribute {precision} {type} ${inputName};`);
                 vert.initialize.push(`${name} = ${inputName} / ${multiplier}.0;`);
 
             } else {
+                frag.define.push(`varying {precision} {type} ${name};`);
+                vert.define.push(`varying {precision} {type} ${name};`);
+
                 // Pick the index of the first offset to add to the buffers.
-                // Find the four closest stops, ideally with two on each side of the zoom level.
                 let numStops = 0;
                 const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.paintProperty);
                 while (numStops < zoomLevels.length && zoomLevels[numStops] < zoom) numStops++;
                 const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
 
-                const fourZoomLevels = [];
-                for (let s = 0; s < 4; s++) {
-                    fourZoomLevels.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
-                }
-
                 const tName = `u_${name}_t`;
 
-                self.addVarying(name);
-
                 vert.define.push(`uniform lowp float ${tName};`);
-
                 self.interpolationUniforms.push({
                     name: tName,
                     paintProperty: attribute.paintProperty,
                     stopOffset
                 });
 
-                if (attribute.components === 1) {
-                    self.attributes.push({
-                        name: inputName,
-                        type: attribute.type,
-                        components: 4,
-                        multiplier,
-                        getValue: createFunctionGetValue(attribute, fourZoomLevels)
-                    });
+                // Find the four closest stops, ideally with two on each side of the zoom level.
+                const zoomStops = [];
+                for (let s = 0; s < 4; s++) {
+                    zoomStops.push(zoomLevels[Math.min(stopOffset + s, zoomLevels.length - 1)]);
+                }
 
+                if (attribute.components === 1) {
+                    self.attributes.push(util.extend({}, attribute, {
+                        components: 4,
+                        zoomStops
+                    }));
                     vert.define.push(`attribute {precision} vec4 ${inputName};`);
                     vert.initialize.push(`${name} = evaluate_zoom_function_1(${inputName}, ${tName}) / ${multiplier}.0;`);
 
                 } else {
-                    const inputNames = [];
+                    const componentNames = [];
                     for (let k = 0; k < 4; k++) {
-                        inputNames.push(inputName + k);
-                        self.attributes.push({
-                            name: inputName + k,
-                            type: attribute.type,
+                        const componentName = inputName + k;
+
+                        self.attributes.push(util.extend({}, attribute, {
+                            name: componentName,
                             components: 4,
-                            multiplier,
-                            getValue: createFunctionGetValue(attribute, [fourZoomLevels[k]])
-                        });
-                        vert.define.push(`attribute {precision} {type} ${inputName + k};`);
+                            zoomStops: [zoomStops[k]]
+                        }));
+                        componentNames.push(componentName);
+                        vert.define.push(`attribute {precision} {type} ${componentName};`);
                     }
-                    vert.initialize.push(`${name} = evaluate_zoom_function_4(${inputNames.join(', ')}, ${tName}) / ${multiplier}.0;`);
+                    vert.initialize.push(`${name} = evaluate_zoom_function_4(${componentNames.join(', ')}, ${tName}) / ${multiplier}.0;`);
                 }
             }
         }
@@ -136,14 +135,6 @@ class ProgramConfiguration {
         vert.initialize.push(`{precision} {type} ${name} = ${inputName};`);
     }
 
-    addVarying(name) {
-        const frag = this.getFragmentPragmas(name);
-        const vert = this.getVertexPragmas(name);
-
-        frag.define.push(`varying {precision} {type} ${name};`);
-        vert.define.push(`varying {precision} {type} ${name};`);
-    }
-
     getFragmentPragmas(name) {
         this.fragmentPragmas[name] = this.fragmentPragmas[name] || {define: [], initialize: []};
         return this.fragmentPragmas[name];
@@ -159,9 +150,14 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            const value = attribute.getValue ?
-                attribute.getValue(layer, globalProperties, featureProperties) :
-                layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
+            let value;
+            if (attribute.zoomStops) {
+                // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
+                const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, {zoom}), featureProperties));
+                value = values.length === 1 ? values[0] : values;
+            } else {
+                value = layer.getPaintValue(attribute.paintProperty, globalProperties, featureProperties);
+            }
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
@@ -209,23 +205,6 @@ function normalizeAttribute(attribute, layer) {
     attribute.multiplier = attribute.multiplier || (isColor ? 255 : 1);
 
     return attribute;
-}
-
-function createFunctionGetValue(attribute, stopZoomLevels) {
-    return function(layer, globalProperties, featureProperties) {
-        if (stopZoomLevels.length === 1) {
-            // return one multi-component value like color0
-            return layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, { zoom: stopZoomLevels[0] }), featureProperties);
-        } else {
-            // pack multiple single-component values into a four component attribute
-            const values = [];
-            for (let z = 0; z < stopZoomLevels.length; z++) {
-                const stopZoomLevel = stopZoomLevels[z];
-                values.push(layer.getPaintValue(attribute.paintProperty, util.extend({}, globalProperties, { zoom: stopZoomLevel }), featureProperties));
-            }
-            return values;
-        }
-    };
 }
 
 module.exports = ProgramConfiguration;

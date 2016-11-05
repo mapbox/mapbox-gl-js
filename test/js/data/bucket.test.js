@@ -23,8 +23,8 @@ test('Bucket', (t) => {
 
     const dataDrivenPaint = {
         'circle-opacity': {
-            stops: [[0, 0], [100, 1.0]],
-            property: 'mapbox'
+            stops: [[0, 0], [100, 100]],
+            property: 'x'
         }
     };
 
@@ -45,9 +45,6 @@ test('Bucket', (t) => {
             paintAttributes: options.paintAttributes || [{
                 name: 'a_map',
                 type: 'Int16',
-                getValue: function(layer, globalProperties, featureProperties) {
-                    return [featureProperties.x];
-                },
                 paintProperty: 'circle-opacity'
             }]
         };
@@ -141,7 +138,6 @@ test('Bucket', (t) => {
             paintAttributes: [{
                 name: 'a_map',
                 type: 'Int16',
-                getValue: function() { return [5]; },
                 paintProperty: 'circle-opacity'
             }],
             layoutAttributes: [],
@@ -153,11 +149,6 @@ test('Bucket', (t) => {
         bucket.populate([createFeature(17, 42)], createOptions());
 
         t.equal(bucket.arrays.layoutVertexArray.bytesPerElement, 0);
-        t.deepEqual(
-            bucket.arrays.layerData.one.programConfiguration.uniforms[0].getValue.call(bucket),
-            [5]
-        );
-
         t.end();
     });
 
