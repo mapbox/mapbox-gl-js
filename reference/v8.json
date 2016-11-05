@@ -1599,7 +1599,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used. If a fill layer is extruded, opacity will be per-layer rather than per-feature (and will thus not support property functions).",
+      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
