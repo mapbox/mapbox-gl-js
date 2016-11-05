@@ -23,6 +23,7 @@ function draw(painter, source, layer, coords) {
     const texture = new ExtrusionTexture(gl, painter, layer);
     texture.bindFramebuffer();
 
+    gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     for (let i = 0; i < coords.length; i++) {
