@@ -357,12 +357,13 @@ class Painter {
         }
     }
 
-    createProgram(name, showOverdraw, gl, configuration) {
+    createProgram(name, configuration) {
+        const gl = this.gl;
         const program = gl.createProgram();
         const definition = shaders[name];
 
         let definesSource = '#define MAPBOX_GL_JS;\n';
-        if (showOverdraw) {
+        if (this._showOverdrawInspector) {
             definesSource += '#define OVERDRAW_INSPECTOR;\n';
         }
 
@@ -398,9 +399,9 @@ class Painter {
 
     _createProgramCached(name, programConfiguration) {
         this.cache = this.cache || {};
-        const key = `${name}${programConfiguration.cacheKey || ''}/${!!this._showOverdrawInspector}`;
+        const key = `${name}${programConfiguration.cacheKey || ''}${this._showOverdrawInspector ? '/overdraw' : ''}`;
         if (!this.cache[key]) {
-            this.cache[key] = this.createProgram(name, this._showOverdrawInspector, this.gl, programConfiguration);
+            this.cache[key] = this.createProgram(name, programConfiguration);
         }
         return this.cache[key];
     }

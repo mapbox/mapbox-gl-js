@@ -137,7 +137,6 @@ class ProgramConfiguration {
 
                 this.attributes.push(util.extend({}, attribute, {
                     name: componentName,
-                    components: 4,
                     zoomStops: [zoomStops[k]]
                 }));
                 vert.define.push(`attribute {precision} {type} ${componentName};`);
@@ -164,14 +163,7 @@ class ProgramConfiguration {
         paintArray.resize(length);
 
         for (const attribute of this.attributes) {
-            let value;
-            if (attribute.zoomStops) {
-                // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
-                const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
-                value = values.length === 1 ? values[0] : values;
-            } else {
-                value = layer.getPaintValue(attribute.property, globalProperties, featureProperties);
-            }
+            const value = getPaintAttributeValue(attribute, layer, globalProperties, featureProperties);
 
             for (let i = start; i < length; i++) {
                 const vertex = paintArray.get(i);
@@ -204,6 +196,17 @@ class ProgramConfiguration {
             gl.uniform1f(program[uniform.name], Math.max(0, Math.min(4, stopInterp - uniform.stopOffset)));
         }
     }
+}
+
+function getPaintAttributeValue(attribute, layer, globalProperties, featureProperties) {
+    if (!attribute.zoomStops) {
+        return layer.getPaintValue(attribute.property, globalProperties, featureProperties);
+    }
+    // add one multi-component value like color0, or pack multiple single-component values into a four component attribute
+    const values = attribute.zoomStops.map((zoom) => layer.getPaintValue(
+            attribute.property, util.extend({}, globalProperties, {zoom}), featureProperties));
+
+    return values.length === 1 ? values[0] : values;
 }
 
 function normalizePaintAttribute(attribute, layer) {
