@@ -33,24 +33,12 @@ void main() {
 
     gl_Position = u_matrix * vec4(a_pos, z, 1);
 
-    vec2 scaled_size_a = u_scale_a * u_pattern_size_a;
-    vec2 scaled_size_b = u_scale_b * u_pattern_size_b;
+    vec2 pos = a_normal.x == 1.0 && a_normal.y == 0.0 && a_normal.z == 16384.0
+        ? a_pos // extrusion top
+        : vec2(a_edgedistance, z * u_height_factor); // extrusion side
 
-    // the following offset calculation is duplicated from the regular pattern shader:
-    vec2 offset_a = mod(mod(mod(u_pixel_coord_upper, scaled_size_a) * 256.0, scaled_size_a) * 256.0 + u_pixel_coord_lower, scaled_size_a);
-    vec2 offset_b = mod(mod(mod(u_pixel_coord_upper, scaled_size_b) * 256.0, scaled_size_b) * 256.0 + u_pixel_coord_lower, scaled_size_b);
-
-    if (a_normal.x == 1.0 && a_normal.y == 0.0 && a_normal.z == 16384.0) {
-        // extrusion top
-        v_pos_a = (u_tile_units_to_pixels * a_pos + offset_a) / scaled_size_a;
-        v_pos_b = (u_tile_units_to_pixels * a_pos + offset_b) / scaled_size_b;
-    } else {
-        // extrusion side
-        float hf = z * u_height_factor;
-
-        v_pos_a = (u_tile_units_to_pixels * vec2(a_edgedistance, hf) + offset_a) / scaled_size_a;
-        v_pos_b = (u_tile_units_to_pixels * vec2(a_edgedistance, hf) + offset_b) / scaled_size_b;
-    }
+    v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_a * u_pattern_size_a, u_tile_units_to_pixels, pos);
+    v_pos_b = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_b * u_pattern_size_b, u_tile_units_to_pixels, pos);
 
     v_lighting = vec4(0.0, 0.0, 0.0, 1.0);
     float directional = clamp(dot(a_normal / 16383.0, u_lightpos), 0.0, 1.0);
