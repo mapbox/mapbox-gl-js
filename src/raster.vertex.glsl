@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform mat4 u_matrix;
 uniform vec2 u_tl_parent;
 uniform float u_scale_parent;

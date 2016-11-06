@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision mediump float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 #pragma mapbox: define lowp vec4 color
 #pragma mapbox: define lowp float opacity
 

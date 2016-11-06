@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform vec2 u_pattern_size_a;
 uniform vec2 u_pattern_size_b;
 uniform vec2 u_pixel_coord_upper;

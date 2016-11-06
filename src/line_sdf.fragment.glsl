@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision mediump float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform lowp float u_opacity;
 
 uniform float u_blur;

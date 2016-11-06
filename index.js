@@ -3,6 +3,10 @@ var path = require('path');
 
 // readFileSync calls must be written out long-form for brfs.
 module.exports = {
+  prelude: {
+    fragmentSource: fs.readFileSync(path.join(__dirname, 'src/_prelude.fragment.glsl'), 'utf8'),
+    vertexSource: fs.readFileSync(path.join(__dirname, 'src/_prelude.vertex.glsl'), 'utf8')
+  },
   circle: {
     fragmentSource: fs.readFileSync(path.join(__dirname, 'src/circle.fragment.glsl'), 'utf8'),
     vertexSource: fs.readFileSync(path.join(__dirname, 'src/circle.vertex.glsl'), 'utf8')
@@ -68,5 +72,3 @@ module.exports = {
     vertexSource: fs.readFileSync(path.join(__dirname, 'src/symbol_sdf.vertex.glsl'), 'utf8')
   }
 };
-
-module.exports.util = fs.readFileSync(path.join(__dirname, 'util.vertex.glsl'), 'utf8');

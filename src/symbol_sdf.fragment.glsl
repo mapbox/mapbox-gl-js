@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision mediump float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform sampler2D u_texture;
 uniform sampler2D u_fadetexture;
 uniform lowp vec4 u_color;

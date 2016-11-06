@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 const float PI = 3.141592653589793;
 
 attribute vec2 a_pos;

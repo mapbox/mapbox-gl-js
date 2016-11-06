@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision mediump float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 uniform float u_opacity;
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;
@@ -32,7 +24,7 @@ void main() {
 
     float dist = length(v_pos - gl_FragCoord.xy);
     float alpha = smoothstep(1.0, 0.0, dist);
-    
+
 
     gl_FragColor = mix(color1, color2, u_mix) * alpha * u_opacity;
 

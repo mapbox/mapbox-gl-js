@@ -1,3 +1,11 @@
+#ifdef GL_ES
+precision highp float;
+#else
+#define lowp
+#define mediump
+#define highp
+#endif
+
 float evaluate_zoom_function_1(const vec4 values, const float t) {
     if (t < 1.0) {
         return mix(values[0], values[1], t);

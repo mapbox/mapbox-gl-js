@@ -1,11 +1,3 @@
-#ifdef GL_ES
-precision highp float;
-#else
-#define lowp
-#define mediump
-#define highp
-#endif
-
 attribute vec2 a_pos;
 attribute vec2 a_offset;
 attribute vec2 a_texture_pos;
