@@ -37,11 +37,11 @@ class ProgramConfiguration {
             const name = attribute.name.slice(2);
 
             if (layer.isPaintValueFeatureConstant(attribute.property)) {
-                self.addZoomDrivenAttribute(name, attribute);
+                self.addZoomAttribute(name, attribute);
             } else if (layer.isPaintValueZoomConstant(attribute.property)) {
-                self.addDataDrivenAttribute(name, attribute);
+                self.addPropertyAttribute(name, attribute);
             } else {
-                self.addDataAndZoomDrivenAttribute(name, attribute, layer, zoom);
+                self.addZoomAndPropertyAttribute(name, attribute, layer, zoom);
             }
         }
         self.PaintVertexArray = createVertexArrayType(self.attributes);
@@ -67,12 +67,12 @@ class ProgramConfiguration {
         this.cacheKey += `/u_${name}`;
     }
 
-    addZoomDrivenAttribute(name, attribute) {
+    addZoomAttribute(name, attribute) {
         this.uniforms.push(attribute);
         this.addUniform(name, attribute.name);
     }
 
-    addDataDrivenAttribute(name, attribute) {
+    addPropertyAttribute(name, attribute) {
         const pragmas = this.getPragmas(name);
 
         this.attributes.push(attribute);
@@ -85,7 +85,7 @@ class ProgramConfiguration {
         this.cacheKey += `/a_${name}`;
     }
 
-    addDataAndZoomDrivenAttribute(name, attribute, layer, zoom) {
+    addZoomAndPropertyAttribute(name, attribute, layer, zoom) {
         const pragmas = this.getPragmas(name);
 
         pragmas.define.push(`varying {precision} {type} ${name};`);
