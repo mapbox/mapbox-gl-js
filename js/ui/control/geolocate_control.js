@@ -47,6 +47,11 @@ class GeolocateControl extends Evented {
 
     _onClickGeolocate() {
 
+        const finish = () => {
+            if (this._timeoutId) { clearTimeout(this._timeoutId); }
+            this._timeoutId = undefined;
+        };
+
         const onSuccess = (position) => {
             this._map.jumpTo({
                 center: [position.coords.longitude, position.coords.latitude],
@@ -56,12 +61,12 @@ class GeolocateControl extends Evented {
             });
 
             this.fire('geolocate', position);
-            this._finish();
+            finish();
         };
 
         const onError = (error) => {
             this.fire('error', error);
-            this._finish();
+            finish();
         };
 
         window.navigator.geolocation.getCurrentPosition(
@@ -69,12 +74,7 @@ class GeolocateControl extends Evented {
 
         // This timeout ensures that we still call finish() even if
         // the user declines to share their location in Firefox
-        this._timeoutId = setTimeout(this._finish.bind(this), 10000 /* 10sec */);
-    }
-
-    _finish() {
-        if (this._timeoutId) { clearTimeout(this._timeoutId); }
-        this._timeoutId = undefined;
+        this._timeoutId = setTimeout(finish, 10000 /* 10sec */);
     }
 }
 
