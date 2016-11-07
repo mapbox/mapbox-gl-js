@@ -219,7 +219,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control, corner='top-right') {
+    addControl(control, corner = 'top-right') {
         const controlElement = control.onAdd(this);
         const cornerContainer = this._controlCorners[corner];
         if (corner.indexOf('bottom') !== -1) {
@@ -1252,7 +1252,7 @@ function removeNode(node) {
  *         this._container.textContent = 'Hello, world';
  *         return this._container;
  *     }
- * 
+ *
  *     onRemove() {
  *         this._container.parentNode.removeChild(this._container);
  *         this._map = undefined;
@@ -1269,7 +1269,7 @@ function removeNode(node) {
  *     this._container.textContent = 'Hello, world';
  *     return this._container;
  * };
- * 
+ *
  * HelloWorldControl.prototype.onRemove() {
  *      this._container.parentNode.removeChild(this._container);
  *      this._map = undefined;
