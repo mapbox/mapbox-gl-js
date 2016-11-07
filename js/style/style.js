@@ -221,7 +221,7 @@ class Style extends Evented {
 
         this._updateZoomHistory(z);
 
-        for (const layerId in this._layers) {
+        for (const layerId of this._order) {
             const layer = this._layers[layerId];
 
             layer.recalculate(z);
