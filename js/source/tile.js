@@ -174,7 +174,7 @@ class Tile {
 
         if (!layer) return;
 
-        const filter = featureFilter(params.filter);
+        const filter = featureFilter(params && params.filter);
         const coord = { z: this.coord.z, x: this.coord.x, y: this.coord.y };
 
         for (let i = 0; i < layer.length; i++) {

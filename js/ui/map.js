@@ -575,7 +575,7 @@ class Map extends Camera {
      * representing features within the specified vector tile or GeoJSON source that satisfy the query parameters.
      *
      * @param {string} sourceID The ID of the vector tile or GeoJSON source to query.
-     * @param {Object} parameters
+     * @param {Object} [parameters]
      * @param {string} [parameters.sourceLayer] The name of the vector tile layer to query. *For vector tile
      *   sources, this parameter is required.* For GeoJSON sources, it is ignored.
      * @param {Array} [parameters.filter] A [filter](https://www.mapbox.com/mapbox-gl-style-spec/#types-filter)
@@ -600,8 +600,8 @@ class Map extends Camera {
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
-    querySourceFeatures(sourceID, params) {
-        return this.style.querySourceFeatures(sourceID, params);
+    querySourceFeatures(sourceID, parameters) {
+        return this.style.querySourceFeatures(sourceID, parameters);
     }
 
     /**
