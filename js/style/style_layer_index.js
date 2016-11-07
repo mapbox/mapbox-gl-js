@@ -3,22 +3,7 @@
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');
 const featureFilter = require('feature-filter');
-const stringify = require('fast-stable-stringify');
-
-function groupByLayout(layers) {
-    const groups = {};
-
-    for (const layer of layers) {
-        const key = stringify([layer.type, layer.source, layer['source-layer'], layer.minzoom, layer.maxzoom, layer.filter, layer.layout]);
-        let group = groups[key];
-        if (!group) {
-            group = groups[key] = [];
-        }
-        group.push(layer);
-    }
-
-    return util.values(groups);
-}
+const groupByLayout = require('mapbox-gl-style-spec/lib/group_by_layout');
 
 class StyleLayerIndex {
     constructor(layers) {
