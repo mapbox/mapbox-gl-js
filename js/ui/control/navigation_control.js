@@ -8,6 +8,7 @@ const className = 'mapboxgl-ctrl';
 /**
  * A `NavigationControl` control contains zoom buttons and a compass.
  *
+ * @implements {IControl}
  * @example
  * var nav = new mapboxgl.NavigationControl();
  * map.addControl(nav, 'top-left');

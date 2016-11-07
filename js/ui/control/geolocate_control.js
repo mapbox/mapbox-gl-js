@@ -12,6 +12,7 @@ const className = 'mapboxgl-ctrl';
  * A `GeolocateControl` control provides a button that uses the browser's geolocation
  * API to locate the user on the map.
  *
+ * @implements {IControl}
  * @example
  * map.addControl(new mapboxgl.GeolocateControl());
  */

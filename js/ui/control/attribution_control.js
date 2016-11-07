@@ -5,6 +5,7 @@ const DOM = require('../../util/dom');
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
  *
+ * @implements {IControl}
  * @example
  * var map = new mapboxgl.Map({attributionControl: false})
  *     .addControl(new mapboxgl.AttributionControl());

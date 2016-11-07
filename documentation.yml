@@ -17,7 +17,6 @@ toc:
   - GeolocateControl
   - AttributionControl
   - ScaleControl
-  - Control
   - name: Handlers
     description: |
       Handlers add different kinds of interactivity to the map -
@@ -65,3 +64,8 @@ toc:
   - LngLatBoundsLike
   - Point
   - PointLike
+  - name: Interfaces
+    description: |
+      Interfaces are specifications for plugin authors to follow in order to
+      create new extensions to Mapbox GL JS
+  - IControl

@@ -5,6 +5,7 @@ const DOM = require('../../util/dom');
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
  *
+ * @implements {IControl}
  * @param {Object} [options]
  * @param {number} [options.maxWidth='150'] The maximum length of the scale control in pixels.
  * @param {string} [options.unit='metric'] Unit of the distance (`'imperial'` or `'metric'`).
