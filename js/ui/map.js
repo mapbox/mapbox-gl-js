@@ -215,7 +215,7 @@ class Map extends Camera {
      * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
      *
      * @param {Control} control The [`Control`](#Control) to add.
-     * @param {string='top-right'} corner corner of the map to which the control will be added
+     * @param {string} corner corner of the map to which the control will be added
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
