@@ -14,7 +14,7 @@ class AttributionControl {
 
     onAdd(map) {
         this._map = map;
-        this._container = DOM.create('div', 'mapboxgl-ctrl-attrib');
+        this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
         this._updateEditLink = () => {
             if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');

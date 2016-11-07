@@ -25,7 +25,7 @@ class NavigationControl {
             this._compassArrow.style.transform = rotate;
         };
 
-        this._container = DOM.create('div', `${className}-group`, map.getContainer());
+        this._container = DOM.create('div', `${className} ${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 
         this._zoomInButton = this._createButton(`${className}-icon ${className}-zoom-in`, 'Zoom In', map.zoomIn.bind(map));

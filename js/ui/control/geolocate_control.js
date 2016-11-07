@@ -20,7 +20,7 @@ class GeolocateControl extends Evented {
 
     onAdd(map) {
         this._map = map;
-        this._container = DOM.create('div', `${className}-group`);
+        this._container = DOM.create('div', `${className} ${className}-group`);
 
         if (browser.supportsGeolocation) {
             this._container.addEventListener('contextmenu',

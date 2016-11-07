@@ -23,7 +23,7 @@ class ScaleControl {
 
     onAdd(map) {
         this._map = map;
-        this._container = DOM.create('div', 'mapboxgl-ctrl-scale', map.getContainer());
+        this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
 
         this._onMove = () => {
             updateScale(this._map, this._container, this.options);

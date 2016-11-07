@@ -193,7 +193,7 @@ class Map extends Camera {
         if (options.classes) this.setClasses(options.classes);
         if (options.style) this.setStyle(options.style);
 
-        if (options.attributionControl) this.addControl(new AttributionControl());
+        if (options.attributionControl) this.addControl(new AttributionControl(), 'bottom-right');
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
@@ -215,19 +215,17 @@ class Map extends Camera {
      * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
      *
      * @param {Control} control The [`Control`](#Control) to add.
-     * @param {string} corner corner of the map to which the control will be added
+     * @param {string='top-right'} corner corner of the map to which the control will be added
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control, corner) {
+    addControl(control, corner='top-right') {
         const controlElement = control.onAdd(this);
-        if (corner && this._controlCorners[corner]) {
-            const cornerContainer = this._controlCorners[corner];
-            if (corner.indexOf('bottom') !== -1) {
-                cornerContainer.insertBefore(controlElement, cornerContainer.firstChild);
-            } else {
-                cornerContainer.appendChild(controlElement);
-            }
+        const cornerContainer = this._controlCorners[corner];
+        if (corner.indexOf('bottom') !== -1) {
+            cornerContainer.insertBefore(controlElement, cornerContainer.firstChild);
+        } else {
+            cornerContainer.appendChild(controlElement);
         }
         return this;
     }
@@ -1238,6 +1236,11 @@ function removeNode(node) {
  * specification for implementers to model: it is not
  * an exported method or class.
  *
+ * Controls must implement `onAdd` and `onRemove`, and must own an
+ * element, which is often a `div` element. To use Mapbox GL JS's
+ * default control styling, add the `mapboxgl-ctrl` class to your control's
+ * node.
+ *
  * @interface IControl
  * @example
  * // Control implemented as ES6 class
@@ -1245,6 +1248,7 @@ function removeNode(node) {
  *     onAdd(map) {
  *         this._map = map;
  *         this._container = document.createElement('div');
+ *         this._container.className = 'mapboxgl-ctrl';
  *         this._container.textContent = 'Hello, world';
  *         return this._container;
  *     }
@@ -1261,6 +1265,7 @@ function removeNode(node) {
  * HelloWorldControl.prototype.onAdd = function(map) {
  *     this._map = map;
  *     this._container = document.createElement('div');
+ *     this._container.className = 'mapboxgl-ctrl';
  *     this._container.textContent = 'Hello, world';
  *     return this._container;
  * };
