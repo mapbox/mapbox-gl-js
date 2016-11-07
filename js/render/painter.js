@@ -118,23 +118,7 @@ class Painter {
      */
     clearColor() {
         const gl = this.gl;
-        const firstGroup = this.style._groups[0];
-        const background = firstGroup && firstGroup[0].type === 'background' ? firstGroup[0] : null;
-
-        // if the bottommost layer is a solid background, use its color for clearColor
-        // to avoid rendering with full quads later
-        if (background && !background.paint['background-pattern'] && !background.isHidden()) {
-            const color = background.paint['background-color'];
-            const opacity = background.paint['background-opacity'];
-            gl.clearColor(
-                color[0] * opacity,
-                color[1] * opacity,
-                color[2] * opacity,
-                color[3] * opacity);
-        } else {
-            gl.clearColor(0, 0, 0, 0);
-        }
-
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
