@@ -17,7 +17,7 @@ const className = 'mapboxgl-ctrl';
  */
 class GeolocateControl extends Evented {
 
-    constructor(options) {
+    constructor() {
         super();
     }
 
@@ -40,7 +40,7 @@ class GeolocateControl extends Evented {
         return this._container;
     }
 
-    onRemove(map) {
+    onRemove() {
         this._container.parentNode.removeChild(this._container);
         this._map = undefined;
     }

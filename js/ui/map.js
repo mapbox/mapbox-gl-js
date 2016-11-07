@@ -224,9 +224,9 @@ class Map extends Camera {
         if (corner && this._controlCorners[corner]) {
             const cornerContainer = this._controlCorners[corner];
             if (corner.indexOf('bottom') !== -1) {
-                cornerContainer.insertBefore(container, cornerContainer.firstChild);
+                cornerContainer.insertBefore(controlElement, cornerContainer.firstChild);
             } else {
-                cornerContainer.appendChild(container);
+                cornerContainer.appendChild(controlElement);
             }
         }
         return this;

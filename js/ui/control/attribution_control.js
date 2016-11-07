@@ -15,22 +15,37 @@ class AttributionControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl-attrib');
 
-        this._updateAttributions();
-        this._updateEditLink();
+        this._updateEditLink = () => {
+            if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+            if (this._editLink) {
+                const center = this._map.getCenter();
+                this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
+                        center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
+            }
+        };
 
-        this._map.on('data', (event) => {
+        this._updateData = (event) => {
             if (event.dataType === 'source') {
                 this._updateAttributions();
                 this._updateEditLink();
             }
-        });
-        this._map.on('moveend', this._updateEditLink.bind(this));
+        };
+
+        this._updateAttributions();
+        this._updateEditLink();
+
+        this._map.on('data', this._updateData);
+        this._map.on('moveend', this._updateEditLink);
 
         return this._container;
     }
 
-    onRemove(map) {
+    onRemove() {
         this._container.parentNode.removeChild(this._container);
+
+        this._map.off('data', this._updateData);
+        this._map.off('moveend', this._updateEditLink);
+
         this._map = undefined;
     }
 
@@ -49,7 +64,7 @@ class AttributionControl {
 
         // remove any entries that are substrings of another entry.
         // first sort by length so that substrings come first
-        attributions.sort((a, b) => { return a.length - b.length; });
+        attributions.sort((a, b) => a.length - b.length);
         attributions = attributions.filter((attrib, i) => {
             for (let j = i + 1; j < attributions.length; j++) {
                 if (attributions[j].indexOf(attrib) >= 0) { return false; }
@@ -61,14 +76,6 @@ class AttributionControl {
         this._editLink = null;
     }
 
-    _updateEditLink() {
-        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
-        if (this._editLink) {
-            const center = this._map.getCenter();
-            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
-                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
-        }
-    }
 }
 
 module.exports = AttributionControl;

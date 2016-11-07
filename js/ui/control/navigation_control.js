@@ -18,7 +18,11 @@ class NavigationControl {
 
     onAdd(map) {
         this._map = map;
-        this._el = map.getCanvasContainer();
+
+        this._rotateCompassArrow = () => {
+            const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+            this._compassArrow.style.transform = rotate;
+        };
 
         this._container = DOM.create('div', `${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
@@ -33,14 +37,15 @@ class NavigationControl {
         this._onCompassMove = this._onCompassMove.bind(this);
         this._onCompassUp = this._onCompassUp.bind(this);
 
-        this._map.on('rotate', this._rotateCompassArrow.bind(this));
+        this._map.on('rotate', this._rotateCompassArrow);
         this._rotateCompassArrow();
 
         return this._container;
     }
 
-    onRemove(map) {
+    onRemove() {
         this._container.parentNode.removeChild(this._container);
+        this._map.off('rotate', this._rotateCompassArrow);
         this._map = undefined;
     }
 
@@ -55,14 +60,14 @@ class NavigationControl {
         window.document.addEventListener('mousemove', this._onCompassMove);
         window.document.addEventListener('mouseup', this._onCompassUp);
 
-        this._el.dispatchEvent(copyMouseEvent(e));
+        this._map.getCanvasContainer().dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     }
 
     _onCompassMove(e) {
         if (e.button !== 0) return;
 
-        this._el.dispatchEvent(copyMouseEvent(e));
+        this._map.getCanvasContainer().dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     }
 
@@ -73,7 +78,7 @@ class NavigationControl {
         window.document.removeEventListener('mouseup', this._onCompassUp);
         DOM.enableDrag();
 
-        this._el.dispatchEvent(copyMouseEvent(e));
+        this._map.getCanvasContainer().dispatchEvent(copyMouseEvent(e));
         e.stopPropagation();
     }
 
@@ -85,10 +90,6 @@ class NavigationControl {
         return a;
     }
 
-    _rotateCompassArrow() {
-        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
-        this._compassArrow.style.transform = rotate;
-    }
 }
 
 module.exports = NavigationControl;

@@ -24,19 +24,21 @@ class ScaleControl {
 
     onAdd(map) {
         this._map = map;
-        this._container = DOM.create('div', className, map.getContainer()),
+        this._container = DOM.create('div', className, map.getContainer());
 
-        const onMove = () => {
+        this._onMove = () => {
             updateScale(this._map, this._container, this.options);
         };
-        this._map.on('move', onMove);
-        onMove();
+
+        this._map.on('move', this._onMove);
+        this._onMove();
 
         return this._container;
     }
 
-    onRemove(map) {
+    onRemove() {
         this._container.parentNode.removeChild(this._container);
+        this._map.off('move', this._onMove);
         this._map = undefined;
     }
 }

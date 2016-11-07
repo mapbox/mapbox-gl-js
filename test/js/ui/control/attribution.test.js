@@ -28,7 +28,7 @@ test('AttributionControl appears in bottom-right by default', (t) => {
 
 test('AttributionControl appears in the position specified by the position option', (t) => {
     const map = createMap();
-    map.addControl(new AttributionControl({position: 'top-left'}));
+    map.addControl(new AttributionControl());
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-top-left .mapboxgl-ctrl-attrib').length, 1);
     t.end();
@@ -36,7 +36,7 @@ test('AttributionControl appears in the position specified by the position optio
 
 test('AttributionControl dedupes attributions that are substrings of others', (t) => {
     const map = createMap();
-    const attribution = new AttributionControl({position: 'top-left'});
+    const attribution = new AttributionControl();
     map.addControl(attribution);
 
     map.on('load', () => {
@@ -59,7 +59,7 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
 
 test('AttributionControl has the correct edit map link', (t) => {
     const map = createMap();
-    const attribution = new AttributionControl({position: 'top-left'});
+    const attribution = new AttributionControl();
     map.addControl(attribution);
 
     map.on('load', () => {
