@@ -17,10 +17,6 @@ const className = 'mapboxgl-ctrl';
  */
 class GeolocateControl extends Evented {
 
-    constructor() {
-        super();
-    }
-
     onAdd(map) {
         this._map = map;
         this._container = DOM.create('div', `${className}-group`);
