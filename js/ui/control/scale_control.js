@@ -26,6 +26,10 @@ class ScaleControl {
         ], this);
     }
 
+    getDefaultPosition() {
+        return 'bottom-left';
+    }
+
     _onMove() {
         updateScale(this._map, this._container, this.options);
     }

@@ -193,7 +193,7 @@ class Map extends Camera {
         if (options.classes) this.setClasses(options.classes);
         if (options.style) this.setStyle(options.style);
 
-        if (options.attributionControl) this.addControl(new AttributionControl(), 'bottom-right');
+        if (options.attributionControl) this.addControl(new AttributionControl());
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
@@ -215,18 +215,24 @@ class Map extends Camera {
      * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
      *
      * @param {Control} control The [`Control`](#Control) to add.
-     * @param {string} [corner='top-right'] corner of the map to which the control will be added
+     * @param {string} [position='top-right'] position on the map to which the control will be added.
+     * valid values are 'top-left', 'top-right', 'bottom-left', and 'bottom-right'
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control, corner) {
-        if (corner === undefined) corner = 'top-right';
+    addControl(control, position) {
+        if (position === undefined && control.getDefaultPosition) {
+            position = control.getDefaultPosition();
+        }
+        if (position === undefined) {
+            position = 'top-right';
+        }
         const controlElement = control.onAdd(this);
-        const cornerContainer = this._controlCorners[corner];
-        if (corner.indexOf('bottom') !== -1) {
-            cornerContainer.insertBefore(controlElement, cornerContainer.firstChild);
+        const positionContainer = this._controlPositions[position];
+        if (position.indexOf('bottom') !== -1) {
+            positionContainer.insertBefore(controlElement, positionContainer.firstChild);
         } else {
-            cornerContainer.appendChild(controlElement);
+            positionContainer.appendChild(controlElement);
         }
         return this;
     }
@@ -967,9 +973,9 @@ class Map extends Camera {
         this._resizeCanvas(dimensions[0], dimensions[1]);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
-        const corners = this._controlCorners = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((pos) => {
-            corners[pos] = DOM.create('div', `mapboxgl-ctrl-${pos}`, controlContainer);
+        const positions = this._controlPositions = {};
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+            positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
     }
 
@@ -1304,6 +1310,20 @@ function removeNode(node) {
  * @name onRemove
  * @param {Map} map the Map this control will be removed from
  * @returns {undefined} there is no required return value for this method
+ */
+
+/**
+ * Optionally provide a default position for this control. If this method
+ * is implemented and {@link Map#addControl} is called without the `position`
+ * parameter, the value returned by getDefaultPosition will be used as the
+ * control's position.
+ *
+ * @function
+ * @memberof IControl
+ * @instance
+ * @name getDefaultPosition
+ * @param {Map} map the Map this control will be added to
+ * @returns {string} a control position, one of the values valid in addControl.
  */
 
 /**

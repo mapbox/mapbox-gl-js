@@ -20,6 +20,10 @@ class AttributionControl {
         ], this);
     }
 
+    getDefaultPosition() {
+        return 'bottom-right';
+    }
+
     onAdd(map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
