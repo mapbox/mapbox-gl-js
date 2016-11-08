@@ -6,8 +6,7 @@ const browser = require('./util/browser');
 const mapboxgl = module.exports = {};
 
 mapboxgl.version = require('../package.json').version;
-mapboxgl.workerCount = Math.max(browser.hardwareConcurrency - 1, 1);
-
+mapboxgl.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.Control = require('./ui/control/control');

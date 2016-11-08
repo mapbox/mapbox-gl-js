@@ -1,7 +1,6 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const proxyquire = require('proxyquire');
 const mapboxgl = require('../../js/mapbox-gl');
 
 test('mapboxgl', (t) => {
@@ -10,11 +9,8 @@ test('mapboxgl', (t) => {
         t.end();
     });
 
-    t.test('.workerCount defaults to hardwareConcurrency - 1', (t) => {
-        const mapboxgl = proxyquire('../../js/mapbox-gl', {
-            './util/browser': { hardwareConcurrency: 15 }
-        });
-        t.equal(mapboxgl.workerCount, 14);
+    t.test('workerCount', (t) => {
+        t.ok(typeof mapboxgl.workerCount === 'number');
         t.end();
     });
     t.end();
