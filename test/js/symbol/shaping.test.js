@@ -50,6 +50,12 @@ test('shaping', (t) => {
     shaped = shaping.shapeText('abcde\r\nabcde', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0, [0, 0]);
     t.deepEqual(shaped.positionedGlyphs, expectedNewLine.positionedGlyphs);
 
+    const expectedNewLinesInMiddle = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../expected/text-shaping-newlines-in-middle.json')));
+
+    shaped = shaping.shapeText('abcde\n\nabcde', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0, [0, 0]);
+    if (UPDATE) fs.writeFileSync(path.join(__dirname, '/../../expected/text-shaping-newlines-in-middle.json'), JSON.stringify(shaped, null, 2));
+    t.deepEqual(shaped, expectedNewLinesInMiddle);
+
     // Null shaping.
     shaped = shaping.shapeText('', glyphs, 15 * oneEm, oneEm, 0.5, 0.5, 0.5, 0 * oneEm, [0, 0]);
     t.equal(false, shaped);
