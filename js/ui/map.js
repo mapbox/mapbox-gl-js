@@ -1316,15 +1316,6 @@ function removeNode(node) {
  */
 
 /**
- * A [`LngLat`](#LngLat) object or an array of two numbers representing longitude and latitude.
- *
- * @typedef {(LngLat | Array<number>)} LngLatLike
- * @example
- * var v1 = new mapboxgl.LngLat(-122.420679, 37.772537);
- * var v2 = [-122.420679, 37.772537];
- */
-
-/**
  * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects.
  *
  * @typedef {(LngLatBounds | Array<LngLatLike>)} LngLatBoundsLike
