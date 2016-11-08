@@ -369,13 +369,13 @@ class Painter {
         }
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, configuration.applyPragmas(definesSource + definition.fragmentSource, 'fragment'));
+        gl.shaderSource(fragmentShader, configuration.applyPragmas(definesSource + shaders.prelude.fragmentSource + definition.fragmentSource, 'fragment'));
         gl.compileShader(fragmentShader);
         assert(gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(fragmentShader));
         gl.attachShader(program, fragmentShader);
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, configuration.applyPragmas(definesSource + shaders.util + definition.vertexSource, 'vertex'));
+        gl.shaderSource(vertexShader, configuration.applyPragmas(definesSource + shaders.prelude.vertexSource + definition.vertexSource, 'vertex'));
         gl.compileShader(vertexShader);
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
