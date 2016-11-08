@@ -109,7 +109,7 @@
   },
   "mapbox-gl-compare": {
     "prefix": "mapbox-gl-compare",
-    "latest": "0.0.2",
+    "latest": "0.1.0",
     "v": {
       "0.0.1": {
         "files": [
@@ -118,6 +118,12 @@
         ]
       },
       "0.0.2": {
+        "files": [
+          "mapbox-gl-compare.js",
+          "mapbox-gl-compare.css"
+        ]
+      },
+      "0.1.0": {
         "files": [
           "mapbox-gl-compare.js",
           "mapbox-gl-compare.css"

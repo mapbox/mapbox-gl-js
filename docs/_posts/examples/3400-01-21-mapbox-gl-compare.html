@@ -46,5 +46,8 @@ var afterMap = new mapboxgl.Map({
     zoom: 0
 });
 
-var map = new mapboxgl.Compare(beforeMap, afterMap);
+var map = new mapboxgl.Compare(beforeMap, afterMap, {
+    // Set this to enable comparing two maps by mouse movement:
+    // mousemove: true
+});
 </script>
