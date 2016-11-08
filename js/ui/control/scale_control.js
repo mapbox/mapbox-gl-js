@@ -1,6 +1,7 @@
 'use strict';
 
 const DOM = require('../../util/dom');
+const util = require('../../util/util');
 
 /**
  * A `ScaleControl` control displays the ratio of a distance on the map to the corresponding distance on the ground.
@@ -19,15 +20,19 @@ class ScaleControl {
 
     constructor(options) {
         this.options = options;
+
+        util.bindAll([
+            '_onMove'
+        ], this);
+    }
+
+    _onMove() {
+        updateScale(this._map, this._container, this.options);
     }
 
     onAdd(map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-scale', map.getContainer());
-
-        this._onMove = () => {
-            updateScale(this._map, this._container, this.options);
-        };
 
         this._map.on('move', this._onMove);
         this._onMove();

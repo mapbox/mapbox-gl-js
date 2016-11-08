@@ -2,6 +2,7 @@
 
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
+const util = require('../../util/util');
 
 const className = 'mapboxgl-ctrl';
 
@@ -17,14 +18,19 @@ const className = 'mapboxgl-ctrl';
  */
 class NavigationControl {
 
+    constructor() {
+        util.bindAll([
+            '_rotateCompassArrow'
+        ], this);
+    }
+
+    _rotateCompassArrow() {
+        const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
+        this._compassArrow.style.transform = rotate;
+    }
+
     onAdd(map) {
         this._map = map;
-
-        this._rotateCompassArrow = () => {
-            const rotate = `rotate(${this._map.transform.angle * (180 / Math.PI)}deg)`;
-            this._compassArrow.style.transform = rotate;
-        };
-
         this._container = DOM.create('div', `${className} ${className}-group`, map.getContainer());
         this._container.addEventListener('contextmenu', this._onContextMenu.bind(this));
 

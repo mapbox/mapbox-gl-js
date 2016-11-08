@@ -1,6 +1,7 @@
 'use strict';
 
 const DOM = require('../../util/dom');
+const util = require('../../util/util');
 
 /**
  * An `AttributionControl` control presents the map's [attribution information](https://www.mapbox.com/help/attribution/).
@@ -12,25 +13,17 @@ const DOM = require('../../util/dom');
  */
 class AttributionControl {
 
+    constructor() {
+        util.bindAll([
+            '_updateEditLink',
+            '_updateData'
+        ], this);
+    }
+
     onAdd(map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
-        this._updateEditLink = () => {
-            if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
-            if (this._editLink) {
-                const center = this._map.getCenter();
-                this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
-                        center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
-            }
-        };
-
-        this._updateData = (event) => {
-            if (event.dataType === 'source') {
-                this._updateAttributions();
-                this._updateEditLink();
-            }
-        };
 
         this._updateAttributions();
         this._updateEditLink();
@@ -48,6 +41,22 @@ class AttributionControl {
         this._map.off('moveend', this._updateEditLink);
 
         this._map = undefined;
+    }
+
+    _updateEditLink() {
+        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+        if (this._editLink) {
+            const center = this._map.getCenter();
+            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
+                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
+        }
+    }
+
+    _updateData(event) {
+        if (event.dataType === 'source') {
+            this._updateAttributions();
+            this._updateEditLink();
+        }
     }
 
     _updateAttributions() {
