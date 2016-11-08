@@ -115,7 +115,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
                     positionedGlyphs[k].x -= lineLength;
                 }
 
-                if (justify) {
+                if (justify && lastSafeBreak > lineStartIndex) {
                     // Collapse invisible characters.
                     let lineEnd = lastSafeBreak;
                     if (invisible[positionedGlyphs[lastSafeBreak].codePoint]) {

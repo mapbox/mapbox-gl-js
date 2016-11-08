@@ -1,0 +1,151 @@
+{
+  "positionedGlyphs": [
+    {
+      "codePoint": 97,
+      "x": -32.5,
+      "y": -41,
+      "glyph": {
+        "id": 97,
+        "width": 11,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 13
+      }
+    },
+    {
+      "codePoint": 98,
+      "x": -19.5,
+      "y": -41,
+      "glyph": {
+        "id": 98,
+        "width": 12,
+        "height": 20,
+        "left": 2,
+        "top": -7,
+        "advance": 14
+      }
+    },
+    {
+      "codePoint": 99,
+      "x": -5.5,
+      "y": -41,
+      "glyph": {
+        "id": 99,
+        "width": 10,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 11
+      }
+    },
+    {
+      "codePoint": 100,
+      "x": 5.5,
+      "y": -41,
+      "glyph": {
+        "id": 100,
+        "width": 12,
+        "height": 20,
+        "left": 1,
+        "top": -7,
+        "advance": 14
+      }
+    },
+    {
+      "codePoint": 101,
+      "x": 19.5,
+      "y": -41,
+      "glyph": {
+        "id": 101,
+        "width": 12,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 13
+      }
+    },
+    {
+      "codePoint": 10,
+      "x": 65,
+      "y": -41,
+      "glyph": null
+    },
+    {
+      "codePoint": 10,
+      "x": 0,
+      "y": -17,
+      "glyph": null
+    },
+    {
+      "codePoint": 97,
+      "x": -32.5,
+      "y": 7,
+      "glyph": {
+        "id": 97,
+        "width": 11,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 13
+      }
+    },
+    {
+      "codePoint": 98,
+      "x": -19.5,
+      "y": 7,
+      "glyph": {
+        "id": 98,
+        "width": 12,
+        "height": 20,
+        "left": 2,
+        "top": -7,
+        "advance": 14
+      }
+    },
+    {
+      "codePoint": 99,
+      "x": -5.5,
+      "y": 7,
+      "glyph": {
+        "id": 99,
+        "width": 10,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 11
+      }
+    },
+    {
+      "codePoint": 100,
+      "x": 5.5,
+      "y": 7,
+      "glyph": {
+        "id": 100,
+        "width": 12,
+        "height": 20,
+        "left": 1,
+        "top": -7,
+        "advance": 14
+      }
+    },
+    {
+      "codePoint": 101,
+      "x": 19.5,
+      "y": 7,
+      "glyph": {
+        "id": 101,
+        "width": 12,
+        "height": 15,
+        "left": 1,
+        "top": -12,
+        "advance": 13
+      }
+    }
+  ],
+  "text": "abcde\n\nabcde",
+  "top": -36,
+  "bottom": 36,
+  "left": -32.5,
+  "right": 32.5
+}
