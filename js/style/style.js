@@ -294,16 +294,9 @@ class Style extends Evented {
             this._reloadSource(updatedSourceIds[i]);
         }
 
-        for (i = 0; i < this._updates.events.length; i++) {
-            const args = this._updates.events[i];
-            this.fire(args[0], args[1]);
-        }
-
         this._applyClasses(classes, options);
 
-        if (this._updates.changed) {
-            this.fire('data', {dataType: 'style'});
-        }
+        this.fire('data', {dataType: 'style'});
 
         this._resetUpdates();
 
@@ -312,7 +305,7 @@ class Style extends Evented {
 
     _resetUpdates() {
         this._updates = {
-            events: [],
+            changed: false,
             layers: {},
             sources: {},
             paintProps: {}
@@ -544,7 +537,7 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name, klass);
     }
 
-    updateClasses (layerId, paintName) {
+    updateClasses(layerId, paintName) {
         this._updates.changed = true;
         if (!layerId) {
             this._updates.allPaintProps = true;
@@ -574,7 +567,7 @@ class Style extends Evented {
         }, (value) => { return value !== undefined; });
     }
 
-    _updateLayer (layer) {
+    _updateLayer(layer) {
         this._updates.layers[layer.id] = true;
         if (layer.source) {
             this._updates.sources[layer.source] = true;
