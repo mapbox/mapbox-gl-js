@@ -93,7 +93,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const bucket = tile.getBucket(layer);
         if (!bucket) continue;
         const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
-        if (!buffers.segments.length) continue;
+        if (!buffers || !buffers.segments.length) continue;
 
         const isSDF = isText || bucket.sdfIcons;
 
