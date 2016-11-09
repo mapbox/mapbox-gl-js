@@ -11,34 +11,22 @@ const className = 'mapboxgl-ctrl';
 let supportsGeolocation;
 
 function checkGeolocationSupport(callback) {
-
     if (supportsGeolocation !== undefined) {
-        if (supportsGeolocation === true) {
-            callback();
-        }
-        return;
-    }
+        callback(supportsGeolocation);
 
-    // Test for the case where a browser disables Geolocation because of an
-    // insecure origin
-    // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-powerful-features-on-insecure-origins
-    //
-    // navigator.permissions has incomplete browser support
-    // http://caniuse.com/#feat=permissions-api
-    if (window.navigator.permissions !== undefined) {
-        window.navigator.permissions
-            .query({ name:'geolocation' })
-            .then((p) => {
-                supportsGeolocation = p.state !== 'denied';
-                if (supportsGeolocation === true) {
-                    callback();
-                }
-            });
+    } else if (window.navigator.permissions !== undefined) {
+        // navigator.permissions has incomplete browser support
+        // http://caniuse.com/#feat=permissions-api
+        // Test for the case where a browser disables Geolocation because of an
+        // insecure origin
+        window.navigator.permissions.query({ name: 'geolocation' }).then((p) => {
+            supportsGeolocation = p.state !== 'denied';
+            callback(supportsGeolocation);
+        });
+
     } else {
         supportsGeolocation = !!window.navigator.geolocation;
-        if (supportsGeolocation === true) {
-            callback();
-        }
+        callback(supportsGeolocation);
     }
 }
 
@@ -102,7 +90,8 @@ class GeolocateControl extends Evented {
         this._timeoutId = undefined;
     }
 
-    _setupUI() {
+    _setupUI(supported) {
+        if (supported === false) return;
         this._container.addEventListener('contextmenu',
             e => e.preventDefault());
         this._geolocateButton = DOM.create('button',
