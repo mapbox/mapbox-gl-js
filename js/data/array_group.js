@@ -1,6 +1,5 @@
 'use strict';
 
-const util = require('../util/util');
 const ProgramConfiguration = require('./program_configuration');
 
 class Segment {
@@ -80,6 +79,7 @@ class ArrayGroup {
     populatePaintArrays(featureProperties) {
         for (const key in this.layerData) {
             const layerData = this.layerData[key];
+            if (layerData.paintVertexArray.bytesPerElement === 0) continue;
             layerData.programConfiguration.populatePaintArray(
                 layerData.layer,
                 layerData.paintVertexArray,
@@ -98,16 +98,23 @@ class ArrayGroup {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
-            paintVertexArrays: util.mapObject(this.layerData, (layerData) => {
-                return {
-                    array: layerData.paintVertexArray.serialize(transferables),
-                    type: layerData.paintVertexArray.constructor.serialize()
-                };
-            }),
+            paintVertexArrays: serializePaintVertexArrays(this.layerData, transferables),
             segments: this.segments,
             segments2: this.segments2
         };
     }
+}
+
+function serializePaintVertexArrays(layerData, transferables) {
+    const paintVertexArrays = {};
+    for (const layerId in layerData) {
+        const inputArray = layerData[layerId].paintVertexArray;
+        if (inputArray.length === 0) continue;
+        const array = inputArray.serialize(transferables);
+        const type = inputArray.constructor.serialize();
+        paintVertexArrays[layerId] = {array, type};
+    }
+    return paintVertexArrays;
 }
 
 /**

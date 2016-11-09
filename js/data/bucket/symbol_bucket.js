@@ -104,9 +104,12 @@ class SymbolBucket {
         this.fontstack = options.fontstack;
 
         if (options.arrays) {
-            this.buffers = util.mapObject(options.arrays, (arrays, key) => {
-                return new BufferGroup(symbolInterfaces[key], options.layers, options.zoom, options.arrays[key]);
-            });
+            this.buffers = {};
+            for (const id in options.arrays) {
+                if (options.arrays[id]) {
+                    this.buffers[id] = new BufferGroup(symbolInterfaces[id], options.layers, options.zoom, options.arrays[id]);
+                }
+            }
         }
     }
 
@@ -190,15 +193,15 @@ class SymbolBucket {
             adjustedTextSize: this.adjustedTextSize,
             adjustedIconSize: this.adjustedIconSize,
             fontstack: this.fontstack,
-            arrays: util.mapObject(this.arrays, (a) => a.serialize(transferables))
+            arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
     }
 
     destroy() {
         if (this.buffers) {
-            this.buffers.icon.destroy();
-            this.buffers.glyph.destroy();
-            this.buffers.collisionBox.destroy();
+            if (this.buffers.icon) this.buffers.icon.destroy();
+            if (this.buffers.glyph) this.buffers.glyph.destroy();
+            if (this.buffers.collisionBox) this.buffers.collisionBox.destroy();
             this.buffers = null;
         }
     }
