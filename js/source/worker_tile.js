@@ -116,9 +116,9 @@ class WorkerTile {
                 buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),
                 collisionTile: collisionTile.serialize(transferables),
-                collisionBoxArray: this.collisionBoxArray.serialize(transferables),
-                symbolInstancesArray: this.symbolInstancesArray.serialize(transferables),
-                symbolQuadsArray: this.symbolQuadsArray.serialize(transferables)
+                collisionBoxArray: this.collisionBoxArray.serialize(),
+                symbolInstancesArray: this.symbolInstancesArray.serialize(),
+                symbolQuadsArray: this.symbolQuadsArray.serialize()
             }, transferables);
         };
 
