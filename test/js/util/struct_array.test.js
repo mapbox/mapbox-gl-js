@@ -87,7 +87,7 @@ test('StructArray', (t) => {
         array.emplaceBack(1, 1, 1);
         t.equal(array.capacity, capacityInitial);
 
-        array.trim();
+        array._trim();
         t.equal(array.capacity, 1);
         t.equal(array.arrayBuffer.byteLength, array.bytesPerElement);
 

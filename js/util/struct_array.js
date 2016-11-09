@@ -54,6 +54,8 @@ const RESIZE_MULTIPLIER = 5;
  */
 class StructArray {
     constructor(serialized) {
+        this.isTransferred = false;
+
         if (serialized !== undefined) {
         // Create from an serialized StructArray
             this.arrayBuffer = serialized.arrayBuffer;
@@ -83,8 +85,12 @@ class StructArray {
      * Serialize this StructArray instance
      */
     serialize(transferables) {
-        this.trim();
+        assert(!this.isTransferred);
+
+        this._trim();
+
         if (transferables) {
+            this.isTransferred = true;
             transferables.push(this.arrayBuffer);
         }
         return {
@@ -98,13 +104,14 @@ class StructArray {
      * @param {number} index The index of the element.
      */
     get(index) {
+        assert(!this.isTransferred);
         return new this.StructType(this, index);
     }
 
     /**
      * Resize the array to discard unused capacity.
      */
-    trim() {
+    _trim() {
         if (this.length !== this.capacity) {
             this.capacity = this.length;
             this.arrayBuffer = this.arrayBuffer.slice(0, this.length * this.bytesPerElement);
@@ -119,6 +126,8 @@ class StructArray {
      * @param {number} n The new size of the array.
      */
     resize(n) {
+        assert(!this.isTransferred);
+
         this.length = n;
         if (n > this.capacity) {
             this.capacity = Math.max(n, Math.floor(this.capacity * RESIZE_MULTIPLIER), DEFAULT_CAPACITY);
@@ -145,6 +154,8 @@ class StructArray {
      * @param {number} endIndex
      */
     toArray(startIndex, endIndex) {
+        assert(!this.isTransferred);
+
         const array = [];
 
         for (let i = startIndex; i < endIndex; i++) {
