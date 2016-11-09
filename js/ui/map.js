@@ -193,7 +193,7 @@ class Map extends Camera {
         if (options.classes) this.setClasses(options.classes);
         if (options.style) this.setStyle(options.style);
 
-        if (options.attributionControl) this.addControl(new AttributionControl(options.attributionControl));
+        if (options.attributionControl) this.addControl(new AttributionControl());
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
@@ -212,14 +212,39 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a [`Control`](#Control) to the map, calling `control.addTo(this)`.
+     * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
      *
      * @param {Control} control The [`Control`](#Control) to add.
+     * @param {string} [position='top-right'] position on the map to which the control will be added.
+     * valid values are 'top-left', 'top-right', 'bottom-left', and 'bottom-right'
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
-    addControl(control) {
-        control.addTo(this);
+    addControl(control, position) {
+        if (position === undefined && control.getDefaultPosition) {
+            position = control.getDefaultPosition();
+        }
+        if (position === undefined) {
+            position = 'top-right';
+        }
+        const controlElement = control.onAdd(this);
+        const positionContainer = this._controlPositions[position];
+        if (position.indexOf('bottom') !== -1) {
+            positionContainer.insertBefore(controlElement, positionContainer.firstChild);
+        } else {
+            positionContainer.appendChild(controlElement);
+        }
+        return this;
+    }
+
+    /**
+     * Removes the control from the map.
+     *
+     * @param {Control} control The [`Control`](#Control) to add.
+     * @returns {Map} `this`
+     */
+    removeControl(control) {
+        control.onRemove(this);
         return this;
     }
 
@@ -948,9 +973,9 @@ class Map extends Camera {
         this._resizeCanvas(dimensions[0], dimensions[1]);
 
         const controlContainer = this._controlContainer = DOM.create('div', 'mapboxgl-control-container', container);
-        const corners = this._controlCorners = {};
-        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((pos) => {
-            corners[pos] = DOM.create('div', `mapboxgl-ctrl-${pos}`, controlContainer);
+        const positions = this._controlPositions = {};
+        ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach((positionName) => {
+            positions[positionName] = DOM.create('div', `mapboxgl-ctrl-${positionName}`, controlContainer);
         });
     }
 
@@ -1212,6 +1237,94 @@ function removeNode(node) {
         node.parentNode.removeChild(node);
     }
 }
+
+/**
+ * Interface for interactive controls added to the map. This is an
+ * specification for implementers to model: it is not
+ * an exported method or class.
+ *
+ * Controls must implement `onAdd` and `onRemove`, and must own an
+ * element, which is often a `div` element. To use Mapbox GL JS's
+ * default control styling, add the `mapboxgl-ctrl` class to your control's
+ * node.
+ *
+ * @interface IControl
+ * @example
+ * // Control implemented as ES6 class
+ * class HelloWorldControl {
+ *     onAdd(map) {
+ *         this._map = map;
+ *         this._container = document.createElement('div');
+ *         this._container.className = 'mapboxgl-ctrl';
+ *         this._container.textContent = 'Hello, world';
+ *         return this._container;
+ *     }
+ *
+ *     onRemove() {
+ *         this._container.parentNode.removeChild(this._container);
+ *         this._map = undefined;
+ *     }
+ * }
+ *
+ * // Control implemented as ES5 prototypical class
+ * function HelloWorldControl() { }
+ *
+ * HelloWorldControl.prototype.onAdd = function(map) {
+ *     this._map = map;
+ *     this._container = document.createElement('div');
+ *     this._container.className = 'mapboxgl-ctrl';
+ *     this._container.textContent = 'Hello, world';
+ *     return this._container;
+ * };
+ *
+ * HelloWorldControl.prototype.onRemove() {
+ *      this._container.parentNode.removeChild(this._container);
+ *      this._map = undefined;
+ * };
+ */
+
+/**
+ * Register a control on the map and give it a chance to register event listeners
+ * and resources. This method is called by {@link Map#addControl}
+ * internally.
+ *
+ * @function
+ * @memberof IControl
+ * @instance
+ * @name onAdd
+ * @param {Map} map the Map this control will be added to
+ * @returns {HTMLElement} The control's container element. This should
+ * be created by the control and returned by onAdd without being attached
+ * to the DOM: the map will insert the control's element into the DOM
+ * as necessary.
+ */
+
+/**
+ * Unregister a control on the map and give it a chance to detach event listeners
+ * and resources. This method is called by {@link Map#removeControl}
+ * internally.
+ *
+ * @function
+ * @memberof IControl
+ * @instance
+ * @name onRemove
+ * @param {Map} map the Map this control will be removed from
+ * @returns {undefined} there is no required return value for this method
+ */
+
+/**
+ * Optionally provide a default position for this control. If this method
+ * is implemented and {@link Map#addControl} is called without the `position`
+ * parameter, the value returned by getDefaultPosition will be used as the
+ * control's position.
+ *
+ * @function
+ * @memberof IControl
+ * @instance
+ * @name getDefaultPosition
+ * @param {Map} map the Map this control will be added to
+ * @returns {string} a control position, one of the values valid in addControl.
+ */
 
 /**
  * A [`LngLat`](#LngLat) object or an array of two numbers representing longitude and latitude.

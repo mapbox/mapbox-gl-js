@@ -506,12 +506,28 @@ test('Map', (t) => {
     t.test('#addControl', (t) => {
         const map = createMap();
         const control = {
-            addTo: function(_) {
+            onAdd: function(_) {
                 t.equal(map, _, 'addTo() called with map');
+                t.end();
+                return window.document.createElement('div');
+            }
+        };
+        map.addControl(control);
+    });
+
+    t.test('#removeControl', (t) => {
+        const map = createMap();
+        const control = {
+            onAdd: function() {
+                return window.document.createElement('div');
+            },
+            onRemove: function(_) {
+                t.equal(map, _, 'onRemove() called with map');
                 t.end();
             }
         };
         map.addControl(control);
+        map.removeControl(control);
     });
 
     t.test('#addClass', (t) => {

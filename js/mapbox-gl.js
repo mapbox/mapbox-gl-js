@@ -9,7 +9,6 @@ mapboxgl.version = require('../package.json').version;
 mapboxgl.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
 
 mapboxgl.Map = require('./ui/map');
-mapboxgl.Control = require('./ui/control/control');
 mapboxgl.NavigationControl = require('./ui/control/navigation_control');
 mapboxgl.GeolocateControl = require('./ui/control/geolocate_control');
 mapboxgl.AttributionControl = require('./ui/control/attribution_control');

@@ -64,7 +64,7 @@ var map = window.map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
-map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
 
 map.on('load', function() {
     map.addSource('geojson', {
