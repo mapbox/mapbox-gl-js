@@ -261,7 +261,7 @@ class Camera extends Evented {
 
         cameraOptions = util.extend({}, cameraOptions);
 
-        // throw duration: 0 into non animation (this is not a good final solution)
+        // duration: 0 should not animate
         if (animationOptions.duration === 0) animationOptions.type = 'none';
 
         switch(animationOptions.type) {
@@ -572,7 +572,8 @@ class Camera extends Evented {
         // When u₀ = u₁, the optimal path doesn’t require both ascent and descent.
         if (Math.abs(u1) < 0.000001) {
             // Perform a more or less instantaneous transition if the path is too short.
-            if (Math.abs(w0 - w1) < 0.000001) return this.setCamera(cameraOptions, util.extend({type: 'ease'}, animationOptions)); // TODO: this creates an endless loop
+            animationOptions.type = 'ease';
+            if (Math.abs(w0 - w1) < 0.000001) return this.setCamera(cameraOptions, animationOptions);
 
             const k = w1 < w0 ? -1 : 1;
             S = Math.abs(Math.log(w1 / w0)) / rho;
