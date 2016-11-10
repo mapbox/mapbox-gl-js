@@ -47,7 +47,7 @@ class DoubleClickZoomHandler {
 
     _onDblClick(e) {
         this._map.setCamera({
-            zoom: this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1), 
+            zoom: this._map.getZoom() + (e.originalEvent.shiftKey ? -1 : 1),
             around: e.lngLat
         }, {type: 'ease'}, e);
     }

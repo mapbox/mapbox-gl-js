@@ -134,10 +134,10 @@ class TouchZoomRotateHandler {
             const animationParams = { type: 'ease', duration: 0 };
 
             if (this._gestureIntent === 'rotate') {
-                cameraParam.bearing = this._startBearing + bearing;
+                cameraParams.bearing = this._startBearing + bearing;
             }
             if (this._gestureIntent === 'zoom' || this._gestureIntent === 'rotate') {
-                cameraParam.zoom = map.transform.scaleZoom(this._startScale * scale);
+                cameraParams.zoom = map.transform.scaleZoom(this._startScale * scale);
             }
 
             map.stop();
@@ -197,7 +197,7 @@ class TouchZoomRotateHandler {
         map.setCamera({
             zoom: targetScale,
             around: map.unproject(p)
-        },{
+        }, {
             type: 'ease',
             duration: duration,
             easing: inertiaEasing

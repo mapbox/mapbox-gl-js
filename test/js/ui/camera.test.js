@@ -34,7 +34,7 @@ test('camera', (t) => {
 
         t.test('throws on invalid center argument', (t) => {
             t.throws(() => {
-                camera.setCenter([1, 'two']);    
+                camera.setCenter([1, 'two']);
             }, Error, 'throws with non-LngLatLike argument');
 
             t.throws(() => {
@@ -161,7 +161,7 @@ test('camera', (t) => {
         });
 
         t.end();
-    });    
+    });
 
     t.test('#setBearing, #getBearing', (t) => {
         const camera = createCamera();
@@ -340,6 +340,7 @@ test('camera', (t) => {
     t.test('#setCamera [ease]', (t) => {
 
         t.test('throws on invalid center argument', (t) => {
+            const camera = createCamera();
             t.throws(() => {
                 camera.setCamera({center: 1}, {type: 'ease'});
             }, Error, 'throws with non-LngLatLike argument');
@@ -351,12 +352,12 @@ test('camera', (t) => {
             const camera = createCamera();
 
             camera.setCamera({
-                center: [1, 2], 
-                pitch: 20, 
-                bearing: 180, 
+                center: [1, 2],
+                pitch: 20,
+                bearing: 180,
                 zoom: 10
             }, {
-                type: 'ease', 
+                type: 'ease',
                 duration: 20
             });
             setTimeout(() => { // check the center in the middle of animation
@@ -400,7 +401,7 @@ test('camera', (t) => {
             camera.setCamera({center: [100, 0]}, { type: 'ease', offset: [100, 0], duration: 1 });
             camera.on('moveend', () => {
                 t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 170.3125, lat: 0 });
-                t.end();    
+                t.end();
             });
         });
 
@@ -453,6 +454,7 @@ test('camera', (t) => {
 
     t.test('#setCamera [fly animation]', (t) => {
         t.test('throws on invalid center argument', (t) => {
+            const camera = createCamera();
             t.throws(() => {
                 camera.setCamera({center: 1}, {type: 'fly'});
             }, Error, 'throws with non-LngLatLike argument');
@@ -742,7 +744,7 @@ test('camera', (t) => {
     t.test('camera events', (t) => {
         t.test('[no animation], emits move/rotate/zoom/pitch events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -759,7 +761,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.equal(zoomed, 'ok');
@@ -771,16 +773,16 @@ test('camera', (t) => {
                 });
 
             camera.setCamera({
-                zoom: 2, 
-                bearing: 10, 
-                pitch: 10, 
+                zoom: 2,
+                bearing: 10,
+                pitch: 10,
                 center: [1, 2]
             }, {}, eventData);
         });
 
         t.test('[no animation], does not emit events if they are not specified', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -797,7 +799,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.notOk(zoomed);
@@ -827,7 +829,7 @@ test('camera', (t) => {
 
         t.test('[ease animation], emits move/rotate/zoom/pitch events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -844,7 +846,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.equal(zoomed, 'ok');
@@ -856,16 +858,16 @@ test('camera', (t) => {
                 });
 
             camera.setCamera({
-                zoom: 2, 
-                bearing: 10, 
-                pitch: 10, 
+                zoom: 2,
+                bearing: 10,
+                pitch: 10,
                 center: [1, 2]
             }, { type: 'ease', duration: 1 }, eventData);
         });
 
         t.test('[ease animation], does not emit events if they are not specified', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -882,7 +884,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.notOk(zoomed);
@@ -912,7 +914,7 @@ test('camera', (t) => {
 
         t.test('[fly animation], emits move/rotate/zoom/pitch events, preserving eventData', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -929,7 +931,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.equal(movestarted, 'ok');
                     t.equal(moved, 'ok');
                     t.equal(zoomed, 'ok');
@@ -941,16 +943,16 @@ test('camera', (t) => {
                 });
 
             camera.setCamera({
-                zoom: 2, 
-                bearing: 10, 
-                pitch: 10, 
+                zoom: 2,
+                bearing: 10,
+                pitch: 10,
                 center: [1, 2]
             }, { type: 'fly', duration: 1 }, eventData);
         });
 
         t.test('[fly animation], does not emit events if they are not specified', (t) => {
             const camera = createCamera();
-            let movestarted, 
+            let movestarted,
                 moved,
                 zoomed,
                 zoomstarted,
@@ -967,7 +969,7 @@ test('camera', (t) => {
                 .on('zoomend', (d) => { zoomended = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
-                .on('moveend', (d) => {
+                .on('moveend', () => {
                     t.notOk(movestarted);
                     t.notOk(moved);
                     t.notOk(zoomed);
@@ -1133,21 +1135,23 @@ test('camera', (t) => {
     t.test('#cameraForBounds, #getBounds', (t) => {
         t.test('throws on invalid LngLatBoundsLike', (t) => {
             const camera = createCamera();
+            let bounds;
             t.throws(() => {
-                const bounds = camera.cameraForBounds([3, 2]);
+                bounds = camera.cameraForBounds([3, 2]);
             }, Error, 'invalid LngLatBoundsLike');
+            t.notOk(bounds);
             t.end();
         });
 
         t.test('returns proper bounds object', (t) => {
             const camera = createCamera();
             const bounds = camera.cameraForBounds([[-73, 40], [-72, 41]]);
-            t.deepEqual(bounds, { 
+            t.deepEqual(bounds, {
                 padding: 0,
                 offset: [ 0, 0 ],
                 center: { lng: -72.5, lat: 40.50186340001147 },
                 zoom: 8.09664982418688,
-                bearing: 0 
+                bearing: 0
             });
             t.end();
         });
@@ -1155,12 +1159,12 @@ test('camera', (t) => {
         t.test('takes padding into account', (t) => {
             const camera = createCamera();
             const bounds = camera.cameraForBounds([[-73, 40], [-72, 41]], {padding: 10});
-            t.deepEqual(bounds, { 
+            t.deepEqual(bounds, {
                 padding: 10,
                 offset: [ 0, 0 ],
                 center: { lng: -72.5, lat: 40.50186340001147 },
                 zoom: 8.03916432952612,
-                bearing: 0 
+                bearing: 0
             });
             t.end();
         });
@@ -1168,7 +1172,7 @@ test('camera', (t) => {
         t.test('takes offset into account', (t) => {
             const camera = createCamera();
             const bounds = camera.cameraForBounds([[-73, 40], [-72, 41]], {offset: [100, 0]});
-            t.deepEqual(bounds, { 
+            t.deepEqual(bounds, {
                 padding: 0,
                 offset: [ 100, 0 ],
                 center: { lng: -72.5, lat: 40.50186340001147 },
@@ -1191,7 +1195,7 @@ test('camera', (t) => {
                 const camera = createCamera({ zoom: 1, bearing: 45 });
                 t.deepEqual(
                     toFixed(camera.getBounds().toArray()),
-                    toFixed([[-127.2792206136, 0], [127.2792206136, 0]])   
+                    toFixed([[-127.2792206136, 0], [127.2792206136, 0]])
                 );
                 t.end();
             });
@@ -1212,9 +1216,11 @@ test('camera', (t) => {
     t.test('#fitBounds', (t) => {
         t.test('throws with invalid bounds', (t) => {
             const camera = createCamera();
+            let bounds;
             t.throws(() => {
-                const bounds = camera.fitBounds([3, 2]);
+                bounds = camera.fitBounds([3, 2]);
             }, Error, 'invalid LngLatBoundsLike');
+            t.notOk(bounds);
             t.end();
         });
 
@@ -1223,7 +1229,7 @@ test('camera', (t) => {
             camera.fitBounds([[-73, 40], [-72, 41]]);
             t.deepEqual(camera.getBounds(), {
                 _sw: { lng: -73.1575640227109, lat: 39.999999999999886 },
-                _ne: { lng: -71.84243597728877, lat: 40.999999999999915 } 
+                _ne: { lng: -71.84243597728877, lat: 40.999999999999915 }
             });
             t.end();
         });
@@ -1234,7 +1240,7 @@ test('camera', (t) => {
             camera.on('moveend', () => {
                 t.deepEqual(camera.getBounds(), {
                     _sw: { lng: -73.1575640227109, lat: 39.999999999999886 },
-                    _ne: { lng: -71.84243597728877, lat: 40.999999999999915 } 
+                    _ne: { lng: -71.84243597728877, lat: 40.999999999999915 }
                 });
                 t.end();
             });
@@ -1246,7 +1252,7 @@ test('camera', (t) => {
             camera.on('moveend', () => {
                 t.deepEqual(camera.getBounds(), {
                     _sw: { lng: -73.15756402271103, lat: 39.999999999999886 },
-                    _ne: { lng: -71.8424359772889, lat: 40.999999999999915 } 
+                    _ne: { lng: -71.8424359772889, lat: 40.999999999999915 }
                 });
                 t.end();
             });
@@ -1254,6 +1260,6 @@ test('camera', (t) => {
 
         t.end();
     });
-   
+
     t.end();
 });

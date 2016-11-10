@@ -50,8 +50,6 @@ class Hash {
                 zoom: +loc[0],
                 bearing: +(loc[3] || 0),
                 pitch: +(loc[4] || 0)
-            },{
-                type: 'none'
             });
             return true;
         }

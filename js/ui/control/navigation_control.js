@@ -46,9 +46,9 @@ class NavigationControl extends Control {
         return container;
     }
 
-    _zoomIn() { map.setCamera({zoom: map.getZoom() + 1}, {type: 'ease'}); }
-    _zoomOut() { map.setCamera({zoom: map.getZoom() - 1}, {type: 'ease'}); }
-    _setNorth() { map.setCamera({bearing: 0}, {type: 'ease'}); }
+    _zoomIn() { this.setCamera({zoom: this.getZoom() + 1}, {type: 'ease'}); }
+    _zoomOut() { this.setCamera({zoom: this.getZoom() - 1}, {type: 'ease'}); }
+    _setNorth() { this.setCamera({bearing: 0}, {type: 'ease'}); }
 
     _onContextMenu(e) {
         e.preventDefault();

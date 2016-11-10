@@ -152,7 +152,7 @@ class Camera extends Evented {
     /**
      * Generates a CameraOptions object based on geometry input. Typically used in conjuction with
      * {@link Map#setCamera} to interpolate the zoom level based on a bounding box input.
-     * 
+     *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Bounding box to fit within the camera state.
      * @param {CameraOptions} [options]
@@ -175,9 +175,9 @@ class Camera extends Evented {
             padding: 0,
             offset: [0, 0]
         }, cameraOptions);
-        
+
         bounds = LngLatBounds.convert(bounds);
-        
+
         const offset = Point.convert(cameraOptions.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
@@ -256,7 +256,7 @@ class Camera extends Evented {
 
         animationOptions = util.extend({
             type: 'none',
-            offset: [0 ,0]
+            offset: [0, 0]
         }, animationOptions);
 
         cameraOptions = util.extend({}, cameraOptions);
@@ -264,26 +264,26 @@ class Camera extends Evented {
         // duration: 0 should not animate
         if (animationOptions.duration === 0) animationOptions.type = 'none';
 
-        switch(animationOptions.type) {
-            case 'fly':
-                animationOptions = util.extend({
-                    speed: 1.2,
-                    curve: 1.42,
-                    easing: util.ease
-                }, animationOptions);
-                this._animateFly(cameraOptions, animationOptions, eventData);
-                break;
-            case 'ease':
-                animationOptions = util.extend({
-                    duration: 500,
-                    easing: util.ease
-                }, animationOptions);
-                this._animateEase(cameraOptions, animationOptions, eventData);
-                break;
-            case 'none':
-            default:
-                this._animateNone(cameraOptions, animationOptions, eventData);
-                break;
+        switch (animationOptions.type) {
+        case 'fly':
+            animationOptions = util.extend({
+                speed: 1.2,
+                curve: 1.42,
+                easing: util.ease
+            }, animationOptions);
+            this._animateFly(cameraOptions, animationOptions, eventData);
+            break;
+        case 'ease':
+            animationOptions = util.extend({
+                duration: 500,
+                easing: util.ease
+            }, animationOptions);
+            this._animateEase(cameraOptions, animationOptions, eventData);
+            break;
+        case 'none':
+        default:
+            this._animateNone(cameraOptions, animationOptions, eventData);
+            break;
         }
     }
 
@@ -319,7 +319,7 @@ class Camera extends Evented {
         const o = Point.convert(offset).mult(-1);
         this.setCamera({
             center: this.transform.center
-        }, util.extend({ type: 'ease', offset: o }, animationOptions), eventData );
+        }, util.extend({ type: 'ease', offset: o }, animationOptions), eventData);
         return this;
     }
 
