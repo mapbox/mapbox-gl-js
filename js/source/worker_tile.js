@@ -124,10 +124,9 @@ class WorkerTile {
 
         // Symbol buckets must be placed in reverse order.
         this.symbolBuckets = [];
-        for (let i = layerIndex.order.length - 1; i >= 0; i--) {
-            const id = layerIndex.order[i];
-            const bucket = buckets[id];
-            if (bucket && bucket.layers[0].type === 'symbol') {
+        for (let i = layerIndex.symbolOrder.length - 1; i >= 0; i--) {
+            const bucket = buckets[layerIndex.symbolOrder[i]];
+            if (bucket) {
                 this.symbolBuckets.push(bucket);
             }
         }

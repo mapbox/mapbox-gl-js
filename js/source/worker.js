@@ -33,12 +33,12 @@ class Worker {
         };
     }
 
-    setLayers(mapId, layerDefinitions) {
-        this.getLayerIndex(mapId).replace(layerDefinitions);
+    setLayers(mapId, layers) {
+        this.getLayerIndex(mapId).replace(layers);
     }
 
-    updateLayers(mapId, layerDefinitions) {
-        this.getLayerIndex(mapId).update(layerDefinitions);
+    updateLayers(mapId, params) {
+        this.getLayerIndex(mapId).update(params.layers, params.removedIds, params.symbolOrder);
     }
 
     loadTile(mapId, params, callback) {
