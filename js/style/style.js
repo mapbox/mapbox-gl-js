@@ -122,7 +122,7 @@ class Style extends Evented {
         if (!this._loaded)
             return false;
 
-        if (Object.keys(this._updates.sources).length)
+        if (Object.keys(this._updatedSources).length)
             return false;
 
         for (const id in this.sourceCaches)
@@ -172,13 +172,13 @@ class Style extends Evented {
         options = options || {transition: true};
         const transition = this.stylesheet.transition || {};
 
-        const layers = this._updates.allPaintProps ? this._layers : this._updates.paintProps;
+        const layers = this._updatedAllPaintProps ? this._layers : this._updatedPaintProps;
 
         for (const id in layers) {
             const layer = this._layers[id];
-            const props = this._updates.paintProps[id];
+            const props = this._updatedPaintProps[id];
 
-            if (this._updates.allPaintProps || props.all) {
+            if (this._updatedAllPaintProps || props.all) {
                 layer.updatePaintTransitions(classes, options, transition, this.animationLoop, this.zoomHistory);
             } else {
                 for (const paintName in props) {
@@ -253,18 +253,18 @@ class Style extends Evented {
      * @private
      */
     update(classes, options) {
-        if (!this._updates.changed) return this;
+        if (!this._changed) return this;
 
-        if (this._updates.allLayers) {
+        if (this._updatedAllLayers) {
             this._updateWorkerLayers();
         } else {
-            const updatedIds = Object.keys(this._updates.layers);
+            const updatedIds = Object.keys(this._updatedLayers);
             if (updatedIds.length) {
                 this._updateWorkerLayers(updatedIds);
             }
         }
 
-        const updatedSourceIds = Object.keys(this._updates.sources);
+        const updatedSourceIds = Object.keys(this._updatedSources);
         let i;
         for (i = 0; i < updatedSourceIds.length; i++) {
             this._reloadSource(updatedSourceIds[i]);
@@ -280,12 +280,15 @@ class Style extends Evented {
     }
 
     _resetUpdates() {
-        this._updates = {
-            changed: false,
-            layers: {},
-            sources: {},
-            paintProps: {}
-        };
+        this._changed = false;
+
+        this._updatedLayers = {};
+        this._updatedAllLayers = false;
+
+        this._updatedSources = {};
+
+        this._updatedPaintProps = {};
+        this._updatedAllPaintProps = false;
     }
 
     addSource(id, source, options) {
@@ -309,7 +312,7 @@ class Style extends Evented {
         source.setEventedParent(this, {source: source.getSource()});
 
         if (source.onAdd) source.onAdd(this.map);
-        this._updates.changed = true;
+        this._changed = true;
 
         return this;
     }
@@ -329,12 +332,12 @@ class Style extends Evented {
         }
         const sourceCache = this.sourceCaches[id];
         delete this.sourceCaches[id];
-        delete this._updates.sources[id];
+        delete this._updatedSources[id];
         sourceCache.setEventedParent(null);
         sourceCache.clearTiles();
 
         if (sourceCache.onRemove) sourceCache.onRemove(this.map);
-        this._updates.changed = true;
+        this._changed = true;
 
         return this;
     }
@@ -374,9 +377,9 @@ class Style extends Evented {
         this._layers[layer.id] = layer;
         this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
 
-        this._updates.allLayers = true;
+        this._updatedAllLayers = true;
         if (layer.source) {
-            this._updates.sources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
 
         return this.updateClasses(layer.id);
@@ -400,12 +403,12 @@ class Style extends Evented {
         layer.setEventedParent(null);
 
         delete this._layers[id];
-        delete this._updates.layers[id];
-        delete this._updates.paintProps[id];
+        delete this._updatedLayers[id];
+        delete this._updatedPaintProps[id];
         this._order.splice(this._order.indexOf(id), 1);
 
-        this._updates.allLayers = true;
-        this._updates.changed = true;
+        this._updatedAllLayers = true;
+        this._changed = true;
 
         return this;
     }
@@ -500,9 +503,9 @@ class Style extends Evented {
         );
 
         if (!isFeatureConstant || !wasFeatureConstant) {
-            this._updates.layers[layerId] = true;
+            this._updatedLayers[layerId] = true;
             if (layer.source) {
-                this._updates.sources[layer.source] = true;
+                this._updatedSources[layer.source] = true;
             }
         }
 
@@ -514,11 +517,11 @@ class Style extends Evented {
     }
 
     updateClasses(layerId, paintName) {
-        this._updates.changed = true;
+        this._changed = true;
         if (!layerId) {
-            this._updates.allPaintProps = true;
+            this._updatedAllPaintProps = true;
         } else {
-            const props = this._updates.paintProps;
+            const props = this._updatedPaintProps;
             if (!props[layerId]) props[layerId] = {};
             props[layerId][paintName || 'all'] = true;
         }
@@ -544,11 +547,11 @@ class Style extends Evented {
     }
 
     _updateLayer(layer) {
-        this._updates.layers[layer.id] = true;
+        this._updatedLayers[layer.id] = true;
         if (layer.source) {
-            this._updates.sources[layer.source] = true;
+            this._updatedSources[layer.source] = true;
         }
-        this._updates.changed = true;
+        this._changed = true;
         return this;
     }
 
