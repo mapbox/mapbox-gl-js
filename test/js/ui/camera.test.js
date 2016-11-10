@@ -471,39 +471,36 @@ test('camera', (t) => {
             });
         });
 
-        // t.test('noop', (t) => {
-        //     const camera = createCamera();
-        //     camera.setCamera({}, { type: 'fly', duration: 1 });
-        //     camera.on('moveend', () => {
-        //         t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 0, lat: 0 });
-        //         t.equal(camera.getZoom(), 0);
-        //         t.equal(camera.getBearing(), 0);
-        //     });
-        //     t.end();
-        // });
+        t.test('noop', (t) => {
+            const camera = createCamera();
+            camera.setCamera({}, { type: 'fly', duration: 1 });
+            camera.on('moveend', () => {
+                t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 0, lat: 0 });
+                t.equal(camera.getZoom(), 0);
+                t.equal(camera.getBearing(), 0);
+                t.end();
+            });
+        });
 
-        // t.test('noop with offset', (t) => {
-        //     const camera = createCamera();
-        //     camera.flyTo({ offset: [100, 0], animate: false });
-        //     t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 0, lat: 0 });
-        //     t.equal(camera.getZoom(), 0);
-        //     t.equal(camera.getBearing(), 0);
-        //     t.end();
-        // });
+        t.test('noop with offset', (t) => {
+            const camera = createCamera();
+            camera.setCamera({}, { type: 'fly', duration: 1, offset: [100, 0] });
+            camera.on('moveend', () => {
+                t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 0, lat: 0 });
+                t.equal(camera.getZoom(), 0);
+                t.equal(camera.getBearing(), 0);
+                t.end();
+            });
+        });
 
-        // t.test('pans with specified offset', (t) => {
-        //     const camera = createCamera();
-        //     camera.flyTo({ center: [100, 0], offset: [100, 0], animate: false });
-        //     t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 29.6875, lat: 0 });
-        //     t.end();
-        // });
-
-        // t.test('pans with specified offset relative to viewport on a rotated camera', (t) => {
-        //     const camera = createCamera({ bearing: 180 });
-        //     camera.easeTo({ center: [100, 0], offset: [100, 0], animate: false });
-        //     t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 170.3125, lat: 0 });
-        //     t.end();
-        // });
+        t.test('pans with specified offset', (t) => {
+            const camera = createCamera();
+            camera.setCamera({ center: [100, 0] }, { type: 'fly', offset: [100, 0] });
+            camera.on('moveend', () => {
+                t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 29.6875, lat: 0 });
+                t.end();
+            });
+        });
 
         t.test('another fly animation stops a previously existing fly animation', (t) => {
             const camera = createCamera();
@@ -951,39 +948,38 @@ test('camera', (t) => {
             }, { type: 'fly', duration: 1 }, eventData);
         });
 
-        // this fails due to call stack size warnings - related to fly animations failing when the center hasn't changed
-        // t.test('[fly animation], does not emit events if they are not specified', (t) => {
-        //     const camera = createCamera();
-        //     let movestarted, 
-        //         moved,
-        //         zoomed,
-        //         zoomstarted,
-        //         zoomended,
-        //         rotated,
-        //         pitched;
-        //     const eventData = { data: 'ok' };
+        t.test('[fly animation], does not emit events if they are not specified', (t) => {
+            const camera = createCamera();
+            let movestarted, 
+                moved,
+                zoomed,
+                zoomstarted,
+                zoomended,
+                rotated,
+                pitched;
+            const eventData = { data: 'ok' };
 
-        //     camera
-        //         .on('movestart', (d) => { movestarted = d.data; })
-        //         .on('move', (d) => { moved = d.data; })
-        //         .on('zoom', (d) => { zoomed = d.data; })
-        //         .on('zoomstart', (d) => { zoomstarted = d.data; })
-        //         .on('zoomend', (d) => { zoomended = d.data; })
-        //         .on('rotate', (d) => { rotated = d.data; })
-        //         .on('pitch', (d) => { pitched = d.data; })
-        //         .on('moveend', (d) => {
-        //             t.equal(movestarted, 'ok');
-        //             t.equal(moved, 'ok');
-        //             t.notOk(zoomed);
-        //             t.notOk(zoomstarted);
-        //             t.notOk(zoomended);
-        //             t.notOk(rotated);
-        //             t.notOk(pitched);
-        //             t.end();
-        //         });
+            camera
+                .on('movestart', (d) => { movestarted = d.data; })
+                .on('move', (d) => { moved = d.data; })
+                .on('zoom', (d) => { zoomed = d.data; })
+                .on('zoomstart', (d) => { zoomstarted = d.data; })
+                .on('zoomend', (d) => { zoomended = d.data; })
+                .on('rotate', (d) => { rotated = d.data; })
+                .on('pitch', (d) => { pitched = d.data; })
+                .on('moveend', (d) => {
+                    t.notOk(movestarted);
+                    t.notOk(moved);
+                    t.notOk(zoomed);
+                    t.notOk(zoomstarted);
+                    t.notOk(zoomended);
+                    t.notOk(rotated);
+                    t.notOk(pitched);
+                    t.end();
+                });
 
-        //     camera.setCamera({}, {type: 'fly', duration: 1}, eventData);
-        // });
+            camera.setCamera({}, {type: 'fly', duration: 1}, eventData);
+        });
 
         t.test('[fly animation] supresses movestart if noMoveStart option is true', (t) => {
             const camera = createCamera();
