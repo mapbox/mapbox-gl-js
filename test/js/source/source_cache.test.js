@@ -141,7 +141,7 @@ test('SourceCache#removeTile', (t) => {
         const coord = new TileCoord(0, 0, 0);
         const sourceCache = createSourceCache({});
         sourceCache.once('data', (event) => {
-            if (event.dataType === 'tile') {
+            if (event.dataType === 'source') {
                 t.end();
             }
         });

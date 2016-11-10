@@ -1584,8 +1584,8 @@ function removeNode(node) {
   */
 
 /**
- * Fired when any map data (style, source, tile, etc) loads or changes. See
- * [`MapDataEvent`](#MapDataEvent) for more information.
+ * Fired when any map data loads or changes. See [`MapDataEvent`](#MapDataEvent)
+ * for more information.
  *
  * @event data
  * @memberof Map
@@ -1608,16 +1608,6 @@ function removeNode(node) {
  * [`MapDataEvent`](#MapDataEvent) for more information.
  *
  * @event sourcedata
- * @memberof Map
- * @instance
- * @property {MapDataEvent} data
- */
-
-/**
- * Fired when a map tile loads or changes. See
- * [`MapDataEvent`](#MapDataEvent) for more information.
- *
- * @event tiledata
  * @memberof Map
  * @instance
  * @property {MapDataEvent} data
@@ -1656,17 +1646,6 @@ function removeNode(node) {
  * @property {MapDataEvent} data
  */
 
-/**
- * Fired when a map tile begins loading or changing asyncronously.
- * All `tiledataloading` events are followed by a `tiledata`
- * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
- *
- * @event tiledataloading
- * @memberof Map
- * @instance
- * @property {MapDataEvent} data
- */
-
  /**
   * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
   * and [`Map#dataloading`](#Map.event:dataloading) events. Possible values for
@@ -1678,7 +1657,8 @@ function removeNode(node) {
   *
   * @typedef {Object} MapDataEvent
   * @property {string} type The event type.
-  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
+  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
+  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
   */
 
  /**
