@@ -207,53 +207,57 @@ class Painter {
 
         this.depthRange = (style._order.length + 2) * this.numSublayers * this.depthEpsilon;
 
-        this.renderPass({isOpaquePass: true});
-        this.renderPass({isOpaquePass: false});
+        this.isOpaquePass = true;
+        this.renderPass();
+        this.isOpaquePass = false;
+        this.renderPass();
     }
 
-    renderPass(options) {
-        const groups = this.style._groups;
-        const isOpaquePass = options.isOpaquePass;
-        this.currentLayer = isOpaquePass ? this.style._order.length : -1;
+    renderPass() {
+        const layerIds = this.style._order;
 
-        for (let i = 0; i < groups.length; i++) {
-            const group = groups[isOpaquePass ? groups.length - 1 - i : i];
-            const sourceCache = this.style.sourceCaches[group.source];
+        let sourceCache, coords;
 
-            let j;
-            let coords = [];
-            if (sourceCache) {
-                if (sourceCache.prepare) sourceCache.prepare();
-                coords = sourceCache.getVisibleCoordinates();
-                for (j = 0; j < coords.length; j++) {
-                    coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.getSource().maxzoom);
+        this.currentLayer = this.isOpaquePass ? layerIds.length - 1 : 0;
+
+        for (let i = 0; i < layerIds.length; i++) {
+            const layer = this.style._layers[layerIds[this.currentLayer]];
+            let sourceChanged = false;
+
+            if (layer.source !== (sourceCache && sourceCache.id)) {
+                sourceCache = this.style.sourceCaches[layer.source];
+                coords = [];
+                sourceChanged = true;
+
+                if (sourceCache) {
+                    if (sourceCache.prepare) sourceCache.prepare();
+                    coords = sourceCache.getVisibleCoordinates();
+                    for (const coord of coords) {
+                        coord.posMatrix = this.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
+                    }
+                    this.clearStencil();
+                    if (sourceCache.getSource().isTileClipped) {
+                        this._renderTileClippingMasks(coords);
+                    }
                 }
-                this.clearStencil();
-                if (sourceCache.getSource().isTileClipped) {
-                    this._renderTileClippingMasks(coords);
+
+                if (this.isOpaquePass) {
+                    if (!this._showOverdrawInspector) {
+                        this.gl.disable(this.gl.BLEND);
+                    }
+                } else {
+                    this.gl.enable(this.gl.BLEND);
+                    coords.reverse();
                 }
             }
 
-            if (isOpaquePass) {
-                if (!this._showOverdrawInspector) {
-                    this.gl.disable(this.gl.BLEND);
-                }
-                this.isOpaquePass = true;
-            } else {
-                this.gl.enable(this.gl.BLEND);
-                this.isOpaquePass = false;
-                coords.reverse();
-            }
+            this.renderLayer(this, sourceCache, layer, coords);
 
-            for (j = 0; j < group.length; j++) {
-                const layer = group[isOpaquePass ? group.length - 1 - j : j];
-                this.currentLayer += isOpaquePass ? -1 : 1;
-                this.renderLayer(this, sourceCache, layer, coords);
-            }
-
-            if (sourceCache) {
+            if (sourceChanged && sourceCache) {
                 draw.debug(this, sourceCache, coords);
             }
+
+            this.currentLayer += this.isOpaquePass ? -1 : 1;
         }
     }
 
