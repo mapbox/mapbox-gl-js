@@ -36,7 +36,7 @@ test('StyleLayerIndex#update', (t) => {
         { id: '1', type: 'fill', source: 'bar', 'source-layer': 'layer', paint: { 'fill-color': 'cyan' } },
         { id: '2', type: 'circle', source: 'bar', 'source-layer': 'layer', paint: { 'circle-color': 'magenta' } },
         { id: '3', type: 'circle', source: 'bar', 'source-layer': 'layer', paint: { 'circle-color': 'yellow' } }
-    ]);
+    ], []);
 
     const families = index.familiesBySource['bar']['layer'];
     t.equal(families.length, 2);

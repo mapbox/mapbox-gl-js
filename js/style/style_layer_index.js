@@ -13,14 +13,25 @@ class StyleLayerIndex {
     }
 
     replace(layers) {
-        this.order = layers.map((layer) => layer.id);
+        this.symbolOrder = [];
+        for (const layer of layers) {
+            if (layer.type === 'symbol') {
+                this.symbolOrder.push(layer.id);
+            }
+        }
         this._layers = {};
-        this.update(layers);
+        this.update(layers, []);
     }
 
-    update(layers) {
+    update(layers, removedIds, symbolOrder) {
         for (const layer of layers) {
             this._layers[layer.id] = layer;
+        }
+        for (const id of removedIds) {
+            delete this._layers[id];
+        }
+        if (symbolOrder) {
+            this.symbolOrder = symbolOrder;
         }
 
         this.familiesBySource = {};

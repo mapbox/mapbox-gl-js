@@ -217,42 +217,16 @@ test('Style#_updateWorkerLayers', (t) => {
     style.on('style.load', () => {
         style.addLayer({id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer' }, 'second');
         style.addLayer({id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer' });
+        style.removeLayer('second');
 
         style.dispatcher.broadcast = function(key, value) {
-            t.equal(key, 'setLayers');
-            t.deepEqual(value.map((layer) => { return layer.id; }), ['first', 'second', 'third']);
+            t.equal(key, 'updateLayers');
+            t.deepEqual(value.layers.map((layer) => { return layer.id; }), ['first', 'third']);
+            t.deepEqual(value.removedIds, ['second']);
             t.end();
         };
 
         style._updateWorkerLayers();
-    });
-});
-
-test('Style#_updateWorkerLayers with specific ids', (t) => {
-    const style = new Style({
-        'version': 8,
-        'sources': {
-            'source': {
-                'type': 'vector'
-            }
-        },
-        'layers': [
-            {id: 'first', source: 'source', type: 'fill', 'source-layer': 'source-layer'},
-            {id: 'second', source: 'source', type: 'fill', 'source-layer': 'source-layer'},
-            {id: 'third', source: 'source', type: 'fill', 'source-layer': 'source-layer'}
-        ]
-    });
-
-    style.on('error', (error) => { t.error(error); });
-
-    style.on('style.load', () => {
-        style.dispatcher.broadcast = function(key, value) {
-            t.equal(key, 'updateLayers');
-            t.deepEqual(value.map((layer) => { return layer.id; }), ['second', 'third']);
-            t.end();
-        };
-
-        style._updateWorkerLayers(['second', 'third']);
     });
 });
 
@@ -827,8 +801,8 @@ test('Style#setFilter', (t) => {
         style.on('style.load', () => {
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'updateLayers');
-                t.deepEqual(value[0].id, 'symbol');
-                t.deepEqual(value[0].filter, ['==', 'id', 1]);
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, ['==', 'id', 1]);
                 t.end();
             };
 
@@ -865,8 +839,8 @@ test('Style#setFilter', (t) => {
 
             style.dispatcher.broadcast = function(key, value) {
                 t.equal(key, 'updateLayers');
-                t.deepEqual(value[0].id, 'symbol');
-                t.deepEqual(value[0].filter, ['==', 'id', 2]);
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, ['==', 'id', 2]);
                 t.end();
             };
             filter[2] = 2;

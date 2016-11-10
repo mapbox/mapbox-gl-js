@@ -147,22 +147,13 @@ class Style extends Evented {
             this._layers[layer.id] = layer;
         }
 
-        this._updateWorkerLayers();
+        this.dispatcher.broadcast('setLayers', this._serializeLayers(this._order));
 
         this.light = new Light(this.stylesheet.light);
     }
 
-    _updateWorkerLayers(ids) {
-        this.dispatcher.broadcast(ids ? 'updateLayers' : 'setLayers', this._serializeLayers(ids));
-    }
-
     _serializeLayers(ids) {
-        ids = ids || this._order;
-        const serialized = [];
-        for (let i = 0; i < ids.length; i++) {
-            serialized.push(this._layers[ids[i]].serialize());
-        }
-        return serialized;
+        return ids.map((id) => this._layers[id].serialize());
     }
 
     _applyClasses(classes, options) {
@@ -255,14 +246,7 @@ class Style extends Evented {
     update(classes, options) {
         if (!this._changed) return this;
 
-        if (this._updatedAllLayers) {
-            this._updateWorkerLayers();
-        } else {
-            const updatedIds = Object.keys(this._updatedLayers);
-            if (updatedIds.length) {
-                this._updateWorkerLayers(updatedIds);
-            }
-        }
+        this._updateWorkerLayers();
 
         const updatedSourceIds = Object.keys(this._updatedSources);
         let i;
@@ -279,11 +263,29 @@ class Style extends Evented {
         return this;
     }
 
+    _updateWorkerLayers() {
+        const updatedIds = Object.keys(this._updatedLayers);
+        const addedIds = Object.keys(this._addedLayers);
+        const removedIds = Object.keys(this._removedLayers);
+
+        if (updatedIds.length || addedIds.length || removedIds.length) {
+            const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
+
+            this.dispatcher.broadcast('updateLayers', {
+                layers: this._serializeLayers(updatedIds.concat(addedIds)),
+                removedIds: removedIds,
+                symbolOrder: symbolOrder
+            });
+        }
+    }
+
     _resetUpdates() {
         this._changed = false;
 
         this._updatedLayers = {};
-        this._updatedAllLayers = false;
+        this._addedLayers = {};
+        this._removedLayers = {};
+        this._updatedSymbolOrder = false;
 
         this._updatedSources = {};
 
@@ -363,24 +365,36 @@ class Style extends Evented {
     addLayer(layerObject, before, options) {
         this._checkLoaded();
 
+        const id = layerObject.id;
+
         // this layer is not in the style.layers array, so we pass an impossible array index
         if (this._validate(validateStyle.layer,
-                `layers.${layerObject.id}`, layerObject, {arrayIndex: -1}, options)) return this;
+                `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return this;
 
         const layer = StyleLayer.create(layerObject);
         this._validateLayer(layer);
 
-        layer.setEventedParent(this, {layer: {id: layer.id}});
+        layer.setEventedParent(this, {layer: {id: id}});
 
-        this._layers[layer.id] = layer;
-        this._order.splice(before ? this._order.indexOf(before) : Infinity, 0, layer.id);
+        const index = before ? this._order.indexOf(before) : this._order.length;
+        this._order.splice(index, 0, id);
 
-        this._updatedAllLayers = true;
+        this._layers[id] = layer;
+
+        if (this._removedLayers[id]) {
+            delete this._removedLayers[id];
+            this._updatedLayers[id] = true;
+        } else {
+            this._addedLayers[id] = true;
+        }
+        if (layer.type === 'symbol') {
+            this._updatedSymbolOrder = true;
+        }
         if (layer.source) {
             this._updatedSources[layer.source] = true;
         }
 
-        return this.updateClasses(layer.id);
+        return this.updateClasses(id);
     }
 
     /**
@@ -400,13 +414,19 @@ class Style extends Evented {
 
         layer.setEventedParent(null);
 
+        const index = this._order.indexOf(id);
+        this._order.splice(index, 1);
+
+        if (layer.type === 'symbol') {
+            this._updatedSymbolOrder = true;
+        }
+
+        this._changed = true;
+        this._removedLayers[id] = true;
         delete this._layers[id];
         delete this._updatedLayers[id];
+        delete this._addedLayers[id];
         delete this._updatedPaintProps[id];
-        this._order.splice(this._order.indexOf(id), 1);
-
-        this._updatedAllLayers = true;
-        this._changed = true;
 
         return this;
     }

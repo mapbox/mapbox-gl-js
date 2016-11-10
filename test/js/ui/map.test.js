@@ -706,7 +706,7 @@ test('Map', (t) => {
             map.on('style.load', () => {
                 map.style.dispatcher.broadcast = function(key, value) {
                     t.equal(key, 'updateLayers');
-                    t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
+                    t.deepEqual(value.layers.map((layer) => { return layer.id; }), ['symbol']);
                 };
 
                 map.setLayoutProperty('symbol', 'text-transform', 'lowercase');
