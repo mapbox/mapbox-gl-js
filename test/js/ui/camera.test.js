@@ -977,23 +977,28 @@ test('camera', (t) => {
         });
 
         t.test('peaks at the specified zoom level', (t) => {
-            const camera = createCamera();
-            camera.setZoom(20);
-            let minZoom = Infinity;
+            const camera = createCamera({zoom: 20});
+            const minZoom = 1;
+            let zoomed = false;
 
             camera.on('zoom', () => {
-                if (camera.getZoom() < minZoom) {
-                    minZoom = camera.getZoom();
+                const zoom = camera.getZoom();
+                if (zoom < 1) {
+                    t.fail(`${zoom} should be >= ${minZoom} during flyTo`);
+                }
+
+                if (camera.getZoom() < (minZoom + 1)) {
+                    zoomed = true;
                 }
             });
 
             camera.on('moveend', () => {
-                t.ok(fixedNum(minZoom, 2) < 1.1);
-                t.ok(fixedNum(minZoom, 2) >= 1);
+                t.ok(zoomed, 'zoom came within satisfactory range of minZoom provided');
                 t.end();
             });
 
-            camera.flyTo({ center: [1, 0], zoom: 20, minZoom: 1 });
+            const options = { center: [1, 0], zoom: 20, minZoom };
+            camera.flyTo(options);
         });
 
         t.end();
