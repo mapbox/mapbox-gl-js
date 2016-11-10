@@ -40,10 +40,5 @@ test('browser', (t) => {
         t.end();
     });
 
-    t.test('supportsGeolocation', (t) => {
-        t.equal(typeof browser.supportsGeolocation, 'boolean');
-        t.end();
-    });
-
     t.end();
 });

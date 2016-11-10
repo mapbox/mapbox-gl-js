@@ -96,5 +96,3 @@ webpImgTest.onload = function() {
     exports.supportsWebp = true;
 };
 webpImgTest.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAQAAAAfQ//73v/+BiOh/AAA=';
-
-exports.supportsGeolocation = !!window.navigator.geolocation;
