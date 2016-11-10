@@ -29,7 +29,7 @@ const minScale = 0.5; // underscale by 1 zoom level
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
@@ -40,6 +40,7 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
     this.glyphAngle = glyphAngle;
     this.minScale = minScale;
     this.maxScale = maxScale;
+    this.writingMode = writingMode;
 }
 
 /**
@@ -171,15 +172,24 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
             }];
         }
 
-        const x1 = positionedGlyph.x + glyph.left,
-            y1 = positionedGlyph.y - glyph.top,
-            x2 = x1 + rect.w,
-            y2 = y1 + rect.h,
+        const x1 = positionedGlyph.x + glyph.left;
+        const y1 = positionedGlyph.y - glyph.top;
+        const x2 = x1 + rect.w;
+        const y2 = y1 + rect.h;
 
-            otl = new Point(x1, y1),
-            otr = new Point(x2, y1),
-            obl = new Point(x1, y2),
-            obr = new Point(x2, y2);
+        const center = new Point(positionedGlyph.x, glyph.advance / 2);
+
+        const otl = new Point(x1, y1);
+        const otr = new Point(x2, y1);
+        const obl = new Point(x1, y2);
+        const obr = new Point(x2, y2);
+
+        if (positionedGlyph.angle !== 0) {
+            otl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            otr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            obl._sub(center)._rotate(positionedGlyph.angle)._add(center);
+            obr._sub(center)._rotate(positionedGlyph.angle)._add(center);
+        }
 
         for (let i = 0; i < glyphInstances.length; i++) {
 
@@ -205,7 +215,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
             const anchorAngle = (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
             const glyphAngle = (instance.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale));
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode));
         }
     }
 

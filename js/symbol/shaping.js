@@ -1,45 +1,55 @@
 'use strict';
 
 const scriptDetection = require('../util/script_detection');
+const verticalizePunctuation = require('../util/verticalize_punctuation');
+
+
+const WritingMode = {
+    horizontal: 1,
+    vertical: 2
+};
 
 module.exports = {
     shapeText: shapeText,
-    shapeIcon: shapeIcon
+    shapeIcon: shapeIcon,
+    WritingMode: WritingMode
 };
 
 
 // The position of a glyph relative to the text's anchor point.
-function PositionedGlyph(codePoint, x, y, glyph) {
+function PositionedGlyph(codePoint, x, y, glyph, angle) {
     this.codePoint = codePoint;
     this.x = x;
     this.y = y;
     this.glyph = glyph || null;
+    this.angle = angle;
 }
 
 // A collection of positioned glyphs and some metadata
-function Shaping(positionedGlyphs, text, top, bottom, left, right) {
+function Shaping(positionedGlyphs, text, top, bottom, left, right, writingMode) {
     this.positionedGlyphs = positionedGlyphs;
     this.text = text;
     this.top = top;
     this.bottom = bottom;
     this.left = left;
     this.right = right;
+    this.writingMode = writingMode;
 }
 
 const newLine = 0x0a;
 
-function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate) {
+function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
+
+    text = text.trim();
+    if (writingMode === WritingMode.vertical) text = verticalizePunctuation(text);
 
     const positionedGlyphs = [];
-    const shaping = new Shaping(positionedGlyphs, text, translate[1], translate[1], translate[0], translate[0]);
+    const shaping = new Shaping(positionedGlyphs, text, translate[1], translate[1], translate[0], translate[0], writingMode);
 
     // the y offset *should* be part of the font metadata
     const yOffset = -17;
 
     let x = 0;
-    const y = yOffset;
-
-    text = text.trim();
 
     for (let i = 0; i < text.length; i++) {
         const codePoint = text.charCodeAt(i);
@@ -47,16 +57,19 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
 
         if (!glyph && codePoint !== newLine) continue;
 
-        positionedGlyphs.push(new PositionedGlyph(codePoint, x, y, glyph));
+        if (!scriptDetection.charAllowsVerticalWritingMode(codePoint) || writingMode === WritingMode.horizontal) {
+            positionedGlyphs.push(new PositionedGlyph(codePoint, x, yOffset, glyph, 0));
+            if (glyph) x += glyph.advance + spacing;
 
-        if (glyph) {
-            x += glyph.advance + spacing;
+        } else {
+            positionedGlyphs.push(new PositionedGlyph(codePoint, x, 0, glyph, -Math.PI / 2));
+            if (glyph) x += verticalHeight + spacing;
         }
     }
 
     if (!positionedGlyphs.length) return false;
 
-    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreaking(text));
+    linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, scriptDetection.allowsIdeographicBreaking(text), writingMode);
 
     return shaping;
 }
@@ -81,7 +94,7 @@ const breakable = {
 
 invisible[newLine] = breakable[newLine] = true;
 
-function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, useBalancedIdeographicBreaking) {
+function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, verticalAlign, justify, translate, useBalancedIdeographicBreaking, writingMode) {
     let lastSafeBreak = null;
     let lengthBeforeCurrentLine = 0;
     let lineStartIndex = 0;
@@ -91,7 +104,7 @@ function linewrap(shaping, glyphs, lineHeight, maxWidth, horizontalAlign, vertic
 
     const positionedGlyphs = shaping.positionedGlyphs;
 
-    if (maxWidth) {
+    if (writingMode === WritingMode.horizontal && maxWidth) {
         if (useBalancedIdeographicBreaking) {
             const lastPositionedGlyph = positionedGlyphs[positionedGlyphs.length - 1];
             const estimatedLineCount = Math.max(1, Math.ceil(lastPositionedGlyph.x / maxWidth));

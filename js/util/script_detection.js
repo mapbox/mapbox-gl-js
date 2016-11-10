@@ -1,54 +1,94 @@
 'use strict';
+/* eslint-disable new-cap */
+
+const isChar = require('./is_char_in_unicode_block');
 
 module.exports.allowsIdeographicBreaking = function(chars) {
     for (const char of chars) {
-        if (!exports.charAllowsIdeographicBreaking(char.charCodeAt(0))) {
-            return false;
-        }
+        if (!exports.charAllowsIdeographicBreaking(char.charCodeAt(0))) return false;
     }
     return true;
 };
 
+module.exports.allowsVerticalWritingMode = function(chars) {
+    for (const char of chars) {
+        if (exports.charAllowsVerticalWritingMode(char.charCodeAt(0))) return true;
+    }
+    return false;
+};
 
 module.exports.charAllowsIdeographicBreaking = function(char) {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
-    // CJK Radicals Supplement, Kangxi Radicals, Ideographic Description Characters, CJK Symbols and Punctuation: “⺀” to “〿”
-    if (char >= 0x2E80 && char <= 0x303F) return true;
-
-    // Hiragana: before “ぁ” to “ゟ”
-    if (char >= 0x3040 && char <= 0x309F) return true;
-
-    // Katakana: “゠” to “ヿ”
-    if (char >= 0x30A0 && char <= 0x30FF) return true;
-
-    // CJK Strokes: “㇀” to past “㇣”
-    if (char >= 0x31C0 && char <= 0x31EF) return true;
-
-    // Katakana Phonetic Extensions: “ㇰ” to “ㇿ”
-    if (char >= 0x31F0 && char <= 0x31FF) return true;
-
-    // Enclosed CJK Letters and Months, CJK Compatibility: “㈀” to “㏿”
-    if (char >= 0x3200 && char <= 0x33FF) return true;
-
-    // CJK Unified Ideographs Extension A: “㐀” to past “䶵”
-    if (char >= 0x3400 && char <= 0x4DBF) return true;
-
-    // CJK Unified Ideographs: “一” to past “鿕”
-    if (char >= 0x4E00 && char <= 0x9FFF) return true;
-
-    // Yi Syllables, Yi Radicals: “ꀀ” to past “꓆”
-    if (char >= 0xA000 && char <= 0xA4CF) return true;
-
-    // CJK Compatibility Forms: “︰” to “﹏”
-    if (char >= 0xFE30 && char <= 0xFE4F) return true;
-
-    // CJK Compatibility Ideographs: “豈” to past “龎”
-    if (char >= 0xF900 && char <= 0xFAFF) return true;
-
-    // Halfwidth and Fullwidth Forms: before “！” to past “￮”
-    if (char >= 0xFF00 && char <= 0xFFEF) return true;
+    if (isChar['Bopomofo Extended'](char)) return true;
+    if (isChar['Bopomofo'](char)) return true;
+    if (isChar['CJK Compatibility Forms'](char)) return true;
+    if (isChar['CJK Compatibility Ideographs'](char)) return true;
+    if (isChar['CJK Compatibility'](char)) return true;
+    if (isChar['CJK Radicals Supplement'](char)) return true;
+    if (isChar['CJK Strokes'](char)) return true;
+    if (isChar['CJK Symbols and Punctuation'](char)) return true;
+    if (isChar['CJK Unified Ideographs Extension A'](char)) return true;
+    if (isChar['CJK Unified Ideographs'](char)) return true;
+    if (isChar['Enclosed CJK Letters and Months'](char)) return true;
+    if (isChar['Halfwidth and Fullwidth Forms'](char)) return true;
+    if (isChar['Hiragana'](char)) return true;
+    if (isChar['Ideographic Description Characters'](char)) return true;
+    if (isChar['Kangxi Radicals'](char)) return true;
+    if (isChar['Katakana Phonetic Extensions'](char)) return true;
+    if (isChar['Katakana'](char)) return true;
+    if (isChar['Vertical Forms'](char)) return true;
+    if (isChar['Yi Radicals'](char)) return true;
+    if (isChar['Yi Syllables'](char)) return true;
 
     return false;
 };
+
+exports.charAllowsVerticalWritingMode = function(char, includeNeutrals) {
+    // Return early for characters outside all ranges that allow the vertical
+    // writing mode.
+    if (char < 0x1100) return false;
+
+    if (isChar['Bopomofo Extended'](char)) return true;
+    if (isChar['Bopomofo'](char)) return true;
+    if (isChar['CJK Compatibility Forms'](char)) return true;
+    if (isChar['CJK Compatibility Ideographs'](char)) return true;
+    if (isChar['CJK Compatibility'](char)) return true;
+    if (isChar['CJK Radicals Supplement'](char)) return true;
+    if (isChar['CJK Strokes'](char)) return true;
+    if (isChar['CJK Symbols and Punctuation'](char)) return true;
+    if (isChar['CJK Unified Ideographs Extension A'](char)) return true;
+    if (isChar['CJK Unified Ideographs'](char)) return true;
+    if (isChar['Enclosed CJK Letters and Months'](char)) return true;
+    if (isChar['Hangul Compatibility Jamo'](char)) return true;
+    if (isChar['Hangul Jamo Extended-A'](char)) return true;
+    if (isChar['Hangul Jamo Extended-B'](char)) return true;
+    if (isChar['Hangul Jamo'](char)) return true;
+    if (isChar['Hangul Syllables'](char)) return true;
+    if (isChar['Hiragana'](char)) return true;
+    if (isChar['Ideographic Description Characters'](char)) return true;
+    if (isChar['Kanbun'](char)) return true;
+    if (isChar['Kangxi Radicals'](char)) return true;
+    if (isChar['Katakana Phonetic Extensions'](char)) return true;
+    if (isChar['Katakana'](char)) return true;
+    if (isChar['Vertical Forms'](char)) return true;
+
+    if (isCharFullwidthForm(char)) return true;
+
+    if (includeNeutrals) {
+        if (isChar['General Punctuation'](char)) return true;
+    }
+
+    return false;
+};
+
+function isCharFullwidthForm(char) {
+    // Fullwidth Forms: "！" to "～"
+    if (char >= 0xFF01 && char <= 0xFF5E) return true;
+
+    // Fullwidth Forms: "￠" to "￦"
+    if (char >= 0xFFE0 && char <= 0xFFE6) return true;
+
+    return false;
+}

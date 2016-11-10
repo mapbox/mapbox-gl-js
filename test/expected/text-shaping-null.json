@@ -11,7 +11,8 @@
         "left": 2,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 105,
@@ -24,12 +25,14 @@
         "left": 1,
         "top": -8,
         "advance": 6
-      }
+      },
+      "angle": 0
     }
   ],
   "text": "hi\u0000",
   "top": -12,
   "bottom": 12,
   "left": -10,
-  "right": 10
+  "right": 10,
+  "writingMode": 1
 }
