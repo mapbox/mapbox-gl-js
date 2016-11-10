@@ -153,6 +153,34 @@ test('Map', (t) => {
             });
         });
 
+        t.test('fires *data and *dataloading events', (t) => {
+            createMap({}, (error, map) => {
+                t.error(error);
+
+                const events = [];
+                function recordEvent(event) { events.push(event.type); }
+
+                map.on('styledata', recordEvent);
+                map.on('styledataloading', recordEvent);
+                map.on('sourcedata', recordEvent);
+                map.on('sourcedataloading', recordEvent);
+
+                map.style.fire('data', {dataType: 'style'});
+                map.style.fire('dataloading', {dataType: 'style'});
+                map.style.fire('data', {dataType: 'source'});
+                map.style.fire('dataloading', {dataType: 'source'});
+
+                t.deepEqual(events, [
+                    'styledata',
+                    'styledataloading',
+                    'sourcedata',
+                    'sourcedataloading'
+                ]);
+
+                t.end();
+            });
+        });
+
         t.test('can be called more than once', (t) => {
             const map = createMap();
 
