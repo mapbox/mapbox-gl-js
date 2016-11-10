@@ -360,16 +360,14 @@ class Style extends Evented {
      * @returns {Style} `this`
      * @private
      */
-    addLayer(layer, before, options) {
+    addLayer(layerObject, before, options) {
         this._checkLoaded();
 
-        if (!(layer instanceof StyleLayer)) {
-            // this layer is not in the style.layers array, so we pass an impossible array index
-            if (this._validate(validateStyle.layer,
-                    `layers.${layer.id}`, layer, {arrayIndex: -1}, options)) return this;
+        // this layer is not in the style.layers array, so we pass an impossible array index
+        if (this._validate(validateStyle.layer,
+                `layers.${layerObject.id}`, layerObject, {arrayIndex: -1}, options)) return this;
 
-            layer = StyleLayer.create(layer);
-        }
+        const layer = StyleLayer.create(layerObject);
         this._validateLayer(layer);
 
         layer.setEventedParent(this, {layer: {id: layer.id}});
@@ -580,7 +578,7 @@ class Style extends Evented {
         if (params && params.layers) {
             for (let i = 0; i < params.layers.length; i++) {
                 const layer = this._layers[params.layers[i]];
-                if (!(layer instanceof StyleLayer)) {
+                if (!layer) {
                     // this layer is not in the style.layers array
                     return this.fire('error', {error: `The layer '${params.layers[i]
                         }' does not exist in the map's style and cannot be queried for features.`});
