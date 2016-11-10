@@ -28,7 +28,7 @@ class VectorTileSource extends Evented {
         }
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire('dataloading', {dataType: 'source', source: this.serialize()});
 
         loadTileJSON(options, (err, tileJSON) => {
             if (err) {
@@ -36,7 +36,7 @@ class VectorTileSource extends Evented {
                 return;
             }
             util.extend(this, tileJSON);
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', isSourceLoaded: false, source: this.serialize()});
             this.fire('source.load');
         });
     }

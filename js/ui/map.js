@@ -1659,6 +1659,7 @@ function removeNode(node) {
   * @property {string} type The event type.
   * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
   * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
+  * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
   */
 
  /**

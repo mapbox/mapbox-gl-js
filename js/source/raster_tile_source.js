@@ -22,13 +22,13 @@ class RasterTileSource extends Evented {
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire('dataloading', {dataType: 'source', source: this.serialize()});
         loadTileJSON(options, (err, tileJSON) => {
             if (err) {
                 return this.fire('error', err);
             }
             util.extend(this, tileJSON);
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', isSourceLoaded: false, source: this.serialize()});
             this.fire('source.load');
         });
     }

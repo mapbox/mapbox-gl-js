@@ -100,13 +100,13 @@ class GeoJSONSource extends Evented {
         }, options.workerOptions);
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire('dataloading', {dataType: 'source', source: this.serialize()});
         this._updateWorkerData((err) => {
             if (err) {
                 this.fire('error', {error: err});
                 return;
             }
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', isSourceLoaded: false, source: this.serialize()});
             this.fire('source.load');
         });
     }
@@ -124,12 +124,12 @@ class GeoJSONSource extends Evented {
     setData(data) {
         this._data = data;
 
-        this.fire('dataloading', {dataType: 'source'});
+        this.fire('dataloading', {dataType: 'source', source: this.serialize()});
         this._updateWorkerData((err) => {
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', isSourceLoaded: false, source: this.serialize()});
         });
 
         return this;

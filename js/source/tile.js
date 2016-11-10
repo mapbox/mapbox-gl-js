@@ -127,7 +127,7 @@ class Tile {
         this.state = 'unloaded';
     }
 
-    redoPlacement(source) {
+    redoPlacement(source, sourceCache) {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
@@ -150,7 +150,12 @@ class Tile {
 
         function done(_, data) {
             this.reloadSymbolData(data, source.map.style);
-            source.fire('data', {tile: this, dataType: 'source'});
+            source.fire('data', {
+                tile: this,
+                dataType: 'source',
+                source: source.serialize(),
+                isSourceLoaded: sourceCache.loaded()
+            });
 
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
             if (source.map) source.map.painter.tileExtentVAO.vao = null;
