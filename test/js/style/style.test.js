@@ -1116,7 +1116,6 @@ test('Style defers expensive methods', (t) => {
         t.spy(style, 'fire');
         t.spy(style, '_reloadSource');
         t.spy(style, '_updateWorkerLayers');
-        t.spy(style, '_groupLayers');
 
         style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
         style.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
@@ -1128,7 +1127,6 @@ test('Style defers expensive methods', (t) => {
         t.notOk(style.fire.called, 'fire is deferred');
         t.notOk(style._reloadSource.called, '_reloadSource is deferred');
         t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
-        t.notOk(style._groupLayers.called, '_groupLayers is deferred');
 
         style.update();
 
@@ -1141,7 +1139,6 @@ test('Style defers expensive methods', (t) => {
 
         // called once
         t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
-        t.ok(style._groupLayers.calledOnce, '_groupLayers is called once');
 
         t.end();
     });

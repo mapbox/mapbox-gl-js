@@ -37,7 +37,6 @@ class Style extends Evented {
 
         this._layers = {};
         this._order  = [];
-        this._groups = [];
         this.sourceCaches = {};
         this.zoomHistory = {};
         this._loaded = false;
@@ -139,40 +138,18 @@ class Style extends Evented {
     _resolve() {
         const layers = deref(this.stylesheet.layers);
 
-        this._order = layers.map((layer) => {
-            return layer.id;
-        });
+        this._order = layers.map((layer) => layer.id);
 
         this._layers = {};
         for (let layer of layers) {
             layer = StyleLayer.create(layer);
-            this._layers[layer.id] = layer;
             layer.setEventedParent(this, {layer: {id: layer.id}});
+            this._layers[layer.id] = layer;
         }
 
-        this._groupLayers();
         this._updateWorkerLayers();
 
         this.light = new Light(this.stylesheet.light);
-    }
-
-    _groupLayers() {
-        let group;
-
-        this._groups = [];
-
-        // Split into groups of consecutive top-level layers with the same source.
-        for (let i = 0; i < this._order.length; ++i) {
-            const layer = this._layers[this._order[i]];
-
-            if (!group || layer.source !== group.source) {
-                group = [];
-                group.source = layer.source;
-                this._groups.push(group);
-            }
-
-            group.push(layer);
-        }
     }
 
     _updateWorkerLayers(ids) {
@@ -279,7 +256,6 @@ class Style extends Evented {
         if (!this._updates.changed) return this;
 
         if (this._updates.allLayers) {
-            this._groupLayers();
             this._updateWorkerLayers();
         } else {
             const updatedIds = Object.keys(this._updates.layers);
@@ -563,7 +539,7 @@ class Style extends Evented {
             glyphs: this.stylesheet.glyphs,
             transition: this.stylesheet.transition,
             sources: util.mapObject(this.sourceCaches, (source) => source.serialize()),
-            layers: this._order.map((id) => this._layers[id].serialize(), this)
+            layers: this._order.map((id) => this._layers[id].serialize())
         }, (value) => { return value !== undefined; });
     }
 
