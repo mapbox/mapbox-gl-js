@@ -265,14 +265,13 @@ class Style extends Evented {
 
     _updateWorkerLayers() {
         const updatedIds = Object.keys(this._updatedLayers);
-        const addedIds = Object.keys(this._addedLayers);
         const removedIds = Object.keys(this._removedLayers);
 
-        if (updatedIds.length || addedIds.length || removedIds.length) {
+        if (updatedIds.length || removedIds.length || this._updatedSymbolOrder) {
             const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
 
             this.dispatcher.broadcast('updateLayers', {
-                layers: this._serializeLayers(updatedIds.concat(addedIds)),
+                layers: this._serializeLayers(updatedIds),
                 removedIds: removedIds,
                 symbolOrder: symbolOrder
             });
@@ -283,7 +282,6 @@ class Style extends Evented {
         this._changed = false;
 
         this._updatedLayers = {};
-        this._addedLayers = {};
         this._removedLayers = {};
         this._updatedSymbolOrder = false;
 
@@ -381,12 +379,9 @@ class Style extends Evented {
 
         this._layers[id] = layer;
 
-        if (this._removedLayers[id]) {
-            delete this._removedLayers[id];
-            this._updatedLayers[id] = true;
-        } else {
-            this._addedLayers[id] = true;
-        }
+        delete this._removedLayers[id];
+        this._updatedLayers[id] = true;
+
         if (layer.type === 'symbol') {
             this._updatedSymbolOrder = true;
         }
@@ -395,6 +390,33 @@ class Style extends Evented {
         }
 
         return this.updateClasses(id);
+    }
+
+    /**
+     * Add a layer to the map style. The layer will be inserted before the layer with
+     * ID `before`, or appended if `before` is omitted.
+     * @param {StyleLayer|Object} layer
+     * @param {string=} before  ID of an existing layer to insert before
+     */
+    moveLayer(id, before) {
+        this._checkLoaded();
+
+        const layer = this._layers[id];
+        if (!layer) throw new Error(`Layer not found: ${id}`);
+
+        const index = this._order.indexOf(id);
+        this._order.splice(index, 1);
+
+        const newIndex = before ? this._order.indexOf(before) : this._order.length;
+        this._order.splice(newIndex, 0, id);
+
+        if (layer.type === 'symbol') {
+            this._changed = true;
+            this._updatedSymbolOrder = true;
+            if (layer.source) {
+                this._updatedSources[layer.source] = true;
+            }
+        }
     }
 
     /**
@@ -408,9 +430,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this._layers[id];
-        if (layer === undefined) {
-            throw new Error('There is no layer with this ID');
-        }
+        if (!layer) throw new Error(`Layer not found: ${id}`);
 
         layer.setEventedParent(null);
 
@@ -425,7 +445,6 @@ class Style extends Evented {
         this._removedLayers[id] = true;
         delete this._layers[id];
         delete this._updatedLayers[id];
-        delete this._addedLayers[id];
         delete this._updatedPaintProps[id];
 
         return this;
