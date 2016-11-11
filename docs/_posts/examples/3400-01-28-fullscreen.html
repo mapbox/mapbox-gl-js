@@ -6,6 +6,12 @@ description: Toggle between current view and fullscreen mode
 tags:
   - controls-and-overlays
 ---
+<style>
+    .mapboxgl-map:-webkit-full-screen {
+        width: 100%;
+        height: 100%;
+    }
+</style>
 
 <div id='map'></div>
 
@@ -20,4 +26,3 @@ var map = new mapboxgl.Map({
 var fullscreen = new mapboxgl.Fullscreen({position: 'top-left' });
 map.addControl(fullscreen);
 </script>
-
