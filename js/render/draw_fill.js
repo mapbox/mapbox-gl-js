@@ -89,9 +89,9 @@ function setFillProgram(programId, usePattern, painter, layerData, layer, tile, 
             layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
         }
     } else {
-        program = painter.useProgram(`${programId}Pattern`);
-        painter.gl.uniform1f(program.u_opacity, layer.paint['fill-opacity']);
+        program = painter.useProgram(`${programId}Pattern`, layerData.programConfiguration);
         if (firstTile || program !== prevProgram) {
+            layerData.programConfiguration.setUniforms(painter.gl, program, layer, {zoom: painter.transform.zoom});
             pattern.prepare(layer.paint['fill-pattern'], painter, program);
         }
         pattern.setTile(tile, painter, program);

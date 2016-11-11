@@ -21,7 +21,7 @@ function drawBackground(painter, sourceCache, layer) {
 
     let program;
     if (image) {
-        program = painter.useProgram('fillPattern');
+        program = painter.useProgram('fillPattern', painter.basicFillProgramConfiguration);
         pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
     } else {
