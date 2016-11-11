@@ -3,8 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -12,6 +11,7 @@
     </style>
 </head>
 
+<body>
 <div class='map'></div>
 <div class='map'></div>
 <div class='map'></div>
@@ -19,8 +19,8 @@
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
-
 <script>
+
 var style = {
     "version": 8,
     "sources": {
@@ -78,7 +78,7 @@ function popup(e) {
         .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
         .addTo(this);
 }
-</script>
 
+</script>
 </body>
 </html>
