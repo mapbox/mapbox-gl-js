@@ -54,29 +54,20 @@ var style = {
 };
 
 function addMap (container) {
-  var map = new mapboxgl.Map({
-    container: container,
-    minZoom: 14,
-    zoom: 15.5,
-    center: [-122.514426, 37.562984],
-    bearing: -96,
-    style: style,
-    hash: false
-  });
-  map.on('click', popup.bind(map))
+    var map = new mapboxgl.Map({
+        container: container,
+        minZoom: 14,
+        zoom: 15.5,
+        center: [-122.514426, 37.562984],
+        bearing: -96,
+        style: style,
+        hash: false
+    });
 }
 
-var containers = document.querySelectorAll('.map')
+var containers = document.querySelectorAll('.map');
 for (var i = 0; i < containers.length; i++) {
     addMap(containers[i]);
-}
-
-function popup(e) {
-    if (e.originalEvent.shiftKey) return;
-    (new mapboxgl.Popup())
-        .setLngLat(e.lngLat)
-        .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
-        .addTo(this);
 }
 
 </script>

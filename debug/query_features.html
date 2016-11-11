@@ -28,7 +28,7 @@ var map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl());
 
-var emptyFc = { type: 'FeatureCollection', features: [] }
+var emptyFc = { type: 'FeatureCollection', features: [] };
 
 map.on('style.load', function() {
     map.addSource('queried', { type: 'geojson', data: emptyFc });
@@ -65,33 +65,33 @@ map.on('click', function(e) {
     }
     if (box.length === 2) {
         var boxcoords = box
-          .map(map.unproject.bind(map))
-          .map(function (latlng) { return [latlng.lng, latlng.lat]; })
-          .sort(function (a, b) { return a[0] - b[0]; });
+            .map(map.unproject.bind(map))
+            .map(function (latlng) { return [latlng.lng, latlng.lat]; })
+            .sort(function (a, b) { return a[0] - b[0]; });
 
         boxcoords = [
-          boxcoords[0],
-          [boxcoords[0][0], boxcoords[1][1]],
-          boxcoords[1],
-          [boxcoords[1][0], boxcoords[0][1]],
-          boxcoords[0]
+            boxcoords[0],
+            [boxcoords[0][0], boxcoords[1][1]],
+            boxcoords[1],
+            [boxcoords[1][0], boxcoords[0][1]],
+            boxcoords[0]
         ];
-        var results = map.queryRenderedFeatures(box, {})
+        var results = map.queryRenderedFeatures(box, {});
         map.getSource('queried').setData({
-          type: 'FeatureCollection',
-          features: results
+            type: 'FeatureCollection',
+            features: results
         });
 
         map.getSource('boxsource').setData({
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: boxcoords
-            }
-          }]
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'LineString',
+                    coordinates: boxcoords
+                }
+            }]
         });
     }
 });

@@ -109,7 +109,7 @@ var map = window.map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 
 var consoleContainer = document.querySelector('#console');
-['info','log','warn','error'].forEach(function (verb) {
+['info', 'log', 'warn', 'error'].forEach(function (verb) {
     console[verb] = (function (method, verb, container) {
         return function (text) {
             method(text);
@@ -130,7 +130,7 @@ var consoleContainer = document.querySelector('#console');
 document.getElementById('show-console').onclick = function() {
     var node = document.getElementById('console');
     if (!node) return;
-    this.checked ? node.classList.remove('hide') : node.classList.add('hide');
+    node.classList[this.checked ? 'remove' : 'add']('hide');
     blurMap(this.checked);
 };
 
@@ -141,13 +141,13 @@ function formatTimestamp() {
     var sec = '00' + d.getSeconds();
     var ms = '000' + d.getMilliseconds();
     return hr.substr(-2) + ':' + min.substr(-2) + ':' + sec.substr(-2) + '.' + ms.substr(-3);
-};
+}
 
 function blurMap(val) {
     var node = document.getElementById('map');
     if (!node) return;
-    val ? node.classList.add('blur') : node.classList.remove('blur');
-};
+    node.classList[val ? 'add' : 'remove']('blur');
+}
 
 function checkEvent(type, checked) {
     map.off(type);
@@ -165,15 +165,16 @@ function checkEvent(type, checked) {
 // Which map events do we want to observe?
 var checkboxContainer = document.querySelector('#checkboxes');
 
-['touchstart', 'touchend', 'touchmove', 'touchcancel',
- 'mouseout', 'mousedown', 'mouseup', 'mousemove',
- 'click', 'dblclick', 'contextmenu',
- 'dragstart', 'drag', 'dragend',
- 'movestart', 'move', 'moveend',
- 'zoomstart', 'zoom', 'zoomend',
- 'rotatestart', 'rotate', 'rotateend',
- 'pitchstart', 'pitch', 'pitchend',
- 'boxzoomstart', 'boxzoomend', 'boxzoomcancel'
+[
+    'touchstart', 'touchend', 'touchmove', 'touchcancel',
+    'mouseout', 'mousedown', 'mouseup', 'mousemove',
+    'click', 'dblclick', 'contextmenu',
+    'dragstart', 'drag', 'dragend',
+    'movestart', 'move', 'moveend',
+    'zoomstart', 'zoom', 'zoomend',
+    'rotatestart', 'rotate', 'rotateend',
+    'pitchstart', 'pitch', 'pitchend',
+    'boxzoomstart', 'boxzoomend', 'boxzoomcancel'
 ].forEach(function (type) {
     var name = 'show-' + type;
     var input = document.createElement('input');
