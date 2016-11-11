@@ -1,4 +1,3 @@
-uniform float u_opacity;
 uniform vec2 u_pattern_tl_a;
 uniform vec2 u_pattern_br_a;
 uniform vec2 u_pattern_tl_b;
@@ -11,7 +10,11 @@ varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec2 v_pos;
 
+#pragma mapbox: define lowp float opacity
+
 void main() {
+    #pragma mapbox: initialize lowp float opacity
+
     vec2 imagecoord = mod(v_pos_a, 1.0);
     vec2 pos = mix(u_pattern_tl_a, u_pattern_br_a, imagecoord);
     vec4 color1 = texture2D(u_image, pos);
@@ -26,7 +29,7 @@ void main() {
     float alpha = smoothstep(1.0, 0.0, dist);
 
 
-    gl_FragColor = mix(color1, color2, u_mix) * alpha * u_opacity;
+    gl_FragColor = mix(color1, color2, u_mix) * alpha * opacity;
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

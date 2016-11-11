@@ -12,7 +12,11 @@ attribute vec2 a_pos;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 
+#pragma mapbox: define lowp float opacity
+
 void main() {
+    #pragma mapbox: initialize lowp float opacity
+
     gl_Position = u_matrix * vec4(a_pos, 0, 1);
 
     v_pos_a = get_pattern_pos(u_pixel_coord_upper, u_pixel_coord_lower, u_scale_a * u_pattern_size_a, u_tile_units_to_pixels, a_pos);
