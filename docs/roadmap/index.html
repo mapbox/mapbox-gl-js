@@ -3,33 +3,6 @@ layout: default
 options: full
 class: fill-light
 title: Mapbox GL JS Roadmap
-roadmap-now:
-  -
-    name: Unify Camera API into a single method
-    issues: ["3583", "2801"]
-  -
-    name: Improving event system and schema
-    issues: ["1408", "3577", "3578"]
-  - 
-    name: Vertical text rendering improvements
-    issues: ["3438", "3470", "3402"]
-  -
-    name: Plugin architecture documentation updates
-    issues: ["1835"]
-roadmap-upcoming:
-  - 
-    name: Use Yarn for dependency installations on Circle CI instead of NPM
-    issues: ["3364", "3551"]
-  -
-    name: Improve performance around setting styles with <code>setStyle()</code>
-    issues: ["1370", "1989"]
-roadmap-long:
-  -
-    name: API refactors and breaking chnages
-    issues: ["2803", "2727", "2506", "2112", "1408"]
-  -
-    name: Custom layer types and shaders
-    issues: ["281"]
 ---
 
 <link href='{{site.baseurl}}/site.css' rel='stylesheet' />
@@ -45,13 +18,7 @@ roadmap-long:
     color: #fbb03b;
   }
 </style>
-<!-- 
-<div class='docnav hide-mobile'>
-  <div class='limiter'>
-    
-  </div>
-</div>
- -->
+
 <div class='limiter clearfix'>
   <div class='pad2y'>
     <div class='col3 pad1x pad2y contain small'>
@@ -82,14 +49,15 @@ roadmap-long:
     </div>
 
     <div class='col12'>
-      
-      <!-- near term -->
+
+      {% for r in site.data.roadmap %}
+      <!-- {{r.term}} -->
       <div class='col4'>
         <div class='roadmap-block fill-white prose keyline-all'>
           <div class='pad2'>
-            <h2 id="roadmap-in-progress">Actively developing</h2>
+            <h2>{{r.term}}</h2>
           </div>
-          {% for item in page.roadmap-now %}
+          {% for item in r.items %}
           <div class='pad2x pad1y keyline-top'>
             {{ item.name }}
             <div class="space-top">
@@ -101,45 +69,8 @@ roadmap-long:
           {% endfor %}
         </div>
       </div>
-
-      <!-- medium term -->
-      <div class='col4'>
-        <div class='roadmap-block fill-white prose keyline-left keyline-right keyline-top keyline-bottom'>
-          <div class='pad2'>
-            <h2 id="roadmap-upcoming">Upcoming</h2>
-          </div>
-          {% for item in page.roadmap-upcoming %}
-          <div class='pad2x pad1y keyline-top'>
-            {{ item.name }}
-            <div class="space-top">
-              {% if item.issues %}{% for i in item.issues %}
-              <code><a class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
-              {% endfor %}{% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- long term -->
-      <div class='col4'>
-        <div class='roadmap-block fill-white prose keyline-left keyline-right keyline-top keyline-bottom'>
-          <div class='pad2'>
-            <h2 id="long-term">Long-term</h2>
-          </div>
-          {% for item in page.roadmap-long %}
-          <div class='pad2x pad1y keyline-top'>
-            {{ item.name }}
-            <div class="space-top">
-              {% if item.issues %}{% for i in item.issues %}
-              <code><a class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
-              {% endfor %}{% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
+      {% endfor %}
+      
     </div>
   </div>
 </div>

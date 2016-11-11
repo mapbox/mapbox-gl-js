@@ -1,0 +1,36 @@
+- 
+  term: "Active development"
+  items: 
+    -
+      name: Unify Camera API into a single method
+      issues: ["3583", "2801"]
+    -
+      name: Improving event system and schema
+      issues: ["1408", "3577", "3578"]
+    - 
+      name: Vertical text rendering improvements
+      issues: ["3438", "3470", "3402"]
+    -
+      name: Plugin architecture documentation updates
+      issues: ["1835"]
+-
+  term: "Upcoming"
+  items:
+    - 
+      name: Use Yarn for dependency installations on Circle CI instead of NPM
+      issues: ["3364", "3551"]
+    -
+      name: Improve performance around setting styles with <code>setStyle()</code>
+      issues: ["1370", "1989"]
+    -
+      name: Fix GeoJSON memory leak
+      issues: ["3220", "3595"]
+-
+  term: "Long-term"
+  items:
+    -
+      name: API refactors and breaking chnages
+      issues: ["2803", "2727", "2506", "2112", "1408"]
+    -
+      name: Custom layer types and shaders
+      issues: ["281"]
