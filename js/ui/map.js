@@ -423,6 +423,13 @@ class Map extends Camera {
     }
 
     /**
+     * Returns the map's minimum allowable zoom level.
+     *
+     * @returns {number} minZoom
+     */
+    getMinZoom() { return this.transform.minZoom; }
+
+    /**
      * Sets or clears the map's maximum zoom level.
      * If the map's current zoom level is higher than the new maximum,
      * the map will zoom to the new maximum.
@@ -445,6 +452,14 @@ class Map extends Camera {
 
         } else throw new Error(`maxZoom must be between the current minZoom and ${defaultMaxZoom}, inclusive`);
     }
+
+    /**
+     * Returns the map's maximum allowable zoom level.
+     *
+     * @returns {number} maxZoom
+     */
+    getMaxZoom() { return this.transform.maxZoom; }
+
     /**
      * Returns a [`Point`](#Point) representing pixel coordinates, relative to the map's `container`,
      * that correspond to the specified geographical location.
