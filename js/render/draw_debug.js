@@ -11,9 +11,6 @@ const PosArray = require('../data/pos_array');
 module.exports = drawDebug;
 
 function drawDebug(painter, sourceCache, coords) {
-    if (painter.isOpaquePass) return;
-    if (!painter.options.debug) return;
-
     for (let i = 0; i < coords.length; i++) {
         drawDebugTile(painter, sourceCache, coords[i]);
     }

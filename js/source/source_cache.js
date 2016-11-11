@@ -512,7 +512,11 @@ class SourceCache extends Evented {
     }
 
     getVisibleCoordinates() {
-        return this.getRenderableIds().map(TileCoord.fromID);
+        const coords = this.getRenderableIds().map(TileCoord.fromID);
+        for (const coord of coords) {
+            coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
+        }
+        return coords;
     }
 }
 

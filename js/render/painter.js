@@ -211,6 +211,11 @@ class Painter {
         this.renderPass();
         this.isOpaquePass = false;
         this.renderPass();
+
+        if (this.options.showTileBoundaries) {
+            const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
+            draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+        }
     }
 
     renderPass() {
@@ -222,20 +227,15 @@ class Painter {
 
         for (let i = 0; i < layerIds.length; i++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
-            let sourceChanged = false;
 
             if (layer.source !== (sourceCache && sourceCache.id)) {
                 sourceCache = this.style.sourceCaches[layer.source];
                 coords = [];
-                sourceChanged = true;
 
                 if (sourceCache) {
                     if (sourceCache.prepare) sourceCache.prepare();
-                    coords = sourceCache.getVisibleCoordinates();
-                    for (const coord of coords) {
-                        coord.posMatrix = this.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
-                    }
                     this.clearStencil();
+                    coords = sourceCache.getVisibleCoordinates();
                     if (sourceCache.getSource().isTileClipped) {
                         this._renderTileClippingMasks(coords);
                     }
@@ -252,11 +252,6 @@ class Painter {
             }
 
             this.renderLayer(this, sourceCache, layer, coords);
-
-            if (sourceChanged && sourceCache) {
-                draw.debug(this, sourceCache, coords);
-            }
-
             this.currentLayer += this.isOpaquePass ? -1 : 1;
         }
     }
