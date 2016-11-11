@@ -17,6 +17,9 @@ title: Mapbox GL JS Roadmap
   code a {
     color: #fbb03b;
   }
+  .roadmap-project {
+    color: #8a8acb;
+  }
 </style>
 
 <div class='limiter clearfix'>
@@ -46,6 +49,7 @@ title: Mapbox GL JS Roadmap
       </h1>
       <p class='prose'>The GL JS team is focused on making our priorities transparent and reliable. Below is a list of which major projects and features are currently in active development, upcoming, or we are thinking about long-term. Each item includes links to the relevant issues and pull requests on GitHub.</p>
       <p>Due to the pace at which GL JS is being developed, we are unable to confidently estimate which release version a feature will ship with.</p>
+      <p class="small"><span class="icon point roadmap-project"></span> indicates a project on GitHub</p>
     </div>
 
     <div class='col12'>
@@ -59,11 +63,15 @@ title: Mapbox GL JS Roadmap
           </div>
           {% for item in r.items %}
           <div class='pad2x pad1y keyline-top'>
-            {{ item.name }}
+            {% if item.project %}<span class="icon point roadmap-project fr"></span>{% endif %}
+            {{item.name}}
             <div class="space-top">
               {% if item.issues %}{% for i in item.issues %}
-              <code><a class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
+              <code><a target="_blank" class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
               {% endfor %}{% endif %}
+              {% if item.project %}
+              <code><a target="_blank" href="https://github.com/mapbox/mapbox-gl-js/projects/{{item.project}}">project#{{item.project}}</a></code>
+              {% endif %}
             </div>
           </div>
           {% endfor %}
