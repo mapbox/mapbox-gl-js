@@ -134,7 +134,8 @@ class SymbolBucket {
         const stacks = options.glyphDependencies;
         const stack = stacks[textFont] = stacks[textFont] || {};
 
-        for (const feature of features) {
+        for (let i = 0; i < features.length; i++) {
+            const feature = features[i];
             if (!this.layers[0].filter(feature)) {
                 continue;
             }
@@ -156,7 +157,7 @@ class SymbolBucket {
             this.features.push({
                 text,
                 icon,
-                index: this.features.length,
+                index: i,
                 sourceLayerIndex: feature.sourceLayerIndex,
                 geometry: loadGeometry(feature),
                 properties: feature.properties
