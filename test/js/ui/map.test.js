@@ -459,6 +459,14 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#getMinZoom', (t) => {
+        const map = createMap({zoom: 0});
+        t.equal(map.getMinZoom(), 0, 'returns default value');
+        map.setMinZoom(10);
+        t.equal(map.getMinZoom(), 10, 'returns custom value');
+        t.end();
+    });
+
     t.test('ignore minZooms over maxZoom', (t) => {
         const map = createMap({zoom:2, maxZoom:5});
         t.throws(() => {
@@ -482,6 +490,14 @@ test('Map', (t) => {
         map.setMaxZoom(null);
         map.setZoom(6);
         t.equal(map.getZoom(), 6);
+        t.end();
+    });
+
+    t.test('#getMaxZoom', (t) => {
+        const map = createMap({zoom: 0});
+        t.equal(map.getMaxZoom(), 20, 'returns default value');
+        map.setMaxZoom(10);
+        t.equal(map.getMaxZoom(), 10, 'returns custom value');
         t.end();
     });
 
