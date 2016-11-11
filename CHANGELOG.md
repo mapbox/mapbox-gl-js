@@ -1,3 +1,47 @@
+## 0.27.0 (November 11 2016)
+
+#### ⚠️ Breaking changes ⚠️
+
+- Replace `fill-extrude-height` and `fill-extrude-base` properties of `fill` render type with a separate `fill-extrusion` type (with corresponding `fill-extrusion-height` and `fill-extrusion-base` properties), solving problems with render parity and runtime switching between flat and extruded fills. https://github.com/mapbox/mapbox-gl-style-spec/issues/554
+- Change the units for extrusion height properties (`fill-extrusion-height`, `fill-extrusion-base`) from "magic numbers" to meters. #3509
+- Remove `mapboxgl.Control` class and change the way custom controls should be implemented. #3497
+- Remove `mapboxgl.util` functions: `inherit`, `extendAll`, `debounce`, `coalesce`, `startsWith`, `supportsGeolocation`. #3441 #3571
+- **`mapboxgl.util` is deprecated** and will be removed in the next release. #1408
+
+#### New features and improvements
+
+- Tons of **performance improvements** that combined make rendering **up to 3 times faster**, especially for complex styles. #3485 #3489 #3490 #3491 #3498 #3499 #3501 #3510 #3514 #3515 #3486 #3527 #3574 ⚡️⚡️⚡️
+- 🈯 Added **vertical text writing mode** for languages that support it. #3438
+- 🈯 Improved **line breaking of Chinese and Japanese text** in point-placed labels. #3420
+- Reduce the default number of worker threads (`mapboxgl.workerCount`) for better performance. #3565
+- Automatically use `categorical` style function type when input values are strings. #3384
+- Improve control buttons accessibility. #3492
+- Remove geolocation button if geolocation is disabled (e.g. the page is not served through `https`). #3571
+- Added `Map#getMaxZoom` and `Map#getMinZoom` methods #3592
+
+#### Bugfixes
+
+- Fix several line dash rendering bugs. #3451
+- Fix intermittent map flicker when using image sources. #3522
+- Fix incorrect rendering of semitransparent `background` layers. #3521
+- Fix broken `raster-fade-duration` property. #3532
+- Fix handling of extrusion heights with negative values (by clamping to `0`). #3463
+- Fix GeoJSON sources not placing labels/icons correctly after map rotation. #3366
+- Fix icon/label placement not respecting order for layers with numeric names. #3404
+- Fix `queryRenderedFeatures` working incorrectly on colliding labels. #3459
+- Fix a bug where changing extrusion properties at runtime sometimes threw an error. #3487 #3468
+- Fix a bug where `map.loaded()` always returned `true` when using raster tile sources. #3302
+- Fix a bug where moving the map out of bounds sometimes threw `failed to invert matrix` error. #3518
+- Fixed `queryRenderedFeatures` throwing an error if no parameters provided. #3542
+- Fixed a bug where using multiple `\n` in a text field resulted in an error. #3570
+
+#### Misc
+
+- 🐞 Fix `npm install mapbox-gl` pulling in all `devDependencies`, leading to an extremely slow install. #3377
+- Switch the codebase to ES6. #3388 #3408 #3415 #3421
+- A lot of internal refactoring to make the codebase simpler and more maintainable.
+- Various documentation fixes. #3440
+
 ## 0.26.0 (October 13 2016)
 
 #### New Features & Improvements
