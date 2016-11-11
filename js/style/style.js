@@ -241,10 +241,9 @@ class Style extends Evented {
 
     /**
      * Apply queued style updates in a batch
-     * @private
      */
     update(classes, options) {
-        if (!this._changed) return this;
+        if (!this._changed) return;
 
         this._updateWorkerLayers();
 
@@ -259,8 +258,6 @@ class Style extends Evented {
         this.fire('data', {dataType: 'style'});
 
         this._resetUpdates();
-
-        return this;
     }
 
     _updateWorkerLayers() {
@@ -304,7 +301,7 @@ class Style extends Evented {
 
         const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
-        if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return this;
+        if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
         source = new SourceCache(id, source, this.dispatcher);
         this.sourceCaches[id] = source;
@@ -313,16 +310,12 @@ class Style extends Evented {
 
         if (source.onAdd) source.onAdd(this.map);
         this._changed = true;
-
-        return this;
     }
 
     /**
      * Remove a source from this stylesheet, given its id.
      * @param {string} id id of the source to remove
-     * @returns {Style} this style
      * @throws {Error} if no source is found with the given ID
-     * @private
      */
     removeSource(id) {
         this._checkLoaded();
@@ -338,15 +331,12 @@ class Style extends Evented {
 
         if (sourceCache.onRemove) sourceCache.onRemove(this.map);
         this._changed = true;
-
-        return this;
     }
 
     /**
      * Get a source by id.
      * @param {string} id id of the desired source
      * @returns {Object} source
-     * @private
      */
     getSource(id) {
         return this.sourceCaches[id] && this.sourceCaches[id].getSource();
@@ -357,8 +347,6 @@ class Style extends Evented {
      * ID `before`, or appended if `before` is omitted.
      * @param {StyleLayer|Object} layer
      * @param {string=} before  ID of an existing layer to insert before
-     * @returns {Style} `this`
-     * @private
      */
     addLayer(layerObject, before, options) {
         this._checkLoaded();
@@ -367,7 +355,7 @@ class Style extends Evented {
 
         // this layer is not in the style.layers array, so we pass an impossible array index
         if (this._validate(validateStyle.layer,
-                `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return this;
+                `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
 
         const layer = StyleLayer.create(layerObject);
         this._validateLayer(layer);
@@ -389,7 +377,7 @@ class Style extends Evented {
             this._updatedSources[layer.source] = true;
         }
 
-        return this.updateClasses(id);
+        this.updateClasses(id);
     }
 
     /**
@@ -422,9 +410,7 @@ class Style extends Evented {
     /**
      * Remove a layer from this stylesheet, given its id.
      * @param {string} id id of the layer to remove
-     * @returns {Style} this style
      * @throws {Error} if no layer is found with the given ID
-     * @private
      */
     removeLayer(id) {
         this._checkLoaded();
@@ -446,8 +432,6 @@ class Style extends Evented {
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
-
-        return this;
     }
 
     /**
@@ -455,7 +439,6 @@ class Style extends Evented {
      *
      * @param {string} id - id of the desired layer
      * @returns {?Object} a layer, if one with the given `id` exists
-     * @private
      */
     getLayer(id) {
         return this._layers[id];
@@ -466,7 +449,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
 
-        if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return this;
+        if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return;
 
         if (minzoom != null) {
             layer.minzoom = minzoom;
@@ -474,7 +457,7 @@ class Style extends Evented {
         if (maxzoom != null) {
             layer.maxzoom = maxzoom;
         }
-        return this._updateLayer(layer);
+        this._updateLayer(layer);
     }
 
     setFilter(layerId, filter) {
@@ -482,19 +465,18 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
 
-        if (filter !== null && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return this;
+        if (filter !== null && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
 
-        if (util.deepEqual(layer.filter, filter)) return this;
+        if (util.deepEqual(layer.filter, filter)) return;
         layer.filter = util.clone(filter);
 
-        return this._updateLayer(layer);
+        this._updateLayer(layer);
     }
 
     /**
      * Get a layer's filter object
      * @param {string} layer the layer to inspect
      * @returns {*} the layer's filter, if any
-     * @private
      */
     getFilter(layer) {
         return util.clone(this.getLayer(layer).filter);
@@ -505,10 +487,10 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
 
-        if (util.deepEqual(layer.getLayoutProperty(name), value)) return this;
+        if (util.deepEqual(layer.getLayoutProperty(name), value)) return;
 
         layer.setLayoutProperty(name, value);
-        return this._updateLayer(layer);
+        this._updateLayer(layer);
     }
 
     /**
@@ -516,7 +498,6 @@ class Style extends Evented {
      * @param {string} layer the layer to inspect
      * @param {string} name the name of the layout property
      * @returns {*} the property value
-     * @private
      */
     getLayoutProperty(layer, name) {
         return this.getLayer(layer).getLayoutProperty(name);
@@ -527,7 +508,7 @@ class Style extends Evented {
 
         const layer = this.getLayer(layerId);
 
-        if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return this;
+        if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return;
 
         const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
         layer.setPaintProperty(name, value, klass);
@@ -546,7 +527,7 @@ class Style extends Evented {
             }
         }
 
-        return this.updateClasses(layerId, name);
+        this.updateClasses(layerId, name);
     }
 
     getPaintProperty(layer, name, klass) {
@@ -562,7 +543,6 @@ class Style extends Evented {
             if (!props[layerId]) props[layerId] = {};
             props[layerId][paintName || 'all'] = true;
         }
-        return this;
     }
 
     serialize() {
@@ -589,7 +569,6 @@ class Style extends Evented {
             this._updatedSources[layer.source] = true;
         }
         this._changed = true;
-        return this;
     }
 
     _flattenRenderedFeatures(sourceResults) {
@@ -619,8 +598,9 @@ class Style extends Evented {
                 const layer = this._layers[params.layers[i]];
                 if (!layer) {
                     // this layer is not in the style.layers array
-                    return this.fire('error', {error: `The layer '${params.layers[i]
+                    this.fire('error', {error: `The layer '${params.layers[i]
                         }' does not exist in the map's style and cannot be queried for features.`});
+                    return;
                 }
                 includedSources[layer.source] = true;
             }
@@ -676,12 +656,12 @@ class Style extends Evented {
                 break;
             }
         }
-        if (!_update) return this;
+        if (!_update) return;
 
         const transition = this.stylesheet.transition || {};
 
         this.light.setLight(lightOptions);
-        return this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
+        this.light.updateLightTransitions(transitionOptions || {transition: true}, transition, this.animationLoop);
     }
 
     _validate(validate, key, value, props, options) {
