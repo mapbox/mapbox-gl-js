@@ -737,7 +737,7 @@ test('Style#removeLayer', (t) => {
         style.on('style.load', () => {
             t.throws(() => {
                 style.removeLayer('background');
-            }, /There is no layer with this ID/);
+            }, /Layer not found: background/);
             t.end();
         });
     });
@@ -775,6 +775,63 @@ test('Style#removeLayer', (t) => {
             style.removeLayer('a');
             t.equal(style.getLayer('a'), undefined);
             t.notEqual(style.getLayer('b'), undefined);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#moveLayer', (t) => {
+
+    t.test('throw before loaded', (t) => {
+        const style = new Style(createStyleJSON({
+            "layers": [{id: 'background', type: 'background'}]
+        }));
+        t.throws(() => {
+            style.moveLayer('background');
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('fires "data" event', (t) => {
+        const style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.once('data', t.end);
+
+        style.on('style.load', () => {
+            style.addLayer(layer);
+            style.moveLayer('background');
+            style.update();
+        });
+    });
+
+    t.test('throws on non-existence', (t) => {
+        const style = new Style(createStyleJSON());
+
+        style.on('style.load', () => {
+            t.throws(() => {
+                style.moveLayer('background');
+            }, /Layer not found: background/);
+            t.end();
+        });
+    });
+
+    t.test('changes the order', (t) => {
+        const style = new Style(createStyleJSON({
+            layers: [
+                {id: 'a', type: 'background'},
+                {id: 'b', type: 'background'},
+                {id: 'c', type: 'background'}
+            ]
+        }));
+
+        style.on('style.load', () => {
+            style.moveLayer('a', 'c');
+            t.deepEqual(style._order, ['b', 'a', 'c']);
             t.end();
         });
     });
