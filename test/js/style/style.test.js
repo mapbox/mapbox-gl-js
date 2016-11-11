@@ -290,15 +290,6 @@ test('Style#_resolve', (t) => {
 });
 
 test('Style#addSource', (t) => {
-    t.test('returns self', (t) => {
-        const style = new Style(createStyleJSON()),
-            source = createSource();
-        style.on('style.load', () => {
-            t.equal(style.addSource('source-id', source), style);
-            t.end();
-        });
-    });
-
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON()),
             source = createSource();
@@ -389,16 +380,6 @@ test('Style#addSource', (t) => {
 });
 
 test('Style#removeSource', (t) => {
-    t.test('returns self', (t) => {
-        const style = new Style(createStyleJSON()),
-            source = createSource();
-        style.on('style.load', () => {
-            style.addSource('source-id', source);
-            t.equal(style.removeSource('source-id'), style);
-            t.end();
-        });
-    });
-
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON({
             "sources": {
@@ -487,16 +468,6 @@ test('Style#removeSource', (t) => {
 });
 
 test('Style#addLayer', (t) => {
-    t.test('returns self', (t) => {
-        const style = new Style(createStyleJSON()),
-            layer = {id: 'background', type: 'background'};
-
-        style.on('style.load', () => {
-            t.equal(style.addLayer(layer), style);
-            t.end();
-        });
-    });
-
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
@@ -671,17 +642,6 @@ test('Style#addLayer', (t) => {
 });
 
 test('Style#removeLayer', (t) => {
-    t.test('returns self', (t) => {
-        const style = new Style(createStyleJSON()),
-            layer = {id: 'background', type: 'background'};
-
-        style.on('style.load', () => {
-            style.addLayer(layer);
-            t.equal(style.removeLayer('background'), style);
-            t.end();
-        });
-    });
-
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON({
             "layers": [{id: 'background', type: 'background'}]
