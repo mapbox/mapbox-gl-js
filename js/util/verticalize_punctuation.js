@@ -10,8 +10,8 @@ module.exports = function verticalizePunctuation(input) {
         const prevCharCode = input.charCodeAt(i - 1) || null;
 
         const canReplacePunctuation = (
-            (!nextCharCode || scriptDetection.charAllowsVerticalWritingMode(nextCharCode, true)) &&
-            (!prevCharCode || scriptDetection.charAllowsVerticalWritingMode(prevCharCode, true))
+            (!nextCharCode || !scriptDetection.charHasRotatedVerticalOrientation(nextCharCode) || module.exports.lookup[input[i + 1]]) &&
+            (!prevCharCode || !scriptDetection.charHasRotatedVerticalOrientation(prevCharCode) || module.exports.lookup[input[i - 1]])
         );
 
         if (canReplacePunctuation && module.exports.lookup[input[i]]) {
@@ -25,7 +25,7 @@ module.exports = function verticalizePunctuation(input) {
 };
 
 module.exports.lookup = {
-    '!': '！',
+    '!': '︕',
     '#': '＃',
     '$': '＄',
     '%': '％',
@@ -34,16 +34,16 @@ module.exports.lookup = {
     ')': '︶',
     '*': '＊',
     '+': '＋',
-    ',': '，',
+    ',': '︐',
     '-': '︲',
     '.': '・',
     '/': '／',
-    ':': '：',
-    ';': '；',
+    ':': '︓',
+    ';': '︔',
     '<': '︿',
     '=': '＝',
     '>': '﹀',
-    '?': '？',
+    '?': '︖',
     '@': '＠',
     '[': '﹇',
     '\\': '＼',
@@ -67,8 +67,10 @@ module.exports.lookup = {
     '’': '﹄',
     '“': '﹁',
     '”': '﹂',
+    '…': '︙',
     '‧': '・',
     '₩': '￦',
+    '、': '︑',
     '。': '︒',
     '〈': '︿',
     '〉': '﹀',
@@ -82,14 +84,19 @@ module.exports.lookup = {
     '】': '︼',
     '〔': '︹',
     '〕': '︺',
-    '〘': '︹',
-    '〙': '︺',
+    '〖': '︗',
+    '〗': '︘',
+    '！': '︕',
     '（': '︵',
     '）': '︶',
+    '，': '︐',
     '－': '︲',
     '．': '・',
+    '：': '︓',
+    '；': '︔',
     '＜': '︿',
     '＞': '﹀',
+    '？': '︖',
     '［': '﹇',
     '］': '﹈',
     '＿': '︳',
