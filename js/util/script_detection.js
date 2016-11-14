@@ -51,6 +51,9 @@ module.exports.charAllowsIdeographicBreaking = function(char) {
 // upright in vertical text but does not distinguish between upright and
 // “neutral” characters.
 
+// Blocks in the Unicode supplementary planes are excluded from this module due
+// to <https://github.com/mapbox/mapbox-gl/issues/29>.
+
 /**
  * Returns true if the given Unicode codepoint identifies a character with
  * upright orientation.
@@ -133,39 +136,6 @@ exports.charHasUprightVerticalOrientation = function(char) {
     if (isChar['Yijing Hexagram Symbols'](char)) return true;
     if (isChar['Yi Syllables'](char)) return true;
     if (isChar['Yi Radicals'](char)) return true;
-
-    // https://github.com/mapbox/mapbox-gl/issues/29
-
-    //if (isChar['Meroitic Hieroglyphs'](char)) return true;
-    //if (isChar['Siddham'](char)) return true;
-    //if (isChar['Egyptian Hieroglyphs'](char)) return true;
-    //if (isChar['Anatolian Hieroglyphs'](char)) return true;
-    //if (isChar['Ideographic Symbols and Punctuation'](char)) return true;
-    //if (isChar['Tangut'](char)) return true;
-    //if (isChar['Tangut Components'](char)) return true;
-    //if (isChar['Kana Supplement'](char)) return true;
-    //if (isChar['Byzantine Musical Symbols'](char)) return true;
-    //if (isChar['Musical Symbols'](char)) return true;
-    //if (isChar['Tai Xuan Jing Symbols'](char)) return true;
-    //if (isChar['Counting Rod Numerals'](char)) return true;
-    //if (isChar['Sutton SignWriting'](char)) return true;
-    //if (isChar['Mahjong Tiles'](char)) return true;
-    //if (isChar['Domino Tiles'](char)) return true;
-    //if (isChar['Playing Cards'](char)) return true;
-    //if (isChar['Enclosed Alphanumeric Supplement'](char)) return true;
-    //if (isChar['Enclosed Ideographic Supplement'](char)) return true;
-    //if (isChar['Miscellaneous Symbols and Pictographs'](char)) return true;
-    //if (isChar['Emoticons'](char)) return true;
-    //if (isChar['Ornamental Dingbats'](char)) return true;
-    //if (isChar['Transport and Map Symbols'](char)) return true;
-    //if (isChar['Alchemical Symbols'](char)) return true;
-    //if (isChar['Geometric Shapes Extended'](char)) return true;
-    //if (isChar['Supplemental Symbols and Pictographs'](char)) return true;
-    //if (isChar['CJK Unified Ideographs Extension B'](char)) return true;
-    //if (isChar['CJK Unified Ideographs Extension C'](char)) return true;
-    //if (isChar['CJK Unified Ideographs Extension D'](char)) return true;
-    //if (isChar['CJK Unified Ideographs Extension E'](char)) return true;
-    //if (isChar['CJK Compatibility Ideographs Supplement'](char)) return true;
 
     return false;
 };
@@ -258,11 +228,6 @@ exports.charHasNeutralVerticalOrientation = function(char) {
         char === 0xFFFD /* replacement character */) {
         return true;
     }
-
-    // https://github.com/mapbox/mapbox-gl/issues/29
-
-    //if (isChar['Supplementary Private Use Area-A'](char)) return true;
-    //if (isChar['Supplementary Private Use Area-B'](char)) return true;
 
     return false;
 };
