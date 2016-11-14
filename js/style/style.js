@@ -247,17 +247,13 @@ class Style extends Evented {
 
         this._updateWorkerLayers();
 
-        const updatedSourceIds = Object.keys(this._updatedSources);
-        let i;
-        for (i = 0; i < updatedSourceIds.length; i++) {
-            this._reloadSource(updatedSourceIds[i]);
+        for (const id in this._updatedSources) {
+            this._reloadSource(id);
         }
-
         this._applyClasses(classes, options);
+        this._resetUpdates();
 
         this.fire('data', {dataType: 'style'});
-
-        this._resetUpdates();
     }
 
     _updateWorkerLayers() {
@@ -303,12 +299,11 @@ class Style extends Evented {
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
-        source = new SourceCache(id, source, this.dispatcher);
-        this.sourceCaches[id] = source;
-        source.style = this;
-        source.setEventedParent(this, {source: source.getSource()});
+        const sourceCache = this.sourceCaches[id] = new SourceCache(id, source, this.dispatcher);
+        sourceCache.style = this;
+        sourceCache.setEventedParent(this, {source: sourceCache.getSource()});
 
-        if (source.onAdd) source.onAdd(this.map);
+        if (sourceCache.onAdd) sourceCache.onAdd(this.map);
         this._changed = true;
     }
 
@@ -368,13 +363,10 @@ class Style extends Evented {
         this._layers[id] = layer;
 
         delete this._removedLayers[id];
-        this._updatedLayers[id] = true;
+        this._updateLayer(layer);
 
         if (layer.type === 'symbol') {
             this._updatedSymbolOrder = true;
-        }
-        if (layer.source) {
-            this._updatedSources[layer.source] = true;
         }
 
         this.updateClasses(id);
@@ -521,10 +513,7 @@ class Style extends Evented {
         );
 
         if (!isFeatureConstant || !wasFeatureConstant) {
-            this._updatedLayers[layerId] = true;
-            if (layer.source) {
-                this._updatedSources[layer.source] = true;
-            }
+            this._updateLayer(layer);
         }
 
         this.updateClasses(layerId, name);
@@ -574,12 +563,12 @@ class Style extends Evented {
     _flattenRenderedFeatures(sourceResults) {
         const features = [];
         for (let l = this._order.length - 1; l >= 0; l--) {
-            const layerID = this._order[l];
-            for (let s = 0; s < sourceResults.length; s++) {
-                const layerFeatures = sourceResults[s][layerID];
+            const layerId = this._order[l];
+            for (const sourceResult of sourceResults) {
+                const layerFeatures = sourceResult[layerId];
                 if (layerFeatures) {
-                    for (let f = 0; f < layerFeatures.length; f++) {
-                        features.push(layerFeatures[f]);
+                    for (const feature of layerFeatures) {
+                        features.push(feature);
                     }
                 }
             }
@@ -594,11 +583,11 @@ class Style extends Evented {
 
         const includedSources = {};
         if (params && params.layers) {
-            for (let i = 0; i < params.layers.length; i++) {
-                const layer = this._layers[params.layers[i]];
+            for (const layerId of params.layers) {
+                const layer = this._layers[layerId];
                 if (!layer) {
                     // this layer is not in the style.layers array
-                    this.fire('error', {error: `The layer '${params.layers[i]
+                    this.fire('error', {error: `The layer '${layerId
                         }' does not exist in the map's style and cannot be queried for features.`});
                     return;
                 }
@@ -609,8 +598,7 @@ class Style extends Evented {
         const sourceResults = [];
         for (const id in this.sourceCaches) {
             if (params.layers && !includedSources[id]) continue;
-            const sourceCache = this.sourceCaches[id];
-            const results = QueryFeatures.rendered(sourceCache, this._layers, queryGeometry, params, zoom, bearing);
+            const results = QueryFeatures.rendered(this.sourceCaches[id], this._layers, queryGeometry, params, zoom, bearing);
             sourceResults.push(results);
         }
         return this._flattenRenderedFeatures(sourceResults);
@@ -624,7 +612,7 @@ class Style extends Evented {
         return sourceCache ? QueryFeatures.source(sourceCache, params) : [];
     }
 
-    addSourceType (name, SourceType, callback) {
+    addSourceType(name, SourceType, callback) {
         if (Source.getType(name)) {
             return callback(new Error(`A source type called "${name}" already exists.`));
         }
@@ -702,16 +690,14 @@ class Style extends Evented {
     // Callbacks from web workers
 
     getIcons(mapId, params, callback) {
-        const sprite = this.sprite;
-        const spriteAtlas = this.spriteAtlas;
-        if (sprite.loaded()) {
-            spriteAtlas.setSprite(sprite);
-            spriteAtlas.addIcons(params.icons, callback);
+        const updateSpriteAtlas = () => {
+            this.spriteAtlas.setSprite(this.sprite);
+            this.spriteAtlas.addIcons(params.icons, callback);
+        };
+        if (this.sprite.loaded()) {
+            updateSpriteAtlas();
         } else {
-            sprite.on('data', () => {
-                spriteAtlas.setSprite(sprite);
-                spriteAtlas.addIcons(params.icons, callback);
-            });
+            this.sprite.on('data', updateSpriteAtlas);
         }
     }
 
