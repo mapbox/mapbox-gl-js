@@ -196,7 +196,7 @@ test('Style#_remove', (t) => {
 
 });
 
-test('Style#_updateWorkerLayers', (t) => {
+test('Style#update', (t) => {
     const style = new Style({
         'version': 8,
         'sources': {
@@ -226,7 +226,7 @@ test('Style#_updateWorkerLayers', (t) => {
             t.end();
         };
 
-        style._updateWorkerLayers();
+        style.update();
     });
 });
 

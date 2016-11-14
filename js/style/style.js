@@ -245,30 +245,30 @@ class Style extends Evented {
     update(classes, options) {
         if (!this._changed) return;
 
-        this._updateWorkerLayers();
+        const updatedIds = Object.keys(this._updatedLayers);
+        const removedIds = Object.keys(this._removedLayers);
 
+        if (updatedIds.length || removedIds.length || this._updatedSymbolOrder) {
+            this._updateWorkerLayers(updatedIds, removedIds);
+        }
         for (const id in this._updatedSources) {
             this._reloadSource(id);
         }
+
         this._applyClasses(classes, options);
         this._resetUpdates();
 
         this.fire('data', {dataType: 'style'});
     }
 
-    _updateWorkerLayers() {
-        const updatedIds = Object.keys(this._updatedLayers);
-        const removedIds = Object.keys(this._removedLayers);
+    _updateWorkerLayers(updatedIds, removedIds) {
+        const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
 
-        if (updatedIds.length || removedIds.length || this._updatedSymbolOrder) {
-            const symbolOrder = this._updatedSymbolOrder ? this._order.filter((id) => this._layers[id].type === 'symbol') : null;
-
-            this.dispatcher.broadcast('updateLayers', {
-                layers: this._serializeLayers(updatedIds),
-                removedIds: removedIds,
-                symbolOrder: symbolOrder
-            });
-        }
+        this.dispatcher.broadcast('updateLayers', {
+            layers: this._serializeLayers(updatedIds),
+            removedIds: removedIds,
+            symbolOrder: symbolOrder
+        });
     }
 
     _resetUpdates() {
@@ -380,6 +380,7 @@ class Style extends Evented {
      */
     moveLayer(id, before) {
         this._checkLoaded();
+        this._changed = true;
 
         const layer = this._layers[id];
         if (!layer) throw new Error(`Layer not found: ${id}`);
@@ -391,7 +392,6 @@ class Style extends Evented {
         this._order.splice(newIndex, 0, id);
 
         if (layer.type === 'symbol') {
-            this._changed = true;
             this._updatedSymbolOrder = true;
             if (layer.source) {
                 this._updatedSources[layer.source] = true;
