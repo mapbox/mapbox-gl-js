@@ -152,7 +152,8 @@ class Tile {
             this.reloadSymbolData(data, source.map.style);
             source.fire('data', {
                 tile: this,
-                dataType: 'source',
+                coord: this.coord,
+                dataType: 'tile',
                 source: source.serialize(),
                 isSourceLoaded: sourceCache.loaded()
             });

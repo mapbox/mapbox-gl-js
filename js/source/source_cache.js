@@ -159,8 +159,9 @@ class SourceCache extends Evented {
         tile.timeAdded = new Date().getTime();
         this._source.fire('data', {
             tile: tile,
-            dataType: 'source',
-            source: this._source.serialize(),
+            coord: tile.coord,
+            dataType: 'tile',
+            source: this.serialize(),
             isSourceLoaded: this.loaded()
         });
 
@@ -408,7 +409,12 @@ class SourceCache extends Evented {
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._source.fire('dataloading', {tile: tile, dataType: 'source', source: this.serialize()});
+        this._source.fire('dataloading', {
+            tile: tile,
+            coord: tile.coord,
+            dataType: 'tile',
+            source: this.serialize()
+        });
 
         return tile;
     }
@@ -428,8 +434,9 @@ class SourceCache extends Evented {
         delete this._tiles[id];
         this._source.fire('data', {
             tile: tile,
-            dataType: 'source',
-            source: this._source.serialize(),
+            coord: tile.coord,
+            dataType: 'tile',
+            source: this.serialize(),
             isSourceLoaded: this.loaded()
         });
 

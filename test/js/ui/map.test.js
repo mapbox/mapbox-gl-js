@@ -164,17 +164,23 @@ test('Map', (t) => {
                 map.on('styledataloading', recordEvent);
                 map.on('sourcedata', recordEvent);
                 map.on('sourcedataloading', recordEvent);
+                map.on('tiledata', recordEvent);
+                map.on('tiledataloading', recordEvent);
 
                 map.style.fire('data', {dataType: 'style'});
                 map.style.fire('dataloading', {dataType: 'style'});
                 map.style.fire('data', {dataType: 'source'});
                 map.style.fire('dataloading', {dataType: 'source'});
+                map.style.fire('data', {dataType: 'tile'});
+                map.style.fire('dataloading', {dataType: 'tile'});
 
                 t.deepEqual(events, [
                     'styledata',
                     'styledataloading',
                     'sourcedata',
-                    'sourcedataloading'
+                    'sourcedataloading',
+                    'tiledata',
+                    'tiledataloading'
                 ]);
 
                 t.end();

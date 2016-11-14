@@ -1604,14 +1604,25 @@ function removeNode(node) {
  */
 
 /**
- * Fired when one of the map's sources loads or changes. See
- * [`MapDataEvent`](#MapDataEvent) for more information.
+ * Fired when one of the map's sources loads or changes. This event is not fired
+ * if a tile belonging to a source loads or changes (that is handled by
+ * `tiledata`). See [`MapDataEvent`](#MapDataEvent) for more information.
  *
  * @event sourcedata
  * @memberof Map
  * @instance
  * @property {MapDataEvent} data
  */
+
+ /**
+  * Fired when one of the map's sources' tiles loads or changes. See
+  * [`MapDataEvent`](#MapDataEvent) for more information.
+  *
+  * @event tiledata
+  * @memberof Map
+  * @instance
+  * @property {MapDataEvent} data
+  */
 
 /**
  * Fired when any map data (style, source, tile, etc) begins loading or
@@ -1637,7 +1648,20 @@ function removeNode(node) {
 
 /**
  * Fired when one of the map's sources begins loading or changing asyncronously.
- * All `sourcedataloading` events are followed by a `sourcedata`
+ * This event is not fired if a tile belonging to a source begins loading or
+ * changing (that is handled by `tiledataloading`). All `sourcedataloading`
+ * events are followed by a `sourcedata` or `error` event. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event sourcedataloading
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+/**
+ * Fired when one of the map's sources' tiles begins loading or changing
+ * asyncronously. All `sourcedataloading` events are followed by a `sourcedata`
  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
  *
  * @event sourcedataloading
@@ -1660,6 +1684,7 @@ function removeNode(node) {
   * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
   * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
   * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
+  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `tile`.
   */
 
  /**
