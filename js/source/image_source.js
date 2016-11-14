@@ -47,6 +47,7 @@ class ImageSource extends Evented {
     constructor(id, options, dispatcher, eventedParent) {
         super();
         this.id = id;
+        // this.type = 'image';
         this.dispatcher = dispatcher;
         this.coordinates = options.coordinates;
 
@@ -157,7 +158,7 @@ class ImageSource extends Evented {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else if (image instanceof window.HTMLVideoElement) {
+        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData) {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }

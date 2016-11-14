@@ -38,6 +38,7 @@ const ImageSource = require('./image_source');
 class VideoSource extends ImageSource {
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
+        // this.type = 'video';
         this.roundZoom = true;
         this.options = options;
     }
@@ -102,7 +103,7 @@ class VideoSource extends ImageSource {
      *   They do not have to represent a rectangle.
      * @returns {VideoSource} this
      */
-    // setCoordiates inherited from ImageSource
+    // setCoordinates inherited from ImageSource
 
     prepare() {
         if (!this.tile || this.video.readyState < 2) return; // not enough data for current position

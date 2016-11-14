@@ -80,6 +80,8 @@ class Worker {
     }
 
     redoPlacement(mapId, params, callback) {
+        // TODO temp fix for [image, video, canvas] not having source.type & not having workerSourceTypes...but they don't need to redo placement I think?
+        if (!params.type) return;
         assert(params.type);
         this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     }
