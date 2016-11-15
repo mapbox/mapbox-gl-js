@@ -18,5 +18,7 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-map.addControl(new mapboxgl.Geocoder());
+map.addControl(new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken
+}));
 </script>
