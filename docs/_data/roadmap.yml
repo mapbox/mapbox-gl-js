@@ -1,0 +1,33 @@
+- 
+  term: "Active development"
+  items: 
+    -
+      name: Unify Camera API into a single method
+      issues: ["3583", "2801"]
+    -
+      name: Augmenting "data" events
+      issues: ["3577", "3578"]
+    - 
+      name: Vertical text rendering improvements
+      issues: ["3438", "3470", "3402"]
+-
+  term: "Upcoming"
+  items:
+    -
+      name: Improve performance around setting styles with <code>setStyle()</code>
+      issues: ["1370", "1989"]
+    -
+      name: Fix GeoJSON memory leak
+      issues: ["3220", "3595"]
+    -
+      name: Custom source type API
+      project: 2
+    -
+      name: Version 1.0 and API stability
+      issues: ["2803", "2727", "2506", "2112", "1408"]
+    -
+      name: Raster source "loading" pattern and "errored" pattern
+      issues: ["3280"]
+    -
+      name: Benchmarking improvements
+      issues: ["3237", "3495", "3031", "2253", "3248"]
