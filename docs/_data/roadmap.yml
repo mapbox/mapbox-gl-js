@@ -22,12 +22,12 @@
     -
       name: Custom source type API
       project: 2
--
-  term: "Long-term"
-  items:
     -
       name: Version 1.0 and API stability
       issues: ["2803", "2727", "2506", "2112", "1408"]
     -
-      name: Custom shaders
-      issues: ["281"]
+      name: Raster source "loading" pattern and "errored" pattern
+      issues: ["3280"]
+    -
+      name: Benchmarking improvements
+      issues: ["3237", "3495", "3031", "2253", "3248"]

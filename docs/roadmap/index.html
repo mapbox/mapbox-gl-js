@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: pages
 options: full
 class: fill-light
 title: Mapbox GL JS Roadmap
@@ -22,64 +22,42 @@ title: Mapbox GL JS Roadmap
   }
 </style>
 
-<div class='limiter clearfix'>
-  <div class='pad2y'>
-    <div class='col3 pad1x pad2y contain small'>
-      <p class='icon time'>Last updated: 11/10/2016</p>
-    </div>
-    <nav class='contain z10 col9 fill-gradient space-bottom round small'>
-      <div class='col3 dark round-left keyline-right pad1 center truncate'>
-        <div class='pad0y'>
-          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL JS
-        </div>
-      </div>
-      <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='{{site.baseurl}}/api' class='col3 truncate{% if page.category == "api" %} active{% endif %}'>API</a><!--
-        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3 truncate'>Style Reference</a><!--
-        --><a href='{{site.baseurl}}/examples' class='col3 truncate{% if page.category == "example" %} active{% endif %}'>Examples</a><!--
-        --><a href='{{site.baseurl}}/plugins' class='col3 truncate{% if page.url contains "plugins" %} active{% endif %}'>Plugins</a>
-      </div>
-    </nav>
+<div class='pad2y col12'> 
+  <div class='pad1 contain space-bottom2'>
+    <h1 class='space-bottom2'>
+      Mapbox GL JS Roadmap
+    </h1>
+    <p class='prose'>The GL JS team is focused on making our priorities transparent and reliable. Below is a list of which major projects and features are currently in active development, upcoming, or we are thinking about long-term. Each item includes links to the relevant issues and pull requests on GitHub.</p>
+    <p class='prose'>This roadmap is updated weekly on Tuesdays. The roadmap does not include bug fixes, and features that take less than a day to develop. Due to the pace at which GL JS is being developed, we are unable to confidently estimate which release version a feature will ship with.</p>
   </div>
 
-  <div class='pad2y col12'> 
-    <div class='pad1 contain space-bottom2'>
-      <h1 class='space-bottom2'>
-        Mapbox GL JS Roadmap
-      </h1>
-      <p class='prose'>The GL JS team is focused on making our priorities transparent and reliable. Below is a list of which major projects and features are currently in active development, upcoming, or we are thinking about long-term. Each item includes links to the relevant issues and pull requests on GitHub.</p>
-      <p>Due to the pace at which GL JS is being developed, we are unable to confidently estimate which release version a feature will ship with.</p>
-      <p class="small"><span class="icon point roadmap-project"></span> indicates a project on GitHub</p>
-    </div>
+  <div class='col12'>
 
-    <div class='col12'>
-
-      {% for r in site.data.roadmap %}
-      <!-- {{r.term}} -->
-      <div class='col4'>
-        <div class='roadmap-block fill-white prose keyline-all'>
-          <div class='pad2'>
-            <h2>{{r.term}}</h2>
-          </div>
-          {% for item in r.items %}
-          <div class='pad2x pad1y keyline-top'>
-            {% if item.project %}<span class="icon point roadmap-project fr"></span>{% endif %}
-            {{item.name}}
-            <div class="space-top">
-              {% if item.issues %}{% for i in item.issues %}
-              <code><a target="_blank" class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
-              {% endfor %}{% endif %}
-              {% if item.project %}
-              <code><a target="_blank" href="https://github.com/mapbox/mapbox-gl-js/projects/{{item.project}}">project#{{item.project}}</a></code>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
+    {% for r in site.data.roadmap %}
+    <!-- {{r.term}} -->
+    <div class='col6'>
+      <div class='roadmap-block fill-white prose keyline-all'>
+        <div class='pad2'>
+          <h2>{{r.term}}</h2>
         </div>
+        {% for item in r.items %}
+        <div class='pad2x pad1y keyline-top'>
+          {% if item.project %}<span class="icon point roadmap-project fr"></span>{% endif %}
+          {{item.name}}
+          <div class="space-top">
+            {% if item.issues %}{% for i in item.issues %}
+            <code><a target="_blank" class="roadmap-issue" href="https://github.com/mapbox/mapbox-gl-js/issues/{{i}}">#{{i}}</a></code>
+            {% endfor %}{% endif %}
+            {% if item.project %}
+            <code><a target="_blank" href="https://github.com/mapbox/mapbox-gl-js/projects/{{item.project}}">project#{{item.project}}</a></code>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-      
     </div>
+    {% endfor %}
+    
   </div>
 </div>
 
