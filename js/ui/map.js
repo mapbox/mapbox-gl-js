@@ -645,18 +645,34 @@ class Map extends Camera {
     }
 
     /**
-     * Replaces the map's Mapbox style object with a new value.
+     * Updates the map's Mapbox style object with a new value.  If the given
+     * value is style JSON object, compares it against the the map's current
+     * state and perform only the changes necessary to make the map style match
+     * the desired state.
      *
      * @param {Object|string} style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
+     * @param {boolean} forceNoDiff Force a 'full' update, removing the current style and adding building the given one instead of attempting a diff-based update.
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style) {
+    setStyle(style, forceNoDiff) {
+        const shouldTryDiff = !forceNoDiff && this.style && style &&
+            !(style instanceof Style) && typeof style !== 'string';
+        if (shouldTryDiff) {
+            try {
+                if (this.style.setState(style)) {
+                    this._update(true);
+                }
+                return this;
+            } catch (e) {
+                util.warnOnce(`Unable to perform style diff: ${e.message || e.error || e}.  Rebuilding the style from scratch.`);
+            }
+        }
+
         if (this.style) {
             this.style.setEventedParent(null);
             this.style._remove();
-
             this.off('rotate', this.style._redoPlacement);
             this.off('pitch', this.style._redoPlacement);
         }

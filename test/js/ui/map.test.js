@@ -208,6 +208,16 @@ test('Map', (t) => {
             });
         });
 
+        t.test('passing null removes style', (t) => {
+            const map = createMap();
+            const style = map.style;
+            t.ok(style);
+            t.spy(style, '_remove');
+            map.setStyle(null);
+            t.equal(style._remove.callCount, 1);
+            t.end();
+        });
+
         t.end();
     });
 
@@ -275,6 +285,32 @@ test('Map', (t) => {
                 }));
                 t.end();
             });
+        });
+
+        t.test('creates a new Style if diff fails', (t) => {
+            const style = createStyle();
+            const map = createMap({ style: style });
+            t.stub(map.style, 'setState', () => {
+                throw new Error('Dummy error');
+            });
+
+            const previousStyle = map.style;
+            map.setStyle(style);
+            t.ok(map.style && map.style !== previousStyle);
+            t.end();
+        });
+
+        t.test('creates a new Style if forceNoDiff parameter is set', (t) => {
+            const style = createStyle();
+            const map = createMap({ style: style });
+            t.stub(map.style, 'setState', () => {
+                t.fail();
+            });
+
+            const previousStyle = map.style;
+            map.setStyle(style, true);
+            t.ok(map.style && map.style !== previousStyle);
+            t.end();
         });
 
         t.end();

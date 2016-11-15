@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script src='/debug/dark-v9.js'></script>
+<script src='/debug/light-v9.js'></script>
+<script>
+// these are set in dark-v9.js and light-v9.js
+var dark = window.darkv9;
+var light = window.lightv9;
+
+var style = dark;
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [-77.01866, 38.888],
+    style: style,
+    hash: style
+});
+
+setInterval(function () {
+    style = (style === dark ? light : dark);
+    map.setStyle(style);
+}, 2000);
+
+</script>
+</body>
+</html>

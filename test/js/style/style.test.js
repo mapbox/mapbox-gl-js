@@ -289,6 +289,60 @@ test('Style#_resolve', (t) => {
     t.end();
 });
 
+test('Style#setState', (t) => {
+    t.test('throw before loaded', (t) => {
+        const style = new Style(createStyleJSON());
+        t.throws(() => {
+            style.setState(style.serialize());
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('do nothing if there are no changes', (t) => {
+        const style = new Style(createStyleJSON());
+        [
+            'addLayer',
+            'removeLayer',
+            'setPaintProperty',
+            'setLayoutProperty',
+            'setFilter',
+            'addSource',
+            'removeSource',
+            'setLayerZoomRange',
+            'setLight'
+        ].forEach((method) => t.stub(style, method, () => t.fail(`${method} called`)));
+        style.on('style.load', () => {
+            const didChange = style.setState(createStyleJSON());
+            t.notOk(didChange, 'return false');
+            t.end();
+        });
+    });
+
+    t.test('return true if there is a change', (t) => {
+        const initialState = createStyleJSON();
+        const nextState = createStyleJSON({
+            sources: {
+                foo: {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                }
+            }
+        });
+
+        const style = new Style(initialState);
+        style.on('style.load', () => {
+            const didChange = style.setState(nextState);
+            t.ok(didChange);
+            t.same(style.stylesheet, nextState);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
 test('Style#addSource', (t) => {
     t.test('throw before loaded', (t) => {
         const style = new Style(createStyleJSON()),
