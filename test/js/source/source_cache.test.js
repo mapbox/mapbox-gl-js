@@ -4,6 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const SourceCache = require('../../../js/source/source_cache');
 const AnimationLoop = require('../../../js/style/animation_loop');
 const Source = require('../../../js/source/source');
+const Tile = require('../../../js/source/tile');
 const TileCoord = require('../../../js/source/tile_coord');
 const Transform = require('../../../js/geo/transform');
 const LngLat = require('../../../js/geo/lng_lat');
@@ -717,11 +718,7 @@ test('SourceCache#findLoadedParent', (t) => {
         tr.height = 512;
         sourceCache.updateCacheSize(tr);
 
-        const tile = {
-            coord: new TileCoord(1, 0, 0),
-            loaded: true
-        };
-
+        const tile = new Tile(new TileCoord(1, 0, 0), 512, 22);
         sourceCache._cache.add(tile.coord.id, tile);
 
         const retain = {};

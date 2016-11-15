@@ -383,8 +383,8 @@ class SourceCache extends Evented {
 
         if (!tile) {
             tile = this._cache.get(wrapped.id);
-            if (tile && this._redoPlacement) {
-                this._redoPlacement(tile);
+            if (tile) {
+                tile.redoPlacement(this._source);
             }
         }
 
