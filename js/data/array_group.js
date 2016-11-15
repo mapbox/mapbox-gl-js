@@ -33,6 +33,7 @@ class Segment {
 class ArrayGroup {
     constructor(programInterface, layers, zoom) {
         this.globalProperties = {zoom};
+
         const LayoutVertexArrayType = programInterface.layoutVertexArrayType;
         this.layoutVertexArray = new LayoutVertexArrayType();
 

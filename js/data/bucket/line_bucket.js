@@ -45,11 +45,11 @@ const lineInterface = {
     ]),
     paintAttributes: [
         {property: 'line-color', type: 'Uint8'},
-		{property: 'line-blur', type: 'Uint8'},
-		{property: 'line-opacity', type: 'Uint8'},
-		{property: 'line-width', type: 'Uint8'},
-		{property: 'line-gap-width', type: 'Uint8'},
-		{property: 'line-offset', type: 'Uint8'},
+		{property: 'line-blur', multiplier:10, type: 'Uint8', },
+		{property: 'line-opacity', multiplier:10, type: 'Uint8', },
+		{property: 'line-width', multiplier:10, type: 'Uint8', },
+		{property: 'line-gap-width', multiplier:10, type: 'Uint8', name: 'a_gapwidth', },
+		{property: 'line-offset', multiplier:10, type: 'Uint8', },
     ],
     elementArrayType: createElementArrayType()
 };
