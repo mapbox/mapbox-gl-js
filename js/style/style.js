@@ -523,6 +523,11 @@ class Style extends Evented {
         return this.getLayer(layer).getPaintProperty(name, klass);
     }
 
+    getTransition() {
+        return util.extend({ duration: 300, delay: 0 },
+            this.stylesheet && this.stylesheet.transition);
+    }
+
     updateClasses(layerId, paintName) {
         this._changed = true;
         if (!layerId) {

@@ -8,14 +8,11 @@ class FrameHistory {
         this.opacities = new Uint8ClampedArray(256);
         this.array = new Uint8Array(this.opacities.buffer);
 
-        this.fadeDuration = 300;
         this.previousZoom = 0;
         this.firstFrame = true;
     }
 
-    record(zoom) {
-        let now = Date.now();
-
+    record(now, zoom, duration) {
         if (this.firstFrame) {
             now = 0;
             this.firstFrame = false;
@@ -38,7 +35,7 @@ class FrameHistory {
 
         for (z = 0; z < 256; z++) {
             const timeSince = now - this.changeTimes[z];
-            const opacityChange = timeSince / this.fadeDuration * 255;
+            const opacityChange = (duration ? timeSince / duration : 1) * 255;
             if (z <= zoom) {
                 this.opacities[z] = this.changeOpacities[z] + opacityChange;
             } else {

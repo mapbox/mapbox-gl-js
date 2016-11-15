@@ -197,7 +197,7 @@ class Painter {
 
         this.glyphSource = style.glyphSource;
 
-        this.frameHistory.record(this.transform.zoom);
+        this.frameHistory.record(Date.now(), this.transform.zoom, style.getTransition().duration);
 
         this.prepareBuffers();
         this.clearColor();
