@@ -683,7 +683,7 @@ class Style extends Evented {
 
     _redoPlacement() {
         for (const id in this.sourceCaches) {
-            if (this.sourceCaches[id].redoPlacement) this.sourceCaches[id].redoPlacement();
+            this.sourceCaches[id].redoPlacement();
         }
     }
 
