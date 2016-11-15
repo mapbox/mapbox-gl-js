@@ -6688,7 +6688,7 @@ var Directions = function () {
     /**
      * Removes the control from the map it has been added to.
      *
-     * @returns {Control} `this`
+     * @returns {IControl} `this`
      */
 
   }, {
