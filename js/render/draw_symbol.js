@@ -80,7 +80,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
 
-    let depthOn = pitchWithMap;
+    const depthOn = pitchWithMap;
 
     if (depthOn) {
         gl.enable(gl.DEPTH_TEST);
