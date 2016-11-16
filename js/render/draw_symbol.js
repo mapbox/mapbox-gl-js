@@ -80,7 +80,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
 
-    if (pitchWithMap) {
+    let depthOn = pitchWithMap;
+
+    if (depthOn) {
         gl.enable(gl.DEPTH_TEST);
     } else {
         gl.disable(gl.DEPTH_TEST);
@@ -112,6 +114,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap, size, haloWidth, haloColor, haloBlur, color);
     }
+
+    if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
 function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, size,
