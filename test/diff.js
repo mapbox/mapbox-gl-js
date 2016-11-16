@@ -225,5 +225,72 @@ t('diff', function (t) {
       }] }
     ], 'multiple light properties change');
 
+    t.deepEqual(diffStyles({
+        layers: [ { id: 'a', source: 'source-one' } ]
+    }, {
+        layers: [ { id: 'a', source: 'source-two' } ]
+    }), [
+        { command: 'removeLayer', args: ['a'] },
+        { command: 'addLayer', args: [{ id: 'a', source: 'source-two' }, undefined] }
+    ], 'updating a layer\'s source removes/re-adds the layer');
+
+    t.deepEqual(diffStyles({
+        layers: [{ id: 'a', type: 'fill' }]
+    }, {
+        layers: [{ id: 'a', type: 'line' }]
+    }), [
+        { command: 'removeLayer', args: ['a'] },
+        { command: 'addLayer', args: [{ id: 'a', type: 'line' }, undefined] }
+    ], 'updating a layer\'s type removes/re-adds the layer');
+
+    t.deepEqual(diffStyles({
+        layers: [{ id: 'a', source: 'a', 'source-layer': 'layer-one' }]
+    }, {
+        layers: [{ id: 'a', source: 'a', 'source-layer': 'layer-two' }]
+    }), [
+        { command: 'removeLayer', args: ['a'] },
+        { command: 'addLayer', args: [{ id: 'a', source: 'a', 'source-layer': 'layer-two' }, undefined] }
+    ], 'updating a layer\'s source-layer removes/re-adds the layer');
+
+    t.deepEqual(diffStyles({
+        layers: [
+            { id: 'b' },
+            { id: 'c' },
+            { id: 'a', type: 'fill' }
+        ]
+    }, {
+        layers: [
+            { id: 'c' },
+            { id: 'a', type: 'line' },
+            { id: 'b' }
+        ]
+    }), [
+        { command: 'removeLayer', args: ['b'] },
+        { command: 'addLayer', args: [{id: 'b'}, undefined] },
+        { command: 'removeLayer', args: ['a'] },
+        { command: 'addLayer', args: [{ id: 'a', type: 'line' }, 'b'] }
+    ], 'pair respects layer reordering');
+
+    t.deepEqual(diffStyles({
+        sources: { foo: { data: 1 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' },
+            { id: 'b', source: 'foo' },
+            { id: 'c', source: 'bar' }
+        ]
+    }, {
+        sources: { foo: { data: 2 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' },
+            { id: 'b', source: 'foo' },
+            { id: 'c', source: 'bar' }
+        ]
+    }), [
+        { command: 'removeLayer', args: ['b'] },
+        { command: 'removeSource', args: ['foo'] },
+        { command: 'addSource', args: ['foo', { data: 2 }] },
+        { command: 'addLayer', args: [{id: 'b', source: 'foo'}, 'c'] }
+    ], 'changing a source removes and re-adds dependent layers');
+
     t.end();
 });
