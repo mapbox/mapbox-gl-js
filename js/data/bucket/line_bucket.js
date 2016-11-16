@@ -110,7 +110,7 @@ class LineBucket extends Bucket {
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
-        const segment = arrays.prepareSegment('line', len * 10);
+        const segment = arrays.prepareSegment(len * 10);
 
         // a line may not have coincident points
         if (len === 2 && closed) return;
