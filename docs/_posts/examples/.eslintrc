@@ -2,6 +2,7 @@
   "plugins": ["html"],
   "globals": {
     "mapboxgl": true,
+    "MapboxGeocoder": true,
     "turf": true,
     "d3": true
   },
