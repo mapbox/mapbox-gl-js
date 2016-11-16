@@ -72,10 +72,10 @@ class GlyphSource {
 
         for (let i = 0; i < glyphIDs.length; i++) {
             const glyphID = glyphIDs[i];
-            const string = String.fromCodePoint(glyphID);
+            const string = String.fromCharCode(glyphID);
             getGlyph(glyphID);
             if (verticalizePunctuation.lookup[string]) {
-                getGlyph(verticalizePunctuation.lookup[string].codePointAt(0));
+                getGlyph(verticalizePunctuation.lookup[string].charCodeAt(0));
             }
         }
 
