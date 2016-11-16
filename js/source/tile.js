@@ -128,6 +128,10 @@ class Tile {
     }
 
     redoPlacement(source) {
+        if (source.type !== 'vector' && source.type !== 'geojson') {
+            return;
+        }
+
         if (this.state !== 'loaded' || this.state === 'reloading') {
             this.redoWhenDone = true;
             return;
