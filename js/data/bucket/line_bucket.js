@@ -5,6 +5,7 @@ const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
 // contains the "texture" normals (-1..1). this is distinct from the extrude
@@ -45,11 +46,11 @@ const lineInterface = {
     ]),
     paintAttributes: [
         {property: 'line-color', type: 'Uint8'},
-		{property: 'line-blur', multiplier:10, type: 'Uint8', },
-		{property: 'line-opacity', multiplier:10, type: 'Uint8', },
-		{property: 'line-width', multiplier:10, type: 'Uint8', },
-		{property: 'line-gap-width', multiplier:10, type: 'Uint8', name: 'a_gapwidth', },
-		{property: 'line-offset', multiplier:1, type: 'Int8', },
+		{property: 'line-blur', multiplier: 10, type: 'Uint8', },
+		{property: 'line-opacity', multiplier: 10, type: 'Uint8', },
+		{property: 'line-width', multiplier: 10, type: 'Uint8', },
+		{property: 'line-gap-width', multiplier: 10, type: 'Uint8', name: 'a_gapwidth', },
+		{property: 'line-offset', multiplier: 1, type: 'Int8', },
     ],
     elementArrayType: createElementArrayType()
 };
@@ -110,6 +111,7 @@ class LineBucket extends Bucket {
         const firstVertex = vertices[0],
             lastVertex = vertices[len - 1],
             closed = firstVertex.equals(lastVertex);
+
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
@@ -119,6 +121,7 @@ class LineBucket extends Bucket {
         if (len === 2 && closed) return;
 
         this.distance = 0;
+
         const beginCap = cap,
             endCap = closed ? 'butt' : cap;
         let startOfLine = true;
@@ -253,12 +256,13 @@ class LineBucket extends Bucket {
                 }
 
                 if (currentJoin === 'fakeround') {
-                        // The join angle is sharp enough that a round join would be visible.
-                        // Bevel joins fill the gap between segments with a single pie slice triangle.
-                        // Create a round join by adding multiple pie slices. The join isn't actually round, but
-                        // it looks like it is at the sizes we render lines at.
-                        // Add more triangles for sharper angles.
-                        // This math is just a good enough approximation. It isn't "correct".
+                    // The join angle is sharp enough that a round join would be visible.
+                    // Bevel joins fill the gap between segments with a single pie slice triangle.
+                    // Create a round join by adding multiple pie slices. The join isn't actually round, but
+                    // it looks like it is at the sizes we render lines at.
+
+                    // Add more triangles for sharper angles.
+                    // This math is just a good enough approximation. It isn't "correct".
                     const n = Math.floor((0.5 - (cosHalfAngle - 0.5)) * 8);
                     let approxFractionalJoinNormal;
 
