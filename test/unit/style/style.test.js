@@ -1524,7 +1524,7 @@ test('Style#queryRenderedFeatures', (t) => {
     });
 
     style.on('style.load', () => {
-        style._applyClasses([]);
+        style._applyPaintPropertyUpdates();
         style._recalculate(0);
 
         t.test('returns feature type', (t) => {

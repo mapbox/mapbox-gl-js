@@ -70,8 +70,8 @@ class StyleLayer extends Evented {
         this._layoutSpecifications = styleSpec[`layout_${this.type}`];
 
         this._paintTransitions = {}; // {[propertyName]: StyleTransition}
-        this._paintTransitionOptions = {}; //
-        this._paintDeclarations = {}; // {[className]: {[propertyName]: StyleDeclaration}}
+        this._paintTransitionOptions = {}; // {[propertyName]: { duration:Number, delay:Number }}
+        this._paintDeclarations = {}; // {[propertyName]: StyleDeclaration}
         this._layoutDeclarations = {}; // {[propertyName]: StyleDeclaration}
         this._layoutFunctions = {}; // {[propertyName]: Boolean}
 
@@ -79,14 +79,8 @@ class StyleLayer extends Evented {
         const options = {validate: false};
 
         // Resolve paint declarations
-        for (const key in layer) {
-            const match = key.match(/^paint(?:\.(.*))?$/);
-            if (match) {
-                const klass = match[1] || '';
-                for (paintName in layer[key]) {
-                    this.setPaintProperty(paintName, layer[key][paintName], klass, options);
-                }
-            }
+        for (paintName in layer.paint) {
+            this.setPaintProperty(paintName, layer.paint[paintName], options);
         }
 
         // Resolve layout declarations
@@ -132,44 +126,33 @@ class StyleLayer extends Evented {
         }
     }
 
-    setPaintProperty(name: string, value: any, klass: string, options: any) {
-        const validateStyleKey = `layers.${this.id}${klass ? `["paint.${klass}"].` : '.paint.'}${name}`;
+    setPaintProperty(name: string, value: any, options: any) {
+        const validateStyleKey = `layers.${this.id}.paint.${name}`;
 
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
-            if (!this._paintTransitionOptions[klass || '']) {
-                this._paintTransitionOptions[klass || ''] = {};
-            }
             if (value === null || value === undefined) {
-                delete this._paintTransitionOptions[klass || ''][name];
+                delete this._paintTransitionOptions[name];
             } else {
                 if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
-                this._paintTransitionOptions[klass || ''][name] = value;
+                this._paintTransitionOptions[name] = value;
             }
+        } else if (value === null || value === undefined) {
+            delete this._paintDeclarations[name];
         } else {
-            if (!this._paintDeclarations[klass || '']) {
-                this._paintDeclarations[klass || ''] = {};
-            }
-            if (value === null || value === undefined) {
-                delete this._paintDeclarations[klass || ''][name];
-            } else {
-                if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
-                this._paintDeclarations[klass || ''][name] = new StyleDeclaration(this._paintSpecifications[name], value, name);
-            }
+            if (this._validate(validateStyle.paintProperty, validateStyleKey, name, value, options)) return;
+            this._paintDeclarations[name] = new StyleDeclaration(this._paintSpecifications[name], value, name);
         }
     }
 
-    getPaintProperty(name: string, klass?: string) {
-        klass = klass || '';
+    getPaintProperty(name: string) {
         if (util.endsWith(name, TRANSITION_SUFFIX)) {
             return (
-                this._paintTransitionOptions[klass] &&
-                this._paintTransitionOptions[klass][name]
+                this._paintTransitionOptions[name]
             );
         } else {
             return (
-                this._paintDeclarations[klass] &&
-                this._paintDeclarations[klass][name] &&
-                this._paintDeclarations[klass][name].value
+                this._paintDeclarations[name] &&
+                this._paintDeclarations[name].value
             );
         }
     }
@@ -210,30 +193,19 @@ class StyleLayer extends Evented {
         return false;
     }
 
-    updatePaintTransitions(classes: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
-        const declarations = util.extend({}, this._paintDeclarations['']);
-        for (let i = 0; i < classes.length; i++) {
-            util.extend(declarations, this._paintDeclarations[classes[i]]);
-        }
-
+    updatePaintTransitions(options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
         let name;
-        for (name in declarations) { // apply new declarations
-            this._applyPaintDeclaration(name, declarations[name], options, globalOptions, animationLoop, zoomHistory);
+        for (name in this._paintDeclarations) { // apply new declarations
+            this._applyPaintDeclaration(name, this._paintDeclarations[name], options, globalOptions, animationLoop, zoomHistory);
         }
         for (name in this._paintTransitions) {
-            if (!(name in declarations)) // apply removed declarations
+            if (!(name in this._paintDeclarations)) // apply removed declarations
                 this._applyPaintDeclaration(name, null, options, globalOptions, animationLoop, zoomHistory);
         }
     }
 
-    updatePaintTransition(name: any, classes: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
-        let declaration = this._paintDeclarations[''][name];
-        for (let i = 0; i < classes.length; i++) {
-            const classPaintDeclarations = this._paintDeclarations[classes[i]];
-            if (classPaintDeclarations && classPaintDeclarations[name]) {
-                declaration = classPaintDeclarations[name];
-            }
-        }
+    updatePaintTransition(name: any, options: any, globalOptions: any, animationLoop: any, zoomHistory: any) {
+        const declaration = this._paintDeclarations[name];
         this._applyPaintDeclaration(name, declaration, options, globalOptions, animationLoop, zoomHistory);
     }
 
@@ -257,16 +229,14 @@ class StyleLayer extends Evented {
             'minzoom': this.minzoom,
             'maxzoom': this.maxzoom,
             'filter': this.filter,
-            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue)
+            'layout': util.mapObject(this._layoutDeclarations, getDeclarationValue),
+            'paint': util.mapObject(this._paintDeclarations, getDeclarationValue)
         };
 
-        for (const klass in this._paintDeclarations) {
-            const key = klass === '' ? 'paint' : `paint.${klass}`;
-            output[key] = util.mapObject(this._paintDeclarations[klass], getDeclarationValue);
-        }
-
         return util.filterObject(output, (value, key) => {
-            return value !== undefined && !(key === 'layout' && !Object.keys(value).length);
+            return value !== undefined &&
+                !(key === 'layout' && !Object.keys(value).length) &&
+                !(key === 'paint' && !Object.keys(value).length);
         });
     }
 
