@@ -1661,10 +1661,10 @@ function removeNode(node) {
 
 /**
  * Fired when one of the map's sources' tiles begins loading or changing
- * asyncronously. All `sourcedataloading` events are followed by a `sourcedata`
+ * asyncronously. All `tiledataloading` events are followed by a `tiledata`
  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
  *
- * @event sourcedataloading
+ * @event tiledataloading
  * @memberof Map
  * @instance
  * @property {MapDataEvent} data
