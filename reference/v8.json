@@ -337,7 +337,7 @@
     },
     "paint.*": {
       "type": "paint",
-      "doc": "Class-specific paint properties for this layer. The class name is the part after the first dot."
+      "doc": "[Deprecated] Class-specific paint properties for this layer. The class name is the part after the first dot. Note: class-specific paint properties are deprecated and will be removed in the next version of this spec."
     }
   },
   "layout": [
