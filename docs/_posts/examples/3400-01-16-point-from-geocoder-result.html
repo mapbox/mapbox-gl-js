@@ -9,20 +9,12 @@ tags:
 <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v{{site.data.plugins.mapbox-gl-geocoder.latest}}/mapbox-gl-geocoder.js'></script>
 <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v{{site.data.plugins.mapbox-gl-geocoder.latest}}/mapbox-gl-geocoder.css' type='text/css' />
 <style>
-#geocoder-container {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    margin-top: 10px;
-}
-
 #geocoder-container > div {
     min-width:50%;
     margin-left:25%;
 }
 </style>
 <div id='map'></div>
-<div id='geocoder-container'></div>
 
 <script>
 var map = new mapboxgl.Map({
@@ -32,8 +24,8 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-var geocoder = new mapboxgl.Geocoder({
-    container: 'geocoder-container' // Optional. Specify a unique container for the control to be added to.
+var geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken
 });
 
 map.addControl(geocoder);

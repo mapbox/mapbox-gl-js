@@ -212,9 +212,9 @@ class Map extends Camera {
     }
 
     /**
-     * Adds a [`Control`](#Control) to the map, calling `control.onAdd(this)`.
+     * Adds a [`IControl`](#IControl) to the map, calling `control.onAdd(this)`.
      *
-     * @param {Control} control The [`Control`](#Control) to add.
+     * @param {IControl} control The [`IControl`](#IControl) to add.
      * @param {string} [position='top-right'] position on the map to which the control will be added.
      * valid values are 'top-left', 'top-right', 'bottom-left', and 'bottom-right'
      * @returns {Map} `this`
@@ -240,7 +240,7 @@ class Map extends Camera {
     /**
      * Removes the control from the map.
      *
-     * @param {Control} control The [`Control`](#Control) to add.
+     * @param {IControl} control The [`IControl`](#IControl) to add.
      * @returns {Map} `this`
      */
     removeControl(control) {

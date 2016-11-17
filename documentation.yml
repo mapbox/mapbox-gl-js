@@ -50,7 +50,7 @@ toc:
     description: |
       This event functionality is used by Mapbox GL JS itself
       and can be useful to other developers who want to create
-      [Controls](#Control) or other extensions.
+      [IControls](#IControl) or other extensions.
   - Evented
   - MapMouseEvent
   - MapTouchEvent

@@ -13,6 +13,7 @@ const EXTENT = require('../data/extent');
  * @example
  *
  * map.addSource('some id', {
+ *     type: 'geojson',
  *     data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
  * });
  *
