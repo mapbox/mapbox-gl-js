@@ -1,7 +1,7 @@
 {
   "mapbox-gl-draw": {
     "prefix": "mapbox-gl-draw",
-    "latest": "0.12.1",
+    "latest": "0.14.0",
     "v":{
       "0.11.15":{
         "files":[
@@ -22,6 +22,12 @@
         ]
       },
       "0.12.1":{
+        "files":[
+          "mapbox-gl-draw.js",
+          "mapbox-gl-draw.css"
+        ]
+      },
+      "0.14.0":{
         "files":[
           "mapbox-gl-draw.js",
           "mapbox-gl-draw.css"
