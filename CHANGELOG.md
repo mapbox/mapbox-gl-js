@@ -1,3 +1,21 @@
+## 0.28.0 (November 17 2016)
+
+#### New features and improvements
+
+- Performance improvements for `Map#addLayer` and `Map#removeLayer` #3584
+- Add method for changing layer order at runtime - `Map#moveLayer` #3584
+- Update vertical punctuation logic to Unicode 9.0 standard #3608
+
+#### Bug fixes
+
+- Fix data-driven `fill-opacity` rendering when using a `fill-pattern` #3598
+- Fix line rendering artifacts #3627
+- Fix incorrect rendering of opaque fills on top of transparent fills #2628
+- Prevent `AssertionErrors` from pitching raster layers by only calling `Worker#redoPlacement` on vector and GeoJSON sources #3624
+- Restore IE11 compatability #3635
+- Fix symbol placement for cached tiles #3637
+
+
 ## 0.27.0 (November 11 2016)
 
 #### ⚠️ Breaking changes ⚠️
