@@ -31,61 +31,6 @@ test('StyleLayer#updatePaintTransition', (t) => {
         t.end();
     });
 
-    t.test('updates paint transition with class', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "background",
-            "paint": {
-                "background-color": "red"
-            },
-            "paint.mapbox": {
-                "background-color": "blue"
-            }
-        });
-        layer.updatePaintTransition('background-color', ['mapbox'], {});
-        t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 1, 1]);
-        t.end();
-    });
-
-    t.test('updates paint transition with extraneous class', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "background",
-            "paint": {
-                "background-color": "red"
-            }
-        });
-        layer.updatePaintTransition('background-color', ['mapbox'], {});
-        t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
-        t.end();
-    });
-
-    t.end();
-});
-
-test('StyleLayer#updatePaintTransitions', (t) => {
-    t.test('respects classes regardless of layer properties order', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "fill",
-            "paint.blue": {
-                "fill-color": "#8ccbf7",
-                "fill-opacity": 1
-            },
-            "paint": {
-                "fill-opacity": 0
-            }
-        });
-
-        layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
-        t.equal(layer.getPaintValue('fill-opacity'), 0);
-
-        layer.updatePaintTransitions(['blue'], {transition: false}, null, createAnimationLoop());
-        t.equal(layer.getPaintValue('fill-opacity'), 1);
-
-        t.end();
-    });
-
     t.end();
 });
 
@@ -138,46 +83,6 @@ test('StyleLayer#setPaintProperty', (t) => {
         t.end();
     });
 
-    t.test('sets classed paint value', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "background",
-            "paint.night": {
-                "background-color": "red"
-            }
-        });
-
-        layer.setPaintProperty('background-color', 'blue', 'night');
-
-        t.deepEqual(layer.getPaintProperty('background-color', 'night'), 'blue');
-        t.end();
-    });
-
-    t.test('unsets classed paint value', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "background",
-            "paint": {
-                "background-color": "red",
-                "background-opacity": 1
-            },
-            "paint.night": {
-                "background-color": "blue",
-                "background-opacity": 0.1
-            }
-        });
-        layer.updatePaintTransitions(['night'], {transition: false}, null, createAnimationLoop());
-        t.deepEqual(layer.getPaintProperty('background-color', 'night'), 'blue');
-        t.deepEqual(layer.getPaintValue('background-color'), [0, 0, 1, 1]);
-
-        layer.setPaintProperty('background-color', null, 'night');
-        layer.updatePaintTransitions(['night'], {transition: false}, null, createAnimationLoop());
-        t.deepEqual(layer.getPaintValue('background-color'), [1, 0, 0, 1]);
-        t.equal(layer.getPaintProperty('background-color', 'night'), undefined);
-
-        t.end();
-    });
-
     t.test('preserves existing transition', (t) => {
         const layer = StyleLayer.create({
             "id": "background",
@@ -208,21 +113,6 @@ test('StyleLayer#setPaintProperty', (t) => {
         layer.setPaintProperty('background-color-transition', {duration: 400});
 
         t.deepEqual(layer.getPaintProperty('background-color-transition'), {duration: 400});
-        t.end();
-    });
-
-    t.test('sets transition with a class name equal to the property name', (t) => {
-        const layer = StyleLayer.create({
-            "id": "background",
-            "type": "background",
-            "paint": {
-                "background-color": "red"
-            }
-        });
-
-        layer.setPaintProperty('background-color-transition', {duration: 400}, 'background-color');
-        layer.updatePaintTransitions([], {transition: false}, null, createAnimationLoop());
-        t.deepEqual(layer.getPaintProperty('background-color-transition', 'background-color'), {duration: 400});
         t.end();
     });
 
@@ -421,19 +311,6 @@ test('StyleLayer#serialize', (t) => {
         t.deepEqual(
             StyleLayer.create(createSymbolLayer()).serialize(),
             createSymbolLayer()
-        );
-        t.end();
-    });
-
-    t.test('serializes layers with paint classes', (t) => {
-        const layer = createSymbolLayer({
-            'paint.night': {
-                'text-color': 'orange'
-            }
-        });
-        t.deepEqual(
-            StyleLayer.create(layer).serialize(),
-            layer
         );
         t.end();
     });

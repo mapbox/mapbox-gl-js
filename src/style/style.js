@@ -186,7 +186,7 @@ class Style extends Evented {
         this._loaded = true;
         this.stylesheet = json;
 
-        this.updateClasses();
+        this.updatePaintProperties();
 
         for (const id in json.sources) {
             this.addSource(id, json.sources[id], {validate: false});
@@ -274,10 +274,9 @@ class Style extends Evented {
         return ids.map((id) => this._layers[id].serialize());
     }
 
-    _applyClasses(classes?: Array<string>, options: ?{}) {
+    _applyPaintPropertyUpdates(options: ?{}) {
         if (!this._loaded) return;
 
-        classes = classes || [];
         options = options || {transition: true};
         const transition = this.stylesheet.transition || {};
 
@@ -288,10 +287,10 @@ class Style extends Evented {
             const props = this._updatedPaintProps[id];
 
             if (this._updatedAllPaintProps || props.all) {
-                layer.updatePaintTransitions(classes, options, transition, this.animationLoop, this.zoomHistory);
+                layer.updatePaintTransitions(options, transition, this.animationLoop, this.zoomHistory);
             } else {
                 for (const paintName in props) {
-                    this._layers[id].updatePaintTransition(paintName, classes, options, transition, this.animationLoop, this.zoomHistory);
+                    this._layers[id].updatePaintTransition(paintName, options, transition, this.animationLoop, this.zoomHistory);
                 }
             }
         }
@@ -360,7 +359,7 @@ class Style extends Evented {
     /**
      * Apply queued style updates in a batch
      */
-    update(classes: Array<string>, options: ?{}) {
+    update(options: ?{}) {
         if (!this._changed) return;
 
         const updatedIds = Object.keys(this._updatedLayers);
@@ -379,7 +378,7 @@ class Style extends Evented {
             }
         }
 
-        this._applyClasses(classes, options);
+        this._applyPaintPropertyUpdates(options);
         this._resetUpdates();
 
         this.fire('data', {dataType: 'style'});
@@ -602,7 +601,7 @@ class Style extends Evented {
             this._updatedSymbolOrder = true;
         }
 
-        this.updateClasses(id);
+        this.updatePaintProperties(id);
     }
 
     /**
@@ -775,7 +774,7 @@ class Style extends Evented {
         return this.getLayer(layer).getLayoutProperty(name);
     }
 
-    setPaintProperty(layerId: string, name: string, value: any, klass?: string) {
+    setPaintProperty(layerId: string, name: string, value: any) {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
@@ -789,10 +788,10 @@ class Style extends Evented {
             return;
         }
 
-        if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return;
+        if (util.deepEqual(layer.getPaintProperty(name), value)) return;
 
         const wasFeatureConstant = layer.isPaintValueFeatureConstant(name);
-        layer.setPaintProperty(name, value, klass);
+        layer.setPaintProperty(name, value);
 
         const isFeatureConstant = !(
             value &&
@@ -805,11 +804,11 @@ class Style extends Evented {
             this._updateLayer(layer);
         }
 
-        this.updateClasses(layerId, name);
+        this.updatePaintProperties(layerId, name);
     }
 
-    getPaintProperty(layer: string, name: string, klass?: string) {
-        return this.getLayer(layer).getPaintProperty(name, klass);
+    getPaintProperty(layer: string, name: string) {
+        return this.getLayer(layer).getPaintProperty(name);
     }
 
     getTransition() {
@@ -817,7 +816,7 @@ class Style extends Evented {
             this.stylesheet && this.stylesheet.transition);
     }
 
-    updateClasses(layerId?: string, paintName?: string) {
+    updatePaintProperties(layerId?: string, paintName?: string) {
         this._changed = true;
         if (!layerId) {
             this._updatedAllPaintProps = true;

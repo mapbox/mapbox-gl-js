@@ -1271,47 +1271,6 @@ test('Map', (t) => {
     t.end();
 });
 
-test('Map deprecated methods', (t) => {
-    t.test('#addClass', (t) => {
-        t.stub(console, 'warn');
-        const map = createMap();
-        map.addClass('night');
-        t.ok(map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#removeClass', (t) => {
-        t.stub(console, 'warn');
-        const map = createMap();
-        map.addClass('night');
-        map.removeClass('night');
-        t.ok(!map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#setClasses', (t) => {
-        t.stub(console, 'warn');
-        const map = createMap();
-        map.addClass('night');
-        map.setClasses([]);
-        t.ok(!map.hasClass('night'));
-
-        map.setClasses(['night']);
-        t.ok(map.hasClass('night'));
-        t.end();
-    });
-
-    t.test('#getClasses', (t) => {
-        t.stub(console, 'warn');
-        const map = createMap();
-        map.addClass('night');
-        t.deepEqual(map.getClasses(), ['night']);
-        t.end();
-    });
-
-    t.end();
-});
-
 function createStyle() {
     return {
         version: 8,
