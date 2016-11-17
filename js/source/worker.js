@@ -61,6 +61,14 @@ class Worker {
         this.getWorkerSource(mapId, params.type).removeTile(params);
     }
 
+    removeSource(mapId, params) {
+        assert(params.type);
+        const worker = this.getWorkerSource(mapId, params.type);
+        if (worker.removeSource !== undefined) {
+            worker.removeSource(params);
+        }
+    }
+
     redoPlacement(mapId, params, callback) {
         assert(params.type);
         this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);

@@ -207,6 +207,10 @@ class GeoJSONSource extends Evented {
         this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
     }
 
+    onRemove() {
+        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id }, () => {});
+    }
+
     serialize() {
         return {
             type: this.type,

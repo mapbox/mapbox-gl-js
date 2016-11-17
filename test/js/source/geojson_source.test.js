@@ -79,6 +79,25 @@ test('GeoJSONSource#setData', (t) => {
     t.end();
 });
 
+test('GeoJSONSource#onRemove', (t) => {
+    t.test('broadcasts "removeSource" event', (t) => {
+        const source = new GeoJSONSource('id', {data: {}}, {
+            broadcast: function (type, data, callback) {
+                callback();
+                t.equal(type, 'removeSource');
+                t.deepEqual(data, { type: 'geojson', source: 'id' });
+                t.end();
+            },
+            send: function() {
+                // Ignore
+            }
+        });
+        source.onRemove();
+    });
+
+    t.end();
+});
+
 test('GeoJSONSource#update', (t) => {
     const transform = new Transform();
     transform.resize(200, 200);
