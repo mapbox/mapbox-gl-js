@@ -85,7 +85,7 @@ window.darkv9 = {
       "type": "vector"
     }
   },
-  "sprite": "mapbox://sprites/mapbox/light-v9",
+  "sprite": "mapbox://sprites/mapbox/dark-v9",
   "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
   "layers": [
     {

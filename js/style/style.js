@@ -34,9 +34,9 @@ const supportedDiffOperations = util.pick(diff.operations, [
     'removeSource',
     'setLayerZoomRange',
     'setLight',
-    'setTransition'
+    'setTransition',
+    'setSprite'
     // 'setGlyphs',
-    // 'setSprite',
 ]);
 
 const ignoredDiffOperations = util.pick(diff.operations, [
@@ -94,8 +94,7 @@ class Style extends Evented {
             }
 
             if (stylesheet.sprite) {
-                this.sprite = new ImageSprite(stylesheet.sprite);
-                this.sprite.setEventedParent(this);
+                this.setSprite(stylesheet.sprite);
             }
 
             this.glyphSource = new GlyphSource(stylesheet.glyphs);
@@ -312,6 +311,8 @@ class Style extends Evented {
 
         this._updatedPaintProps = {};
         this._updatedAllPaintProps = false;
+
+        this._updatedSprite = false;
     }
 
     /**
@@ -776,6 +777,23 @@ class Style extends Evented {
     _redoPlacement() {
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].redoPlacement();
+        }
+    }
+
+    setSprite(sprite) {
+        if (this.sprite) {
+            this.sprite.setEventedParent(null);
+            this.spriteAtlas = new SpriteAtlas(1024, 1024);
+        }
+        this.sprite = new ImageSprite(sprite);
+        this.sprite.setEventedParent(this);
+        this._updatedSprite = true;
+
+        for (const layerId in this._layers) {
+            const layer = this._layers[layerId];
+            if (layer.type === 'symbol' && !this._updatedSources[layer.source]) {
+                this._updatedSources[layer.source] = 'reload';
+            }
         }
     }
 
