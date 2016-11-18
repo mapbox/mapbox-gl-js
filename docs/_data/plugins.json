@@ -73,7 +73,7 @@
   },
   "mapbox-gl-geocoder": {
     "prefix": "mapbox-gl-geocoder",
-    "latest": "2.0.0",
+    "latest": "2.0.1",
     "v": {
       "0.0.0": {
         "files": [
@@ -112,6 +112,12 @@
         ]
       },
       "2.0.0": {
+        "files": [
+          "mapbox-gl-geocoder.js",
+          "mapbox-gl-geocoder.css"
+        ]
+      },
+      "2.0.1": {
         "files": [
           "mapbox-gl-geocoder.js",
           "mapbox-gl-geocoder.css"
