@@ -37,15 +37,21 @@ const ImageSource = require('./image_source');
 class CanvasSource extends ImageSource {
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
-        // this.type = 'canvas';
     }
 
     _load(options) {
         this.canvas = window.document.getElementById(options.canvas);
-
+        this.animate = options.hasOwnProperty('animate') ? options.animate : true;
         this.dimensions = options.dimensions;
 
-        this.canvasData = this.canvas.getContext('2d').getImageData(this.dimensions[0], this.dimensions[1], this.dimensions[2], this.dimensions[3]);
+        // detect context type
+        if (this.canvas.getContext('2d')) {
+            this.contextType = '2d';
+        } else if (this.canvas.getContext('webgl')) {
+            this.contextType = 'webgl';
+        }
+
+        this._rereadCanvas();
 
         this.play = function() {
             let loopID = this.map.style.animationLoop.set(Infinity);
@@ -56,12 +62,37 @@ class CanvasSource extends ImageSource {
     }
 
     _rereadCanvas() {
-        this.canvasData = this.canvas.getContext('2d')
-            .getImageData(
-                this.dimensions[0],
-                this.dimensions[1],
-                this.dimensions[2],
-                this.dimensions[3]);
+        if (!this.animate && this.canvasData) return;
+        switch (this.contextType) {
+            case '2d':
+                this.canvasData = this.canvas.getContext('2d')
+                    .getImageData(
+                        this.dimensions[0],
+                        this.dimensions[1],
+                        this.dimensions[2],
+                        this.dimensions[3]);
+                return;
+
+            case 'webgl':
+                if (this.canvasBuffer) delete this.canvasBuffer;
+
+                let w = this.dimensions[2] - this.dimensions[0],
+                    h = this.dimensions[3] - this.dimensions[1];
+
+                this.canvasBuffer = new Uint8Array(w * h * 4);
+
+                const ctx = this.canvas.getContext('webgl');
+
+                ctx.readPixels(
+                    this.dimensions[0],
+                    this.dimensions[1],
+                    this.dimensions[2],
+                    this.dimensions[3],
+                    ctx.RGBA, ctx.UNSIGNED_BYTE, this.canvasBuffer);
+                this.canvasData = new window.ImageData(new Uint8ClampedArray(this.canvasBuffer), w, h);
+                return;
+        }
+
     }
 
     /**
@@ -77,7 +108,7 @@ class CanvasSource extends ImageSource {
         if (this.map) return;
         this.map = map;
         if (this.canvasData) {
-            this.play();
+            if (this.animate) this.play();
             this.setCoordinates(this.coordinates);
         }
     }
