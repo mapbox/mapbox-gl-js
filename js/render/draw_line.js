@@ -83,9 +83,6 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
     }
 
     if (programChanged) {
-        if (!image) {
-            gl.uniform4fv(program.u_color, layer.paint['line-color']);
-        }
 
         if (dasharray) {
             gl.uniform1i(program.u_image, 0);
