@@ -125,7 +125,7 @@
       },
       "2.0.1": {
         "files": [
-          "mapbox-gl-geocoder.js",
+          "mapbox-gl-geocoder.min.js",
           "mapbox-gl-geocoder.css"
         ]
       }
