@@ -18,5 +18,7 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-map.addControl(new mapboxgl.Directions());
+map.addControl(new MapboxDirections({
+  accessToken: mapboxgl.accessToken
+}), 'top-left');
 </script>
