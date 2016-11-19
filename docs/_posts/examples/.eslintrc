@@ -3,6 +3,7 @@
   "globals": {
     "mapboxgl": true,
     "MapboxGeocoder": true,
+    "MapboxDirections": true,
     "turf": true,
     "d3": true
   },
