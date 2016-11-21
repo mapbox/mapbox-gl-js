@@ -10,6 +10,9 @@
     -
       name: Allow <code>setStyle()</code> to smoothly transition between styles
       issues: ["1989"]
+    -
+      name: Add <code>canvas</code> layer type
+      issues: ["3580"]
 -
   term: "Upcoming"
   items:
@@ -18,6 +21,7 @@
       issues: ["3280"]
     -
       name: Add <code>circle-stroke-*</code> style properties
+      issues: ["3670"]
     -
       name: Add <code>Map#{add,remove}Image</code>
       issues: ["2059"]
