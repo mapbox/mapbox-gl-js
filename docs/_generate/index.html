@@ -829,7 +829,7 @@ navigation:
             </tbody>
           </table>
 
-          <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements, the first is a zoom and the second is a function output value.</p>
+          <p><strong>Zoom functions</strong> allow the appearance of a map feature to change with map’s zoom level. Zoom functions can be used to create the illusion of depth and control data density. Each stop is an array with two elements: the first is a zoom level and the second is a function output value.</p>
 
           <div class='col12 space-bottom'>
               {% highlight js %}
@@ -848,6 +848,10 @@ navigation:
 }
               {% endhighlight %}
           </div>
+
+          <p>The rendered values of <a href='#types-color'>color</a>, <a href='#types-number'>number</a>, and <a href='#types-array'>array</a> properties are intepolated between stops. <a href='#types-enum'>Enum</a>, <a href='#types-boolean'>boolean</a>, and <a href='#types-string'>string</a> property values cannot be intepolated, so their rendered values only change at the specified stops.</p>
+
+          <p>There is an important difference between the way that zoom functions render for <em>layout</em> and <em>paint</em> properties. Paint properties are continuously re-evaluated whenever the zoom level changes, even fractionally. The rendered value of a paint property will change, for example, as the map moves between zoom levels <code>4.1</code> and <code>4.6</code>. Layout properties, on the other hand, are evaluated only once for each integer zoom level. To continue the prior example: the rendering of a layout property will <em>not</em> change between zoom levels <code>4.1</code> and <code>4.6</code>, no matter what stops are specified; but at zoom level <code>5</code>, the function will be re-evaluated according to the function, and the property's rendered value will change. (You can include fractional zoom levels in a layout property zoom function, and it will affect the generated values; but, still, the rendering will only change at integer zoom levels.)</p>
 
           <p><strong>Property functions</strong> allow the appearance of a map feature to change with its properties. Property functions can be used to visually differentate types of features within the same layer or create data visualizations. Each stop is an array with two elements, the first is a property input value and the second is a function output value. Note that support for property functions is not available across all properties and platforms at this time.</p>
 
