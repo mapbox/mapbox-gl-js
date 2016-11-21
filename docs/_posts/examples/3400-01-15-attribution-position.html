@@ -14,8 +14,7 @@ var map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/light-v9',
     center: [-77.04, 38.907],
     zoom: 11.15,
-    attributionControl: {
-        position: 'top-left'
-    }
+    attributionControl: false
 });
+map.addControl(new mapboxgl.AttributionControl(), 'top-left');
 </script>
