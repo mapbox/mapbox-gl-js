@@ -121,19 +121,6 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
 
 See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
 
-## Sprint Planning
-
-* We use Github milestones to schedule tasks into two week sprints
-* We end each sprint and publish a release every other Wednesday unless there is an outstanding “release blocker” issue.
-    * If there is a "release blocker" issue, we fix it as soon as possible and do the release
-* We will prioritize feature work as follows:
-    1. “release blocker” bugs
-    3. in-progress things
-    2. things needed by customers
-    4. new things
-* We try to include one "testing and release process", one "refactoring", and one "bug" issue in each release.
-* We name releases alphabetically after [cities](https://en.wikipedia.org/wiki/List_of_towns_and_cities_with_100,000_or_more_inhabitants/cityname:_A). (Fun facts are encouraged!)
-
 ### Github Issue Labels
 
 Our labeling system is
