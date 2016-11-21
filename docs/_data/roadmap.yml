@@ -1,14 +1,14 @@
-- 
+-
   term: "Active development"
-  items: 
+  items:
     -
-      name: Unify Camera API into a single method
+      name: Unify camera API into a single method
       issues: ["3583", "2801"]
     -
-      name: Augmenting "data" events
+      name: Augment "data" events
       issues: ["3577", "3578"]
-    - 
-      name: Vertical text rendering improvements
+    -
+      name: Improve vertical text rendering
       issues: ["3438", "3470", "3402"]
 -
   term: "Upcoming"
@@ -20,14 +20,14 @@
       name: Fix GeoJSON memory leak
       issues: ["3220", "3595"]
     -
-      name: Custom source type API
+      name: Create Custom source API
       project: 2
     -
-      name: Version 1.0 and API stability
+      name: Stabilize all APIs in prepration for v1
       issues: ["2803", "2727", "2506", "2112", "1408"]
     -
-      name: Raster source "loading" pattern and "errored" pattern
+      name: Allow raster source "loading" pattern and "errored" pattern
       issues: ["3280"]
     -
-      name: Benchmarking improvements
+      name: Improve benchmarking
       issues: ["3237", "3495", "3031", "2253", "3248"]
