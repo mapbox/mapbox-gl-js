@@ -8,26 +8,25 @@
       name: Augment "data" events
       issues: ["3577", "3578"]
     -
-      name: Improve vertical text rendering
-      issues: ["3438", "3470", "3402"]
+      name: Allow <code>setStyle()</code> to smoothly transition between styles
+      issues: ["1989"]
 -
   term: "Upcoming"
   items:
     -
-      name: Improve performance around setting styles with <code>setStyle()</code>
-      issues: ["1370", "1989"]
+      name: Allow raster source "loading" pattern and "errored" pattern
+      issues: ["3280"]
     -
-      name: Fix GeoJSON memory leak
-      issues: ["3220", "3595"]
+      name: Add <code>circle-stroke-*</code> style properties
     -
-      name: Create Custom source API
+      name: Add <code>Map#{add,remove}Image</code>
+      issues: ["2059"]
+    -
+      name: Improve benchmarking tools
+      issues: ["3237", "3495", "3031", "2253", "3248"]
+    -
+      name: Create custom source API
       project: 2
     -
       name: Stabilize all APIs in prepration for v1
       issues: ["2803", "2727", "2506", "2112", "1408"]
-    -
-      name: Allow raster source "loading" pattern and "errored" pattern
-      issues: ["3280"]
-    -
-      name: Improve benchmarking
-      issues: ["3237", "3495", "3031", "2253", "3248"]
