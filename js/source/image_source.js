@@ -55,7 +55,7 @@ class ImageSource extends Evented {
         this.tileSize = 512;
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source', source: this.serialize()});
+        this.fire('dataloading', {dataType: 'source'});
 
         this._load(options);
     }
@@ -121,8 +121,7 @@ class ImageSource extends Evented {
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('data', {dataType: 'source', source: this.serialize(), isSourceLoaded: true});
-
+        this.fire('data', {dataType: 'source'});
         return this;
     }
 

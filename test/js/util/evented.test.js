@@ -115,6 +115,17 @@ test('Evented', (t) => {
             t.end();
         });
 
+        t.test('attaches parent data from a function to parent listeners', (t) => {
+            const eventedSource = new Evented();
+            const eventedSink = new Evented();
+            eventedSource.setEventedParent(eventedSink, () => ({foz: 'baz'}));
+            eventedSink.on('a', (data) => {
+                t.equal(data.foz, 'baz');
+            });
+            eventedSource.fire('a', {foo: 'bar'});
+            t.end();
+        });
+
         t.test('passes original "target" to parent listeners', (t) => {
             const eventedSource = new Evented();
             const eventedSink = new Evented();
