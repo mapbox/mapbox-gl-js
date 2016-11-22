@@ -182,9 +182,10 @@ class SymbolBucket {
     }
 
     isEmpty() {
-        return this.arrays.icon.isEmpty() &&
+        return !this.arrays || (
+            this.arrays.icon.isEmpty() &&
             this.arrays.glyph.isEmpty() &&
-            this.arrays.collisionBox.isEmpty();
+            this.arrays.collisionBox.isEmpty());
     }
 
     serialize(transferables) {
