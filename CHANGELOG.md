@@ -70,6 +70,7 @@
  * Add depth testing for symbols with `'pitch-alignment': 'map'` #3243
  * Add `dataloading` events for styles and sources #3306
  * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning: #3355
+ * Calculate style layer `ref`s automatically and get rid of user-specified `ref`s :warning: BREAKING CHANGE :warning: #3486 
 
 #### Performance Improvements
 
