@@ -13,6 +13,9 @@
     -
       name: Allow raster source "loading" pattern and "errored" pattern
       issues: ["3280"]
+    -
+      name: Add <code>circle-stroke-*</code> style properties
+      issues: ["3670"]
 -
   term: "Upcoming"
   items:
