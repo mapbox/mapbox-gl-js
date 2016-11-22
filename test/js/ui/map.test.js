@@ -300,7 +300,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('creates a new Style if forceNoDiff parameter is set', (t) => {
+        t.test('creates a new Style if diff option is false', (t) => {
             const style = createStyle();
             const map = createMap({ style: style });
             t.stub(map.style, 'setState', () => {
@@ -308,7 +308,7 @@ test('Map', (t) => {
             });
 
             const previousStyle = map.style;
-            map.setStyle(style, true);
+            map.setStyle(style, {diff: false});
             t.ok(map.style && map.style !== previousStyle);
             t.end();
         });

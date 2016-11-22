@@ -652,12 +652,14 @@ class Map extends Camera {
      *
      * @param {Object|string} style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
-     * @param {boolean} forceNoDiff Force a 'full' update, removing the current style and adding building the given one instead of attempting a diff-based update.
+     * @param {Object} [options]
+     * @param {boolean} [options.diff=true] If false, force a 'full' update, removing the current style
+     *   and adding building the given one instead of attempting a diff-based update.
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style, forceNoDiff) {
-        const shouldTryDiff = !forceNoDiff && this.style && style &&
+    setStyle(style, options) {
+        const shouldTryDiff = (!options || options.diff !== false) && this.style && style &&
             !(style instanceof Style) && typeof style !== 'string';
         if (shouldTryDiff) {
             try {
