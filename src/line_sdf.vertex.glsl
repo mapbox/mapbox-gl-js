@@ -35,6 +35,7 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float width
+#pragma mapbox: define lowp float opacity
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
 
@@ -42,6 +43,7 @@ void main() {
     #pragma mapbox: initialize lowp vec4 color
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float width
+    #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
 
