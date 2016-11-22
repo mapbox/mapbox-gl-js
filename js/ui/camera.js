@@ -316,11 +316,10 @@ class Camera extends Evented {
         options = util.extend({
             padding: 0,
             offset: [0, 0],
-            maxZoom: Infinity
+            maxZoom: 22
         }, options);
 
         bounds = LngLatBounds.convert(bounds);
-
         const offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
@@ -329,9 +328,11 @@ class Camera extends Evented {
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
 
+
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
         options.bearing = 0;
+        console.log(options);
 
         return options.linear ?
             this.easeTo(options, eventData) :
