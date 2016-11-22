@@ -434,7 +434,7 @@ class Map extends Camera {
      * If the map's current zoom level is higher than the new maximum,
      * the map will zoom to the new maximum.
      *
-     * @param {?number} maxZoom The maximum zoom level to set (0-20).
+     * @param {?number} maxZoom The maximum zoom level to set.
      *   If `null` or `undefined` is provided, the function removes the current maximum zoom (sets it to 20).
      * @returns {Map} `this`
      */
@@ -442,7 +442,7 @@ class Map extends Camera {
 
         maxZoom = maxZoom === null || maxZoom === undefined ? defaultMaxZoom : maxZoom;
 
-        if (maxZoom >= this.transform.minZoom && maxZoom <= defaultMaxZoom) {
+        if (maxZoom >= this.transform.minZoom) {
             this.transform.maxZoom = maxZoom;
             this._update();
 
@@ -450,7 +450,7 @@ class Map extends Camera {
 
             return this;
 
-        } else throw new Error(`maxZoom must be between the current minZoom and ${defaultMaxZoom}, inclusive`);
+        } else throw new Error(`maxZoom must be greater than the current minZoom`);
     }
 
     /**

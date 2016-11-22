@@ -296,7 +296,8 @@ class Camera extends Evented {
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      *
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
+     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into. If bounds contains
+     *     only one point, the map center transitions to that point at zoom level options.maxZoom or {@link Map#getMaxZoom}.
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -316,7 +317,7 @@ class Camera extends Evented {
         options = util.extend({
             padding: 0,
             offset: [0, 0],
-            maxZoom: 22
+            maxZoom: this.getMaxZoom()
         }, options);
 
         bounds = LngLatBounds.convert(bounds);
@@ -332,7 +333,6 @@ class Camera extends Evented {
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
         options.bearing = 0;
-        console.log(options);
 
         return options.linear ?
             this.easeTo(options, eventData) :
