@@ -8,20 +8,14 @@
       name: Augment "data" events
       issues: ["3577", "3578"]
     -
-      name: Allow <code>setStyle()</code> to smoothly transition between styles
-      issues: ["1989"]
-    -
       name: Add <code>canvas</code> layer type
       issues: ["3580"]
--
-  term: "Upcoming"
-  items:
     -
       name: Allow raster source "loading" pattern and "errored" pattern
       issues: ["3280"]
-    -
-      name: Add <code>circle-stroke-*</code> style properties
-      issues: ["3670"]
+-
+  term: "Upcoming"
+  items:
     -
       name: Add <code>Map#{add,remove}Image</code>
       issues: ["2059"]
