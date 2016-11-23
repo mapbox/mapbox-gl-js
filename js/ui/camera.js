@@ -297,7 +297,8 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into. If bounds contains
-     *     only one point, the map center transitions to that point at zoom level options.maxZoom or {@link Map#getMaxZoom}.
+     *     only one point (i.e. bounds.ne and bounds.sw are the same location, the map center
+     *     transitions to that point at zoom level options.maxZoom or {@link Map#getMaxZoom}.
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -321,6 +322,7 @@ class Camera extends Evented {
         }, options);
 
         bounds = LngLatBounds.convert(bounds);
+
         const offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
@@ -328,7 +330,6 @@ class Camera extends Evented {
             size = se.sub(nw),
             scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
-
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
