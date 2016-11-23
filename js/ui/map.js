@@ -155,7 +155,9 @@ class Map extends Camera {
             '_contextLost',
             '_contextRestored',
             '_update',
-            '_render'
+            '_render',
+            '_onData',
+            '_onDataLoading'
         ], this);
 
         this._setupContainer();
@@ -202,13 +204,8 @@ class Map extends Camera {
             this.style.update(this._classes, {transition: false});
         });
 
-        this.on('data', function(event) {
-            if (event.dataType === 'style') {
-                this._update(true);
-            } else {
-                this._update();
-            }
-        });
+        this.on('data', this._onData);
+        this.on('dataloading', this._onDataLoading);
     }
 
     /**
@@ -1274,6 +1271,15 @@ class Map extends Camera {
     // show vertices
     get vertices() { return !!this._vertices; }
     set vertices(value) { this._vertices = value; this._update(); }
+
+    _onData(event) {
+        this._update(event.dataType === 'style');
+        this.fire(`${event.dataType}data`, event);
+    }
+
+    _onDataLoading(event) {
+        this.fire(`${event.dataType}dataloading`, event);
+    }
 }
 
 module.exports = Map;
@@ -1596,8 +1602,8 @@ function removeNode(node) {
   */
 
 /**
- * Fired when any map data (style, source, tile, etc) loads or changes. See
- * [`MapDataEvent`](#MapDataEvent) for more information.
+ * Fired when any map data loads or changes. See [`MapDataEvent`](#MapDataEvent)
+ * for more information.
  *
  * @event data
  * @memberof Map
@@ -1605,16 +1611,82 @@ function removeNode(node) {
  * @property {MapDataEvent} data
  */
 
+/**
+ * Fired when the map's style loads or changes. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event styledata
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+/**
+ * Fired when one of the map's sources loads or changes. This event is not fired
+ * if a tile belonging to a source loads or changes (that is handled by
+ * `tiledata`). See [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event sourcedata
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
  /**
-  * Fired when any map data (style, source, tile, etc) begins loading or
-  * changing asyncronously. All `dataloading` events are followed by a `data`
-  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+  * Fired when one of the map's sources' tiles loads or changes. See
+  * [`MapDataEvent`](#MapDataEvent) for more information.
   *
-  * @event dataloading
+  * @event tiledata
   * @memberof Map
   * @instance
   * @property {MapDataEvent} data
   */
+
+/**
+ * Fired when any map data (style, source, tile, etc) begins loading or
+ * changing asyncronously. All `dataloading` events are followed by a `data`
+ * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event dataloading
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+/**
+ * Fired when the map's style begins loading or changing asyncronously.
+ * All `styledataloading` events are followed by a `styledata`
+ * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event styledataloading
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+/**
+ * Fired when one of the map's sources begins loading or changing asyncronously.
+ * This event is not fired if a tile belonging to a source begins loading or
+ * changing (that is handled by `tiledataloading`). All `sourcedataloading`
+ * events are followed by a `sourcedata` or `error` event. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event sourcedataloading
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+/**
+ * Fired when one of the map's sources' tiles begins loading or changing
+ * asyncronously. All `tiledataloading` events are followed by a `tiledata`
+ * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event tiledataloading
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
 
  /**
   * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
@@ -1627,7 +1699,10 @@ function removeNode(node) {
   *
   * @typedef {Object} MapDataEvent
   * @property {string} type The event type.
-  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
+  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
+  * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
+  * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
+  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `tile`.
   */
 
  /**

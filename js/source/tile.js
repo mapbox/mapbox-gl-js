@@ -150,7 +150,7 @@ class Tile {
 
         function done(_, data) {
             this.reloadSymbolData(data, source.map.style);
-            source.fire('data', {tile: this, dataType: 'tile'});
+            source.fire('data', {tile: this, coord: this.coord, dataType: 'tile'});
 
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
             if (source.map) source.map.painter.tileExtentVAO.vao = null;

@@ -133,20 +133,51 @@ test('Map', (t) => {
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('error', recordEvent);
-                map.on('source.load', recordEvent);
                 map.on('data', recordEvent);
                 map.on('dataloading', recordEvent);
 
                 map.style.fire('error');
-                map.style.fire('source.load');
                 map.style.fire('data');
                 map.style.fire('dataloading');
 
                 t.deepEqual(events, [
                     'error',
-                    'source.load',
                     'data',
                     'dataloading',
+                ]);
+
+                t.end();
+            });
+        });
+
+        t.test('fires *data and *dataloading events', (t) => {
+            createMap({}, (error, map) => {
+                t.error(error);
+
+                const events = [];
+                function recordEvent(event) { events.push(event.type); }
+
+                map.on('styledata', recordEvent);
+                map.on('styledataloading', recordEvent);
+                map.on('sourcedata', recordEvent);
+                map.on('sourcedataloading', recordEvent);
+                map.on('tiledata', recordEvent);
+                map.on('tiledataloading', recordEvent);
+
+                map.style.fire('data', {dataType: 'style'});
+                map.style.fire('dataloading', {dataType: 'style'});
+                map.style.fire('data', {dataType: 'source'});
+                map.style.fire('dataloading', {dataType: 'source'});
+                map.style.fire('data', {dataType: 'tile'});
+                map.style.fire('dataloading', {dataType: 'tile'});
+
+                t.deepEqual(events, [
+                    'styledata',
+                    'styledataloading',
+                    'sourcedata',
+                    'sourcedataloading',
+                    'tiledata',
+                    'tiledataloading'
                 ]);
 
                 t.end();
