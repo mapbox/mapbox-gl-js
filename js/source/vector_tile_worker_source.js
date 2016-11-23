@@ -81,10 +81,26 @@ class VectorTileWorkerSource {
      */
     reloadTile(params, callback) {
         const loaded = this.loaded[params.source],
-            uid = params.uid;
+            uid = params.uid,
+            vtSource = this;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, callback);
+
+            if (workerTile.status === 'parsing') {
+                workerTile.reloadCallback = callback;
+            } else if (workerTile.status === 'done') {
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done.bind(workerTile));
+            }
+
+            function done(err, data) {
+                if (this.reloadCallback) {
+                    const reloadCallback = this.reloadCallback;
+                    delete this.reloadCallback;
+                    this.parse(this.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
+                }
+
+                callback(err, data);
+            }
         }
     }
 
