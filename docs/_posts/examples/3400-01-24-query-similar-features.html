@@ -126,7 +126,7 @@ map.on('load', function() {
         map.getSource('highlight').setData({
             type: 'FeatureCollection',
             features: relatedFeatures.map(function(f) {
-                return {"type": "Feature", "geometry": f.geometry}
+                return {type: 'Feature', geometry: f.geometry};
             })
         });
 
