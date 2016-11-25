@@ -48,6 +48,11 @@ map.on('load', function() {
         "url": "mapbox://mapbox.82pkq93d"
     });
 
+    map.addSource('highlight', {
+        type: 'geojson',
+        data: {"type": "FeatureCollection", "features": []}
+    });
+
     map.addLayer({
         "id": "counties",
         "type": "fill",
@@ -62,14 +67,12 @@ map.on('load', function() {
     map.addLayer({
         "id": "counties-highlighted",
         "type": "fill",
-        "source": "counties",
-        "source-layer": "original",
+        "source": "highlight",
         "paint": {
             "fill-outline-color": "#484896",
             "fill-color": "#6e599f",
             "fill-opacity": 0.75
-        },
-        "filter": ["in", "COUNTY", ""]
+        }
     }, 'place-city-sm'); // Place polygon under these labels.
 
     map.on('mousemove', function(e) {
@@ -83,7 +86,10 @@ map.on('load', function() {
         // Remove things if no feature was found.
         if (!features.length) {
             popup.remove();
-            map.setFilter('counties-highlighted', ['in', 'COUNTY', '']);
+            map.getSource('highlight').setData({
+                type: 'FeatureCollection',
+                features: []
+            });
             overlay.style.display = 'none';
             return;
         }
@@ -117,7 +123,12 @@ map.on('load', function() {
         overlay.style.display = 'block';
 
         // Add features that share the same county name to the highlighted layer.
-        map.setFilter('counties-highlighted', ['in', 'COUNTY', feature.properties.COUNTY]);
+        map.getSource('highlight').setData({
+            type: 'FeatureCollection',
+            features: relatedFeatures.map(function(f) {
+                return {"type": "Feature", "geometry": f.geometry}
+            })
+        });
 
         // Display a popup with the name of the county
         popup.setLngLat(e.lngLat)
