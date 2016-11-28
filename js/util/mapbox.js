@@ -6,12 +6,12 @@ const browser = require('./browser');
 
 const help = 'See https://www.mapbox.com/developers/api/#access-tokens';
 
-type UrlObject = {
+type UrlObject = {|
     protocol: string,
     authority: string,
     path: string,
     params: Array<string>
-};
+|};
 
 function makeAPIURL(urlObject: UrlObject, accessToken): ?string {
     const apiUrlObject = parseUrl(config.API_URL);
@@ -109,7 +109,7 @@ exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSi
 function replaceTempAccessToken(params: Array<string>) {
     for (let i = 0; i < params.length; i++) {
         if (params[i].indexOf('access_token=tk.') === 0) {
-            params[i] = `access_token=${config.ACCESS_TOKEN}`;
+            params[i] = `access_token=${config.ACCESS_TOKEN || ''}`;
         }
     }
 }
