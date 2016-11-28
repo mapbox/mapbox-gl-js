@@ -165,7 +165,7 @@ class SourceCache extends Evented {
         }
 
         tile.sourceCache = this;
-        tile.timeAdded = new Date().getTime();
+        tile.timeAdded = tile.timeAdded || Date.now();
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986

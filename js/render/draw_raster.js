@@ -1,7 +1,6 @@
 'use strict';
 
 const util = require('../util/util');
-const pattern = require('./pattern');
 
 module.exports = drawRaster;
 
@@ -26,13 +25,6 @@ function drawRaster(painter, sourceCache, layer, coords) {
     }
 
     gl.depthFunc(gl.LEQUAL);
-
-    gl.disable(gl.DEPTH_TEST);
-    const loadingCoords = sourceCache.getLoadingCoords(Date.now() - layer.paint['raster-fade-duration']);
-    for (let i = 0; i < loadingCoords.length; i++) {
-        const loadingCoord = loadingCoords[i];
-        drawLoadingTile(painter, sourceCache, layer, loadingCoord);
-    }
 }
 
 function drawRasterTile(painter, sourceCache, layer, coord) {
@@ -111,44 +103,6 @@ function saturationFactor(saturation) {
     return saturation > 0 ?
         1 - 1 / (1.001 - saturation) :
         -saturation;
-}
-
-function drawLoadingTile(painter, sourceCache, layer, coord) {
-    const gl = painter.gl;
-    const transform = painter.transform;
-    const tileSize = transform.tileSize;
-    const color = layer.paint['raster-loading-color'];
-    const image = layer.paint['raster-loading-pattern'];
-
-    const tile = sourceCache.getTile(coord);
-    let opacityT;
-    if (tile.timeAdded) {
-        opacityT = 1 - (Date.now() - sourceCache.getTile(coord).timeAdded) / layer.paint['raster-fade-duration'];
-    } else {
-        opacityT = 1;
-    }
-    const opacity = layer.paint['raster-loading-opacity'] * opacityT;
-
-    gl.disable(gl.STENCIL_TEST);
-
-    let program;
-    if (image) {
-        program = painter.useProgram('fillPattern', painter.basicFillProgramConfiguration);
-        pattern.prepare(image, painter, program);
-        painter.tileExtentPatternVAO.bind(gl, program, painter.tileExtentBuffer);
-    } else {
-        program = painter.useProgram('fill', painter.basicFillProgramConfiguration);
-        gl.uniform4fv(program.u_color, color);
-        painter.tileExtentVAO.bind(gl, program, painter.tileExtentBuffer);
-    }
-
-    gl.uniform1f(program.u_opacity, opacity);
-
-    if (image) {
-        pattern.setTile({coord, tileSize}, painter, program);
-    }
-    gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
 }
 
 function getOpacities(tile, parentTile, layer, transform) {
