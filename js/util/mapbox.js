@@ -1,12 +1,23 @@
 'use strict';
+// @flow
 
 const config = require('./config');
 const browser = require('./browser');
 
 const help = 'See https://www.mapbox.com/developers/api/#access-tokens';
 
-function makeAPIURL(urlObject, accessToken) {
+type UrlObject = {
+    protocol: string,
+    authority: string,
+    path: string,
+    params: Array<string>
+};
+
+function makeAPIURL(urlObject: UrlObject, accessToken): ?string {
     const apiUrlObject = parseUrl(config.API_URL);
+    if (!apiUrlObject) {
+        return null;
+    }
     urlObject.protocol = apiUrlObject.protocol;
     urlObject.authority = apiUrlObject.authority;
 
@@ -22,29 +33,38 @@ function makeAPIURL(urlObject, accessToken) {
     return formatUrl(urlObject);
 }
 
-function isMapboxURL(url) {
+function isMapboxURL(url: string) {
     return url.indexOf('mapbox:') === 0;
 }
 
 exports.isMapboxURL = isMapboxURL;
 
-exports.normalizeStyleURL = function(url, accessToken) {
+exports.normalizeStyleURL = function(url: string, accessToken: string): ?string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
+    if (!urlObject) {
+        return null;
+    }
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeGlyphsURL = function(url, accessToken) {
+exports.normalizeGlyphsURL = function(url: string, accessToken: string): ?string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
+    if (!urlObject) {
+        return null;
+    }
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSourceURL = function(url, accessToken) {
+exports.normalizeSourceURL = function(url: string, accessToken: string): ?string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
+    if (!urlObject) {
+        return null;
+    }
     urlObject.path = `/v4/${urlObject.authority}.json`;
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
@@ -52,8 +72,11 @@ exports.normalizeSourceURL = function(url, accessToken) {
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSpriteURL = function(url, format, extension, accessToken) {
+exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken: string): ?string {
     const urlObject = parseUrl(url);
+    if (!urlObject) {
+        return null;
+    }
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;
         return formatUrl(urlObject);
@@ -64,10 +87,13 @@ exports.normalizeSpriteURL = function(url, format, extension, accessToken) {
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
+exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): ?string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
+    if (!urlObject) {
+        return null;
+    }
 
     // The v4 mapbox tile API supports 512x512 image tiles only when @2x
     // is appended to the tile URL. If `tileSize: 512` is specified for
@@ -80,7 +106,7 @@ exports.normalizeTileURL = function(tileURL, sourceURL, tileSize) {
     return formatUrl(urlObject);
 };
 
-function replaceTempAccessToken(params) {
+function replaceTempAccessToken(params: Array<string>) {
     for (let i = 0; i < params.length; i++) {
         if (params[i].indexOf('access_token=tk.') === 0) {
             params[i] = `access_token=${config.ACCESS_TOKEN}`;
@@ -90,8 +116,11 @@ function replaceTempAccessToken(params) {
 
 const urlRe = /^(\w+):\/\/([^/?]+)(\/[^?]+)?\??(.+)?/;
 
-function parseUrl(url) {
+function parseUrl(url: string): ?UrlObject {
     const parts = url.match(urlRe);
+    if (!parts) {
+        return null;
+    }
     return {
         protocol: parts[1],
         authority: parts[2],
@@ -100,7 +129,7 @@ function parseUrl(url) {
     };
 }
 
-function formatUrl(obj) {
+function formatUrl(obj: UrlObject): string {
     const params = obj.params.length ? `?${obj.params.join('&')}` : '';
     return `${obj.protocol}://${obj.authority}${obj.path}${params}`;
 }
