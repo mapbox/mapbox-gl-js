@@ -15,9 +15,9 @@
 <div id='map'></div>
 
 <script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
 <script>
 
-mapboxgl.accessToken = 'pk.eyJ1IjoibHVjYXN3b2oiLCJhIjoiNWtUX3JhdyJ9.WtCTtw6n20XV2DwwJHkGqQ';
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 16,
@@ -26,8 +26,10 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
+map.addControl(new mapboxgl.NavigationControl());
+
 map.on('load', function() {
-    map.addSource('raster-source', {
+    map.addSource('wms-test', {
         "type": "raster",
         "tiles": ['http://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&width=256&height=256&layers=Natural2015'
         ],
@@ -35,15 +37,11 @@ map.on('load', function() {
     });
 
     map.addLayer({
-        "id": "raster-source-layer",
-        "type": "source",
-        "source": "composite",
-        "paint": {
-            'source-loading-pattern': 'circle-11',
-            'source-loading-opacity': 0.5
-        }
+        "id": "wms-test-layer",
+        "type": "raster",
+        "source": "wms-test",
+        "paint": {}
     });
-
 });
 
 </script>
