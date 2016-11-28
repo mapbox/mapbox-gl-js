@@ -5,6 +5,7 @@ const ajax = require('../util/ajax');
 const Evented = require('../util/evented');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
+const TileBounds = require('./tile_bounds');
 
 class RasterTileSource extends Evented {
 
@@ -20,6 +21,8 @@ class RasterTileSource extends Evented {
         this.tileSize = 512;
         this._loaded = false;
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+
+        this.setBounds(options.bounds);
 
         this.setEventedParent(eventedParent);
         this.fire('dataloading', {dataType: 'source'});
@@ -37,13 +40,25 @@ class RasterTileSource extends Evented {
         this.map = map;
     }
 
+    setBounds(bounds) {
+      this.bounds = bounds;
+      if (bounds) {
+        this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
+      }
+    }
+
     serialize() {
         return {
             type: 'raster',
             url: this.url,
             tileSize: this.tileSize,
-            tiles: this.tiles
+            tiles: this.tiles,
+            bounds: this.bounds,
         };
+    }
+
+    hasTile(coord) {
+        return !this.tileBounds || this.tileBounds.contains(coord);
     }
 
     loadTile(tile, callback) {
