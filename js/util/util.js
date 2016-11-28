@@ -284,7 +284,7 @@ exports.filterObject = function(input: Object, iterator: Function, context?: Obj
  *
  * @private
  */
-exports.deepEqual = function(a: any, b: any): boolean {
+exports.deepEqual = function(a: ?mixed, b: ?mixed): boolean {
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
