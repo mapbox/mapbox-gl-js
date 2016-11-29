@@ -272,25 +272,72 @@
       "type": "enum",
       "values": {
         "fill": {
-            "doc": "A filled polygon with an optional stroked border."
+          "doc": "A filled polygon with an optional stroked border.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         },
         "line": {
-            "doc": "A stroked line."
+          "doc": "A stroked line.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         },
         "symbol": {
-            "doc": "An icon or a text label."
+          "doc": "An icon or a text label.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         },
         "circle": {
-            "doc": "A filled circle."
+          "doc": "A filled circle.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         },
         "fill-extrusion": {
-            "doc": "An extruded (3D) polygon."
+          "doc": "An extruded (3D) polygon.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.27.0"
+            }
+          }
         },
         "raster": {
-            "doc": "Raster map textures such as satellite imagery."
+          "doc": "Raster map textures such as satellite imagery.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         },
         "background": {
-            "doc": "The background color or pattern of the map."
+          "doc": "The background color or pattern of the map.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "ios": "2.0.0",
+              "android": "2.0.1"
+            }
+          }
         }
       },
       "doc": "Rendering type of this layer."
