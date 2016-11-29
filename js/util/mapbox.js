@@ -13,11 +13,8 @@ type UrlObject = {|
     params: Array<string>
 |};
 
-function makeAPIURL(urlObject: UrlObject, accessToken): ?string {
+function makeAPIURL(urlObject: UrlObject, accessToken): string {
     const apiUrlObject = parseUrl(config.API_URL);
-    if (!apiUrlObject) {
-        return null;
-    }
     urlObject.protocol = apiUrlObject.protocol;
     urlObject.authority = apiUrlObject.authority;
 
@@ -39,32 +36,23 @@ function isMapboxURL(url: string) {
 
 exports.isMapboxURL = isMapboxURL;
 
-exports.normalizeStyleURL = function(url: string, accessToken: string): ?string {
+exports.normalizeStyleURL = function(url: string, accessToken: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
-    if (!urlObject) {
-        return null;
-    }
     urlObject.path = `/styles/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeGlyphsURL = function(url: string, accessToken: string): ?string {
+exports.normalizeGlyphsURL = function(url: string, accessToken: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
-    if (!urlObject) {
-        return null;
-    }
     urlObject.path = `/fonts/v1${urlObject.path}`;
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSourceURL = function(url: string, accessToken: string): ?string {
+exports.normalizeSourceURL = function(url: string, accessToken: string): string {
     if (!isMapboxURL(url)) return url;
     const urlObject = parseUrl(url);
-    if (!urlObject) {
-        return null;
-    }
     urlObject.path = `/v4/${urlObject.authority}.json`;
     // TileJSON requests need a secure flag appended to their URLs so
     // that the server knows to send SSL-ified resource references.
@@ -72,11 +60,8 @@ exports.normalizeSourceURL = function(url: string, accessToken: string): ?string
     return makeAPIURL(urlObject, accessToken);
 };
 
-exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken: string): ?string {
+exports.normalizeSpriteURL = function(url: string, format: string, extension: string, accessToken: string): string {
     const urlObject = parseUrl(url);
-    if (!urlObject) {
-        return null;
-    }
     if (!isMapboxURL(url)) {
         urlObject.path += `${format}${extension}`;
         return formatUrl(urlObject);
@@ -87,13 +72,10 @@ exports.normalizeSpriteURL = function(url: string, format: string, extension: st
 
 const imageExtensionRe = /(\.(png|jpg)\d*)(?=$)/;
 
-exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): ?string {
+exports.normalizeTileURL = function(tileURL: string, sourceURL?: ?string, tileSize?: ?number): string {
     if (!sourceURL || !isMapboxURL(sourceURL)) return tileURL;
 
     const urlObject = parseUrl(tileURL);
-    if (!urlObject) {
-        return null;
-    }
 
     // The v4 mapbox tile API supports 512x512 image tiles only when @2x
     // is appended to the tile URL. If `tileSize: 512` is specified for
@@ -116,10 +98,10 @@ function replaceTempAccessToken(params: Array<string>) {
 
 const urlRe = /^(\w+):\/\/([^/?]+)(\/[^?]+)?\??(.+)?/;
 
-function parseUrl(url: string): ?UrlObject {
+function parseUrl(url: string): UrlObject {
     const parts = url.match(urlRe);
     if (!parts) {
-        return null;
+        throw new Error('Unable to parse URL object');
     }
     return {
         protocol: parts[1],
