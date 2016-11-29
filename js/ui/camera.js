@@ -296,7 +296,8 @@ class Camera extends Evented {
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      *
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -316,7 +317,7 @@ class Camera extends Evented {
         options = util.extend({
             padding: 0,
             offset: [0, 0],
-            maxZoom: Infinity
+            maxZoom: this.getMaxZoom()
         }, options);
 
         bounds = LngLatBounds.convert(bounds);
