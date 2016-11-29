@@ -183,25 +183,8 @@ class StructArray {
      */
     _refreshViews() {
         for (const type of this._usedTypes) {
-            if (type === 'Int8') {
-                this.int8 = new viewTypes.Int8(this.arrayBuffer);
-            } else if (type === 'Uint8') {
-                this.uint8 = new viewTypes.Uint8(this.arrayBuffer);
-            } else if (type === 'Uint8Clamped') {
-                this.uint8clamped = new viewTypes.Uint8Clamped(this.arrayBuffer);
-            } else if (type === 'Int16') {
-                this.int16 = new viewTypes.Int16(this.arrayBuffer);
-            } else if (type === 'Uint16') {
-                this.uint16 = new viewTypes.Uint16(this.arrayBuffer);
-            } else if (type === 'Int32') {
-                this.int32 = new viewTypes.Int32(this.arrayBuffer);
-            } else if (type === 'Uint32') {
-                this.uint32 = new viewTypes.Uint32(this.arrayBuffer);
-            } else if (type === 'Float32') {
-                this.float32 = new viewTypes.Float32(this.arrayBuffer);
-            } else if (type === 'float64') {
-                this.float64 = new viewTypes.Float64(this.arrayBuffer);
-            }
+            // $FlowFixMe
+            this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
         }
     }
 
