@@ -534,6 +534,60 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid boolean domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              true,
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid array domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              [],
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid null domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              null,
+              "green"
+            ]
+          ]
+        }
+      }
     }
   ]
 }
