@@ -2260,6 +2260,61 @@
           "js": "0.21.0"
         }
       }
+    },
+    "circle-stroke-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The width of the circle's stroke. Strokes are placed outside of the \"circle-radius\".",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "master"
+        },
+        "data-driven styling": {
+          "js": "master"
+        }
+      }
+    },
+    "circle-stroke-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The stroke color of the circle.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "master"
+        },
+        "data-driven styling": {
+          "js": "master"
+        }
+      }
+    },
+    "circle-stroke-opacity": {
+      "type": "number",
+      "doc": "The opacity of the circle's stroke.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "master"
+        },
+        "data-driven styling": {
+          "js": "master"
+        }
+      }
     }
   },
   "paint_symbol": {
