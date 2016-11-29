@@ -1,4 +1,5 @@
 'use strict';
+// @flow
 
 /**
  * A [least-recently-used cache](http://en.wikipedia.org/wiki/Cache_algorithms)
@@ -7,12 +8,16 @@
  *
  * @private
  */
-class LRUCache {
+class LRUCache<T> {
+    max: number;
+    data: {[key: string]: T};
+    order: Array<string>;
+    onRemove: (element: T) => void;
     /**
      * @param {number} max number of permitted values
      * @param {Function} onRemove callback called with items when they expire
      */
-    constructor(max, onRemove) {
+    constructor(max: number, onRemove: (element: T) => void) {
         this.max = max;
         this.onRemove = onRemove;
         this.reset();
@@ -45,7 +50,7 @@ class LRUCache {
      * @returns {LRUCache} this cache
      * @private
      */
-    add(key, data) {
+    add(key: string, data: T) {
 
         if (this.has(key)) {
             this.order.splice(this.order.indexOf(key), 1);
@@ -72,7 +77,7 @@ class LRUCache {
      * @returns {boolean} whether the cache has this value
      * @private
      */
-    has(key) {
+    has(key: string): boolean {
         return key in this.data;
     }
 
@@ -82,7 +87,7 @@ class LRUCache {
      * @returns {Array<string>} an array of keys in this cache.
      * @private
      */
-    keys() {
+    keys(): Array<string> {
         return this.order;
     }
 
@@ -94,7 +99,7 @@ class LRUCache {
      * @returns {*} the data, or null if it isn't found
      * @private
      */
-    get(key) {
+    get(key: string): ?T {
         if (!this.has(key)) { return null; }
 
         const data = this.data[key];
@@ -112,7 +117,7 @@ class LRUCache {
      * @returns {LRUCache} this cache
      * @private
      */
-    setMaxSize(max) {
+    setMaxSize(max: number): LRUCache<T> {
         this.max = max;
 
         while (this.order.length > this.max) {
