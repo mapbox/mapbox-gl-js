@@ -52,7 +52,7 @@
     "line": 204
   },
   {
-    "message": "layers[12].paint.fill-antialias.stops[1]: number stop key type must match previous stop key type object",
+    "message": "layers[12].paint.fill-antialias.stops[1]: object expected, number found",
     "line": 227
   },
   {
@@ -82,5 +82,21 @@
   {
     "message": "layers[21].paint.background-color.stops: identity function may not have a \"stops\" property",
     "line": 384
+  },
+  {
+    "message": "layers[24].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 433
+  },
+  {
+    "message": "layers[25].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 451
+  },
+  {
+    "message": "layers[26].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 469
+  },
+  {
+    "message": "layers[27].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 487
   }
 ]

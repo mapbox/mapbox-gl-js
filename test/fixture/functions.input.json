@@ -282,7 +282,7 @@
             [
               {
                 "zoom": "1",
-                "value": "asdf"
+                "value": 0
               },
               true
             ]
@@ -382,6 +382,112 @@
         "background-color": {
           "type": "identity",
           "stops": []
+        }
+      }
+    },
+    {
+      "id": "valid implicitly categorical property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid implicitly categorical zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for exponential property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "exponential",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for exponential zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "exponential",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for interval property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "interval",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for interval zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "interval",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ]
+          ]
         }
       }
     }
