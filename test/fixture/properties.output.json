@@ -31,7 +31,11 @@
     "line": 56
   },
   {
+    "message": "layers[3].paint.fill-color.stops[1][0]: unknown property \"magic\"",
+    "line": 61
+  },
+  {
     "message": "layers[3].paint.bad: unknown property \"bad\"",
-    "line": 58
+    "line": 64
   }
 ]
