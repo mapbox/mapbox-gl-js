@@ -246,7 +246,7 @@ const structArrayTypeCache: {[key: string]: typeof StructArray} = {};
  */
 
 function createStructArrayType(options: {|
-  members: Array<{type: ViewType, name: string, components?:? number}>,
+  members: Array<{type: ViewType, name: string, components?: number}>,
   alignment?: number
 |}) {
 
@@ -256,7 +256,7 @@ function createStructArrayType(options: {|
         return structArrayTypeCache[key];
     }
 
-    const alignment = (options.alignment === undefined || options.alignment === null) ?
+    const alignment = (options.alignment === undefined) ?
       1 : options.alignment;
 
     let offset = 0;
