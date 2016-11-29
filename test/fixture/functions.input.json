@@ -58,7 +58,9 @@
       "source-layer": "layer",
       "paint": {
         "line-width": {
-          "stops": ["1"]
+          "stops": [
+            "1"
+          ]
         }
       }
     },
@@ -69,7 +71,9 @@
       "source-layer": "layer",
       "paint": {
         "line-width": {
-          "stops": [[]]
+          "stops": [
+            []
+          ]
         }
       }
     },
@@ -134,11 +138,29 @@
         "fill-translate": [
           {
             "base": 1,
-            "stops": [[15, 0], [16, -2]]
+            "stops": [
+              [
+                15,
+                0
+              ],
+              [
+                16,
+                -2
+              ]
+            ]
           },
           {
             "base": 1,
-            "stops": [[15, 0], [16, -2]]
+            "stops": [
+              [
+                15,
+                0
+              ],
+              [
+                16,
+                -2
+              ]
+            ]
           }
         ]
       }
@@ -151,7 +173,22 @@
       "paint": {
         "fill-translate": {
           "base": 1,
-          "stops": [[15, [0, 0]], [16, [-2, -2]]]
+          "stops": [
+            [
+              15,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              16,
+              [
+                -2,
+                -2
+              ]
+            ]
+          ]
         }
       }
     },
@@ -162,7 +199,12 @@
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
-          "stops": [[0.5, true]]
+          "stops": [
+            [
+              0.5,
+              true
+            ]
+          ]
         }
       }
     },
@@ -175,8 +217,18 @@
         "fill-antialias": {
           "property": "mapbox",
           "stops": [
-              [{ "zoom": 0, "value": 1 }, true],
-              [0.5, true]]
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              true
+            ],
+            [
+              0.5,
+              true
+            ]
+          ]
         }
       }
     },
@@ -188,7 +240,14 @@
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "stops": [[{"value": "asdf"}, true]]
+          "stops": [
+            [
+              {
+                "value": "asdf"
+              },
+              true
+            ]
+          ]
         }
       }
     },
@@ -200,7 +259,14 @@
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "stops": [[{"zoom": 1}, true]]
+          "stops": [
+            [
+              {
+                "zoom": 1
+              },
+              true
+            ]
+          ]
         }
       }
     },
@@ -212,7 +278,15 @@
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "stops": [[{"zoom": "1", "value": "asdf"}, true]]
+          "stops": [
+            [
+              {
+                "zoom": "1",
+                "value": "asdf"
+              },
+              true
+            ]
+          ]
         }
       }
     },
@@ -224,66 +298,92 @@
       "paint": {
         "fill-antialias": {
           "property": "mapbox",
-          "stops": [[{"zoom": 1, "value": { "asdf": true }}, true]]
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": {
+                  "asdf": true
+                }
+              },
+              true
+            ]
+          ]
         }
       }
-  },
-  {
-    "id": "invalid object-keyed string stop for zoom function",
-    "type": "fill",
-    "source": "source",
-    "source-layer": "layer",
-    "paint": {
-      "fill-antialias": {
-        "stops": [["bad", true]]
+    },
+    {
+      "id": "invalid object-keyed string stop for zoom function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [
+            [
+              "bad",
+              true
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid object-keyed string stop for property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "stops": [
+            [
+              "good",
+              true
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid use of property function",
+      "type": "background",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "background-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid identity function",
+      "type": "background",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "background-color": {
+          "type": "identity"
+        }
+      }
+    },
+    {
+      "id": "invalid identity function with stops",
+      "type": "background",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "background-color": {
+          "type": "identity",
+          "stops": []
+        }
       }
     }
-  },
-  {
-    "id": "valid object-keyed string stop for property function",
-    "type": "fill",
-    "source": "source",
-    "source-layer": "layer",
-    "paint": {
-      "fill-antialias": {
-        "property": "mapbox",
-        "stops": [["good", true]]
-      }
-    }
-  },
-  {
-    "id": "invalid use of property function",
-    "type": "background",
-    "source": "source",
-    "source-layer": "layer",
-    "paint": {
-      "background-color": {
-        "property": "mapbox",
-        "stops": [["good", "green"]]
-      }
-    }
-  },
-  {
-    "id": "valid identity function",
-    "type": "background",
-    "source": "source",
-    "source-layer": "layer",
-    "paint": {
-      "background-color": {
-        "type": "identity"
-      }
-    }
-  }, {
-    "id": "invalid identity function with stops",
-    "type": "background",
-    "source": "source",
-    "source-layer": "layer",
-    "paint": {
-      "background-color": {
-        "type": "identity",
-        "stops": []
-      }
-    }
-  }
   ]
 }

@@ -21,66 +21,66 @@
   },
   {
     "message": "layers[4].paint.line-width.stops[0]: array expected, string found",
-    "line": 61
+    "line": 62
   },
   {
     "message": "layers[5].paint.line-width.stops[0]: array length 2 expected, length 0 found",
-    "line": 72
+    "line": 75
   },
   {
     "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
-    "line": 85
+    "line": 89
   },
   {
     "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
-    "line": 102
+    "line": 106
   },
   {
     "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order",
-    "line": 121
+    "line": 125
   },
   {
     "message": "layers[9].paint.fill-translate[0]: number expected, object found",
-    "line": 135
-  },
-  {
-    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
     "line": 139
   },
   {
+    "message": "layers[9].paint.fill-translate[1]: number expected, object found",
+    "line": 152
+  },
+  {
     "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
-    "line": 165
+    "line": 204
   },
   {
     "message": "layers[12].paint.fill-antialias.stops[1]: number stop key type must match previous stop key type object",
-    "line": 179
-  },
-  {
-    "message": "layers[13].paint.fill-antialias.stops[0]: object stop key must have zoom",
-    "line": 191
-  },
-  {
-    "message": "layers[14].paint.fill-antialias.stops[0]: object stop key must have value",
-    "line": 203
-  },
-  {
-    "message": "layers[15].paint.fill-antialias.stops[0][0].zoom: number expected, string found",
-    "line": 215
-  },
-  {
-    "message": "layers[16].paint.fill-antialias.stops[0][0].value: property value must be a number, string or array",
     "line": 227
   },
   {
+    "message": "layers[13].paint.fill-antialias.stops[0]: object stop key must have zoom",
+    "line": 244
+  },
+  {
+    "message": "layers[14].paint.fill-antialias.stops[0]: object stop key must have value",
+    "line": 263
+  },
+  {
+    "message": "layers[15].paint.fill-antialias.stops[0][0].zoom: number expected, string found",
+    "line": 284
+  },
+  {
+    "message": "layers[16].paint.fill-antialias.stops[0][0].value: property value must be a number, string or array",
+    "line": 305
+  },
+  {
     "message": "layers[17].paint.fill-antialias.stops[0][0]: number expected, string found",
-    "line": 238
+    "line": 324
   },
   {
     "message": "layers[19].paint.background-color: property functions not supported",
-    "line": 260
+    "line": 354
   },
   {
     "message": "layers[21].paint.background-color.stops: identity function may not have a \"stops\" property",
-    "line": 284
+    "line": 384
   }
 ]
