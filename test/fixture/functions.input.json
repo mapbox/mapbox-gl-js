@@ -420,6 +420,50 @@
       }
     },
     {
+      "id": "invalid mixed domain types for property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              "good",
+              "green"
+            ],
+            [
+              1,
+              "blue"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid mixed domain types for zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ],
+            [
+              {"zoom": 0, "value": 1},
+              "blue"
+            ]
+          ]
+        }
+      }
+    },
+    {
       "id": "invalid domain type for exponential property function",
       "type": "fill",
       "source": "source",

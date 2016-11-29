@@ -84,19 +84,27 @@
     "line": 384
   },
   {
-    "message": "layers[24].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 433
+    "message": "layers[24].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
+    "line": 437
   },
   {
-    "message": "layers[25].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 451
+    "message": "layers[25].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
+    "line": 459
   },
   {
     "message": "layers[26].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 469
+    "line": 477
   },
   {
     "message": "layers[27].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 487
+    "line": 495
+  },
+  {
+    "message": "layers[28].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 513
+  },
+  {
+    "message": "layers[29].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 531
   }
 ]
