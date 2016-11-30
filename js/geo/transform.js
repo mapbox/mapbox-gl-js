@@ -315,25 +315,18 @@ class Transform {
 
     /**
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
-     * @param {TileCoord|Coordinate} coord
+     * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
-    calculatePosMatrix(coord, maxZoom) {
-        if (maxZoom === undefined) maxZoom = Infinity;
-        if (coord instanceof TileCoord) coord = coord.toCoordinate(maxZoom);
-
-        // Initialize model-view matrix that converts from the tile coordinates to screen coordinates.
-
+    calculatePosMatrix(tileCoord, maxZoom) {
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
-        const z = Math.min(coord.zoom, maxZoom);
+        const coord = tileCoord.toCoordinate(maxZoom);
+        const scale = this.worldSize / this.zoomScale(coord.zoom);
 
-        const scale = this.worldSize / this.zoomScale(z);
-        const posMatrix = new Float64Array(16);
-
-        mat4.identity(posMatrix);
+        const posMatrix = mat4.identity(new Float64Array(16));
         mat4.translate(posMatrix, posMatrix, [coord.column * scale, coord.row * scale, 0]);
-        mat4.scale(posMatrix, posMatrix, [ scale / EXTENT, scale / EXTENT, 1 ]);
+        mat4.scale(posMatrix, posMatrix, [scale / EXTENT, scale / EXTENT, 1]);
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
         return new Float32Array(posMatrix);
@@ -423,11 +416,9 @@ class Transform {
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);
 
-        const circumferenceOfEarth = 2 * Math.PI * 6378137;
-
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        const verticalScale = this.worldSize / (circumferenceOfEarth * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
+        const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
         mat4.scale(m, m, [1, 1, verticalScale, 1]);
 
         this.projMatrix = m;
@@ -451,8 +442,8 @@ class Transform {
 
         // calculate how much longer the real world distance is at the top of the screen
         // than at the middle of the screen.
-        const topedgelength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
-        this.lineStretch = (topedgelength + (this.height / 2 * Math.tan(this._pitch))) / topedgelength - 1;
+        const topEdgeLength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
+        this.lineStretch = (this.height / 2 * Math.tan(this._pitch)) / topEdgeLength;
     }
 }
 

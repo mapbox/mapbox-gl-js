@@ -32,7 +32,7 @@ class TileCoord {
     }
 
     toCoordinate(sourceMaxZoom) {
-        const zoom = Math.min(this.z, sourceMaxZoom);
+        const zoom = Math.min(this.z, sourceMaxZoom === undefined ? this.z : sourceMaxZoom);
         const tileScale = Math.pow(2, zoom);
         const row = this.y;
         const column = this.x + tileScale * this.w;
