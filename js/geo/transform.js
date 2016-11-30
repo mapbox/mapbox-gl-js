@@ -186,16 +186,16 @@ class Transform {
     zoomScale(zoom) { return Math.pow(2, zoom); }
     scaleZoom(scale) { return Math.log(scale) / Math.LN2; }
 
-    project(lnglat, worldSize) {
+    project(lnglat) {
         return new Point(
-            this.lngX(lnglat.lng, worldSize),
-            this.latY(lnglat.lat, worldSize));
+            this.lngX(lnglat.lng),
+            this.latY(lnglat.lat));
     }
 
-    unproject(point, worldSize) {
+    unproject(point) {
         return new LngLat(
-            this.xLng(point.x, worldSize),
-            this.yLat(point.y, worldSize));
+            this.xLng(point.x),
+            this.yLat(point.y));
     }
 
     get x() { return this.lngX(this.center.lng); }
@@ -210,8 +210,8 @@ class Transform {
      * @returns {number} pixel coordinate
      * @private
      */
-    lngX(lng, worldSize) {
-        return (180 + lng) * (worldSize || this.worldSize) / 360;
+    lngX(lng) {
+        return (180 + lng) * this.worldSize / 360;
     }
     /**
      * latitude to absolute y coord
@@ -220,16 +220,16 @@ class Transform {
      * @returns {number} pixel coordinate
      * @private
      */
-    latY(lat, worldSize) {
+    latY(lat) {
         const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
-        return (180 - y) * (worldSize || this.worldSize) / 360;
+        return (180 - y) * this.worldSize / 360;
     }
 
-    xLng(x, worldSize) {
-        return x * 360 / (worldSize || this.worldSize) - 180;
+    xLng(x) {
+        return x * 360 / this.worldSize - 180;
     }
-    yLat(y, worldSize) {
-        const y2 = 180 - y * 360 / (worldSize || this.worldSize);
+    yLat(y) {
+        const y2 = 180 - y * 360 / this.worldSize;
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     }
 
@@ -292,10 +292,10 @@ class Transform {
      * @private
      */
     coordinateLocation(coord) {
-        const worldSize = this.zoomScale(coord.zoom);
+        const scale = this.worldSize / this.zoomScale(coord.zoom);
         return new LngLat(
-            this.xLng(coord.column, worldSize),
-            this.yLat(coord.row, worldSize));
+            this.xLng(coord.column * scale),
+            this.yLat(coord.row * scale));
     }
 
     pointCoordinate(p) {
@@ -456,12 +456,10 @@ class Transform {
 
         const circumferenceOfEarth = 2 * Math.PI * 6378137;
 
-        mat4.scale(m, m, [1, 1,
-            // scale vertically to meters per pixel (inverse of ground resolution):
-            // (2^z * tileSize) / (circumferenceOfEarth * cos(lat * π / 180))
-            (Math.pow(2, this.zoom) * this.tileSize) /
-            (circumferenceOfEarth * Math.abs(Math.cos(this.center.lat * (Math.PI / 180)))),
-            1]);
+        // scale vertically to meters per pixel (inverse of ground resolution):
+        // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
+        const verticalScale = this.worldSize / (circumferenceOfEarth * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
+        mat4.scale(m, m, [1, 1, verticalScale, 1]);
 
         this.projMatrix = m;
 

@@ -621,7 +621,6 @@ class Camera extends Evented {
             from = tr.point,
             to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
-        const startWorldSize = tr.worldSize;
         let rho = options.curve;
 
             // w₀: Initial visible span, measured in pixels at the initial scale.
@@ -708,8 +707,9 @@ class Camera extends Evented {
             const s = k * S,
                 us = u(s);
 
-            tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
-            tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
+            const scale = 1 / w(s);
+            tr.zoom = startZoom + tr.scaleZoom(scale);
+            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
