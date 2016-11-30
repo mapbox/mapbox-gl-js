@@ -153,18 +153,16 @@ class Transform {
         if (z < options.minzoom) return [];
         if (z > options.maxzoom) z = options.maxzoom;
 
-        const tr = this,
-            tileCenter = tr.locationCoordinate(tr.center)._zoomTo(z),
-            centerPoint = new Point(tileCenter.column - 0.5, tileCenter.row - 0.5);
-
-        return TileCoord.cover(z, [
-            tr.pointCoordinate(new Point(0, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, 0))._zoomTo(z),
-            tr.pointCoordinate(new Point(tr.width, tr.height))._zoomTo(z),
-            tr.pointCoordinate(new Point(0, tr.height))._zoomTo(z)
-        ], options.reparseOverscaled ? actualZ : z).sort((a, b) => {
-            return centerPoint.dist(a) - centerPoint.dist(b);
-        });
+        const centerCoord = this.pointCoordinate(this.centerPoint, z);
+        const centerPoint = new Point(centerCoord.column - 0.5, centerCoord.row - 0.5);
+        const cornerCoords = [
+            this.pointCoordinate(new Point(0, 0), z),
+            this.pointCoordinate(new Point(this.width, 0), z),
+            this.pointCoordinate(new Point(this.width, this.height), z),
+            this.pointCoordinate(new Point(0, this.height), z)
+        ];
+        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z)
+            .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
     }
 
     resize(width, height) {
@@ -225,12 +223,8 @@ class Transform {
     }
 
     setLocationAtPoint(lnglat, point) {
-        const c = this.locationCoordinate(lnglat);
-        const coordAtPoint = this.pointCoordinate(point);
-        const coordCenter = this.pointCoordinate(this.centerPoint);
-        const translate = coordAtPoint._sub(c);
-        this._unmodified = false;
-        this.center = this.coordinateLocation(coordCenter._sub(translate));
+        const translate = this.pointCoordinate(point)._sub(this.pointCoordinate(this.centerPoint));
+        this.center = this.coordinateLocation(this.locationCoordinate(lnglat)._sub(translate));
     }
 
     /**
@@ -276,7 +270,8 @@ class Transform {
             this.yLat(zoomedCoord.row * this.tileSize));
     }
 
-    pointCoordinate(p) {
+    pointCoordinate(p, zoom) {
+        if (zoom === undefined) zoom = this.tileZoom;
 
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
@@ -303,7 +298,7 @@ class Transform {
         return new Coordinate(
             interp(x0, x1, t) / this.tileSize,
             interp(y0, y1, t) / this.tileSize,
-            this.zoom)._zoomTo(this.tileZoom);
+            this.zoom)._zoomTo(zoom);
     }
 
     /**
