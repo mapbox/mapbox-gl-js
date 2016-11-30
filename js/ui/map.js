@@ -139,6 +139,7 @@ class Map extends Camera {
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
+            if (!this._container) throw new Error(`Container '${options.container}' not found.`);
         } else {
             this._container = options.container;
         }

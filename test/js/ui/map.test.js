@@ -56,6 +56,11 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
+        t.throws(() => {
+            new Map({
+                container: 'anElementIdWhichDoesNotExistInTheDocument'
+            });
+        }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
         t.end();
     });
 
