@@ -224,11 +224,6 @@ class Transform {
         return 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
     }
 
-    panBy(offset) {
-        const point = this.centerPoint._add(offset);
-        this.center = this.pointLocation(point);
-    }
-
     setLocationAtPoint(lnglat, point) {
         const c = this.locationCoordinate(lnglat);
         const coordAtPoint = this.pointCoordinate(point);
