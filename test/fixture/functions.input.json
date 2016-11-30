@@ -610,6 +610,25 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid zoom-and-property missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": "v"
+              },
+              true
+            ]
+          ]
+        }
+      }
     }
   ]
 }

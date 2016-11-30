@@ -64,11 +64,11 @@
     "line": 263
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
-  },
-  {
     "message": "layers[15].paint.fill-antialias.stops[0][0].zoom: number expected, string found",
     "line": 284
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
   },
   {
     "message": "layers[16].paint.fill-antialias.stops[0][0].value: property value must be a number or string",
@@ -121,5 +121,9 @@
   {
     "message": "layers[33].paint.fill-antialias: exponential functions not supported",
     "line": 598
+  },
+  {
+    "message": "layers[34].paint.fill-antialias: \"property\" property is required",
+    "line": 620
   }
 ]
