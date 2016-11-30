@@ -16,9 +16,6 @@ const vec4 = glmatrix.vec4,
 /**
  * A single transform, generally used for a single tile to be
  * scaled, rotated, and zoomed.
- *
- * @param {number} minZoom
- * @param {number} maxZoom
  * @private
  */
 class Transform {
@@ -131,7 +128,6 @@ class Transform {
      * @param {number} options.tileSize
      * @param {boolean} options.roundZoom
      * @returns {number} zoom level
-     * @private
      */
     coveringZoomLevel(options) {
         return (options.roundZoom ? Math.round : Math.floor)(
@@ -149,7 +145,6 @@ class Transform {
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
      * @returns {Array<Tile>} tiles
-     * @private
      */
     coveringTiles(options) {
         let z = this.coveringZoomLevel(options);
@@ -206,9 +201,7 @@ class Transform {
     /**
      * latitude to absolute x coord
      * @param {number} lon
-     * @param {number} [worldSize=this.worldSize]
      * @returns {number} pixel coordinate
-     * @private
      */
     lngX(lng) {
         return (180 + lng) * this.worldSize / 360;
@@ -216,9 +209,7 @@ class Transform {
     /**
      * latitude to absolute y coord
      * @param {number} lat
-     * @param {number} [worldSize=this.worldSize]
      * @returns {number} pixel coordinate
-     * @private
      */
     latY(lat) {
         const y = 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
@@ -251,7 +242,6 @@ class Transform {
      * Given a location, return the screen point that corresponds to it
      * @param {LngLat} lnglat location
      * @returns {Point} screen point
-     * @private
      */
     locationPoint(lnglat) {
         return this.coordinatePoint(this.locationCoordinate(lnglat));
@@ -261,7 +251,6 @@ class Transform {
      * Given a point on screen, return its lnglat
      * @param {Point} p screen point
      * @returns {LngLat} lnglat location
-     * @private
      */
     pointLocation(p) {
         return this.coordinateLocation(this.pointCoordinate(p));
@@ -269,33 +258,27 @@ class Transform {
 
     /**
      * Given a geographical lnglat, return an unrounded
-     * coordinate that represents it at this transform's zoom level and
-     * worldsize.
+     * coordinate that represents it at this transform's zoom level.
      * @param {LngLat} lnglat
      * @returns {Coordinate}
-     * @private
      */
     locationCoordinate(lnglat) {
-        const k = this.zoomScale(this.tileZoom) / this.worldSize,
-            ll = LngLat.convert(lnglat);
-
         return new Coordinate(
-            this.lngX(ll.lng) * k,
-            this.latY(ll.lat) * k,
-            this.tileZoom);
+            this.lngX(lnglat.lng) / this.tileSize,
+            this.latY(lnglat.lat) / this.tileSize,
+            this.zoom).zoomTo(this.tileZoom);
     }
 
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
      * @returns {LngLat} lnglat
-     * @private
      */
     coordinateLocation(coord) {
-        const scale = this.worldSize / this.zoomScale(coord.zoom);
+        const zoomedCoord = coord.zoomTo(this.zoom);
         return new LngLat(
-            this.xLng(coord.column * scale),
-            this.yLat(coord.row * scale));
+            this.xLng(zoomedCoord.column * this.tileSize),
+            this.yLat(zoomedCoord.row * this.tileSize));
     }
 
     pointCoordinate(p) {
@@ -320,25 +303,22 @@ class Transform {
         const z0 = coord0[2] / w0;
         const z1 = coord1[2] / w1;
 
-
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
-        const scale = this.worldSize / this.zoomScale(this.tileZoom);
 
         return new Coordinate(
-            interp(x0, x1, t) / scale,
-            interp(y0, y1, t) / scale,
-            this.tileZoom);
+            interp(x0, x1, t) / this.tileSize,
+            interp(y0, y1, t) / this.tileSize,
+            this.zoom)._zoomTo(this.tileZoom);
     }
 
     /**
      * Given a coordinate, return the screen point that corresponds to it
      * @param {Coordinate} coord
      * @returns {Point} screen point
-     * @private
      */
     coordinatePoint(coord) {
-        const scale = this.worldSize / this.zoomScale(coord.zoom);
-        const p = [coord.column * scale, coord.row * scale, 0, 1];
+        const zoomedCoord = coord.zoomTo(this.zoom);
+        const p = [zoomedCoord.column * this.tileSize, zoomedCoord.row * this.tileSize, 0, 1];
         vec4.transformMat4(p, p, this.pixelMatrix);
         return new Point(p[0] / p[3], p[1] / p[3]);
     }
@@ -347,7 +327,6 @@ class Transform {
      * Calculate the posMatrix that, given a tile coordinate, would be used to display the tile on a map.
      * @param {TileCoord|Coordinate} coord
      * @param {number} maxZoom maximum source zoom to account for overscaling
-     * @private
      */
     calculatePosMatrix(coord, maxZoom) {
         if (maxZoom === undefined) maxZoom = Infinity;
@@ -359,7 +338,7 @@ class Transform {
         // so calculate the matrix the maxzoom tile would use.
         const z = Math.min(coord.zoom, maxZoom);
 
-        const scale = this.worldSize / Math.pow(2, z);
+        const scale = this.worldSize / this.zoomScale(z);
         const posMatrix = new Float64Array(16);
 
         mat4.identity(posMatrix);
