@@ -4,7 +4,8 @@
     "line": 17
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
+    "message": "layers[0].paint.line-width.stops: array must have at least one stop",
+    "line": 18
   },
   {
     "message": "layers[1].paint.line-width: missing required property \"stops\"",
@@ -59,8 +60,11 @@
     "line": 244
   },
   {
-    "message": "layers[0].paint.line-width.stops: array must have at least one stop",
-    "line": 18
+    "message": "layers[14].paint.fill-antialias.stops[0]: object stop key must have value",
+    "line": 263
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
   },
   {
     "message": "layers[15].paint.fill-antialias.stops[0][0].zoom: number expected, string found",
@@ -115,7 +119,7 @@
     "line": 567
   },
   {
-    "message": "layers[14].paint.fill-antialias.stops[0]: object stop key must have value",
-    "line": 263
+    "message": "layers[33].paint.fill-antialias: exponential functions not supported",
+    "line": 598
   }
 ]

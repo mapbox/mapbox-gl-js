@@ -588,6 +588,28 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid explicit exponential function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "property": "mapbox",
+          "type": "exponential",
+          "stops": [
+            [
+              0,
+              true
+            ],
+            [
+              1,
+              false
+            ]
+          ]
+        }
+      }
     }
   ]
 }
