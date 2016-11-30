@@ -125,5 +125,9 @@
   {
     "message": "layers[34].paint.fill-antialias: \"property\" property is required",
     "line": 620
+  },
+  {
+    "message": "layers[35].paint.fill-antialias: \"property\" property is required",
+    "line": 639
   }
 ]

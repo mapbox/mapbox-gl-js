@@ -629,6 +629,23 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid categorical function missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "categorical",
+          "stops": [
+            [
+              "good",
+              true
+            ]
+          ]
+        }
+      }
     }
   ]
 }
