@@ -92,15 +92,16 @@ class VectorTileWorkerSource {
                 workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done.bind(workerTile));
             }
 
-            function done(err, data) {
-                if (this.reloadCallback) {
-                    const reloadCallback = this.reloadCallback;
-                    delete this.reloadCallback;
-                    this.parse(this.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
-                }
+        }
 
-                callback(err, data);
+        function done(err, data) {
+            if (this.reloadCallback) {
+                const reloadCallback = this.reloadCallback;
+                delete this.reloadCallback;
+                this.parse(this.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
             }
+
+            callback(err, data);
         }
     }
 
