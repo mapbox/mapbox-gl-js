@@ -53,14 +53,14 @@ test('redoPlacement', (t) => {
     t.test('on loaded tile', (t) => {
         const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
         const tile = {
-            redoPlacement: function(angle, pitch, showCollisionBoxes) {
+            redoPlacement: function(angle, pitch, showCollisionBoxes, callback) {
                 t.equal(angle, 60);
                 t.equal(pitch, 30);
                 t.equal(showCollisionBoxes, false);
-                return {
+                callback({
                     result: {isResult: true},
                     transferables: {isTransferrables: true}
-                };
+                });
             }
         };
         source.loaded = {mapbox: {3: tile}};
