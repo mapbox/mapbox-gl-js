@@ -130,7 +130,8 @@ class CanvasSource extends ImageSource {
         if (!this.tile) return; // not enough data for current position
 
         this._rereadCanvas();
-        this._prepareImage(this.map.painter.gl, this.canvasData);
+        this._prepareImage(this.map.painter.gl, this.canvasData, this.resize);
+        this.resize = false;
     }
 
     serialize() {
@@ -139,6 +140,12 @@ class CanvasSource extends ImageSource {
             canvas: this.canvas,
             coordinates: this.coordinates
         };
+    }
+
+    setDimensions(dimensions) {
+        this.dimensions = dimensions;
+        this._rereadCanvas();
+        this.resize = true;
     }
 }
 
