@@ -237,7 +237,7 @@ class Map extends Camera {
     /**
      * Removes the control from the map.
      *
-     * @param {IControl} control The [`IControl`](#IControl) to add.
+     * @param {IControl} control The [`IControl`](#IControl) to remove.
      * @returns {Map} `this`
      */
     removeControl(control) {
