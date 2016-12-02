@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+var style =   {
+    "version": 8,
+    "sources": {
+      "vtiles": {
+        "type": "vector",
+        "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
+      }
+    },
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "#FFF"
+        }
+      },
+      {
+        "id": "terrain",
+        "source": "vtiles",
+        "source-layer": "elevation",
+        "type": "terrain"
+      }
+    ]
+  };
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12,
+    center: [-112.9487, 36.2628],
+    style: style,
+    hash: true
+});
+
+</script>
+</body>
+</html>

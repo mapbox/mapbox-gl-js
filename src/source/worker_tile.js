@@ -21,6 +21,7 @@ class WorkerTile {
     }
 
     parse(data, layerIndex, actor, callback) {
+        console.log(data, layerIndex)
         // Normalize GeoJSON data.
         if (!data.layers) {
             data = { layers: { '_geojsonTileLayer': data } };
