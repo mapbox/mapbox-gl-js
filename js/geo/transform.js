@@ -7,7 +7,7 @@ const LngLat = require('./lng_lat'),
     interp = require('../util/interpolate'),
     TileCoord = require('../source/tile_coord'),
     EXTENT = require('../data/extent'),
-    glmatrix = require('gl-matrix');
+    glmatrix = require('@mapbox/gl-matrix');
 
 const vec4 = glmatrix.vec4,
     mat4 = glmatrix.mat4,

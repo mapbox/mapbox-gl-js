@@ -1,7 +1,7 @@
 'use strict';
 
 const browser = require('../util/browser');
-const mat4 = require('gl-matrix').mat4;
+const mat4 = require('@mapbox/gl-matrix').mat4;
 const FrameHistory = require('./frame_history');
 const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');

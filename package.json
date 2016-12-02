@@ -12,6 +12,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
+    "@mapbox/gl-matrix": "^0.0.1",
     "bubleify": "^0.5.1",
     "csscolorparser": "^1.0.2",
     "earcut": "^2.0.3",
@@ -19,7 +20,6 @@
     "flow-remove-types": "^1.0.4",
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.4.0",
-    "gl-matrix": "^2.3.1",
     "grid-index": "^1.0.0",
     "mapbox-gl-function": "mapbox/mapbox-gl-function#41c6724e2bbd7bd1eb5991451bbf118b7d02b525",
     "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#26733535ba2f1b164dd6a231d4d1868c3218eafd",
