@@ -31,17 +31,17 @@ function restore() {
     window.HTMLElement.prototype.clientTop = 0;
 
     window.HTMLCanvasElement.prototype.getContext = (function () {
-      let original = window.HTMLCanvasElement.prototype.getContext;
-      return function (type, attributes) {
-        if (type === 'webgl') {
-          if (!this._webGLContext) {
-            this._webGLContext = gl(this.width, this.height, attributes);
-          }
-          return this._webGLContext;
-        }
-        original = original.bind(this);
-        return original(type, attributes);
-      };
+        let original = window.HTMLCanvasElement.prototype.getContext;
+        return function (type, attributes) {
+            if (type === 'webgl') {
+                if (!this._webGLContext) {
+                    this._webGLContext = gl(this.width, this.height, attributes);
+                }
+                return this._webGLContext;
+            }
+            original = original.bind(this);
+            return original(type, attributes);
+        };
     }());
 
     window.useFakeXMLHttpRequest = function() {
