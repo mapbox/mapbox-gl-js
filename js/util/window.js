@@ -30,19 +30,18 @@ function restore() {
     window.HTMLElement.prototype.clientLeft = 0;
     window.HTMLElement.prototype.clientTop = 0;
 
-    window.HTMLCanvasElement.prototype.getContext = (function () {
-        let original = window.HTMLCanvasElement.prototype.getContext;
-        return function (type, attributes) {
-            if (type === 'webgl') {
-                if (!this._webGLContext) {
-                    this._webGLContext = gl(this.width, this.height, attributes);
-                }
-                return this._webGLContext;
+    // Add webgl context with the supplied GL
+    const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
+    window.HTMLCanvasElement.prototype.getContext = function (type, attributes) {
+        if (type === 'webgl') {
+            if (!this._webGLContext) {
+                this._webGLContext = gl(this.width, this.height, attributes);
             }
-            original = original.bind(this);
-            return original(type, attributes);
-        };
-    }());
+            return this._webGLContext;
+        }
+        // Fallback to existing HTMLCanvasElement getContext behaviour
+        return originalGetContext.call(this, type, attributes);
+    };
 
     window.useFakeXMLHttpRequest = function() {
         sinon.xhr.supportsCORS = true;
