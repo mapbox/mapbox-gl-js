@@ -771,12 +771,12 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [before] The ID of an existing layer to insert the new layer before.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
      */
-    moveLayer(layerId, before) {
-        this.style.moveLayer(layerId, before);
+    moveLayer(id, beforeId) {
+        this.style.moveLayer(id, beforeId);
         this._update(true);
         return this;
     }
