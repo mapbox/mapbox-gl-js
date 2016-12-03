@@ -19,6 +19,7 @@ uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform mediump float u_extra;
 uniform mat2 u_antialiasingmatrix;
+uniform mediump float u_width;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -27,7 +28,6 @@ varying float v_gamma_scale;
 #pragma mapbox: define lowp vec4 color
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp float width
 #pragma mapbox: define mediump float gapwidth
 #pragma mapbox: define lowp float offset
 
@@ -35,7 +35,6 @@ void main() {
     #pragma mapbox: initialize lowp vec4 color
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp float width
     #pragma mapbox: initialize mediump float gapwidth
     #pragma mapbox: initialize lowp float offset
 
@@ -54,7 +53,7 @@ void main() {
     // these transformations used to be applied in the JS and native code bases. 
     // moved them into the shader for clarity and simplicity. 
     gapwidth = gapwidth / 2.0;
-    width = width / 2.0;
+    float width = u_width / 2.0;
     offset = -1.0 * offset; 
 
     float inset = gapwidth + (gapwidth > 0.0 ? ANTIALIASING : 0.0);
