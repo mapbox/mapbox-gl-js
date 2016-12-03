@@ -34,10 +34,9 @@ class WorkerTile {
         this.collisionBoxArray = new CollisionBoxArray();
         this.symbolInstancesArray = new SymbolInstancesArray();
         this.symbolQuadsArray = new SymbolQuadsArray();
-        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
-        const featureIndex = new FeatureIndex(this.coord, this.overscaling, collisionTile, data.layers);
+        const featureIndex = new FeatureIndex(this.coord, this.overscaling);
         featureIndex.bucketLayerIDs = {};
 
         const buckets = {};
@@ -103,6 +102,8 @@ class WorkerTile {
             }
         }
 
+        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
+
         const done = () => {
             this.status = 'done';
 
@@ -115,11 +116,6 @@ class WorkerTile {
                 symbolInstancesArray: this.symbolInstancesArray.serialize(),
                 symbolQuadsArray: this.symbolQuadsArray.serialize()
             }, transferables);
-
-            if (this.redoPlacementAfterDone) {
-                this.redoPlacement(this.angle, this.pitch, null, () => {});
-                this.redoPlacementAfterDone = false;
-            }
         };
 
         // Symbol buckets must be placed in reverse order.
@@ -177,7 +173,6 @@ class WorkerTile {
 
     redoPlacement(angle, pitch, showCollisionBoxes) {
         if (this.status !== 'done') {
-            this.redoPlacementAfterDone = true;
             this.angle = angle;
             return {};
         }
