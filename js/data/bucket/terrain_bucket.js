@@ -27,8 +27,9 @@ class TerrainBucket extends Bucket {
         this.terrainPrepared = false;
     }
 
-    addFeature(feature) {
-        console.log(feature);
+    populate(features, options) {
+        // console.log(features, options);
+
     }
 
 }
