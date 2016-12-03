@@ -140,14 +140,10 @@ class WorkerTile {
             deps++;
             if (deps === 2) {
                 for (const bucket of this.symbolBuckets) {
-                    // Layers are shared and may have been used by a WorkerTile with a different zoom.
-                    for (const layer of bucket.layers) {
-                        layer.recalculate(this.zoom);
-                    }
-
                     bucket.prepare(stacks, icons);
-                    bucket.place(collisionTile, this.showCollisionBoxes);
+                    placeSymbols(bucket, collisionTile, this.showCollisionBoxes, this.zoom);
                 }
+
                 done();
             }
         };
@@ -180,12 +176,7 @@ class WorkerTile {
         const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
 
         for (const bucket of this.symbolBuckets) {
-            // Layers are shared and may have been used by a WorkerTile with a different zoom.
-            for (const layer of bucket.layers) {
-                layer.recalculate(this.zoom);
-            }
-
-            bucket.place(collisionTile, showCollisionBoxes);
+            placeSymbols(bucket, collisionTile, showCollisionBoxes, this.zoom);
         }
 
         const transferables = [];
@@ -204,5 +195,15 @@ function serializeBuckets(buckets, transferables) {
         .filter((b) => !b.isEmpty())
         .map((b) => b.serialize(transferables));
 }
+
+function placeSymbols(bucket, collisionTile, showCollisionBoxes, zoom) {
+    // Layers are shared and may have been used by a WorkerTile with a different zoom.
+    for (const layer of bucket.layers) {
+        layer.recalculate(zoom);
+    }
+
+    bucket.place(collisionTile, showCollisionBoxes);
+}
+
 
 module.exports = WorkerTile;
