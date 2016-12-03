@@ -102,9 +102,10 @@ class WorkerTile {
             }
         }
 
-        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
 
         const done = () => {
+            const collisionTile = this.placeSymbols(this.showCollisionBoxes);
+
             this.status = 'done';
 
             const transferables = [];
@@ -141,7 +142,6 @@ class WorkerTile {
             if (deps === 2) {
                 for (const bucket of this.symbolBuckets) {
                     bucket.prepare(stacks, icons);
-                    placeSymbols(bucket, collisionTile, this.showCollisionBoxes, this.zoom);
                 }
 
                 done();
@@ -170,14 +170,11 @@ class WorkerTile {
     redoPlacement(angle, pitch, showCollisionBoxes) {
         if (this.status !== 'done') {
             this.angle = angle;
+            this.pitch = pitch;
             return {};
         }
 
-        const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
-
-        for (const bucket of this.symbolBuckets) {
-            placeSymbols(bucket, collisionTile, showCollisionBoxes, this.zoom);
-        }
+        const collisionTile = this.placeSymbols(showCollisionBoxes);
 
         const transferables = [];
         return {
@@ -188,6 +185,21 @@ class WorkerTile {
             transferables: transferables
         };
     }
+
+    placeSymbols(showCollisionBoxes) {
+        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
+
+        for (const bucket of this.symbolBuckets) {
+            // Layers are shared and may have been used by a WorkerTile with a different zoom.
+            for (const layer of bucket.layers) {
+                layer.recalculate(this.zoom);
+            }
+
+            bucket.place(collisionTile, showCollisionBoxes);
+        }
+
+        return collisionTile;
+    }
 }
 
 function serializeBuckets(buckets, transferables) {
@@ -195,15 +207,5 @@ function serializeBuckets(buckets, transferables) {
         .filter((b) => !b.isEmpty())
         .map((b) => b.serialize(transferables));
 }
-
-function placeSymbols(bucket, collisionTile, showCollisionBoxes, zoom) {
-    // Layers are shared and may have been used by a WorkerTile with a different zoom.
-    for (const layer of bucket.layers) {
-        layer.recalculate(zoom);
-    }
-
-    bucket.place(collisionTile, showCollisionBoxes);
-}
-
 
 module.exports = WorkerTile;
