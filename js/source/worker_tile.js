@@ -107,22 +107,19 @@ class WorkerTile {
             this.status = 'done';
 
             const transferables = [];
-            serializeBuckets(util.values(buckets), transferables, (buckets) => {
-                callback(null, {
-                    buckets: buckets,
-                    featureIndex: featureIndex.serialize(transferables),
-                    collisionTile: collisionTile.serialize(transferables),
-                    collisionBoxArray: this.collisionBoxArray.serialize(),
-                    symbolInstancesArray: this.symbolInstancesArray.serialize(),
-                    symbolQuadsArray: this.symbolQuadsArray.serialize()
-                }, transferables);
+            callback(null, {
+                buckets: serializeBuckets(util.values(buckets), transferables),
+                featureIndex: featureIndex.serialize(transferables),
+                collisionTile: collisionTile.serialize(transferables),
+                collisionBoxArray: this.collisionBoxArray.serialize(),
+                symbolInstancesArray: this.symbolInstancesArray.serialize(),
+                symbolQuadsArray: this.symbolQuadsArray.serialize()
+            }, transferables);
 
-                if (this.redoPlacementAfterDone) {
-                    this.redoPlacement(this.angle, this.pitch, null, () => {});
-                    this.redoPlacementAfterDone = false;
-                }
-            });
-
+            if (this.redoPlacementAfterDone) {
+                this.redoPlacement(this.angle, this.pitch, null, () => {});
+                this.redoPlacementAfterDone = false;
+            }
         };
 
         // Symbol buckets must be placed in reverse order.
@@ -178,11 +175,11 @@ class WorkerTile {
         }
     }
 
-    redoPlacement(angle, pitch, showCollisionBoxes, callback) {
+    redoPlacement(angle, pitch, showCollisionBoxes) {
         if (this.status !== 'done') {
             this.redoPlacementAfterDone = true;
             this.angle = angle;
-            callback({});
+            return {};
         }
 
         const collisionTile = new CollisionTile(angle, pitch, this.collisionBoxArray);
@@ -197,23 +194,20 @@ class WorkerTile {
         }
 
         const transferables = [];
-
-        serializeBuckets(this.symbolBuckets, transferables, (buckets) => {
-            callback({
-                result: {
-                    buckets: buckets,
-                    collisionTile: collisionTile.serialize(transferables)
-                },
-                transferables: transferables
-            });
-        });
+        return {
+            result: {
+                buckets: serializeBuckets(this.symbolBuckets, transferables),
+                collisionTile: collisionTile.serialize(transferables)
+            },
+            transferables: transferables
+        };
     }
 }
 
-function serializeBuckets(buckets, transferables, callback) {
-    callback(buckets
+function serializeBuckets(buckets, transferables) {
+    return buckets
         .filter((b) => !b.isEmpty())
-        .map((b) => b.serialize(transferables)));
+        .map((b) => b.serialize(transferables));
 }
 
 module.exports = WorkerTile;

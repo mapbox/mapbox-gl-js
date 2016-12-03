@@ -178,11 +178,11 @@ class VectorTileWorkerSource {
 
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes, (result) => {
-                if (result.result) {
-                    callback(null, result.result, result.transferables);
-                }
-            });
+            const result = workerTile.redoPlacement(params.angle, params.pitch, params.showCollisionBoxes);
+
+            if (result.result) {
+                callback(null, result.result, result.transferables);
+            }
 
         } else if (loading && loading[uid]) {
             loading[uid].angle = params.angle;
