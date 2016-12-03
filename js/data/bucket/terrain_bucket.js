@@ -2,8 +2,10 @@ const Bucket = require('../bucket');
 const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
+const DEMPyramid = require('../../geo/dem_pyramid');
 const EXTENT = require('../extent');
 
+// not sure if we need this.... :thinkingface:
 const terrainInterface = {
     layoutVertexArrayType: createVertexArrayType([
         {name: 'a_pos',         components: 2, type: 'Int16'},
@@ -25,12 +27,25 @@ class TerrainBucket extends Bucket {
     constructor(options) {
         super(options, terrainInterface);
         this.terrainPrepared = false;
+        this.terrainTile;
     }
 
     populate(features, options) {
-        // console.log(features, options);
+        let pbf = features[0]._pbf;
+        pbf.pos = -1;
 
+        this.terrainTile = features[0];
+        this.terrainTile.pyramid = this.getDEMPyramid();
     }
 
+    getDEMPyramid(){
+        if (this.terrainTile) {
+            if (this.terrainTile.extent != 256) {
+                Util.warnOnce("DEM extent must be 256");
+                return this.terrainTile.pyramid;
+            }
+        }
+
+    }
 }
 module.exports = TerrainBucket;
