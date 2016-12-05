@@ -142,6 +142,7 @@ class WorkerTile {
 
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
+
                     bucket.prepare(stacks, icons);
                     bucket.place(collisionTile, this.showCollisionBoxes);
                 }
@@ -170,9 +171,10 @@ class WorkerTile {
     }
 
     redoPlacement(angle, pitch, showCollisionBoxes) {
+        this.angle = angle;
+        this.pitch = pitch;
+
         if (this.status !== 'done') {
-            this.angle = angle;
-            this.pitch = pitch;
             return {};
         }
 
@@ -180,6 +182,7 @@ class WorkerTile {
 
         for (const bucket of this.symbolBuckets) {
             recalculateLayers(bucket, this.zoom);
+
             bucket.place(collisionTile, showCollisionBoxes);
         }
 
