@@ -22,7 +22,7 @@
     "geojson-vt": "^2.4.0",
     "grid-index": "^1.0.0",
     "mapbox-gl-function": "mapbox/mapbox-gl-function#41c6724e2bbd7bd1eb5991451bbf118b7d02b525",
-    "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#26733535ba2f1b164dd6a231d4d1868c3218eafd",
+    "mapbox-gl-shaders": "mapbox/mapbox-gl-shaders#94518afb141b376e7f86e492c1b022c0159ca4a3",
     "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#e85407a377510acb647161de6be6357ab4f606dd",
     "mapbox-gl-supported": "^1.2.0",
     "package-json-versionify": "^1.0.2",
