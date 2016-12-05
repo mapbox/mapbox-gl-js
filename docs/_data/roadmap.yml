@@ -5,14 +5,13 @@
       name: <code>Map#setCamera</code> method
       issues: ["3583", "2801"]
     -
-      name: Custom layer type API
+      name: Custom canvas layer type
       issues: ["3580"]
     -
       name: Source loading and errored patterns
       issues: ["3280"]
     -
-      name: Client-side terrain rendering
-      issues: ["3730"]
+      name: Vector terrain
 -
   term: "Upcoming"
   items:
@@ -34,3 +33,8 @@
     -
       name: Property functions for symbol paint properties
       issues: ["2730"]
+    -
+      name: Custom WebGL layer type
+      issues: ["281"]
+    -
+      name: Arbitrary expression functions
