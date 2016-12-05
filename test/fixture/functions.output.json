@@ -133,5 +133,9 @@
   {
     "message": "layers[36].paint.fill-antialias.stops[2][0]: stop domain values must be unique",
     "line": 669
+  },
+  {
+    "message": "layers[37].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
+    "line": 687
   }
 ]

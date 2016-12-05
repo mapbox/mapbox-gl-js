@@ -672,6 +672,24 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid categorical function fractional stop",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "type": "categorical",
+          "property": "mapbox",
+          "stops": [
+            [
+              0.33,
+              0
+            ]
+          ]
+        }
+      }
     }
   ]
 }
