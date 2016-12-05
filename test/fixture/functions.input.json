@@ -690,6 +690,60 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid zoom-and-property function non-ascending stop values",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 0
+              },
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid zoom-and-property function non-ascending stop zooms",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": 0
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              0
+            ]
+          ]
+        }
+      }
     }
   ]
 }

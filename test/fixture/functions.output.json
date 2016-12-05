@@ -28,15 +28,15 @@
     "line": 75
   },
   {
-    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
-    "line": 89
+    "message": "layers[6].paint.line-width: \"property\" property is required",
+    "line": 86
   },
   {
     "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
     "line": 106
   },
   {
-    "message": "layers[8].paint.line-width.stops[1][0]: array stops must appear in ascending order",
+    "message": "layers[8].paint.line-width.stops[1][0]: stop domain values must appear in ascending order",
     "line": 125
   },
   {
@@ -72,11 +72,11 @@
     "line": 305
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
+    "message": "layers[17].paint.fill-antialias: \"property\" property is required",
+    "line": 321
   },
   {
-    "message": "layers[17].paint.fill-antialias.stops[0][0]: number expected, string found",
-    "line": 324
+    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
   },
   {
     "message": "layers[19].paint.background-color: property functions not supported",
@@ -137,5 +137,13 @@
   {
     "message": "layers[37].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
     "line": 687
+  },
+  {
+    "message": "layers[38].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
+    "line": 713
+  },
+  {
+    "message": "layers[39].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
+    "line": 739
   }
 ]
