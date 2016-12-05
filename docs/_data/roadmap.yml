@@ -5,7 +5,7 @@
       name: <code>Map#setCamera</code> method
       issues: ["3583", "2801"]
     -
-      name: Custom layer type API
+      name: Custom canvas layer type
       issues: ["3580"]
     -
       name: Source loading and errored patterns
@@ -33,3 +33,7 @@
     -
       name: Property functions for symbol paint properties
       issues: ["2730"]
+    -
+      name: Custom WebGL layer type
+    -
+      name: Arbitrary expression functions
