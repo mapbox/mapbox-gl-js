@@ -5,7 +5,7 @@ const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
 
-const geoOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
+const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
@@ -41,13 +41,20 @@ function checkGeolocationSupport(callback) {
  * be visible.
  *
  * @implements {IControl}
+ * @param {Object} [options]
+ * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
  * @example
- * map.addControl(new mapboxgl.GeolocateControl());
+ * map.addControl(new mapboxgl.GeolocateControl({
+ *     positionOptions: {
+ *         enableHighAccuracy: true
+ *     }
+ * }));
  */
 class GeolocateControl extends Evented {
 
-    constructor() {
+    constructor(options) {
         super();
+        this.options = options;
         util.bindAll([
             '_onSuccess',
             '_onError',
@@ -106,7 +113,7 @@ class GeolocateControl extends Evented {
     _onClickGeolocate() {
 
         window.navigator.geolocation.getCurrentPosition(
-            this._onSuccess, this._onError, geoOptions);
+            this._onSuccess, this._onError, util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {}));
 
         // This timeout ensures that we still call finish() even if
         // the user declines to share their location in Firefox
