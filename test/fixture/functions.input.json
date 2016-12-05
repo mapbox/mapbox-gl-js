@@ -646,6 +646,32 @@
           ]
         }
       }
+    },
+    {
+      "id": "invalid categorical function repeating stops",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "categorical",
+          "property": "mapbox",
+          "stops": [
+            [
+              "foo",
+              true
+            ],
+            [
+              "bar",
+              true
+            ],
+            [
+              "foo",
+              true
+            ]
+          ]
+        }
+      }
     }
   ]
 }

@@ -68,11 +68,11 @@
     "line": 284
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
-  },
-  {
     "message": "layers[16].paint.fill-antialias.stops[0][0].value: property value must be a number or string",
     "line": 305
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
   },
   {
     "message": "layers[17].paint.fill-antialias.stops[0][0]: number expected, string found",
@@ -129,5 +129,9 @@
   {
     "message": "layers[35].paint.fill-antialias: \"property\" property is required",
     "line": 639
+  },
+  {
+    "message": "layers[36].paint.fill-antialias.stops[2][0]: stop domain values must be unique",
+    "line": 669
   }
 ]
