@@ -1,12 +1,7 @@
 const assert = require('assert');
 
 class DEMPyramid {
-    constructor(imageData){
-        this.width = 256; // constant?
-        this.height = 256; // constant?
-        this.border = 1;
-        this.stride = null;
-        this.image = new DEMImage(this.width, this.height, image);
+    constructor(){
         this.levels = [];
     }
 
@@ -40,15 +35,16 @@ class Level {
         this.height = height;
         this.border = border;
         this.stride = width + 2 * border;
-        this.image = new DEMImage(stride, height + 2 * border);
+        this.image = new DEMImage(this.stride, height + 2 * border);
     }
 
     setPixelValue(x, y, value){
-        image.data[this._index(x,y)] = value + 65536;
+        this.image.data[this._index(x,y)] = value + 65536;
+        if (x < 10 && y<10 && value + 65536 < 256 && value+65536>0) console.log((y + this.border) * this.stride + (x + this.border), this)
     }
 
     getPixelValue(x, y){
-        return image.data[this._index(x,y)] - 65536;
+        return this.image.data[this._index(x,y)] - 65536;
     }
 
     _index(x,y) {
@@ -75,8 +71,8 @@ class DEMImage {
     constructor(width, height, data) {
         this.width = width;
         this.height = height;
-        this.data = data ? new Uint8ClampedArray(data) : new Uint8ClampedArray();
+        this.data = data ? new Uint8ClampedArray(data) : new Uint8ClampedArray(width*height);
     }
 }
 
-module.exports = DEMPyramid;
+module.exports = {DEMPyramid, Level};
