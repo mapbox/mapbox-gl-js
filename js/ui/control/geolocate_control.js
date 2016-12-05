@@ -43,6 +43,7 @@ function checkGeolocationSupport(callback) {
  * @implements {IControl}
  * @param {Object} [options]
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.watchPosition=false] If `true` the map will reposition each time the position of the device changes and the control becomes a toggle.
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
@@ -106,18 +107,37 @@ class GeolocateControl extends Evented {
             this._container);
         this._geolocateButton.type = 'button';
         this._geolocateButton.setAttribute('aria-label', 'Geolocate');
+        if (this.options.watchPosition) this._geolocateButton.setAttribute('aria-pressed', false);
         this._geolocateButton.addEventListener('click',
             this._onClickGeolocate.bind(this));
     }
 
     _onClickGeolocate() {
+        const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
 
-        window.navigator.geolocation.getCurrentPosition(
-            this._onSuccess, this._onError, util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {}));
+        // toggle watching the device location
+        if (this.options.watchPosition) {
+            if (this._geolocationWatchID !== undefined) {
+                // clear watchPosition
+                this._geolocateButton.classList.remove('watching');
+                this._geolocateButton.setAttribute('aria-pressed', false);
+                window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+                this._geolocationWatchID = undefined;
+            } else {
+                // enable watchPosition
+                this._geolocateButton.classList.add('watching');
+                this._geolocateButton.setAttribute('aria-pressed', true);
+                this._geolocationWatchID = window.navigator.geolocation.watchPosition(
+                    this._onSuccess, this._onError, positionOptions);
+            }
+        } else {
+            window.navigator.geolocation.getCurrentPosition(
+                this._onSuccess, this._onError, positionOptions);
 
-        // This timeout ensures that we still call finish() even if
-        // the user declines to share their location in Firefox
-        this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
+            // This timeout ensures that we still call finish() even if
+            // the user declines to share their location in Firefox
+            this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
+        }
     }
 }
 

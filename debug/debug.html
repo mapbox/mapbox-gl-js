@@ -44,7 +44,8 @@ map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
-    }
+    },
+    watchPosition: true
 }));
 map.addControl(new mapboxgl.ScaleControl());
 
