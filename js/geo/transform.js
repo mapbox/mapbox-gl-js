@@ -408,6 +408,9 @@ class Transform {
         mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0.1, farZ);
         mat4.translate(m, m, [0, 0, -this.altitude]);
 
+        // a hack around https://github.com/mapbox/mapbox-gl-js/issues/2270
+        m[14] = Math.min(m[14], m[15]);
+
         // After the rotateX, z values are in pixel units. Convert them to
         // altitude units. 1 altitude unit = the screen height.
         mat4.scale(m, m, [1, -1, 1 / this.height]);
