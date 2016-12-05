@@ -1375,7 +1375,6 @@ function removeNode(node) {
  * @memberof IControl
  * @instance
  * @name getDefaultPosition
- * @param {Map} map the Map this control will be added to
  * @returns {string} a control position, one of the values valid in addControl.
  */
 
