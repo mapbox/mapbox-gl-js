@@ -103,9 +103,7 @@ class WorkerTile {
         }
 
 
-        const done = () => {
-            const collisionTile = this.placeSymbols(this.showCollisionBoxes);
-
+        const done = (collisionTile) => {
             this.status = 'done';
 
             const transferables = [];
@@ -129,7 +127,7 @@ class WorkerTile {
         }
 
         if (this.symbolBuckets.length === 0) {
-            return done();
+            return done(new CollisionTile(this.angle, this.pitch, this.collisionBoxArray));
         }
 
         let deps = 0;
@@ -140,11 +138,15 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
+                const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
+
                 for (const bucket of this.symbolBuckets) {
+                    recalculateLayers(bucket, this.zoom);
                     bucket.prepare(stacks, icons);
+                    bucket.place(collisionTile, this.showCollisionBoxes);
                 }
 
-                done();
+                done(collisionTile);
             }
         };
 
@@ -174,7 +176,12 @@ class WorkerTile {
             return {};
         }
 
-        const collisionTile = this.placeSymbols(showCollisionBoxes);
+        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
+
+        for (const bucket of this.symbolBuckets) {
+            recalculateLayers(bucket, this.zoom);
+            bucket.place(collisionTile, showCollisionBoxes);
+        }
 
         const transferables = [];
         return {
@@ -185,20 +192,12 @@ class WorkerTile {
             transferables: transferables
         };
     }
+}
 
-    placeSymbols(showCollisionBoxes) {
-        const collisionTile = new CollisionTile(this.angle, this.pitch, this.collisionBoxArray);
-
-        for (const bucket of this.symbolBuckets) {
-            // Layers are shared and may have been used by a WorkerTile with a different zoom.
-            for (const layer of bucket.layers) {
-                layer.recalculate(this.zoom);
-            }
-
-            bucket.place(collisionTile, showCollisionBoxes);
-        }
-
-        return collisionTile;
+function recalculateLayers(bucket, zoom) {
+    // Layers are shared and may have been used by a WorkerTile with a different zoom.
+    for (const layer of bucket.layers) {
+        layer.recalculate(zoom);
     }
 }
 
