@@ -2,34 +2,34 @@
 
 const pattern = require('./pattern');
 
-module.exports = function drawSource(painter, sourceCache, layer) {
+module.exports = function drawPlaceholder(painter, sourceCache, layer) {
     if (painter.isOpaquePass) return;
 
-    const loadingCoords = sourceCache.getLoadingCoords(Date.now() - layer.paint['source-fade-duration']);
+    const loadingCoords = sourceCache.getLoadingCoords(Date.now() - layer.paint['placeholder-fade-duration']);
     for (let i = 0; i < loadingCoords.length; i++) {
         const loadingCoord = loadingCoords[i];
-        drawSourceLoadingTile(painter, sourceCache, layer, loadingCoord);
+        drawPlaceholderLoadingTile(painter, sourceCache, layer, loadingCoord);
     }
 };
 
-function drawSourceLoadingTile(painter, sourceCache, layer, coord) {
+function drawPlaceholderLoadingTile(painter, sourceCache, layer, coord) {
     const gl = painter.gl;
     const transform = painter.transform;
     const tileSize = transform.tileSize;
-    const color = layer.paint['source-loading-color'];
-    const image = layer.paint['source-loading-pattern'];
+    const color = layer.paint['placeholder-loading-color'];
+    const image = layer.paint['placeholder-loading-pattern'];
 
     const tile = sourceCache.getTile(coord);
 
-    tile.setAnimationLoop(painter.style.animationLoop, layer.paint['source-fade-duration']);
+    tile.setAnimationLoop(painter.style.animationLoop, layer.paint['placeholder-fade-duration']);
 
     let opacityT;
     if (tile.timeAdded) {
-        opacityT = 1 - (Date.now() - sourceCache.getTile(coord).timeAdded) / layer.paint['source-fade-duration'];
+        opacityT = 1 - (Date.now() - sourceCache.getTile(coord).timeAdded) / layer.paint['placeholder-fade-duration'];
     } else {
         opacityT = 1;
     }
-    const opacity = layer.paint['source-loading-opacity'] * opacityT;
+    const opacity = layer.paint['placeholder-loading-opacity'] * opacityT;
 
     gl.disable(gl.STENCIL_TEST);
 
