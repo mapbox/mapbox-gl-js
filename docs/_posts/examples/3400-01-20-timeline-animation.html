@@ -72,14 +72,6 @@ var map = new mapboxgl.Map({
     zoom: 0.5
 });
 
-var popup = new mapboxgl.Popup({
-    closeOnClick: false,
-    closeButton: false
-});
-
-var legend = document.getElementById('legend');
-var monthLabel = document.getElementById('month');
-
 var months = [
     'January',
     'February',
@@ -104,7 +96,7 @@ function filterBy(month) {
     map.setFilter('earthquake-labels', filters);
 
     // Set the label to the month
-    monthLabel.textContent = months[month];
+    document.getElementById('month').textContent = months[month];
 }
 
 map.on('load', function() {
