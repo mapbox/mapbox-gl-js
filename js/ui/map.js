@@ -215,8 +215,8 @@ class Map extends Camera {
      * Adds a [`IControl`](#IControl) to the map, calling `control.onAdd(this)`.
      *
      * @param {IControl} control The [`IControl`](#IControl) to add.
-     * @param {string} [position='top-right'] position on the map to which the control will be added.
-     * valid values are 'top-left', 'top-right', 'bottom-left', and 'bottom-right'
+     * @param {string} [position] position on the map to which the control will be added.
+     * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
