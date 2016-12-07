@@ -901,7 +901,8 @@
       ],
       "function": "interpolated",
       "zoom-function": true,
-      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "property-function": true,
+      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
       "requires": [
         "icon-image"
       ],
