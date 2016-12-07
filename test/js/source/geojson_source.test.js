@@ -47,12 +47,11 @@ const hawkHill = {
 
 test('GeoJSONSource#setData', (t) => {
     function createSource() {
-        const source = new GeoJSONSource('id', {data: {}}, {
+        return new GeoJSONSource('id', {data: {}}, {
             send: function (type, data, callback) {
                 return setTimeout(callback, 0);
             }
         });
-        return source;
     }
 
     t.test('returns self', (t) => {

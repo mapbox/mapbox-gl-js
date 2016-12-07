@@ -11,7 +11,6 @@ class VectorTileSource extends Evented {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
-        this.setEventedParent(eventedParent);
 
         this.type = 'vector';
         this.minzoom = 0;
@@ -27,6 +26,8 @@ class VectorTileSource extends Evented {
         if (this.tileSize !== 512) {
             throw new Error('vector tile sources must have a tileSize of 512');
         }
+
+        this.setEventedParent(eventedParent);
     }
 
     load() {
