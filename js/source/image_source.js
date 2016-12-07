@@ -55,15 +55,16 @@ class ImageSource extends Evented {
         this.tileSize = 512;
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source'});
 
-        this._load(options);
+        this.options = options;
     }
 
-    _load(options) {
-        this.url = options.url;
+    load() {
+        this.fire('dataloading', {dataType: 'source'});
 
-        ajax.getImage(options.url, (err, image) => {
+        this.url = this.options.url;
+
+        ajax.getImage(this.options.url, (err, image) => {
             if (err) return this.fire('error', {error: err});
 
             this.image = image;
@@ -81,6 +82,7 @@ class ImageSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
         if (this.image) {
             this.setCoordinates(this.coordinates);

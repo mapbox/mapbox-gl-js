@@ -8,7 +8,7 @@ const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 class RasterTileSource extends Evented {
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id, options, dispatcher) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
@@ -19,11 +19,13 @@ class RasterTileSource extends Evented {
         this.scheme = 'xyz';
         this.tileSize = 512;
         this._loaded = false;
+        this.options = options;
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+    }
 
-        this.setEventedParent(eventedParent);
+    load() {
         this.fire('dataloading', {dataType: 'source'});
-        loadTileJSON(options, (err, tileJSON) => {
+        loadTileJSON(this.options, (err, tileJSON) => {
             if (err) {
                 return this.fire('error', err);
             }
@@ -34,6 +36,7 @@ class RasterTileSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
     }
 

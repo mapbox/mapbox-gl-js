@@ -7,7 +7,9 @@ const window = require('../../../js/util/window');
 const Evented = require('../../../js/util/evented');
 
 function createSource(options) {
-    const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
+    const source = new VectorTileSource('id', options, { send: function() {} });
+    source.setEventedParent(options.eventedParent);
+    source.load();
 
     source.on('error', (e) => {
         throw e.error;
