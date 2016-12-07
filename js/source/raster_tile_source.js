@@ -8,10 +8,11 @@ const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 class RasterTileSource extends Evented {
 
-    constructor(id, options, dispatcher) {
+    constructor(id, options, dispatcher, eventedParent) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
+        this.setEventedParent(eventedParent);
 
         this.minzoom = 0;
         this.maxzoom = 22;

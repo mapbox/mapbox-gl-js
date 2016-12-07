@@ -18,10 +18,11 @@ class SpritePosition {
 
 class ImageSprite extends Evented {
 
-    constructor(base) {
+    constructor(base, eventedParent) {
         super();
         this.base = base;
         this.retina = browser.devicePixelRatio > 1;
+        this.setEventedParent(eventedParent);
 
         const format = this.retina ? '@2x' : '';
 
