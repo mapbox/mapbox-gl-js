@@ -52,7 +52,6 @@ test('GeoJSONSource#setData', (t) => {
                 return setTimeout(callback, 0);
             }
         });
-        source.load();
         return source;
     }
 
