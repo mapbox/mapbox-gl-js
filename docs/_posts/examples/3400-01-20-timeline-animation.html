@@ -88,8 +88,6 @@ var months = [
 ];
 
 function filterBy(month) {
-    // Clear the popup if displayed.
-    popup.remove();
 
     var filters = ['==', 'month', month];
     map.setFilter('earthquake-circles', filters);
