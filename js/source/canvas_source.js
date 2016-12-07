@@ -1,25 +1,25 @@
 'use strict';
 
 const ImageSource = require('./image_source');
+const window = require('../util/window');
 
-/**         // TODO update documentation
- * A data source containing video.
- * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-video) for detailed documentation of options.)
- * @interface VideoSource
+/**
+ * A data source containing content copied from an HTML canvas.
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
+ * @interface CanvasSource
  * @example
  * // add to map
  * map.addSource('some id', {
- *    type: 'video',
- *    url: [
- *        'https://www.mapbox.com/blog/assets/baltimore-smoke.mp4',
- *        'https://www.mapbox.com/blog/assets/baltimore-smoke.webm'
- *    ],
+ *    type: 'canvas',
+ *    canvas: 'idOfMyHTMLCanvas',
+ *    animate: true,
  *    coordinates: [
  *        [-76.54, 39.18],
  *        [-76.52, 39.18],
  *        [-76.52, 39.17],
  *        [-76.54, 39.17]
- *    ]
+ *    ],
+ *    dimensions: [0, 0, 400, 400]
  * });
  *
  * // update
@@ -31,66 +31,64 @@ const ImageSource = require('./image_source');
  *     [-76.54520273208618, 39.17876344106642]
  * ]);
  *
+ * // update
+ * var mySource = map.getSource('some id');
+ * mySource.setDimensions([0, 0, 600, 600]);
+ *
  * map.removeSource('some id');  // remove
- * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
+ * @see [Add a canvas (TODO: this page does not yet exist)](https://www.mapbox.com/mapbox-gl-js/example/canvas-on-a-map/)
  */
 class CanvasSource extends ImageSource {
+
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
+        this.options = options;
     }
 
-    _load(options) {
-        this.canvas = window.document.getElementById(options.canvas);
+    load() {
+        const options = this.options;
+        this._canvas = window.document.getElementById(options.canvas);
         this.animate = options.hasOwnProperty('animate') ? options.animate : true;
         this.dimensions = options.dimensions;
 
         // detect context type
-        if (this.canvas.getContext('2d')) {
+        if (this._canvas.getContext('2d')) {
             this.contextType = '2d';
-        } else if (this.canvas.getContext('webgl')) {
+            this.canvas = this._canvas;
+        } else if (this._canvas.getContext('webgl')) {
             this.contextType = 'webgl';
         }
 
         this._rereadCanvas();
 
         this.play = function() {
-            let loopID = this.map.style.animationLoop.set(Infinity);
+            this.map.style.animationLoop.set(Infinity);
             this.map._rerender();
-        }
+        };
 
         this._finishLoading();
     }
 
     _rereadCanvas() {
-        if (!this.animate && this.canvasData) return;
-        switch (this.contextType) {
-            case '2d':
-                this.canvasData = this.canvas.getContext('2d')
-                    .getImageData(
-                        this.dimensions[0],
-                        this.dimensions[1],
-                        this.dimensions[2],
-                        this.dimensions[3]);
-                return;
+        if (!this.animate && this.canvas) return;
 
-            case 'webgl':
-                if (this.canvasBuffer) delete this.canvasBuffer;
+        if (this.contextType === 'webgl') {
+            if (this.canvasBuffer) delete this.canvasBuffer;
 
-                let w = this.dimensions[2] - this.dimensions[0],
-                    h = this.dimensions[3] - this.dimensions[1];
+            const w = this.dimensions[2] - this.dimensions[0],
+                h = this.dimensions[3] - this.dimensions[1];
 
-                this.canvasBuffer = new Uint8Array(w * h * 4);
+            this.canvasBuffer = new Uint8Array(w * h * 4);
 
-                const ctx = this.canvas.getContext('webgl');
+            const ctx = this.canvas.getContext('webgl');
 
-                ctx.readPixels(
-                    this.dimensions[0],
-                    this.dimensions[1],
-                    this.dimensions[2],
-                    this.dimensions[3],
-                    ctx.RGBA, ctx.UNSIGNED_BYTE, this.canvasBuffer);
-                this.canvasData = new window.ImageData(new Uint8ClampedArray(this.canvasBuffer), w, h);
-                return;
+            ctx.readPixels(
+                this.dimensions[0],
+                this.dimensions[1],
+                this.dimensions[2],
+                this.dimensions[3],
+                ctx.RGBA, ctx.UNSIGNED_BYTE, this.canvasBuffer);
+            this.canvas = new window.ImageData(new Uint8ClampedArray(this.canvasBuffer), w, h);
         }
 
     }
@@ -101,13 +99,14 @@ class CanvasSource extends ImageSource {
      * @returns {HTMLCanvasElement} The HTML `canvas` element.
      */
     getCanvas() {
-        return this.canvas;
+        return this._canvas;
     }
 
     onAdd(map) {
         if (this.map) return;
+        this.load();
         this.map = map;
-        if (this.canvasData) {
+        if (this.canvas) {
             if (this.animate) this.play();
             this.setCoordinates(this.coordinates);
         }
@@ -123,25 +122,31 @@ class CanvasSource extends ImageSource {
      *   They do not have to represent a rectangle.
      * @returns {CanvasSource} this
      */
-        // console.log(this.canvasData.data.filter(d => d !== 0).length);
     // setCoordinates inherited from ImageSource
 
     prepare() {
         if (!this.tile) return; // not enough data for current position
 
         this._rereadCanvas();
-        this._prepareImage(this.map.painter.gl, this.canvasData, this.resize);
+        this._prepareImage(this.map.painter.gl, this.canvas, this.resize);
         this.resize = false;
     }
 
     serialize() {
         return {
             type: 'canvas',
-            canvas: this.canvas,
+            canvas: this._canvas,
             coordinates: this.coordinates
         };
     }
 
+    /**
+     * Sets new dimensions to read the canvas and re-renders the map.
+     * @method setDimensions
+     * @param {Array<Array<number>>} dimensions Four pixel dimensions,
+     *   represented as an array of [x (first horizontal pixel), y (first
+     *   vertical pixel), width, height].
+     */
     setDimensions(dimensions) {
         this.dimensions = dimensions;
         this._rereadCanvas();

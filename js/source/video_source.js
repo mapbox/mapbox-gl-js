@@ -36,9 +36,9 @@ const ImageSource = require('./image_source');
  * @see [Add a video](https://www.mapbox.com/mapbox-gl-js/example/video-on-a-map/)
  */
 class VideoSource extends ImageSource {
+
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
-        // this.type = 'video';
         this.roundZoom = true;
         this.options = options;
     }
