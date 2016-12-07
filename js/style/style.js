@@ -108,6 +108,7 @@ class Style extends Evented {
         } else {
             browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
         }
+
         this.on('source.load', (event) => {
             const source = this.sourceCaches[event.sourceId].getSource();
             if (source && source.vectorLayerIds) {
@@ -378,8 +379,8 @@ class Style extends Evented {
             source: sourceCache.serialize(),
             sourceId: id
         }));
-        sourceCache.onAdd(this.map);
 
+        sourceCache.onAdd(this.map);
         this._changed = true;
     }
 
