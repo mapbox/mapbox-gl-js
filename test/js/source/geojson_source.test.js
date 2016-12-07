@@ -52,7 +52,6 @@ test('GeoJSONSource#setData', (t) => {
                 return setTimeout(callback, 0);
             }
         });
-        source.load();
         return source;
     }
 
@@ -68,6 +67,7 @@ test('GeoJSONSource#setData', (t) => {
             source.on('data', t.end);
             source.setData({});
         });
+        source.load();
     });
 
     t.test('fires "dataloading" event', (t) => {
@@ -76,6 +76,7 @@ test('GeoJSONSource#setData', (t) => {
             source.on('dataloading', t.end);
             source.setData({});
         });
+        source.load();
     });
 
     t.end();
