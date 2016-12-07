@@ -8,7 +8,7 @@ const normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 class RasterTileSource extends Evented {
 
-    constructor(id, options, dispatcher, eventedParent) {
+    constructor(id, options, dispatcher) {
         super();
         this.id = id;
         this.dispatcher = dispatcher;
