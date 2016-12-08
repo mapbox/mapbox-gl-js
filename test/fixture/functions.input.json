@@ -214,7 +214,7 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
@@ -222,11 +222,11 @@
                 "zoom": 0,
                 "value": 1
               },
-              true
+              "#fff"
             ],
             [
               0.5,
-              true
+              "#fff"
             ]
           ]
         }
@@ -238,14 +238,14 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
               {
                 "value": "asdf"
               },
-              true
+              "#fff"
             ]
           ]
         }
@@ -257,14 +257,14 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
               {
                 "zoom": 1
               },
-              true
+              "#fff"
             ]
           ]
         }
@@ -276,7 +276,7 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
@@ -284,7 +284,7 @@
                 "zoom": "1",
                 "value": 0
               },
-              true
+              "#fff"
             ]
           ]
         }
@@ -296,7 +296,7 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
@@ -306,7 +306,7 @@
                   "asdf": true
                 }
               },
-              true
+              "#fff"
             ]
           ]
         }
@@ -318,11 +318,11 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "stops": [
             [
               "bad",
-              true
+              "#fff"
             ]
           ]
         }
@@ -334,12 +334,12 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "property": "mapbox",
           "stops": [
             [
               "good",
-              true
+              "#fff"
             ]
           ]
         }
@@ -596,7 +596,6 @@
       "source-layer": "layer",
       "paint": {
         "fill-antialias": {
-          "property": "mapbox",
           "type": "exponential",
           "stops": [
             [
@@ -636,12 +635,12 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-color": {
           "type": "categorical",
           "stops": [
             [
               "good",
-              true
+              "#fff"
             ]
           ]
         }
@@ -653,21 +652,21 @@
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "fill-antialias": {
+        "fill-opacity": {
           "type": "categorical",
           "property": "mapbox",
           "stops": [
             [
               "foo",
-              true
+              0
             ],
             [
               "bar",
-              true
+              0
             ],
             [
               "foo",
-              true
+              0
             ]
           ]
         }

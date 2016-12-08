@@ -52,27 +52,27 @@
     "line": 204
   },
   {
-    "message": "layers[12].paint.fill-antialias.stops[1]: object expected, number found",
+    "message": "layers[12].paint.fill-color.stops[1]: object expected, number found",
     "line": 227
   },
   {
-    "message": "layers[13].paint.fill-antialias.stops[0]: object stop key must have zoom",
+    "message": "layers[13].paint.fill-color.stops[0]: object stop key must have zoom",
     "line": 244
   },
   {
-    "message": "layers[14].paint.fill-antialias.stops[0]: object stop key must have value",
+    "message": "layers[14].paint.fill-color.stops[0]: object stop key must have value",
     "line": 263
   },
   {
-    "message": "layers[15].paint.fill-antialias.stops[0][0].zoom: number expected, string found",
+    "message": "layers[15].paint.fill-color.stops[0][0].zoom: number expected, string found",
     "line": 284
   },
   {
-    "message": "layers[16].paint.fill-antialias.stops[0][0].value: property value must be a number or string",
+    "message": "layers[16].paint.fill-color.stops[0][0].value: property value must be a number or string",
     "line": 305
   },
   {
-    "message": "layers[17].paint.fill-antialias: \"property\" property is required",
+    "message": "layers[17].paint.fill-color: \"property\" property is required",
     "line": 321
   },
   {
@@ -124,26 +124,26 @@
   },
   {
     "message": "layers[34].paint.fill-antialias: \"property\" property is required",
-    "line": 620
+    "line": 619
   },
   {
-    "message": "layers[35].paint.fill-antialias: \"property\" property is required",
-    "line": 639
+    "message": "layers[35].paint.fill-color: \"property\" property is required",
+    "line": 638
   },
   {
-    "message": "layers[36].paint.fill-antialias.stops[2][0]: stop domain values must be unique",
-    "line": 669
+    "message": "layers[36].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
+    "line": 668
   },
   {
     "message": "layers[37].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
-    "line": 687
+    "line": 686
   },
   {
     "message": "layers[38].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
-    "line": 713
+    "line": 712
   },
   {
     "message": "layers[39].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
-    "line": 739
+    "line": 738
   }
 ]
