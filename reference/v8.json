@@ -2274,7 +2274,7 @@
       "property-function": true,
       "transition": true,
       "units": "pixels",
-      "doc": "The width of the circle's stroke. Strokes are placed outside of the \"circle-radius\".",
+      "doc": "The width of the circle's stroke. Strokes are placed outside of the `circle-radius`.",
       "sdk-support": {
         "basic functionality": {
           "js": "master"
