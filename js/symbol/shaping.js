@@ -234,10 +234,8 @@ function align(positionedGlyphs, justify, horizontalAlign, verticalAlign, maxLin
     }
 }
 
-function shapeIcon(image, layout, layer, featureProperties) {
+function shapeIcon(image, iconOffset) {
     if (!image || !image.rect) return null;
-
-    const iconOffset = layer.getLayoutValue('icon-offset', {}, featureProperties);
 
     const dx = iconOffset[0];
     const dy = iconOffset[1];
