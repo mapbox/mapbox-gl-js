@@ -337,15 +337,29 @@ class SymbolBucket {
             mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
                 layout['text-ignore-placement'] || layout['icon-ignore-placement'],
             symbolPlacement = layout['symbol-placement'],
-            isLine = symbolPlacement === 'line',
             textRepeatDistance = symbolMinDistance / 2;
 
+        function isMultipoint(lines) {
+            for (const line of lines) {
+                if (line.length > 1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         let list = null;
-        if (isLine) {
+        if (symbolPlacement === 'line') {
             list = clipLine(lines, 0, 0, EXTENT, EXTENT);
-        } else {
-            // Only care about looping through the outer rings
-            list = classifyRings(lines, 0);
+        } else if (symbolPlacement === 'point') {
+            if (isMultipoint(lines)) {
+                list = [];
+                for (const point of lines) list.push([point]);
+            } else {
+                // the feature is a polygon and we are rendering the label at
+                // the polygon's centroid
+                list = classifyRings(lines, 0);
+            }
         }
 
         for (let i = 0; i < list.length; i++) {
@@ -355,7 +369,7 @@ class SymbolBucket {
             let line = null;
 
             // Calculate the anchor points around which you want to place labels
-            if (isLine) {
+            if (symbolPlacement === 'line') {
                 line = pointsOrRings;
                 anchors = getAnchors(
                     line,
@@ -380,7 +394,7 @@ class SymbolBucket {
             for (let j = 0, len = anchors.length; j < len; j++) {
                 const anchor = anchors[j];
 
-                if (shapedTextOrientations[WritingMode.horizontal] && isLine) {
+                if (shapedTextOrientations[WritingMode.horizontal] && symbolPlacement === 'line') {
                     if (this.anchorIsTooClose(shapedTextOrientations[WritingMode.horizontal].text, textRepeatDistance, anchor)) {
                         continue;
                     }
