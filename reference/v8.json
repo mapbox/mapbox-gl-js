@@ -1902,12 +1902,10 @@
       "default": 0,
       "minimum": 0,
       "units": "meters",
-      "doc": "The height with which to extrude the base of this layer.",
+      "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `fill-extrusion-height`.",
       "transition": true,
       "requires": [
-        {
-          "<=": "fill-extrusion-height"
-        }
+        "fill-extrusion-height"
       ],
       "sdk-support": {
         "basic functionality": {
