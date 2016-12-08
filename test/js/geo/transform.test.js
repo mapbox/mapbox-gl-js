@@ -52,16 +52,6 @@ test('transform', (t) => {
         t.end();
     });
 
-    t.test('panBy', (t) => {
-        const transform = new Transform();
-        transform.resize(500, 500);
-        transform.latRange = undefined;
-        t.deepEqual(transform.center, { lng: 0, lat: 0 });
-        t.equal(transform.panBy(new Point(10, 10)), undefined);
-        t.deepEqual(fixedLngLat(transform.center), fixedLngLat({ lng: 7.03125, lat: -7.01366792756663 }));
-        t.end();
-    });
-
     t.test('setLocationAt', (t) => {
         const transform = new Transform();
         transform.resize(500, 500);

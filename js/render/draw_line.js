@@ -104,7 +104,7 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
             gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
             gl.uniform1f(program.u_fade, image.t);
         }
-
+        gl.uniform1f(program.u_width, layer.paint['line-width']);
 
         gl.uniformMatrix2fv(program.u_antialiasingmatrix, false, painter.transform.lineAntialiasingMatrix);
         gl.uniform1f(program.u_extra, painter.transform.lineStretch);

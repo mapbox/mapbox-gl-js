@@ -139,6 +139,7 @@ class Map extends Camera {
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
+            if (!this._container) throw new Error(`Container '${options.container}' not found.`);
         } else {
             this._container = options.container;
         }
@@ -237,7 +238,7 @@ class Map extends Camera {
     /**
      * Removes the control from the map.
      *
-     * @param {IControl} control The [`IControl`](#IControl) to add.
+     * @param {IControl} control The [`IControl`](#IControl) to remove.
      * @returns {Map} `this`
      */
     removeControl(control) {
@@ -1374,7 +1375,6 @@ function removeNode(node) {
  * @memberof IControl
  * @instance
  * @name getDefaultPosition
- * @param {Map} map the Map this control will be added to
  * @returns {string} a control position, one of the values valid in addControl.
  */
 

@@ -2,7 +2,7 @@
 
 const textVertices = require('../lib/debugtext');
 const browser = require('../util/browser');
-const mat4 = require('gl-matrix').mat4;
+const mat4 = require('@mapbox/gl-matrix').mat4;
 const EXTENT = require('../data/extent');
 const Buffer = require('../data/buffer');
 const VertexArrayObject = require('./vertex_array_object');
