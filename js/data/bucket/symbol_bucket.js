@@ -20,6 +20,7 @@ const loadGeometry = require('../load_geometry');
 const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
+const VectorTileFeature = require('vector-tile').VectorTileFeature;
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -160,7 +161,8 @@ class SymbolBucket {
                 index: i,
                 sourceLayerIndex: feature.sourceLayerIndex,
                 geometry: loadGeometry(feature),
-                properties: feature.properties
+                properties: feature.properties,
+                type: VectorTileFeature.types[feature.type]
             });
 
             if (icon) {
@@ -339,26 +341,15 @@ class SymbolBucket {
             symbolPlacement = layout['symbol-placement'],
             textRepeatDistance = symbolMinDistance / 2;
 
-        function isMultipoint(lines) {
-            for (const line of lines) {
-                if (line.length > 1) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         let list = null;
         if (symbolPlacement === 'line') {
             list = clipLine(lines, 0, 0, EXTENT, EXTENT);
         } else if (symbolPlacement === 'point') {
-            if (isMultipoint(lines)) {
+            if (feature.type === 'Polygon') {
+                list = classifyRings(lines, 0);
+            } else {
                 list = [];
                 for (const point of lines) list.push([point]);
-            } else {
-                // the feature is a polygon and we are rendering the label at
-                // the polygon's centroid
-                list = classifyRings(lines, 0);
             }
         }
 
