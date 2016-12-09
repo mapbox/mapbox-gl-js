@@ -43,7 +43,7 @@ class Tile {
 
     registerFadeDuration(animationLoop, duration) {
         const fadeEndTime = duration + this.timeAdded;
-        if (fadeEndTime > Date.now()) return;
+        if (fadeEndTime < Date.now()) return;
         if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;
