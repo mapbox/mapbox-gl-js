@@ -4,8 +4,12 @@ const Evented = require('../../util/evented');
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
+const assert = require('assert');
+const LngLat = require('../../geo/lng_lat');
+const Marker = require('../marker');
 
 const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
+const defaultFitBoundsOptions = { maxZoom: 18 };
 const className = 'mapboxgl-ctrl';
 
 let supportsGeolocation;
@@ -40,15 +44,23 @@ function checkGeolocationSupport(callback) {
  * geolocation support is not available, the GeolocateControl will not
  * be visible.
  *
+ * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
+ *
+ * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the users's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so the user's location dot still updates but the camera doesn't.
+ *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
- * @param {Object} [options.watchPosition=false] If `true` the map will reposition each time the position of the device changes and the control becomes a toggle.
+ * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
+ * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
  *         enableHighAccuracy: true
- *     }
+ *     },
+ *     trackUserLocation: true
  * }));
  */
 class GeolocateControl extends Evented {
@@ -56,11 +68,18 @@ class GeolocateControl extends Evented {
     constructor(options) {
         super();
         this.options = options || {};
+
+        // apply default for options.showUserLocation
+        this.options.showUserLocation = (this.options && 'showUserLocation' in this.options) ? this.options.showUserLocation : true;
+
         util.bindAll([
             '_onSuccess',
             '_onError',
             '_finish',
-            '_setupUI'
+            '_setupUI',
+            '_updateCamera',
+            '_updateMarker',
+            '_onClickGeolocate'
         ], this);
     }
 
@@ -72,24 +91,139 @@ class GeolocateControl extends Evented {
     }
 
     onRemove() {
+        // clear the geolocation watch if exists
+        if (this._geolocationWatchID !== undefined) {
+            window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+            this._geolocationWatchID = undefined;
+        }
+
+        // clear the marker from the map
+        if (this.options.showUserLocation) {
+            this._userLocationDotMarker.remove();
+        }
+
         this._container.parentNode.removeChild(this._container);
         this._map = undefined;
     }
 
     _onSuccess(position) {
-        this._map.jumpTo({
-            center: [position.coords.longitude, position.coords.latitude],
-            zoom: 17,
-            bearing: 0,
-            pitch: 0
-        });
+        if (this.options.trackUserLocation) {
+            // keep a record of the position so that if the state is BACKGROUND and the user
+            // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
+            // watchPosition to trigger _onSuccess
+            this._lastKnownPosition = position;
+
+            switch (this._watchState) {
+            case 'WAITING_ACTIVE':
+            case 'ACTIVE_LOCK':
+            case 'ACTIVE_ERROR':
+                this._watchState = 'ACTIVE_LOCK';
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+                break;
+            case 'BACKGROUND':
+            case 'BACKGROUND_ERROR':
+                this._watchState = 'BACKGROUND';
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
+                break;
+            default:
+                assert(false, `Unexpected watchState ${this._watchState}`);
+            }
+            this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+        }
+
+        // if showUserLocation and the watch state isn't off then update the marker location
+        if (this.options.showUserLocation && this._watchState !== 'OFF') {
+            this._updateMarker(position);
+        }
+
+        // if in normal mode (not watch mode), or if in watch mode and the state is active watch
+        // then update the camera
+        if (!this.options.trackUserLocation || this._watchState === 'ACTIVE_LOCK') {
+            this._updateCamera(position);
+        }
+
+        if (this.options.showUserLocation) {
+            this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
+        }
+
+        if (this._watchState === 'ACTIVE_LOCK') {
+            this.fire('trackuserlocationstart');
+        }
 
         this.fire('geolocate', position);
         this._finish();
     }
 
+    _updateCamera(position) {
+        const center = new LngLat(position.coords.longitude, position.coords.latitude);
+        const radius = position.coords.accuracy;
+
+        this._map.fitBounds(center.toBounds(radius), util.extend(defaultFitBoundsOptions, this.options.fitBoundsOptions || {}), {
+            geolocateSource: true // tag this camera change so it won't cause the control to change to background state
+        });
+    }
+
+    _updateMarker(position) {
+        if (position) {
+            this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
+        } else {
+            this._userLocationDotMarker.remove();
+        }
+    }
+
     _onError(error) {
+        if (this.options.trackUserLocation) {
+            if (error.code === 1) {
+                // PERMISSION_DENIED
+                this._watchState = 'OFF';
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+
+                if (this._geolocationWatchID !== undefined) {
+                    this._clearWatch();
+                }
+            } else {
+                switch (this._watchState) {
+                case 'WAITING_ACTIVE':
+                    this._watchState = 'ACTIVE_ERROR';
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+                    break;
+                case 'ACTIVE_LOCK':
+                    this._watchState = 'ACTIVE_ERROR';
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+                    // turn marker grey
+                    break;
+                case 'BACKGROUND':
+                    this._watchState = 'BACKGROUND_ERROR';
+                    this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
+                    this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+                    // turn marker grey
+                    break;
+                case 'ACTIVE_ERROR':
+                    break;
+                default:
+                    assert(false, `Unexpected watchState ${this._watchState}`);
+                }
+            }
+        }
+
+        if (this._watchState !== 'OFF' && this.options.showUserLocation) {
+            this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
+        }
+
         this.fire('error', error);
+
         this._finish();
     }
 
@@ -107,28 +241,117 @@ class GeolocateControl extends Evented {
             this._container);
         this._geolocateButton.type = 'button';
         this._geolocateButton.setAttribute('aria-label', 'Geolocate');
-        if (this.options.watchPosition) this._geolocateButton.setAttribute('aria-pressed', false);
+
+        if (this.options.trackUserLocation) {
+            this._geolocateButton.setAttribute('aria-pressed', false);
+            this._watchState = 'OFF';
+        }
+
+        // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
+        if (this.options.showUserLocation) {
+            if (this.options.trackUserLocation) this._watchState = 'INITILIZE';
+
+            this._dotElement = DOM.create('div', 'mapboxgl-user-location-dot');
+
+            this._userLocationDotMarker = new Marker(this._dotElement, { offset: [-13, -13] });
+
+            if (this.options.trackUserLocation) this._watchState = 'OFF';
+        }
+
         this._geolocateButton.addEventListener('click',
             this._onClickGeolocate.bind(this));
+
+        // when the camera is changed (and it's not as a result of the Geolocation Control) change
+        // the watch mode to background watch, so that the marker is updated but not the camera.
+        if (this.options.trackUserLocation) {
+            this._map.on('movestart', (event) => {
+                if (!event.geolocateSource) {
+                    if (this._watchState === 'ACTIVE_LOCK') {
+                        this._watchState = 'BACKGROUND';
+                        this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
+                        this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+
+                        this.fire('trackuserlocationend');
+                    }
+                }
+            });
+        }
     }
 
     _onClickGeolocate() {
         const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
 
-        // toggle watching the device location
-        if (this.options.watchPosition) {
-            if (this._geolocationWatchID !== undefined) {
-                // clear watchPosition
-                this._geolocateButton.classList.remove('mapboxgl-watching');
-                this._geolocateButton.setAttribute('aria-pressed', false);
-                window.navigator.geolocation.clearWatch(this._geolocationWatchID);
-                this._geolocationWatchID = undefined;
-            } else {
-                // enable watchPosition
-                this._geolocateButton.classList.add('mapboxgl-watching');
+        if (this.options.trackUserLocation) {
+            // update watchState and do any outgoing state cleanup
+            switch (this._watchState) {
+            case 'OFF':
+                // turn on the Geolocate Control
+                this._watchState = 'WAITING_ACTIVE';
+                break;
+            case 'WAITING_ACTIVE':
+            case 'ACTIVE_LOCK':
+            case 'ACTIVE_ERROR':
+            case 'BACKGROUND_ERROR':
+                // turn off the Geolocate Control
+                this._watchState = 'OFF';
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-active-error');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background-error');
+                break;
+            case 'BACKGROUND':
+                this._watchState = 'ACTIVE_LOCK';
+                this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-background');
+                // set camera to last known location
+                if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
+                break;
+            default:
+                assert(false, `Unexpected watchState ${this._watchState}`);
+            }
+
+            // incoming state setup
+            switch (this._watchState) {
+            case 'WAITING_ACTIVE':
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+                break;
+            case 'ACTIVE_LOCK':
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active');
+                break;
+            case 'ACTIVE_ERROR':
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-active-error');
+                break;
+            case 'BACKGROUND':
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background');
+                break;
+            case 'BACKGROUND_ERROR':
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-background-error');
+                break;
+            case 'OFF':
+                break;
+            default:
+                assert(false, `Unexpected watchState ${this._watchState}`);
+            }
+
+            // manage geolocation.watchPosition / geolocation.clearWatch
+            if (this._watchState === 'OFF' && this._geolocationWatchID !== undefined) {
+                // clear watchPosition as we've changed to an OFF state
+                this._clearWatch();
+            } else if (this._geolocationWatchID === undefined) {
+                // enable watchPosition since watchState is not OFF and there is no watchPosition already running
+
+                this._geolocateButton.classList.add('mapboxgl-ctrl-geolocate-waiting');
                 this._geolocateButton.setAttribute('aria-pressed', true);
+
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
+            }
+
+            if (this._watchState === 'ACTIVE_LOCK') {
+                this.fire('trackuserlocationstart');
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
@@ -139,26 +362,56 @@ class GeolocateControl extends Evented {
             this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
         }
     }
+
+    _clearWatch() {
+        window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+
+        this._geolocationWatchID = undefined;
+        this._geolocateButton.classList.remove('mapboxgl-ctrl-geolocate-waiting');
+        this._geolocateButton.setAttribute('aria-pressed', false);
+
+        if (this.options.showUserLocation) {
+            this._updateMarker(null);
+        }
+    }
 }
 
 module.exports = GeolocateControl;
 
 /**
- * geolocate event.
+ * Fired on each Geolocation API position update which returned as success.
  *
  * @event geolocate
  * @memberof GeolocateControl
  * @instance
- * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
+ * @property {Position} data The returned [Position](https://developer.mozilla.org/en-US/docs/Web/API/Position) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
  *
  */
 
 /**
- * error event.
+ * Fired on each Geolocation API position update which returned as an error.
  *
  * @event error
  * @memberof GeolocateControl
  * @instance
- * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition).
+ * @property {PositionError} data The returned [PositionError](https://developer.mozilla.org/en-US/docs/Web/API/PositionError) object from the callback in [Geolocation.getCurrentPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition) or [Geolocation.watchPosition()](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/watchPosition).
+ *
+ */
+
+/**
+ * Fired when the Geolocate Control changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
+ *
+ * @event trackuserlocationstart
+ * @memberof GeolocateControl
+ * @instance
+ *
+ */
+
+/**
+ * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
+ *
+ * @event trackuserlocationend
+ * @memberof GeolocateControl
+ * @instance
  *
  */
