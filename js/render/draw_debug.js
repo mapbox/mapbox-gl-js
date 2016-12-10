@@ -11,8 +11,8 @@ const PosArray = require('../data/pos_array');
 module.exports = drawDebug;
 
 function drawDebug(painter, sourceCache, coords) {
-    for (let i = 0; i < coords.length; i++) {
-        drawDebugTile(painter, sourceCache, coords[i]);
+    for (const coord of coords) {
+        drawDebugTile(painter, sourceCache, coord);
     }
 }
 
@@ -30,7 +30,9 @@ function drawDebugTile(painter, sourceCache, coord) {
     painter.debugVAO.bind(gl, program, painter.debugBuffer);
     gl.drawArrays(gl.LINE_STRIP, 0, painter.debugBuffer.length);
 
-    const vertices = textVertices(coord.toString(), 50, 200, 5);
+    const tile = sourceCache.getTile(coord);
+    const text = `${coord.toString()} - ${tile.state}`;
+    const vertices = textVertices(text, 50, 200, 5);
     const debugTextArray = new PosArray();
     for (let v = 0; v < vertices.length; v += 2) {
         debugTextArray.emplaceBack(vertices[v], vertices[v + 1]);
