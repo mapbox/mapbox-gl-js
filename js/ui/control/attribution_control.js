@@ -13,10 +13,13 @@ const util = require('../../util/util');
  */
 class AttributionControl {
 
-    constructor() {
+    constructor(options) {
+        this.options = options;
+
         util.bindAll([
             '_updateEditLink',
-            '_updateData'
+            '_updateData',
+            '_updateCompact'
         ], this);
     }
 
@@ -25,15 +28,25 @@ class AttributionControl {
     }
 
     onAdd(map) {
+        const compact = this.options && this.options.compact;
+
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
+        if (compact) {
+            this._container.classList.add('compact');
+        }
 
         this._updateAttributions();
         this._updateEditLink();
 
         this._map.on('data', this._updateData);
         this._map.on('moveend', this._updateEditLink);
+
+        if (compact === undefined) {
+            this._map.on('resize', this._updateCompact);
+            this._updateCompact();
+        }
 
         return this._container;
     }
@@ -43,6 +56,7 @@ class AttributionControl {
 
         this._map.off('data', this._updateData);
         this._map.off('moveend', this._updateEditLink);
+        this._map.off('resize', this._updateCompact);
 
         this._map = undefined;
     }
@@ -88,6 +102,12 @@ class AttributionControl {
         this._container.innerHTML = attributions.join(' | ');
         // remove old DOM node from _editLink
         this._editLink = null;
+    }
+
+    _updateCompact() {
+        const compact = this._map.getCanvasContainer().offsetWidth <= 640;
+
+        this._container.classList[compact ? 'add' : 'remove']('compact');
     }
 
 }
