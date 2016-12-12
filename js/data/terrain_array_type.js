@@ -12,8 +12,8 @@ module.exports = createTerrainArrayType;
 function createTerrainArrayType(components) {
     return createStructArrayType({
         members: [{
-            type: 'Uint16',
-            name: 'pbf-terrain',
+            type: 'Uint32',
+            name: 'elevation',
             components: 1
         }]
     });

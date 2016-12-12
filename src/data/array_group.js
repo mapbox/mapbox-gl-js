@@ -44,6 +44,9 @@ class ArrayGroup {
         const ElementArrayType2 = programInterface.elementArrayType2;
         if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
+        const TerrainArrayType = programInterface.terrainArrayType;
+        if (TerrainArrayType) this.terrainArray = new TerrainArrayType();
+
         this.layerData = {};
         for (const layer of layers) {
             const programConfiguration = ProgramConfiguration.createDynamic(
@@ -101,6 +104,7 @@ class ArrayGroup {
             layoutVertexArray: this.layoutVertexArray.serialize(transferables),
             elementArray: this.elementArray && this.elementArray.serialize(transferables),
             elementArray2: this.elementArray2 && this.elementArray2.serialize(transferables),
+            terrainArray: this.terrainArray && this.terrainArray.serialize(transferables),
             paintVertexArrays: serializePaintVertexArrays(this.layerData, transferables),
             segments: this.segments,
             segments2: this.segments2
