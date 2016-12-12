@@ -9,6 +9,7 @@ const LngLat = require('../../../js/geo/lng_lat');
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
+const fixedCoord = fixed.Coord;
 
 function createMap(options, callback) {
     const container = window.document.createElement('div');
@@ -505,7 +506,7 @@ test('Map', (t) => {
         });
 
         function toFixed(bounds) {
-            const n = 10;
+            const n = 9;
             return [
                 [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
@@ -659,7 +660,7 @@ test('Map', (t) => {
 
     t.test('#unproject', (t) => {
         const map = createMap();
-        t.deepEqual(map.unproject([100, 100]), { lng: 0, lat: 0 });
+        t.deepEqual(fixedLngLat(map.unproject([100, 100])), { lng: 0, lat: 0 });
         t.end();
     });
 
@@ -689,7 +690,7 @@ test('Map', (t) => {
                 const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.deepEqual(args[0], [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
+                t.deepEqual(args[0].map(c => fixedCoord(c)), [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
                 t.deepEqual(args[1], {}); // params
                 t.deepEqual(args[2], 0); // bearing
                 t.deepEqual(args[3], 0); // zoom
@@ -738,8 +739,8 @@ test('Map', (t) => {
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
-                const coords = map.style.queryRenderedFeatures.getCall(0).args[0];
-                t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
+                const coords = map.style.queryRenderedFeatures.getCall(0).args[0].map(c => fixedCoord(c));
+                t.equal(coords[0].column, 1.5);
                 t.equal(coords[0].row, 0.5);
                 t.equal(coords[0].zoom, 0);
 

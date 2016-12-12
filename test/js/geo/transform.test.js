@@ -113,6 +113,9 @@ test('transform', (t) => {
         const transform = new Transform();
         transform.resize(200, 200);
 
+        // make slightly off center so that sort order is not subject to precision issues
+        transform.center = { lng: -0.01, lat: 0.01 };
+
         transform.zoom = 0;
         t.deepEqual(transform.coveringTiles(options), []);
 

@@ -173,12 +173,12 @@ function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
         const s = pixelsToTileUnits(tile, fontScale, tr.zoom);
         gl.uniform2f(program.u_extrude_scale, s, s);
     } else {
-        const s = tr.altitude * fontScale;
+        const s = tr.cameraToCenterDistance * fontScale;
         gl.uniform2f(program.u_extrude_scale, tr.pixelsToGLUnits[0] * s, tr.pixelsToGLUnits[1] * s);
     }
 
     if (isSDF) {
-        const gammaScale = fontScale * (pitchWithMap ? Math.cos(tr._pitch) : 1) * tr.altitude;
+        const gammaScale = fontScale * (pitchWithMap ? Math.cos(tr._pitch) : 1) * tr.cameraToCenterDistance;
 
         if (haloWidth) { // Draw halo underneath the text.
             gl.uniform1f(program.u_gamma, (haloBlur * blurOffset / sdfPx + gamma) / gammaScale);

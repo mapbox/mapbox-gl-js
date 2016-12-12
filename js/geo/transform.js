@@ -32,7 +32,7 @@ class Transform {
         this._center = new LngLat(0, 0);
         this.zoom = 0;
         this.angle = 0;
-        this._altitude = 1.5;
+        this._fov = 0.6435011087932844;
         this._pitch = 0;
         this._unmodified = true;
     }
@@ -89,14 +89,14 @@ class Transform {
         this._calcMatrices();
     }
 
-    get altitude() {
-        return this._altitude;
+    get fov() {
+        return this._fov / Math.PI * 180;
     }
-    set altitude(altitude) {
-        const a = Math.max(0.75, altitude);
-        if (this._altitude === a) return;
+    set fov(fov) {
+        fov = Math.max(0.01, Math.min(60, fov));
+        if (this._fov === fov) return;
         this._unmodified = false;
-        this._altitude = a;
+        this._fov = fov / 180 * Math.PI;
         this._calcMatrices();
     }
 
@@ -396,25 +396,28 @@ class Transform {
     _calcMatrices() {
         if (!this.height) return;
 
-        // Find the distance from the center point to the center top in altitude units using law of sines.
-        const halfFov = Math.atan(0.5 / this.altitude);
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.altitude / Math.sin(Math.PI / 2 - this._pitch - halfFov);
+        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+
+        // Find the distance from the center point [width/2, height/2] to the
+        // center top point [width/2, 0] in Z units, using the law of sines.
+        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
+        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
+        const halfFov = this._fov / 2;
+        const groundAngle = Math.PI / 2 + this._pitch;
+        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
 
         // Calculate z value of the farthest fragment that should be rendered.
-        const farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.altitude;
+        const farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
 
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
-        mat4.perspective(m, 2 * Math.atan((this.height / 2) / this.altitude), this.width / this.height, 0.1, farZ);
-        mat4.translate(m, m, [0, 0, -this.altitude]);
+        mat4.perspective(m, this._fov, this.width / this.height, 0.1, farZ);
 
         // a hack around https://github.com/mapbox/mapbox-gl-js/issues/2270
         m[14] = Math.min(m[14], m[15]);
 
-        // After the rotateX, z values are in pixel units. Convert them to
-        // altitude units. 1 altitude unit = the screen height.
-        mat4.scale(m, m, [1, -1, 1 / this.height]);
-
+        mat4.scale(m, m, [1, -1, 1]);
+        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
         mat4.rotateX(m, m, this._pitch);
         mat4.rotateZ(m, m, this.angle);
         mat4.translate(m, m, [-this.x, -this.y, 0]);
@@ -445,7 +448,7 @@ class Transform {
 
         // calculate how much longer the real world distance is at the top of the screen
         // than at the middle of the screen.
-        const topEdgeLength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
+        const topEdgeLength = Math.sqrt((this.height * this.height + this.cameraToCenterDistance * this.cameraToCenterDistance) / 4);
         this.lineStretch = (this.height / 2 * Math.tan(this._pitch)) / topEdgeLength;
     }
 }
