@@ -406,15 +406,14 @@ class Transform {
         const groundAngle = Math.PI / 2 + this._pitch;
         const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
 
-        // Calculate z value of the farthest fragment that should be rendered.
-        const farZ = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+        // Calculate z distance of the farthest fragment that should be rendered.
+        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
+        const farZ = furthestDistance * 1.01;
 
         // matrix for conversion from location to GL coordinates (-1 .. 1)
         let m = new Float64Array(16);
-        mat4.perspective(m, this._fov, this.width / this.height, 0.1, farZ);
-
-        // a hack around https://github.com/mapbox/mapbox-gl-js/issues/2270
-        m[14] = Math.min(m[14], m[15]);
+        mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
         mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
