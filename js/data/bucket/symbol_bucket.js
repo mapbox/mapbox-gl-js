@@ -20,6 +20,7 @@ const loadGeometry = require('../load_geometry');
 const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
+const VectorTileFeature = require('vector-tile').VectorTileFeature;
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -160,7 +161,8 @@ class SymbolBucket {
                 index: i,
                 sourceLayerIndex: feature.sourceLayerIndex,
                 geometry: loadGeometry(feature),
-                properties: feature.properties
+                properties: feature.properties,
+                type: VectorTileFeature.types[feature.type]
             });
 
             if (icon) {
@@ -337,15 +339,18 @@ class SymbolBucket {
             mayOverlap = layout['text-allow-overlap'] || layout['icon-allow-overlap'] ||
                 layout['text-ignore-placement'] || layout['icon-ignore-placement'],
             symbolPlacement = layout['symbol-placement'],
-            isLine = symbolPlacement === 'line',
             textRepeatDistance = symbolMinDistance / 2;
 
         let list = null;
-        if (isLine) {
+        if (symbolPlacement === 'line') {
             list = clipLine(lines, 0, 0, EXTENT, EXTENT);
-        } else {
-            // Only care about looping through the outer rings
-            list = classifyRings(lines, 0);
+        } else if (symbolPlacement === 'point') {
+            if (feature.type === 'Polygon') {
+                list = classifyRings(lines, 0);
+            } else {
+                list = [];
+                for (const point of lines) list.push([point]);
+            }
         }
 
         for (let i = 0; i < list.length; i++) {
@@ -355,7 +360,7 @@ class SymbolBucket {
             let line = null;
 
             // Calculate the anchor points around which you want to place labels
-            if (isLine) {
+            if (symbolPlacement === 'line') {
                 line = pointsOrRings;
                 anchors = getAnchors(
                     line,
@@ -380,7 +385,7 @@ class SymbolBucket {
             for (let j = 0, len = anchors.length; j < len; j++) {
                 const anchor = anchors[j];
 
-                if (shapedTextOrientations[WritingMode.horizontal] && isLine) {
+                if (shapedTextOrientations[WritingMode.horizontal] && symbolPlacement === 'line') {
                     if (this.anchorIsTooClose(shapedTextOrientations[WritingMode.horizontal].text, textRepeatDistance, anchor)) {
                         continue;
                     }
