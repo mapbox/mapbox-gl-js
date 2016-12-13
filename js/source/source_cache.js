@@ -344,7 +344,7 @@ class SourceCache extends Evented {
             const id = ids[k];
             coord = TileCoord.fromID(id);
             tile = this._tiles[id];
-            if (tile && tile.animationLoopEndTime >= Date.now()) {
+            if (tile && tile.fadeEndTime >= Date.now()) {
                 // This tile is still fading in. Find tiles to cross-fade with it.
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
                     retain[id] = true;

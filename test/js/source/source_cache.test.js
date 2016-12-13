@@ -386,7 +386,7 @@ test('SourceCache#update', (t) => {
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.setAnimationLoop(animationLoop, 100);
+                tile.registerFadeDuration(animationLoop, 100);
                 callback();
             }
         });
@@ -419,7 +419,7 @@ test('SourceCache#update', (t) => {
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.setAnimationLoop(animationLoop, 100);
+                tile.registerFadeDuration(animationLoop, 100);
                 callback();
             }
         });
