@@ -295,7 +295,7 @@ class SymbolBucket {
             let shapedIcon;
             if (feature.icon) {
                 const image = icons[feature.icon];
-                const iconOffset = this.layers[0].getLayoutValue('icon-offset', {}, feature.properties);
+                const iconOffset = this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties);
                 shapedIcon = shapeIcon(image, iconOffset);
 
                 if (image) {
