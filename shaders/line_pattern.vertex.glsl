@@ -20,8 +20,7 @@ attribute vec4 a_data;
 uniform mat4 u_matrix;
 uniform mediump float u_ratio;
 uniform mediump float u_width;
-uniform mediump float u_extra;
-uniform mat2 u_antialiasingmatrix;
+uniform vec2 u_gl_units_to_pixels;
 
 varying vec2 v_normal;
 varying vec2 v_width2;
@@ -72,20 +71,17 @@ void main() {
     mediump float t = 1.0 - abs(u);
     mediump vec2 offset2 = offset * a_extrude * scale * normal.y * mat2(t, -u, u, t);
 
-    // Remove the texture normal bit of the position before scaling it with the
-    // model/view matrix.
-    gl_Position = u_matrix * vec4(floor(a_pos * 0.5) + (offset2 + dist) / u_ratio, 0.0, 1.0);
+    // Remove the texture normal bit to get the position
+    vec2 pos = floor(a_pos * 0.5);
+
+    vec4 projected_extrude = u_matrix * vec4(dist / u_ratio, 0.0, 0.0);
+    gl_Position = u_matrix * vec4(pos + offset2 / u_ratio, 0.0, 1.0) + projected_extrude;
+
+    // calculate how much the perspective view squishes or stretches the extrude
+    float extrude_length_without_perspective = length(dist);
+    float extrude_length_with_perspective = length(projected_extrude.xy / gl_Position.w * u_gl_units_to_pixels);
+    v_gamma_scale = extrude_length_without_perspective / extrude_length_with_perspective;
+
     v_linesofar = a_linesofar;
-
-    // position of y on the screen
-    float y = gl_Position.y / gl_Position.w;
-
-    // how much features are squished in the y direction by the tilt
-    float squish_scale = length(a_extrude) / length(u_antialiasingmatrix * a_extrude);
-
-    // how much features are squished in all directions by the perspectiveness
-    float perspective_scale = 1.0 / (1.0 - min(y * u_extra, 0.9));
-
     v_width2 = vec2(outset, inset);
-    v_gamma_scale = perspective_scale * squish_scale;
 }

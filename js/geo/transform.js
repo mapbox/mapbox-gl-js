@@ -439,16 +439,6 @@ class Transform {
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
 
-        // line antialiasing matrix
-        m = mat2.create();
-        mat2.scale(m, m, [1, Math.cos(this._pitch)]);
-        mat2.rotate(m, m, this.angle);
-        this.lineAntialiasingMatrix = m;
-
-        // calculate how much longer the real world distance is at the top of the screen
-        // than at the middle of the screen.
-        const topEdgeLength = Math.sqrt((this.height * this.height + this.cameraToCenterDistance * this.cameraToCenterDistance) / 4);
-        this.lineStretch = (this.height / 2 * Math.tan(this._pitch)) / topEdgeLength;
     }
 }
 
