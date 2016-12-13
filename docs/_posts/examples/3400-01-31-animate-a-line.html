@@ -1,0 +1,128 @@
+--- layout: example category: example title: Animate a line description: Animate a line by updating a GeoJSON source on each frame. tags: - layers - sources ---
+<style>
+button {
+  position: absolute;
+  margin: 20px;
+}
+
+#play::after {
+  content: 'Stop';
+}
+
+#play.pause::after {
+  content: 'Play';
+}
+</style>
+
+<div id='map'></div>
+<button id='play' class='pause'></button>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoieXVuamllbGkiLCJhIjoiY2lxdmV5MG5rMDAxNmZta3FlNGhyMmpicSJ9.CTEQgAyZGROcpJouZuzJyA';
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v8',
+  center: [0, 0],
+  zoom: 1
+});
+
+// Create a GeoJSON source with an empty lineString.
+var geojson = {
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [0, 0]
+      ]
+    }
+  }]
+};
+
+map.on('load', function() {
+
+  // Add a source and layer displaying the line which will be
+  // animated in a circle as a sine wave along the map.
+  map.addSource('line-animation', {
+    'type': 'geojson',
+    'data': geojson
+  });
+
+  map.addLayer({
+    'id': 'line-animation',
+    'type': 'line',
+    'source': 'line-animation',
+    'layout': {
+      'line-cap': 'round',
+      'line-join': 'round'
+    },
+    'paint': {
+      'line-color': '#3cc',
+      'line-width': 5,
+      'line-opacity': .4
+    }
+  });
+
+  var animation;
+  // timestamp of the moment the animation begins
+  // in a format like 145056.405
+  var startTime;
+  // progress = time - startTime
+  var progress = 0;
+  // number of frames per longitude degree
+  var speedFactor = 40;
+
+  function animateLine(time) {
+
+    // if animation completes a lap of 360 degrees in longitude, reset the animation
+    if (progress > speedFactor * 360) {
+      startTime = time;
+      // reset the geojson to the initial empty state
+      geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [0, 0]
+            ]
+          }
+        }]
+      };
+    }
+
+    progress = time - startTime;
+    // speedFactor controls the animation speed.
+    var x = progress / speedFactor;
+    // draw a sine wave with some math.
+    var y = Math.sin(x * Math.PI / 90) * 40;
+    // append new coordinates to the lineStrin
+    // then update the map
+    geojson.features[0].geometry.coordinates.push([x, y]);
+    map.getSource('line-animation').setData(geojson);
+
+    // Fly the map to follow the animation
+    // map.panBy([60, 0]);
+
+    // Request the next frame of the animation.
+    animation = requestAnimationFrame(animateLine);
+  }
+
+  document.getElementById("play").addEventListener("click", function() {
+    this.classList.toggle('pause');
+
+    // to cancel the animation:
+    if (this.classList.contains('pause')) {
+      cancelAnimationFrame(animation);
+      // to play the animation
+    } else {
+      // resume previous progress if progress != 0 
+      startTime = performance.now() - progress;
+      animation = requestAnimationFrame(animateLine);
+    }
+  });
+
+});
+</script>
