@@ -12,7 +12,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const ProgramConfiguration = require('../data/program_configuration');
-const shaders = require('mapbox-gl-shaders');
+const shaders = require('./shaders');
 const assert = require('assert');
 
 const draw = {
