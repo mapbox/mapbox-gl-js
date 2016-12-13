@@ -75,7 +75,7 @@ void main() {
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
-    v_gamma_scale = (gl_Position.w - 0.5);
+    v_gamma_scale = gl_Position.w;
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
