@@ -51,6 +51,7 @@ class SourceCache extends Evented {
         this._cache = new Cache(0, this.unloadTile.bind(this));
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
+        this._isIdLoading = this._isIdLoading.bind(this);
     }
 
     onAdd(map) {
@@ -127,8 +128,16 @@ class SourceCache extends Evented {
         return this.getIds().filter(this._isIdRenderable);
     }
 
+    getLoadingIds(time) {
+        return this.getIds().filter(this._isIdLoading.bind(this, time));
+    }
+
     _isIdRenderable(id) {
         return this._tiles[id].hasData() && !this._coveredTiles[id];
+    }
+
+    _isIdLoading(time, id) {
+        return (this._tiles[id].state === 'loading' || this._tiles[id].timeAdded > time) && !this._coveredTiles[id];
     }
 
     reload() {
@@ -156,7 +165,7 @@ class SourceCache extends Evented {
         }
 
         tile.sourceCache = this;
-        tile.timeAdded = new Date().getTime();
+        tile.timeAdded = tile.timeAdded || Date.now();
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -519,6 +528,14 @@ class SourceCache extends Evented {
 
     getVisibleCoordinates() {
         const coords = this.getRenderableIds().map(TileCoord.fromID);
+        for (const coord of coords) {
+            coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
+        }
+        return coords;
+    }
+
+    getLoadingCoords(time) {
+        const coords = this.getLoadingIds(time).map(TileCoord.fromID);
         for (const coord of coords) {
             coord.posMatrix = this.transform.calculatePosMatrix(coord, this._source.maxzoom);
         }

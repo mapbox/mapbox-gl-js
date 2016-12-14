@@ -22,6 +22,7 @@ const draw = {
     fill: require('./draw_fill'),
     'fill-extrusion': require('./draw_fill_extrusion'),
     raster: require('./draw_raster'),
+    placeholder: require('./draw_placeholder'),
     background: require('./draw_background'),
     debug: require('./draw_debug')
 };
@@ -265,7 +266,7 @@ class Painter {
 
     renderLayer(painter, sourceCache, layer, coords) {
         if (layer.isHidden(this.transform.zoom)) return;
-        if (layer.type !== 'background' && !coords.length) return;
+        if (layer.type !== 'background' && layer.type !== 'source' && !coords.length) return;
         this.id = layer.id;
 
         draw[layer.type](painter, sourceCache, layer, coords);
