@@ -320,12 +320,9 @@ class SymbolBucket {
     }
 
     addFeature(feature, shapedTextOrientations, shapedIcon) {
-        const lines = feature.geometry;
-        const layout = this.layers[0].layout;
-
-        const glyphSize = 24;
-
-        const fontScale = this.adjustedTextSize / glyphSize,
+        const layout = this.layers[0].layout,
+            glyphSize = 24,
+            fontScale = this.adjustedTextSize / glyphSize,
             textMaxSize = this.adjustedTextMaxSize !== undefined ? this.adjustedTextMaxSize : this.adjustedTextSize,
             textBoxScale = this.tilePixelRatio * fontScale,
             textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
@@ -342,28 +339,30 @@ class SymbolBucket {
             symbolPlacement = layout['symbol-placement'],
             textRepeatDistance = symbolMinDistance / 2;
 
-        let list = null;
+        const addSymbolInstance = (line, anchor) => {
+            const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
+
+            if (avoidEdges && !inside) return;
+
+            // Normally symbol layers are drawn across tile boundaries. Only symbols
+            // with their anchors within the tile boundaries are added to the buffers
+            // to prevent symbols from being drawn twice.
+            //
+            // Symbols in layers with overlap are sorted in the y direction so that
+            // symbols lower on the canvas are drawn on top of symbols near the top.
+            // To preserve this order across tile boundaries these symbols can't
+            // be drawn across tile boundaries. Instead they need to be included in
+            // the buffers for both tiles and clipped to tile boundaries at draw time.
+            const addToBuffers = inside || mayOverlap;
+            this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
+                addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
+                textBoxScale, textPadding, textAlongLine,
+                iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
+        };
+
         if (symbolPlacement === 'line') {
-            list = clipLine(lines, 0, 0, EXTENT, EXTENT);
-        } else if (symbolPlacement === 'point') {
-            if (feature.type === 'Polygon') {
-                list = classifyRings(lines, 0);
-            } else {
-                list = [];
-                for (const point of lines) list.push([point]);
-            }
-        }
-
-        for (let i = 0; i < list.length; i++) {
-            let anchors = null;
-            // At this point it is a list of points for a line or a list of polygon rings
-            const pointsOrRings = list[i];
-            let line = null;
-
-            // Calculate the anchor points around which you want to place labels
-            if (symbolPlacement === 'line') {
-                line = pointsOrRings;
-                anchors = getAnchors(
+            for (const line of clipLine(feature.geometry, 0, 0, EXTENT, EXTENT)) {
+                const anchors = getAnchors(
                     line,
                     symbolMinDistance,
                     textMaxAngle,
@@ -374,61 +373,31 @@ class SymbolBucket {
                     this.overscaling,
                     EXTENT
                 );
-            } else {
-                line = pointsOrRings[0];
-                anchors = this.findPolygonAnchors(pointsOrRings);
-            }
-
-
-            // Here line is a list of points that is either the outer ring of a polygon or just a line
-
-            // For each potential label, create the placement features used to check for collisions, and the quads use for rendering.
-            for (let j = 0, len = anchors.length; j < len; j++) {
-                const anchor = anchors[j];
-
-                if (shapedTextOrientations[WritingMode.horizontal] && symbolPlacement === 'line') {
-                    if (this.anchorIsTooClose(shapedTextOrientations[WritingMode.horizontal].text, textRepeatDistance, anchor)) {
-                        continue;
+                for (const anchor of anchors) {
+                    const shapedText = shapedTextOrientations[WritingMode.horizontal];
+                    if (!shapedText || !this.anchorIsTooClose(shapedText.text, textRepeatDistance, anchor)) {
+                        addSymbolInstance(line, anchor);
                     }
                 }
-
-                const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
-
-                if (avoidEdges && !inside) continue;
-
-                // Normally symbol layers are drawn across tile boundaries. Only symbols
-                // with their anchors within the tile boundaries are added to the buffers
-                // to prevent symbols from being drawn twice.
-                //
-                // Symbols in layers with overlap are sorted in the y direction so that
-                // symbols lower on the canvas are drawn on top of symbols near the top.
-                // To preserve this order across tile boundaries these symbols can't
-                // be drawn across tile boundaries. Instead they need to be included in
-                // the buffers for both tiles and clipped to tile boundaries at draw time.
-                const addToBuffers = inside || mayOverlap;
-                this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
-                    addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
-                    textBoxScale, textPadding, textAlongLine,
-                    iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
+            }
+        } else if (feature.type === 'Polygon') {
+            for (const polygon of classifyRings(feature.geometry, 0)) {
+                // 16 here represents 2 pixels
+                const poi = findPoleOfInaccessibility(polygon, 16);
+                addSymbolInstance(polygon[0], new Anchor(poi.x, poi.y, 0));
+            }
+        } else if (feature.type === 'LineString') {
+            // https://github.com/mapbox/mapbox-gl-js/issues/3808
+            for (const line of feature.geometry) {
+                addSymbolInstance(line, new Anchor(line[0].x, line[0].y, 0));
+            }
+        } else if (feature.type === 'Point') {
+            for (const points of feature.geometry) {
+                for (const point of points) {
+                    addSymbolInstance([point], new Anchor(point.x, point.y, 0));
+                }
             }
         }
-    }
-
-    findPolygonAnchors(polygonRings) {
-
-        const outerRing = polygonRings[0];
-        if (outerRing.length === 0) {
-            return [];
-        } else if (outerRing.length < 3 || !util.isClosedPolygon(outerRing)) {
-            return [ new Anchor(outerRing[0].x, outerRing[0].y, 0) ];
-        }
-
-        let anchors = null;
-        // 16 here represents 2 pixels
-        const poi = findPoleOfInaccessibility(polygonRings, 16);
-        anchors = [ new Anchor(poi.x, poi.y, 0) ];
-
-        return anchors;
     }
 
     anchorIsTooClose(text, repeatDistance, anchor) {
