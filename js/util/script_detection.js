@@ -18,10 +18,6 @@ module.exports.allowsVerticalWritingMode = function(chars) {
 };
 
 module.exports.charAllowsIdeographicBreaking = function(char) {
-    // Allow U+2027 "Interpunct" for hyphenation of Chinese words
-    // See https://github.com/mapbox/mapbox-gl-js/issues/3658
-    if (char === 0x2027) return true;
-
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
 
