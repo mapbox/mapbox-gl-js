@@ -936,9 +936,7 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.21.0",
-          "ios": "2.0.0",
-          "android": "2.0.1"
+          "js": "0.21.0"
         },
         "`auto` value": {
           "js": "0.25.0"
