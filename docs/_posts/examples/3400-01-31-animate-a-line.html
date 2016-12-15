@@ -90,6 +90,12 @@ map.on('load', function() {
 
   function animateLine(timestamp) {
 
+    // requestAnimationFrame pauses when the tab is inactive
+    // reset startTime and progress when switched back
+    document.addEventListener('visibilitychange', function(){
+        startTime = timestamp - progress;
+    });
+
     progress = timestamp - startTime;
 
     // stop if animation completes a lap of 360 degrees
