@@ -10,6 +10,7 @@ const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 
 const className = 'mapboxgl-ctrl';
 
 const markerLayerName = '_geolocate-control-marker';
+const markerShadowLayerName = '_geolocate-control-marker-shadow';
 const markerSourceName = '_geolocate-control-marker-position';
 
 let supportsGeolocation;
@@ -52,6 +53,8 @@ function checkGeolocationSupport(callback) {
  * @param {Object} [options.watchPosition=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the device location as it changes.
  * @param {Object} [options.showMarker=true] By default a marker will be added to the map with the device's location. Set to `false` to disable.
  * @param {Object} [options.markerPaintProperties={'circle-radius': 10, 'circle-color': '#33b5e5', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker. The default is a blue dot with a white stroke.
+ * @param {Object} [options.markerShadowPaintProperties={ 'circle-radius': 14, 'circle-color': '#000', 'circle-opacity': 0.5, 'circle-blur': 0.4, 'circle-translate': [2, 2], 'circle-translate-anchor': 'viewport' }] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker, used as a "shadow" layer. The default is a blurred semi-transparent black shadow.
+ * @param {Object} [options.markerStalePaintProperties={'circle-color': '#a6d5e5', 'circle-opacity': 0.5, 'circle-stroke-opacity': 0.8}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object applied to the base markerPaintProperties to customize the device location marker in a stale state. The marker is stale when there was a Geolocation error so the previous reported location is used, which may no longer be current. The default is a faded blue dot with a white stroke.
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
@@ -115,7 +118,7 @@ class GeolocateControl extends Evented {
             // watchPosition to trigger _onSuccess
             this._lastKnownPosition = position;
 
-            console.log('GPS Success old watch state ${this._watchState}');
+            console.log(`GPS Success old watch state ${this._watchState}`);
             switch (this._watchState) {
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -133,11 +136,11 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.add('background');
                 break;
             default:
-                assert(false, 'Unexpected watchState ${this._watchState}');
+                assert(false, `Unexpected watchState ${this._watchState}`);
             }
             this._geolocateButton.classList.remove('waiting');
-            console.log('...new watch state ${this._watchState}');
-            console.log('...classList ${this._geolocateButton.classList}');
+            console.log(`...new watch state ${this._watchState}`);
+            console.log(`...classList ${this._geolocateButton.classList}`);
         }
 
         // if in normal mode (not watch mode), or if in watch mode and the state is active watch
@@ -151,6 +154,13 @@ class GeolocateControl extends Evented {
         if (this.options.showMarker && this._watchState !== 'OFF') {
             console.log('update marker location');
             this._updateMarker(position);
+        }
+
+        if (this.options.showMarker) {
+            // restore any paint properties which were changed to make the marker stale
+            for (const paintProperty in this._markerStalePaintProperties) {
+                this._map.setPaintProperty(markerLayerName, paintProperty, this._markerPaintProperties[paintProperty]);
+            }
         }
 
         this.fire('geolocate', position);
@@ -190,7 +200,7 @@ class GeolocateControl extends Evented {
     }
 
     _onError(error) {
-        console.log('GPS Error old watch state ${this._watchState}');
+        console.log(`GPS Error old watch state ${this._watchState}`);
         if (this.options.watchPosition) {
             switch (this._watchState) {
             case 'WAITING_ACTIVE':
@@ -215,12 +225,19 @@ class GeolocateControl extends Evented {
             case 'ACTIVE_ERROR':
                 break;
             default:
-                assert(false, 'Unexpected watchState ${this._watchState}');
+                assert(false, `Unexpected watchState ${this._watchState}`);
             }
-            console.log('...new watch state ${this._watchState}');
-            console.log('...classList ${this._geolocateButton.classList}');
+            console.log(`...new watch state ${this._watchState}`);
+            console.log(`...classList ${this._geolocateButton.classList}`);
         }
         console.log(error);
+
+        if (this.options.showMarker) {
+            // apply paint properties to make the marker stale
+            for (const paintProperty in this._markerStalePaintProperties) {
+                this._map.setPaintProperty(markerLayerName, paintProperty, this._markerStalePaintProperties[paintProperty]);
+            }
+        }
 
         this.fire('error', error);
 
@@ -267,14 +284,14 @@ class GeolocateControl extends Evented {
             this._map.on('movestart', (event) => {
                 if (event.originalEvent) {
                     // FIXME this only checks for user camera changes, but only camera changes from this control should be ignored, camera changes via the API should also trigger this code path
-                    console.log('movestart event old watch state ${this._watchState}');
+                    console.log(`movestart event old watch state ${this._watchState}`);
                     if (this._watchState === 'ACTIVE_LOCK') {
                         this._watchState = 'BACKGROUND';
                         this._geolocateButton.classList.add('background');
                         this._geolocateButton.classList.remove('active');
                     }
-                    console.log('...new watch state ${this._watchState}');
-                    console.log('...classList ${this._geolocateButton.classList}');
+                    console.log(`...new watch state ${this._watchState}`);
+                    console.log(`...classList ${this._geolocateButton.classList}`);
                 }
             });
         }
@@ -284,11 +301,28 @@ class GeolocateControl extends Evented {
 
     _setupMarker() {
         const defaultMarkerPaintProperties = {
-            'circle-radius': 10,
+            'circle-radius': 9,
             'circle-color': '#33b5e5',
             'circle-stroke-color': '#fff',
-            'circle-stroke-width': 2
+            'circle-stroke-width': 3
         };
+        const defaultMarkerShadowPaintProperties = {
+            'circle-radius': 14,
+            'circle-color': '#000',
+            'circle-opacity': 0.5,
+            'circle-blur': 0.4,
+            'circle-translate': [2, 2],
+            'circle-translate-anchor': 'viewport'
+        };
+        const defaultMarkerStalePaintProperties = {
+            'circle-color': '#a6d5e5',
+            'circle-opacity': 0.5,
+            'circle-stroke-opacity': 0.8
+        };
+
+        this._markerPaintProperties = this.options.markerPaintProperties || defaultMarkerPaintProperties;
+        this._markerShadowPaintProperties = this.options.markerShadowPaintProperties || defaultMarkerShadowPaintProperties;
+        this._markerStalePaintProperties = util.extend({}, this._markerPaintProperties, this.options.markerStalePaintProperties || defaultMarkerStalePaintProperties);
 
         // sources can't be added until the Map style is loaded
         this._map.on('load', () => {
@@ -301,10 +335,16 @@ class GeolocateControl extends Evented {
             });
 
             this._map.addLayer({
+                id: markerShadowLayerName,
+                source: markerSourceName,
+                type: 'circle',
+                paint: this._markerShadowPaintProperties
+            });
+            this._map.addLayer({
                 id: markerLayerName,
                 source: markerSourceName,
                 type: 'circle',
-                paint: this.options.markerPaintProperties || defaultMarkerPaintProperties
+                paint: this._markerPaintProperties
             });
 
             if (this.options.watchPosition) this._watchState = 'OFF';
@@ -319,7 +359,7 @@ class GeolocateControl extends Evented {
         const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
 
         if (this.options.watchPosition) {
-            console.log('Click Geolocate old watch state ${this._watchState}');
+            console.log(`Click Geolocate old watch state ${this._watchState}`);
 
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
@@ -346,7 +386,7 @@ class GeolocateControl extends Evented {
                 if (this._lastKnownPosition) this._updateCamera(this._lastKnownPosition);
                 break;
             default:
-                assert(false, 'Unexpected watchState ${this._watchState}');
+                assert(false, `Unexpected watchState ${this._watchState}`);
             }
 
             // incoming state setup
@@ -372,11 +412,11 @@ class GeolocateControl extends Evented {
             case 'OFF':
                 break;
             default:
-                assert(false, 'Unexpected watchState ${this._watchState}');
+                assert(false, `Unexpected watchState ${this._watchState}`);
             }
 
-            console.log('...new watch state ${this._watchState}');
-            console.log('...classList ${this._geolocateButton.classList}');
+            console.log(`...new watch state ${this._watchState}`);
+            console.log(`...classList ${this._geolocateButton.classList}`);
 
             // manage geolocation.watchPosition / geolocation.clearWatch
             if (this._watchState === 'OFF' && this._geolocationWatchID !== undefined) {
