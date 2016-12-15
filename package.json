@@ -50,7 +50,7 @@
     "coveralls": "^2.11.8",
     "documentation": "4.0.0-beta12",
     "envify": "^3.4.0",
-    "eslint": "^3.9.0",
+    "eslint": "3.12.1",
     "eslint-config-mourner": "^2.0.0",
     "eslint-plugin-flowtype": "^2.20.0",
     "eslint-plugin-html": "^1.5.1",
