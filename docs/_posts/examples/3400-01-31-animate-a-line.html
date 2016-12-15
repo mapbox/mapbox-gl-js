@@ -1,29 +1,26 @@
---- layout: example category: example title: Animate a line description: Animate a line by updating a GeoJSON source on each frame. tags: - layers - sources ---
+--- 
+layout: example 
+category: example 
+title: Animate a line 
+description: Animate a line by updating a GeoJSON source on each frame. 
+tags: 
+ - layers 
+ - sources 
+---
 <style>
 button {
   position: absolute;
   margin: 20px;
 }
-
-#play::after {
-  content: 'Stop';
-}
-
-#play.pause::after {
-  content: 'Play';
-}
 </style>
-
 <div id='map'></div>
-<button id='play' class='pause'></button>
-
+<button id='replay'>Replay</button>
 <script>
-mapboxgl.accessToken = 'pk.eyJ1IjoieXVuamllbGkiLCJhIjoiY2lxdmV5MG5rMDAxNmZta3FlNGhyMmpicSJ9.CTEQgAyZGROcpJouZuzJyA';
 var map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/streets-v8',
-  center: [0, 0],
-  zoom: 1
+  center: [-180, 0],
+  zoom: 0.5
 });
 
 // Create a GeoJSON source with an empty lineString.
@@ -58,71 +55,62 @@ map.on('load', function() {
       'line-join': 'round'
     },
     'paint': {
-      'line-color': '#3cc',
+      'line-color': '#ed6498',
       'line-width': 5,
-      'line-opacity': .4
+      'line-opacity': .8
     }
   });
 
-  var animation;
-  // timestamp of the moment the animation begins
-  // in a format like 145056.405
-  var startTime;
-  // progress = time - startTime
-  var progress = 0;
-  // number of frames per longitude degree
-  var speedFactor = 40;
+  var speedFactor = 40; // number of frames per longitude degree
+  var animation; // to store the animation
+  var startTime = performance.now(); // system timestamp
+  var progress; // progress = timestamp - startTime
 
-  function animateLine(time) {
+  animateLine();
 
-    // if animation completes a lap of 360 degrees in longitude, reset the animation
+  document.getElementById("replay").addEventListener("click", function() {
+    // in case there is an ongoing animation
+    cancelAnimationFrame(animation);
+    startTime = performance.now();
+    geojson = {
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [0, 0]
+          ]
+        }
+      }]
+    };
+    // play animation
+    animateLine();
+  });
+
+  function animateLine(timestamp) {
+
+    progress = timestamp - startTime;
+
+    // stop if animation completes a lap of 360 degrees
     if (progress > speedFactor * 360) {
-      startTime = time;
-      // reset the geojson to the initial empty state
-      geojson = {
-        "type": "FeatureCollection",
-        "features": [{
-          "type": "Feature",
-          "geometry": {
-            "type": "LineString",
-            "coordinates": [
-              [0, 0]
-            ]
-          }
-        }]
-      };
-    }
-
-    progress = time - startTime;
-    // speedFactor controls the animation speed.
-    var x = progress / speedFactor;
-    // draw a sine wave with some math.
-    var y = Math.sin(x * Math.PI / 90) * 40;
-    // append new coordinates to the lineStrin
-    // then update the map
-    geojson.features[0].geometry.coordinates.push([x, y]);
-    map.getSource('line-animation').setData(geojson);
-
-    // Fly the map to follow the animation
-    // map.panBy([60, 0]);
-
-    // Request the next frame of the animation.
-    animation = requestAnimationFrame(animateLine);
-  }
-
-  document.getElementById("play").addEventListener("click", function() {
-    this.classList.toggle('pause');
-
-    // to cancel the animation:
-    if (this.classList.contains('pause')) {
       cancelAnimationFrame(animation);
-      // to play the animation
     } else {
-      // resume previous progress if progress != 0 
-      startTime = performance.now() - progress;
-      animation = requestAnimationFrame(animateLine);
+        var x = progress / speedFactor;
+        // draw a sine wave with some math.
+        var y = Math.sin(x * Math.PI / 90) * 40;
+        // append new coordinates to the lineString
+        // then update the map
+        geojson.features[0].geometry.coordinates.push([x, y]);
+        map.getSource('line-animation').setData(geojson);
+
+        // Fly the map to follow the animation
+        // map.panBy([60, 0]);
+
+        // Request the next frame of the animation.
+        animation = requestAnimationFrame(animateLine);
     }
-  });
+  }
 
 });
 </script>
