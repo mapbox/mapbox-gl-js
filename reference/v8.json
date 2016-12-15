@@ -729,7 +729,8 @@
           "android": "2.0.1"
         },
         "`auto` value": {
-          "js": "0.25.0"
+          "js": "0.25.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -777,7 +778,8 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -808,7 +810,8 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -936,10 +939,12 @@
       ],
       "sdk-support": {
         "basic functionality": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "4.2.0"
         },
         "`auto` value": {
-          "js": "0.25.0"
+          "js": "0.25.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -970,7 +975,8 @@
           "android": "2.0.1"
         },
         "`auto` value": {
-          "js": "0.25.0"
+          "js": "0.25.0",
+          "android": "4.2.0"
         }
       }
     },
@@ -2208,7 +2214,8 @@
       "doc": "Controls the scaling behavior of the circle when the map is pitched.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "4.2.0"
         }
       }
     },
