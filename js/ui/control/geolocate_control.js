@@ -216,6 +216,10 @@ class GeolocateControl extends Evented {
                 this._geolocateButton.classList.remove('active-error');
                 this._geolocateButton.classList.remove('background');
                 this._geolocateButton.classList.remove('background-error');
+
+                if (this._geolocationWatchID !== undefined) {
+                    this._clearWatch();
+                }
             } else {
                 switch (this._watchState) {
                 case 'WAITING_ACTIVE':
@@ -248,7 +252,7 @@ class GeolocateControl extends Evented {
         }
         console.log(error);
 
-        if (this.options.showMarker) {
+        if (this._watchState !== 'OFF' && this.options.showMarker) {
             // apply paint properties to make the marker stale
             for (const paintProperty in this._markerStalePaintProperties) {
                 this._map.setPaintProperty(markerLayerName, paintProperty, this._markerStalePaintProperties[paintProperty]);
@@ -436,17 +440,7 @@ class GeolocateControl extends Evented {
             // manage geolocation.watchPosition / geolocation.clearWatch
             if (this._watchState === 'OFF' && this._geolocationWatchID !== undefined) {
                 // clear watchPosition as we've changed to an OFF state
-
-                console.log('clear watch');
-                window.navigator.geolocation.clearWatch(this._geolocationWatchID);
-
-                this._geolocationWatchID = undefined;
-                this._geolocateButton.classList.remove('waiting');
-                this._geolocateButton.setAttribute('aria-pressed', false);
-
-                if (this.options.showMarker) {
-                    this._updateMarker(null);
-                }
+                this._clearWatch();
             } else if (this._geolocationWatchID === undefined) {
                 // enable watchPosition since watchState is not OFF and there is no watchPosition already running
 
@@ -467,6 +461,19 @@ class GeolocateControl extends Evented {
             // This timeout ensures that we still call finish() even if
             // the user declines to share their location in Firefox
             this._timeoutId = setTimeout(this._finish, 10000 /* 10sec */);
+        }
+    }
+
+    _clearWatch() {
+        console.log('clear watch');
+        window.navigator.geolocation.clearWatch(this._geolocationWatchID);
+
+        this._geolocationWatchID = undefined;
+        this._geolocateButton.classList.remove('waiting');
+        this._geolocateButton.setAttribute('aria-pressed', false);
+
+        if (this.options.showMarker) {
+            this._updateMarker(null);
         }
     }
 }

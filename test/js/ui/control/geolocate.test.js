@@ -131,7 +131,7 @@ test('GeolocateControl watching map updates recenter on location with marker', (
                     t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#f00', 'markerStalePaintProperty circle-color');
                     t.end();
                 });
-                geolocation.changeError({code: 1, message: 'message'});
+                geolocation.changeError({code: 2, message: 'position unavaliable'});
             });
             geolocation.change({latitude: 40, longitude: 50, accuracy: 60});
         });
