@@ -257,8 +257,6 @@ class GeolocateControl extends Evented {
 
         this.fire('error', error);
 
-        // make the marker greyed out
-
         this._finish();
     }
 
