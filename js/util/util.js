@@ -112,20 +112,6 @@ exports.values = function (obj: Object): Array<string> {
 };
 
 /*
- * Polyfill for Math.sign, unsupported in IE11 as of 12/15/16
- * https://github.com/mapbox/mapbox-gl-js/issues/3814
- *
- * @private
- */
-exports.sign = function(x: number): number {
-    x = +x;
-    if (x === 0 || isNaN(x)) {
-        return Number(x);
-    }
-    return x > 0 ? 1 : -1;
-};
-
-/*
  * Compute the difference between the keys in one object and the keys
  * in another object.
  *
