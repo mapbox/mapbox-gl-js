@@ -177,6 +177,8 @@ class GeolocateControl extends Evented {
             zoom: 17,
             bearing: 0,
             pitch: 0
+        }, {
+            geolocateSource: true // tag this camera change so it won't cause the control to change to background state
         });
     }
 
@@ -286,8 +288,7 @@ class GeolocateControl extends Evented {
         // the watch mode to background watch, so that the marker is updated but not the camera.
         if (this.options.watchPosition) {
             this._map.on('movestart', (event) => {
-                if (event.originalEvent) {
-                    // FIXME this only checks for user camera changes, but only camera changes from this control should be ignored, camera changes via the API should also trigger this code path
+                if (!event.geolocateSource) {
                     console.log(`movestart event old watch state ${this._watchState}`);
                     if (this._watchState === 'ACTIVE_LOCK') {
                         this._watchState = 'BACKGROUND';
