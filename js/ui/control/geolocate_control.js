@@ -163,6 +163,10 @@ class GeolocateControl extends Evented {
             }
         }
 
+        if (this._watchState === 'ACTIVE_LOCK') {
+            this.fire('active_lock');
+        }
+
         this.fire('geolocate', position);
         this._finish();
     }
@@ -289,6 +293,8 @@ class GeolocateControl extends Evented {
                         this._watchState = 'BACKGROUND';
                         this._geolocateButton.classList.add('background');
                         this._geolocateButton.classList.remove('active');
+
+                        this.fire('background');
                     }
                     console.log(`...new watch state ${this._watchState}`);
                     console.log(`...classList ${this._geolocateButton.classList}`);
@@ -441,6 +447,10 @@ class GeolocateControl extends Evented {
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
             }
+
+            if (this._watchState === 'ACTIVE_LOCK') {
+                this.fire('active_lock');
+            }
         } else {
             window.navigator.geolocation.getCurrentPosition(
                 this._onSuccess, this._onError, positionOptions);
@@ -478,6 +488,24 @@ module.exports = GeolocateControl;
  * Fired when the Geolocate Control is ready and able to be clicked.
  *
  * @event ready
+ * @memberof GeolocateControl
+ * @instance
+ *
+ */
+
+/**
+ * Fired when the Geolocate Control changes to the active_lock state, which happens either when we first obtain a successful Geolocation API position for the device (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active_lock state (no geolocate event will follow unless the device's location changes).
+ *
+ * @event active_lock
+ * @memberof GeolocateControl
+ * @instance
+ *
+ */
+
+/**
+ * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when watchPosition is true. In the background state, the marker on the map will update with location updates but the camera will not.
+ *
+ * @event background
  * @memberof GeolocateControl
  * @instance
  *
