@@ -2,6 +2,7 @@
 
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
+const util = require('../util/util');
 
 
 const WritingMode = {
@@ -112,7 +113,7 @@ function calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) {
         // Be more tolerant of short final lines
         return Math.max(0, raggedness - 150);
     }
-    return raggedness + (Math.sign(penalty) * Math.pow(penalty, 2));
+    return raggedness + (util.sign(penalty) * Math.pow(penalty, 2));
 }
 
 function calculatePenalty(codePoint, previousCodePoint) {
