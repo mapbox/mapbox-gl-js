@@ -68,6 +68,7 @@
     "jsonlint": "^1.6.2",
     "lodash.template": "^4.4.0",
     "minifyify": "^7.0.1",
+    "mock-geolocation": "^1.0.11",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",
     "pixelmatch": "^4.0.2",
