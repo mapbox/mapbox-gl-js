@@ -208,30 +208,40 @@ class GeolocateControl extends Evented {
     _onError(error) {
         console.log(`GPS Error old watch state ${this._watchState}`);
         if (this.options.watchPosition) {
-            switch (this._watchState) {
-            case 'WAITING_ACTIVE':
-                this._watchState = 'ACTIVE_ERROR';
+            if (error.code === 1) {
+                // PERMISSION_DENIED
+                this._watchState = 'OFF';
+                this._geolocateButton.classList.remove('waiting');
                 this._geolocateButton.classList.remove('active');
-                this._geolocateButton.classList.add('active-error');
-                break;
-            case 'ACTIVE_LOCK':
-                this._watchState = 'ACTIVE_ERROR';
-                this._geolocateButton.classList.remove('active');
-                this._geolocateButton.classList.add('active-error');
-                this._geolocateButton.classList.add('waiting');
-                // turn marker grey
-                break;
-            case 'BACKGROUND':
-                this._watchState = 'BACKGROUND_ERROR';
+                this._geolocateButton.classList.remove('active-error');
                 this._geolocateButton.classList.remove('background');
-                this._geolocateButton.classList.add('background-error');
-                this._geolocateButton.classList.add('waiting');
-                // turn marker grey
-                break;
-            case 'ACTIVE_ERROR':
-                break;
-            default:
-                assert(false, `Unexpected watchState ${this._watchState}`);
+                this._geolocateButton.classList.remove('background-error');
+            } else {
+                switch (this._watchState) {
+                case 'WAITING_ACTIVE':
+                    this._watchState = 'ACTIVE_ERROR';
+                    this._geolocateButton.classList.remove('active');
+                    this._geolocateButton.classList.add('active-error');
+                    break;
+                case 'ACTIVE_LOCK':
+                    this._watchState = 'ACTIVE_ERROR';
+                    this._geolocateButton.classList.remove('active');
+                    this._geolocateButton.classList.add('active-error');
+                    this._geolocateButton.classList.add('waiting');
+                    // turn marker grey
+                    break;
+                case 'BACKGROUND':
+                    this._watchState = 'BACKGROUND_ERROR';
+                    this._geolocateButton.classList.remove('background');
+                    this._geolocateButton.classList.add('background-error');
+                    this._geolocateButton.classList.add('waiting');
+                    // turn marker grey
+                    break;
+                case 'ACTIVE_ERROR':
+                    break;
+                default:
+                    assert(false, `Unexpected watchState ${this._watchState}`);
+                }
             }
             console.log(`...new watch state ${this._watchState}`);
             console.log(`...classList ${this._geolocateButton.classList}`);
