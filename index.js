@@ -135,6 +135,7 @@ function evaluateIntervalFunction(parameters, input) {
     // Edge cases
     var n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
+    if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
@@ -149,6 +150,7 @@ function evaluateExponentialFunction(parameters, input) {
     // Edge cases
     var n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
+    if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 

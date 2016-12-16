@@ -194,98 +194,135 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.test('property', function(t) {
+
+                t.test('zoom function', function(t) {
+                    var f = MapboxGLFunction({
+                        type: 'exponential',
+                        stops: [[0, 0], [1, 2]]
+                    });
+
+                    t.equal(f(1), 2);
+
+                    t.end();
+                });
+
+                t.test('property function', function(t) {
+                    var f = MapboxGLFunction({
+                        property: 'foo',
+                        type: 'exponential',
+                        stops: [[0, 0], [1, 2]]
+                    });
+
+                    t.equal(f(0, {foo: 1}), 2);
+
+                    t.end();
+                });
+
+                t.test('property function, missing property', function(t) {
+                    var f = MapboxGLFunction({
+                        property: 'foo',
+                        type: 'exponential',
+                        stops: [[0, 0], [1, 2]]
+                    });
+
+                    t.equal(f(0, {}), 2);
+
+                    t.end();
+                });
+
+                t.test('zoom-and-property function, one element', function(t) {
+                    var f = MapboxGLFunction({
+                        type: 'exponential',
+                        property: 'prop',
+                        stops: [[{ zoom: 1, value: 1 }, 2]]
+                    });
+
+                    t.equal(f(0, { prop: 0 }), 2);
+                    t.equal(f(1, { prop: 0 }), 2);
+                    t.equal(f(2, { prop: 0 }), 2);
+                    t.equal(f(0, { prop: 1 }), 2);
+                    t.equal(f(1, { prop: 1 }), 2);
+                    t.equal(f(2, { prop: 1 }), 2);
+                    t.equal(f(0, { prop: 2 }), 2);
+                    t.equal(f(1, { prop: 2 }), 2);
+                    t.equal(f(2, { prop: 2 }), 2);
+
+                    t.end();
+                });
+
+                t.test('zoom-and-property function, two elements', function(t) {
+                    var f = MapboxGLFunction({
+                        type: 'exponential',
+                        property: 'prop',
+                        base: 1,
+                        stops: [
+                            [{ zoom: 1, value: 0 }, 0],
+                            [{ zoom: 1, value: 2 }, 4],
+                            [{ zoom: 3, value: 0 }, 0],
+                            [{ zoom: 3, value: 2 }, 12]]
+                    });
+
+                    t.equal(f(0, { prop: 1 }), 2);
+                    t.equal(f(1, { prop: 1 }), 2);
+                    t.equal(f(2, { prop: 1 }), 4);
+                    t.equal(f(3, { prop: 1 }), 6);
+                    t.equal(f(4, { prop: 1 }), 6);
+
+                    t.equal(f(2, { prop: -1}), 0);
+                    t.equal(f(2, { prop: 0}), 0);
+                    t.equal(f(2, { prop: 2}), 8);
+                    t.equal(f(2, { prop: 3}), 8);
+
+                    t.end();
+                });
+
+                t.test('zoom-and-property function, three elements', function(t) {
+                    var f = MapboxGLFunction({
+                        type: 'exponential',
+                        property: 'prop',
+                        base: 1,
+                        stops: [
+                            [{ zoom: 1, value: 0}, 0],
+                            [{ zoom: 1, value: 2}, 4],
+                            [{ zoom: 3, value: 0}, 0],
+                            [{ zoom: 3, value: 2}, 12],
+                            [{ zoom: 5, value: 0}, 0],
+                            [{ zoom: 5, value: 2}, 20]]
+                    });
+
+                    t.equal(f(0, { prop: 1 }), 2);
+                    t.equal(f(1, { prop: 1 }), 2);
+                    t.equal(f(2, { prop: 1 }), 4);
+
+                    t.end();
+                });
+
+                t.test('zoom-and-property function, two elements, fractional zoom', function(t) {
+                    var f = MapboxGLFunction({
+                        type: 'exponential',
+                        property: 'prop',
+                        base: 1,
+                        stops: [
+                            [{ zoom: 1.9, value: 0 }, 4],
+                            [{ zoom: 2.1, value: 0 }, 8]
+                        ]
+                    });
+
+                    t.equal(f(1.9, { prop: 1 }), 4);
+                    t.equal(f(2, { prop: 1 }), 6);
+                    t.equal(f(2.1, { prop: 1 }), 8);
+
+                    t.end();
+                });
+
+                t.end();
+            });
+
+            t.end();
         });
 
-        t.test('zoom + data stops', function(t) {
-            t.test('one element', function(t) {
-                var f = MapboxGLFunction({
-                    type: 'exponential',
-                    property: 'prop',
-                    stops: [[{ zoom: 1, value: 1 }, 2]]
-                });
-
-                t.equal(f(0, { prop: 0 }), 2);
-                t.equal(f(1, { prop: 0 }), 2);
-                t.equal(f(2, { prop: 0 }), 2);
-                t.equal(f(0, { prop: 1 }), 2);
-                t.equal(f(1, { prop: 1 }), 2);
-                t.equal(f(2, { prop: 1 }), 2);
-                t.equal(f(0, { prop: 2 }), 2);
-                t.equal(f(1, { prop: 2 }), 2);
-                t.equal(f(2, { prop: 2 }), 2);
-
-                t.end();
-            });
-
-            t.test('two elements', function(t) {
-                var f = MapboxGLFunction({
-                    type: 'exponential',
-                    property: 'prop',
-                    base: 1,
-                    stops: [
-                        [{ zoom: 1, value: 0 }, 0],
-                        [{ zoom: 1, value: 2 }, 4],
-                        [{ zoom: 3, value: 0 }, 0],
-                        [{ zoom: 3, value: 2 }, 12]]
-                });
-
-                t.equal(f(0, { prop: 1 }), 2);
-                t.equal(f(1, { prop: 1 }), 2);
-                t.equal(f(2, { prop: 1 }), 4);
-                t.equal(f(3, { prop: 1 }), 6);
-                t.equal(f(4, { prop: 1 }), 6);
-
-                t.equal(f(2, { prop: -1}), 0);
-                t.equal(f(2, { prop: 0}), 0);
-                t.equal(f(2, { prop: 2}), 8);
-                t.equal(f(2, { prop: 3}), 8);
-
-                t.end();
-            });
-
-            t.test('three elements', function(t) {
-                var f = MapboxGLFunction({
-                    type: 'exponential',
-                    property: 'prop',
-                    base: 1,
-                    stops: [
-                        [{ zoom: 1, value: 0}, 0],
-                        [{ zoom: 1, value: 2}, 4],
-                        [{ zoom: 3, value: 0}, 0],
-                        [{ zoom: 3, value: 2}, 12],
-                        [{ zoom: 5, value: 0}, 0],
-                        [{ zoom: 5, value: 2}, 20]]
-                });
-
-                t.equal(f(0, { prop: 1 }), 2);
-                t.equal(f(1, { prop: 1 }), 2);
-                t.equal(f(2, { prop: 1 }), 4);
-
-                t.end();
-            });
-
-            t.test('fractional zoom', function(t) {
-                var f = MapboxGLFunction({
-                    type: 'exponential',
-                    property: 'prop',
-                    base: 1,
-                    stops: [
-                        [{ zoom: 1.9, value: 0 }, 4],
-                        [{ zoom: 2.1, value: 0 }, 8]
-                    ]
-                });
-
-                t.equal(f(1.9, { prop: 1 }), 4);
-                t.equal(f(2, { prop: 1 }), 6);
-                t.equal(f(2.1, { prop: 1 }), 8);
-
-                t.end();
-            });
-
-
-        });
-
-
+        t.end();
     });
 
     t.test('categorical', function(t) {
@@ -326,6 +363,49 @@ test('function types', function(t) {
             t.end();
         });
 
+        t.test('property', function(t) {
+
+            t.test('zoom function', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'categorical',
+                    stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+                });
+
+                t.equal(f(1), 'good');
+
+                t.end();
+            });
+
+            t.test('property function', function(t) {
+                t.test('zoom function', function(t) {
+                    var f = MapboxGLFunction({
+                        property: 'foo',
+                        type: 'categorical',
+                        stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+                    });
+
+                    t.equal(f(0, {foo: 1}), 'good');
+
+                    t.end();
+                });
+            });
+
+            t.test('property function, missing property', function(t) {
+                var f = MapboxGLFunction({
+                    property: 'foo',
+                    type: 'categorical',
+                    stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+                });
+
+                t.equal(f(0, {}), 'zero');
+
+                t.end();
+            });
+
+            t.end();
+        });
+
+        t.end();
     });
 
     t.test('interval', function(t) {
@@ -391,42 +471,45 @@ test('function types', function(t) {
             t.end();
         });
 
-    });
+        t.test('property', function(t) {
 
-});
+            t.test('zoom function', function(t) {
+                var f = MapboxGLFunction({
+                    type: 'interval',
+                    stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+                });
 
-test('property', function(t) {
+                t.equal(f(1.5), 'good');
 
-    t.test('missing property', function(t) {
-        var f = MapboxGLFunction({
-            type: 'categorical',
-            stops: [['map', 'neat'], ['box', 'swell']]
+                t.end();
+            });
+
+            t.test('property function', function(t) {
+                var f = MapboxGLFunction({
+                    property: 'foo',
+                    type: 'interval',
+                    stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+                });
+
+                t.equal(f(0, {foo: 1.5}), 'good');
+
+                t.end();
+            });
+
+            t.test('property function, missing property', function(t) {
+                var f = MapboxGLFunction({
+                    property: 'foo',
+                    type: 'interval',
+                    stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+                });
+
+                t.equal(f(0, {}), 'two');
+
+                t.end();
+            });
+
+            t.end();
         });
-
-        t.equal(f('box'), 'swell');
-
-        t.end();
-    });
-
-    t.test('zoom', function(t) {
-        var f = MapboxGLFunction({
-            type: 'categorical',
-            stops: [['map', 'neat'], ['box', 'swell']]
-        });
-
-        t.equal(f('box'), 'swell');
-
-        t.end();
-    });
-
-    t.test('feature property', function(t) {
-        var f = MapboxGLFunction({
-            type: 'categorical',
-            stops: [['map', 'neat'], ['box', 'swell']],
-            property: 'mapbox'
-        });
-
-        t.equal(f({}, {mapbox: 'box'}), 'swell');
 
         t.end();
     });
