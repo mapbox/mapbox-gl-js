@@ -117,7 +117,7 @@ exports.values = function (obj: Object): Array<string> {
  *
  * @private
  */
-exports.sign = function(x: Number): Number {
+exports.sign = function(x: number): number {
     x = +x;
     if (x === 0 || isNaN(x)) {
         return Number(x);
