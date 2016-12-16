@@ -112,7 +112,7 @@ function calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) {
         // Be more tolerant of short final lines
         return Math.max(0, raggedness - 150);
     }
-    return raggedness + (Math.sign(penalty) * Math.pow(penalty, 2));
+    return raggedness + Math.abs(penalty) * penalty;
 }
 
 function calculatePenalty(codePoint, previousCodePoint) {
