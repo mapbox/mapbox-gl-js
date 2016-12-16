@@ -123,7 +123,7 @@ exports.sign = function(x: Number): Number {
         return Number(x);
     }
     return x > 0 ? 1 : -1;
-}
+};
 
 /*
  * Compute the difference between the keys in one object and the keys
