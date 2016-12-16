@@ -59,6 +59,15 @@ function createFunction(parameters, defaultType) {
             outputFunction = identityFunction;
         }
 
+
+        // For categorical functions, generate an Object as a hashmap of the stops for fast searching
+        if (innerFun === evaluateCategoricalFunction) {
+          var hashedStops = Object.create(null);
+          for (var i = 0; i < parameters.stops.length; i++) {
+            hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
+          }
+        }
+
         if (zoomAndFeatureDependent) {
             var featureFunctions = {};
             var featureFunctionStops = [];
@@ -89,13 +98,19 @@ function createFunction(parameters, defaultType) {
 
         } else if (zoomDependent) {
             fun = function(zoom) {
-                return outputFunction(innerFun(parameters, zoom));
+                if (innerFun === evaluateCategoricalFunction) {
+                  return outputFunction(innerFun(parameters, zoom, hashedStops));
+                }
+                else return outputFunction(innerFun(parameters, zoom));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                return outputFunction(
+                if (innerFun === evaluateCategoricalFunction) {
+                  return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
+                }
+                else return outputFunction(
                   innerFun(parameters, feature[parameters.property]));
             };
             fun.isFeatureConstant = false;
@@ -106,54 +121,75 @@ function createFunction(parameters, defaultType) {
     return fun;
 }
 
-function evaluateCategoricalFunction(parameters, input) {
-    for (var i = 0; i < parameters.stops.length; i++) {
-        if (input === parameters.stops[i][0]) {
-            return parameters.stops[i][1];
-        }
+function evaluateCategoricalFunction(parameters, input, hashedStops) {
+    var value = hashedStops[input];
+    if (value === undefined) {
+      // If the input is not found, return the first value from the original array by default
+      return parameters.stops[0][1];
     }
-    return parameters.stops[0][1];
+
+    return value;
 }
 
 function evaluateIntervalFunction(parameters, input) {
-    for (var i = 0; i < parameters.stops.length; i++) {
-        if (input < parameters.stops[i][0]) break;
-    }
-    return parameters.stops[Math.max(i - 1, 0)][1];
+    // Edge cases
+    var n = parameters.stops.length;
+    if (n === 1) return parameters.stops[0][1];
+    if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
+
+    var index = binarySearchForIndex(parameters.stops, input);
+
+    return parameters.stops[index][1];
 }
 
 function evaluateExponentialFunction(parameters, input) {
     var base = parameters.base !== undefined ? parameters.base : 1;
 
-    var i = 0;
-    while (true) {
-        if (i >= parameters.stops.length) break;
-        else if (input <= parameters.stops[i][0]) break;
-        else i++;
-    }
+    // Edge cases
+    var n = parameters.stops.length;
+    if (n === 1) return parameters.stops[0][1];
+    if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
+    if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    if (i === 0) {
-        return parameters.stops[i][1];
+    var index = binarySearchForIndex(parameters.stops, input);
 
-    } else if (i === parameters.stops.length) {
-        return parameters.stops[i - 1][1];
-
-    } else {
-        return interpolate(
+    return interpolate(
             input,
             base,
-            parameters.stops[i - 1][0],
-            parameters.stops[i][0],
-            parameters.stops[i - 1][1],
-            parameters.stops[i][1]
-        );
-    }
+            parameters.stops[index][0],
+            parameters.stops[index + 1][0],
+            parameters.stops[index][1],
+            parameters.stops[index + 1][1]
+    );
 }
 
 function evaluateIdentityFunction(parameters, input) {
     return input;
 }
 
+function binarySearchForIndex(stops, input) {
+  var n = stops.length;
+  var lowerIndex = 0;
+  var upperIndex = n - 1;
+  var currentIndex = 0;
+  var currentValue;
+
+  while (lowerIndex <= upperIndex) {
+    currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
+    currentValue = stops[currentIndex][0];
+    if (currentValue === input) {
+      currentIndex += 1;
+      break;
+    } else if (currentValue < input) {
+      lowerIndex = currentIndex + 1;
+    } else if (currentValue > input) {
+      upperIndex = currentIndex - 1;
+    }
+  }
+
+  return Math.max(currentIndex - 1, 0);
+}
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (typeof outputLower === 'function') {
