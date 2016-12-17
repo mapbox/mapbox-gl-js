@@ -17,7 +17,6 @@ module.exports = function bindHandlers(map, options) {
     const el = map.getCanvasContainer();
     let contextMenuEvent = null;
     let mouseDown = false;
-    let mapRotating = false;
     let startPos = null;
     let tapped = null;
 
@@ -62,16 +61,12 @@ module.exports = function bindHandlers(map, options) {
 
         contextMenuEvent = null;
         mouseDown = false;
-        mapRotating = false;
         fireMouseEvent('mouseup', e);
     }
 
     function onMouseMove(e) {
         if (map.dragPan && map.dragPan.isActive()) return;
-        if (map.dragRotate && map.dragRotate.isActive()) {
-            mapRotating = true;
-            return;
-        }
+        if (map.dragRotate && map.dragRotate.isActive()) return;
 
         let target = e.toElement || e.target;
         while (target && target !== el) target = target.parentNode;
@@ -127,7 +122,7 @@ module.exports = function bindHandlers(map, options) {
 
     function onContextMenu(e) {
         const rotating = map.dragRotate && map.dragRotate.isActive();
-        if (!mouseDown && !rotating && !mapRotating) {
+        if (!mouseDown && !rotating) {
             // Windows: contextmenu fired on mouseup, so fire event now
             fireMouseEvent('contextmenu', e);
         } else if (mouseDown) {
