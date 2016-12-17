@@ -200,7 +200,14 @@ class DragRotateHandler {
         } else {
             const buttons = (e.ctrlKey ? 1 : 2),  // ? ctrl+left button : right button
                 button = (e.ctrlKey ? 0 : 2);   // ? ctrl+left button : right button
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+            let eventButton = e.button;
+            if (typeof InstallTrigger !== 'undefined' && e.button === 2 && e.ctrlKey) {
+                // Fix for https://github.com/mapbox/mapbox-gl-js/issues/3131:
+                // Firefox (detected by InstallTrigger) determines e.button = 2 when
+                // using Control + left click
+                eventButton = 0;
+            }
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : eventButton !== button);
         }
     }
 
