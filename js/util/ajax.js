@@ -56,14 +56,18 @@ function sameOrigin(url) {
 const transparentPngUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQYV2NgAAIAAAUAAarVyFEAAAAASUVORK5CYII=';
 
 exports.getImage = function(url, callback) {
+    // request the image with XHR to work around caching issues
+    // see https://github.com/mapbox/mapbox-gl-js/issues/1470
     return exports.getArrayBuffer(url, (err, imgData) => {
         if (err) return callback(err);
         const img = new window.Image();
-        img.onload = () => callback(null, img);
-        if (!sameOrigin(url)) {
-            img.crossOrigin = "Anonymous";
-        }
-        img.src = imgData.byteLength ? url : transparentPngUrl;
+        const URL = window.URL || window.webkitURL;
+        img.onload = () => {
+            callback(null, img);
+            URL.revokeObjectURL(img.src);
+        };
+        const blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
+        img.src = imgData.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
     });
 };
 
