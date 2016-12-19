@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "collisionDebug": true,
+      "width": 500,
+      "height": 500,
+      "queryGeometry": [
+          [
+              0,
+              0
+          ],
+          [
+              500,
+              500
+          ]
+      ]
+    }
+  },
+  "center": [
+    3,
+    3
+  ],
+  "zoom": 8.75,
+  "pitch": 60,
+  "bearing": 45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": "local://data/121points.geojson"
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "icon-image": "bicycle-12"
+      },
+      "interactive": true
+    }
+  ]
+}

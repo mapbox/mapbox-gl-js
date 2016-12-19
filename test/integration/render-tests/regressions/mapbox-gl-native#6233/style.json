@@ -1,0 +1,68 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "wait"
+        ],
+        [
+          "setLayoutProperty",
+          "line",
+          "visibility",
+          "visible"
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            10
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            -10,
+            -10
+          ],
+          [
+            10,
+            -10
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "placeholder - forces the source to load",
+      "type": "line",
+      "source": "geojson",
+      "filter": ["==", "$id", "nonesuch"]
+    },
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "layout": {
+        "visibility": "none"
+      }
+    }
+  ]
+}

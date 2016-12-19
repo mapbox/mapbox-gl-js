@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "ignored": {
+        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3708"
+      },
+      "width": 256,
+      "height": 256
+    }
+  },
+  "bearing": 45,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates":
+          [
+            0,
+            0
+          ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "symbol",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "symbol-placement": "point",
+        "symbol-spacing": 20,
+        "text-allow-overlap": true,
+        "text-rotation-alignment": "auto",
+        "text-max-width": 5,
+        "text-field": "مكتبة الإسكندرية‎‎ Maktabat al-Iskandarīyah",
+        "text-font": [
+          "Open Sans Semibold",
+          "Arial Unicode MS Bold"
+        ]
+      }
+    }
+  ]
+}

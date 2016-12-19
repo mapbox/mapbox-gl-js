@@ -1,0 +1,47 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "ignored": {
+        "js": "current behavior is arbitrary",
+        "native": "current behavior is arbitrary"
+      }
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            10
+          ],
+          [
+            10,
+            10
+          ],
+          [
+            -10,
+            -10
+          ],
+          [
+            10,
+            -10
+          ]
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/sprite",
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson"
+    }
+  ]
+}

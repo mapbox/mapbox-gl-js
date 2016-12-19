@@ -1,0 +1,45 @@
+<style>
+    body { font-family: Helvetica; }
+    h2 { text-align: center; margin-bottom: 10px; padding: 2px 5px; font-weight: normal; }
+    h2 a { color: white; text-decoration: none; }
+    table td { vertical-align: top; }
+    ul { margin-top: 0; }
+</style>
+<script>
+  document.addEventListener('mouseover', handleHover);
+  document.addEventListener('mouseout', handleHover);
+
+  function handleHover(e) {
+    var el = e.target;
+    if (el.tagName === 'IMG' && el.dataset.altSrc) {
+      var tmp = el.src;
+      el.src = el.dataset.altSrc;
+      el.dataset.altSrc = tmp;
+    }
+  }
+</script>
+<table>
+<tr>
+    <th>Actual / Expected</th>
+    <th>Diff</th>
+    <th>Info</th>
+</tr>
+{{#each results}}
+<tr>
+    <td><img style="width: {{width}}; height: {{height}}" src="data:image/png;base64,{{actual}}" data-alt-src="data:image/png;base64,{{expected}}"></td>
+    <td><img style="width: {{width}}; height: {{height}}" src="data:image/png;base64,{{diff}}"></td>
+    <td>
+        <h2 style="background: {{color}}"><a href="{{group}}/{{test}}/style.json">{{group}}/{{test}}</a></h2>
+        <ul>
+            <li>diff: <strong>{{difference}}</strong></li>
+            {{#if zoom}}<li>zoom: <strong>{{zoom}}</strong></li>{{/if}}
+            {{#if center}}<li>center: <strong>{{center}}</strong></li>{{/if}}
+            {{#if bearing}}<li>bearing: <strong>{{bearing}}</strong></li>{{/if}}
+            {{#if pitch}}<li>pitch: <strong>{{pitch}}</strong></li>{{/if}}
+            <li>width: <strong>{{width}}</strong></li>
+            <li>height: <strong>{{height}}</strong></li>
+        </ul>
+    </td>
+</tr>
+{{/each}}
+</table>
