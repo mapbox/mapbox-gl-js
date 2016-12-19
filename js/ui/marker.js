@@ -2,10 +2,8 @@
 'use strict';
 
 var DOM = require('../util/dom');
-var util = require('../util/util');
 var LngLat = require('../geo/lng_lat');
 var Point = require('point-geometry');
-var Popup = require('./popup');
 
 /**
  * Creates a marker component
@@ -105,8 +103,6 @@ class Marker {
      */
 
     setPopup(popup) {
-        var that = this;
-
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
