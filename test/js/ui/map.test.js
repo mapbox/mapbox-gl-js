@@ -62,6 +62,17 @@ test('Map', (t) => {
                 container: 'anElementIdWhichDoesNotExistInTheDocument'
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+
+        const largeContainer = window.document.createElement('div');
+        largeContainer.offsetWidth = 10000;
+        largeContainer.offsetHeight = 10000;
+        t.throws(() => {
+            new Map({
+                container: largeContainer
+            });
+        }, new Error('Map canvas is larger than allowed by gl.MAX_RENDERBUFFER_SIZE'),
+        'throws on then map canvas is larger than allowed by gl.MAX_RENDERBUFFER_SIZE');
+
         t.end();
     });
 
