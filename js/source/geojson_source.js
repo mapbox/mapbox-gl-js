@@ -95,8 +95,6 @@ class GeoJSONSource extends Evented {
                 maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom) || (this.maxzoom - 1),
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
-                trackPointsInClusterByPropertyField: options.trackPointsInClusterByPropertyField || '',
-                trackPointsInClusterFromZoom: options.trackPointsInClusterFromZoom,
                 log: false
             }
         }, options.workerOptions);
