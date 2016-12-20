@@ -58,6 +58,28 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         callback(null, geojsonWrapper);
     }
 
+    getClusterChildren(params, callback) {
+        if(params.recursive){
+            callback(null, this._getClusterPoints(this._geoJSONIndexes[params.source], params.clusterId, params.zoom));
+        } else {
+            callback(null, this._geoJSONIndexes[params.source].getChildren(params.clusterId, params.zoom));
+        }
+    }
+
+    _getClusterPoints(superClusterIndex, clusterId, zoom){
+        var points = [],
+            children = superClusterIndex.getChildren(clusterId, zoom);
+
+        for(let child of children){
+            if(child.properties.cluster){
+                points = points.concat(this._getClusterPoints(superClusterIndex, clusterId, zoom + 1));
+            } else {
+                points.push(child);
+            }
+        }
+        return points;
+    }
+
     /**
      * Fetches (if appropriate), parses, and index geojson data into tiles. This
      * preparatory method must be called before {@link GeoJSONWorkerSource#loadTile}

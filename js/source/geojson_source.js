@@ -137,6 +137,17 @@ class GeoJSONSource extends Evented {
         return this;
     }
 
+    getClusterChildren(clusterId, zoom, recursive, callback){
+        const options = util.extend({clusterId: clusterId, zoom: Math.ceil(zoom), recursive: !!recursive}, this.workerOptions);
+        this.dispatcher.send(`${this.type}.getClusterChildren`, options, (err, children) => {
+            if (err) {
+                callback({success: false});
+                return this.fire('error', { error: err });
+            }
+            callback({success: true, children: children});
+        }, this.workerID);
+    }
+
     /*
      * Responsible for invoking WorkerSource's geojson.loadData target, which
      * handles loading the geojson data and preparing to serve it up as tiles,

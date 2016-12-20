@@ -32,7 +32,7 @@
     "quickselect": "^1.0.0",
     "request": "^2.39.0",
     "shelf-pack": "^1.0.0",
-    "supercluster": "bewithjonam/supercluster#2dafd0bd91408109dbb4a0b838e704023e26ace9",
+    "supercluster": "mapbox/supercluster#03746dc06167c447034566d292c92a23afd137a1",
     "tinyqueue": "^1.1.0",
     "unassertify": "^2.0.0",
     "unflowify": "^1.0.0",
