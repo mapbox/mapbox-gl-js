@@ -28,9 +28,12 @@ class VectorTileSource extends Evented {
         }
 
         this.setEventedParent(eventedParent);
+    }
+
+    load() {
         this.fire('dataloading', {dataType: 'source'});
 
-        loadTileJSON(options, (err, tileJSON) => {
+        loadTileJSON(this._options, (err, tileJSON) => {
             if (err) {
                 this.fire('error', err);
                 return;
@@ -42,6 +45,7 @@ class VectorTileSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
     }
 

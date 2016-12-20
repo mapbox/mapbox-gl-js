@@ -13,7 +13,7 @@ const Evented = require('../../../js/util/evented');
 const util = require('../../../js/util/util');
 
 // Add a mocked source type for use in these tests
-function MockSourceType(id, sourceOptions) {
+function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
     // allow tests to override mocked methods/properties by providing
     // them in the source definition object that's given to Source.create()
     class SourceMock extends Evented {
@@ -23,9 +23,18 @@ function MockSourceType(id, sourceOptions) {
             this.minzoom = 0;
             this.maxzoom = 22;
             util.extend(this, sourceOptions);
+            this.setEventedParent(eventedParent);
         }
         loadTile(tile, callback) {
             setTimeout(callback, 0);
+        }
+        onAdd() {
+            if (sourceOptions.noLoad) return;
+            if (sourceOptions.error) {
+                this.fire('error', { error: sourceOptions.error });
+            } else {
+                this.fire('source.load');
+            }
         }
         abortTile() {}
         unloadTile() {}
@@ -33,14 +42,6 @@ function MockSourceType(id, sourceOptions) {
     }
     const source = new SourceMock();
 
-    if (sourceOptions.noLoad) { return source; }
-    setTimeout(() => {
-        if (sourceOptions.error) {
-            source.fire('error', { error: sourceOptions.error });
-        } else {
-            source.fire('source.load');
-        }
-    }, 0);
     return source;
 }
 
@@ -67,6 +68,7 @@ test('SourceCache#addTile', (t) => {
                 t.end();
             }
         });
+        sourceCache.onAdd();
         sourceCache.addTile(coord);
     });
 
@@ -78,6 +80,7 @@ test('SourceCache#addTile', (t) => {
             t.equal(data.tile.uses, 1);
             t.end();
         });
+        sourceCache.onAdd();
         sourceCache.addTile(coord);
     });
 
@@ -201,27 +204,31 @@ test('SourceCache#removeTile', (t) => {
 
 test('SourceCache / Source lifecycle', (t) => {
     t.test('does not fire load or change before source load event', (t) => {
-        createSourceCache({noLoad: true})
+        const sourceCache = createSourceCache({noLoad: true})
             .on('source.load', t.fail)
             .on('data', t.fail);
+        sourceCache.onAdd();
         setTimeout(t.end, 1);
     });
 
     t.test('forward load event', (t) => {
-        createSourceCache({}).on('source.load', t.end);
+        const sourceCache = createSourceCache({}).on('source.load', t.end);
+        sourceCache.onAdd();
     });
 
     t.test('forward change event', (t) => {
         const sourceCache = createSourceCache().on('data', t.end);
+        sourceCache.onAdd();
         sourceCache.getSource().fire('data');
     });
 
     t.test('forward error event', (t) => {
-        createSourceCache({ error: 'Error loading source' })
+        const sourceCache = createSourceCache({ error: 'Error loading source' })
         .on('error', (err) => {
             t.equal(err.error, 'Error loading source');
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('loaded() true after error', (t) => {
@@ -230,6 +237,7 @@ test('SourceCache / Source lifecycle', (t) => {
             t.ok(sourceCache.loaded());
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('reloads tiles after a "source" data event', (t) => {
@@ -252,6 +260,8 @@ test('SourceCache / Source lifecycle', (t) => {
             sourceCache.update(transform);
             sourceCache.getSource().fire('data', {dataType: 'source'});
         });
+
+        sourceCache.onAdd();
     });
 
     t.end();
@@ -270,6 +280,7 @@ test('SourceCache#update', (t) => {
             t.deepEqual(sourceCache.getIds(), []);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('loads covering tiles', (t) => {
@@ -283,6 +294,7 @@ test('SourceCache#update', (t) => {
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('removes unused tiles', (t) => {
@@ -290,11 +302,7 @@ test('SourceCache#update', (t) => {
         transform.resize(511, 511);
         transform.zoom = 0;
 
-        const sourceCache = createSourceCache({
-            load: function(tile) {
-                tile.state = 'loaded';
-            }
-        });
+        const sourceCache = createSourceCache({});
 
         sourceCache.on('source.load', () => {
             sourceCache.update(transform);
@@ -311,6 +319,8 @@ test('SourceCache#update', (t) => {
             ]);
             t.end();
         });
+
+        sourceCache.onAdd();
     });
 
 
@@ -343,6 +353,7 @@ test('SourceCache#update', (t) => {
             ]);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('retains parent tiles for pending children (wrapped)', (t) => {
@@ -374,6 +385,7 @@ test('SourceCache#update', (t) => {
             ]);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('includes partially covered tiles in rendered tiles', (t) => {
@@ -406,6 +418,7 @@ test('SourceCache#update', (t) => {
             t.deepEqual(sourceCache.getRenderableIds().length, 5);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('retains a parent tile for fading even if a tile is partially covered by children', (t) => {
@@ -436,6 +449,7 @@ test('SourceCache#update', (t) => {
             t.equal(sourceCache._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
 
@@ -476,6 +490,7 @@ test('SourceCache#update', (t) => {
             ]);
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.end();
@@ -497,6 +512,7 @@ test('SourceCache#clearTiles', (t) => {
                 unload++;
             }
         });
+        sourceCache.onAdd();
 
         sourceCache.addTile(coord);
         sourceCache.clearTiles();
@@ -513,6 +529,7 @@ test('SourceCache#clearTiles', (t) => {
 test('SourceCache#tilesIn', (t) => {
     t.test('graceful response before source loaded', (t) => {
         const sourceCache = createSourceCache({ noLoad: true });
+        sourceCache.onAdd();
         t.same(sourceCache.tilesIn([
             new Coordinate(0.5, 0.25, 1),
             new Coordinate(1.5, 0.75, 1)
@@ -563,6 +580,7 @@ test('SourceCache#tilesIn', (t) => {
 
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('reparsed overscaled tiles', (t) => {
@@ -607,6 +625,7 @@ test('SourceCache#tilesIn', (t) => {
 
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.test('overscaled tiles', (t) => {
@@ -627,6 +646,7 @@ test('SourceCache#tilesIn', (t) => {
 
             t.end();
         });
+        sourceCache.onAdd();
     });
 
     t.end();
@@ -647,6 +667,7 @@ test('SourceCache#loaded (no errors)', (t) => {
         t.ok(sourceCache.loaded());
         t.end();
     });
+    sourceCache.onAdd();
 });
 
 test('SourceCache#loaded (with errors)', (t) => {
@@ -663,6 +684,7 @@ test('SourceCache#loaded (with errors)', (t) => {
         t.ok(sourceCache.loaded());
         t.end();
     });
+    sourceCache.onAdd();
 });
 
 test('SourceCache#getIds (ascending order by zoom level)', (t) => {
@@ -684,6 +706,7 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
         new TileCoord(3, 0, 0).id
     ]);
     t.end();
+    sourceCache.onAdd();
 });
 
 
@@ -691,6 +714,7 @@ test('SourceCache#findLoadedParent', (t) => {
 
     t.test('adds from previously used tiles (sourceCache._tiles)', (t) => {
         const sourceCache = createSourceCache({});
+        sourceCache.onAdd();
         const tr = new Transform();
         tr.width = 512;
         tr.height = 512;
@@ -715,6 +739,7 @@ test('SourceCache#findLoadedParent', (t) => {
 
     t.test('adds from cache', (t) => {
         const sourceCache = createSourceCache({});
+        sourceCache.onAdd();
         const tr = new Transform();
         tr.width = 512;
         tr.height = 512;
@@ -742,6 +767,7 @@ test('SourceCache#findLoadedParent', (t) => {
 test('SourceCache#reload', (t) => {
     t.test('before loaded', (t) => {
         const sourceCache = createSourceCache({ noLoad: true });
+        sourceCache.onAdd();
 
         t.doesNotThrow(() => {
             sourceCache.reload();

@@ -39,9 +39,11 @@ class VideoSource extends ImageSource {
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
         this.roundZoom = true;
+        this.options = options;
     }
 
-    _load(options) {
+    load() {
+        const options = this.options;
         this.urls = options.urls;
 
         ajax.getVideo(options.urls, (err, video) => {
@@ -82,6 +84,7 @@ class VideoSource extends ImageSource {
 
     onAdd(map) {
         if (this.map) return;
+        this.load();
         this.map = map;
         if (this.video) {
             this.video.play();

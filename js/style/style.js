@@ -94,8 +94,7 @@ class Style extends Evented {
             }
 
             if (stylesheet.sprite) {
-                this.sprite = new ImageSprite(stylesheet.sprite);
-                this.sprite.setEventedParent(this);
+                this.sprite = new ImageSprite(stylesheet.sprite, this);
             }
 
             this.glyphSource = new GlyphSource(stylesheet.glyphs);
