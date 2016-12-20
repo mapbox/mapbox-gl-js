@@ -175,14 +175,14 @@ function binarySearchForIndex(stops, input) {
   var lowerIndex = 0;
   var upperIndex = n - 1;
   var currentIndex = 0;
-  var currentValue;
+  var currentValue, upperValue;
 
   while (lowerIndex <= upperIndex) {
     currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
     currentValue = stops[currentIndex][0];
-    if (currentValue === input) {
-      currentIndex += 1;
-      break;
+    upperValue = stops[currentIndex + 1][0];
+    if (input >= currentValue && input < upperValue) { // Search complete
+      return currentIndex;
     } else if (currentValue < input) {
       lowerIndex = currentIndex + 1;
     } else if (currentValue > input) {

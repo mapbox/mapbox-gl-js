@@ -131,14 +131,51 @@ test('function types', function(t) {
                 t.equal(f(2), 4);
                 t.equal(f(2.5), 5);
                 t.equal(f(3), 6);
+                t.equal(f(3.5), 7);
                 t.equal(f(4), 8);
                 t.equal(f(4.5), 9);
                 t.equal(f(5), 10);
                 t.equal(f(6), 12);
+                t.equal(f(6.5), 13);
                 t.equal(f(7), 14);
                 t.equal(f(8), 14);
 
                 t.end();
+            });
+
+            t.test('many elements', function(t) {
+              var stops = [
+                [2, 100],
+                [55, 200],
+                [132, 300],
+                [607, 400],
+                [1287, 500],
+                [1985, 600],
+                [2650, 700],
+                [3299, 800],
+                [3995, 900],
+                [4927, 1000],
+                [7147, 10000],//10
+                [10028, 100000],//11
+                [12889, 1000000],
+                [40000, 10000000]
+              ];
+              var f = MapboxGLFunction({
+                type: 'exponential',
+                "stops": stops
+              });
+
+              t.equal(f(2), 100);
+              t.equal(f(20), 133.9622641509434);
+              t.equal(f(607), 400);
+              t.equal(f(680), 410.7352941176471);
+              t.equal(f(4927), 1000); //86
+              t.equal(f(7300), 14779.590419993057);
+              t.equal(f(10000), 99125.30371398819);
+              t.equal(f(20000), 3360628.527166095);
+              t.equal(f(40000), 10000000);
+
+              t.end();
             });
 
             t.test('three elements', function(t) {
