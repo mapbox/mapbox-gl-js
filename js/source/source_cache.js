@@ -319,6 +319,10 @@ class SourceCache extends Evented {
                 roundZoom: this._source.roundZoom,
                 reparseOverscaled: this._source.reparseOverscaled
             });
+
+            if (this._source.hasTile) {
+                visibleCoords = visibleCoords.filter((coord) => this._source.hasTile(coord));
+            }
         }
 
         for (i = 0; i < visibleCoords.length; i++) {
