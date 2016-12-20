@@ -27,7 +27,7 @@
     -
       name: Custom source type API
       project: 2
-    - 
+    -
       name: Property aggregation on clustered features
       issues: ["2412"]
     -
@@ -35,5 +35,6 @@
       issues: ["2730"]
     -
       name: Custom WebGL layer type
+      issues: ["281"]
     -
       name: Arbitrary expression functions

@@ -1,7 +1,7 @@
 {
   "mapbox-gl-draw": {
     "prefix": "mapbox-gl-draw",
-    "latest": "0.14.0",
+    "latest": "0.16.0",
     "v":{
       "0.11.15":{
         "files":[
@@ -32,12 +32,18 @@
           "mapbox-gl-draw.js",
           "mapbox-gl-draw.css"
         ]
+      },
+      "0.16.0":{
+        "files":[
+          "mapbox-gl-draw.js",
+          "mapbox-gl-draw.css"
+        ]
       }
     }
   },
   "mapbox-gl-directions": {
     "prefix": "mapbox-gl-directions",
-    "latest": "2.2.0",
+    "latest": "3.0.3",
     "v": {
       "0.0.0": {
         "files": [
@@ -68,12 +74,36 @@
           "mapbox-gl-directions.js",
           "mapbox-gl-directions.css"
         ]
+      },
+      "3.0.0": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      },
+      "3.0.1": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      },
+      "3.0.2": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      },
+      "3.0.3": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
       }
     }
   },
   "mapbox-gl-geocoder": {
     "prefix": "mapbox-gl-geocoder",
-    "latest": "2.0.0",
+    "latest": "2.0.1",
     "v": {
       "0.0.0": {
         "files": [
@@ -112,6 +142,12 @@
         ]
       },
       "2.0.0": {
+        "files": [
+          "mapbox-gl-geocoder.js",
+          "mapbox-gl-geocoder.css"
+        ]
+      },
+      "2.0.1": {
         "files": [
           "mapbox-gl-geocoder.js",
           "mapbox-gl-geocoder.css"

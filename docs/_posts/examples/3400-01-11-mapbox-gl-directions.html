@@ -2,7 +2,7 @@
 layout: example
 category: example
 title: Display driving directions
-description: 'Use the <a target="_blank" href="https://github.com/mapbox/mapbox-gl-directions">mapbox-gl-directions</a> plugin to show results from the Mapbox Directions API.'
+description: 'Use the <a target="_blank" href="https://github.com/mapbox/mapbox-gl-directions">mapbox-gl-directions</a> plugin to show results from the Mapbox Directions API. Click the map to add an origin and destination.'
 tags:
   - controls-and-overlays
 ---
@@ -18,5 +18,7 @@ var map = new mapboxgl.Map({
     zoom: 13
 });
 
-map.addControl(new mapboxgl.Directions());
+map.addControl(new MapboxDirections({
+    accessToken: mapboxgl.accessToken
+}), 'top-left');
 </script>

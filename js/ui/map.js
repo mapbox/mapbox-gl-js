@@ -213,8 +213,8 @@ class Map extends Camera {
      * Adds a [`IControl`](#IControl) to the map, calling `control.onAdd(this)`.
      *
      * @param {IControl} control The [`IControl`](#IControl) to add.
-     * @param {string} [position='top-right'] position on the map to which the control will be added.
-     * valid values are 'top-left', 'top-right', 'bottom-left', and 'bottom-right'
+     * @param {string} [position] position on the map to which the control will be added.
+     * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
      * @returns {Map} `this`
      * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
@@ -787,12 +787,12 @@ class Map extends Camera {
      * Moves a layer to a different z-position.
      *
      * @param {string} id The ID of the layer to move.
-     * @param {string} [before] The ID of an existing layer to insert the new layer before.
+     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
      * @returns {Map} `this`
      */
-    moveLayer(layerId, before) {
-        this.style.moveLayer(layerId, before);
+    moveLayer(id, beforeId) {
+        this.style.moveLayer(id, beforeId);
         this._update(true);
         return this;
     }

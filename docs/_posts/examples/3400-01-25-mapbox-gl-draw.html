@@ -55,8 +55,7 @@ var map = new mapboxgl.Map({
     zoom: 12 // starting zoom
 });
 
-var draw = mapboxglDraw({
-    drawing: true,
+var draw = new MapboxDraw({
     displayControlsDefault: false,
     controls: {
         polygon: true,
