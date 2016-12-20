@@ -72,7 +72,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
 
         for(let child of children){
             if(child.properties.cluster){
-                points = points.concat(this._getClusterPoints(superClusterIndex, clusterId, zoom + 1));
+                points = points.concat(this._getClusterPoints(superClusterIndex, child.properties.cluster_id, zoom + 1));
             } else {
                 points.push(child);
             }
