@@ -914,6 +914,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
         }
       }
     },
@@ -1894,6 +1897,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
         }
       }
     },
@@ -1999,6 +2005,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "data-driven styling": {
+            "js": "0.29.0"
         }
       }
     },
@@ -2016,6 +2025,9 @@
           "js": "0.12.1",
           "ios": "3.1.0",
           "android": "3.0.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
         }
       }
     },
@@ -2034,6 +2046,9 @@
           "js": "0.10.0",
           "ios": "2.0.0",
           "android": "2.0.1"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
         }
       }
     },
@@ -2231,10 +2246,10 @@
       "doc": "The width of the circle's stroke. Strokes are placed outside of the `circle-radius`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "master"
+          "js": "0.29.0"
         },
         "data-driven styling": {
-          "js": "master"
+          "js": "0.29.0"
         }
       }
     },
@@ -2248,10 +2263,10 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "master"
+          "js": "0.29.0"
         },
         "data-driven styling": {
-          "js": "master"
+          "js": "0.29.0"
         }
       }
     },
@@ -2267,10 +2282,10 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "master"
+          "js": "0.29.0"
         },
         "data-driven styling": {
-          "js": "master"
+          "js": "0.29.0"
         }
       }
     }
