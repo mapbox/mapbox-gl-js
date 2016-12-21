@@ -118,7 +118,6 @@ class GeolocateControl extends Evented {
             // watchPosition to trigger _onSuccess
             this._lastKnownPosition = position;
 
-            console.log(`GPS Success old watch state ${this._watchState}`);
             switch (this._watchState) {
             case 'WAITING_ACTIVE':
             case 'ACTIVE_LOCK':
@@ -139,20 +138,16 @@ class GeolocateControl extends Evented {
                 assert(false, `Unexpected watchState ${this._watchState}`);
             }
             this._geolocateButton.classList.remove('waiting');
-            console.log(`...new watch state ${this._watchState}`);
-            console.log(`...classList ${this._geolocateButton.classList}`);
         }
 
         // if in normal mode (not watch mode), or if in watch mode and the state is active watch
         // then update the camera
         if (!this.options.watchPosition || this._watchState === 'ACTIVE_LOCK') {
-            console.log('update camera location');
             this._updateCamera(position);
         }
 
         // if showMarker and the watch state isn't off then update the marker location
         if (this.options.showMarker && this._watchState !== 'OFF') {
-            console.log('update marker location');
             this._updateMarker(position);
         }
 
@@ -206,7 +201,6 @@ class GeolocateControl extends Evented {
     }
 
     _onError(error) {
-        console.log(`GPS Error old watch state ${this._watchState}`);
         if (this.options.watchPosition) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
@@ -247,10 +241,7 @@ class GeolocateControl extends Evented {
                     assert(false, `Unexpected watchState ${this._watchState}`);
                 }
             }
-            console.log(`...new watch state ${this._watchState}`);
-            console.log(`...classList ${this._geolocateButton.classList}`);
         }
-        console.log(error);
 
         if (this._watchState !== 'OFF' && this.options.showMarker) {
             // apply paint properties to make the marker stale
@@ -267,8 +258,6 @@ class GeolocateControl extends Evented {
     _finish() {
         if (this._timeoutId) { clearTimeout(this._timeoutId); }
         this._timeoutId = undefined;
-
-        console.log('finish');
     }
 
     _setupUI(supported) {
@@ -301,7 +290,6 @@ class GeolocateControl extends Evented {
         if (this.options.watchPosition) {
             this._map.on('movestart', (event) => {
                 if (!event.geolocateSource) {
-                    console.log(`movestart event old watch state ${this._watchState}`);
                     if (this._watchState === 'ACTIVE_LOCK') {
                         this._watchState = 'BACKGROUND';
                         this._geolocateButton.classList.add('background');
@@ -309,8 +297,6 @@ class GeolocateControl extends Evented {
 
                         this.fire('background');
                     }
-                    console.log(`...new watch state ${this._watchState}`);
-                    console.log(`...classList ${this._geolocateButton.classList}`);
                 }
             });
         }
@@ -378,8 +364,6 @@ class GeolocateControl extends Evented {
         const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
 
         if (this.options.watchPosition) {
-            console.log(`Click Geolocate old watch state ${this._watchState}`);
-
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
             case 'OFF':
@@ -434,9 +418,6 @@ class GeolocateControl extends Evented {
                 assert(false, `Unexpected watchState ${this._watchState}`);
             }
 
-            console.log(`...new watch state ${this._watchState}`);
-            console.log(`...classList ${this._geolocateButton.classList}`);
-
             // manage geolocation.watchPosition / geolocation.clearWatch
             if (this._watchState === 'OFF' && this._geolocationWatchID !== undefined) {
                 // clear watchPosition as we've changed to an OFF state
@@ -465,7 +446,6 @@ class GeolocateControl extends Evented {
     }
 
     _clearWatch() {
-        console.log('clear watch');
         window.navigator.geolocation.clearWatch(this._geolocationWatchID);
 
         this._geolocationWatchID = undefined;
