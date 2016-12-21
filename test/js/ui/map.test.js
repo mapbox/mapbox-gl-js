@@ -70,7 +70,7 @@ test('Map', (t) => {
             new Map({
                 container: largeContainer
             });
-        }, new Error('Map canvas is larger than allowed by gl.MAX_RENDERBUFFER_SIZE'),
+        }, /Map canvas \(\d+x\d+\) is larger than half of gl.MAX_RENDERBUFFER_SIZE \(\d+\)/,
         'throws on then map canvas is larger than allowed by gl.MAX_RENDERBUFFER_SIZE');
 
         t.end();
