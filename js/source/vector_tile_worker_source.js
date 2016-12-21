@@ -163,10 +163,11 @@ class VectorTileWorkerSource {
     loadVectorData(params, callback) {
         const xhr = ajax.getArrayBuffer(params.url, done.bind(this));
         return function abort () { xhr.abort(); };
-        function done(err, arrayBuffer) {
+        function done(err, response) {
             if (err) { return callback(err); }
-            const vectorTile = new vt.VectorTile(new Protobuf(arrayBuffer));
-            vectorTile.rawData = arrayBuffer;
+            const vectorTile = new vt.VectorTile(new Protobuf(response.data));
+            vectorTile.rawData = response.data;
+            vectorTile.cacheControl = xhr.getResponseHeader('Cache-Control');
             callback(err, vectorTile);
         }
     }

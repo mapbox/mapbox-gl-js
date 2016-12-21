@@ -38,7 +38,10 @@ exports.getArrayBuffer = function(url, callback) {
             return callback(new Error('http status 200 returned without content.'));
         }
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
+            callback(null, {
+                data: xhr.response,
+                cacheControl: xhr.getResponseHeader('Cache-Control')
+            });
         } else {
             callback(new Error(xhr.statusText));
         }
