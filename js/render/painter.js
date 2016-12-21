@@ -225,6 +225,14 @@ class Painter {
 
         this.currentLayer = this.isOpaquePass ? layerIds.length - 1 : 0;
 
+        if (this.isOpaquePass) {
+            if (!this._showOverdrawInspector) {
+                this.gl.disable(this.gl.BLEND);
+            }
+        } else {
+            this.gl.enable(this.gl.BLEND);
+        }
+
         for (let i = 0; i < layerIds.length; i++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
 
@@ -241,12 +249,7 @@ class Painter {
                     }
                 }
 
-                if (this.isOpaquePass) {
-                    if (!this._showOverdrawInspector) {
-                        this.gl.disable(this.gl.BLEND);
-                    }
-                } else {
-                    this.gl.enable(this.gl.BLEND);
+                if (!this.isOpaquePass) {
                     coords.reverse();
                 }
             }
