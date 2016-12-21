@@ -116,8 +116,8 @@ class GlyphSource {
             const rangeName = `${range * 256}-${range * 256 + 255}`;
             const url = glyphUrl(fontstack, rangeName, this.url);
 
-            ajax.getArrayBuffer(url, (err, data) => {
-                const glyphs = !err && new Glyphs(new Protobuf(data));
+            ajax.getArrayBuffer(url, (err, response) => {
+                const glyphs = !err && new Glyphs(new Protobuf(response.data));
                 for (let i = 0; i < loading[range].length; i++) {
                     loading[range][i](err, range, glyphs);
                 }

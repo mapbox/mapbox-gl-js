@@ -108,8 +108,8 @@ function preloadAssets(stylesheet, callback) {
 
         function getTile(url, callback) {
             ajax.getArrayBuffer(url, (err, response) => {
-                assets.tiles[url] = response;
-                callback(err, response);
+                assets.tiles[url] = response.data;
+                callback(err, response.data);
             });
         }
 
