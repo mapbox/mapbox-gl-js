@@ -1,16 +1,10 @@
 const assert = require('assert');
-// if (typeof window === 'undefined') {
-    // const Canvas = require('canvas');
-    // const Image = Canvas.Image;
-// } else {
     const Canvas = function(width, height) {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         return canvas;
     }
-// }
-// const Canvas = require('canvas');
 
 class DEMPyramid {
     constructor(scale){

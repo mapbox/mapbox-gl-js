@@ -13,8 +13,7 @@ function createTerrainArrayType(components) {
     return createStructArrayType({
         members: [{
             type: 'Uint32',
-            name: 'elevation',
-            components: 1
+            name: 'elevation'
         }]
     });
 }

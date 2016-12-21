@@ -24,7 +24,7 @@ const terrainInterface = {
     terrainArrayType: createTerrainArrayType()
 }
 
-
+var log = true
 class TerrainBucket extends Bucket {
     constructor(options) {
         super(options, terrainInterface);
@@ -35,8 +35,7 @@ class TerrainBucket extends Bucket {
     addLevel(level){
         const arrays = this.arrays;
         for (var i = 0; i< level.data.length; i++) {
-            arrays.terrainArray.emplaceBack(level[i]);
-
+            arrays.terrainArray.emplaceBack(level.data[i]);
         }
     }
 
