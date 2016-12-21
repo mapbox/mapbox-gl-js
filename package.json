@@ -62,7 +62,7 @@
     "in-publish": "^2.0.0",
     "jsdom": "^9.4.2",
     "lodash.template": "^4.4.0",
-    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#1ca07142aa1dc27c404563ed4f8e0c9b69bfb71f",
+    "mapbox-gl-test-suite": "mapbox/mapbox-gl-test-suite#2bdca923fc4190156b5a22af71be29442451db54",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",
