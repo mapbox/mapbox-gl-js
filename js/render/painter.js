@@ -214,7 +214,9 @@ class Painter {
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
-            draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+            if (sourceCache) {
+                draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+            }
         }
     }
 
