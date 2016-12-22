@@ -1471,7 +1471,7 @@
     },
     "property": {
       "type": "string",
-      "doc": "The name of a global property or feature property to use as the function input.",
+      "doc": "The name of a feature property to use as the function input.",
       "default": "$zoom"
     },
     "type": {
