@@ -20,15 +20,21 @@ class StyleLayerIndex {
             }
         }
         this._layerConfigs = {};
+        this._layers = {};
         this.update(layerConfigs, []);
     }
 
     update(layerConfigs, removedIds, symbolOrder) {
         for (const layerConfig of layerConfigs) {
             this._layerConfigs[layerConfig.id] = layerConfig;
+
+            const layer = this._layers[layerConfig.id] = StyleLayer.create(layerConfig);
+            layer.updatePaintTransitions({}, {transition: false});
+            layer.filter = featureFilter(layer.filter);
         }
         for (const id of removedIds) {
             delete this._layerConfigs[id];
+            delete this._layers[id];
         }
         if (symbolOrder) {
             this.symbolOrder = symbolOrder;
@@ -39,12 +45,7 @@ class StyleLayerIndex {
         const groups = groupByLayout(util.values(this._layerConfigs));
 
         for (const layerConfigs of groups) {
-            const layers = layerConfigs.map((layer) => {
-                layer = StyleLayer.create(layer);
-                layer.updatePaintTransitions({}, {transition: false});
-                layer.filter = featureFilter(layer.filter);
-                return layer;
-            });
+            const layers = layerConfigs.map((layerConfig) => this._layers[layerConfig.id]);
 
             const layer = layers[0];
             if (layer.layout && layer.layout.visibility === 'none') {
