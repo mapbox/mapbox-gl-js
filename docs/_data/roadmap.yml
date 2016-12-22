@@ -12,6 +12,7 @@
       issues: ["3280"]
     -
       name: Vector terrain
+      issues: ["3730"]
 -
   term: "Upcoming"
   items:
