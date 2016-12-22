@@ -45,6 +45,7 @@
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
     "browserify": "^13.0.0",
+    "canvas": "^1.6.2",
     "clipboard": "^1.5.12",
     "colors": "^1.1.2",
     "concat-stream": "1.5.2",

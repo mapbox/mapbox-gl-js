@@ -43,13 +43,13 @@ class CanvasSource extends ImageSource {
     constructor(id, options, dispatcher, eventedParent) {
         super(id, options, dispatcher, eventedParent);
         this.options = options;
+        this.animate = options.hasOwnProperty('animate') ? options.animate : true;
+        this.dimensions = options.dimensions;
+        this.resize = false;
     }
 
     load() {
-        const options = this.options;
-        this._canvas = window.document.getElementById(options.canvas);
-        this.animate = options.hasOwnProperty('animate') ? options.animate : true;
-        this.dimensions = options.dimensions;
+        this._canvas = this._canvas || window.document.getElementById(this.options.canvas);
 
         // detect context type
         if (this._canvas.getContext('2d')) {
@@ -104,8 +104,8 @@ class CanvasSource extends ImageSource {
 
     onAdd(map) {
         if (this.map) return;
-        this.load();
         this.map = map;
+        this.load();
         if (this.canvas) {
             if (this.animate) this.play();
             this.setCoordinates(this.coordinates);

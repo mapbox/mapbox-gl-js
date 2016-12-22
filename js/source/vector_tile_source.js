@@ -30,9 +30,6 @@ class VectorTileSource extends Evented {
         this.setEventedParent(eventedParent);
     }
 
-        this.setEventedParent(eventedParent);
-    }
-
     load() {
         this.fire('dataloading', {dataType: 'source'});
 
