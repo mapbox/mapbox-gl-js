@@ -254,9 +254,8 @@ class SourceCache extends Evented {
                 return tile;
             }
             if (this._cache.has(coord.id)) {
-                this.addTile(coord);
                 retain[coord.id] = true;
-                return this._tiles[coord.id];
+                return this._cache.get(coord.id);
             }
         }
     }
@@ -288,6 +287,7 @@ class SourceCache extends Evented {
         let i;
         let coord;
         let tile;
+        let parentTile;
 
         this.updateCacheSize(transform);
 
@@ -332,7 +332,10 @@ class SourceCache extends Evented {
             // The tile we require is not yet loaded.
             // Retain child or parent tiles that cover the same area.
             if (!this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                this.findLoadedParent(coord, minCoveringZoom, retain);
+                parentTile = this.findLoadedParent(coord, minCoveringZoom, retain);
+                if (parentTile) {
+                    this.addTile(parentTile.coord);
+                }
             }
         }
 
@@ -348,7 +351,10 @@ class SourceCache extends Evented {
                 if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
                     retain[id] = true;
                 }
-                this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
+                parentTile = this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
+                if (parentTile) {
+                    this.addTile(parentTile.coord);
+                }
             }
         }
 
