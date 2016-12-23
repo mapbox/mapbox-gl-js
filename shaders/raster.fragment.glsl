@@ -1,5 +1,3 @@
-uniform float u_fade_opacity0;
-uniform float u_fade_opacity1;
 uniform float u_fade_t;
 uniform float u_opacity;
 uniform sampler2D u_image0;
