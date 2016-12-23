@@ -15,6 +15,7 @@ exports.diff = require('./lib/diff');
 exports.ValidationError = require('./lib/error/validation_error');
 exports.ParsingError = require('./lib/error/parsing_error');
 exports.function = require('./lib/function');
+exports.featureFilter = require('./lib/feature_filter');
 
 exports.validate = require('./lib/validate_style');
 exports.validate.parsed = require('./lib/validate_style');

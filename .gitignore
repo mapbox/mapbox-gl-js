@@ -1,4 +1,6 @@
 _site
 node_modules
-npm-debug.log
+*.log
 /docs/index.html
+coverage
+.nyc_output

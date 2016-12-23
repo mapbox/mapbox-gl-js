@@ -29,8 +29,10 @@
     "lodash": "^4.16.0",
     "remark": "^6.0.1",
     "remark-html": "^5.0.1",
+    "pbf": "^1.3.5",
     "tap-min": "^1.0.0",
-    "tape": "^2.12.1"
+    "tape": "^2.12.1",
+    "vector-tile": "^1.2.0"
   },
   "keywords": [
     "mapbox",

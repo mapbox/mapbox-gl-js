@@ -10,6 +10,7 @@
     "eqeqeq": 0,
     "new-cap": 2,
     "no-new": 2,
+    "no-new-func": 0,
     "no-multi-spaces": 2,
     "brace-style": 2,
     "no-underscore-dangle": [0],
