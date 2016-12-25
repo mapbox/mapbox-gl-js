@@ -425,6 +425,11 @@ class Style extends Evented {
 
         const id = layerObject.id;
 
+        if (typeof layerObject.source === 'object') {
+            this.addSource(id, layerObject.source);
+            layerObject.source = id;
+        }
+
         // this layer is not in the style.layers array, so we pass an impossible array index
         if (this._validate(validateStyle.layer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
