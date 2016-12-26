@@ -526,6 +526,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) throw new Error(`Layer not found: ${layerId}`);
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return;
 
@@ -542,6 +543,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) throw new Error(`Layer not found: ${layerId}`);
 
         if (filter !== null && filter !== undefined && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
 
@@ -564,6 +566,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) throw new Error(`Layer not found: ${layerId}`);
 
         if (util.deepEqual(layer.getLayoutProperty(name), value)) return;
 
@@ -585,6 +588,7 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) throw new Error(`Layer not found: ${layerId}`);
 
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return;
 
