@@ -816,6 +816,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('throws if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                t.throws(() => {
+                    map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
+                }, /not found/i);
+
+                t.end();
+            });
+        });
+
         t.test('fires a data event', (t) => {
             // background layers do not have a source
             const map = createMap({
@@ -1002,6 +1020,23 @@ test('Map', (t) => {
             }, Error, /load/i);
 
             t.end();
+        });
+
+        t.test('throws if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                t.throws(() => {
+                    map.setPaintProperty('non-existant', 'background-color', 'red');
+                }, /not found/i);
+                t.end();
+            });
         });
 
         t.end();

@@ -941,6 +941,16 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('throws if layer not found', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            t.throws(() => {
+                style.setFilter('non-existant', ['==', 'id', 1]);
+            }, /not found/i);
+            t.end();
+        });
+    });
+
     t.end();
 });
 
@@ -981,6 +991,16 @@ test('Style#setLayerZoomRange', (t) => {
             style.setLayerZoomRange('symbol', 5, 12);
         }, Error, /load/i);
         style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('throws if layer not found', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            t.throws(() => {
+                style.setLayerZoomRange('non-existant', 5, 12);
+            }, /not found/i);
             t.end();
         });
     });
