@@ -207,3 +207,21 @@ and legacy style specifications.
 **Returns** `Array.<ValidationError>`, 
 
 
+### `createFilter(filter)`
+
+Given a filter expressed as nested arrays, return a new function
+that evaluates whether a given feature (with a .properties or .tags property)
+passes its test.
+
+
+### Parameters
+
+| parameter | type  | description      |
+| --------- | ----- | ---------------- |
+| `filter`  | Array | mapbox gl filter |
+
+
+
+**Returns** `Function`, filter-evaluating function
+
+
