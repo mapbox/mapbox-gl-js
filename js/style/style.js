@@ -434,7 +434,8 @@ class Style extends Evented {
 
         layer.setEventedParent(this, {layer: {id: id}});
 
-        const index = before ? this._order.indexOf(before) : this._order.length;
+        const beforeIndex = before ? this._order.indexOf(before) : -1;
+        const index = beforeIndex > -1 ? beforeIndex : this._order.length;
         this._order.splice(index, 0, id);
 
         this._layers[id] = layer;
@@ -474,7 +475,8 @@ class Style extends Evented {
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
 
-        const newIndex = before ? this._order.indexOf(before) : this._order.length;
+        const beforeIndex = before ? this._order.indexOf(before) : -1;
+        const newIndex = beforeIndex > -1 ? beforeIndex : this._order.length;
         this._order.splice(newIndex, 0, id);
 
         if (layer.type === 'symbol') {
