@@ -269,7 +269,7 @@ class StyleLayer extends Evented {
             declaration = new StyleDeclaration(spec, spec.default);
         }
 
-        if (oldTransition && oldTransition.declaration.json === declaration.json) return;
+        if (oldTransition && oldTransition.declaration && oldTransition.declaration.json === declaration.json) return;
 
         const transitionOptions = util.extend({
             duration: 300,
