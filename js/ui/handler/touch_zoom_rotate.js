@@ -41,13 +41,19 @@ class TouchZoomRotateHandler {
     /**
      * Enables the "pinch to rotate and zoom" interaction.
      *
+     * @param {Object} [options]
+     * @param {string} [options.around] If "center" is passed, map will zoom around the center
+     *
      * @example
      *   map.touchZoomRotate.enable();
+     * @example
+     *   map.touchZoomRotate.enable({ around: 'center' });
      */
-    enable() {
+    enable(options) {
         if (this.isEnabled()) return;
         this._el.addEventListener('touchstart', this._onStart, false);
         this._enabled = true;
+        this._aroundCenter = options && options.around === 'center';
     }
 
     /**
@@ -197,7 +203,7 @@ class TouchZoomRotateHandler {
             zoom: targetScale,
             duration: duration,
             easing: inertiaEasing,
-            around: map.unproject(p)
+            around: this._aroundCenter ? map.getCenter() : map.unproject(p)
         }, { originalEvent: e });
     }
 
