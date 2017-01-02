@@ -276,8 +276,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         },
@@ -286,8 +287,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         },
@@ -296,8 +298,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         },
@@ -306,8 +309,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         },
@@ -324,8 +328,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         },
@@ -334,8 +339,9 @@
           "sdk-support": {
             "basic functionality": {
               "js": "0.10.0",
+              "android": "2.0.1",
               "ios": "2.0.0",
-              "android": "2.0.1"
+              "macos": "0.1.0"
             }
           }
         }
@@ -412,8 +418,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -434,8 +441,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -456,8 +464,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -503,8 +512,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -528,8 +538,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -547,8 +558,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -566,8 +578,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -586,8 +599,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -610,8 +624,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -631,8 +646,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -645,8 +661,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -662,8 +679,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -679,8 +697,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -697,8 +716,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -725,8 +745,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "`auto` value": {
           "js": "0.25.0",
@@ -747,8 +768,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -779,7 +801,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.21.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "macos": "0.2.1"
         }
       }
     },
@@ -811,7 +834,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.21.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "macos": "0.2.1"
         }
       }
     },
@@ -824,8 +848,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -844,8 +869,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.21.0"
@@ -866,8 +892,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -889,8 +916,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -912,8 +940,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.29.0"
@@ -943,7 +972,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.21.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "macos": "0.2.1"
         },
         "`auto` value": {
           "js": "0.25.0",
@@ -974,8 +1004,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "`auto` value": {
           "js": "0.25.0",
@@ -993,8 +1024,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1011,8 +1043,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1030,8 +1063,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1049,8 +1083,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1067,8 +1102,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1085,8 +1121,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1113,8 +1150,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1159,8 +1197,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1180,8 +1219,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1199,8 +1239,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1218,8 +1259,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1241,8 +1283,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1269,8 +1312,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1292,8 +1336,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1309,8 +1354,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1326,8 +1372,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1344,8 +1391,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1364,8 +1412,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -1386,8 +1435,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -1609,8 +1659,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1627,8 +1678,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.21.0"
@@ -1651,8 +1703,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.19.0"
@@ -1677,8 +1730,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.19.0"
@@ -1701,8 +1755,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1726,8 +1781,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1740,8 +1796,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -1895,8 +1952,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.29.0"
@@ -1919,8 +1977,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.23.0"
@@ -1943,8 +2002,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1968,8 +2028,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -1985,8 +2046,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2003,8 +2065,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
             "js": "0.29.0"
@@ -2023,8 +2086,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.12.1",
+          "android": "3.0.0",
           "ios": "3.1.0",
-          "android": "3.0.0"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.29.0"
@@ -2044,8 +2108,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.29.0"
@@ -2069,8 +2134,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2083,8 +2149,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -2103,8 +2170,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.18.0"
@@ -2122,8 +2190,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.18.0"
@@ -2141,8 +2210,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.20.0"
@@ -2162,8 +2232,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         },
         "data-driven styling": {
           "js": "0.20.0"
@@ -2183,8 +2254,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2208,8 +2280,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2230,7 +2303,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.21.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "macos": "0.2.1"
         }
       }
     },
@@ -2306,8 +2380,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2324,8 +2399,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2342,8 +2418,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2362,8 +2439,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2382,8 +2460,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2406,8 +2485,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2432,8 +2512,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2452,8 +2533,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2470,8 +2552,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2488,8 +2571,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2508,8 +2592,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2528,8 +2613,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2552,8 +2638,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2578,8 +2665,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -2597,8 +2685,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2614,8 +2703,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2631,8 +2721,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2648,8 +2739,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2665,8 +2757,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2682,8 +2775,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2699,8 +2793,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }
@@ -2721,8 +2816,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2735,8 +2831,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     },
@@ -2752,8 +2849,9 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",
+          "android": "2.0.1",
           "ios": "2.0.0",
-          "android": "2.0.1"
+          "macos": "0.1.0"
         }
       }
     }

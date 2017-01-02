@@ -75,8 +75,9 @@
       <tr class='fill-light'>
         <th>SDK Support</th>
         <td class='center'>Mapbox GL JS</td>
-        <td class='center'>iOS SDK</td>
         <td class='center'>Android SDK</td>
+        <td class='center'>iOS SDK</td>
+        <td class='center'>macOS SDK</td>
       </tr>
       </thead>
       <tbody>
@@ -84,8 +85,9 @@
       <tr>
         <td><%= md(key) %></td>
         <td class='center'><%- support(key, 'js') %></td>
-        <td class='center'><%- support(key, 'ios') %></td>
         <td class='center'><%- support(key, 'android') %></td>
+        <td class='center'><%- support(key, 'ios') %></td>
+        <td class='center'><%- support(key, 'macos') %></td>
       </tr>
       <% }); %>
       </tbody>
