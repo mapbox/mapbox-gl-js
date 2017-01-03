@@ -816,7 +816,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('throws if layer not found', (t) => {
+        t.test('fires an error if layer not found', (t) => {
             const map = createMap({
                 style: {
                     version: 8,
@@ -826,10 +826,15 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                t.throws(() => {
-                    map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
-                }, /not found/i);
-
+                let errors = 0;
+                t.stub(map.style, 'fire', (type, data) => {
+                    if (data.error &&
+                      data.error.message.includes('does not exist in the map\'s style and cannot be styled.')) {
+                        errors++;
+                    }
+                });
+                map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
+                t.equals(errors, 1);
                 t.end();
             });
         });
@@ -1022,7 +1027,7 @@ test('Map', (t) => {
             t.end();
         });
 
-        t.test('throws if layer not found', (t) => {
+        t.test('fires an error if layer not found', (t) => {
             const map = createMap({
                 style: {
                     version: 8,
@@ -1032,9 +1037,15 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                t.throws(() => {
-                    map.setPaintProperty('non-existant', 'background-color', 'red');
-                }, /not found/i);
+                let errors = 0;
+                t.stub(map.style, 'fire', (type, data) => {
+                    if (data.error &&
+                      data.error.message.includes('does not exist in the map\'s style and cannot be styled.')) {
+                        errors++;
+                    }
+                });
+                map.setPaintProperty('non-existant', 'background-color', 'red');
+                t.equals(errors, 1);
                 t.end();
             });
         });

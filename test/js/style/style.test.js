@@ -745,13 +745,19 @@ test('Style#removeLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.removeLayer('background');
-            }, /Layer not found: background/);
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error &&
+                  data.error.message.includes('does not exist in the map\'s style and cannot be removed.')) {
+                    errors++;
+                }
+            });
+            style.removeLayer('background');
+            t.equals(errors, 1);
             t.end();
         });
     });
@@ -823,13 +829,19 @@ test('Style#moveLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.moveLayer('background');
-            }, /Layer not found: background/);
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error &&
+                  data.error.message.includes('does not exist in the map\'s style and cannot be moved.')) {
+                    errors++;
+                }
+            });
+            style.moveLayer('background');
+            t.equals(errors, 1);
             t.end();
         });
     });
@@ -941,12 +953,19 @@ test('Style#setFilter', (t) => {
         });
     });
 
-    t.test('throws if layer not found', (t) => {
+    t.test('fires an error if layer not found', (t) => {
         const style = createStyle();
+
         style.on('style.load', () => {
-            t.throws(() => {
-                style.setFilter('non-existant', ['==', 'id', 1]);
-            }, /not found/i);
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error &&
+                  data.error.message.includes('does not exist in the map\'s style and cannot be filtered.')) {
+                    errors++;
+                }
+            });
+            style.setFilter('non-existant', ['==', 'id', 1]);
+            t.equals(errors, 1);
             t.end();
         });
     });
@@ -995,12 +1014,18 @@ test('Style#setLayerZoomRange', (t) => {
         });
     });
 
-    t.test('throws if layer not found', (t) => {
+    t.test('fires an error if layer not found', (t) => {
         const style = createStyle();
         style.on('style.load', () => {
-            t.throws(() => {
-                style.setLayerZoomRange('non-existant', 5, 12);
-            }, /not found/i);
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error &&
+                  data.error.message.includes('does not exist in the map\'s style and cannot have zoom extent.')) {
+                    errors++;
+                }
+            });
+            style.setLayerZoomRange('non-existant', 5, 12);
+            t.equals(errors, 1);
             t.end();
         });
     });

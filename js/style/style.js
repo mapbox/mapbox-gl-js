@@ -469,7 +469,15 @@ class Style extends Evented {
         this._changed = true;
 
         const layer = this._layers[id];
-        if (!layer) throw new Error(`Layer not found: ${id}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${id}' does not exist in ` +
+                  `the map's style and cannot be moved.`
+                )
+            });
+            return;
+        }
 
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
@@ -494,7 +502,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this._layers[id];
-        if (!layer) throw new Error(`Layer not found: ${id}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${id}' does not exist in ` +
+                  `the map's style and cannot be removed.`
+                )
+            });
+            return;
+        }
 
         layer.setEventedParent(null);
 
@@ -526,7 +542,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
-        if (!layer) throw new Error(`Layer not found: ${layerId}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot have zoom extent.`
+                )
+            });
+            return;
+        }
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return;
 
@@ -543,7 +567,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
-        if (!layer) throw new Error(`Layer not found: ${layerId}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be filtered.`
+                )
+            });
+            return;
+        }
 
         if (filter !== null && filter !== undefined && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
 
@@ -566,7 +598,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
-        if (!layer) throw new Error(`Layer not found: ${layerId}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be styled.`
+                )
+            });
+            return;
+        }
 
         if (util.deepEqual(layer.getLayoutProperty(name), value)) return;
 
@@ -588,7 +628,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
-        if (!layer) throw new Error(`Layer not found: ${layerId}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be styled.`
+                )
+            });
+            return;
+        }
 
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return;
 
