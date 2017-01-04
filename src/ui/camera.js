@@ -339,11 +339,13 @@ class Camera extends Evented {
             // to the given bounds to adjust the viewport bounds.
             nwPadding = Point.convert([options.padding[0], options.padding[3]]),
             sePadding = Point.convert([options.padding[1], options.padding[2]]),
-            nw = tr.project(bounds.getNorthWest()).add(nwPadding),
+            // because both x and y decrease in the nw direction in screen coordinates
+            // we subtract the nw padding, and add the se padding to get the appropriate bounds.
+            nw = tr.project(bounds.getNorthWest()).sub(nwPadding),
             se = tr.project(bounds.getSouthEast()).add(sePadding),
             size = se.sub(nw),
-            scaleX = (tr.width - (options.padding[1] + options.padding[3]) * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - (options.padding[0] + options.padding[2]) * 2 - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - Math.abs(offset.y) * 2) / size.y;
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
