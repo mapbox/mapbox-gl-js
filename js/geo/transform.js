@@ -144,6 +144,7 @@ class Transform {
      * @param {number} options.maxzoom
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
+     * @param {boolean} options.wrapAroundWorld
      * @returns {Array<Tile>} tiles
      */
     coveringTiles(options) {
@@ -161,7 +162,7 @@ class Transform {
             this.pointCoordinate(new Point(this.width, this.height), z),
             this.pointCoordinate(new Point(0, this.height), z)
         ];
-        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z)
+        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, options.wrapAroundWorld)
             .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
     }
 

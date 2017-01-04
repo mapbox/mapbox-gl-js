@@ -51,7 +51,9 @@ const defaultOptions = {
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
 
-    trackResize: true
+    trackResize: true,
+
+    wrapAroundWorld: true
 };
 
 /**
@@ -113,6 +115,7 @@ const defaultOptions = {
  * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
  * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-60). If `pitch` is not specified in the constructor options, Mapbox GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
+ * @param {boolean} [options.wrapAroundWorld=true]  If `true`, mulitple copies of the world will be rendered, when zoomed out.
  * @example
  * var map = new mapboxgl.Map({
  *   container: 'map',
@@ -133,6 +136,7 @@ class Map extends Camera {
 
         this._interactive = options.interactive;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
+        this._wrapAroundWorld = options.wrapAroundWorld;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
