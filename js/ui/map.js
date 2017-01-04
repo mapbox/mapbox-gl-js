@@ -131,12 +131,11 @@ class Map extends Camera {
     constructor(options) {
         options = util.extend({}, defaultOptions, options);
 
-        const transform = new Transform(options.minZoom, options.maxZoom);
+        const transform = new Transform(options.minZoom, options.maxZoom, options.wrapAroundWorld);
         super(transform, options);
 
         this._interactive = options.interactive;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
-        this._wrapAroundWorld = options.wrapAroundWorld;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;

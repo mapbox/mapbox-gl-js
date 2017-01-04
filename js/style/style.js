@@ -63,7 +63,6 @@ class Style extends Evented {
         this._order  = [];
         this.sourceCaches = {};
         this.zoomHistory = {};
-        this.wrapAroundWorld = this.map ? this.map._wrapAroundWorld : true;
         this._loaded = false;
 
         util.bindAll(['_redoPlacement'], this);
