@@ -83,6 +83,8 @@ These projects are written and maintained by the GL JS community. Feel free to o
  - [Typescript Definitions on DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/mapbox-gl)
  - [wtMapbox: Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
  - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
+ - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
+ 
 
 ## Using Mapbox GL JS with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
 
