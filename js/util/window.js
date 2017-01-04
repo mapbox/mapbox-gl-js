@@ -43,6 +43,10 @@ function restore() {
         return originalGetContext.call(this, type, attributes);
     };
 
+    window.useFakeHTMLCanvasGetContext = function() {
+        window.HTMLCanvasElement.prototype.getContext = sinon.stub().returns('2d');
+    }
+
     window.useFakeXMLHttpRequest = function() {
         sinon.xhr.supportsCORS = true;
         window.server = sinon.fakeServer.create();

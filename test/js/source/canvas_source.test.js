@@ -5,10 +5,14 @@ const CanvasSource = require('../../../js/source/canvas_source');
 const Transform = require('../../../js/geo/transform');
 const Evented = require('../../../js/util/evented');
 const util = require('../../../js/util/util');
-const Canvas = require('canvas');
+const window = require('../../../js/util/window');
 
 function createSource(options) {
-    const c = new Canvas(20, 20);
+    window.useFakeHTMLCanvasGetContext();
+
+    const c = window.document.createElement('canvas');
+    c.width = 20;
+    c.height = 20;
 
     options = util.extend({
         canvas: 'id',
