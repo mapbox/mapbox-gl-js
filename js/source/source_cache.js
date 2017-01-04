@@ -317,7 +317,7 @@ class SourceCache extends Evented {
                 maxzoom: this._source.maxzoom,
                 roundZoom: this._source.roundZoom,
                 reparseOverscaled: this._source.reparseOverscaled,
-                wrapAroundWorld: this.style.wrapAroundWorld
+                wrapAroundWorld: this.style ? this.style.wrapAroundWorld : true
             });
         }
 
