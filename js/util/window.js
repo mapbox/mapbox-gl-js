@@ -45,7 +45,7 @@ function restore() {
 
     window.useFakeHTMLCanvasGetContext = function() {
         window.HTMLCanvasElement.prototype.getContext = sinon.stub().returns('2d');
-    }
+    };
 
     window.useFakeXMLHttpRequest = function() {
         sinon.xhr.supportsCORS = true;
