@@ -323,11 +323,11 @@ class Camera extends Evented {
         options = util.extend({
             padding: [0, 0, 0, 0],
             offset: [0, 0],
-            maxZoom: this.getMaxZoom()
+            maxZoom: this.transform.maxZoom
         }, options);
 
         if (typeof options.padding === 'number') {
-            var p = options.padding;
+            const p = options.padding;
             options.padding = [p, p, p, p];
         }
 
@@ -335,8 +335,12 @@ class Camera extends Evented {
 
         const offset = Point.convert(options.offset),
             tr = this.transform,
-            nw = tr.project(bounds.getNorthWest()),
-            se = tr.project(bounds.getSouthEast()),
+            // options padding order is [n, e, s, w], so we add the appropriate paddings
+            // to the given bounds to adjust the viewport bounds.
+            nwPadding = Point.convert([options.padding[0], options.padding[3]]),
+            sePadding = Point.convert([options.padding[1], options.padding[2]]),
+            nw = tr.project(bounds.getNorthWest()).add(nwPadding),
+            se = tr.project(bounds.getSouthEast()).add(sePadding),
             size = se.sub(nw),
             scaleX = (tr.width - (options.padding[1] + options.padding[3]) * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - (options.padding[0] + options.padding[2]) * 2 - Math.abs(offset.y) * 2) / size.y;
