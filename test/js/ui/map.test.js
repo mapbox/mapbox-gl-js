@@ -826,16 +826,11 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                let errors = 0;
-                t.stub(map.style, 'fire', (type, data) => {
-                    if (data.error &&
-                      data.error.message.includes('does not exist in the map\'s style and cannot be styled.')) {
-                        errors++;
-                    }
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
                 });
                 map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
-                t.equals(errors, 1);
-                t.end();
             });
         });
 
@@ -1037,16 +1032,11 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                let errors = 0;
-                t.stub(map.style, 'fire', (type, data) => {
-                    if (data.error &&
-                      data.error.message.includes('does not exist in the map\'s style and cannot be styled.')) {
-                        errors++;
-                    }
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
                 });
                 map.setPaintProperty('non-existant', 'background-color', 'red');
-                t.equals(errors, 1);
-                t.end();
             });
         });
 
