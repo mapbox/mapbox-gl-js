@@ -1136,41 +1136,34 @@ test('camera', (t) => {
         t.end();
     });
 
-    t.test('#fitBounds', function(t) {
-        t.test('no options passsed', function(t) {
-            var camera = createCamera();
-            var bb = [[-79, 43], [-73, 45]];
+    t.test('#fitBounds', (t) => {
+        t.test('no padding passed', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16],[-68, 50]];
 
-            camera.fitBounds(bb);
-
-            camera.on('moveend', function() {
-                t.deepEqual(camera.getCenter(), { lng: -76.00000000000006, lat: 44.008428892836804 }, 'pans to coordinates based on fitBounds');
-                t.end();
-            });
+            camera.fitBounds(bb, {duration:0});
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -100.5, lat: 34.717077774 }, 'pans to coordinates based on fitBounds');
+            t.equal(fixedNum(camera.getZoom(), 3), 2.469)
+            t.end();
         });
 
-        t.test('padding number', function(t) {
-            var camera = createCamera();
-            var bb = [[-79, 43], [-73, 45]];
+        t.test('padding number', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16],[-68, 50]];
 
-            camera.fitBounds(bb, { padding: 80 });
-
-            camera.on('moveend', function() {
-                t.deepEqual(camera.getCenter(), { lng: -76.00000000000001, lat: 44.008428892836804 }, 'pans to coordinates based on fitBounds with padding option as number applied');
-                t.end();
-            });
+            camera.fitBounds(bb, { padding: 50, duration:0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -100.5, lat: 34.717077774 }, 'pans to coordinates based on fitBounds with padding option as number applied');
+            t.equal(fixedNum(camera.getZoom(), 3), 1.412);
+            t.end();
         });
 
-        t.test('padding array', function(t) {
-            var camera = createCamera();
-            var bb = [[-79, 43], [-73, 45]];
+        t.test('padding array', (t) => {
+            const camera = createCamera();
+            const bb = [[-133, 16],[-68, 50]];
 
-            camera.fitBounds(bb, { padding: [10, 50, 10, 20] });
-
-            camera.on('moveend', function() {
-                t.deepEqual(camera.getCenter(), { lng: -75.99999999999997, lat: 44.008428892836776 }, 'pans to coordinates based on fitBounds with padding option as array applied');
-                t.end();
-            });
+            camera.fitBounds(bb, { padding: [50, 15, 25, 75], duration:0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -102.5831167, lat: 35.4274358 }, 'pans to coordinates based on fitBounds with padding option as array applied');
+            t.end();
         });
 
         t.end();
