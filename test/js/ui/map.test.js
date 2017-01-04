@@ -816,6 +816,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
+            });
+        });
+
         t.test('fires a data event', (t) => {
             // background layers do not have a source
             const map = createMap({
@@ -1002,6 +1020,24 @@ test('Map', (t) => {
             }, Error, /load/i);
 
             t.end();
+        });
+
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setPaintProperty('non-existant', 'background-color', 'red');
+            });
         });
 
         t.end();

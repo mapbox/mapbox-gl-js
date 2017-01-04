@@ -745,14 +745,15 @@ test('Style#removeLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.removeLayer('background');
-            }, /Layer not found: background/);
-            t.end();
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
+                t.end();
+            });
+            style.removeLayer('background');
         });
     });
 
@@ -823,14 +824,15 @@ test('Style#moveLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.moveLayer('background');
-            }, /Layer not found: background/);
-            t.end();
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+                t.end();
+            });
+            style.moveLayer('background');
         });
     });
 
@@ -941,6 +943,18 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
+                t.end();
+            });
+            style.setFilter('non-existant', ['==', 'id', 1]);
+        });
+    });
+
     t.end();
 });
 
@@ -982,6 +996,17 @@ test('Style#setLayerZoomRange', (t) => {
         }, Error, /load/i);
         style.on('style.load', () => {
             t.end();
+        });
+    });
+
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
+                t.end();
+            });
+            style.setLayerZoomRange('non-existant', 5, 12);
         });
     });
 
