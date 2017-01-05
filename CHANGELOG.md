@@ -1,3 +1,27 @@
+## 0.30.0 (December 20 2016)
+
+#### New Features
+
+ - Fire an error when map canvas is larger than allowed by `gl.MAX_RENDERBUFFER_SIZE` #2893
+ - Improve error messages when referencing a nonexistent layer id #2597
+ - Fire an error when layer uses a `geojson` source and specifies a `source-layer` #3896
+ - Add inline source declaration syntax #3857
+ - Improve line breaking behavior #3887
+
+#### Performance Improvements
+
+ - Improve `Map#setStyle` performance in some cases #3853
+
+#### Bug Fixes
+
+ - Fix unexpected popup positioning when some offsets are unspecified #3367
+ - Fix incorrect interpolation in functions #3838
+ - Fix incorrect opacity when multiple backgrounds are rendered #3819
+ - Fix exception thrown when instantiating geolocation control in Safari #3844
+ - Fix exception thrown when setting `showTileBoundaries` with no sources #3849
+ - Fix incorrect rendering of transparent parts of raster layers in some cases #3723
+ - Fix non-terminating render loop when zooming in in some cases #3399
+
 ## 0.29.0 (December 20 2016)
 
 #### New Features

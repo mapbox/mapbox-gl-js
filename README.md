@@ -25,8 +25,8 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on htt
 <!DOCTYPE html>
 <html>
 <head>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.css' rel='stylesheet' />
 </head>
 
 <body>
@@ -84,7 +84,7 @@ These projects are written and maintained by the GL JS community. Feel free to o
  - [wtMapbox: Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
  - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
  - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
- 
+
 
 ## Using Mapbox GL JS with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
 
