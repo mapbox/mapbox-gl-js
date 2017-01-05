@@ -40,6 +40,11 @@ class StubMap extends Evented {
 }
 
 test('CanvasSource', (t) => {
+    t.afterEach((callback) => {
+        window.restore();
+        callback();
+    });
+
     t.test('constructor', (t) => {
         const source = createSource();
 
@@ -98,6 +103,8 @@ test('CanvasSource#serialize', (t) => {
     t.ok(serialized.canvas);
     t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
 
+    window.restore();
+
     t.end();
 });
 
@@ -111,6 +118,8 @@ test('CanvasSource#setDimensions', (t) => {
 
     t.equal(source.resize, true);
     t.deepEqual(source.dimensions, [0, 0, 30, 30]);
+
+    window.restore();
 
     t.end();
 });

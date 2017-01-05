@@ -57,6 +57,8 @@ function restore() {
 
     window.restore = restore;
 
+    window.ImageData = window.ImageData || sinon.stub().returns(false);
+
     return window;
 }
 
