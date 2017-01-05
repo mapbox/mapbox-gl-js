@@ -692,6 +692,33 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('fires an error on non-existant source layer', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            sources: {
+                dummy: {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                }
+            }
+        }));
+
+        const layer = {
+            id: 'dummy',
+            source: 'dummy',
+            type: 'background',
+            'source-layer': 'dummy'
+        };
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist on source/);
+                t.end();
+            });
+            style.addLayer(layer);
+        });
+
+    });
+
     t.end();
 });
 

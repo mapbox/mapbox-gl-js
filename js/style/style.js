@@ -128,9 +128,9 @@ class Style extends Evented {
         if (!layer.sourceLayer) return;
         if (!sourceCache) return;
         const source = sourceCache.getSource();
-        if (!source.vectorLayerIds) return;
 
-        if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
+        if (source.type === 'geojson' || (source.vectorLayerIds &&
+            source.vectorLayerIds.indexOf(layer.sourceLayer) === -1)) {
             this.fire('error', {
                 error: new Error(
                     `Source layer "${layer.sourceLayer}" ` +
