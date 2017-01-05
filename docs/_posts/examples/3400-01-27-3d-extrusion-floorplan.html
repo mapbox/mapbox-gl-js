@@ -20,17 +20,15 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
-    // Geojson Data source used in vector tiles, documented at
-    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
-    map.addSource("museumData", {
-        'type': 'geojson',
-        'data': '{{site.baseurl}}/assets/data/indoor-3d-map.geojson'
-    });
-
     map.addLayer({
         'id': 'room-extrusion',
         'type': 'fill-extrusion',
-        'source': 'museumData',
+        'source': {
+            // Geojson Data source used in vector tiles, documented at
+            // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+            'type': 'geojson',
+            'data': 'https://www.mapbox.com/mapbox-gl-js/assets/data/indoor-3d-map.geojson'
+        },
         'paint': {
             // See the Mapbox Style Spec for details on property functions
             // https://www.mapbox.com/mapbox-gl-style-spec/#types-function

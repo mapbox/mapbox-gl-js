@@ -21,7 +21,7 @@ map.on('load', function() {
 
     // Add a new source from our GeoJSON data and set the
     // 'cluster' option to true.
-    map.addSource("earthquakes", {
+    var earthquakes = {
         type: "geojson",
         // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
         // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
@@ -29,7 +29,7 @@ map.on('load', function() {
         cluster: true,
         clusterMaxZoom: 15, // Max zoom to cluster points on
         clusterRadius: 20 // Use small cluster radius for the heatmap look
-    });
+    };
 
     // Use the earthquakes source to create four layers:
     // three for each cluster category, and one for unclustered points
@@ -45,7 +45,7 @@ map.on('load', function() {
         map.addLayer({
             "id": "cluster-" + i,
             "type": "circle",
-            "source": "earthquakes",
+            "source": earthquakes,
             "paint": {
                 "circle-color": layer[1],
                 "circle-radius": 70,
@@ -62,7 +62,7 @@ map.on('load', function() {
     map.addLayer({
         "id": "unclustered-points",
         "type": "circle",
-        "source": "earthquakes",
+        "source": earthquakes,
         "paint": {
             "circle-color": 'rgba(0,255,0,0.5)',
             "circle-radius": 20,
