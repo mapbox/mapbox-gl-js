@@ -1153,16 +1153,16 @@ test('camera', (t) => {
 
             camera.fitBounds(bb, { padding: 15, duration:0 });
             t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -100.5, lat: 34.717077774 }, 'pans to coordinates based on fitBounds with padding option as number applied');
-            t.equal(fixedNum(camera.getZoom(), 3), 2.519);
+            t.equal(fixedNum(camera.getZoom(), 3), 2.064);
             t.end();
         });
 
-        t.test('padding array', (t) => {
+        t.test('padding object', (t) => {
             const camera = createCamera();
             const bb = [[-133, 16], [-68, 50]];
 
-            camera.fitBounds(bb, { padding: [50, 15, 25, 75], duration:0 });
-            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -102.8164, lat: 35.50661 }, 'pans to coordinates based on fitBounds with padding option as array applied');
+            camera.fitBounds(bb, { padding: {north: 10, east: 75, south: 50, west: 25}, duration:0 });
+            t.deepEqual(fixedLngLat(camera.getCenter()), { lng: -82.921875, lat: 22.403743206 }, 'pans to coordinates based on fitBounds with padding option as object applied');
             t.end();
         });
 

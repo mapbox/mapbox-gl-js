@@ -321,25 +321,35 @@ class Camera extends Evented {
     fitBounds(bounds, options, eventData) {
 
         options = util.extend({
-            padding: [0, 0, 0, 0],
+            padding: {
+                north: 0,
+                south: 0,
+                east: 0,
+                west: 0
+            },
             offset: [0, 0],
             maxZoom: this.transform.maxZoom
         }, options);
 
         if (typeof options.padding === 'number') {
             const p = options.padding;
-            options.padding = [p, p, p, p];
+            options.padding = {
+                north: p,
+                south: p,
+                east: p,
+                west: p
+            };
         }
-
         bounds = LngLatBounds.convert(bounds);
 
         const offset = Point.convert(options.offset),
             tr = this.transform,
-            // options padding order is [n, e, s, w], so we add the appropriate paddings
-            // to the given bounds to adjust the viewport bounds.
-            nwPadding = Point.convert([options.padding[0], options.padding[3]]),
-            sePadding = Point.convert([options.padding[1], options.padding[2]]),
-            // because both x and y decrease in the nw direction in screen coordinates
+            // add the appropriate paddings to the given bounds to adjust the viewport bounds.
+            // for NW: [x,y] = [w, n]
+            nwPadding = Point.convert([ options.padding.west || 0, options.padding.north || 0]),
+            // for SE: [x,y] = [e, s]
+            sePadding = Point.convert([ options.padding.east || 0, options.padding.south || 0]),
+            // because x decreases in the west direction and y decreases in the n direction in screen coordinates
             // we subtract the nw padding, and add the se padding to get the appropriate bounds.
             nw = tr.project(bounds.getNorthWest()).sub(nwPadding),
             se = tr.project(bounds.getSouthEast()).add(sePadding),
