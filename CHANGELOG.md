@@ -1,4 +1,4 @@
-## 0.30.0 (December 20 2016)
+## 0.30.0 (Jan 5 2017)
 
 #### New Features
 
