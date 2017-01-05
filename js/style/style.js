@@ -427,7 +427,7 @@ class Style extends Evented {
 
         if (typeof layerObject.source === 'object') {
             this.addSource(id, layerObject.source);
-            layerObject.source = id;
+            layerObject = util.extend(layerObject, { source: id });
         }
 
         // this layer is not in the style.layers array, so we pass an impossible array index
