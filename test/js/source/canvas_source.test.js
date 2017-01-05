@@ -16,13 +16,12 @@ function createSource(options) {
 
     options = util.extend({
         canvas: 'id',
-        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]],
-        dimensions: [0, 0, 20, 20]
+        coordinates: [[0, 0], [1, 0], [1, 1], [0, 1]]
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
 
-    source._canvas = c;
+    source.canvas = c;
 
     return source;
 }
@@ -52,7 +51,6 @@ test('CanvasSource', (t) => {
             t.equal(source.minzoom, 0);
             t.equal(source.maxzoom, 22);
             t.equal(source.tileSize, 512);
-            t.equal(source.contextType, '2d');
             t.equal(source.animate, true);
             t.equal(typeof source.play, 'function');
             t.end();
@@ -102,22 +100,6 @@ test('CanvasSource#serialize', (t) => {
     t.equal(serialized.type, 'canvas');
     t.ok(serialized.canvas);
     t.deepEqual(serialized.coordinates, [[0, 0], [1, 0], [1, 1], [0, 1]]);
-
-    window.restore();
-
-    t.end();
-});
-
-test('CanvasSource#setDimensions', (t) => {
-    const source = createSource();
-
-    t.equal(source.resize, false);
-    t.deepEqual(source.dimensions, [0, 0, 20, 20]);
-
-    source.setDimensions([0, 0, 30, 30]);
-
-    t.equal(source.resize, true);
-    t.deepEqual(source.dimensions, [0, 0, 30, 30]);
 
     window.restore();
 
