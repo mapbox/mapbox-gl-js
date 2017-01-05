@@ -304,7 +304,7 @@ class Camera extends Evented {
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
      * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {number|Array} options.padding how much padding there is around the given bounds on each side in pixels. Accepts a number for all padding edges or an array [n, e, s, w]
+     * @param {number|Object} [options.padding] Sets padding around the given bounds on each side in pixels. Accepts a number for all padding edges or an object with padding for each compass direction (north, south, east, and west)
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -314,7 +314,7 @@ class Camera extends Evented {
 	 * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
-     *   padding: [10, 40, 10, 40]
+     *   padding: {north: 10, east:25, south: 15, west: 5}
      * });
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
