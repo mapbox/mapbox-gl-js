@@ -97,20 +97,13 @@ route.features[0].geometry.coordinates = arc;
 var counter = 0;
 
 map.on('load', function () {
-    // Add a source and layer displaying a point which will be animated in a circle.
-    map.addSource('route', {
-        "type": "geojson",
-        "data": route
-    });
-
-    map.addSource('point', {
-        "type": "geojson",
-        "data": point
-    });
 
     map.addLayer({
         "id": "route",
-        "source": "route",
+        "source": {
+            "type": "geojson",
+            "data": route
+        },
         "type": "line",
         "paint": {
             "line-width": 2,
@@ -120,7 +113,10 @@ map.on('load', function () {
 
     map.addLayer({
         "id": "point",
-        "source": "point",
+        "source": {
+            "type": "geojson",
+            "data": point
+        },
         "type": "symbol",
         "layout": {
             "icon-image": "airport-15",

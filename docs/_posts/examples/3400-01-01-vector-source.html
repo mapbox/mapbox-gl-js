@@ -16,14 +16,14 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    map.addSource('terrain-data', {
-        type: 'vector',
-        url: 'mapbox://mapbox.mapbox-terrain-v2'
-    });
+
     map.addLayer({
         "id": "terrain-data",
         "type": "line",
-        "source": "terrain-data",
+        "source": {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-terrain-v2'
+        },
         "source-layer": "contour",
         "layout": {
             "line-join": "round",

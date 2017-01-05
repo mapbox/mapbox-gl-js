@@ -16,14 +16,14 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    map.addSource('population', {
-        type: 'vector',
-        url: 'mapbox://examples.8fgz4egr'
-    });
+
     map.addLayer({
         'id': 'population',
         'type': 'circle',
-        'source': 'population',
+        'source': {
+            type: 'vector',
+            url: 'mapbox://examples.8fgz4egr'
+        },
         'source-layer': 'sf2010',
         'paint': {
             // make circles larger as the user zooms from z12 to z22
