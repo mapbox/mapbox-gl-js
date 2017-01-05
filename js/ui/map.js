@@ -1403,13 +1403,13 @@ function removeNode(node) {
 
 /**
  * A [`Point` geometry](https://github.com/mapbox/point-geometry) object, which has
- * `x` and `y` properties representing coordinates.
+ * `x` and `y` properties representing screen coordinates in pixels.
  *
  * @typedef {Object} Point
  */
 
 /**
- * A [`Point`](#Point) or an array of two numbers representing `x` and `y` coordinates.
+ * A [`Point`](#Point) or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
  */
