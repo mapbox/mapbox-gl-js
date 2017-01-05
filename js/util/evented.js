@@ -117,7 +117,7 @@ class Evented {
      */
     setEventedParent(parent, data) {
         this._eventedParent = parent;
-        this._eventedParentData = data;
+        this._eventedParentData = typeof data === 'function' ? data() : data;
 
         return this;
     }

@@ -386,7 +386,7 @@ test('SourceCache#update', (t) => {
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.setAnimationLoop(animationLoop, 100);
+                tile.registerFadeDuration(animationLoop, 100);
                 callback();
             }
         });
@@ -419,7 +419,7 @@ test('SourceCache#update', (t) => {
             loadTile: function(tile, callback) {
                 tile.timeAdded = Infinity;
                 tile.state = 'loaded';
-                tile.setAnimationLoop(animationLoop, 100);
+                tile.registerFadeDuration(animationLoop, 100);
                 callback();
             }
         });
@@ -443,7 +443,9 @@ test('SourceCache#update', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 16;
-        transform.center = new LngLat(0, 0);
+
+        // use slightly offset center so that sort order is better defined
+        transform.center = new LngLat(-0.001, 0.001);
 
 
         const sourceCache = createSourceCache({
@@ -459,8 +461,8 @@ test('SourceCache#update', (t) => {
             t.deepEqual(sourceCache.getRenderableIds(), [
                 new TileCoord(16, 8191, 8191, 0).id,
                 new TileCoord(16, 8192, 8191, 0).id,
-                new TileCoord(16, 8192, 8192, 0).id,
-                new TileCoord(16, 8191, 8192, 0).id
+                new TileCoord(16, 8191, 8192, 0).id,
+                new TileCoord(16, 8192, 8192, 0).id
             ]);
 
             transform.zoom = 15;
@@ -469,8 +471,8 @@ test('SourceCache#update', (t) => {
             t.deepEqual(sourceCache.getRenderableIds(), [
                 new TileCoord(16, 8191, 8191, 0).id,
                 new TileCoord(16, 8192, 8191, 0).id,
-                new TileCoord(16, 8192, 8192, 0).id,
-                new TileCoord(16, 8191, 8192, 0).id
+                new TileCoord(16, 8191, 8192, 0).id,
+                new TileCoord(16, 8192, 8192, 0).id
             ]);
             t.end();
         });

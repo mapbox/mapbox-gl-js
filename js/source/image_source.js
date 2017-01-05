@@ -73,7 +73,6 @@ class ImageSource extends Evented {
     }
 
     _finishLoading() {
-        this.fire('data', {dataType: 'source'});
         this.fire('source.load');
 
         if (this.map) {

@@ -1,11 +1,8 @@
-/* eslint-disable */
 'use strict';
 
-var DOM = require('../util/dom');
-var util = require('../util/util');
-var LngLat = require('../geo/lng_lat');
-var Point = require('point-geometry');
-var Popup = require('./popup');
+const DOM = require('../util/dom');
+const LngLat = require('../geo/lng_lat');
+const Point = require('point-geometry');
 
 /**
  * Creates a marker component
@@ -105,8 +102,6 @@ class Marker {
      */
 
     setPopup(popup) {
-        var that = this;
-
         if (this._popup) {
             this._popup.remove();
             this._popup = null;
@@ -121,8 +116,8 @@ class Marker {
     }
 
     _onMapClick(event) {
-        var targetElement = event.originalEvent.target;
-        var element = this._element;
+        const targetElement = event.originalEvent.target;
+        const element = this._element;
 
         if (this._popup && (targetElement === element || element.contains(targetElement))) {
             this.togglePopup();
@@ -142,7 +137,7 @@ class Marker {
      * @returns {Marker} `this`
      */
     togglePopup() {
-        var popup = this._popup;
+        const popup = this._popup;
 
         if (!popup) return;
         else if (popup.isOpen()) popup.remove();
@@ -151,12 +146,12 @@ class Marker {
 
     _update(e) {
         if (!this._map) return;
-        var pos = this._map.project(this._lngLat)._add(this._offset);
+        let pos = this._map.project(this._lngLat)._add(this._offset);
         // because rouding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
         if (!e || e.type === "moveend") pos = pos.round();
-        DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
+        DOM.setTransform(this._element, `translate(${pos.x}px, ${pos.y}px)`);
     }
 }
 

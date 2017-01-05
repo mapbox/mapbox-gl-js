@@ -1,3 +1,41 @@
+## 0.29.0 (December 20 2016)
+
+#### New Features
+
+ - Add support for property functions for many style properties on line layers #3033
+ - Make `Map#setStyle` smoothly transition to the new style #3621
+ - Add `styledata`, `sourcedata`, `styledataloading`, and `sourcedataloading` events
+ - Add `isSourceLoaded` and `source` properties to `MapDataEvent` #3590
+ - Remove "max zoom" cap of 20 #3683
+ - Add `circle-stroke-*` style properties #3672
+ - Add a more helpful error message when the specified `container` element doesn't exist #3719
+ - Add `watchPosition` option to `GeolocateControl` #3739
+ - Add `positionOptions` option to `GeolocateControl` #3739
+ - Add `aria-label` to map canvas #3782
+ - Adjust multipoint symbol rendering behavior #3763
+ - Add support for property functions for `icon-offset` #3791
+ - Improved antialiasing on pitched lines #3790
+ - Allow attribution control to collapse to an ⓘ button on smaller screens #3783
+ - Improve line breaking algorithm #3743
+
+#### Performance Improvements
+
+ - Fix memory leak when calling `Map#removeSource` #3602
+ - Reduce bundle size by adding custom build of `gl-matrix` #3734
+ - Improve performance of projection code #3721
+ - Improve performance of style function evaluation #3816
+
+#### Bug fixes
+
+ - Fix exception thrown when using `line-color` property functions #3639
+ - Fix exception thrown when removing a layer and then adding another layer with the same id but different type #3655
+ - Fix exception thrown when passing a single point to `Map#fitBounds` #3655
+ - Fix exception thrown occasionally during rapid map mutations #3681
+ - Fix rendering defects on pitch=0 on some systems #3740
+ - Fix unnecessary CPU usage when displaying a raster layer #3764
+ - Fix bug causing sprite after `Map#setStyle` #3829
+ - Fix bug preventing `Map` from emitting a `contextmenu` event on Windows browsers #3822
+
 ## 0.28.0 (November 17 2016)
 
 #### New features and improvements
@@ -70,6 +108,7 @@
  * Add depth testing for symbols with `'pitch-alignment': 'map'` #3243
  * Add `dataloading` events for styles and sources #3306
  * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning: #3355
+ * Calculate style layer `ref`s automatically and get rid of user-specified `ref`s :warning: BREAKING CHANGE :warning: #3486
 
 #### Performance Improvements
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const browser = require('../util/browser');
-const mat4 = require('gl-matrix').mat4;
+const mat4 = require('@mapbox/gl-matrix').mat4;
 const FrameHistory = require('./frame_history');
 const SourceCache = require('../source/source_cache');
 const EXTENT = require('../data/extent');
@@ -12,7 +12,7 @@ const VertexArrayObject = require('./vertex_array_object');
 const RasterBoundsArray = require('../data/raster_bounds_array');
 const PosArray = require('../data/pos_array');
 const ProgramConfiguration = require('../data/program_configuration');
-const shaders = require('mapbox-gl-shaders');
+const shaders = require('./shaders');
 const assert = require('assert');
 
 const draw = {

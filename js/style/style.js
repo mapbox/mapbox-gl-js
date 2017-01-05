@@ -111,7 +111,7 @@ class Style extends Evented {
         }
 
         this.on('source.load', (event) => {
-            const source = event.source;
+            const source = this.sourceCaches[event.sourceId].getSource();
             if (source && source.vectorLayerIds) {
                 for (const layerId in this._layers) {
                     const layer = this._layers[layerId];
@@ -375,9 +375,13 @@ class Style extends Evented {
 
         const sourceCache = this.sourceCaches[id] = new SourceCache(id, source, this.dispatcher);
         sourceCache.style = this;
-        sourceCache.setEventedParent(this, {source: sourceCache.getSource()});
+        sourceCache.setEventedParent(this, () => ({
+            isSourceLoaded: sourceCache.loaded(),
+            source: sourceCache.serialize(),
+            sourceId: id
+        }));
 
-        if (sourceCache.onAdd) sourceCache.onAdd(this.map);
+        sourceCache.onAdd(this.map);
         this._changed = true;
     }
 

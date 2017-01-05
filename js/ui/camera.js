@@ -296,7 +296,8 @@ class Camera extends Evented {
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
      *
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds The bounds to fit the visible area into.
+     * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
+     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -316,7 +317,7 @@ class Camera extends Evented {
         options = util.extend({
             padding: 0,
             offset: [0, 0],
-            maxZoom: Infinity
+            maxZoom: this.getMaxZoom()
         }, options);
 
         bounds = LngLatBounds.convert(bounds);
@@ -620,7 +621,6 @@ class Camera extends Evented {
             from = tr.point,
             to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
 
-        const startWorldSize = tr.worldSize;
         let rho = options.curve;
 
             // w₀: Initial visible span, measured in pixels at the initial scale.
@@ -707,8 +707,9 @@ class Camera extends Evented {
             const s = k * S,
                 us = u(s);
 
-            tr.zoom = startZoom + tr.scaleZoom(1 / w(s));
-            tr.center = tr.unproject(from.add(to.sub(from).mult(us)), startWorldSize);
+            const scale = 1 / w(s);
+            tr.zoom = startZoom + tr.scaleZoom(scale);
+            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);

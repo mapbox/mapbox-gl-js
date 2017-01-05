@@ -1,4 +1,5 @@
 'use strict';
+// @flow
 
 // Note: all "sizes" are measured in bytes
 
@@ -18,6 +19,10 @@ const viewTypes = {
     'Float64': Float64Array
 };
 
+/* eslint-disable no-undef */
+type ViewType = $Keys<typeof viewTypes>;
+/* eslint-enable no-undef */
+
 /**
  * @typedef {Object} StructMember
  * @private
@@ -30,6 +35,14 @@ const viewTypes = {
  * @private
  */
 class Struct {
+    _pos1: number;
+    _pos2: number;
+    _pos4: number;
+    _pos8: number;
+    _structArray: StructArray;
+    // The following properties are defined on the prototype of sub classes.
+    size: number;
+    alignment: number;
     /**
      * @param {StructArray} structArray The StructArray the struct is stored in
      * @param {number} index The index of the struct in the StructArray.
@@ -47,13 +60,39 @@ class Struct {
 const DEFAULT_CAPACITY = 128;
 const RESIZE_MULTIPLIER = 5;
 
+type StructArrayMember = {|
+    name: string,
+    type: ViewType,
+    components: number,
+    offset: number
+|};
+
 /**
  * The StructArray class is inherited by the custom StructArrayType classes created with
  * `createStructArrayType(members, options)`.
  * @private
  */
 class StructArray {
-    constructor(serialized) {
+    capacity: number;
+    length: number;
+    isTransferred: boolean;
+    arrayBuffer: ArrayBuffer;
+    int8: ?Int8Array;
+    uint8: Uint8Array;
+    uint8clamped: ?Uint8ClampedArray;
+    int16: ?Int16Array;
+    uint16: ?Uint16Array;
+    int32: ?Int32Array;
+    uint32: ?Uint32Array;
+    float32: ?Float32Array;
+    float64: ?Float64Array;
+    // The following properties aer defined on the prototype.
+    members: Array<StructArrayMember>;
+    StructType: typeof Struct;
+    bytesPerElement: number;
+    _usedTypes: Array<ViewType>;
+    emplaceBack: Function;
+    constructor(serialized?: {arrayBuffer: ArrayBuffer, length: number}) {
         this.isTransferred = false;
 
         if (serialized !== undefined) {
@@ -84,7 +123,7 @@ class StructArray {
     /**
      * Serialize this StructArray instance
      */
-    serialize(transferables) {
+    serialize(transferables: ?{push: (buffer: ArrayBuffer) => void}) {
         assert(!this.isTransferred);
 
         this._trim();
@@ -103,7 +142,7 @@ class StructArray {
      * Return the Struct at the given location in the array.
      * @param {number} index The index of the element.
      */
-    get(index) {
+    get(index: number) {
         assert(!this.isTransferred);
         return new this.StructType(this, index);
     }
@@ -125,7 +164,7 @@ class StructArray {
      * If `n` is less than the current length then the array will be reduced to the first `n` elements.
      * @param {number} n The new size of the array.
      */
-    resize(n) {
+    resize(n: number) {
         assert(!this.isTransferred);
 
         this.length = n;
@@ -144,6 +183,7 @@ class StructArray {
      */
     _refreshViews() {
         for (const type of this._usedTypes) {
+            // $FlowFixMe
             this[getArrayViewName(type)] = new viewTypes[type](this.arrayBuffer);
         }
     }
@@ -153,7 +193,7 @@ class StructArray {
      * @param {number} startIndex
      * @param {number} endIndex
      */
-    toArray(startIndex, endIndex) {
+    toArray(startIndex: number, endIndex: number) {
         assert(!this.isTransferred);
 
         const array = [];
@@ -167,7 +207,7 @@ class StructArray {
     }
 }
 
-const structArrayTypeCache = {};
+const structArrayTypeCache: {[key: string]: typeof StructArray} = {};
 
 /**
  * `createStructArrayType` is used to create new `StructArray` types.
@@ -204,7 +244,11 @@ const structArrayTypeCache = {};
  *
  * @private
  */
-function createStructArrayType(options) {
+
+function createStructArrayType(options: {|
+  members: Array<{type: ViewType, name: string, components?: number}>,
+  alignment?: number
+|}) {
 
     const key = JSON.stringify(options);
 
@@ -212,7 +256,8 @@ function createStructArrayType(options) {
         return structArrayTypeCache[key];
     }
 
-    if (options.alignment === undefined) options.alignment = 1;
+    const alignment = (options.alignment === undefined) ?
+      1 : options.alignment;
 
     let offset = 0;
     let maxSize = 0;
@@ -225,7 +270,7 @@ function createStructArrayType(options) {
         if (usedTypes.indexOf(member.type) < 0) usedTypes.push(member.type);
 
         const typeSize = sizeOf(member.type);
-        const memberOffset = offset = align(offset, Math.max(options.alignment, typeSize));
+        const memberOffset = offset = align(offset, Math.max(alignment, typeSize));
         const components = member.components || 1;
 
         maxSize = Math.max(maxSize, typeSize);
@@ -239,11 +284,11 @@ function createStructArrayType(options) {
         };
     });
 
-    const size = align(offset, Math.max(maxSize, options.alignment));
+    const size = align(offset, Math.max(maxSize, alignment));
 
     class StructType extends Struct {}
 
-    StructType.prototype.alignment = options.alignment;
+    StructType.prototype.alignment = alignment;
     StructType.prototype.size = size;
 
     for (const member of members) {
@@ -269,15 +314,15 @@ function createStructArrayType(options) {
     return StructArrayType;
 }
 
-function align(offset, size) {
+function align(offset: number, size: number): number {
     return Math.ceil(offset / size) * size;
 }
 
-function sizeOf(type) {
+function sizeOf(type: ViewType): number {
     return viewTypes[type].BYTES_PER_ELEMENT;
 }
 
-function getArrayViewName(type) {
+function getArrayViewName(type: ViewType): string {
     return type.toLowerCase();
 }
 
@@ -286,7 +331,7 @@ function getArrayViewName(type) {
  * > elementIndex to i) (likely due to v8 inlining heuristics).
  * - lucaswoj
  */
-function createEmplaceBack(members, bytesPerElement) {
+function createEmplaceBack(members, bytesPerElement): Function {
     const usedTypeSizes = [];
     const argNames = [];
     let body =
@@ -319,7 +364,7 @@ function createEmplaceBack(members, bytesPerElement) {
 
     body += 'return i;';
 
-    return new Function(argNames, body);
+    return new Function(argNames.toString(), body);
 }
 
 function createMemberComponentString(member, component) {
@@ -330,9 +375,9 @@ function createMemberComponentString(member, component) {
 }
 
 function createGetter(member, c) {
-    return new Function([], `return ${createMemberComponentString(member, c)};`);
+    return new Function(`return ${createMemberComponentString(member, c)};`);
 }
 
 function createSetter(member, c) {
-    return new Function(['x'], `${createMemberComponentString(member, c)} = x;`);
+    return new Function('x', `${createMemberComponentString(member, c)} = x;`);
 }
