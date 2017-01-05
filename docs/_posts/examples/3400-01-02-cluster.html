@@ -19,21 +19,25 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
 
+    // Add a new source from our GeoJSON data and set the
+    // 'cluster' option to true.
+    map.addSource("earthquakes", {
+        type: "geojson",
+        // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
+        // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
+        data: "{{site.baseurl}}/assets/earthquakes.geojson",
+        cluster: true,
+        clusterMaxZoom: 14, // Max zoom to cluster points on
+        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+    });
+
     // Use the earthquakes source to create five layers:
     // One for unclustered points, three for each cluster category,
     // and one for cluster labels.
     map.addLayer({
         "id": "unclustered-points",
         "type": "symbol",
-        "source": {
-            type: "geojson",
-            // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-            // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-            data: "{{site.baseurl}}/assets/earthquakes.geojson",
-            cluster: true,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-        },
+        "source": "earthquakes",
         "filter": ["!has", "point_count"],
         "layout": {
             "icon-image": "marker-15"
@@ -52,15 +56,7 @@ map.on('load', function() {
         map.addLayer({
             "id": "cluster-" + i,
             "type": "circle",
-            "source": {
-                type: "geojson",
-                // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-                // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-                data: "{{site.baseurl}}/assets/earthquakes.geojson",
-                cluster: true,
-                clusterMaxZoom: 14, // Max zoom to cluster points on
-                clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-            },
+            "source": "earthquakes",
             "paint": {
                 "circle-color": layer[1],
                 "circle-radius": 18
@@ -77,15 +73,7 @@ map.on('load', function() {
     map.addLayer({
         "id": "cluster-count",
         "type": "symbol",
-        "source": {
-            type: "geojson",
-            // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-            // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-            data: "{{site.baseurl}}/assets/earthquakes.geojson",
-            cluster: true,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-        },
+        "source": "earthquakes",
         "layout": {
             "text-field": "{point_count}",
             "text-font": [
