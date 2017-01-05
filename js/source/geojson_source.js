@@ -93,6 +93,7 @@ class GeoJSONSource extends Evented {
             },
             superclusterOptions: {
                 maxZoom: Math.min(options.clusterMaxZoom, this.maxzoom) || (this.maxzoom - 1),
+                aggregateBy: options.aggregateBy,
                 extent: EXTENT,
                 radius: (options.clusterRadius || 50) * scale,
                 log: false
