@@ -136,6 +136,11 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function() {
+    // Add a GeoJSON source containing place coordinates and information.
+    map.addSource("places", {
+        "type": "geojson",
+        "data": places
+    });
 
     places.features.forEach(function(feature) {
         var symbol = feature.properties['icon'];
@@ -146,10 +151,7 @@ map.on('load', function() {
             map.addLayer({
                 "id": layerID,
                 "type": "symbol",
-                "source": {
-                    "type": "geojson",
-                    "data": places
-                },
+                "source": "places",
                 "layout": {
                     "icon-image": symbol + "-15",
                     "icon-allow-overlap": true
