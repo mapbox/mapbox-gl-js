@@ -99,16 +99,13 @@ function onUp(e) {
 
 map.on('load', function() {
 
-    // Add a single point to the map
-    map.addSource('point', {
-        "type": "geojson",
-        "data": geojson
-    });
-
     map.addLayer({
         "id": "point",
         "type": "circle",
-        "source": "point",
+        "source":{
+            "type": "geojson",
+            "data": geojson
+        },
         "paint": {
             "circle-radius": 10,
             "circle-color": "#3887be"

@@ -33,17 +33,16 @@ map.addControl(geocoder);
 // After the map style has loaded on the page, add a source layer and default
 // styling for a single point.
 map.on('load', function() {
-    map.addSource('single-point', {
-        "type": "geojson",
-        "data": {
-            "type": "FeatureCollection",
-            "features": []
-        }
-    });
 
     map.addLayer({
         "id": "point",
-        "source": "single-point",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": []
+            }
+        },
         "type": "circle",
         "paint": {
             "circle-radius": 10,
@@ -54,7 +53,7 @@ map.on('load', function() {
     // Listen for the `geocoder.input` event that is triggered when a user
     // makes a selection and add a symbol that matches the result.
     geocoder.on('result', function(ev) {
-        map.getSource('single-point').setData(ev.result.geometry);
+        map.getSource('point').setData(ev.result.geometry);
     });
 });
 </script>
