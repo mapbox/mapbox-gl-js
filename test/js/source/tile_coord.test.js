@@ -158,7 +158,7 @@ test('TileCoord', (t) => {
             t.end();
         });
 
-        t.test('only includes tiles for a single world, if wrapAroundWorld is set to false', (t) => {
+        t.test('only includes tiles for a single world, if renderWorldCopies is set to false', (t) => {
             const z = 2,
                 coords = [
                     {column: -0.5, row: 1, zoom: 2},
@@ -166,8 +166,8 @@ test('TileCoord', (t) => {
                     {column:  0.5, row: 2, zoom: 2},
                     {column: -0.5, row: 2, zoom: 2}
                 ],
-                wrapAroundWorld = false,
-                res = TileCoord.cover(z, coords, z, wrapAroundWorld);
+                renderWorldCopies = false,
+                res = TileCoord.cover(z, coords, z, renderWorldCopies);
             t.deepEqual(res, [
                 {id: 130, w: 0, x: 0, y: 1, z: 2, posMatrix: null}]);
             t.end();

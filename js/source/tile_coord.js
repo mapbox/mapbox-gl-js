@@ -144,9 +144,9 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
 
-TileCoord.cover = function(z, bounds, actualZ, wrapAroundWorld) {
-    if (wrapAroundWorld === undefined) {
-        wrapAroundWorld = true;
+TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
+    if (renderWorldCopies === undefined) {
+        renderWorldCopies = true;
     }
     const tiles = 1 << z;
     const t = {};
@@ -157,7 +157,7 @@ TileCoord.cover = function(z, bounds, actualZ, wrapAroundWorld) {
             for (x = x0; x < x1; x++) {
                 w = Math.floor(x / tiles);
                 wx = (x % tiles + tiles) % tiles;
-                if (w === 0 || wrapAroundWorld === true) {
+                if (w === 0 || renderWorldCopies === true) {
                     coord = new TileCoord(actualZ, wx, y, w);
                     t[coord.id] = coord;
                 }

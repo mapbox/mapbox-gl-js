@@ -19,10 +19,10 @@ const vec4 = glmatrix.vec4,
  * @private
  */
 class Transform {
-    constructor(minZoom, maxZoom, wrapAroundWorld) {
+    constructor(minZoom, maxZoom, renderWorldCopies) {
         this.tileSize = 512; // constant
 
-        this._wrapAroundWorld = wrapAroundWorld === undefined ? true : wrapAroundWorld;
+        this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
         this._minZoom = minZoom || 0;
         this._maxZoom = maxZoom || 22;
 
@@ -145,7 +145,7 @@ class Transform {
      * @param {number} options.maxzoom
      * @param {boolean} options.roundZoom
      * @param {boolean} options.reparseOverscaled
-     * @param {boolean} options.wrapAroundWorld
+     * @param {boolean} options.renderWorldCopies
      * @returns {Array<Tile>} tiles
      */
     coveringTiles(options) {
@@ -163,7 +163,7 @@ class Transform {
             this.pointCoordinate(new Point(this.width, this.height), z),
             this.pointCoordinate(new Point(0, this.height), z)
         ];
-        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._wrapAroundWorld)
+        return TileCoord.cover(z, cornerCoords, options.reparseOverscaled ? actualZ : z, this._renderWorldCopies)
             .sort((a, b) => centerPoint.dist(a) - centerPoint.dist(b));
     }
 
