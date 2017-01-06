@@ -23,8 +23,8 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    // Add a GeoJSON source containing place coordinates and information.
-    map.addSource("places", {
+    // Declare a GeoJSON source containing place coordinates and information.
+    var places = {
         "type": "geojson",
         "data": {
             "type": "FeatureCollection",
@@ -126,7 +126,7 @@ map.on('load', function () {
     map.addLayer({
         "id": "places",
         "type": "symbol",
-        "source": "places",
+        "source": places,
         "layout": {
             "icon-image": "{icon}-15",
             "icon-allow-overlap": true
