@@ -444,7 +444,7 @@ class Style extends Evented {
 
         this._layers[id] = layer;
 
-        if (this._removedLayers[id]) {
+        if (this._removedLayers[id] && layer.source) {
             // If, in the current batch, we have already removed this layer
             // and we are now re-adding it, then we need to clear (rather
             // than just reload) the underyling source's tiles.
