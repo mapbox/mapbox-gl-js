@@ -6,6 +6,7 @@ module.exports = drawTerrain;
 
 //size of raster terrain tile
 const TERRAIN_TILE_WIDTH = 256;
+const TERRAIN_TILE_HEIGHT = 256;
 
 function drawTerrain(painter, sourceCache, layer, coords){
     if (painter.isOpaquePass) return;
@@ -38,33 +39,49 @@ function drawTerrain(painter, sourceCache, layer, coords){
 
 function prepareTerrain(painter, tile) {
     const gl = painter.gl;
+    // create empty texture
     let tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TERRAIN_TILE_WIDTH, TERRAIN_TILE_WIDTH, 0, gl.RGBA, gl.UNSIGNED_BYTE,new Uint8Array(TERRAIN_TILE_WIDTH*TERRAIN_TILE_WIDTH*4));
     // We are using clamp to edge here since OpenGL ES doesn't allow GL_REPEAT on NPOT textures.
     // We use those when the pixelRatio isn't a power of two, e.g. on iPhone 6 Plus.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TERRAIN_TILE_WIDTH, TERRAIN_TILE_HEIGHT, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-    let framebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    let fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-    gl.viewport(0,0,TERRAIN_TILE_WIDTH,TERRAIN_TILE_WIDTH);
 
-    gl.bindTexture(gl.TEXTURE_2D, tile.dem);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.viewport(0,0,TERRAIN_TILE_WIDTH,TERRAIN_TILE_HEIGHT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const matrix = mat4.create();
+    // Flip rendering at y axis.
+    mat4.ortho(0, TERRAIN_TILE_WIDTH, -TERRAIN_TILE_HEIGHT, 0, 0, 1, matrix);
+    mat4.translate(matrix, matrix, [0, -TERRAIN_TILE_HEIGHT, 0]);
+
+    const program = painter.useProgram('terrainPrepare');
+
+    gl.uniformMatrix4fv(program.u_matrix, false, matrix);
     gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, tile.dem);
 
-    const mat = mat4.create();
-    mat.ortho(mat, 0, EXTENT, -EXTENT, 0, 0, 1);
-    mat.translate(mat, mat, 0, -EXTENT, 0);
+    gl.uniform1f(program.u_zoom, tile.coord.z);
+    gl.uniform2fv(program.u_dimension, [512,512]);
+    gl.uniform1i(program.u_image, 0);
 
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.rasterBoundsBuffer);
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    tile.texture = tex;
+    tile.prepared = true;
 }
 
 function populateLevelPixels(terrainArray) {
