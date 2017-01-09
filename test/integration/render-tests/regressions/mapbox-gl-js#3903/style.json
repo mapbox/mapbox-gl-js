@@ -1,0 +1,32 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 1,
+      "height": 1,
+      "operations": [
+        [
+          "removeLayer",
+          "background"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "background",
+            "type": "background"
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background"
+    }
+  ]
+}

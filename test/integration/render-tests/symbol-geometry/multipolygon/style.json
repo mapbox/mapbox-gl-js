@@ -4,10 +4,7 @@
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "metadata": {
     "test": {
-      "height": 256,
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/6115"
-      }
+      "height": 256
     }
   },
   "center": [0, 0],
