@@ -34,6 +34,13 @@ function drawTerrain(painter, sourceCache, layer, coords){
         }
         tile.uploaded=true;
         if (!tile.prepared) prepareTerrain(painter, tile);
+        if (tile.texture){
+            console.log(tile.texture);
+            const program = painter.useProgram('terrain');
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+        }
     }
 }
 
