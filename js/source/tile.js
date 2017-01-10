@@ -99,7 +99,7 @@ class Tile {
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (bucket.type === 'symbol') {
+            if (bucket.layers[0].type === 'symbol') {
                 bucket.destroy();
                 delete this.buckets[id];
             }
