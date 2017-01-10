@@ -1,11 +1,11 @@
 'use strict';
 
-var st = require('st');
-var http = require('http');
-var path = require('path');
+const st = require('st');
+const http = require('http');
+const path = require('path');
 
 module.exports = function () {
-    var server = http.createServer(st({path: path.join(__dirname, '..')}));
+    const server = http.createServer(st({path: path.join(__dirname, '..')}));
 
     function localURL(url) {
         return url.replace(/^local:\/\//, 'http://localhost:2900/');
@@ -17,12 +17,12 @@ module.exports = function () {
         },
 
         close: function (callback) {
-            server.close(callback)
+            server.close(callback);
         },
 
         localizeURLs: function (style) {
             function localizeSourceURLs(source) {
-                for (var l in source.tiles) {
+                for (const l in source.tiles) {
                     source.tiles[l] = localURL(source.tiles[l]);
                 }
 
@@ -41,7 +41,7 @@ module.exports = function () {
 
             // localize the source, glyphs, and sprite URLs in the given style JSON
             function localizeStyleURLs (style) {
-                for (var k in style.sources) {
+                for (const k in style.sources) {
                     localizeSourceURLs(style.sources[k]);
                 }
 
@@ -55,16 +55,16 @@ module.exports = function () {
             }
 
             if (style.metadata && style.metadata.test && style.metadata.test.operations) {
-                style.metadata.test.operations.forEach(function (op) {
+                style.metadata.test.operations.forEach((op) => {
                     if (op[0] === 'addSource') {
                         localizeSourceURLs(op[2]);
                     } else if (op[0] === 'setStyle' && op[1]) {
-                        localizeStyleURLs(op[1])
+                        localizeStyleURLs(op[1]);
                     }
                 });
             }
 
-            localizeStyleURLs(style)
+            localizeStyleURLs(style);
         }
     };
 };

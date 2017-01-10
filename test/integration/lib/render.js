@@ -1,27 +1,27 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var PNG = require('pngjs').PNG;
-var harness = require('./harness');
-var pixelmatch = require('pixelmatch');
+const fs = require('fs');
+const path = require('path');
+const PNG = require('pngjs').PNG;
+const harness = require('./harness');
+const pixelmatch = require('pixelmatch');
 
 function compare(path1, path2, diffPath, callback) {
 
-    var img1 = fs.createReadStream(path1).pipe(new PNG()).on('parsed', doneReading);
-    var img2 = fs.createReadStream(path2).pipe(new PNG()).on('parsed', doneReading);
-    var read = 0;
+    const img1 = fs.createReadStream(path1).pipe(new PNG()).on('parsed', doneReading);
+    const img2 = fs.createReadStream(path2).pipe(new PNG()).on('parsed', doneReading);
+    let read = 0;
 
     function doneReading() {
         if (++read < 2) return;
 
-        var diff = new PNG({width: img1.width, height: img1.height});
+        const diff = new PNG({width: img1.width, height: img1.height});
 
-        var numPixels = pixelmatch(img1.data, img2.data, diff.data, img1.width, img1.height, {
+        const numPixels = pixelmatch(img1.data, img2.data, diff.data, img1.width, img1.height, {
             threshold: 0.13
         });
 
-        diff.pack().pipe(fs.createWriteStream(diffPath)).on('finish', function () {
+        diff.pack().pipe(fs.createWriteStream(diffPath)).on('finish', () => {
             callback(null, numPixels / (diff.width * diff.height));
         });
     }
@@ -57,26 +57,25 @@ function compare(path1, path2, diffPath, callback) {
  * @returns {undefined} terminates the process when testing is complete
  */
 exports.run = function (implementation, options, render) {
-    var directory = path.join(__dirname, '../render-tests');
-    harness(directory, implementation, options, function(style, params, done) {
-        render(style, params, function (err, data) {
+    const directory = path.join(__dirname, '../render-tests');
+    harness(directory, implementation, options, (style, params, done) => {
+        render(style, params, (err, data) => {
             if (err) return done(err);
 
-            var stats;
-            var dir = path.join(directory, params.group, params.test);
+            let stats;
+            const dir = path.join(directory, params.group, params.test);
             try {
                 stats = fs.statSync(dir, fs.R_OK | fs.W_OK);
-                if (!stats.isDirectory()) throw true;
-            }
-            catch (e) {
+                if (!stats.isDirectory()) throw new Error();
+            }            catch (e) {
                 fs.mkdirSync(dir);
             }
 
-            var expected = path.join(dir, 'expected.png');
-            var actual   = path.join(dir, 'actual.png');
-            var diff     = path.join(dir, 'diff.png');
+            const expected = path.join(dir, 'expected.png');
+            const actual   = path.join(dir, 'actual.png');
+            const diff     = path.join(dir, 'diff.png');
 
-            var png = new PNG({
+            const png = new PNG({
                 width: params.width * params.pixelRatio,
                 height: params.height * params.pixelRatio
             });
@@ -90,20 +89,19 @@ exports.run = function (implementation, options, render) {
             } else {
                 png.pack()
                     .pipe(fs.createWriteStream(actual))
-                    .on('finish', function () {
+                    .on('finish', () => {
 
                         try {
                             stats = fs.statSync(expected, fs.R_OK | fs.W_OK);
-                            if (!stats.isFile()) throw true;
-                        }
-                        catch (e) {  // no expected.png, create it
+                            if (!stats.isFile()) throw new Error();
+                        }                        catch (e) {  // no expected.png, create it
                             png.pack()
                                 .pipe(fs.createWriteStream(expected))
                                 .on('finish', done);
                             return;
                         }
 
-                        compare(actual, expected, diff, function (err, difference) {
+                        compare(actual, expected, diff, (err, difference) => {
                             if (err) return done(err);
 
                             params.difference = difference;

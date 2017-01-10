@@ -1,25 +1,27 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var queue = require('d3-queue').queue;
-var colors = require('colors/safe');
-var handlebars = require('handlebars');
+/* eslint-disable no-process-exit */
+
+const fs = require('fs');
+const path = require('path');
+const queue = require('d3-queue').queue;
+const colors = require('colors/safe');
+const handlebars = require('handlebars');
 
 module.exports = function (directory, implementation, options, run) {
-    var q = queue(1);
-    var server = require('./server')();
+    const q = queue(1);
+    const server = require('./server')();
 
-    var tests = options.tests || [];
+    const tests = options.tests || [];
 
     function shouldRunTest(group, test) {
         if (tests.length === 0)
             return true;
 
-        var id = group + '/' + test;
+        const id = `${group}/${test}`;
 
-        for (var i = 0; i < tests.length; i++) {
-            var k = id.indexOf(tests[i]);
+        for (let i = 0; i < tests.length; i++) {
+            const k = id.indexOf(tests[i]);
             if (k === 0 || id[k - 1] === '-' || id[k - 1] === '/')
                 return true;
         }
@@ -29,11 +31,11 @@ module.exports = function (directory, implementation, options, run) {
 
     q.defer(server.listen);
 
-    fs.readdirSync(directory).forEach(function (group) {
-        if (group === 'index.html' || group == 'results.html.tmpl' || group[0] === '.')
+    fs.readdirSync(directory).forEach((group) => {
+        if (group === 'index.html' || group === 'results.html.tmpl' || group[0] === '.')
             return;
 
-        fs.readdirSync(path.join(directory, group)).forEach(function (test) {
+        fs.readdirSync(path.join(directory, group)).forEach((test) => {
             if (!shouldRunTest(group, test))
                 return;
 
@@ -41,11 +43,11 @@ module.exports = function (directory, implementation, options, run) {
                 !fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
                 return;
 
-            var style = require(path.join(directory, group, test, 'style.json'));
+            const style = require(path.join(directory, group, test, 'style.json'));
 
             server.localizeURLs(style);
 
-            var params = Object.assign({
+            const params = Object.assign({
                 group: group,
                 test: test,
                 width: 512,
@@ -55,14 +57,14 @@ module.exports = function (directory, implementation, options, run) {
             }, style.metadata && style.metadata.test);
 
             if (implementation === 'native' && process.env.BUILDTYPE === 'Release' && params.group === 'debug') {
-                console.log(colors.gray('* skipped ' + params.group + ' ' + params.test));
+                console.log(colors.gray(`* skipped ${params.group} ${params.test}`));
                 return;
             }
 
-            var skipped = params.skipped && params.skipped[implementation]
+            const skipped = params.skipped && params.skipped[implementation];
             if (skipped) {
-                console.log(colors.gray('* skipped ' + params.group + ' ' + params.test +
-                    ' (' + skipped + ')'));
+                console.log(colors.gray(`* skipped ${params.group} ${params.test
+                    } (${skipped})`));
                 return;
             }
 
@@ -76,22 +78,22 @@ module.exports = function (directory, implementation, options, run) {
 
             params.ignored = params.ignored && implementation in params.ignored;
 
-            q.defer(function (callback) {
-                run(style, params, function(err) {
+            q.defer((callback) => {
+                run(style, params, (err) => {
                     if (err) return callback(err);
 
                     if (params.ignored && !params.ok) {
                         params.color = '#9E9E9E';
-                        console.log(colors.white('* ignore ' + params.group + ' ' + params.test));
+                        console.log(colors.white(`* ignore ${params.group} ${params.test}`));
                     } else if (params.ignored) {
                         params.color = '#E8A408';
-                        console.log(colors.yellow('* ignore ' + params.group + ' ' + params.test));
+                        console.log(colors.yellow(`* ignore ${params.group} ${params.test}`));
                     } else if (!params.ok) {
                         params.color = 'red';
-                        console.log(colors.red('* failed ' + params.group + ' ' + params.test));
+                        console.log(colors.red(`* failed ${params.group} ${params.test}`));
                     } else {
                         params.color = 'green';
-                        console.log(colors.green('* passed ' + params.group + ' ' + params.test));
+                        console.log(colors.green(`* passed ${params.group} ${params.test}`));
                     }
 
                     callback(null, params);
@@ -102,26 +104,26 @@ module.exports = function (directory, implementation, options, run) {
 
     q.defer(server.close);
 
-    q.awaitAll(function (err, results) {
+    q.awaitAll((err, results) => {
         if (err) {
             console.error(err);
-            setTimeout(function () { process.exit(-1); }, 0);
+            setTimeout(() => { process.exit(-1); }, 0);
             return;
         }
 
         results = results.slice(1, -1);
 
         if (process.env.UPDATE) {
-            console.log('Updated ' + results.length + ' tests.');
+            console.log(`Updated ${results.length} tests.`);
             process.exit(0);
         }
 
-        var passedCount = 0,
+        let passedCount = 0,
             ignoreCount = 0,
             ignorePassCount = 0,
             failedCount = 0;
 
-        results.forEach(function (params) {
+        results.forEach((params) => {
             if (params.ignored && !params.ok) {
                 ignoreCount++;
             } else if (params.ignored) {
@@ -133,7 +135,7 @@ module.exports = function (directory, implementation, options, run) {
             }
         });
 
-        var totalCount = passedCount + ignorePassCount + ignoreCount + failedCount;
+        const totalCount = passedCount + ignorePassCount + ignoreCount + failedCount;
 
         if (passedCount > 0) {
             console.log(colors.green('%d passed (%s%)'),
@@ -155,10 +157,10 @@ module.exports = function (directory, implementation, options, run) {
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
-        var template = handlebars.compile(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
-        var p = path.join(directory, 'index.html');
+        const template = handlebars.compile(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
+        const p = path.join(directory, 'index.html');
         fs.writeFileSync(p, template({results: results}));
-        console.log('Results at: ' + p);
+        console.log(`Results at: ${p}`);
 
         process.exit(failedCount === 0 ? 0 : 1);
     });
