@@ -1244,7 +1244,7 @@ test('Style defers expensive methods', (t) => {
 test('Style#query*Features', (t) => {
 
     // These tests only cover filter validation. Most tests for these methods
-    // live in mapbox-gl-test-suite.
+    // live in the integration tests.
 
     let style;
     let onError;

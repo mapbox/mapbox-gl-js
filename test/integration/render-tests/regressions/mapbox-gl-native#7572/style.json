@@ -1,0 +1,50 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "operations": [
+        [
+          "setLayoutProperty",
+          "b",
+          "icon-offset",
+          [0, 10]
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "transition": {
+    "duration": 0
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "a",
+      "type": "symbol",
+      "source": "geojson",
+      "layout": {
+        "icon-image": "generic_icon",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "icon-offset": [0, 0]
+      }
+    },
+    {
+      "id": "b",
+      "ref": "a"
+    }
+  ]
+}

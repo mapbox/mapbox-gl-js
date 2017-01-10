@@ -52,7 +52,7 @@ map.addControl(new mapboxgl.ScaleControl());
 map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
-        "data": "/node_modules/mapbox-gl-test-suite/data/linestring.geojson"
+        "data": "/test/integration/data/linestring.geojson"
     });
     map.addLayer({
         "id": "route",

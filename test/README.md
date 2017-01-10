@@ -8,7 +8,7 @@ First you must configure your development environment per [`../CONTRIBUTING.md`]
 There are two test suites associated with Mapbox GL JS
 
  - `npm test` runs quick unit tests
- - `npm run test-suite` runs integration tests from the [mapbox-gl-test-suite](https://github.com/mapbox/mapbox-gl-test-suite) repository
+ - `npm run test-suite` runs slower integration tests
 
 ## Writing Unit Tests
 

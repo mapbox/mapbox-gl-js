@@ -1,0 +1,46 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "ignored": {
+        "js": "https://github.com/mapbox/mapbox-gl-js/issues/2059"
+      },
+      "skipped": {
+        "js": true
+      },
+      "operations": [
+        [
+          "addImage",
+          "marker",
+          "./image/marker.png"
+        ],
+        [
+          "addLayer",
+          {
+            "id": "geometry",
+            "type": "symbol",
+            "source": "geometry",
+            "layout": {
+              "icon-image": "marker"
+            }
+          }
+        ],
+        [
+          "wait"
+        ]
+      ]
+    }
+  },
+  "sources": {
+    "geometry": {
+      "type": "geojson",
+      "data": {
+        "type": "Point",
+        "coordinates": [0, 0]
+      }
+    }
+  },
+  "layers": []
+}
