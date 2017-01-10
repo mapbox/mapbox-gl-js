@@ -17,6 +17,7 @@ toc:
   - GeolocateControl
   - AttributionControl
   - ScaleControl
+  - LogoControl
   - name: Handlers
     description: |
       Handlers add different kinds of interactivity to the map -
