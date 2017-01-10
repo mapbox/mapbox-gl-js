@@ -7,6 +7,9 @@
       "ignored": {
         "js": "https://github.com/mapbox/mapbox-gl-js/issues/2059"
       },
+      "skipped": {
+        "js": true
+      },
       "operations": [
         [
           "addImage",
@@ -38,5 +41,6 @@
         "coordinates": [0, 0]
       }
     }
-  }
+  },
+  "layers": []
 }
