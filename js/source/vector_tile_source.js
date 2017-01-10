@@ -69,7 +69,7 @@ class VectorTileSource extends Evented {
             showCollisionBoxes: this.map.showCollisionBoxes
         };
 
-        if (!tile.workerID) {
+        if (!tile.workerID || tile.state === 'expired') {
             tile.workerID = this.dispatcher.send('loadTile', params, done.bind(this));
         } else if (tile.state === 'loading') {
             // schedule tile reloading after it has been loaded
@@ -85,6 +85,7 @@ class VectorTileSource extends Evented {
             if (err) {
                 return callback(err);
             }
+            tile.setExpiryData(data);
 
             tile.loadVectorData(data, this.map.painter);
 

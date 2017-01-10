@@ -48,6 +48,7 @@ class SourceCache extends Evented {
 
         this._tiles = {};
         this._cache = new Cache(0, this.unloadTile.bind(this));
+        this._timers = {};
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
     }
@@ -133,21 +134,25 @@ class SourceCache extends Evented {
     reload() {
         this._cache.reset();
         for (const i in this._tiles) {
-            const tile = this._tiles[i];
-
-            // The difference between "loading" tiles and "reloading" tiles is
-            // that "reloading" tiles are "renderable". Therefore, a "loading"
-            // tile cannot become a "reloading" tile without first becoming
-            // a "loaded" tile.
-            if (tile.state !== 'loading') {
-                tile.state = 'reloading';
-            }
-
-            this.loadTile(this._tiles[i], this._tileLoaded.bind(this, this._tiles[i]));
+            this.reloadTile(i, 'reloading');
         }
     }
 
-    _tileLoaded(tile, err) {
+    reloadTile(id, state) {
+        const tile = this._tiles[id];
+
+        // The difference between "loading" tiles and "reloading" or "expired"
+        // tiles is that "reloading"/"expired" tiles are "renderable".
+        // Therefore, a "loading" tile cannot become a "reloading" tile without
+        // first becoming a "loaded" tile.
+        if (tile.state !== 'loading') {
+            tile.state = state;
+        }
+
+        this.loadTile(tile, this._tileLoaded.bind(this, tile, id));
+    }
+
+    _tileLoaded(tile, id, err) {
         if (err) {
             tile.state = 'errored';
             this._source.fire('error', {tile: tile, error: err});
@@ -157,9 +162,10 @@ class SourceCache extends Evented {
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
 
+        this._setTimers(id, tile);
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
-        // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+        // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
     }
 
@@ -411,7 +417,7 @@ class SourceCache extends Evented {
             const zoom = coord.z;
             const overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
             tile = new Tile(wrapped, this._source.tileSize * overscaling, this._source.maxzoom);
-            this.loadTile(tile, this._tileLoaded.bind(this, tile));
+            this.loadTile(tile, this._tileLoaded.bind(this, tile, coord.id));
         }
 
         tile.uses++;
@@ -419,6 +425,28 @@ class SourceCache extends Evented {
         this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         return tile;
+    }
+
+    _setTimers(id, tile) {
+        if (tile.cacheControl) {
+            // Cache-Control headers set max age (in seconds) from the time of request
+            const parsedCC = util.parseCacheControl(tile.cacheControl);
+            const expires = parsedCC['max-age'] * 1000 - (new Date().getTime() - tile.timeAdded);
+
+            this._timers[id] = setTimeout(() => {
+                this.reloadTile(id, 'expired');
+                delete this._timers[id];
+            }, expires);
+            // TODO what about s-maxage? what if s-maxage and not max-age?
+        } else if (tile.expires) {
+            // Expires headers set absolute expiration times
+            const expires = new Date(tile.expires).getTime() - new Date().getTime();
+
+            this._timers[id] = setTimeout(() => {
+                this.reloadTile(id, 'expired');
+                delete this._timers[id];
+            }, expires);
+        }
     }
 
     /**

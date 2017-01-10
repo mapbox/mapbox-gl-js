@@ -61,9 +61,13 @@ class VectorTileWorkerSource {
             workerTile.parse(vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
                 if (err) return callback(err);
 
+                const cacheControl = {};
+                if (vectorTile.expires) cacheControl.expires = vectorTile.expires;
+                if (vectorTile.cacheControl) cacheControl.cacheControl = vectorTile.cacheControl;
+
                 // Not transferring rawTileData because the worker needs to retain its copy.
                 callback(null,
-                    util.extend({rawTileData: vectorTile.rawData}, result),
+                    util.extend({rawTileData: vectorTile.rawData}, result, cacheControl),
                     transferrables);
             });
 
@@ -167,7 +171,8 @@ class VectorTileWorkerSource {
             if (err) { return callback(err); }
             const vectorTile = new vt.VectorTile(new Protobuf(response.data));
             vectorTile.rawData = response.data;
-            vectorTile.cacheControl = xhr.getResponseHeader('Cache-Control');
+            vectorTile.cacheControl = response.cacheControl;
+            vectorTile.expires = response.expires;
             callback(err, vectorTile);
         }
     }

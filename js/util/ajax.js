@@ -40,7 +40,8 @@ exports.getArrayBuffer = function(url, callback) {
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
             callback(null, {
                 data: xhr.response,
-                cacheControl: xhr.getResponseHeader('Cache-Control')
+                cacheControl: xhr.getResponseHeader('Cache-Control'),
+                expires: xhr.getResponseHeader('Expires')
             });
         } else {
             callback(new Error(xhr.statusText));
