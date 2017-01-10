@@ -70,8 +70,8 @@ exports.getImage = function(url, callback) {
             callback(null, img);
             URL.revokeObjectURL(img.src);
         };
-        const blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
-        img.src = imgData.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+        const blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
+        img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
     });
 };
 
