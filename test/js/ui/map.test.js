@@ -1155,6 +1155,23 @@ test('Map', (t) => {
         });
     });
 
+    t.test('Map#isMoving', (t) => {
+        t.plan(3);
+        const map = createMap();
+
+        t.equal(map.isMoving(), false);
+
+        map.on('movestart', () => {
+            t.equal(map.isMoving(), true);
+        });
+
+        map.on('moveend', () => {
+            t.equal(map.isMoving(), false);
+        });
+
+        map.zoomTo(5, { duration: 0 });
+    });
+
     t.end();
 });
 
