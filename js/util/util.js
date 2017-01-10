@@ -431,7 +431,7 @@ exports.sphericalToCartesian = function(spherical: Array<number>): Array<number>
  * @return object containing parsed header info.
  */
 
-exports.parseCacheControl = function(cacheControl) {
+exports.parseCacheControl = function(cacheControl: string): Object {
     // Taken from [Wreck](https://github.com/hapijs/wreck)
     const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
 
