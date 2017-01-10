@@ -487,19 +487,6 @@ class SourceCache extends Evented {
     }
 
     /**
-     * Remove tiles that h
-     * @private
-     */
-    clearExpiredTiles() {
-        for (const id in this._tiles)
-            // check if the header is before now
-            // remove it if it is
-            this.removeTile(id);
-        this._cache.reset();
-    }
-
-
-    /**
      * Search through our current tiles and attempt to find the tiles that
      * cover the given bounds.
      * @param {Array<Coordinate>} queryGeometry coordinates of the corners of bounding rectangle
