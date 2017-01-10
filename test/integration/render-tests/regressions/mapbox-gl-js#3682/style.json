@@ -6,7 +6,7 @@
       "height": 64,
       "ignored": {
         "js": "https://github.com/mapbox/mapbox-gl-js/issues/3682",
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/4860"
+        "native": "https://github.com/mapbox/mapbox-gl-js/issues/3682"
       },
       "skipped": {
         "js": true
