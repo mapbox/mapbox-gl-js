@@ -22,17 +22,15 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function () {
-    // Add a GeoJSON source containing the state polygons.
-    map.addSource('states', {
-        'type': 'geojson',
-        'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_1_states_provinces_shp.geojson'
-    });
 
     // Add a layer showing the state polygons.
     map.addLayer({
         'id': 'states-layer',
         'type': 'fill',
-        'source': 'states',
+        'source': {
+            'type': 'geojson',
+            'data': 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_1_states_provinces_shp.geojson'
+        },
         'paint': {
             'fill-color': 'rgba(200, 100, 240, 0.4)',
             'fill-outline-color': 'rgba(200, 100, 240, 1)'

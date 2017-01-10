@@ -510,9 +510,15 @@ class Map extends Camera {
      * which the feature belongs. Layout and paint properties in this object contain values which are fully evaluated
      * for the given zoom level and feature.
      *
-     * Only visible features are returned. The topmost rendered feature appears first in the returned array, and
-     * subsequent features are sorted by descending z-order. Features that are rendered multiple times (due to wrapping
-     * across the antimeridian at low zoom levels) are returned only once (though subject to the following caveat).
+     * Features from layers whose `visibility` property is `"none"`, or from layers whose zoom range excludes the
+     * current zoom level are not included. Symbol features that have been hidden due to text or icon collision are
+     * not included. Features from all other layers are included, including features that may have no visible
+     * contribution to the rendered result; for example, because the layer's opacity or color alpha component is set to
+     * 0.
+     *
+     * The topmost rendered feature appears first in the returned array, and subsequent features are sorted by
+     * descending z-order. Features that are rendered multiple times (due to wrapping across the antimeridian at low
+     * zoom levels) are returned only once (though subject to the following caveat).
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
      * geometries may be split or duplicated across tile boundaries and, as a result, features may appear multiple
