@@ -49,6 +49,7 @@ class SourceCache extends Evented {
         this._tiles = {};
         this._cache = new Cache(0, this.unloadTile.bind(this));
         this._timers = {};
+        this._cacheTimers = {};
 
         this._isIdRenderable = this._isIdRenderable.bind(this);
     }
@@ -262,7 +263,15 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(coord.id)) {
                 retain[coord.id] = true;
-                return this._cache.get(coord.id);
+                const cachedTile = this._cache.get(coord.id);
+
+                if (this._cacheTimers[coord.id]) {
+                    clearTimeout(this._cacheTimers[coord.id]);
+                    delete this._cacheTimers[coord.id];
+                    this._setTimers(coord.id, cachedTile);
+                }
+
+                return cachedTile;
             }
         }
     }
@@ -410,6 +419,11 @@ class SourceCache extends Evented {
             tile = this._cache.get(wrapped.id);
             if (tile) {
                 tile.redoPlacement(this._source);
+                if (this._cacheTimers[wrapped.id]) {
+                    clearTimeout(this._cacheTimers[wrapped.id]);
+                    delete this._cacheTimers[wrapped.id];
+                    this._setTimers(wrapped.id, tile);
+                }
             }
         }
 
@@ -428,24 +442,22 @@ class SourceCache extends Evented {
     }
 
     _setTimers(id, tile) {
-        if (tile.cacheControl) {
-            // Cache-Control headers set max age (in seconds) from the time of request
-            const parsedCC = util.parseCacheControl(tile.cacheControl);
-            const expires = parsedCC['max-age'] * 1000 - (new Date().getTime() - tile.timeAdded);
-
+        const tileExpires = tile.getExpiry();
+        if (tileExpires) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
                 delete this._timers[id];
-            }, expires);
-            // TODO what about s-maxage? what if s-maxage and not max-age?
-        } else if (tile.expires) {
-            // Expires headers set absolute expiration times
-            const expires = new Date(tile.expires).getTime() - new Date().getTime();
+            }, tileExpires - new Date().getTime());
+        }
+    }
 
-            this._timers[id] = setTimeout(() => {
-                this.reloadTile(id, 'expired');
+    _setCacheTimers(id, tile) {
+        const tileExpires = tile.getExpiry();
+        if (tileExpires) {
+            this._cacheTimers[id] = setTimeout(() => {
+                this._cache.remove(id);
                 delete this._timers[id];
-            }, expires);
+            }, tileExpires - new Date().getTime());
         }
     }
 
@@ -462,13 +474,19 @@ class SourceCache extends Evented {
 
         tile.uses--;
         delete this._tiles[id];
+        if (this._timers[id]) {
+            clearTimeout(this._timers[id]);
+            delete this._timers[id];
+        }
         this._source.fire('data', { tile: tile, coord: tile.coord, dataType: 'tile' });
 
         if (tile.uses > 0)
             return;
 
         if (tile.hasData()) {
-            this._cache.add(tile.coord.wrapped().id, tile);
+            const wrappedId = tile.coord.wrapped().id;
+            this._cache.add(wrappedId, tile);
+            this._setCacheTimers(wrappedId, tile);
         } else {
             tile.aborted = true;
             this.abortTile(tile);

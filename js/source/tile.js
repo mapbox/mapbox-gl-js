@@ -204,6 +204,18 @@ class Tile {
         if (data.cacheControl) this.cacheControl = data.cacheControl;
         if (data.expires) this.expires = data.expires;
     }
+
+    getExpiry() {
+        if (this.cacheControl) {
+            // Cache-Control headers set max age (in seconds) from the time of request
+            const parsedCC = util.parseCacheControl(this.cacheControl);
+            if (parsedCC['max-age']) return this.timeAdded + parsedCC['max-age'] * 1000;
+            // what about s-maxage? what if s-maxage and not max-age?
+        } else if (this.expires) {
+            // Expires headers set absolute expiration times
+            return new Date(this.expires).getTime();
+        }
+    }
 }
 
 module.exports = Tile;
