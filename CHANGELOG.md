@@ -1,3 +1,18 @@
+## 0.31.0 (Jan 10 2017)
+
+#### New Features
+
+- Add `renderWorldCopies` option to the `Map` constructor to give users control over whether multiple worlds are rendered in a map #3885
+
+#### Bug Fixes
+
+- Fix performance regression triggered when `Map` pitch or bearing is changed #3938
+- Fix null pointer exception caused by trying to clear an `undefined` source #3903
+
+#### Miscellaneous
+
+- Incorporate integration tests formerly at [`mapbox-gl-test-suite`](https://github.com/mapbox/mapbox-gl-test-suite) into this repository #3834
+
 ## 0.30.0 (Jan 5 2017)
 
 #### New Features
