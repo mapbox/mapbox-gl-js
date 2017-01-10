@@ -11,11 +11,8 @@ const DOM = require('../../util/dom');
 **/
 
 class LogoControl {
-    constructor() {
-    }
 
-    onAdd(map) {
-        this._map = map;
+    onAdd() {
         this._container = DOM.create('div', 'mapboxgl-ctrl');
         const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
         anchor.target = "_blank";
@@ -26,7 +23,10 @@ class LogoControl {
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
+    }
+
+    getDefaultPosition() {
+        return 'bottom-left';
     }
 }
 

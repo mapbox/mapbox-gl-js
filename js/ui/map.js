@@ -203,7 +203,7 @@ class Map extends Camera {
         if (options.style) this.setStyle(options.style);
 
         if (options.attributionControl) this.addControl(new AttributionControl());
-        if (options.logoControl) this.addControl(new LogoControl(), 'bottom-left');
+        if (options.logoControl) this.addControl(new LogoControl());
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {
