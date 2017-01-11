@@ -2,7 +2,7 @@
 
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
-
+const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const WritingMode = {
     horizontal: 1,
@@ -36,8 +36,6 @@ function Shaping(positionedGlyphs, text, top, bottom, left, right, writingMode) 
     this.writingMode = writingMode;
 }
 
-const newLine = 0x0a;
-
 function breakLines(text, lineBreakPoints) {
     const lines = [];
     let start = 0;
@@ -53,15 +51,18 @@ function breakLines(text, lineBreakPoints) {
 }
 
 function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
-    text = text.trim();
-    if (writingMode === WritingMode.vertical) text = verticalizePunctuation(text);
+    let logicalInput = text.trim();
+    if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
     const positionedGlyphs = [];
-    const shaping = new Shaping(positionedGlyphs, text, translate[1], translate[1], translate[0], translate[0], writingMode);
+    const shaping = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
 
-    const lines = (writingMode === WritingMode.horizontal && maxWidth) ?
-        breakLines(text, determineLineBreaks(text, spacing, maxWidth, glyphs)) :
-        [text];
+    let lines;
+    if (rtlTextPlugin.processBidirectionalText) {
+        lines = rtlTextPlugin.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    } else {
+        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    }
 
     shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
 
@@ -81,6 +82,7 @@ const whitespace = {
 };
 
 const breakable = {
+    0x0a:   true, // newline
     0x20:   true, // space
     0x26:   true, // ampersand
     0x28:   true, // left parenthesis
@@ -98,8 +100,6 @@ const breakable = {
     // Consider "neutral orientation" characters at scriptDetection.charHasNeutralVerticalOrientation
     // See https://github.com/mapbox/mapbox-gl-js/issues/3658
 };
-
-breakable[newLine] = true;
 
 function determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphs) {
     let totalWidth = 0;

@@ -21,6 +21,7 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const rtlTextPlugin = require('../../source/rtl_text_plugin');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -143,7 +144,11 @@ class SymbolBucket {
 
             let text;
             if (hasText) {
-                text = resolveText(feature, layout);
+                if (rtlTextPlugin.applyArabicShaping) {
+                    text = rtlTextPlugin.applyArabicShaping(resolveText(feature, layout));
+                } else {
+                    text = resolveText(feature, layout);
+                }
             }
 
             let icon;
