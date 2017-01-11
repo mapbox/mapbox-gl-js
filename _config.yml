@@ -1,6 +1,0 @@
-url: https://122e4e-mapbox.global.ssl.fastly.net
-api: https://122e4e-mapbox.global.ssl.fastly.net/core
-tileApi: https://api-maps-staging.tilestream.net
-source: docs
-permalink: /
-baseurl: /mapbox-gl-style-spec

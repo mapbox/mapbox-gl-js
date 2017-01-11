@@ -1,6 +1,6 @@
 _site
 node_modules
 *.log
-/docs/index.html
+/docs/style-spec/index.html
 coverage
 .nyc_output
