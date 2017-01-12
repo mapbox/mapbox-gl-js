@@ -4,6 +4,7 @@ const test = require('mapbox-gl-js-test').test;
 const window = require('../../../../js/util/window');
 const Map = require('../../../../js/ui/map');
 const GeolocateControl = require('../../../../js/ui/control/geolocate_control');
+const map = require('object.map');
 
 // window and navigator globals need to be set for mock-geolocation
 global.window = {};
@@ -24,6 +25,13 @@ function createMap() {
             sources: {},
             layers: []
         }
+    });
+}
+
+// convert the coordinates of a LngLat object to a fixed number of digits
+function lngLatAsFixed(lngLat, digits) {
+    return map(lngLat, (val) => {
+        return val.toFixed(digits);
     });
 }
 
@@ -84,20 +92,69 @@ test('GeolocateControl geolocate event', (t) => {
     });
 });
 
-test('GeolocateControl no watching map centered on geolocation', (t) => {
+test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     const map = createMap();
-    const geolocate = new GeolocateControl();
+    const geolocate = new GeolocateControl({
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0,
+            maxZoom: 10
+        }
+    });
+    map.addControl(geolocate);
+
+    const click = new window.Event('click');
+
+    geolocate.on('ready', () => {
+        map.once('moveend', (position) => {
+            t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
+            t.end();
+        });
+        geolocate._geolocateButton.dispatchEvent(click);
+        geolocation.send({latitude: 10, longitude: 20, accuracy: 1});
+    });
+});
+
+test('GeolocateControl no watching map camera on geolocation', (t) => {
+    const map = createMap();
+    const geolocate = new GeolocateControl({
+        fitBoundsOptions: {
+            maxZoom: 20,
+            linear: true,
+            duration: 0
+        }
+    });
     map.addControl(geolocate);
 
     const click = new window.Event('click');
 
     geolocate.on('ready', () => {
         map.on('moveend', () => {
-            t.deepEqual(map.getCenter(), { lat: 10, lng: 20 }, 'map centered on location');
+            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location');
+
+            const mapBounds = map.getBounds();
+
+            // map bounds should contain or equal accuracy bounds, that is the ensure accuracy bounds doesn't fall outside the map bounds
+            const accuracyBounds = map.getCenter().toBounds(1000);
+            t.ok(accuracyBounds.getNorth().toFixed(4) <= mapBounds.getNorth().toFixed(4), 'map contains north of accuracy radius');
+            t.ok(accuracyBounds.getSouth().toFixed(4) >= mapBounds.getSouth().toFixed(4), 'map contains south of accuracy radius');
+            t.ok(accuracyBounds.getEast().toFixed(4) <= mapBounds.getEast().toFixed(4), 'map contains east of accuracy radius');
+            t.ok(accuracyBounds.getWest().toFixed(4) >= mapBounds.getWest().toFixed(4), 'map contains west of accuracy radius');
+
+            // map bounds should not be too much bigger on all edges of the accuracy bounds (this test will only work for an orthogonal bearing),
+            // ensures map bounds does not contain buffered accuracy bounds, as if it does there is too much gap around the accuracy bounds
+            const bufferedAccuracyBounds = map.getCenter().toBounds(1100);
+            t.notOk(
+                (bufferedAccuracyBounds.getNorth().toFixed(4) < mapBounds.getNorth().toFixed(4)) &&
+                (bufferedAccuracyBounds.getSouth().toFixed(4) > mapBounds.getSouth().toFixed(4)) &&
+                (bufferedAccuracyBounds.getEast().toFixed(4) < mapBounds.getEast().toFixed(4)) &&
+                (bufferedAccuracyBounds.getWest().toFixed(4) > mapBounds.getWest().toFixed(4)),
+            'map bounds is much is larger than the accuracy radius');
+
             t.end();
         });
         geolocate._geolocateButton.dispatchEvent(click);
-        geolocation.send({latitude: 10, longitude: 20, accuracy: 30});
+        geolocation.send({latitude: 10, longitude: 20, accuracy: 1000});
     });
 });
 
@@ -106,6 +163,10 @@ test('GeolocateControl watching map updates recenter on location with marker', (
     const geolocate = new GeolocateControl({
         watchPosition: true,
         showMarker: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        },
         markerPaintProperties: {
             'circle-radius': 10,
             'circle-color': '#000',
@@ -122,11 +183,11 @@ test('GeolocateControl watching map updates recenter on location with marker', (
 
     geolocate.on('ready', () => {
         map.once('moveend', () => {
-            t.deepEqual(map.getCenter(), { lat: 10, lng: 20 }, 'map centered on location after 1st update');
+            t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location after 1st update');
             t.ok(map.getLayer('_geolocate-control-marker'), 'has marker layer');
             t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#000', 'markerPaintProperty circle-color');
             map.once('moveend', () => {
-                t.deepEqual(map.getCenter(), { lat: 40, lng: 50 }, 'map centered on location after 2nd update');
+                t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 40, lng: 50 }, 'map centered on location after 2nd update');
                 geolocate.once('error', () => {
                     t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#f00', 'markerStalePaintProperty circle-color');
                     t.end();
@@ -143,7 +204,11 @@ test('GeolocateControl watching map updates recenter on location with marker', (
 test('GeolocateControl watching map background event', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true
+        watchPosition: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
     });
     map.addControl(geolocate);
 
@@ -171,7 +236,11 @@ test('GeolocateControl watching map background event', (t) => {
 test('GeolocateControl watching map background state', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true
+        watchPosition: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
     });
     map.addControl(geolocate);
 
@@ -202,10 +271,13 @@ test('GeolocateControl watching map background state', (t) => {
 });
 
 test('GeolocateControl active_lock event', (t) => {
-    console.log('start final test');
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true
+        watchPosition: true,
+        fitBoundsOptions: {
+            linear: true,
+            duration: 0
+        }
     });
     map.addControl(geolocate);
 
