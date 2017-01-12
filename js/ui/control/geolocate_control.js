@@ -47,9 +47,9 @@ function checkGeolocationSupport(callback) {
  * geolocation support is not available, the GeolocateControl will not
  * be visible.
  *
- * The GeolocateControl has two modes. If `watchPosition` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the device location. If the device moves, the map won't update. This is most suited for the desktop. If `watchPosition` is `true` the control acts as a toggle button that when active the device's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the device's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so that the location marker still updates but the camera doesn't.
- *
  * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
+ *
+ * The GeolocateControl has two modes. If `watchPosition` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the device location. If the device moves, the map won't update. This is most suited for the desktop. If `watchPosition` is `true` the control acts as a toggle button that when active the device's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the device's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so that the location marker still updates but the camera doesn't.
  *
  * @implements {IControl}
  * @param {Object} [options]
