@@ -8,6 +8,7 @@ const assert = require('assert');
 const LngLat = require('../../geo/lng_lat');
 
 const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
+const defaultFitBoundsOptions = { maxZoom: 18 };
 const className = 'mapboxgl-ctrl';
 
 const markerLayerName = '_geolocate-control-marker';
@@ -175,9 +176,7 @@ class GeolocateControl extends Evented {
         const center = new LngLat(position.coords.longitude, position.coords.latitude);
         const radius = position.coords.accuracy;
 
-        this._map.fitBounds(center.toBounds(radius), util.extend({
-            maxZoom: (this.options.maxZoom !== undefined) ? this.options.maxZoom : 18
-        }, this.options.fitBoundsOptions || {}), {
+        this._map.fitBounds(center.toBounds(radius), util.extend(defaultFitBoundsOptions, this.options.fitBoundsOptions || {}), {
             geolocateSource: true // tag this camera change so it won't cause the control to change to background state
         });
     }
