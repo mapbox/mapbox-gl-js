@@ -35,11 +35,27 @@ function drawTerrain(painter, sourceCache, layer, coords){
         tile.uploaded=true;
         if (!tile.prepared) prepareTerrain(painter, tile);
         if (tile.texture){
-            console.log(tile.texture);
             const program = painter.useProgram('terrain');
-
+            console.log(tile);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, tile.texture);
+
+            gl.uniformMatrix4fv(program.u_matrix, false, painter.transform.calculatePosMatrix(coord));
+            gl.uniform1i(program.u_image, 0);
+
+            gl.uniform2fv(program.u_dimension, [256,256]);
+
+
+    // uniforms::u_mode,
+    // uniforms::u_dimension,
+    // uniforms::u_zoom,
+    // uniforms::u_azimuth,
+    // uniforms::u_zenith,
+    // uniforms::u_mipmap,
+    // uniforms::u_exaggeration,
+    // uniforms::u_shadow,
+    // uniforms::u_highlight,
+    // uniforms::u_accent
         }
     }
 }
