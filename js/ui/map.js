@@ -842,7 +842,7 @@ class Map extends Camera {
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
-     * @see [Highlight features under the mouse pointer](calendar.google.com/calendar/render#main_7)
+     * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter(layer, filter) {
