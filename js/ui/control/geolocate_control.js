@@ -5,6 +5,7 @@ const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
 const assert = require('assert');
+const LngLat = require('../../geo/lng_lat');
 
 const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 const className = 'mapboxgl-ctrl';
@@ -47,14 +48,18 @@ function checkGeolocationSupport(callback) {
  *
  * The GeolocateControl has two modes. If `watchPosition` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the device location. If the device moves, the map won't update. This is most suited for the desktop. If `watchPosition` is `true` the control acts as a toggle button that when active the device's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the device's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so that the location marker still updates but the camera doesn't.
  *
+ * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
+ *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the device location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
  * @param {Object} [options.watchPosition=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the device location as it changes.
  * @param {Object} [options.showMarker=true] By default a marker will be added to the map with the device's location. Set to `false` to disable.
  * @param {Object} [options.markerPaintProperties={'circle-radius': 10, 'circle-color': '#33b5e5', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker. The default is a blue dot with a white stroke.
  * @param {Object} [options.markerShadowPaintProperties={ 'circle-radius': 14, 'circle-color': '#000', 'circle-opacity': 0.5, 'circle-blur': 0.4, 'circle-translate': [2, 2], 'circle-translate-anchor': 'viewport' }] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker, used as a "shadow" layer. The default is a blurred semi-transparent black shadow.
  * @param {Object} [options.markerStalePaintProperties={'circle-color': '#a6d5e5', 'circle-opacity': 0.5, 'circle-stroke-opacity': 0.8}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object applied to the base markerPaintProperties to customize the device location marker in a stale state. The marker is stale when there was a Geolocation error so the previous reported location is used, which may no longer be current. The default is a faded blue dot with a white stroke.
+ *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
@@ -167,12 +172,12 @@ class GeolocateControl extends Evented {
     }
 
     _updateCamera(position) {
-        this._map.jumpTo({
-            center: [position.coords.longitude, position.coords.latitude],
-            zoom: 17,
-            bearing: 0,
-            pitch: 0
-        }, {
+        const center = new LngLat(position.coords.longitude, position.coords.latitude);
+        const radius = position.coords.accuracy;
+
+        this._map.fitBounds(center.toBounds(radius), util.extend({
+            maxZoom: (this.options.maxZoom !== undefined) ? this.options.maxZoom : 18
+        }, this.options.fitBoundsOptions || {}), {
             geolocateSource: true // tag this camera change so it won't cause the control to change to background state
         });
     }
