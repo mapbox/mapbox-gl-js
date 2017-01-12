@@ -106,7 +106,7 @@ test('GeolocateControl geolocate fitBoundsOptions', (t) => {
     const click = new window.Event('click');
 
     geolocate.on('ready', () => {
-        map.once('moveend', (position) => {
+        map.once('moveend', () => {
             t.equal(map.getZoom(), 10, 'geolocate fitBounds maxZoom');
             t.end();
         });
