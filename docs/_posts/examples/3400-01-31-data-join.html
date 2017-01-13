@@ -16,13 +16,14 @@ var map = new mapboxgl.Map({
     zoom: 1
 });
 
-//Get the client data to join 
+// Generate client data to join to vector tiles
+// Key is the property to join, value is the measure to style on
 // EX: {"01" : 27, "02" : 89}
 var maxValue = 100;
-var data = {}
-for (var i=1; i<=78; i++) {
-    var id = (i<10) ? ("0" + i) : i;
-    var randomNum = Math.floor((Math.random() * maxValue) + 1)
+var data = {};
+for (var i = 1; i <= 78; i++) {
+    var id = (i < 10) ? ("0" + i) : i;
+    var randomNum = Math.floor((Math.random() * maxValue) + 1);
     data[id] = randomNum;
 }
 
@@ -43,13 +44,13 @@ map.on('load', function() {
     var stops = [["0", "rgba(0,0,0,0)"]];
 
     // Calculate color based on the data value
-    for (var key in data){
+    for (var key in data) {
         var green = ((data[key] / maxValue) * 255);
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
         stops.push([key, color]);
-    };
+    }
 
-    // Add layer from the vector tile source with a joined categorical data-driven style
+    // Add layer from the vector tile source with data-driven style
     map.addLayer({
         "id": "states-join",
         "type": "fill",
