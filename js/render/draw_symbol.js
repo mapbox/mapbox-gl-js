@@ -88,7 +88,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.disable(gl.DEPTH_TEST);
     }
 
-    let program;
+    let program, prevFontstack;
 
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
@@ -99,7 +99,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const isSDF = isText || bucket.sdfIcons;
 
-        if (!program) {
+        if (!program || bucket.fontstack !== prevFontstack) {
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon');
 
             setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, size,
@@ -113,6 +113,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap, size, haloWidth, haloColor, haloBlur, color);
+
+        prevFontstack = bucket.fontstack;
     }
 
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
