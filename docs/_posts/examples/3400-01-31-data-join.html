@@ -1,8 +1,8 @@
 --- 
 layout: example 
 category: example 
-title: Join data to vector tiles
-description: Create a choropleth map using client data joined to vector tile geometry
+title: Join client data to vector tiles
+description: Style a choropleth by matching client properties data to vector tile geometry
 tags: 
   - sources 
 ---
@@ -20,7 +20,7 @@ var map = new mapboxgl.Map({
 // Client data to join to vector tile geometry
 // USA unemplyoment rate in 2009
 // Source https://data.bls.gov/timeseries/LNS14000000
-var maxValue = 15;
+var maxValue = 13;
 var data = [{
     "STATE_ID": "01",
     "unemployment": 13.17
@@ -195,7 +195,6 @@ map.on('load', function() {
 
     // Calculate color based on the data value
     data.forEach(function(row) {
-
         var green = ((row[dataStyleProp] / maxValue) * 255);
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
         stops.push([row[dataMatchProp], color]);
@@ -214,6 +213,6 @@ map.on('load', function() {
                 "stops": stops
             }
         }
-    });
+    }, 'waterway-label');
 });
 </script>
