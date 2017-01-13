@@ -1,11 +1,12 @@
 --- 
 layout: example 
 category: example 
-title: Join client data to vector tiles 
-description: Use data-driven styles to join client data to vector tiles
+title: Join data to vector tiles
+description: Create a choropleth map using client data joined to vector tile geometry
 tags: 
   - sources 
 ---
+
 
 <div id='map'></div>
 <script>
@@ -16,53 +17,253 @@ var map = new mapboxgl.Map({
     zoom: 1
 });
 
-// Generate client data to join to vector tiles
-// Key is the property to join, value is the measure to style on
-// EX: {"01" : 27, "02" : 89}
-var maxValue = 100;
-var data = {};
-for (var i = 1; i <= 78; i++) {
-    var id = (i < 10) ? ("0" + i) : i;
-    var randomNum = Math.floor((Math.random() * maxValue) + 1);
-    data[id] = randomNum;
-}
+// Client data to join to vector tile geometry
+// USA unemplyoment rate in 2009
+// Source https://data.bls.gov/timeseries/LNS14000000
+var maxValue = 15;
+var data = [
+  {
+    "STATE_ID": "01",
+    "unemployment": 13.17
+  },
+  {
+    "STATE_ID": "02",
+    "unemployment": 9.5
+  },
+  {
+    "STATE_ID": "04",
+    "unemployment": 12.15
+  },
+  {
+    "STATE_ID": "05",
+    "unemployment": 8.99
+  },
+  {
+    "STATE_ID": "06",
+    "unemployment": 11.83
+  },
+  {
+    "STATE_ID": "08",
+    "unemployment": 7.52
+  },
+  {
+    "STATE_ID": "09",
+    "unemployment": 6.44
+  },
+  {
+    "STATE_ID": "10",
+    "unemployment": 5.17
+  },
+  {
+    "STATE_ID": "12",
+    "unemployment": 9.67
+  },
+  {
+    "STATE_ID": "13",
+    "unemployment": 10.64
+  },
+  {
+    "STATE_ID": "15",
+    "unemployment": 12.38
+  },
+  {
+    "STATE_ID": "16",
+    "unemployment": 10.13
+  },
+  {
+    "STATE_ID": "17",
+    "unemployment": 9.58
+  },
+  {
+    "STATE_ID": "18",
+    "unemployment": 10.63
+  },
+  {
+    "STATE_ID": "19",
+    "unemployment": 8.09
+  },
+  {
+    "STATE_ID": "20",
+    "unemployment": 5.93
+  },
+  {
+    "STATE_ID": "21",
+    "unemployment": 9.86
+  },
+  {
+    "STATE_ID": "22",
+    "unemployment": 9.81
+  },
+  {
+    "STATE_ID": "23",
+    "unemployment": 7.82
+  },
+  {
+    "STATE_ID": "24",
+    "unemployment": 8.35
+  },
+  {
+    "STATE_ID": "25",
+    "unemployment": 9.1
+  },
+  {
+    "STATE_ID": "26",
+    "unemployment": 10.69
+  },
+  {
+    "STATE_ID": "27",
+    "unemployment": 11.53
+  },
+  {
+    "STATE_ID": "28",
+    "unemployment": 9.29
+  },
+  {
+    "STATE_ID": "29",
+    "unemployment": 9.94
+  },
+  {
+    "STATE_ID": "30",
+    "unemployment": 9.29
+  },
+  {
+    "STATE_ID": "31",
+    "unemployment": 5.45
+  },
+  {
+    "STATE_ID": "32",
+    "unemployment": 4.21
+  },
+  {
+    "STATE_ID": "33",
+    "unemployment": 4.27
+  },
+  {
+    "STATE_ID": "34",
+    "unemployment": 4.09
+  },
+  {
+    "STATE_ID": "35",
+    "unemployment": 7.83
+  },
+  {
+    "STATE_ID": "36",
+    "unemployment": 8.01
+  },
+  {
+    "STATE_ID": "37",
+    "unemployment": 9.34
+  },
+  {
+    "STATE_ID": "38",
+    "unemployment": 11.23
+  },
+  {
+    "STATE_ID": "39",
+    "unemployment": 7.08
+  },
+  {
+    "STATE_ID": "40",
+    "unemployment": 11.22
+  },
+  {
+    "STATE_ID": "41",
+    "unemployment": 6.2
+  },
+  {
+    "STATE_ID": "42",
+    "unemployment": 9.11
+  },
+  {
+    "STATE_ID": "44",
+    "unemployment": 10.42
+  },
+  {
+    "STATE_ID": "45",
+    "unemployment": 8.89
+  },
+  {
+    "STATE_ID": "46",
+    "unemployment": 11.03
+  },
+  {
+    "STATE_ID": "47",
+    "unemployment": 7.35
+  },
+  {
+    "STATE_ID": "48",
+    "unemployment": 8.92
+  },
+  {
+    "STATE_ID": "49",
+    "unemployment": 7.65
+  },
+  {
+    "STATE_ID": "50",
+    "unemployment": 8.01
+  },
+  {
+    "STATE_ID": "51",
+    "unemployment": 7.62
+  },
+  {
+    "STATE_ID": "53",
+    "unemployment": 7.77
+  },
+  {
+    "STATE_ID": "54",
+    "unemployment": 8.49
+  },
+  {
+    "STATE_ID": "55",
+    "unemployment": 9.42
+  },
+  {
+    "STATE_ID": "56",
+    "unemployment": 7.59
+  }
+]
 
 // Get the vector data to join
 // US Census Data Source
 // https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
-var mapId = 'mapbox.us_census_states_2015';
-var layerName = 'states';
-var vtMatchProp = 'STATEFP';
+var mapId = "mapbox.us_census_states_2015";
+var layerName = "states";
+var vtMatchProp = "STATEFP";
+var dataMatchProp = "STATE_ID";
+var dataStyleProp = "unemployment";
 
 map.on('load', function() {
 
     // Add source for state polygons hosted on Mapbox
-    map.addSource('states', {
-        type: 'vector',
-        url: 'mapbox://' + mapId
+    map.addSource("states", {
+        type: "vector",
+        url: "mapbox://" + mapId
     });
 
     // First value is the default, used where the is no data
-    var stops = [["0", "rgba(0,0,0,0)"]];
+    var stops = [["00", "rgba(0,0,0,0)"]];
 
     // Calculate color based on the data value
-    for (var key in data) {
-        var green = ((data[key] / maxValue) * 255);
+
+    data.forEach(function(row) {
+
+        var green = ((row[dataStyleProp] / maxValue) * 255);
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-        stops.push([key, color]);
-    }
+        stops.push([row[dataMatchProp], color]);
+    });
 
     // Add layer from the vector tile source with data-driven style
     map.addLayer({
         "id": "states-join",
         "type": "fill",
-        "source": 'states',
+        "source": "states",
         "source-layer": layerName,
         "paint": {
             "fill-color": {
-                property: vtMatchProp,
-                type: "categorical",
-                stops: stops
+                "property": vtMatchProp,
+                "type": "categorical",
+                "stops": stops
             }
         }
     });
