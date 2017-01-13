@@ -191,12 +191,9 @@ map.on('load', function() {
     });
 
     // First value is the default, used where the is no data
-    var stops = [
-        ["00", "rgba(0,0,0,0)"]
-    ];
+    var stops = [["0", "rgba(0,0,0,0)"]];
 
     // Calculate color based on the data value
-
     data.forEach(function(row) {
 
         var green = ((row[dataStyleProp] / maxValue) * 255);
