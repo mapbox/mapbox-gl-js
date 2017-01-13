@@ -28,9 +28,11 @@ for (var i = 1; i <= 78; i++) {
 }
 
 // Get the vector data to join
+// US Census Data Source
+// https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
 var mapId = 'mapbox.us_census_states_2015';
 var layerName = 'states';
-var vtMatchProp = 'STATE_ID';
+var vtMatchProp = 'STATEFP';
 
 map.on('load', function() {
 
