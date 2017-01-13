@@ -319,12 +319,9 @@ class Painter {
         this.reusableTextures.viewport.texture = texture;
     }
 
-    getTileTexture(width, height) {
-        const widthTextures = this.reusableTextures[width];
-        if (widthTextures) {
-            const textures = widthTextures[height || width];
-            return textures && textures.length > 0 ? textures.pop() : null;
-        }
+    getTileTexture(size) {
+        const textures = this.reusableTextures[size];
+        return textures && textures.length > 0 ? textures.pop() : null;
     }
 
     getViewportTexture(width, height) {
