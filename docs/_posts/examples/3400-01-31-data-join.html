@@ -6,64 +6,58 @@ description: Use data-driven styles to join client data to vector tiles
 tags: 
   - sources 
 ---
+
 <div id='map'></div>
 <script>
 var map = new mapboxgl.Map({
-    container: 'map'
+    container: 'map',
     style: 'mapbox://styles/mapbox/light-v9',
     center: [-99.9, 41.5],
-    zoom: 1,
+    zoom: 1
 });
 
 //Get the client data to join 
-var data = {
-    "01": 10,
-    "02": 12,
-    "06": 20,
-    "10": 15,
-    "15": 10,
-    "20": 20,
-    "25": 1,
-    "30": 8,
-    "35": 4,
-    "40": 18,
-    "45": 11,
-    "50": 3
+// EX: {"01" : 27, "02" : 89}
+var maxValue = 100;
+var data = {}
+for (var i=1; i<=78; i++) {
+    var id = (i<10) ? ("0" + i) : i;
+    var randomNum = Math.floor((Math.random() * maxValue) + 1)
+    data[id] = randomNum;
 }
 
 // Get the vector data to join
-var mapid = 'rsbaumann.8h761oct' 
-var layername = 'states'       
-var vt_match_prop = 'STATE_ID' 
+var mapId = 'mapbox.us_census_states_2015';
+var layerName = 'states';
+var vtMatchProp = 'STATE_ID';
 
 map.on('load', function() {
 
     // Add source for state polygons hosted on Mapbox
     map.addSource('states', {
         type: 'vector',
-        url: 'mapbox://' + mapid
+        url: 'mapbox://' + mapId
     });
 
     // First value is the default, used where the is no data
     var stops = [["0", "rgba(0,0,0,0)"]];
 
     // Calculate color based on the data value
-    Object.keys(data).forEach(function(key) {
-        let val = parseInt(data[key])
-        let green = Math.round(val / 20 * 100);
-        let color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
-        stops.push([String(key), color]);
-    });
+    for (var key in data){
+        var green = ((data[key] / maxValue) * 255);
+        var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
+        stops.push([key, color]);
+    };
 
     // Add layer from the vector tile source with a joined categorical data-driven style
     map.addLayer({
         "id": "states-join",
         "type": "fill",
         "source": 'states',
-        "source-layer": layername,
+        "source-layer": layerName,
         "paint": {
             "fill-color": {
-                property: vt_match_prop,
+                property: vtMatchProp,
                 type: "categorical",
                 stops: stops
             }
