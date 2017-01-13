@@ -17,7 +17,7 @@ var map = new mapboxgl.Map({
     zoom: 1
 });
 
-// Client data to join to vector tile geometry
+// Join local JSON data with vector tile geometry
 // USA unemplyoment rate in 2009
 // Source https://data.bls.gov/timeseries/LNS14000000
 var maxValue = 13;
@@ -74,7 +74,7 @@ var data = [
     {"STATE_ID": "56", "unemployment": 7.59}
 ];
 
-// Get the vector data to join
+// Get the vector geometries to join
 // US Census Data Source
 // https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html
 var mapId = "mapbox.us_census_states_2015";
@@ -94,7 +94,7 @@ map.on('load', function() {
     // First value is the default, used where the is no data
     var stops = [["0", "rgba(0,0,0,0)"]];
 
-    // Calculate color based on the data value
+    // Calculate color for each state based on the unemployment rate
     data.forEach(function(row) {
         var green = ((row[dataStyleProp] / maxValue) * 255);
         var color = "rgba(" + 0 + ", " + green + ", " + 0 + ", 1)";
