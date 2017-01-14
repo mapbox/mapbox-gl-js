@@ -37,7 +37,10 @@ class Painter {
         this.gl = gl;
         this.transform = transform;
 
-        this.reusableTextures = {};
+        this.reusableTextures = {
+            tiles: {},
+            viewport: {}
+        };
         this.preFbos = {};
 
         this.frameHistory = new FrameHistory();
@@ -306,28 +309,26 @@ class Painter {
     }
 
     saveTileTexture(texture) {
-        const textures = this.reusableTextures[texture.size];
+        const textures = this.reusableTextures.tiles[texture.size];
         if (!textures) {
-            this.reusableTextures[texture.size] = [texture];
+            this.reusableTextures.tiles[texture.size] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
     saveViewportTexture(texture) {
-        if (!this.reusableTextures.viewport) this.reusableTextures.viewport = {};
         this.reusableTextures.viewport.texture = texture;
     }
 
     getTileTexture(size) {
-        const textures = this.reusableTextures[size];
+        const textures = this.reusableTextures.tiles[size];
         return textures && textures.length > 0 ? textures.pop() : null;
     }
 
     getViewportTexture(width, height) {
-        if (!this.reusableTextures.viewport) return;
-
         const texture = this.reusableTextures.viewport.texture;
+        if (!texture) return;
 
         if (texture.width === width && texture.height === height) {
             return texture;
