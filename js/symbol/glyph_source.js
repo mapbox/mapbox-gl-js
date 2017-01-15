@@ -6,6 +6,7 @@ const verticalizePunctuation = require('../util/verticalize_punctuation');
 const Glyphs = require('../util/glyphs');
 const GlyphAtlas = require('../symbol/glyph_atlas');
 const Protobuf = require('pbf');
+const Evented = require('../util/evented');
 
 // A simplified representation of the glyph containing only the properties needed for shaping.
 class SimpleGlyph {
@@ -25,11 +26,12 @@ class SimpleGlyph {
  *
  * @private
  */
-class GlyphSource {
+class GlyphSource extends Evented {
     /**
      * @param {string} url glyph template url
      */
     constructor(url) {
+        super();
         this.url = url && normalizeURL(url);
         this.atlases = {};
         this.stacks = {};
@@ -82,15 +84,19 @@ class GlyphSource {
         if (!remaining) callback(undefined, glyphs, fontstack);
 
         const onRangeLoaded = (err, range, data) => {
-            if (!err) {
-                const stack = this.stacks[fontstack][range] = data.stacks[0];
-                for (let i = 0; i < missing[range].length; i++) {
-                    const glyphID = missing[range][i];
-                    const glyph = stack.glyphs[glyphID];
-                    const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
-                    if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
-                }
+            if (err) {
+                this.fire('error', {error: err});
+                return;
             }
+
+            const stack = this.stacks[fontstack][range] = data.stacks[0];
+            for (let i = 0; i < missing[range].length; i++) {
+                const glyphID = missing[range][i];
+                const glyph = stack.glyphs[glyphID];
+                const rect  = atlas.addGlyph(uid, fontstack, glyph, buffer);
+                if (glyph) glyphs[glyphID] = new SimpleGlyph(glyph, rect, buffer);
+            }
+
             remaining--;
             if (!remaining) callback(undefined, glyphs, fontstack);
         };
