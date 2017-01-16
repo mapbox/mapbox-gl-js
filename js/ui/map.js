@@ -1060,13 +1060,6 @@ class Map extends Camera {
             return;
         }
 
-        const MAX_RENDERBUFFER_SIZE = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) / 2;
-        if (this._canvas.width > MAX_RENDERBUFFER_SIZE ||
-            this._canvas.height > MAX_RENDERBUFFER_SIZE) {
-            throw new Error(`Map canvas (${this._canvas.width}x${this._canvas.height}) ` +
-            `is larger than half of gl.MAX_RENDERBUFFER_SIZE (${MAX_RENDERBUFFER_SIZE})`);
-        }
-
         this.painter = new Painter(gl, this.transform);
     }
 
