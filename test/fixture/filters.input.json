@@ -83,28 +83,6 @@
       ]
     },
     {
-      "id": "key-constant",
-      "type": "line",
-      "source": "source",
-      "source-layer": "source-layer",
-      "filter": [
-        "==",
-        "@constant",
-        "value"
-      ]
-    },
-    {
-      "id": "value-constant",
-      "type": "line",
-      "source": "source",
-      "source-layer": "source-layer",
-      "filter": [
-        "==",
-        "key",
-        "@constant"
-      ]
-    },
-    {
       "id": "invalid-type-operator",
       "type": "line",
       "source": "source",
@@ -164,16 +142,6 @@
       "filter": [
         "has",
         {"mapbox": true}
-      ]
-    },
-    {
-      "id": "invalid-has-filter-constant",
-      "type": "line",
-      "source": "source",
-      "source-layer": "source-layer",
-      "filter": [
-        "has",
-        "@mapbox"
       ]
     }
   ]
