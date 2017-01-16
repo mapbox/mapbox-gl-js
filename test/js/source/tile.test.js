@@ -116,6 +116,14 @@ test('querySourceFeatures', (t) => {
     t.end();
 });
 
+test('Tile#redoPlacement on an empty tile', (t) => {
+    const tile = new Tile(new TileCoord(1, 1, 1));
+    tile.loadVectorData(null, createPainter());
+
+    t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }
