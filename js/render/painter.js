@@ -39,7 +39,7 @@ class Painter {
 
         this.reusableTextures = {
             tiles: {},
-            viewport: {}
+            viewport: null
         };
         this.preFbos = {};
 
@@ -318,7 +318,7 @@ class Painter {
     }
 
     saveViewportTexture(texture) {
-        this.reusableTextures.viewport.texture = texture;
+        this.reusableTextures.viewport = texture;
     }
 
     getTileTexture(size) {
@@ -327,14 +327,14 @@ class Painter {
     }
 
     getViewportTexture(width, height) {
-        const texture = this.reusableTextures.viewport.texture;
+        const texture = this.reusableTextures.viewport;
         if (!texture) return;
 
         if (texture.width === width && texture.height === height) {
             return texture;
         } else {
             this.gl.deleteTexture(texture);
-            this.reusableTextures.viewport.texture = null;
+            this.reusableTextures.viewport = null;
             return;
         }
     }
