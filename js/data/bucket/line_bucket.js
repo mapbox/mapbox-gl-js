@@ -161,15 +161,16 @@ class LineBucket extends Bucket {
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
             let joinNormal = prevNormal.add(nextNormal)._unit();
-            if (isNaN(joinNormal.x) && isNaN(joinNormal.y)) {
+
+            if (isNaN(joinNormal.x) && isNaN(joinNormal.y) && join === 'miter') {
                 // In the case of 180° angles, the prev and next normals cancel
                 // each other out: prevNormal + nextNormal = (0, 0), its
                 // magnitude is 0, so the unit vector becomes (NaN, NaN). We
                 // can use the prevNormal, though, since we are confident this
                 // is a 180° angle.
                 joinNormal = prevNormal;
+                nextNormal._mult(-1);
             }
-
             /*  joinNormal     prevNormal
              *             ↖      ↑
              *                .________. prevVertex
