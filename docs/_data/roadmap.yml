@@ -37,5 +37,3 @@
     -
       name: Custom WebGL layer type
       issues: ["281"]
-    -
-      name: Arbitrary expression functions
