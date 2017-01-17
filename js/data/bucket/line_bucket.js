@@ -63,7 +63,6 @@ function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofa
         // add 128 to store a byte in an unsigned byte
         Math.round(EXTRUDE_SCALE * extrude.x) + 128,
         Math.round(EXTRUDE_SCALE * extrude.y) + 128,
-
         // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
         // Combine it with the lower 6 bits of `linesofar` (shifted by 2 bites to make
         // room for the direction value). The upper 8 bits of `linesofar` are placed in
