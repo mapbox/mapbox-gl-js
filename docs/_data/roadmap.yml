@@ -2,9 +2,6 @@
   term: "Active development"
   items:
     -
-      name: <code>Map#setCamera</code> method
-      issues: ["3583", "2801"]
-    -
       name: Custom canvas layer type
       issues: ["3580"]
     -
@@ -22,6 +19,9 @@
 -
   term: "Upcoming"
   items:
+    -
+      name: <code>Map#setCamera</code> method
+      issues: ["3583", "2801"]
     -
       name: <code>Map#addImage</code> and <code>Map#removeImage</code>
       issues: ["2059"]
