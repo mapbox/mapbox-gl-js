@@ -1,6 +1,6 @@
 [![Build Status](https://circleci.com/gh/mapbox/mapbox-gl-js.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-js) [![Coverage Status](https://coveralls.io/repos/github/mapbox/mapbox-gl-js/badge.svg?branch=master)](https://coveralls.io/github/mapbox/mapbox-gl-js?branch=master)
 
-[Mapbox provides is an ecosystem of libraries for rendering maps on the web, iOS, Android, Qt, macOS and more.](https://www.mapbox.com/maps/). This repository holds the files and issues shared among all platforms.
+[Mapbox provides an ecosystem of libraries for rendering maps on the web, iOS, Android, Qt, macOS and more.](https://www.mapbox.com/maps/). This repository holds the files and issues shared among all platforms.
 
 [<img width="981" alt="Mapbox GL JS gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
