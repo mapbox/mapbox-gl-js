@@ -60,7 +60,7 @@ function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofa
         (point.x << 1) | tx,
         (point.y << 1) | ty,
         // a_data
-        // add 128 to store an byte in an unsigned byte
+        // add 128 to store a byte in an unsigned byte
         Math.round(EXTRUDE_SCALE * extrude.x) + 128,
         Math.round(EXTRUDE_SCALE * extrude.y) + 128,
         // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
@@ -161,6 +161,15 @@ class LineBucket extends Bucket {
             // of the segments between the previous line and the next line.
             let joinNormal = prevNormal.add(nextNormal)._unit();
 
+            if (isNaN(joinNormal.x) && isNaN(joinNormal.y) && join === 'miter') {
+                // In the case of 180° angles, the prev and next normals cancel
+                // each other out: prevNormal + nextNormal = (0, 0), its
+                // magnitude is 0, so the unit vector becomes (NaN, NaN). We
+                // can use the prevNormal, though, since we are confident this
+                // is a 180° angle.
+                joinNormal = prevNormal;
+                nextNormal._mult(-1);
+            }
             /*  joinNormal     prevNormal
              *             ↖      ↑
              *                .________. prevVertex
@@ -207,7 +216,7 @@ class LineBucket extends Bucket {
 
             if (currentJoin === 'bevel') {
                 // The maximum extrude length is 128 / 63 = 2 times the width of the line
-                // so if miterLength >= 2 we need to draw a different type of bevel where.
+                // so if miterLength >= 2 we need to draw a different type of bevel here.
                 if (miterLength > 2) currentJoin = 'flipbevel';
 
                 // If the miterLength is really small and the line bevel wouldn't be visible,
@@ -228,7 +237,7 @@ class LineBucket extends Bucket {
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.clone();
+                    joinNormal = nextNormal.clone().mult(-1);
 
                 } else {
                     const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;
