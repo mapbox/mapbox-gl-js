@@ -129,7 +129,7 @@ class Tile {
     }
 
     redoPlacement(source) {
-        if ((source.type !== 'vector' && source.type !== 'geojson')) {
+        if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
         if (this.state !== 'loaded') {
