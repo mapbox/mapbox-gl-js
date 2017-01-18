@@ -1,7 +1,7 @@
 'use strict';
 // @flow
 
-const UnitBezier = require('unitbezier');
+const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
 const Point = require('point-geometry');
 
