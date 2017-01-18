@@ -116,6 +116,48 @@ test('querySourceFeatures', (t) => {
     t.end();
 });
 
+test('Tile#redoPlacement', (t) => {
+
+    test('redoPlacement on an empty tile', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        tile.loadVectorData(null, createPainter());
+
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
+        t.notOk(tile.redoWhenDone);
+        t.end();
+    });
+
+    test('redoPlacement on a loading tile', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        t.doesNotThrow(() => tile.redoPlacement({type: 'vector'}));
+        t.ok(tile.redoWhenDone);
+        t.end();
+    });
+
+    test('redoPlacement on a reloading tile', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        tile.loadVectorData(createVectorData(), createPainter());
+
+        const options = {
+            type: 'vector',
+            dispatcher: {
+                send: () => {}
+            },
+            map: {
+                transform: {}
+            }
+        };
+
+        tile.redoPlacement(options);
+        tile.redoPlacement(options);
+
+        t.ok(tile.redoWhenDone);
+        t.end();
+    });
+
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }

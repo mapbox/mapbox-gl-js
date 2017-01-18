@@ -132,9 +132,11 @@ class Tile {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
-
-        if (this.state !== 'loaded' || this.state === 'reloading') {
+        if (this.state !== 'loaded') {
             this.redoWhenDone = true;
+            return;
+        }
+        if (!this.collisionTile) { // empty tile
             return;
         }
 
@@ -147,9 +149,7 @@ class Tile {
             angle: source.map.transform.angle,
             pitch: source.map.transform.pitch,
             showCollisionBoxes: source.map.showCollisionBoxes
-        }, done.bind(this), this.workerID);
-
-        function done(_, data) {
+        }, (_, data) => {
             this.reloadSymbolData(data, source.map.style);
             source.fire('data', {tile: this, coord: this.coord, dataType: 'tile'});
 
@@ -157,11 +157,12 @@ class Tile {
             if (source.map) source.map.painter.tileExtentVAO.vao = null;
 
             this.state = 'loaded';
+
             if (this.redoWhenDone) {
-                this.redoPlacement(source);
                 this.redoWhenDone = false;
+                this.redoPlacement(source);
             }
-        }
+        }, this.workerID);
     }
 
     getBucket(layer) {
