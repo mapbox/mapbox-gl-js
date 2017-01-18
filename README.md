@@ -1,10 +1,8 @@
-[![Build Status](https://circleci.com/gh/mapbox/mapbox-gl-js.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-js) [![Coverage Status](https://coveralls.io/repos/github/mapbox/mapbox-gl-js/badge.svg?branch=master)](https://coveralls.io/github/mapbox/mapbox-gl-js?branch=master)
-
-[Mapbox GL is an ecosystem of libraries for rendering maps using WebGL/OpenGL on the web, iOS, Android, Qt, macOS and more.](https://www.mapbox.com/maps/). This repository holds the files and issues shared among all platforms.
+[Mapbox GL is an ecosystem of libraries for rendering maps using WebGL/OpenGL on the web, iOS, Android, Qt, macOS and more](https://www.mapbox.com/maps/). This repository holds the files and issues shared among all platforms.
 
 [<img width="981" alt="Mapbox GL gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
-## Mapbox GL on the web
+## Mapbox GL JS
 
 This repository holds the files and issues that relate to the web platform.
 
@@ -14,7 +12,7 @@ This repository holds the files and issues that relate to the web platform.
 - [Roadmap](https://www.mapbox.com/mapbox-gl-js/roadmap/)
 - [Contributor Documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
-## Mapbox GL on iOS, Android, Qt, macOS ...
+## Mapbox iOS, Android, Qt, and macOS SDKs
 
 The [`mapbox/mapbox-gl-native` repository](https://github.com/mapbox/mapbox-gl-native) holds the files and issues that relate to the Andriod, iOS, macOS, Qt, and other platforms.
 
