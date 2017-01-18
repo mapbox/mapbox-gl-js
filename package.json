@@ -126,7 +126,7 @@
     "start": "run-p build-token watch-dev watch-benchmarks watch-benchmarks-view start-server",
     "start-debug": "run-p build-token watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks watch-benchmarks-view start-server",
-    "build-docs": "documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
+    "build-docs": "flow-node docs/style-spec/_generate/generate.js && documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
     "lint": "eslint --ignore-path .gitignore js test bench docs/_posts/examples/*.html debug/*.html",
@@ -144,7 +144,6 @@
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
     "build-style-spec": "node js/style-spec/minify.js",
-    "build-style-spec-docs": "cd docs/style-spec/_generate && node generate.js",
     "build-style-spec-api-docs": "cat js/style-spec/*.js js/style-spec/*/*.js | dox --raw --skipSingleStar | doxme > js/style-spec/API.md"
   },
   "bin": {

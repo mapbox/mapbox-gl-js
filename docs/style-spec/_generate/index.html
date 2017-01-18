@@ -1,10 +1,9 @@
 ---
 layout: default
-category: reference
 title: Mapbox Style Specification
-permalink: /
 class: fill-light
 options: full
+category: style-spec
 navigation:
   - title: Root
     subnav:
@@ -91,15 +90,15 @@ navigation:
         </div>
       </div>
       <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/api' class='col3 truncate'>API</a><!--
+      --><a href='{{site.baseurl}}/api' class='col3 truncate'>API</a><!--
         --><a href='#' class='col3 truncate active'>Style Specification</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/examples' class='col3 truncate'>Examples</a><!--
-        --><a href='https://mapbox.com/mapbox-gl-js/plugins' class='col3 truncate'>Plugins</a>
+        --><a href='{{site.baseurl}}/examples' class='col3 truncate'>Examples</a><!--
+        --><a href='{{site.baseurl}}/plugins' class='col3 truncate'>Plugins</a>
       </div>
     </nav>
   </div>
 
-  <div class='contain margin3 col9 pad2'>
+  <div class='contain margin3 col9'>
     <div class='prose'>
       <h1>{{ page.title }}</h1>
       <p>A Mapbox style is a document that defines the visual appearance of a map: what data to draw, the order to draw it in, and how to style the data when drawing it. A style document is a <a href="http://www.json.org/">JSON</a> object with specific root level and nested properties. This specification defines and describes these properties.</p>
