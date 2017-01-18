@@ -15,9 +15,9 @@ title: Plugins
         <a href='{{site.baseurl}}/example/{% if plugin.example %}{{plugin.example}}{% else %}{{plugin.prefix}}{% endif %}/' class='rcon next'>View example</a>
       </div>
     </div>
-    <div class='pin-right pad2'>
+    {% if plugin.js or plugin.css %}<div class='pin-right pad2'>
       <a href='#' title='Copy plugin to clipboard' data-clipboard-target='snippet-{{forloop.index}}' class='button icon clipboard js-clipboard'>Copy</a>
-    </div>
+  </div>{% endif %}
   </div>
   <div class='col12 quiet-scroll fill-light'>
     <pre id='snippet-{{forloop.index}}' class='pad2 prettyprint'>{% if plugin.js %}&lt;script src='https://api.mapbox.com/mapbox-gl-js/plugins/{{plugin.prefix}}/v{{site.data.plugins[plugin.prefix].latest}}/{{plugin.prefix}}.js'&gt;&lt;/script&gt;{% endif %}

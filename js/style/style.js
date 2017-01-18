@@ -23,6 +23,7 @@ const MapboxGLFunction = require('mapbox-gl-function');
 const getWorkerPool = require('../global_worker_pool');
 const deref = require('mapbox-gl-style-spec/lib/deref');
 const diff = require('mapbox-gl-style-spec/lib/diff');
+const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -75,6 +76,14 @@ class Style extends Evented {
 
         this.setEventedParent(map);
         this.fire('dataloading', {dataType: 'style'});
+
+        const self = this;
+        rtlTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
+            self.dispatcher.broadcast('loadRTLTextPlugin', pluginBlobURL, rtlTextPlugin.errorCallback);
+            for (const id in self.sourceCaches) {
+                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+            }
+        });
 
         const stylesheetLoaded = (err, stylesheet) => {
             if (err) {

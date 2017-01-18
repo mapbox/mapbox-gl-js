@@ -199,5 +199,16 @@
         ]
       }
     }
+  },
+  "mapbox-gl-rtl-text": {
+    "prefix": "mapbox-gl-rtl-text",
+    "latest": "0.1.0",
+    "v": {
+      "0.1.0": {
+        "files": [
+          "mapbox-gl-rtl-text.js"
+        ]
+      }
+    }
   }
 }

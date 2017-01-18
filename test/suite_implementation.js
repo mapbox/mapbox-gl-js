@@ -7,6 +7,11 @@ const PNG = require('pngjs').PNG;
 const Map = require('../js/ui/map');
 const window = require('../js/util/window');
 const browser = require('../js/util/browser');
+const rtlTextPlugin = require('../js/source/rtl_text_plugin');
+const rtlText = require('mapbox-gl-rtl-text');
+
+rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
+rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
 
 module.exports = function(style, options, _callback) {
     let wasCallbackCalled = false;
