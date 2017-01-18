@@ -4,7 +4,10 @@
     "test": {
       "width": 112,
       "height": 64,
-      "diff": 0.00075
+      "diff": 0.00075,
+      "ignored":{
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/7778"
+      }
     }
   },
   "sources": {
