@@ -37,7 +37,7 @@ module.exports = function(style, options, _callback) {
         preserveDrawingBuffer: true
     });
 
-    const _style = new Style(style, map, { validate: (options.ignored ? false : true) });
+    const _style = new Style(style, map, { validate: !options.ignored });
     map.setStyle(_style);
 
     // Configure the map to never stop the render loop
