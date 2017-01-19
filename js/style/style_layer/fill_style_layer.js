@@ -14,7 +14,7 @@ class FillStyleLayer extends StyleLayer {
 
             // https://github.com/mapbox/mapbox-gl-js/issues/3657
             const transition = this._paintTransitions['fill-outline-color'];
-            if (!transition.instant()) {
+            if (transition && !transition.instant()) {
                 const source = transition.oldTransition._calculateTargetValue(globalProperties, featureProperties);
                 if (!source) {
                     return super.getPaintValue('fill-color', globalProperties, featureProperties);
