@@ -4,7 +4,7 @@ const ImageSource = require('./image_source');
 const window = require('../util/window');
 
 /**
- * A data source containing content copied from an HTML canvas.
+ * A data source containing the contents of an HTML canvas.
  * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-canvas) for detailed documentation of options.)
  * @interface CanvasSource
  * @example
@@ -31,7 +31,6 @@ const window = require('../util/window');
  * ]);
  *
  * map.removeSource('some id');  // remove
- * @see [Add a canvas (TODO: this page does not yet exist)](https://www.mapbox.com/mapbox-gl-js/example/canvas-on-a-map/)
  */
 class CanvasSource extends ImageSource {
 
