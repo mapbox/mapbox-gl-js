@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const request = require('request');
 const PNG = require('pngjs').PNG;
 const Map = require('../js/ui/map');
+const Style = require('../js/style/style');
 const window = require('../js/util/window');
 const browser = require('../js/util/browser');
 const rtlTextPlugin = require('../js/source/rtl_text_plugin');
@@ -30,12 +31,14 @@ module.exports = function(style, options, _callback) {
 
     const map = new Map({
         container: container,
-        style: style,
         classes: options.classes,
         interactive: false,
         attributionControl: false,
         preserveDrawingBuffer: true
     });
+
+    const _style = new Style(style, map, { validate: (options.ignored ? false : true) });
+    map.setStyle(_style);
 
     // Configure the map to never stop the render loop
     map.repaint = true;
