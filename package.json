@@ -26,8 +26,6 @@
     "grid-index": "^1.0.0",
     "jsonlint-lines-primitives": "~1.6.0",
     "lodash.isequal": "^3.0.4",
-    "mapbox-gl-function": "mapbox/mapbox-gl-function#4f829622413f336080d3c710244c251421c0ec30",
-    "mapbox-gl-style-spec": "mapbox/mapbox-gl-style-spec#e85407a377510acb647161de6be6357ab4f606dd",
     "mapbox-gl-supported": "^1.2.0",
     "minimist": "0.0.8",
     "package-json-versionify": "^1.0.2",

@@ -1,6 +1,6 @@
 'use strict';
 
-const styleSpec = require('./style_spec');
+const styleSpec = require('../style-spec').latest;
 const util = require('../util/util');
 const Evented = require('../util/evented');
 const validateStyle = require('./validate_style');

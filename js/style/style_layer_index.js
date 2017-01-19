@@ -3,7 +3,7 @@
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');
 const featureFilter = require('feature-filter');
-const groupByLayout = require('mapbox-gl-style-spec/lib/group_by_layout');
+const groupByLayout = require('../style-spec/group_by_layout');
 
 class StyleLayerIndex {
     constructor(layerConfigs) {

@@ -18,11 +18,11 @@ const validateStyle = require('./validate_style');
 const Source = require('../source/source');
 const QueryFeatures = require('../source/query_features');
 const SourceCache = require('../source/source_cache');
-const styleSpec = require('./style_spec');
-const MapboxGLFunction = require('mapbox-gl-function');
+const styleSpec = require('../style-spec').latest;
+const MapboxGLFunction = require('../style-spec/function');
 const getWorkerPool = require('../global_worker_pool');
-const deref = require('mapbox-gl-style-spec/lib/deref');
-const diff = require('mapbox-gl-style-spec/lib/diff');
+const deref = require('../style-spec/deref');
+const diff = require('../style-spec/diff');
 const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const supportedDiffOperations = util.pick(diff.operations, [

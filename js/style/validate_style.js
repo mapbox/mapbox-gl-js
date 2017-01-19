@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = require('mapbox-gl-style-spec/lib/validate_style.min');
+module.exports = require('../style-spec/validate_style.min');
 
 module.exports.emitErrors = function (emitter, errors) {
     if (errors && errors.length) {

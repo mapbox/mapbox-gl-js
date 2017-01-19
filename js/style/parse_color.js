@@ -2,7 +2,7 @@
 
 const parseColorString = require('csscolorparser').parseCSSColor;
 const util = require('../util/util');
-const MapboxGLFunction = require('mapbox-gl-function');
+const MapboxGLFunction = require('../style-spec/function');
 
 const cache = {};
 

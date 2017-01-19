@@ -3,8 +3,6 @@
 ### Usage
 
 ``` javascript
-var glfun = require('mapbox-gl-function');
-
 var identity = glfun.interpolated({type: 'identity'});
 identity(0); // => '0'
 identity('A'); // => 'A'
