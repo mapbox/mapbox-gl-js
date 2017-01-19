@@ -38,6 +38,7 @@
     "shelf-pack": "^1.0.0",
     "sort-object": "^0.3.2",
     "supercluster": "^2.0.1",
+    "through2": "^2.0.3",
     "tinyqueue": "^1.1.0",
     "unassertify": "^2.0.0",
     "unflowify": "^1.0.0",
@@ -105,7 +106,8 @@
       ],
       "package-json-versionify",
       "unassertify",
-      "brfs"
+      "brfs",
+      "./js/style-spec/reference-minifyify"
     ]
   },
   "browser": {
@@ -141,7 +143,6 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "build-style-spec": "node js/style-spec/minify.js",
     "build-style-spec-api-docs": "cat js/style-spec/*.js js/style-spec/*/*.js | dox --raw --skipSingleStar | doxme > js/style-spec/API.md"
   },
   "bin": {

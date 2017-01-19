@@ -23,7 +23,7 @@ glob.sync(`${__dirname}/fixture/*.input.json`).forEach((file) => {
 
 const fixtures = glob.sync(`${__dirname}/fixture/*.input.json`);
 const style = JSON.parse(fs.readFileSync(fixtures[0]));
-const reference = require('../../../js/style-spec/reference/latest.min');
+const reference = require('../../../js/style-spec/reference/latest');
 
 t('validate.parsed exists', (t) => {
     t.equal(typeof validate.parsed, 'function');
