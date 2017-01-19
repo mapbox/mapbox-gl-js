@@ -6,11 +6,23 @@ const FillBucket = require('../../data/bucket/fill_bucket');
 class FillStyleLayer extends StyleLayer {
 
     getPaintValue(name, globalProperties, featureProperties) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintValue('fill-color', globalProperties, featureProperties);
-        } else {
-            return super.getPaintValue(name, globalProperties, featureProperties);
+        if (name === 'fill-outline-color') {
+            const target = this.getPaintProperty('fill-outline-color');
+            if (target === undefined) {
+                return super.getPaintValue('fill-color', globalProperties, featureProperties);
+            }
+
+            // https://github.com/mapbox/mapbox-gl-js/issues/3657
+            const transition = this._paintTransitions['fill-outline-color'];
+            if (!transition.instant()) {
+                const source = transition.oldTransition._calculateTargetValue(globalProperties, featureProperties);
+                if (!source) {
+                    return super.getPaintValue('fill-color', globalProperties, featureProperties);
+                }
+            }
         }
+
+        return super.getPaintValue(name, globalProperties, featureProperties);
     }
 
     getPaintValueStopZoomLevels(name) {
