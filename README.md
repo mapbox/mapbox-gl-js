@@ -62,6 +62,8 @@ var map = new mapboxgl.Map({
 });
 ```
 
+Also, add to your site the Mapbox GL JS CSS in `mapbox-gl/dist/mapbox-gl.css`.
+
 ## Using Mapbox GL JS with other module systems
 
 Since our build system depends on Browserify, to use Mapbox GL with any other module bundlers like [Webpack](https://webpack.github.io/), [SystemJS](https://github.com/systemjs/systemjs), you have to require the distribution build instead of the package entry point:
@@ -75,6 +77,8 @@ If you're using the ES6 module system (e.g. with [Rollup](https://github.com/rol
 ```js
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 ```
+
+Also, add to your site the Mapbox GL JS CSS in `mapbox-gl/dist/mapbox-gl.css`.
 
 ## Third Party Projects
 
