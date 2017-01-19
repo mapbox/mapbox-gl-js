@@ -1159,14 +1159,14 @@ test('Map', (t) => {
         t.plan(3);
         const map = createMap();
 
-        t.equal(map.isMoving(), false);
+        t.equal(map.isMoving(), false, 'false before moving');
 
         map.on('movestart', () => {
-            t.equal(map.isMoving(), true);
+            t.equal(map.isMoving(), true, 'true on movestart');
         });
 
         map.on('moveend', () => {
-            t.equal(map.isMoving(), false);
+            t.equal(map.isMoving(), false, 'false on moveend');
         });
 
         map.zoomTo(5, { duration: 0 });

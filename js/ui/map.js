@@ -134,7 +134,6 @@ class Map extends Camera {
         const transform = new Transform(options.minZoom, options.maxZoom, options.renderWorldCopies);
         super(transform, options);
 
-        this._isMoving = false;
         this._interactive = options.interactive;
         this._failIfMajorPerformanceCaveat = options.failIfMajorPerformanceCaveat;
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
@@ -170,13 +169,9 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         this.on('zoom', this._update.bind(this, true));
-        this.on('movestart', () => {
-            this._isMoving = true;
-        });
         this.on('moveend', () => {
             this.animationLoop.set(300); // text fading
             this._rerender();
-            this._isMoving = false;
         });
 
         if (typeof window !== 'undefined') {
@@ -1218,15 +1213,6 @@ class Map extends Camera {
         if (this._trackResize) {
             this.stop().resize()._update();
         }
-    }
-
-    /**
-     * Returns a Boolean indicating whether the map is moving.
-     *
-     * @returns {boolean} A Boolean indicating whether the map is moving.
-     */
-    isMoving() {
-        return this._isMoving;
     }
 
     /**
