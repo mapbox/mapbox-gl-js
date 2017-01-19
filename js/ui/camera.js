@@ -750,6 +750,7 @@ class Camera extends Evented {
     /**
      * Returns a Boolean indicating whether the camera is moving.
      *
+     * @memberof Map#
      * @returns {boolean} A Boolean indicating whether the camera is moving.
      */
     isMoving() {
