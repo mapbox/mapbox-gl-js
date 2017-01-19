@@ -38,7 +38,6 @@ class CanvasSource extends ImageSource {
         super(id, options, dispatcher, eventedParent);
         this.options = options;
         this.animate = options.hasOwnProperty('animate') ? options.animate : true;
-        this.resize = false;
     }
 
     load() {
@@ -93,21 +92,19 @@ class CanvasSource extends ImageSource {
     // setCoordinates inherited from ImageSource
 
     prepare() {
+        let resize = false;
         if (this.canvas.width !== this.width) {
             this.width = this.canvas.width;
-            this.resize = true;
+            resize = true;
         }
         if (this.canvas.height !== this.height) {
             this.height = this.canvas.height;
-            this.resize = true;
+            resize = true;
         }
-        if (this._hasInvalidDimensions()) {
-            return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
-        }
+        if (this._hasInvalidDimensions()) return;
 
         if (!this.tile) return; // not enough data for current position
-        this._prepareImage(this.map.painter.gl, this.canvas, this.resize);
-        this.resize = false;
+        this._prepareImage(this.map.painter.gl, this.canvas, resize);
     }
 
     serialize() {
