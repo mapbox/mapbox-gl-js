@@ -4,7 +4,7 @@
     "line": 4
   },
   {
-    "message": "sources.invalid-type.type: expected one of [vector, raster, geojson, video, image], invalid found",
+    "message": "sources.invalid-type.type: expected one of [vector, raster, geojson, video, image, canvas], invalid found",
     "line": 7
   },
   {
