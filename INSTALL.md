@@ -47,6 +47,8 @@ var map = new mapboxgl.Map({
 });
 ```
 
+Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.31.0/mapbox-gl.css`.
+
 ### Using Mapbox with other module systems
 
 Since our build system depends on Browserify, to use Mapbox GL with any other module bundlers like [Webpack](https://webpack.github.io/), [SystemJS](https://github.com/systemjs/systemjs), you have to require the distribution build instead of the package entry point:
@@ -60,6 +62,8 @@ If you're using the ES6 module system (e.g. with [Rollup](https://github.com/rol
 ```js
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 ```
+
+Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.31.0/mapbox-gl.css`.
 
 ### Using Mapbox with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
 
