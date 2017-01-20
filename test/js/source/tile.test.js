@@ -158,6 +158,54 @@ test('Tile#redoPlacement', (t) => {
     t.end();
 });
 
+test('expiring tiles', (t) => {
+    t.test('regular tiles do not expire', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        tile.state = 'loaded';
+        tile.timeAdded = Date.now();
+
+        t.notOk(tile.cacheControl);
+        t.notOk(tile.expires);
+
+        t.end();
+    });
+
+    t.test('set, get expiry', (t) => {
+        const tile = new Tile(new TileCoord(1, 1, 1));
+        tile.state = 'loaded';
+        tile.timeAdded = Date.now();
+
+        t.notOk(tile.cacheControl, 'no cache-control set');
+        t.notOk(tile.expires, 'no expires set');
+
+        tile.setExpiryData({
+            cacheControl: 'max-age=60'
+        });
+
+        t.equal(tile.cacheControl, 'max-age=60', 'set cache-control');
+        t.equal(tile.getExpiry(), tile.timeAdded + 60000, 'cache-control parsed as expected');
+
+        const date = new Date();
+        date.setMinutes(date.getMinutes() + 10);
+        date.setMilliseconds(0);
+
+        tile.setExpiryData({
+            expires: date.toString()
+        });
+
+        // this shouldn't happen, but if both expiry data are set, cacheControl takes precedence
+        t.equal(tile.getExpiry(), tile.timeAdded + 60000, 'cache-control takes precedence over expires');
+
+        delete tile.cacheControl;
+
+        t.equal(tile.getExpiry(), date.getTime(), 'expires header set date as expected');
+
+        t.end();
+    });
+
+    t.end();
+});
+
 function createRawTileData() {
     return fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'));
 }
