@@ -38,6 +38,7 @@ class Camera extends Evented {
 
     constructor(transform, options) {
         super();
+        this.moving = false;
         this.transform = transform;
         this._bearingSnap = options.bearingSnap;
     }
@@ -469,6 +470,7 @@ class Camera extends Evented {
         }
 
         if (!options.noMoveStart) {
+            this.moving = true;
             this.fire('movestart', eventData);
         }
         if (this.zooming) {
@@ -515,6 +517,7 @@ class Camera extends Evented {
 
     _easeToEnd(eventData) {
         const wasZooming = this.zooming;
+        this.moving = false;
         this.zooming = false;
         this.rotating = false;
         this.pitching = false;
@@ -695,6 +698,7 @@ class Camera extends Evented {
             options.duration = 1000 * S / V;
         }
 
+        this.moving = true;
         this.zooming = true;
         if (startBearing !== bearing) this.rotating = true;
         if (startPitch !== pitch) this.pitching = true;
@@ -727,6 +731,7 @@ class Camera extends Evented {
                 this.fire('pitch', eventData);
             }
         }, function() {
+            this.moving = false;
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
@@ -740,6 +745,16 @@ class Camera extends Evented {
 
     isEasing() {
         return !!this._abortFn;
+    }
+
+    /**
+     * Returns a Boolean indicating whether the camera is moving.
+     *
+     * @memberof Map#
+     * @returns {boolean} A Boolean indicating whether the camera is moving.
+     */
+    isMoving() {
+        return this.moving;
     }
 
     /**
