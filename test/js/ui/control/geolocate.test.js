@@ -4,7 +4,6 @@ const test = require('mapbox-gl-js-test').test;
 const window = require('../../../../js/util/window');
 const Map = require('../../../../js/ui/map');
 const GeolocateControl = require('../../../../js/ui/control/geolocate_control');
-const map = require('object.map');
 
 // window and navigator globals need to be set for mock-geolocation
 global.window = {};
@@ -30,9 +29,10 @@ function createMap() {
 
 // convert the coordinates of a LngLat object to a fixed number of digits
 function lngLatAsFixed(lngLat, digits) {
-    return map(lngLat, (val) => {
-        return val.toFixed(digits);
-    });
+    return Object.keys(lngLat).reduce((previous, current) => {
+        previous[current] = lngLat[current].toFixed(digits);
+        return previous;
+    }, {});
 }
 
 test('GeolocateControl with no options', (t) => {

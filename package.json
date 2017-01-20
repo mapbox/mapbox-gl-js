@@ -71,7 +71,6 @@
     "mock-geolocation": "^1.0.11",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",
-    "object.map": "^0.2.0",
     "pixelmatch": "^4.0.2",
     "pngjs": "^3.0.0",
     "proxyquire": "^1.7.9",
