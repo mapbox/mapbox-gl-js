@@ -62,7 +62,7 @@ var map = new mapboxgl.Map({
 });
 ```
 
-Also, add to your site the Mapbox GL JS CSS in `mapbox-gl/dist/mapbox-gl.css`.
+Also, add to your site the Mapbox GL JS CSS in `node_modules/mapbox-gl/dist/mapbox-gl.css`.
 
 ## Using Mapbox GL JS with other module systems
 
@@ -78,7 +78,7 @@ If you're using the ES6 module system (e.g. with [Rollup](https://github.com/rol
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 ```
 
-Also, add to your site the Mapbox GL JS CSS in `mapbox-gl/dist/mapbox-gl.css`.
+Also, add to your site the Mapbox GL JS CSS in `node_modules/mapbox-gl/dist/mapbox-gl.css`.
 
 ## Third Party Projects
 
