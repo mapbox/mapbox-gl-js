@@ -49,25 +49,25 @@ function checkGeolocationSupport(callback) {
  *
  * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
  *
- * The GeolocateControl has two modes. If `watchPosition` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the device location. If the device moves, the map won't update. This is most suited for the desktop. If `watchPosition` is `true` the control acts as a toggle button that when active the device's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the device's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so that the location marker still updates but the camera doesn't.
+ * The GeolocateControl has two modes. If `trackUserLocation` is `false` (default) the control acts as a button, which when pressed will set the map's camera to target the user location. If the user moves, the map won't update. This is most suited for the desktop. If `trackUserLocation` is `true` the control acts as a toggle button that when active the user's location is actively monitored for changes. In this mode there is a concept of an active lock and background. In active lock the map's camera will automatically update as the users's location changes until the user manually changes the camera (such as panning or zooming). When this happens the control is in background so the user's location dot still updates but the camera doesn't.
  *
  * @implements {IControl}
  * @param {Object} [options]
  * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
- * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the device location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
- * @param {Object} [options.watchPosition=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the device location as it changes.
- * @param {Object} [options.showMarker=true] By default a marker will be added to the map with the device's location. Set to `false` to disable.
- * @param {Object} [options.markerPaintProperties={'circle-radius': 10, 'circle-color': '#33b5e5', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker. The default is a blue dot with a white stroke.
- * @param {Object} [options.markerShadowPaintProperties={ 'circle-radius': 14, 'circle-color': '#000', 'circle-opacity': 0.5, 'circle-blur': 0.4, 'circle-translate': [2, 2], 'circle-translate-anchor': 'viewport' }] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the device location marker, used as a "shadow" layer. The default is a blurred semi-transparent black shadow.
- * @param {Object} [options.markerStalePaintProperties={'circle-color': '#a6d5e5', 'circle-opacity': 0.5, 'circle-stroke-opacity': 0.8}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object applied to the base markerPaintProperties to customize the device location marker in a stale state. The marker is stale when there was a Geolocation error so the previous reported location is used, which may no longer be current. The default is a faded blue dot with a white stroke.
+ * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
+ * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
+ * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
+ * @param {Object} [options.userLocationPaintProperties={'circle-radius': 10, 'circle-color': '#33b5e5', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the user's location dot. The default is a blue dot with a white stroke.
+ * @param {Object} [options.userLocationShadowPaintProperties={ 'circle-radius': 14, 'circle-color': '#000', 'circle-opacity': 0.5, 'circle-blur': 0.4, 'circle-translate': [2, 2], 'circle-translate-anchor': 'viewport' }] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the user's location dot, used as a "shadow" layer. The default is a blurred semi-transparent black shadow.
+ * @param {Object} [options.userLocationStalePaintProperties={'circle-color': '#a6d5e5', 'circle-opacity': 0.5, 'circle-stroke-opacity': 0.8}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object applied to the base userLocationPaintProperties to customize the user's location dot in a stale state. The dot is stale when there was a Geolocation error leading to the previous reported location to be used, which may no longer be current. The default is a faded blue dot with a white stroke.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
  *         enableHighAccuracy: true
  *     },
- *     watchPosition: true,
- *     markerPaintProperties: {
+ *     trackUserLocation: true,
+ *     userLocationPaintProperties: {
  *         'circle-color': '#000'
  *     }
  * }));
@@ -78,8 +78,8 @@ class GeolocateControl extends Evented {
         super();
         this.options = options || {};
 
-        // apply default for options.showMarker
-        this.options.showMarker = (this.options && 'showMarker' in this.options) ? this.options.showMarker : true;
+        // apply default for options.showUserLocation
+        this.options.showUserLocation = (this.options && 'showUserLocation' in this.options) ? this.options.showUserLocation : true;
 
         util.bindAll([
             '_onSuccess',
@@ -108,7 +108,7 @@ class GeolocateControl extends Evented {
         }
 
         // clear the marker from the map
-        if (this.options.showMarker) {
+        if (this.options.showUserLocation) {
             if (this._map.getLayer(markerLayerName)) this._map.removeLayer(markerLayerName);
             if (this._map.getSource(markerSourceName)) this._map.removeSource(markerSourceName);
         }
@@ -118,7 +118,7 @@ class GeolocateControl extends Evented {
     }
 
     _onSuccess(position) {
-        if (this.options.watchPosition) {
+        if (this.options.trackUserLocation) {
             // keep a record of the position so that if the state is BACKGROUND and the user
             // clicks the button, we can move to ACTIVE_LOCK immediately without waiting for
             // watchPosition to trigger _onSuccess
@@ -148,24 +148,24 @@ class GeolocateControl extends Evented {
 
         // if in normal mode (not watch mode), or if in watch mode and the state is active watch
         // then update the camera
-        if (!this.options.watchPosition || this._watchState === 'ACTIVE_LOCK') {
+        if (!this.options.trackUserLocation || this._watchState === 'ACTIVE_LOCK') {
             this._updateCamera(position);
         }
 
-        // if showMarker and the watch state isn't off then update the marker location
-        if (this.options.showMarker && this._watchState !== 'OFF') {
+        // if showUserLocation and the watch state isn't off then update the marker location
+        if (this.options.showUserLocation && this._watchState !== 'OFF') {
             this._updateMarker(position);
         }
 
-        if (this.options.showMarker) {
+        if (this.options.showUserLocation) {
             // restore any paint properties which were changed to make the marker stale
-            for (const paintProperty in this._markerStalePaintProperties) {
-                this._map.setPaintProperty(markerLayerName, paintProperty, this._markerPaintProperties[paintProperty]);
+            for (const paintProperty in this._userLocationStalePaintProperties) {
+                this._map.setPaintProperty(markerLayerName, paintProperty, this._userLocationPaintProperties[paintProperty]);
             }
         }
 
         if (this._watchState === 'ACTIVE_LOCK') {
-            this.fire('active_lock');
+            this.fire('activeLock');
         }
 
         this.fire('geolocate', position);
@@ -205,7 +205,7 @@ class GeolocateControl extends Evented {
     }
 
     _onError(error) {
-        if (this.options.watchPosition) {
+        if (this.options.trackUserLocation) {
             if (error.code === 1) {
                 // PERMISSION_DENIED
                 this._watchState = 'OFF';
@@ -247,10 +247,10 @@ class GeolocateControl extends Evented {
             }
         }
 
-        if (this._watchState !== 'OFF' && this.options.showMarker) {
+        if (this._watchState !== 'OFF' && this.options.showUserLocation) {
             // apply paint properties to make the marker stale
-            for (const paintProperty in this._markerStalePaintProperties) {
-                this._map.setPaintProperty(markerLayerName, paintProperty, this._markerStalePaintProperties[paintProperty]);
+            for (const paintProperty in this._userLocationStalePaintProperties) {
+                this._map.setPaintProperty(markerLayerName, paintProperty, this._userLocationStalePaintProperties[paintProperty]);
             }
         }
 
@@ -274,14 +274,14 @@ class GeolocateControl extends Evented {
         this._geolocateButton.type = 'button';
         this._geolocateButton.setAttribute('aria-label', 'Geolocate');
 
-        if (this.options.watchPosition) {
+        if (this.options.trackUserLocation) {
             this._geolocateButton.setAttribute('aria-pressed', false);
             this._watchState = 'OFF';
         }
 
-        // when showMarker is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
-        if (this.options.showMarker) {
-            if (this.options.watchPosition) this._watchState = 'INITILIZE';
+        // when showUserLocation is enabled, keep the Geolocate button disabled until the device location marker is setup on the map
+        if (this.options.showUserLocation) {
+            if (this.options.trackUserLocation) this._watchState = 'INITILIZE';
             this._geolocateButton.disabled = true;
             this._setupMarker();
         }
@@ -291,7 +291,7 @@ class GeolocateControl extends Evented {
 
         // when the camera is changed (and it's not as a result of the Geolocation Control) change
         // the watch mode to background watch, so that the marker is updated but not the camera.
-        if (this.options.watchPosition) {
+        if (this.options.trackUserLocation) {
             this._map.on('movestart', (event) => {
                 if (!event.geolocateSource) {
                     if (this._watchState === 'ACTIVE_LOCK') {
@@ -305,7 +305,7 @@ class GeolocateControl extends Evented {
             });
         }
 
-        if (!this.options.showMarker) this.fire('ready');
+        if (!this.options.showUserLocation) this.fire('ready');
     }
 
     _setupMarker() {
@@ -329,9 +329,9 @@ class GeolocateControl extends Evented {
             'circle-stroke-opacity': 0.8
         };
 
-        this._markerPaintProperties = this.options.markerPaintProperties || defaultMarkerPaintProperties;
-        this._markerShadowPaintProperties = this.options.markerShadowPaintProperties || defaultMarkerShadowPaintProperties;
-        this._markerStalePaintProperties = util.extend({}, this._markerPaintProperties, this.options.markerStalePaintProperties || defaultMarkerStalePaintProperties);
+        this._userLocationPaintProperties = this.options.userLocationPaintProperties || defaultMarkerPaintProperties;
+        this._userLocationShadowPaintProperties = this.options.userLocationShadowPaintProperties || defaultMarkerShadowPaintProperties;
+        this._userLocationStalePaintProperties = util.extend({}, this._userLocationPaintProperties, this.options.userLocationStalePaintProperties || defaultMarkerStalePaintProperties);
 
         // sources can't be added until the Map style is loaded
         this._map.on('load', () => {
@@ -347,16 +347,16 @@ class GeolocateControl extends Evented {
                 id: markerShadowLayerName,
                 source: markerSourceName,
                 type: 'circle',
-                paint: this._markerShadowPaintProperties
+                paint: this._userLocationShadowPaintProperties
             });
             this._map.addLayer({
                 id: markerLayerName,
                 source: markerSourceName,
                 type: 'circle',
-                paint: this._markerPaintProperties
+                paint: this._userLocationPaintProperties
             });
 
-            if (this.options.watchPosition) this._watchState = 'OFF';
+            if (this.options.trackUserLocation) this._watchState = 'OFF';
 
             this._geolocateButton.disabled = false;
 
@@ -367,7 +367,7 @@ class GeolocateControl extends Evented {
     _onClickGeolocate() {
         const positionOptions = util.extend(defaultGeoPositionOptions, this.options && this.options.positionOptions || {});
 
-        if (this.options.watchPosition) {
+        if (this.options.trackUserLocation) {
             // update watchState and do any outgoing state cleanup
             switch (this._watchState) {
             case 'OFF':
@@ -437,7 +437,7 @@ class GeolocateControl extends Evented {
             }
 
             if (this._watchState === 'ACTIVE_LOCK') {
-                this.fire('active_lock');
+                this.fire('activeLock');
             }
         } else {
             window.navigator.geolocation.getCurrentPosition(
@@ -456,7 +456,7 @@ class GeolocateControl extends Evented {
         this._geolocateButton.classList.remove('waiting');
         this._geolocateButton.setAttribute('aria-pressed', false);
 
-        if (this.options.showMarker) {
+        if (this.options.showUserLocation) {
             this._updateMarker(null);
         }
     }
@@ -494,16 +494,16 @@ module.exports = GeolocateControl;
  */
 
 /**
- * Fired when the Geolocate Control changes to the active_lock state, which happens either when we first obtain a successful Geolocation API position for the device (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active_lock state (no geolocate event will follow unless the device's location changes).
+ * Fired when the Geolocate Control changes to the active lock state, which happens either upon first obtaining a successful Geolocation API position for the user (a geolocate event will follow), or the user clicks the geolocate button when in the background state which uses the last known position to recenter the map and enter active lock state (no geolocate event will follow unless the users's location changes).
  *
- * @event active_lock
+ * @event activeLock
  * @memberof GeolocateControl
  * @instance
  *
  */
 
 /**
- * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when watchPosition is true. In the background state, the marker on the map will update with location updates but the camera will not.
+ * Fired when the Geolocate Control changes to the background state, which happens when a user changes the camera during an active position lock. This only applies when trackUserLocation is true. In the background state, the dot on the map will update with location updates but the camera will not.
  *
  * @event background
  * @memberof GeolocateControl

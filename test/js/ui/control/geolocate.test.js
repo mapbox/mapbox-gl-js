@@ -42,7 +42,7 @@ test('GeolocateControl with no options', (t) => {
     t.end();
 });
 
-test('GeolocateControl showMarker button state and ready event', (t) => {
+test('GeolocateControl showUserLocation button state and ready event', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl();
 
@@ -161,8 +161,8 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
 test('GeolocateControl watching map updates recenter on location with marker', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true,
-        showMarker: true,
+        trackUserLocation: true,
+        showUserLocation: true,
         fitBoundsOptions: {
             linear: true,
             duration: 0
@@ -204,7 +204,7 @@ test('GeolocateControl watching map updates recenter on location with marker', (
 test('GeolocateControl watching map background event', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true,
+        trackUserLocation: true,
         fitBoundsOptions: {
             linear: true,
             duration: 0
@@ -236,7 +236,7 @@ test('GeolocateControl watching map background event', (t) => {
 test('GeolocateControl watching map background state', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true,
+        trackUserLocation: true,
         fitBoundsOptions: {
             linear: true,
             duration: 0
@@ -270,10 +270,10 @@ test('GeolocateControl watching map background state', (t) => {
     });
 });
 
-test('GeolocateControl active_lock event', (t) => {
+test('GeolocateControl activeLock event', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
-        watchPosition: true,
+        trackUserLocation: true,
         fitBoundsOptions: {
             linear: true,
             duration: 0
@@ -284,9 +284,9 @@ test('GeolocateControl active_lock event', (t) => {
     const click = new window.Event('click');
 
     geolocate.once('ready', () => {
-        geolocate.once('active_lock', () => {
+        geolocate.once('activeLock', () => {
             geolocate.once('background', () => {
-                geolocate.once('active_lock', () => {
+                geolocate.once('activeLock', () => {
                     t.end();
                 });
                 // click the geolocate control button again which should transition back to active_lock state
