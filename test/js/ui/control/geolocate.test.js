@@ -158,7 +158,7 @@ test('GeolocateControl no watching map camera on geolocation', (t) => {
     });
 });
 
-test('GeolocateControl watching map updates recenter on location with marker', (t) => {
+test('GeolocateControl watching map updates recenter on location with dot', (t) => {
     const map = createMap();
     const geolocate = new GeolocateControl({
         trackUserLocation: true,
@@ -167,13 +167,13 @@ test('GeolocateControl watching map updates recenter on location with marker', (
             linear: true,
             duration: 0
         },
-        markerPaintProperties: {
+        userLocationPaintProperties: {
             'circle-radius': 10,
             'circle-color': '#000',
             'circle-stroke-color': '#fff',
             'circle-stroke-width': 2
         },
-        markerStalePaintProperties: {
+        userLocationStalePaintProperties: {
             'circle-color': '#f00',
         }
     });
@@ -185,11 +185,11 @@ test('GeolocateControl watching map updates recenter on location with marker', (
         map.once('moveend', () => {
             t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 10, lng: 20 }, 'map centered on location after 1st update');
             t.ok(map.getLayer('_geolocate-control-marker'), 'has marker layer');
-            t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#000', 'markerPaintProperty circle-color');
+            t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#000', 'userLocationPaintProperty circle-color');
             map.once('moveend', () => {
                 t.deepEqual(lngLatAsFixed(map.getCenter(), 4), { lat: 40, lng: 50 }, 'map centered on location after 2nd update');
                 geolocate.once('error', () => {
-                    t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#f00', 'markerStalePaintProperty circle-color');
+                    t.equals(map.getPaintProperty('_geolocate-control-marker', 'circle-color'), '#f00', 'userLocationStalePaintProperty circle-color');
                     t.end();
                 });
                 geolocation.changeError({code: 2, message: 'position unavaliable'});
