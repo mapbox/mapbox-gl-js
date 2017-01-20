@@ -1,5 +1,6 @@
 -
   term: "Active development"
+  description: "Things actively being built right now."
   items:
     -
       name: Custom canvas layer type
@@ -18,6 +19,7 @@
       issues: ["2412"]
 -
   term: "Upcoming"
+  description: "Things we hope to start building in the next several months."
   items:
     -
       name: <code>Map#setCamera</code> method
