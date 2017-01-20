@@ -159,16 +159,13 @@ class LineBucket extends Bucket {
 
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
-            let joinNormal = prevNormal.add(nextNormal)._unit();
-
-            if (isNaN(joinNormal.x) && isNaN(joinNormal.y) && join === 'miter') {
-                // In the case of 180° angles, the prev and next normals cancel
-                // each other out: prevNormal + nextNormal = (0, 0), its
-                // magnitude is 0, so the unit vector becomes (NaN, NaN). We
-                // can use the prevNormal, though, since we are confident this
-                // is a 180° angle.
-                joinNormal = prevNormal;
-                nextNormal._mult(-1);
+            // In the case of 180° angles, the prev and next normals cancel each other out:
+            // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
+            // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
+            // below will also become 0 and miterLength will become Infinity.
+            let joinNormal = prevNormal.add(nextNormal);
+            if (joinNormal.x !== 0 || joinNormal.y !== 0) {
+                joinNormal._unit();
             }
             /*  joinNormal     prevNormal
              *             ↖      ↑
@@ -184,7 +181,7 @@ class LineBucket extends Bucket {
             // Find the cosine of the angle between the next and join normals
             // using dot product. The inverse of that is the miter length.
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
-            const miterLength = 1 / cosHalfAngle;
+            const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
