@@ -19,7 +19,7 @@ var url = '{{site.baseurl}}/assets/hike.geojson';
 map.on('load', function () {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
             var data = JSON.parse(xhr.responseText);
 
             // save full coordinate list for later
