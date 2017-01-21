@@ -10,6 +10,7 @@ coverage
 .DS_Store
 .nyc_output
 *_generated.js
+*-generated.js
 yarn.lock
 test/integration/**/index.html
 test/integration/**/actual.png
