@@ -786,7 +786,9 @@
         },
         "`auto` value": {
           "js": "0.25.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
         }
       }
     },
@@ -837,6 +839,7 @@
         "basic functionality": {
           "js": "0.21.0",
           "android": "4.2.0",
+          "ios": "3.4.0",
           "macos": "0.2.1"
         }
       }
@@ -870,6 +873,7 @@
         "basic functionality": {
           "js": "0.21.0",
           "android": "4.2.0",
+          "ios": "3.4.0",
           "macos": "0.2.1"
         }
       }
@@ -1008,11 +1012,14 @@
         "basic functionality": {
           "js": "0.21.0",
           "android": "4.2.0",
+          "ios": "3.4.0",
           "macos": "0.2.1"
         },
         "`auto` value": {
           "js": "0.25.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
         }
       }
     },
@@ -1045,7 +1052,9 @@
         },
         "`auto` value": {
           "js": "0.25.0",
-          "android": "4.2.0"
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
         }
       }
     },
@@ -2339,6 +2348,7 @@
         "basic functionality": {
           "js": "0.21.0",
           "android": "4.2.0",
+          "ios": "3.4.0",
           "macos": "0.2.1"
         }
       }
