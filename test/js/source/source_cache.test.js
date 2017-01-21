@@ -388,7 +388,7 @@ test('SourceCache#update', (t) => {
         sourceCache.onAdd();
     });
 
-    t.test('includes partially covered tiles in rendered tiles', (t) => {
+    t.test('retains covered child tiles while parent tile is fading in', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 2;
@@ -402,6 +402,8 @@ test('SourceCache#update', (t) => {
                 callback();
             }
         });
+
+        sourceCache._source.type = 'raster';
 
         sourceCache.on('source.load', () => {
             sourceCache.update(transform);
@@ -436,6 +438,8 @@ test('SourceCache#update', (t) => {
                 callback();
             }
         });
+
+        sourceCache._source.type = 'raster';
 
         sourceCache.on('source.load', () => {
             sourceCache.update(transform);
