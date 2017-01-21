@@ -30,12 +30,13 @@ class GlyphSource extends Evented {
     /**
      * @param {string} url glyph template url
      */
-    constructor(url) {
+    constructor(url, eventedParent) {
         super();
         this.url = url && normalizeURL(url);
         this.atlases = {};
         this.stacks = {};
         this.loading = {};
+        this.setEventedParent(eventedParent);
     }
 
     getSimpleGlyphs(fontstack, glyphIDs, uid, callback) {
