@@ -457,6 +457,67 @@ test('SourceCache#update', (t) => {
     });
 
 
+    t.test('retains children for fading when tile.fadeEndTime is not set', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.timeAdded = Date.now();
+                tile.state = 'loaded';
+                callback();
+            }
+        });
+
+        sourceCache._source.type = 'raster';
+
+        sourceCache.on('source.load', () => {
+            sourceCache.update(transform);
+
+            transform.zoom = 0;
+            sourceCache.update(transform);
+
+            t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
+            t.end();
+        });
+        sourceCache.onAdd();
+    });
+
+
+    t.test('retains children when tile.fadeEndTime is in the future', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        const sourceCache = createSourceCache({
+            loadTile: function(tile, callback) {
+                tile.timeAdded = Date.now();
+                tile.state = 'loaded';
+                tile.fadeEndTime = Date.now() + 100;
+                callback();
+            }
+        });
+
+        sourceCache._source.type = 'raster';
+
+        sourceCache.on('source.load', () => {
+            sourceCache.update(transform);
+
+            transform.zoom = 0;
+            sourceCache.update(transform);
+
+            t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
+            setTimeout(() => {
+                sourceCache.update(transform);
+                t.equal(sourceCache.getRenderableIds().length, 1, 'drops children after fading is complete');
+                t.end();
+            }, 100);
+        });
+        sourceCache.onAdd();
+    });
+
+
     t.test('retains overscaled loaded children', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
