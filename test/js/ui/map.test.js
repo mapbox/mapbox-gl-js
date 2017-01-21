@@ -316,11 +316,10 @@ test('Map', (t) => {
             const map = createMap({style: style});
 
             map.on('load', () => {
-                map.on('error', ({ error }) => {
-                    t.match(error.message, /There is no source with ID/);
-                    t.end();
-                });
-                map.isSourceLoaded('geojson');
+                t.throws(() => {
+                    map.isSourceLoaded('geojson');
+                }, Error, /There is no source with ID/i);
+                t.end();
             });
         });
 

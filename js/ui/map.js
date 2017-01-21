@@ -740,12 +740,9 @@ class Map extends Camera {
      * @returns {boolean} A Boolean indicating whether the source is loaded.
      */
     isSourceLoaded(id) {
-        const source = this.style.sourceCaches[id];
+        const source = this.style && this.style.sourceCaches[id];
         if (source === undefined) {
-            this.fire('error', {
-                error: new Error(`There is no source with ID '${id}'`)
-            });
-            return;
+            throw new Error(`There is no source with ID '${id}'`);
         }
         return source.loaded();
     }
