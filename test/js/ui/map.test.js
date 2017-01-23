@@ -62,6 +62,23 @@ test('Map', (t) => {
                 container: 'anElementIdWhichDoesNotExistInTheDocument'
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+
+        t.end();
+    });
+
+    t.test('constructor, max size detection', (t) => {
+        t.stub(console, 'warn');
+
+        const container = window.document.createElement('div');
+        container.offsetWidth = 10000;
+        container.offsetHeight = 10000;
+        new Map({container});
+
+        t.match(
+            console.warn.getCall(0).args[0],
+            /Map size \(10000px by 10000px\) is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
+        );
+
         t.end();
     });
 
