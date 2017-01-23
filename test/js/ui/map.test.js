@@ -311,6 +311,33 @@ test('Map', (t) => {
             });
         });
 
+        t.test('fires an error on checking if non-existant source is loaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /There is no source with ID/);
+                    t.end();
+                });
+                map.isSourceLoaded('geojson');
+            });
+        });
+
+        t.test('#isSourceLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('source.load', () => {
+                    t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                    t.end();
+                });
+                map.addSource('geojson', createStyleSource());
+                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
+            });
+        });
+
         t.test('returns the style with added layers', (t) => {
             const style = createStyle();
             const map = createMap({style: style});

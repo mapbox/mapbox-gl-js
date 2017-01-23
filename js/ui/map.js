@@ -734,6 +734,23 @@ class Map extends Camera {
     }
 
     /**
+     * Returns a Boolean indicating whether the source is loaded.
+     *
+     * @param {string} id The ID of the source to be checked.
+     * @returns {boolean} A Boolean indicating whether the source is loaded.
+     */
+    isSourceLoaded(id) {
+        const source = this.style && this.style.sourceCaches[id];
+        if (source === undefined) {
+            this.fire('error', {
+                error: new Error(`There is no source with ID '${id}'`)
+            });
+            return;
+        }
+        return source.loaded();
+    }
+
+    /**
      * Adds a [custom source type](#Custom Sources), making it available for use with
      * {@link Map#addSource}.
      * @private
