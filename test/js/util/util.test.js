@@ -231,21 +231,6 @@ test('util', (t) => {
             t.end();
         });
 
-        t.test('s-maxage', (t) => {
-            t.deepEqual(util.parseCacheControl('s-maxage=200'), {
-                's-maxage': 200
-            }, 'returns valid s-maxage header');
-
-            t.deepEqual(util.parseCacheControl('max-age=43200,s-maxage=300'), {
-                'max-age': 43200,
-                's-maxage': 300
-            }, 'returns valid headers');
-
-            t.deepEqual(util.parseCacheControl('s-maxage=something'), {}, 'does not return invalid s-maxage header');
-
-            t.end();
-        });
-
         t.end();
     });
 
