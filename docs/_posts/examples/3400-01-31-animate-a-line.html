@@ -12,9 +12,15 @@ button {
   position: absolute;
   margin: 20px;
 }
+#pause::after {
+  content: 'Pause';
+}
+#pause.pause::after {
+  content: 'Play';
+}
 </style>
 <div id='map'></div>
-<button id='replay'>Replay</button>
+<button id='pause'></button>
 <script>
 var map = new mapboxgl.Map({
   container: 'map',
@@ -36,6 +42,13 @@ var geojson = {
     }
   }]
 };
+
+var speedFactor = 4; // number of frames per longitude degree
+var animation; // to store the animation
+var startTime = performance.now(); // system timestamp
+var progress = 0; // progress = timestamp - startTime
+var pause = false;
+var pauseButton = document.getElementById('pause');
 
 map.on('load', function() {
 
@@ -61,46 +74,37 @@ map.on('load', function() {
     }
   });
 
-  var speedFactor = 40; // number of frames per longitude degree
-  var animation; // to store the animation
-  var startTime = performance.now(); // system timestamp
-  var progress; // progress = timestamp - startTime
-
   animateLine();
 
-  document.getElementById("replay").addEventListener("click", function() {
-    // in case there is an ongoing animation
-    cancelAnimationFrame(animation);
-    startTime = performance.now();
-    geojson = {
-      "type": "FeatureCollection",
-      "features": [{
-        "type": "Feature",
-        "geometry": {
-          "type": "LineString",
-          "coordinates": [
-            [0, 0]
-          ]
-        }
-      }]
-    };
-    // play animation
-    animateLine();
+  pauseButton.addEventListener('click', function() {
+    pauseButton.classList.toggle('pause');
+    if (pauseButton.classList.contains('pause')) {
+        cancelAnimationFrame(animation);
+    } else {
+        animateLine();
+        pause = true;
+    }
+  });
+
+  // requestAnimationFrame pauses when the tab is inactive
+  // reset startTime and progress when switched back
+  document.addEventListener('visibilitychange', function(){
+      pause = true;
   });
 
   function animateLine(timestamp) {
-
-    // requestAnimationFrame pauses when the tab is inactive
-    // reset startTime and progress when switched back
-    document.addEventListener('visibilitychange', function(){
-        startTime = timestamp - progress;
-    });
-
-    progress = timestamp - startTime;
+    console.log(progress);
+    if (pause) {
+      startTime = timestamp - progress;
+      pause = false;
+    } else {
+      progress = timestamp - startTime;
+    }
 
     // stop if animation completes a lap of 360 degrees
     if (progress > speedFactor * 360) {
-      cancelAnimationFrame(animation);
+        startTime = timestamp;
+        geojson.features[0].geometry.coordinates = [];
     } else {
         var x = progress / speedFactor;
         // draw a sine wave with some math.
@@ -112,10 +116,9 @@ map.on('load', function() {
 
         // Fly the map to follow the animation
         // map.panBy([60, 0]);
-
-        // Request the next frame of the animation.
-        animation = requestAnimationFrame(animateLine);
     }
+    // Request the next frame of the animation.
+    animation = requestAnimationFrame(animateLine);
   }
 
 });
