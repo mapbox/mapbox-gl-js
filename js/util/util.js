@@ -448,11 +448,5 @@ exports.parseCacheControl = function(cacheControl: string): Object {
         else header['max-age'] = maxAge;
     }
 
-    if (header['s-maxage']) {
-        const sMaxAge = parseInt(header['s-maxage'], 10);
-        if (isNaN(sMaxAge)) delete header['s-maxage'];
-        else header['s-maxage'] = sMaxAge;
-    }
-
     return header;
 };
