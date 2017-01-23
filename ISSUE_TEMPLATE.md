@@ -9,7 +9,7 @@ If you are reporting a bug, please:
  - Only post to report a bug or request a feature. Direct all other questions to https://stackoverflow.com/questions/tagged/mapbox-gl-js
  
 If you are requesting a new feature or suggesting a big change, please:
- - Copy the Mapbox GL RFC template into this ticket and fill out as much as you can https://raw.githubusercontent.com/mapbox/mapbox-gl/master/RFC_TEMPLATE.md
+ - Copy the Mapbox GL RFC template into this ticket and fill out as much as you can https://raw.githubusercontent.com/mapbox/mapbox-gl-js/master/RFC_TEMPLATE.md
   - Make the issue title a succinct but specific description of your use case or the desired functionality. Bad: "More clustering options". Good: "Compute and expose aggregated values when clustering GeoJSON".
 -->
 
