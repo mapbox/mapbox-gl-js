@@ -71,6 +71,8 @@ exports.getImage = function(url, callback) {
             URL.revokeObjectURL(img.src);
         };
         const blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
+        img.cacheControl = imgData.cacheControl;
+        img.expires = imgData.expires;
         img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
     });
 };
