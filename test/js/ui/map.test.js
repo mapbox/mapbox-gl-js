@@ -76,7 +76,7 @@ test('Map', (t) => {
 
         t.match(
             console.warn.getCall(0).args[0],
-            /Map size \(10000px by 10000px\) is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
+            /Map is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
         );
 
         t.end();
