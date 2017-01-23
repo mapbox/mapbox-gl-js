@@ -255,6 +255,7 @@ class Map extends Camera {
      * Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
      * in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
      * [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
+     *
      * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to add.
@@ -273,6 +274,7 @@ class Map extends Camera {
 
     /**
      * Removes a Mapbox style class from the map.
+     *
      * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to remove.
