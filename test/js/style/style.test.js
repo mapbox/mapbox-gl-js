@@ -625,6 +625,72 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            },
+            layers: [{
+                "id": "my-layer",
+                "type": "symbol",
+                "source": "mapbox",
+                "source-layer": "boxmap",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+
+        const layer = {
+            "id": "my-layer",
+            "type": "symbol",
+            "source": "mapbox",
+            "source-layer": "boxmap"
+        };
+
+        style.on('style.load', () => {
+            style.sourceCaches['mapbox'].reload = t.end;
+            style.sourceCaches['mapbox'].clearTiles = t.fail;
+            style.removeLayer('my-layer');
+            style.addLayer(layer);
+            style.update();
+        });
+    });
+
+    t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            },
+            layers: [{
+                "id": "my-layer",
+                "type": "symbol",
+                "source": "mapbox",
+                "source-layer": "boxmap",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+
+        const layer = {
+            "id": "my-layer",
+            "type": "circle",
+            "source": "mapbox",
+            "source-layer": "boxmap"
+        };
+
+        style.on('style.load', () => {
+            style.sourceCaches['mapbox'].reload = t.fail;
+            style.sourceCaches['mapbox'].clearTiles = t.end;
+            style.removeLayer('my-layer');
+            style.addLayer(layer);
+            style.update();
+        });
+    });
+
     t.test('fires "data" event', (t) => {
         const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};

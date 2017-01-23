@@ -455,13 +455,15 @@ class Style extends Evented {
 
         if (this._removedLayers[id] && layer.source) {
             // If, in the current batch, we have already removed this layer
-            // and we are now re-adding it, then we need to clear (rather
-            // than just reload) the underyling source's tiles.
-            // Otherwise, tiles marked 'reloading' will have buffers that are
-            // set up for the _previous_ version of this layer, confusing
+            // and we are now re-adding it with a different `type`, then we
+            // need to clear (rather than just reload) the underyling source's
+            // tiles.  Otherwise, tiles marked 'reloading' will have buckets /
+            // buffers that are set up for the _previous_ version of this
+            // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
+            const removed = this._removedLayers[id];
             delete this._removedLayers[id];
-            this._updatedSources[layer.source] = 'clear';
+            this._updatedSources[layer.source] = removed.type !== layer.type ? 'clear' : 'reload';
         }
         this._updateLayer(layer);
 
@@ -536,7 +538,7 @@ class Style extends Evented {
         }
 
         this._changed = true;
-        this._removedLayers[id] = true;
+        this._removedLayers[id] = layer;
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
