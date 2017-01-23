@@ -255,6 +255,7 @@ class Map extends Camera {
      * Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
      * in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
      * [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
+     * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to add.
      * @param {StyleOptions} [options]
@@ -272,6 +273,7 @@ class Map extends Camera {
 
     /**
      * Removes a Mapbox style class from the map.
+     * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to remove.
      * @param {StyleOptions} [options]
@@ -290,6 +292,8 @@ class Map extends Camera {
 
     /**
      * Replaces the map's existing Mapbox style classes with a new array of classes.
+     *
+     * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {Array<string>} klasses The style classes to set.
      * @param {StyleOptions} [options]
@@ -312,6 +316,8 @@ class Map extends Camera {
      * Returns a Boolean indicating whether the map has the
      * specified Mapbox style class.
      *
+     * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
+     *
      * @param {string} klass The style class to test.
      * @returns {boolean} `true` if the map has the specified style class.
      */
@@ -321,6 +327,8 @@ class Map extends Camera {
 
     /**
      * Returns the map's Mapbox style classes.
+     *
+     * **Note:** Class-specific paint properties are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @returns {Array<string>} The map's style classes.
      */
