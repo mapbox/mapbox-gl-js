@@ -742,7 +742,10 @@ class Map extends Camera {
     isSourceLoaded(id) {
         const source = this.style && this.style.sourceCaches[id];
         if (source === undefined) {
-            throw new Error(`There is no source with ID '${id}'`);
+            this.fire('error', {
+                error: new Error(`There is no source with ID '${id}'`)
+            });
+            return;
         }
         return source.loaded();
     }
