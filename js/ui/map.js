@@ -346,6 +346,15 @@ class Map extends Camera {
         this.transform.resize(width, height);
         this.painter.resize(width, height);
 
+        const gl = this.painter.gl;
+        const maxSize = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) / 2;
+        if (this._canvas.width > maxSize || this._canvas.height > maxSize) {
+            util.warnOnce(
+                `Map is larger than maximum size supported by this system ` +
+                `(${maxSize}px by ${maxSize}px).`
+            );
+        }
+
         return this
             .fire('movestart')
             .fire('move')
