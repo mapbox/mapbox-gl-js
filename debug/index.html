@@ -1,31 +1,124 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
-        body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position: absolute;
+        height: 100%;
+        left:0;
+        right:0;
+    }
+
+    #sidebar {
+        width: 200px;
+        position: absolute;
+        top:0;
+        left:0;
+        height: 100%;
+        background-color: white;
+        opacity: .3;
+        z-index: 99;
+    }
     </style>
 </head>
 
 <body>
-<div id='map'></div>
+    <div id='map'></div>
+    <div id="sidebar"></div>
+    <script src='/dist/mapbox-gl-dev.js'></script>
+    <script src='/debug/access_token_generated.js'></script>
+    <script>
+    var map = window.map = new mapboxgl.Map({
+        container: 'map',
+        zoom: 5,
+        center: [-77.01866, 38.888],
+        bearing: 0,
+        style: 'mapbox://styles/mapbox/streets-v10',
+        hash: false
+    });
 
-<script src='/dist/mapbox-gl-dev.js'></script>
-<script src='/debug/access_token_generated.js'></script>
-<script>
+    map.on('load', () => {
+        const boundsSW = [-132.890625,
+          19.31114335506464],
+            boundsNE = [-56.953125,
+          52.05249047600099],
+            bounds = mapboxgl.LngLatBounds.convert([boundsSW, boundsNE]);        // map.fitBounds(bounds);
+        // [n,e,s,w]
+        // sw: [w,s] = [x,y]
+        // ne: [e,n] = [x,y]
+        const padding = {north: 30, east: 0, south: 0, west: 200};
+        // var newNE = map.project(bounds.getNorthEast()).add(mapboxgl.Point.convert([padding.east, -padding.north]));
+        // var newSW = map.project(bounds.getSouthWest()).add(mapboxgl.Point.convert([-padding.west, padding.south]));
 
-var map = window.map = new mapboxgl.Map({
-    container: 'map',
-    zoom: 12.5,
-    center: [-77.01866, 38.888],
-    style: 'mapbox://styles/mapbox/streets-v10',
-    hash: true
-});
-
-</script>
+        // const newNEgeo = map.unproject(newNE);
+        // const newSWgeo = map.unproject(newSW);
+        map.addSource('original', {
+            type: 'geojson',
+            data: {
+                type: 'FeatureCollection',
+                features: [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: boundsNE
+                    },
+                    properties: {}
+                }, {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: boundsSW
+                    },
+                    properties: {}
+                }]
+            }
+        });
+        // map.addSource('new', {
+        //     type: 'geojson',
+        //     data: {
+        //         type: 'FeatureCollection',
+        //         features: [{
+        //             type: 'Feature',
+        //             geometry: {
+        //                 type: 'Point',
+        //                 coordinates: [newNEgeo.lng, newNEgeo.lat]
+        //             },
+        //             properties: {}
+        //         }, {
+        //             type: 'Feature',
+        //             geometry: {
+        //                 type: 'Point',
+        //                 coordinates: [newSWgeo.lng, newSWgeo.lat]
+        //             },
+        //             properties: {}
+        //         }]
+        //     }
+        // });
+        setTimeout(()=>{
+            map.fitBounds(bounds);
+        }, 1000);
+        map.addLayer({
+            id: 'original',
+            source: 'original',
+            type: 'circle',
+            paint: {
+                'circle-radius': 5,
+                'circle-color': 'blue',
+                'circle-opacity': 0.7
+            }
+        })
+    });
+    </script>
 </body>
+
 </html>
