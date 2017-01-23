@@ -7,16 +7,18 @@ class FillStyleLayer extends StyleLayer {
 
     getPaintValue(name, globalProperties, featureProperties) {
         if (name === 'fill-outline-color') {
-            const target = this.getPaintProperty('fill-outline-color');
-            if (target === undefined) {
+            // Special-case handling when transitioning either to or from an
+            // undefined fill-outline-color values
+            const toValue = this.getPaintProperty('fill-outline-color');
+            if (toValue === undefined) {
                 return super.getPaintValue('fill-color', globalProperties, featureProperties);
             }
 
             // https://github.com/mapbox/mapbox-gl-js/issues/3657
             const transition = this._paintTransitions['fill-outline-color'];
             if (transition && !transition.instant()) {
-                const source = transition.oldTransition._calculateTargetValue(globalProperties, featureProperties);
-                if (!source) {
+                const fromValue = transition.oldTransition._calculateTargetValue(globalProperties, featureProperties);
+                if (!fromValue) {
                     return super.getPaintValue('fill-color', globalProperties, featureProperties);
                 }
             }
