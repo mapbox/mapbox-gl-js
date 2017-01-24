@@ -162,8 +162,7 @@ class SourceCache extends Evented {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
-
-        this._setTimers(id, tile);
+        this._setTileReloadTimer(id, tile);
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -414,7 +413,7 @@ class SourceCache extends Evented {
                 if (this._cacheTimers[wrapped.id]) {
                     clearTimeout(this._cacheTimers[wrapped.id]);
                     this._cacheTimers[wrapped.id] = undefined;
-                    this._setTimers(wrapped.id, tile);
+                    this._setTileReloadTimer(wrapped.id, tile);
                 }
             }
         }
@@ -433,7 +432,7 @@ class SourceCache extends Evented {
         return tile;
     }
 
-    _setTimers(id, tile) {
+    _setTileReloadTimer(id, tile) {
         const tileExpires = tile.getExpiry();
         if (tileExpires) {
             this._timers[id] = setTimeout(() => {
@@ -443,7 +442,7 @@ class SourceCache extends Evented {
         }
     }
 
-    _setCacheTimers(id, tile) {
+    _setCacheInvalidationTimer(id, tile) {
         const tileExpires = tile.getExpiry();
         if (tileExpires) {
             this._cacheTimers[id] = setTimeout(() => {
@@ -478,7 +477,7 @@ class SourceCache extends Evented {
         if (tile.hasData()) {
             const wrappedId = tile.coord.wrapped().id;
             this._cache.add(wrappedId, tile);
-            this._setCacheTimers(wrappedId, tile);
+            this._setCacheInvalidationTimer(wrappedId, tile);
         } else {
             tile.aborted = true;
             this.abortTile(tile);

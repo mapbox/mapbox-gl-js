@@ -123,16 +123,16 @@ test('SourceCache#addTile', (t) => {
         time.setSeconds(time.getSeconds() + 5);
 
         const sourceCache = createSourceCache();
-        sourceCache._setTimers = (id) => {
+        sourceCache._setTileReloadTimer = (id) => {
             sourceCache._timers[id] = setTimeout(() => {}, 0);
         };
-        sourceCache._setCacheTimers = (id) => {
+        sourceCache._setCacheInvalidationTimer = (id) => {
             sourceCache._cacheTimers[id] = setTimeout(() => {}, 0);
         };
         sourceCache.loadTile = (tile, callback) => {
             tile.state = 'loaded';
             tile.getExpiry = () => time;
-            sourceCache._setTimers(coord.id, tile);
+            sourceCache._setTileReloadTimer(coord.id, tile);
             callback();
         };
 
