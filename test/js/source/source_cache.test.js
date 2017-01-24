@@ -26,6 +26,11 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             this.setEventedParent(eventedParent);
         }
         loadTile(tile, callback) {
+            if (sourceOptions.expires) {
+                tile.setExpiryData({
+                    expires: sourceOptions.expires
+                });
+            }
             setTimeout(callback, 0);
         }
         onAdd() {
@@ -108,6 +113,52 @@ test('SourceCache#addTile', (t) => {
 
         t.equal(load, 1);
         t.equal(add, 2);
+
+        t.end();
+    });
+
+    t.test('moves timers when adding tile from cache', (t) => {
+        const coord = new TileCoord(0, 0, 0);
+        const time = new Date();
+        time.setSeconds(time.getSeconds() + 5);
+
+        const sourceCache = createSourceCache();
+        sourceCache._setTileReloadTimer = (id) => {
+            sourceCache._timers[id] = setTimeout(() => {}, 0);
+        };
+        sourceCache._setCacheInvalidationTimer = (id) => {
+            sourceCache._cacheTimers[id] = setTimeout(() => {}, 0);
+        };
+        sourceCache.loadTile = (tile, callback) => {
+            tile.state = 'loaded';
+            tile.getExpiry = () => time;
+            sourceCache._setTileReloadTimer(coord.id, tile);
+            callback();
+        };
+
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
+
+        const id = coord.id;
+        t.notOk(sourceCache._timers[id]);
+        t.notOk(sourceCache._cacheTimers[id]);
+
+        sourceCache.addTile(coord);
+
+        t.ok(sourceCache._timers[id]);
+        t.notOk(sourceCache._cacheTimers[id]);
+
+        sourceCache.removeTile(coord.id);
+
+        t.notOk(sourceCache._timers[id]);
+        t.ok(sourceCache._cacheTimers[id]);
+
+        sourceCache.addTile(coord);
+
+        t.ok(sourceCache._timers[id]);
+        t.notOk(sourceCache._cacheTimers[id]);
 
         t.end();
     });
@@ -838,6 +889,25 @@ test('SourceCache#reload', (t) => {
         }, null, 'reload ignored gracefully');
 
         t.end();
+    });
+
+    t.end();
+});
+
+test('SourceCache reloads expiring tiles', (t) => {
+    t.test('calls reloadTile when tile expires', (t) => {
+        const coord = new TileCoord(1, 0, 0);
+
+        const expiryDate = new Date();
+        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 5);
+        const sourceCache = createSourceCache({ expires: expiryDate });
+
+        sourceCache.reloadTile = (id, state) => {
+            t.equal(state, 'expired');
+            t.end();
+        };
+
+        sourceCache.addTile(coord);
     });
 
     t.end();

@@ -149,7 +149,8 @@ test('VectorTileSource', (t) => {
                 loadVectorData: function () {
                     this.state = 'loaded';
                     events.push('tileLoaded');
-                }
+                },
+                setExpiryData: function() {}
             };
             source.loadTile(tile, () => {});
             t.equal(tile.state, 'loading');

@@ -111,6 +111,24 @@ class LRUCache<T> {
     }
 
     /**
+     * Remove a key/value combination from the cache.
+     *
+     * @param {string} key the key for the pair to delete
+     * @returns {LRUCache} this cache
+     * @private
+     */
+    remove(key: string) {
+        if (!this.has(key)) { return this; }
+
+        const data = this.data[key];
+        delete this.data[key];
+        this.onRemove(data);
+        this.order.splice(this.order.indexOf(key), 1);
+
+        return this;
+    }
+
+    /**
      * Change the max size of the cache.
      *
      * @param {number} max the max size of the cache

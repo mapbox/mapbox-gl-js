@@ -136,8 +136,8 @@ sinon.stub(ajax, 'getArrayBuffer', (url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            cache[url] = body;
-            callback(null, body);
+            cache[url] = {data: body};
+            callback(null, {data: body});
         } else {
             callback(error || new Error(response.statusCode));
         }

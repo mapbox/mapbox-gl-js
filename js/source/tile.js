@@ -30,6 +30,8 @@ class Tile {
         this.tileSize = size;
         this.sourceMaxZoom = sourceMaxZoom;
         this.buckets = {};
+        this.expires = null;
+        this.cacheControl = null;
 
         // `this.state` must be one of
         //
@@ -38,6 +40,7 @@ class Tile {
         // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
         // - `unloaded`:  Tile data has been deleted.
         // - `errored`:   Tile data was not loaded because of an error.
+        // - `expired`:   Tile data was previously loaded, but has expired per its HTTP headers and is in the process of refreshing.
         this.state = 'loading';
     }
 
@@ -194,7 +197,23 @@ class Tile {
     }
 
     hasData() {
-        return this.state === 'loaded' || this.state === 'reloading';
+        return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
+    }
+
+    setExpiryData(data) {
+        if (data.cacheControl) this.cacheControl = data.cacheControl;
+        if (data.expires) this.expires = data.expires;
+    }
+
+    getExpiry() {
+        if (this.cacheControl) {
+            // Cache-Control headers set max age (in seconds) from the time of request
+            const parsedCC = util.parseCacheControl(this.cacheControl);
+            if (parsedCC['max-age']) return this.timeAdded + parsedCC['max-age'] * 1000;
+        } else if (this.expires) {
+            // Expires headers set absolute expiration times
+            return new Date(this.expires).getTime();
+        }
     }
 }
 
