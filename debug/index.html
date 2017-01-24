@@ -7,12 +7,18 @@
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
-        html, body, #map { height: 100%; }
+        html, body, #map { height: 100%; width: 100% }
     </style>
 </head>
 
 <body>
 <div id='map'></div>
+<div id='checkboxes'>
+    <label><input id='show-tile-boundaries-checkbox' type='checkbox'> tile debug</label><br />
+    <label><input id='show-symbol-collision-boxes-checkbox' type='checkbox'> collision debug</label><br />
+    <label><input id='show-overdraw-checkbox' type='checkbox'> overdraw debug</label><br />
+    <label><input id='pitch-checkbox' type='checkbox' checked> pitch with rotate</label><br />
+</div>
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
@@ -29,6 +35,7 @@ var map = window.map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl());
 map.addControl(new mapboxgl.GeolocateControl());
 map.addControl(new mapboxgl.ScaleControl());
+map.addControl(new mapboxgl.FullscreenControl());
 
 map.on('load', function() {
     map.addSource('geojson', {
@@ -67,7 +74,7 @@ map.on('load', function() {
             var width = value;
             _stats.push({name: name, value: value, width: width});
         }
-        _stats = _stats.sort(function(a, b) { return b.value - a.value }).slice(0, 10);
+        _stats = _stats.sort(function(a, b) { return b.value - a.value; }).slice(0, 10);
 
         var html = '';
         for (var i in _stats) {
