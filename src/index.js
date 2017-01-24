@@ -13,9 +13,9 @@ mapboxgl.NavigationControl = require('./ui/control/navigation_control');
 mapboxgl.GeolocateControl = require('./ui/control/geolocate_control');
 mapboxgl.AttributionControl = require('./ui/control/attribution_control');
 mapboxgl.ScaleControl = require('./ui/control/scale_control');
+mapboxgl.FullscreenControl = require('./ui/control/fullscreen_control');
 mapboxgl.Popup = require('./ui/popup');
 mapboxgl.Marker = require('./ui/marker');
-mapboxgl.Fullscreen = require('./ui/control/fullscreen');
 
 mapboxgl.Style = require('./style/style');
 
