@@ -1,7 +1,7 @@
 ## master
 
 #### Deprecation Notices
-- [Class-specific paint properties](https://www.mapbox.com/mapbox-gl-style-spec/#layer-paint.*) are deprecated and will be removed in an upcoming release of Mapbox GL JS.
+- [Style classes](https://www.mapbox.com/mapbox-gl-style-spec/#layer-paint.*) are deprecated and will be removed in an upcoming release of Mapbox GL JS.
 
 ## 0.31.0 (Jan 10 2017)
 
