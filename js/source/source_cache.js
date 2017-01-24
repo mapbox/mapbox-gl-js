@@ -263,15 +263,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(coord.id)) {
                 retain[coord.id] = true;
-                const cachedTile = this._cache.get(coord.id);
-
-                if (this._cacheTimers[coord.id]) {
-                    clearTimeout(this._cacheTimers[coord.id]);
-                    delete this._cacheTimers[coord.id];
-                    this._setTimers(coord.id, cachedTile);
-                }
-
-                return cachedTile;
+                return this._cache.get(coord.id);
             }
         }
     }
@@ -421,7 +413,7 @@ class SourceCache extends Evented {
                 tile.redoPlacement(this._source);
                 if (this._cacheTimers[wrapped.id]) {
                     clearTimeout(this._cacheTimers[wrapped.id]);
-                    delete this._cacheTimers[wrapped.id];
+                    this._cacheTimers[wrapped.id] = undefined;
                     this._setTimers(wrapped.id, tile);
                 }
             }
@@ -446,7 +438,7 @@ class SourceCache extends Evented {
         if (tileExpires) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
-                delete this._timers[id];
+                this._timers[id] = undefined;
             }, tileExpires - new Date().getTime());
         }
     }
@@ -456,7 +448,7 @@ class SourceCache extends Evented {
         if (tileExpires) {
             this._cacheTimers[id] = setTimeout(() => {
                 this._cache.remove(id);
-                delete this._timers[id];
+                this._cacheTimers[id] = undefined;
             }, tileExpires - new Date().getTime());
         }
     }
@@ -476,7 +468,7 @@ class SourceCache extends Evented {
         delete this._tiles[id];
         if (this._timers[id]) {
             clearTimeout(this._timers[id]);
-            delete this._timers[id];
+            this._timers[id] = undefined;
         }
         this._source.fire('data', { tile: tile, coord: tile.coord, dataType: 'tile' });
 

@@ -120,8 +120,9 @@ class LRUCache<T> {
     remove(key: string) {
         if (!this.has(key)) { return this; }
 
-        this.onRemove(this.data[key]);
+        const data = this.data[key];
         delete this.data[key];
+        this.onRemove(data);
         this.order.splice(this.order.indexOf(key), 1);
 
         return this;
