@@ -156,6 +156,7 @@ class SourceCache extends Evented {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
+
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
@@ -341,19 +342,26 @@ class SourceCache extends Evented {
 
         const parentsForFading = {};
 
-        const ids = Object.keys(retain);
-        for (let k = 0; k < ids.length; k++) {
-            const id = ids[k];
-            coord = TileCoord.fromID(id);
-            tile = this._tiles[id];
-            if (tile && tile.fadeEndTime >= Date.now()) {
-                // This tile is still fading in. Find tiles to cross-fade with it.
-                if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
-                    retain[id] = true;
-                }
-                parentTile = this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
-                if (parentTile) {
-                    this.addTile(parentTile.coord);
+        if (isRasterType(this._source.type)) {
+            const ids = Object.keys(retain);
+            for (let k = 0; k < ids.length; k++) {
+                const id = ids[k];
+                coord = TileCoord.fromID(id);
+                tile = this._tiles[id];
+                if (!tile) continue;
+
+                // If the drawRasterTile has never seen this tile, then
+                // tile.fadeEndTime may be unset.  In that case, or if
+                // fadeEndTime is in the future, then this tile is still
+                // fading in. Find tiles to cross-fade with it.
+                if (typeof tile.fadeEndTime === 'undefined' || tile.fadeEndTime >= Date.now()) {
+                    if (this.findLoadedChildren(coord, maxCoveringZoom, retain)) {
+                        retain[id] = true;
+                    }
+                    parentTile = this.findLoadedParent(coord, minCoveringZoom, parentsForFading);
+                    if (parentTile) {
+                        this.addTile(parentTile.coord);
+                    }
                 }
             }
         }
@@ -552,6 +560,10 @@ function coordinateToTilePoint(tileCoord, sourceMaxZoom, coord) {
 
 function compareKeyZoom(a, b) {
     return (a % 32) - (b % 32);
+}
+
+function isRasterType(type) {
+    return type === 'raster' || type === 'image' || type === 'video';
 }
 
 module.exports = SourceCache;

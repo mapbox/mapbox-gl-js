@@ -14,6 +14,7 @@ class RasterTileSource extends Evented {
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
 
+        this.type = 'raster';
         this.minzoom = 0;
         this.maxzoom = 22;
         this.roundZoom = true;

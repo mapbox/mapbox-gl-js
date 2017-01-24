@@ -50,6 +50,7 @@ class ImageSource extends Evented {
         this.dispatcher = dispatcher;
         this.coordinates = options.coordinates;
 
+        this.type = 'image';
         this.minzoom = 0;
         this.maxzoom = 22;
         this.tileSize = 512;
