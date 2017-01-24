@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const StyleLayer = require('../style_layer');
 const FillBucket = require('../../data/bucket/fill_bucket');
 
@@ -9,18 +10,20 @@ class FillStyleLayer extends StyleLayer {
         if (name === 'fill-outline-color') {
             // Special-case handling when transitioning either to or from an
             // undefined fill-outline-color values
-            const toValue = this.getPaintProperty('fill-outline-color');
-            if (toValue === undefined) {
-                return super.getPaintValue('fill-color', globalProperties, featureProperties);
-            }
+            let transition = this._paintTransitions['fill-outline-color'];
+            while (transition) {
+                const declaredValue = (
+                    transition &&
+                    transition.declaration &&
+                    transition.declaration.value
+                );
 
-            // https://github.com/mapbox/mapbox-gl-js/issues/3657
-            const transition = this._paintTransitions['fill-outline-color'];
-            if (transition && !transition.instant()) {
-                const fromValue = transition.oldTransition._calculateTargetValue(globalProperties, featureProperties);
-                if (!fromValue) {
+                if (!declaredValue) {
                     return super.getPaintValue('fill-color', globalProperties, featureProperties);
                 }
+
+                assert(transition !== transition.oldTransition);
+                transition = transition.oldTransition;
             }
         }
 
