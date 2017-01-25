@@ -1,6 +1,5 @@
 'use strict';
 
-const assert = require('assert');
 const StyleLayer = require('../style_layer');
 const FillBucket = require('../../data/bucket/fill_bucket');
 
@@ -26,7 +25,6 @@ class FillStyleLayer extends StyleLayer {
                     return super.getPaintValue('fill-color', globalProperties, featureProperties);
                 }
 
-                assert(transition !== transition.oldTransition);
                 transition = transition.oldTransition;
             }
         }
