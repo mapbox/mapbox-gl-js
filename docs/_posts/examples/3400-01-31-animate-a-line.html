@@ -26,7 +26,8 @@ var map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/mapbox/streets-v8',
   center: [-180, 0],
-  zoom: 0.5
+  zoom: 0.5,
+  renderWorldCopies: false
 });
 
 // Create a GeoJSON source with an empty lineString.
@@ -43,7 +44,7 @@ var geojson = {
   }]
 };
 
-var speedFactor = 4; // number of frames per longitude degree
+var speedFactor = 30; // number of frames per longitude degree
 var animation; // to store the animation
 var startTime = performance.now(); // system timestamp
 var progress = 0; // progress = timestamp - startTime
@@ -81,8 +82,8 @@ map.on('load', function() {
     if (pauseButton.classList.contains('pause')) {
         cancelAnimationFrame(animation);
     } else {
-        animateLine();
         pause = true;
+        animateLine();
     }
   });
 
@@ -93,15 +94,15 @@ map.on('load', function() {
   });
 
   function animateLine(timestamp) {
-    console.log(progress);
     if (pause) {
-      startTime = timestamp - progress;
+      // no timestamp in frame0
+      startTime = performance.now() - progress;
       pause = false;
     } else {
       progress = timestamp - startTime;
     }
 
-    // stop if animation completes a lap of 360 degrees
+    // restart if all 360 degrees are covered
     if (progress > speedFactor * 360) {
         startTime = timestamp;
         geojson.features[0].geometry.coordinates = [];
