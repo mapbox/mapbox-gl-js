@@ -550,7 +550,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-join": {
@@ -576,7 +577,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-miter-limit": {
@@ -596,7 +598,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-round-limit": {
@@ -616,7 +619,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "visibility": {
@@ -637,7 +641,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -662,7 +667,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "symbol-spacing": {
@@ -684,7 +690,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "symbol-avoid-edges": {
@@ -699,7 +706,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-allow-overlap": {
@@ -717,7 +725,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-ignore-placement": {
@@ -735,7 +744,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-optional": {
@@ -754,7 +764,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-rotation-alignment": {
@@ -789,7 +800,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-size": {
@@ -808,7 +820,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-text-fit": {
@@ -841,7 +854,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-text-fit-padding": {
@@ -875,7 +889,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-image": {
@@ -890,7 +905,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-rotate": {
@@ -934,7 +950,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-keep-upright": {
@@ -958,7 +975,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-offset": {
@@ -1020,7 +1038,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-rotation-alignment": {
@@ -1055,7 +1074,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.3.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-field": {
@@ -1071,7 +1091,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-font": {
@@ -1090,7 +1111,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-size": {
@@ -1110,7 +1132,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-max-width": {
@@ -1130,7 +1153,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-line-height": {
@@ -1149,7 +1173,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-letter-spacing": {
@@ -1168,7 +1193,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-justify": {
@@ -1197,7 +1223,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-anchor": {
@@ -1244,7 +1271,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-max-angle": {
@@ -1266,7 +1294,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-rotate": {
@@ -1286,7 +1315,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-padding": {
@@ -1306,7 +1336,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-keep-upright": {
@@ -1330,7 +1361,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-transform": {
@@ -1359,7 +1391,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-offset": {
@@ -1383,7 +1416,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-allow-overlap": {
@@ -1401,7 +1435,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-ignore-placement": {
@@ -1419,7 +1454,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-optional": {
@@ -1438,7 +1474,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "visibility": {
@@ -1459,7 +1496,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -1482,7 +1520,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -1706,7 +1745,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-opacity": {
@@ -1802,7 +1842,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-translate-anchor": {
@@ -1828,7 +1869,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-pattern": {
@@ -1843,7 +1885,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -1856,7 +1899,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis.",
+      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis, and data-driven styling is not available.",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
@@ -1902,7 +1945,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.27.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-extrusion-translate-anchor": {
@@ -1925,7 +1969,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.27.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-extrusion-pattern": {
@@ -1937,7 +1982,8 @@
       "sdk-support": {
         "basic functionality": {
           "js": "0.27.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "fill-extrusion-height": {
@@ -2049,7 +2095,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-translate-anchor": {
@@ -2075,7 +2122,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-width": {
@@ -2093,7 +2141,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-gap-width": {
@@ -2114,7 +2163,7 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-            "js": "0.29.0"
+          "js": "0.29.0"
         }
       }
     },
@@ -2181,7 +2230,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "line-pattern": {
@@ -2196,7 +2246,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -2301,7 +2352,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "circle-translate-anchor": {
@@ -2327,7 +2379,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "circle-pitch-scale": {
@@ -2350,7 +2403,8 @@
           "android": "4.2.0",
           "ios": "3.4.0",
           "macos": "0.2.1"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "circle-stroke-width": {
@@ -2428,7 +2482,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-color": {
@@ -2447,7 +2502,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-halo-color": {
@@ -2466,7 +2522,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-halo-width": {
@@ -2487,7 +2544,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-halo-blur": {
@@ -2508,7 +2566,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-translate": {
@@ -2533,7 +2592,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "icon-translate-anchor": {
@@ -2560,7 +2620,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-opacity": {
@@ -2581,7 +2642,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-color": {
@@ -2600,7 +2662,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-halo-color": {
@@ -2619,7 +2682,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-halo-width": {
@@ -2640,7 +2704,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-halo-blur": {
@@ -2661,7 +2726,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-translate": {
@@ -2686,7 +2752,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "text-translate-anchor": {
@@ -2713,7 +2780,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
@@ -2733,7 +2801,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-hue-rotate": {
@@ -2751,7 +2820,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-brightness-min": {
@@ -2769,7 +2839,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-brightness-max": {
@@ -2787,7 +2858,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-saturation": {
@@ -2805,7 +2877,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-contrast": {
@@ -2823,7 +2896,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     },
     "raster-fade-duration": {
@@ -2841,7 +2915,8 @@
           "android": "2.0.1",
           "ios": "2.0.0",
           "macos": "0.1.0"
-        }
+        },
+        "data-driven styling": {}
       }
     }
   },
