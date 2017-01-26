@@ -313,7 +313,7 @@
       }
     },
     {
-      "id": "invalid object-keyed string stop for zoom function",
+      "id": "invalid categorical function - missing type and property",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -329,7 +329,7 @@
       }
     },
     {
-      "id": "valid object-keyed string stop for property function",
+      "id": "invalid categorical function - missing type",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",
@@ -338,7 +338,7 @@
           "property": "mapbox",
           "stops": [
             [
-              "good",
+              "bad",
               "#fff"
             ]
           ]
@@ -346,17 +346,35 @@
       }
     },
     {
-      "id": "invalid use of property function",
-      "type": "background",
+      "id": "invalid categorical function - missing property",
+      "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "background-color": {
+        "fill-color": {
+          "type": "categorical",
+          "stops": [
+            [
+              "bad",
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid categorical function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "categorical",
           "property": "mapbox",
           "stops": [
             [
               "good",
-              "green"
+              "#fff"
             ]
           ]
         }
@@ -382,40 +400,6 @@
         "background-color": {
           "type": "identity",
           "stops": []
-        }
-      }
-    },
-    {
-      "id": "valid implicitly categorical property function",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-color": {
-          "property": "mapbox",
-          "stops": [
-            [
-              "good",
-              "green"
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "valid implicitly categorical zoom-and-property function",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-color": {
-          "property": "mapbox",
-          "stops": [
-            [
-              {"zoom": 0, "value": "good"},
-              "green"
-            ]
-          ]
         }
       }
     },
@@ -624,23 +608,6 @@
                 "value": "v"
               },
               true
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "id": "invalid categorical function missing property",
-      "type": "fill",
-      "source": "source",
-      "source-layer": "layer",
-      "paint": {
-        "fill-color": {
-          "type": "categorical",
-          "stops": [
-            [
-              "good",
-              "#fff"
             ]
           ]
         }

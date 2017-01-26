@@ -28,8 +28,8 @@
     "line": 75
   },
   {
-    "message": "layers[6].paint.line-width: \"property\" property is required",
-    "line": 86
+    "message": "layers[6].paint.line-width.stops[0][0]: number expected, string found",
+    "line": 89
   },
   {
     "message": "layers[7].paint.line-width.stops[0][1]: number expected, string found",
@@ -72,78 +72,82 @@
     "line": 305
   },
   {
-    "message": "layers[17].paint.fill-color: \"property\" property is required",
-    "line": 321
+    "message": "layers[17].paint.fill-color.stops[0][0]: number expected, string found\nIf you intended to use a categorical function, specify `\"type\": \"categorical\"`.",
+    "line": 324
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: property value must be a number or string"
+    "message": "layers[18].paint.fill-color.stops[0][0]: number expected, string found\nIf you intended to use a categorical function, specify `\"type\": \"categorical\"`.",
+    "line": 341
   },
   {
-    "message": "layers[19].paint.background-color: property functions not supported",
+    "message": "layers[31].paint.fill-color.stops[0][0]: property value must be a number or string"
+  },
+  {
+    "message": "layers[19].paint.fill-color: \"property\" property is required",
     "line": 354
   },
   {
-    "message": "layers[21].paint.background-color.stops: identity function may not have a \"stops\" property",
-    "line": 384
+    "message": "layers[22].paint.background-color.stops: identity function may not have a \"stops\" property",
+    "line": 402
   },
   {
-    "message": "layers[24].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
-    "line": 437
+    "message": "layers[23].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
+    "line": 421
   },
   {
-    "message": "layers[25].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
-    "line": 459
+    "message": "layers[24].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
+    "line": 443
   },
   {
-    "message": "layers[26].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 477
+    "message": "layers[25].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 461
   },
   {
-    "message": "layers[27].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 495
+    "message": "layers[26].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 479
   },
   {
-    "message": "layers[28].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 513
+    "message": "layers[27].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 497
   },
   {
-    "message": "layers[29].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 531
+    "message": "layers[28].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 515
+  },
+  {
+    "message": "layers[29].paint.fill-color.stops[0][0]: property value must be a number or string",
+    "line": 533
   },
   {
     "message": "layers[30].paint.fill-color.stops[0][0]: property value must be a number or string",
-    "line": 549
+    "line": 551
   },
   {
-    "message": "layers[31].paint.fill-color.stops[0][0]: property value must be a number or string",
-    "line": 567
+    "message": "layers[32].paint.fill-antialias: exponential functions not supported",
+    "line": 582
   },
   {
-    "message": "layers[33].paint.fill-antialias: exponential functions not supported",
-    "line": 598
+    "message": "layers[33].paint.fill-antialias: \"property\" property is required",
+    "line": 603
   },
   {
-    "message": "layers[34].paint.fill-antialias: \"property\" property is required",
-    "line": 619
+    "message": "layers[33].paint.fill-antialias.stops[0][0].value: number expected, string found",
+    "line": 608
   },
   {
-    "message": "layers[35].paint.fill-color: \"property\" property is required",
-    "line": 638
+    "message": "layers[34].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
+    "line": 635
   },
   {
-    "message": "layers[36].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
-    "line": 668
+    "message": "layers[35].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
+    "line": 653
   },
   {
-    "message": "layers[37].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
-    "line": 686
+    "message": "layers[36].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
+    "line": 679
   },
   {
-    "message": "layers[38].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
-    "line": 712
-  },
-  {
-    "message": "layers[39].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
-    "line": 738
+    "message": "layers[37].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
+    "line": 705
   }
 ]
