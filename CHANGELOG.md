@@ -1,3 +1,9 @@
+## 0.32.1 (Jan 26, 2017)
+
+#### Bug Fixes
+
+ - Fix bug causing [`mapbox-gl-rtl-text` plugin](https://github.com/mapbox/mapbox-gl-rtl-text) to not work #4055
+
 ## 0.32.0 (Jan 26, 2017)
 
 #### Deprecation Notices

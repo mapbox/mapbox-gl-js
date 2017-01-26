@@ -10,8 +10,8 @@ To use the [vector tiles](https://www.mapbox.com/maps/) and styles hosted on [ma
 <!DOCTYPE html>
 <html>
 <head>
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css' rel='stylesheet' />
 </head>
 
 <body>
@@ -47,7 +47,7 @@ var map = new mapboxgl.Map({
 });
 ```
 
-Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.0/mapbox-gl.css`.
+Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css`.
 
 ### Using Mapbox with other module systems
 
@@ -63,7 +63,7 @@ If you're using the ES6 module system (e.g. with [Rollup](https://github.com/rol
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js';
 ```
 
-Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.0/mapbox-gl.css`.
+Add the CSS file at `node_modules/mapbox-gl/dist/mapbox-gl.css` or `https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css`.
 
 ### Using Mapbox with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
 
