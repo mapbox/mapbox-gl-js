@@ -48,7 +48,6 @@ const defaultOptions = {
     hash: false,
 
     attributionControl: true,
-    logoControl: true,
 
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
@@ -101,7 +100,7 @@ const defaultOptions = {
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [AttributionControl](#AttributionControl) will be added to the map.
- * @param {boolean} [options.logoControl=true] If `true`, a [LogoControl](#LogoControl) will be added to the map.
+ * @param {boolean} [options.logoPosition='bottom-left'] Position of the Mapbox wordmark on the map. Valid options are ['top-left','top-right', 'bottom-left', 'bottom-right'].
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
@@ -203,7 +202,7 @@ class Map extends Camera {
         if (options.style) this.setStyle(options.style);
 
         if (options.attributionControl) this.addControl(new AttributionControl());
-        if (options.logoControl) this.addControl(new LogoControl());
+        this.addControl(new LogoControl(), options.logoPosition);
 
         this.on('style.load', function() {
             if (this.transform.unmodified) {

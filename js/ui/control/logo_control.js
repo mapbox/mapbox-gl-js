@@ -1,6 +1,7 @@
 'use strict';
 
 const DOM = require('../../util/dom');
+const util = require('../../util/util');
 
 /**
  * A `LogoControl` is a control that adds the Mapbox watermark
@@ -12,13 +13,16 @@ const DOM = require('../../util/dom');
 
 class LogoControl {
 
-    onAdd() {
+    constructor() {
+        util.bindAll(['_logoRequired', '_updateLogo'], this);
+    }
+
+    onAdd(map) {
+        this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
-        const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
-        anchor.target = "_blank";
-        anchor.href = "https://www.mapbox.com/";
-        anchor.setAttribute("aria-label", "Mapbox logo");
-        this._container.appendChild(anchor);
+
+        this._map.on('data', this._updateLogo);
+        this._updateLogo();
         return this._container;
     }
 
@@ -29,6 +33,32 @@ class LogoControl {
     getDefaultPosition() {
         return 'bottom-left';
     }
+
+    _updateLogo() {
+        if (this._logoRequired()) {
+            const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
+            anchor.target = "_blank";
+            anchor.href = "https://www.mapbox.com/";
+            anchor.setAttribute("aria-label", "Mapbox logo");
+            this._container.appendChild(anchor);
+            this._map.off('data', this._updateLogo);
+        }
+    }
+
+    _logoRequired() {
+        if (!this._map.style) return;
+
+        const sourceCaches = this._map.style.sourceCaches;
+        for (const id in sourceCaches) {
+            const source = sourceCaches[id].getSource();
+            if (source.mapbox_logo) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
 
 
