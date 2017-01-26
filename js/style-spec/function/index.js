@@ -23,12 +23,19 @@ function createFunction(parameters, defaultType) {
         const type = parameters.type || defaultType || 'exponential';
 
         let innerFun;
+        let hashedStops;
         if (type === 'exponential') {
             innerFun = evaluateExponentialFunction;
         } else if (type === 'interval') {
             innerFun = evaluateIntervalFunction;
         } else if (type === 'categorical') {
             innerFun = evaluateCategoricalFunction;
+
+            // For categorical functions, generate an Object as a hashmap of the stops for fast searching
+            hashedStops = Object.create(null);
+            for (const stop of parameters.stops) {
+                hashedStops[stop[0]] = stop[1];
+            }
         } else if (type === 'identity') {
             innerFun = evaluateIdentityFunction;
         } else {
@@ -58,15 +65,6 @@ function createFunction(parameters, defaultType) {
             }
         } else {
             outputFunction = identityFunction;
-        }
-
-
-        // For categorical functions, generate an Object as a hashmap of the stops for fast searching
-        const hashedStops = Object.create(null);
-        if (innerFun === evaluateCategoricalFunction) {
-            for (let i = 0; i < parameters.stops.length; i++) {
-                hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
-            }
         }
 
         if (zoomAndFeatureDependent) {
@@ -99,21 +97,13 @@ function createFunction(parameters, defaultType) {
 
         } else if (zoomDependent) {
             fun = function(zoom) {
-                if (innerFun === evaluateCategoricalFunction) {
-                    return outputFunction(innerFun(parameters, zoom, hashedStops));
-                } else {
-                    return outputFunction(innerFun(parameters, zoom));
-                }
+                return outputFunction(innerFun(parameters, zoom, hashedStops));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                if (innerFun === evaluateCategoricalFunction) {
-                    return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
-                } else {
-                    return outputFunction(innerFun(parameters, feature[parameters.property]));
-                }
+                return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
