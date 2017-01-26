@@ -19,15 +19,11 @@
     "csscolorparser": "^1.0.2",
     "csscolorparser": "~1.0.2",
     "earcut": "^2.0.3",
-    "fast-stable-stringify": "^0.1.1",
     "feature-filter": "^2.2.0",
     "geojson-rewind": "^0.1.0",
     "geojson-vt": "^2.4.0",
     "grid-index": "^1.0.0",
-    "jsonlint-lines-primitives": "~1.6.0",
-    "lodash.isequal": "^3.0.4",
     "mapbox-gl-supported": "^1.2.0",
-    "minimist": "0.0.8",
     "package-json-versionify": "^1.0.2",
     "pbf": "^1.3.2",
     "pngjs": "^2.2.0",
@@ -82,10 +78,8 @@
     "pixelmatch": "^4.0.2",
     "pngjs": "^3.0.0",
     "proxyquire": "^1.7.9",
-    "remark-html": "^5.0.1",
     "remark": "^6.0.1",
     "sinon": "^1.15.4",
-    "st": "^1.1.0",
     "st": "^1.2.0",
     "tap": "^5.7.0",
     "vinyl-fs": "2.4.4",
@@ -107,7 +101,7 @@
       "package-json-versionify",
       "unassertify",
       "brfs",
-      "./js/style-spec/reference-minifyify"
+      "./js/style-spec/minifyify_style_spec"
     ]
   },
   "browser": {
@@ -143,12 +137,7 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "build-style-spec-api-docs": "cat js/style-spec/*.js js/style-spec/*/*.js | dox --raw --skipSingleStar | doxme > js/style-spec/API.md"
-  },
-  "bin": {
-    "gl-style-migrate": "bin/gl-style-migrate",
-    "gl-style-validate": "bin/gl-style-validate",
-    "gl-style-format": "bin/gl-style-format",
-    "gl-style-composite": "bin/gl-style-composite"
+    "build-style-spec-api-docs": "cat js/style-spec/*.js js/style-spec/*/*.js | dox --raw --skipSingleStar | doxme > js/style-spec/API.md",
+    "postinstall": "cd js/style-spec && npm install"
   }
 }

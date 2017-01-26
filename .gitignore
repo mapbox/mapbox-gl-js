@@ -4,7 +4,7 @@
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
 *.js.map
-/node_modules
+node_modules
 npm-debug.log
 *.sublime-*
 coverage
