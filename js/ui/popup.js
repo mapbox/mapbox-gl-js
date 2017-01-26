@@ -166,6 +166,10 @@ class Popup extends Evented {
     /**
      * Sets the popup's content to the HTML provided as a string.
      *
+     * This method does not perform HTML filtering or sanitization, and must be
+     * used only with trusted content. Consider [`setText`](#Popup#setText) if
+     * the content is an untrusted text string.
+     *
      * @param {string} html A string representing HTML content for the popup.
      * @returns {Popup} `this`
      */
