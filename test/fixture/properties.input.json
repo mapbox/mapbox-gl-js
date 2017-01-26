@@ -64,6 +64,15 @@
         },
         "bad": true
       }
+    },
+    {
+      "id": "invalid attempt to use string interpolation rather than a property function",
+      "type": "fill",
+      "source": "vector",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": "{opacity}"
+      }
     }
   ]
 }

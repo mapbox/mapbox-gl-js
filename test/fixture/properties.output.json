@@ -37,5 +37,9 @@
   {
     "message": "layers[3].paint.bad: unknown property \"bad\"",
     "line": 65
+  },
+  {
+    "message": "layers[4].paint.fill-opacity: \"fill-opacity\" does not support interpolation syntax\nUse an identity property function instead: `{ \"type\": \"identity\", \"property\": \"opacity\"` }`.",
+    "line": 74
   }
 ]
