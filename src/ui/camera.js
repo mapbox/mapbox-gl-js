@@ -322,10 +322,10 @@ class Camera extends Evented {
 
         options = util.extend({
             padding: {
-                north: 0,
-                south: 0,
-                east: 0,
-                west: 0
+                top: 0,
+                bottom: 0,
+                right: 0,
+                left: 0
             },
             offset: [0, 0],
             maxZoom: this.transform.maxZoom
@@ -334,10 +334,10 @@ class Camera extends Evented {
         if (typeof options.padding === 'number') {
             const p = options.padding;
             options.padding = {
-                north: p,
-                south: p,
-                east: p,
-                west: p
+                top: p,
+                bottom: p,
+                right: p,
+                left: p
             };
         }
         bounds = LngLatBounds.convert(bounds);
@@ -346,9 +346,9 @@ class Camera extends Evented {
             tr = this.transform,
             // add the appropriate paddings to the given bounds to adjust the viewport bounds.
             // for NW: [x,y] = [w, n]
-            nwPadding = Point.convert([ options.padding.west || 0, options.padding.north || 0]),
+            nwPadding = Point.convert([ options.padding.left || 0, options.padding.top || 0]),
             // for SE: [x,y] = [e, s]
-            sePadding = Point.convert([ options.padding.east || 0, options.padding.south || 0]),
+            sePadding = Point.convert([ options.padding.right || 0, options.padding.bottom || 0]),
             // because x decreases in the west direction and y decreases in the n direction in screen coordinates
             // we subtract the nw padding, and add the se padding to get the appropriate bounds.
             nw = tr.project(bounds.getNorthWest()).sub(nwPadding),
