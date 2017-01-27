@@ -5,7 +5,7 @@ const StyleTransition = require('./style_transition');
 const StyleDeclaration = require('./style_declaration');
 const styleSpec = require('../style-spec/reference/latest');
 const validateStyle = require('./validate_style');
-const parseColor = require('./parse_color');
+const parseColor = require('./../style-spec/util/parse_color');
 const Evented = require('../util/evented');
 
 const TRANSITION_SUFFIX = '-transition';
