@@ -857,6 +857,17 @@ navigation:
               </dl>
             </div>
             <div class="col12 clearfix pad0y pad2x space-bottom2">
+              <div><span class='code'><a id="function-default" href="#function-default">default</a></span></div>
+              <div>A value to serve as a fallback function result when a value isn't otherwise available. It is used in the following circumstances:</div>
+              <ul>
+                <li>In categorical functions, when the feature value does not match any of the stop domain values.</li>
+                <li>In property and zoom-and-property functions, when a feature does not contain a value for the specified property.</li>
+                <li>In identity functions, when the feature value is not valid for the style property (for example, if the function is being used for a <var>circle-color</var> property but the feature property value is not a string or not a valid color).</li>
+                <li>In interval or exponential property and zoom-and-property functions, when the feature value is not numeric.</li>
+              </ul>
+              <div>If no default is provided, the style property's default is used in these circumstances.</div>
+            </div>
+            <div class="col12 clearfix pad0y pad2x space-bottom2">
               <div><span class='code'><a id="function-colorSpace" href="#function-colorSpace">colorSpace</a></span></div>
               <div><em class='quiet'>Optional <a href='#types-string'>enum</a>. One of <var>rgb</var>, <var>lab</var>, <var>hcl</var>.</em></div>
               <div class=' space-bottom1'>The color space in which colors interpolated. Interpolating colors in perceptual color spaces like LAB and HCL tend to produce color ramps that look more consistent and produce colors that can be differentiated more easily than those interpolated in RGB space.</div>

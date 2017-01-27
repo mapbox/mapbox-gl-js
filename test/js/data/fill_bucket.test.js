@@ -16,6 +16,9 @@ const feature = vt.layers.water.feature(0);
 
 function createFeature(points) {
     return {
+        properties: {
+            'foo': 1
+        },
         loadGeometry: function() {
             return points;
         }

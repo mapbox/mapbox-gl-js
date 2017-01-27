@@ -710,6 +710,45 @@
           ]
         }
       }
+    },
+    {
+      "id": "valid default",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": 0
+        }
+      }
+    },
+    {
+      "id": "invalid default - wrong type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": "0"
+        }
+      }
+    },
+    {
+      "id": "invalid default - color",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": "invalid"
+        }
+      }
     }
   ]
 }

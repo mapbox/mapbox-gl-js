@@ -29,7 +29,10 @@ module.exports = function validateFunction(options) {
         valueSpec: options.styleSpec.function,
         style: options.style,
         styleSpec: options.styleSpec,
-        objectElementValidators: { stops: validateFunctionStops }
+        objectElementValidators: {
+            stops: validateFunctionStops,
+            default: validateFunctionDefault
+        }
     });
 
     if (functionType !== 'identity' && !options.value.stops) {
@@ -184,4 +187,13 @@ module.exports = function validateFunction(options) {
         return [];
     }
 
+    function validateFunctionDefault(options) {
+        return validate({
+            key: options.key,
+            value: options.value,
+            valueSpec: functionValueSpec,
+            style: options.style,
+            styleSpec: options.styleSpec
+        });
+    }
 };

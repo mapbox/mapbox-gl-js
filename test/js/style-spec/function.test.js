@@ -1,12 +1,11 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const createInterpolated = require('../../../js/style-spec/function').interpolated;
-const createInterval = require('../../../js/style-spec/function')['piecewise-constant'];
+const createFunction = require('../../../js/style-spec/function');
 
 test('constant function', (t) => {
     t.test('number', (t) => {
-        const f = createInterpolated(1);
+        const f = createFunction(1, {type: 'number'});
 
         t.equal(f(0), 1);
         t.equal(f(1), 1);
@@ -16,7 +15,7 @@ test('constant function', (t) => {
     });
 
     t.test('string', (t) => {
-        const f = createInterpolated('mapbox');
+        const f = createFunction('mapbox', {type: 'string'});
 
         t.equal(f(0), 'mapbox');
         t.equal(f(1), 'mapbox');
@@ -25,8 +24,18 @@ test('constant function', (t) => {
         t.end();
     });
 
+    t.test('color', (t) => {
+        const f = createFunction('red', {type: 'color'});
+
+        t.deepEqual(f(0), [1, 0, 0, 1]);
+        t.deepEqual(f(1), [1, 0, 0, 1]);
+        t.deepEqual(f(2), [1, 0, 0, 1]);
+
+        t.end();
+    });
+
     t.test('array', (t) => {
-        const f = createInterpolated([1]);
+        const f = createFunction([1], {type: 'array'});
 
         t.deepEqual(f(0), [1]);
         t.deepEqual(f(1), [1]);
@@ -40,9 +49,12 @@ test('constant function', (t) => {
 
 test('exponential function', (t) => {
     t.test('is the default for interpolated properties', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             stops: [[1, 2], [3, 6]],
             base: 2
+        }, {
+            type: 'number',
+            function: 'interpolated'
         });
 
         t.equal(f(2), 30 / 9);
@@ -51,10 +63,12 @@ test('exponential function', (t) => {
     });
 
     t.test('base', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: [[1, 2], [3, 6]],
             base: 2
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0), 2);
@@ -67,9 +81,11 @@ test('exponential function', (t) => {
     });
 
     t.test('one stop', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: [[1, 2]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0), 2);
@@ -80,9 +96,11 @@ test('exponential function', (t) => {
     });
 
     t.test('two stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: [[1, 2], [3, 6]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0), 2);
@@ -95,9 +113,11 @@ test('exponential function', (t) => {
     });
 
     t.test('three stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: [[1, 2], [3, 6], [5, 10]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0), 2);
@@ -114,9 +134,11 @@ test('exponential function', (t) => {
     });
 
     t.test('four stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: [[1, 2], [3, 6], [5, 10], [7, 14]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0), 2);
@@ -153,9 +175,11 @@ test('exponential function', (t) => {
             [12889, 1000000],
             [40000, 10000000]
         ];
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             stops: stops
+        }, {
+            type: 'number'
         });
 
         t.equal(f(2), 100);
@@ -171,11 +195,28 @@ test('exponential function', (t) => {
         t.end();
     });
 
+    t.test('color', (t) => {
+        const f = createFunction({
+            type: 'exponential',
+            stops: [[1, 'red'], [11, 'blue']]
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0), [1, 0, 0, 1]);
+        t.deepEqual(f(5), [0.6, 0, 0.4, 1]);
+        t.deepEqual(f(11), [0, 0, 1, 1]);
+
+        t.end();
+    });
+
     t.test('lab colorspace', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             colorSpace: 'lab',
             stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
+        }, {
+            type: 'color'
         });
 
         t.deepEqual(f(0), [0, 0, 0, 1]);
@@ -187,10 +228,12 @@ test('exponential function', (t) => {
     });
 
     t.test('rgb colorspace', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             colorSpace: 'rgb',
             stops: [[0, [0, 0, 0, 1]], [10, [1, 1, 1, 1]]]
+        }, {
+            type: 'color'
         });
 
         t.deepEqual(f(5).map((n) => {
@@ -202,10 +245,12 @@ test('exponential function', (t) => {
 
     t.test('unknown color spaces', (t) => {
         t.throws(() => {
-            createInterpolated({
+            createFunction({
                 type: 'exponential',
                 colorSpace: 'unknown',
                 stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
+            }, {
+                type: 'color'
             });
         }, 'Unknown color space: unknown');
 
@@ -219,16 +264,20 @@ test('exponential function', (t) => {
             stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
         };
         const paramsCopy = JSON.parse(JSON.stringify(params));
-        createInterpolated(params);
+        createFunction(params, {
+            type: 'color'
+        });
         t.deepEqual(params, paramsCopy);
         t.end();
     });
 
-    t.test('property function', (t) => {
-        const f = createInterpolated({
+    t.test('property present', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'exponential',
             stops: [[0, 0], [1, 2]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0, {foo: 1}), 2);
@@ -236,23 +285,73 @@ test('exponential function', (t) => {
         t.end();
     });
 
-    t.test('property function, missing property', (t) => {
-        const f = createInterpolated({
+    t.test('property absent, function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'exponential',
+            stops: [[0, 0], [1, 2]],
+            default: 3
+        }, {
+            type: 'number'
+        });
+
+        t.equal(f(0, {}), 3);
+
+        t.end();
+    });
+
+    t.test('property absent, spec default', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'exponential',
             stops: [[0, 0], [1, 2]]
+        }, {
+            type: 'number',
+            default: 3
         });
 
-        t.equal(f(0, {}), 2);
+        t.equal(f(0, {}), 3);
+
+        t.end();
+    });
+
+    t.test('property type mismatch, function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'exponential',
+            stops: [[0, 0], [1, 2]],
+            default: 3
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {foo: 'string'}), 3);
+
+        t.end();
+    });
+
+    t.test('property type mismatch, spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'exponential',
+            stops: [[0, 0], [1, 2]]
+        }, {
+            type: 'string',
+            default: 3
+        });
+
+        t.equal(f(0, {foo: 'string'}), 3);
 
         t.end();
     });
 
     t.test('zoom-and-property function, one stop', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             property: 'prop',
             stops: [[{ zoom: 1, value: 1 }, 2]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0, { prop: 0 }), 2);
@@ -269,7 +368,7 @@ test('exponential function', (t) => {
     });
 
     t.test('zoom-and-property function, two stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             property: 'prop',
             base: 1,
@@ -278,6 +377,8 @@ test('exponential function', (t) => {
                 [{ zoom: 1, value: 2 }, 4],
                 [{ zoom: 3, value: 0 }, 0],
                 [{ zoom: 3, value: 2 }, 12]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0, { prop: 1 }), 2);
@@ -295,7 +396,7 @@ test('exponential function', (t) => {
     });
 
     t.test('zoom-and-property function, three stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             property: 'prop',
             base: 1,
@@ -306,6 +407,8 @@ test('exponential function', (t) => {
                 [{ zoom: 3, value: 2}, 12],
                 [{ zoom: 5, value: 0}, 0],
                 [{ zoom: 5, value: 2}, 20]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0, { prop: 1 }), 2);
@@ -316,7 +419,7 @@ test('exponential function', (t) => {
     });
 
     t.test('zoom-and-property function, two stops, fractional zoom', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'exponential',
             property: 'prop',
             base: 1,
@@ -324,6 +427,8 @@ test('exponential function', (t) => {
                 [{ zoom: 1.9, value: 0 }, 4],
                 [{ zoom: 2.1, value: 0 }, 8]
             ]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(1.9, { prop: 1 }), 4);
@@ -333,13 +438,38 @@ test('exponential function', (t) => {
         t.end();
     });
 
+    t.test('zoom-and-property function, no default', (t) => {
+        // This can happen for fill-outline-color, where the spec has no default.
+
+        const f = createFunction({
+            type: 'exponential',
+            property: 'prop',
+            base: 1,
+            stops: [
+                [{ zoom: 0, value: 1 }, 'red'],
+                [{ zoom: 1, value: 1 }, 'red']
+            ]
+        }, {
+            type: 'color'
+        });
+
+        t.equal(f(0, {}), undefined);
+        t.equal(f(0.5, {}), undefined);
+        t.equal(f(1, {}), undefined);
+
+        t.end();
+    });
+
     t.end();
 });
 
 test('interval function', (t) => {
     t.test('is the default for piecewise-constant properties', (t) => {
-        const f = createInterval({
+        const f = createFunction({
             stops: [[-1, 11], [0, 111]]
+        }, {
+            type: 'number',
+            function: 'piecewise-constant'
         });
 
         t.equal(f(-1.5), 11);
@@ -351,9 +481,11 @@ test('interval function', (t) => {
     });
 
     t.test('one stop', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'interval',
             stops: [[0, 11]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(-0.5), 11);
@@ -364,9 +496,11 @@ test('interval function', (t) => {
     });
 
     t.test('two stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'interval',
             stops: [[-1, 11], [0, 111]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(-1.5), 11);
@@ -378,9 +512,11 @@ test('interval function', (t) => {
     });
 
     t.test('three stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'interval',
             stops: [[-1, 11], [0, 111], [1, 1111]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(-1.5), 11);
@@ -394,9 +530,11 @@ test('interval function', (t) => {
     });
 
     t.test('four stops', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             type: 'interval',
             stops: [[-1, 11], [0, 111], [1, 1111], [2, 11111]]
+        }, {
+            type: 'number'
         });
 
         t.equal(f(-1.5), 11);
@@ -411,11 +549,28 @@ test('interval function', (t) => {
         t.end();
     });
 
+    t.test('color', (t) => {
+        const f = createFunction({
+            type: 'interval',
+            stops: [[1, 'red'], [11, 'blue']]
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0), [1, 0, 0, 1]);
+        t.deepEqual(f(0), [1, 0, 0, 1]);
+        t.deepEqual(f(11), [0, 0, 1, 1]);
+
+        t.end();
+    });
+
     t.test('property present', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             property: 'foo',
             type: 'interval',
             stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+        }, {
+            type: 'string'
         });
 
         t.equal(f(0, {foo: 1.5}), 'good');
@@ -423,14 +578,62 @@ test('interval function', (t) => {
         t.end();
     });
 
-    t.test('property absent', (t) => {
-        const f = createInterpolated({
+    t.test('property absent, function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'interval',
+            stops: [[0, 'zero'], [1, 'one'], [2, 'two']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {}), 'default');
+
+        t.end();
+    });
+
+    t.test('property absent, spec default', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'interval',
             stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+        }, {
+            type: 'string',
+            default: 'default'
         });
 
-        t.equal(f(0, {}), 'two');
+        t.equal(f(0, {}), 'default');
+
+        t.end();
+    });
+
+    t.test('property type mismatch, function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'interval',
+            stops: [[0, 'zero'], [1, 'one'], [2, 'two']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {foo: 'string'}), 'default');
+
+        t.end();
+    });
+
+    t.test('property type mismatch, spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'interval',
+            stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+        }, {
+            type: 'string',
+            default: 'default'
+        });
+
+        t.equal(f(0, {foo: 'string'}), 'default');
 
         t.end();
     });
@@ -439,26 +642,97 @@ test('interval function', (t) => {
 });
 
 test('categorical function', (t) => {
-    t.test('property present', (t) => {
-        const f = createInterpolated({
+    t.test('string', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'categorical',
             stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
+        }, {
+            type: 'string'
         });
 
+        t.equal(f(0, {foo: 0}), 'bad');
         t.equal(f(0, {foo: 1}), 'good');
+        t.equal(f(0, {foo: 2}), 'bad');
 
         t.end();
     });
 
-    t.test('property absent', (t) => {
-        const f = createInterpolated({
+    t.test('string function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[0, 'zero'], [1, 'one'], [2, 'two']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {}), 'default');
+        t.equal(f(0, {foo: 3}), 'default');
+
+        t.end();
+    });
+
+    t.test('string spec default', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'categorical',
             stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
+        }, {
+            type: 'string',
+            default: 'default'
         });
 
-        t.equal(f(0, {}), 'zero');
+        t.equal(f(0, {}), 'default');
+        t.equal(f(0, {foo: 3}), 'default');
+
+        t.end();
+    });
+
+    t.test('color', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[0, 'red'], [1, 'blue']]
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0, {foo: 0}), [1, 0, 0, 1]);
+        t.deepEqual(f(1, {foo: 1}), [0, 0, 1, 1]);
+
+        t.end();
+    });
+
+    t.test('color function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[0, 'red'], [1, 'blue']],
+            default: 'lime'
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0, {}), [0, 1, 0, 1]);
+        t.deepEqual(f(0, {foo: 3}), [0, 1, 0, 1]);
+
+        t.end();
+    });
+
+    t.test('color spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[0, 'red'], [1, 'blue']]
+        }, {
+            type: 'color',
+            default: 'lime'
+        });
+
+        t.deepEqual(f(0, {}), [0, 1, 0, 1]);
+        t.deepEqual(f(0, {foo: 3}), [0, 1, 0, 1]);
 
         t.end();
     });
@@ -467,10 +741,12 @@ test('categorical function', (t) => {
 });
 
 test('identity function', (t) => {
-    t.test('property present', (t) => {
-        const f = createInterpolated({
+    t.test('number', (t) => {
+        const f = createFunction({
             property: 'foo',
             type: 'identity'
+        }, {
+            type: 'number'
         });
 
         t.equal(f(0, {foo: 1}), 1);
@@ -478,13 +754,114 @@ test('identity function', (t) => {
         t.end();
     });
 
-    t.test('property absent', (t) => {
-        const f = createInterpolated({
+    t.test('number function default', (t) => {
+        const f = createFunction({
             property: 'foo',
-            type: 'identity'
+            type: 'identity',
+            default: 1
+        }, {
+            type: 'string'
         });
 
-        t.equal(f(0, {}), undefined);
+        t.equal(f(0, {}), 1);
+
+        t.end();
+    });
+
+    t.test('number spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'string',
+            default: 1
+        });
+
+        t.equal(f(0, {}), 1);
+
+        t.end();
+    });
+
+    t.test('color', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0, {foo: 'red'}), [1, 0, 0, 1]);
+        t.deepEqual(f(1, {foo: 'blue'}), [0, 0, 1, 1]);
+
+        t.end();
+    });
+
+    t.test('color function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity',
+            default: 'red'
+        }, {
+            type: 'color'
+        });
+
+        t.deepEqual(f(0, {}), [1, 0, 0, 1]);
+
+        t.end();
+    });
+
+    t.test('color spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'color',
+            default: 'red'
+        });
+
+        t.deepEqual(f(0, {}), [1, 0, 0, 1]);
+
+        t.end();
+    });
+
+    t.test('color invalid', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'color',
+            default: 'red'
+        });
+
+        t.deepEqual(f(0, {foo: 'invalid'}), [1, 0, 0, 1]);
+
+        t.end();
+    });
+
+    t.test('property type mismatch, function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity',
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {foo: 0}), 'default');
+
+        t.end();
+    });
+
+    t.test('property type mismatch, spec default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'identity'
+        }, {
+            type: 'string',
+            default: 'default'
+        });
+
+        t.equal(f(0, {foo: 0}), 'default');
 
         t.end();
     });
@@ -493,13 +870,19 @@ test('identity function', (t) => {
 });
 
 test('unknown function', (t) => {
-    t.throws(() => createInterpolated({type: 'nonesuch', stops: [[]]}), /Unknown function type "nonesuch"/);
+    t.throws(() => createFunction({
+        type: 'nonesuch', stops: [[]]
+    }, {
+        type: 'string'
+    }), /Unknown function type "nonesuch"/);
     t.end();
 });
 
 test('isConstant', (t) => {
     t.test('constant', (t) => {
-        const f = createInterpolated(1);
+        const f = createFunction(1, {
+            type: 'string'
+        });
 
         t.ok(f.isZoomConstant);
         t.ok(f.isFeatureConstant);
@@ -508,8 +891,10 @@ test('isConstant', (t) => {
     });
 
     t.test('zoom', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             stops: [[1, 1]]
+        }, {
+            type: 'string'
         });
 
         t.notOk(f.isZoomConstant);
@@ -519,9 +904,11 @@ test('isConstant', (t) => {
     });
 
     t.test('property', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             stops: [[1, 1]],
             property: 'mapbox'
+        }, {
+            type: 'string'
         });
 
         t.ok(f.isZoomConstant);
@@ -531,9 +918,11 @@ test('isConstant', (t) => {
     });
 
     t.test('zoom + property', (t) => {
-        const f = createInterpolated({
+        const f = createFunction({
             stops: [[{ zoom: 1, data: 1 }, 1]],
             property: 'mapbox'
+        }, {
+            type: 'string'
         });
 
         t.notOk(f.isZoomConstant);

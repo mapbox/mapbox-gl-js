@@ -39,24 +39,6 @@ test('StyleDeclaration', (t) => {
         t.end();
     });
 
-    t.test('color parsing', (t) => {
-        const reference = {type: "color", function: "interpolated"};
-        t.deepEqual(new StyleDeclaration(reference, 'red').calculate({zoom: 0}), [ 1, 0, 0, 1 ]);
-        t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate({zoom: 0}), [ 1, 0, 1, 1 ]);
-        t.deepEqual(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, '#0f0']] }).calculate({zoom: 0}), [1, 0, 0, 1]);
-        t.throws(() => {
-            t.ok(new StyleDeclaration(reference, { stops: [[0, '#f00'], [1, null]] }));
-        }, /Invalid color/);
-        t.throws(() => {
-            // hex value with only 5 digits should throw an Invalid color error
-            t.ok(new StyleDeclaration(reference, '#00000'));
-        }, Error, /Invalid color/i);
-        // cached
-        t.deepEqual(new StyleDeclaration(reference, '#ff00ff').calculate({zoom: 0}), [ 1, 0, 1, 1 ]);
-        t.deepEqual(new StyleDeclaration(reference, 'rgba(255, 51, 0, 1)').calculate({zoom: 0}), [ 1, 0.2, 0, 1 ]);
-        t.end();
-    });
-
     t.test('property functions', (t) => {
         const declaration = new StyleDeclaration(
             {type: "number", function: "interpolated"},

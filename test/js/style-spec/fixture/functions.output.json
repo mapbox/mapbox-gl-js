@@ -80,11 +80,11 @@
     "line": 341
   },
   {
-    "message": "layers[31].paint.fill-color.stops[0][0]: property value must be a number or string"
-  },
-  {
     "message": "layers[19].paint.fill-color: \"property\" property is required",
     "line": 354
+  },
+  {
+    "message": "layers[31].paint.fill-color.stops[0][0]: property value must be a number or string"
   },
   {
     "message": "layers[22].paint.background-color.stops: identity function may not have a \"stops\" property",
@@ -149,5 +149,13 @@
   {
     "message": "layers[37].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
     "line": 705
+  },
+  {
+    "message": "layers[39].paint.fill-opacity.default: number expected, string found",
+    "line": 736
+  },
+  {
+    "message": "layers[40].paint.fill-color.default: color expected, \"invalid\" found",
+    "line": 749
   }
 ]
