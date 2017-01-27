@@ -252,14 +252,14 @@ map.on('load', function () {
     'id': 'lines-layer',
     'type': 'line',
     'source': 'lines-source',
-  // The identity function does not take a 'stops' property
-  // Instead, the property value (in this case, 'color') on the datasource will be the direct output.
-    'paint': {
+// The identity function does not take a 'stops' property
+// Instead, the property value (in this case, 'color') on the datasource will be the direct output.
+		'paint': {
     	'line-width': 3,
-    	'line-color': {
-    		'type': 'identity',
- 				'property': 'color'
-    	}
+	  	'line-color': {
+	  		'type': 'identity',
+	  		'property': 'color'
+	  	}
     }
   });
 });
