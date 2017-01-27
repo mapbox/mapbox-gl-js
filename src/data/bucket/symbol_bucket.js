@@ -683,6 +683,8 @@ class SymbolBucket {
     }
 }
 
+SymbolBucket.programInterfaces = symbolInterfaces;
+
 // this constant is based on the size of StructArray indexes used in a symbol
 // bucket--namely, iconBoxEndIndex and textBoxEndIndex
 // eg the max valid UInt16 is 65,535
