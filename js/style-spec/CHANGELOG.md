@@ -1,3 +1,12 @@
+## master
+
+* BREAKING CHANGE: the API for the `function` module has changed. The `interpolated` and `piecewise-constant` exports
+were replaced with a single unnamed export, a function which accepts an object conforming to the style spec "function"
+definition, and an object defining a style spec property. It handles color parsing and validation of feature values
+internally.
+* Functions now support a "default" property.
+* `parseColor` was promoted from gl-js.
+
 ## 8.11.0
 
 * Merge `feature-filter` repository into this repository #639

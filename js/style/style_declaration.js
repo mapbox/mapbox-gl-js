@@ -1,26 +1,19 @@
 'use strict';
 
-const MapboxGLFunction = require('../style-spec/function');
-const parseColor = require('./parse_color');
+const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 
 class StyleDeclaration {
 
     constructor(reference, value) {
         this.value = util.clone(value);
-        this.isFunction = MapboxGLFunction.isFunctionDefinition(value);
+        this.isFunction = createFunction.isFunctionDefinition(value);
 
         // immutable representation of value. used for comparison
         this.json = JSON.stringify(this.value);
 
         this.minimum = reference.minimum;
-        this.isColor = reference.type === 'color';
-
-        const parsedValue = this.isColor && this.value ? parseColor(this.value) : value;
-        let specDefault = reference.default;
-        if (specDefault && reference.type === 'color') specDefault = parseColor(specDefault);
-
-        this.function = MapboxGLFunction[reference.function || 'piecewise-constant'](parsedValue, specDefault);
+        this.function = createFunction(this.value, reference);
         this.isFeatureConstant = this.function.isFeatureConstant;
         this.isZoomConstant = this.function.isZoomConstant;
 
@@ -35,19 +28,18 @@ class StyleDeclaration {
                 }
             }
 
-            this.functionInterpolationT = MapboxGLFunction.interpolated({
+            this.functionInterpolationT = createFunction({
+                type: 'exponential',
                 stops: interpolationAmountStops,
-                base: value.base,
-                colorSpace: value.colorSpace
+                base: value.base
+            }, {
+                type: 'number'
             });
         }
     }
 
     calculate(globalProperties, featureProperties) {
         const value = this.function(globalProperties && globalProperties.zoom, featureProperties || {});
-        if (this.isColor && value) {
-            return parseColor(value);
-        }
         if (this.minimum !== undefined && value < this.minimum) {
             return this.minimum;
         }

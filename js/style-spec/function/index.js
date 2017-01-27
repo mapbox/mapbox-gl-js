@@ -1,15 +1,23 @@
 'use strict';
 
 const colorSpaces = require('./color_spaces');
+const parseColor = require('../util/parse_color');
+const extend = require('../util/extend');
+const getType = require('../util/get_type');
 
 function identityFunction(x) {
     return x;
 }
 
-function createFunction(parameters, defaultType) {
+function createFunction(parameters, propertySpec) {
+    const isColor = propertySpec.type === 'color';
+
     let fun;
 
     if (!isFunctionDefinition(parameters)) {
+        if (isColor && parameters) {
+            parameters = parseColor(parameters);
+        }
         fun = function() {
             return parameters;
         };
@@ -20,7 +28,23 @@ function createFunction(parameters, defaultType) {
         const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
         const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
         const zoomDependent = zoomAndFeatureDependent || !featureDependent;
-        const type = parameters.type || defaultType || 'exponential';
+        const type = parameters.type || (propertySpec.function === 'interpolated' ? 'exponential' : 'interval');
+
+        if (isColor) {
+            parameters = extend({}, parameters);
+
+            if (parameters.stops) {
+                parameters.stops = parameters.stops.map((stop) => {
+                    return [stop[0], parseColor(stop[1])];
+                });
+            }
+
+            if (parameters.default) {
+                parameters.default = parseColor(parameters.default);
+            } else {
+                parameters.default = parseColor(propertySpec.default);
+            }
+        }
 
         let innerFun;
         let hashedStops;
@@ -84,26 +108,30 @@ function createFunction(parameters, defaultType) {
             }
 
             for (const z in featureFunctions) {
-                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
+                featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z], propertySpec)]);
             }
             fun = function(zoom, feature) {
                 return outputFunction(evaluateExponentialFunction({
                     stops: featureFunctionStops,
                     base: parameters.base
-                }, zoom)(zoom, feature));
+                }, propertySpec, zoom)(zoom, feature));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = false;
 
         } else if (zoomDependent) {
             fun = function(zoom) {
-                return outputFunction(innerFun(parameters, zoom, hashedStops));
+                return outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
-                return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
+                const value = feature[parameters.property];
+                if (value === undefined) {
+                    return coalesce(parameters.default, propertySpec.default);
+                }
+                return outputFunction(innerFun(parameters, propertySpec, value, hashedStops));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
@@ -113,21 +141,21 @@ function createFunction(parameters, defaultType) {
     return fun;
 }
 
-function evaluateCategoricalFunction(parameters, input, hashedStops) {
-    const value = hashedStops[input];
-    if (value === undefined) {
-      // If the input is not found, return the first value from the original array by default
-        return parameters.stops[0][1];
-    }
-
-    return value;
+function coalesce(a, b, c) {
+    if (a !== undefined) return a;
+    if (b !== undefined) return b;
+    if (c !== undefined) return c;
 }
 
-function evaluateIntervalFunction(parameters, input) {
+function evaluateCategoricalFunction(parameters, propertySpec, input, hashedStops) {
+    return coalesce(hashedStops[input], parameters.default, propertySpec.default);
+}
+
+function evaluateIntervalFunction(parameters, propertySpec, input) {
     // Edge cases
+    if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
-    if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
@@ -136,13 +164,13 @@ function evaluateIntervalFunction(parameters, input) {
     return parameters.stops[index][1];
 }
 
-function evaluateExponentialFunction(parameters, input) {
+function evaluateExponentialFunction(parameters, propertySpec, input) {
     const base = parameters.base !== undefined ? parameters.base : 1;
 
     // Edge cases
+    if (getType(input) !== 'number') return coalesce(parameters.default, propertySpec.default);
     const n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
-    if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
@@ -158,8 +186,13 @@ function evaluateExponentialFunction(parameters, input) {
     );
 }
 
-function evaluateIdentityFunction(parameters, input) {
-    return input;
+function evaluateIdentityFunction(parameters, propertySpec, input) {
+    if (propertySpec.type === 'color') {
+        input = parseColor(input);
+    } else if (getType(input) !== propertySpec.type) {
+        input = undefined;
+    }
+    return coalesce(input, parameters.default, propertySpec.default);
 }
 
 function binarySearchForIndex(stops, input) {
@@ -190,6 +223,10 @@ function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpp
         return function() {
             const evaluatedLower = outputLower.apply(undefined, arguments);
             const evaluatedUpper = outputUpper.apply(undefined, arguments);
+            // Special case for fill-outline-color, which has no spec default.
+            if (evaluatedLower === undefined || evaluatedUpper === undefined) {
+                return undefined;
+            }
             return interpolate(input, base, inputLower, inputUpper, evaluatedLower, evaluatedUpper);
         };
     } else if (outputLower.length) {
@@ -225,13 +262,5 @@ function isFunctionDefinition(value) {
     return typeof value === 'object' && (value.stops || value.type === 'identity');
 }
 
-
+module.exports = createFunction;
 module.exports.isFunctionDefinition = isFunctionDefinition;
-
-module.exports.interpolated = function(parameters) {
-    return createFunction(parameters, 'exponential');
-};
-
-module.exports['piecewise-constant'] = function(parameters) {
-    return createFunction(parameters, 'interval');
-};
