@@ -16,6 +16,9 @@ var map = new mapboxgl.Map({
     zoom: 16
 });
 
+var red = '#F7455D';
+var blue = '#33C9EB';
+
 map.on('load', function () {
 	map.addSource('lines-source', {
 	  'type': 'geojson',
@@ -25,7 +28,7 @@ map.on('load', function () {
 			    {
 			      'type': 'Feature',
 			      'properties': {
-			        'color': '#F7455D',
+			        'color': red,
 			      },
 			      'geometry': {
 			        'type': 'LineString',
@@ -94,7 +97,7 @@ map.on('load', function () {
 			    {
 			      'type': 'Feature',
 			      'properties': {
-			        'color': '#F7455D',
+			        'color': red,
 			      },
 			      'geometry': {
 			        'type': 'LineString',
@@ -137,7 +140,7 @@ map.on('load', function () {
 			    {
 			      'type': 'Feature',
 			      'properties': {
-			        'color': '#33C9EB'
+			        'color': blue
 			      },
 			      'geometry': {
 			        'type': 'LineString',
