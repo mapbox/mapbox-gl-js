@@ -1,3 +1,34 @@
+## 0.32.1 (Jan 26, 2017)
+
+#### Bug Fixes
+
+ - Fix bug causing [`mapbox-gl-rtl-text` plugin](https://github.com/mapbox/mapbox-gl-rtl-text) to not work #4055
+
+## 0.32.0 (Jan 26, 2017)
+
+#### Deprecation Notices
+
+- [Style classes](https://www.mapbox.com/mapbox-gl-style-spec/#layer-paint.*) are deprecated and will be removed in an upcoming release of Mapbox GL JS.
+
+#### New Features
+
+ - Add `Map#isSourceLoaded` method #4033
+ - Automatically reload tiles based on their `Expires` and `Cache-Control` HTTP headers #3944
+ - Add `around=center` option to `scrollZoom` and `touchZoomRotate` interaction handlers #3876
+ - Add support for [`mapbox-gl-rtl-text` plugin](https://github.com/mapbox/mapbox-gl-rtl-text) to support right-to-left scripts #3758
+ - Add `canvas` source type #3765
+ - Add `Map#isMoving` method #2792
+
+#### Bug Fixes
+
+ - Fix bug causing garbled text on zoom #3962
+ - Fix bug causing crash in Firefox and Mobile Safari when rendering a large map #4037
+ - Fix bug causing raster tiles to flicker during zoom #2467
+ - Fix bug causing exception when unsetting and resetting fill-outline-color #3657
+ - Fix memory leak when removing raster sources #3951
+ - Fix bug causing exception when when zooming in / out on empty GeoJSON tile #3985
+ - Fix line join artifacts at very sharp angles #4008
+
 ## 0.31.0 (Jan 10 2017)
 
 #### New Features

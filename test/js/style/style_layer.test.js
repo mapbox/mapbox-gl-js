@@ -276,6 +276,36 @@ test('StyleLayer#setPaintProperty', (t) => {
         t.end();
     });
 
+    t.test('can transition fill-outline-color from undefined to a value #3657', (t) => {
+        const layer = StyleLayer.create({
+            id: 'building',
+            type: 'fill',
+            source: 'streets',
+            paint: {
+                'fill-color': '#00f'
+            }
+        });
+
+        const animationLoop = createAnimationLoop();
+
+        // setup: set and then unset fill-outline-color so that, when we then try
+        // to re-set it, StyleTransition#calculate() attempts interpolation
+        layer.setPaintProperty('fill-outline-color', '#f00');
+        layer.updatePaintTransitions([], {transition: true}, null, animationLoop);
+        layer.setPaintProperty('fill-outline-color', undefined);
+        layer.updatePaintTransitions([], {transition: true}, null, animationLoop);
+
+        // re-set fill-outline-color and get its value, triggering the attempt
+        // to interpolate between undefined and #f00
+        layer.setPaintProperty('fill-outline-color', '#f00');
+        layer.updatePaintTransitions([], {transition: true}, null, animationLoop);
+        t.doesNotThrow(() => {
+            layer.getPaintValue('fill-outline-color');
+        });
+        t.end();
+    });
+
+
     t.end();
 });
 

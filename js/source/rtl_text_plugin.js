@@ -28,7 +28,7 @@ module.exports.setRTLTextPlugin = function(pluginURL, callback) {
             callback(err);
         } else {
             pluginBlobURL =
-                window.URL.createObjectURL(new window.Blob([response]), {type: "text/javascript"});
+                window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
 
             for (const pluginAvailableCallback of pluginAvailableCallbacks) {
                 pluginAvailableCallback(pluginBlobURL);

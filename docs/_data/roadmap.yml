@@ -1,9 +1,7 @@
 -
   term: "Active development"
+  description: "Things actively being built right now."
   items:
-    -
-      name: <code>Map#setCamera</code> method
-      issues: ["3583", "2801"]
     -
       name: Custom canvas layer type
       issues: ["3580"]
@@ -21,7 +19,11 @@
       issues: ["2412"]
 -
   term: "Upcoming"
+  description: "Things we hope to start building in the next several months."
   items:
+    -
+      name: <code>Map#setCamera</code> method
+      issues: ["3583", "2801"]
     -
       name: <code>Map#addImage</code> and <code>Map#removeImage</code>
       issues: ["2059"]
@@ -37,5 +39,3 @@
     -
       name: Custom WebGL layer type
       issues: ["281"]
-    -
-      name: Arbitrary expression functions
