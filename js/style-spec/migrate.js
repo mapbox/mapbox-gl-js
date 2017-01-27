@@ -3,6 +3,7 @@
 /**
  * Migrate a Mapbox GL Style to the latest version.
  *
+ * @private
  * @alias migrate
  * @param {object} style a Mapbox GL Style
  * @returns {Object} a migrated style

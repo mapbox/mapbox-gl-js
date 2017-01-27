@@ -21,6 +21,7 @@ module.exports = groupByLayout;
  * The input is not modified. The output layers are references to the
  * input layers.
  *
+ * @private
  * @param {Array<Layer>} layers
  * @returns {Array<Array<Layer>>}
  */

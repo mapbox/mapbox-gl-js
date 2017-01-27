@@ -7,6 +7,7 @@ const jsonlint = require('jsonlint-lines-primitives');
 /**
  * Validate a Mapbox GL style against the style specification.
  *
+ * @private
  * @alias validate
  * @param {Object|String|Buffer} style The style to be validated. If a `String`
  *     or `Buffer` is provided, the returned errors will contain line numbers.

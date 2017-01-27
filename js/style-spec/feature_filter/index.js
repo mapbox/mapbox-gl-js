@@ -9,6 +9,7 @@ const types = ['Unknown', 'Point', 'LineString', 'Polygon'];
  * that evaluates whether a given feature (with a .properties or .tags property)
  * passes its test.
  *
+ * @private
  * @param {Array} filter mapbox gl filter
  * @returns {Function} filter-evaluating function
  */

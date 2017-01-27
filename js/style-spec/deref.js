@@ -31,6 +31,7 @@ module.exports = derefLayers;
  * The input is not modified. The output may contain references to portions
  * of the input.
  *
+ * @private
  * @param {Array<Layer>} layers
  * @returns {Array<Layer>}
  */

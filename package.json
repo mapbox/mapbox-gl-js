@@ -137,7 +137,6 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "build-style-spec-api-docs": "cat js/style-spec/*.js js/style-spec/*/*.js | dox --raw --skipSingleStar | doxme > js/style-spec/API.md",
     "postinstall": "cd js/style-spec && npm install"
   }
 }

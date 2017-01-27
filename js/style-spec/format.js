@@ -28,6 +28,7 @@ function sameOrderAs(reference) {
  *
  * If `space` is unspecified, a default of `2` spaces will be used.
  *
+ * @private
  * @param {Object} style a Mapbox GL Style
  * @param {number} [space] space argument to pass to `JSON.stringify`
  * @returns {string} stringified formatted JSON
