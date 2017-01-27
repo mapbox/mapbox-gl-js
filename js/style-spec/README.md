@@ -1,30 +1,22 @@
-# Mapbox GL Spec & Lint
+# Mapbox GL style specification & utilities
 
-[![Circle CI](https://circleci.com/gh/mapbox/mapbox-gl-style-spec.svg?style=svg)](https://circleci.com/gh/mapbox/mapbox-gl-style-spec)
+This directory contains code and reference files that define the Mapbox GL style specification and provides some utilities for working with Mapbox styles.
 
-GL style spec, validation, and migration scripts for [mapbox-gl-js](https://github.com/mapbox/mapbox-gl-js) and
-[mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native).
+## npm package
 
-### Install
+The Mapbox GL style specification and utilities are published as a seperate npm
+package so that they can be installed without the bulk of GL JS.
 
-    npm install -g mapbox-gl-style-spec
+    npm install @mapbox/mapbox-gl-style-spec
 
-Provides the utilities:
+## CLI Tools
 
-* `gl-style-migrate`
-* `gl-style-format`
-* `gl-style-validate`
+If you install this package globally, you will have access to several CLI tools.
 
-### Validation
+    npm install @mapbox/mapbox-gl-style-spec --global
 
-```bash
-$ gl-style-validate style.json
-```
 
-Will validate the given style JSON and print errors to stdout. Provide a
-`--json` flag to get JSON output.
-
-### Migrations
+### `gl-style-migrate`
 
 This repo contains scripts for migrating GL styles of any version to the latest version
 (currently v8). Migrate a style like this:
@@ -40,32 +32,19 @@ $ brew install moreutils
 $ gl-style-migrate bright.json | sponge bright.json
 ```
 
-### [API](API.md)
-
-## Tests
-
-To run tests:
-
-    npm install
-    npm test
-
-To update test fixtures
-
-    UPDATE=true npm test
-
-### Documentation
-
-* The utility reference page [API.md](API.md) is generated automatically from inline source documentation.
-* The style reference page exists here: `docs/_generate/index.html` and can be edited directly.
-
-To view the documentation, run
+### `gl-style-format`
 
 ```bash
-npm start
+$ gl-style-format style.json
 ```
 
-and open the served page
+Will format the given style JSON to use standard indentation and sorted object keys.
+
+### `gl-style-validate`
 
 ```bash
-open http://127.0.0.1:4000/mapbox-gl-style-spec
+$ gl-style-validate style.json
 ```
+
+Will validate the given style JSON and print errors to stdout. Provide a
+`--json` flag to get JSON output.
