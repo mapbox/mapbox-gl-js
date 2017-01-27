@@ -14,7 +14,7 @@ const util = require('../../util/util');
 class LogoControl {
 
     constructor() {
-        util.bindAll(['_logoRequired', '_updateLogo'], this);
+        util.bindAll(['_updateLogo'], this);
     }
 
     onAdd(map) {
@@ -28,6 +28,7 @@ class LogoControl {
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
+        this._map.off('data', this._updateLogo);
     }
 
     getDefaultPosition() {
