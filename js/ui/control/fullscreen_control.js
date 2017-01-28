@@ -4,6 +4,15 @@ const DOM = require('../../util/dom');
 const util = require('../../util/util');
 const window = require('../../util/window');
 
+/**
+ * A `FullscreenControl` control contains a button for toggling the map in and out of fullscreen mode.
+ *
+ * @implements {IControl}
+ * @example
+ * map.addControl(new mapboxgl.FullscreenControl());
+ * @see [View a fullscreen map](https://www.mapbox.com/mapbox-gl-js/example/fullscreen/)
+ */
+
 class FullscreenControl {
 
     constructor() {

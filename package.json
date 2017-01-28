@@ -112,7 +112,7 @@
     "build-docs": "flow-node docs/style-spec/_generate/generate.js && documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
-    "lint": "eslint --fix --ignore-path .gitignore js test bench docs/_posts/examples/*.html debug/*.html",
+    "lint": "eslint --ignore-path .gitignore js test bench docs/_posts/examples/*.html debug/*.html",
     "lint-docs": "documentation lint",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "plugin-deploy": "set -e; node plugins/exists.js; aws s3 sync --exclude *.DS_Store --acl public-read plugins/src s3://mapbox-gl-js/plugins/; echo ' -- DEPLOYED --'",
