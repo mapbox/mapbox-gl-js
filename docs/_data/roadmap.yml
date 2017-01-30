@@ -3,12 +3,6 @@
   description: "Things actively being built right now."
   items:
     -
-      name: Custom canvas layer type
-      issues: ["3580"]
-    -
-      name: Source loading and errored patterns
-      issues: ["3280"]
-    -
       name: Client-side terrain rendering
       issues: ["3730"]
     -
@@ -17,6 +11,9 @@
     -
       name: Property aggregation on clustered features
       issues: ["2412"]
+    -
+      name: Property functions for symbol paint properties
+      issues: ["2730"]
 -
   term: "Upcoming"
   description: "Things we hope to start building in the next several months."
@@ -33,9 +30,6 @@
     -
       name: Custom source type API
       project: 2
-    -
-      name: Property functions for symbol paint properties
-      issues: ["2730"]
     -
       name: Custom WebGL layer type
       issues: ["281"]
