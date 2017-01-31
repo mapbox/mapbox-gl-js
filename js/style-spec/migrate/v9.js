@@ -1,9 +1,9 @@
 'use strict';
 
-var deref = require('../deref');
+const deref = require('../deref');
 
 function eachLayer(style, callback) {
-    for (var k in style.layers) {
+    for (const k in style.layers) {
         callback(style.layers[k]);
     }
 }
@@ -15,8 +15,8 @@ module.exports = function(style) {
     style.layers = deref(style.layers);
 
     // remove class-specific paint properties
-    eachLayer(style, function (layer) {
-        for (var k in layer) {
+    eachLayer(style, (layer) => {
+        for (const k in layer) {
             if (/paint\..*/.test(k)) {
                 delete layer[k];
             }

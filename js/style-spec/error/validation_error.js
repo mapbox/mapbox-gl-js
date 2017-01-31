@@ -1,10 +1,10 @@
 'use strict';
 
-var format = require('util').format;
+const format = require('util').format;
 
 function ValidationError(key, value /*, message, ...*/) {
     this.message = (
-        (key ? key + ': ' : '') +
+        (key ? `${key}: ` : '') +
         format.apply(format, Array.prototype.slice.call(arguments, 2))
     );
 

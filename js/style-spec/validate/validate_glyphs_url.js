@@ -1,13 +1,13 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var validateString = require('./validate_string');
+const ValidationError = require('../error/validation_error');
+const validateString = require('./validate_string');
 
 module.exports = function(options) {
-    var value = options.value;
-    var key = options.key;
+    const value = options.value;
+    const key = options.key;
 
-    var errors = validateString(options);
+    const errors = validateString(options);
     if (errors.length) return errors;
 
     if (value.indexOf('{fontstack}') === -1) {

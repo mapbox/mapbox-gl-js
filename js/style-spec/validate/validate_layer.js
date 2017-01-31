@@ -1,47 +1,48 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var unbundle = require('../util/unbundle_jsonlint');
-var validateObject = require('./validate_object');
-var validateFilter = require('./validate_filter');
-var validatePaintProperty = require('./validate_paint_property');
-var validateLayoutProperty = require('./validate_layout_property');
-var extend = require('../util/extend');
+const ValidationError = require('../error/validation_error');
+const unbundle = require('../util/unbundle_jsonlint');
+const validateObject = require('./validate_object');
+const validateFilter = require('./validate_filter');
+const validatePaintProperty = require('./validate_paint_property');
+const validateLayoutProperty = require('./validate_layout_property');
+const extend = require('../util/extend');
 
 module.exports = function validateLayer(options) {
-    var errors = [];
+    let errors = [];
 
-    var layer = options.value;
-    var key = options.key;
-    var style = options.style;
-    var styleSpec = options.styleSpec;
+    const layer = options.value;
+    const key = options.key;
+    const style = options.style;
+    const styleSpec = options.styleSpec;
 
     if (!layer.type && !layer.ref) {
         errors.push(new ValidationError(key, layer, 'either "type" or "ref" is required'));
     }
-    var type = unbundle(layer.type);
-    var ref = unbundle(layer.ref);
+    let type = unbundle(layer.type);
+    const ref = unbundle(layer.ref);
 
     if (layer.id) {
-        for (var i = 0; i < options.arrayIndex; i++) {
-            var otherLayer = style.layers[i];
-            if (unbundle(otherLayer.id) === unbundle(layer.id)) {
+        const layerId = unbundle(layer.id);
+        for (let i = 0; i < options.arrayIndex; i++) {
+            const otherLayer = style.layers[i];
+            if (unbundle(otherLayer.id) === layerId) {
                 errors.push(new ValidationError(key, layer.id, 'duplicate layer id "%s", previously used at line %d', layer.id, otherLayer.id.__line__));
             }
         }
     }
 
     if ('ref' in layer) {
-        ['type', 'source', 'source-layer', 'filter', 'layout'].forEach(function (p) {
+        ['type', 'source', 'source-layer', 'filter', 'layout'].forEach((p) => {
             if (p in layer) {
                 errors.push(new ValidationError(key, layer[p], '"%s" is prohibited for ref layers', p));
             }
         });
 
-        var parent;
+        let parent;
 
-        style.layers.forEach(function(layer) {
-            if (layer.id == ref) parent = layer;
+        style.layers.forEach((layer) => {
+            if (unbundle(layer.id) === ref) parent = layer;
         });
 
         if (!parent) {
@@ -55,14 +56,15 @@ module.exports = function validateLayer(options) {
         if (!layer.source) {
             errors.push(new ValidationError(key, layer, 'missing required property "source"'));
         } else {
-            var source = style.sources && style.sources[layer.source];
+            const source = style.sources && style.sources[layer.source];
+            const sourceType = source && unbundle(source.type);
             if (!source) {
                 errors.push(new ValidationError(key, layer.source, 'source "%s" not found', layer.source));
-            } else if (source.type == 'vector' && type == 'raster') {
+            } else if (sourceType === 'vector' && type === 'raster') {
                 errors.push(new ValidationError(key, layer.source, 'layer "%s" requires a raster source', layer.id));
-            } else if (source.type == 'raster' && type != 'raster') {
+            } else if (sourceType === 'raster' && type !== 'raster') {
                 errors.push(new ValidationError(key, layer.source, 'layer "%s" requires a vector source', layer.id));
-            } else if (source.type == 'vector' && !layer['source-layer']) {
+            } else if (sourceType === 'vector' && !layer['source-layer']) {
                 errors.push(new ValidationError(key, layer, 'layer "%s" must specify a "source-layer"', layer.id));
             }
         }

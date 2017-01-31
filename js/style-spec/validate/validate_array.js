@@ -1,16 +1,16 @@
 'use strict';
 
-var getType = require('../util/get_type');
-var validate = require('./validate');
-var ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
+const validate = require('./validate');
+const ValidationError = require('../error/validation_error');
 
 module.exports = function validateArray(options) {
-    var array = options.value;
-    var arraySpec = options.valueSpec;
-    var style = options.style;
-    var styleSpec = options.styleSpec;
-    var key = options.key;
-    var validateArrayElement = options.arrayElementValidator || validate;
+    const array = options.value;
+    const arraySpec = options.valueSpec;
+    const style = options.style;
+    const styleSpec = options.styleSpec;
+    const key = options.key;
+    const validateArrayElement = options.arrayElementValidator || validate;
 
     if (getType(array) !== 'array') {
         return [new ValidationError(key, array, 'array expected, %s found', getType(array))];
@@ -24,7 +24,7 @@ module.exports = function validateArray(options) {
         return [new ValidationError(key, array, 'array length at least %d expected, length %d found', arraySpec['min-length'], array.length)];
     }
 
-    var arrayElementSpec = {
+    let arrayElementSpec = {
         "type": arraySpec.value
     };
 
@@ -36,8 +36,8 @@ module.exports = function validateArray(options) {
         arrayElementSpec = arraySpec.value;
     }
 
-    var errors = [];
-    for (var i = 0; i < array.length; i++) {
+    let errors = [];
+    for (let i = 0; i < array.length; i++) {
         errors = errors.concat(validateArrayElement({
             array: array,
             arrayIndex: i,
@@ -45,7 +45,7 @@ module.exports = function validateArray(options) {
             valueSpec: arrayElementSpec,
             style: style,
             styleSpec: styleSpec,
-            key: key + '[' + i + ']'
+            key: `${key}[${i}]`
         }));
     }
     return errors;

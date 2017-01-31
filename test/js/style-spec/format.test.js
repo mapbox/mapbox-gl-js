@@ -1,13 +1,13 @@
 'use strict';
 
-var t = require('tap').test,
+const t = require('mapbox-gl-js-test').test,
     format = require('../../../js/style-spec/format');
 
 function roundtrip(style) {
     return JSON.parse(format(style));
 }
 
-t('orders top-level keys', function(t) {
+t('orders top-level keys', (t) => {
     t.deepEqual(Object.keys(roundtrip({
         "layers": [],
         "other": {},
@@ -19,7 +19,7 @@ t('orders top-level keys', function(t) {
     t.end();
 });
 
-t('orders layer keys', function(t) {
+t('orders layer keys', (t) => {
     t.deepEqual(Object.keys(roundtrip({
         "layers": [{
             "paint": {},

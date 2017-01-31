@@ -1,6 +1,6 @@
 'use strict';
 
-const test = require('tap').test;
+const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 
 test('dev build contains asserts', (t) => {

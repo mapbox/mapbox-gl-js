@@ -1,13 +1,13 @@
 'use strict';
 
-var getType = require('../util/get_type');
-var ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
+const ValidationError = require('../error/validation_error');
 
 module.exports = function validateNumber(options) {
-    var key = options.key;
-    var value = options.value;
-    var valueSpec = options.valueSpec;
-    var type = getType(value);
+    const key = options.key;
+    const value = options.value;
+    const valueSpec = options.valueSpec;
+    const type = getType(value);
 
     if (type !== 'number') {
         return [new ValidationError(key, value, 'number expected, %s found', type)];

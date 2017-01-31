@@ -1,9 +1,9 @@
 'use strict';
 
-var t = require('tap').test,
+const t = require('mapbox-gl-js-test').test,
     diffStyles = require('../../../js/style-spec/diff');
 
-t('diff', function (t) {
+t('diff', (t) => {
 
     t.deepEqual(diffStyles({
         layers: [{ id: 'a' }]
@@ -217,12 +217,12 @@ t('diff', function (t) {
             intensity: 1.0
         }
     }), [
-      { command: 'setLight', args: [{
+        { command: 'setLight', args: [{
             anchor: 'map',
             color: 'red',
             position: [1, 40, 30],
             intensity: 1.0
-      }] }
+        }] }
     ], 'multiple light properties change');
 
     t.deepEqual(diffStyles({

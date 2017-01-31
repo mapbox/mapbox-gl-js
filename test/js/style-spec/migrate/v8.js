@@ -1,10 +1,10 @@
 'use strict';
 
-var t = require('tape'),
+const t = require('mapbox-gl-js-test').test,
     migrate = require('../../../../js/style-spec/migrate/v8');
 
-t('split text-font', function (t) {
-    var input = {
+t('split text-font', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {
@@ -25,7 +25,7 @@ t('split text-font', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {
@@ -50,8 +50,8 @@ t('split text-font', function (t) {
     t.end();
 });
 
-t('rename symbol-min-distance', function (t) {
-    var input = {
+t('rename symbol-min-distance', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {
@@ -71,7 +71,7 @@ t('rename symbol-min-distance', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {
@@ -95,8 +95,8 @@ t('rename symbol-min-distance', function (t) {
     t.end();
 });
 
-t('renames urls', function (t) {
-    var input = {
+t('renames urls', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {
@@ -107,7 +107,7 @@ t('renames urls', function (t) {
         "layers": []
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {
@@ -123,8 +123,8 @@ t('renames urls', function (t) {
 });
 
 
-t('not migrate interpolated functions', function (t) {
-    var input = {
+t('not migrate interpolated functions', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {
@@ -146,7 +146,7 @@ t('not migrate interpolated functions', function (t) {
         }]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {
@@ -172,8 +172,8 @@ t('not migrate interpolated functions', function (t) {
     t.end();
 });
 
-t('not migrate piecewise-constant functions', function (t) {
-    var input = {
+t('not migrate piecewise-constant functions', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {
@@ -194,7 +194,7 @@ t('not migrate piecewise-constant functions', function (t) {
         }]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {
@@ -219,8 +219,8 @@ t('not migrate piecewise-constant functions', function (t) {
     t.end();
 });
 
-t('inline constants', function (t) {
-    var input = {
+t('inline constants', (t) => {
+    const input = {
         "version": 7,
         "constants": {
             "@foo": 0.5
@@ -241,7 +241,7 @@ t('inline constants', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -263,8 +263,8 @@ t('inline constants', function (t) {
     t.end();
 });
 
-t('migrate and inline fontstack constants', function (t) {
-    var input = {
+t('migrate and inline fontstack constants', (t) => {
+    const input = {
         "version": 7,
         "constants": {
             "@foo": "Arial Unicode,Foo Bar"
@@ -285,7 +285,7 @@ t('migrate and inline fontstack constants', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -307,8 +307,8 @@ t('migrate and inline fontstack constants', function (t) {
     t.end();
 });
 
-t('update fontstack function', function (t) {
-    var input = {
+t('update fontstack function', (t) => {
+    const input = {
         "version": 7,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -338,7 +338,7 @@ t('update fontstack function', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -366,8 +366,8 @@ t('update fontstack function', function (t) {
     t.end();
 });
 
-t('inline and migrate fontstack constant function', function (t) {
-    var input = {
+t('inline and migrate fontstack constant function', (t) => {
+    const input = {
         "version": 7,
         "constants": {
             "@function": {
@@ -400,7 +400,7 @@ t('inline and migrate fontstack constant function', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -428,8 +428,8 @@ t('inline and migrate fontstack constant function', function (t) {
     t.end();
 });
 
-t('update fontstack function constant', function (t) {
-    var input = {
+t('update fontstack function constant', (t) => {
+    const input = {
         "version": 7,
         "constants": {
             "@font-stack-a": "Open Sans Regular, Arial Unicode MS Regular",
@@ -457,7 +457,7 @@ t('update fontstack function constant', function (t) {
         ]
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "sources": {
             "vector": {"type": "vector", "url": "mapbox://mapbox.mapbox-streets-v5"}
@@ -485,14 +485,14 @@ t('update fontstack function constant', function (t) {
     t.end();
 });
 
-t('migrate UNversioned fontstack urls', function (t) {
-    var input = {
+t('migrate UNversioned fontstack urls', (t) => {
+    const input = {
         "version": 7,
         "glyphs": "mapbox://fontstack/{fontstack}/{range}.pbf",
         "layers": []
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
         "layers": []
@@ -502,14 +502,14 @@ t('migrate UNversioned fontstack urls', function (t) {
     t.end();
 });
 
-t('migrate versioned fontstack urls', function (t) {
-    var input = {
+t('migrate versioned fontstack urls', (t) => {
+    const input = {
         "version": 7,
         "glyphs": "mapbox://fonts/v1/boxmap/{fontstack}/{range}.pbf",
         "layers": []
     };
 
-    var output = {
+    const output = {
         "version": 8,
         "glyphs": "mapbox://fonts/boxmap/{fontstack}/{range}.pbf",
         "layers": []

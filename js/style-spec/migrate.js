@@ -13,7 +13,7 @@
  * fs.writeFileSync('./style.json', JSON.stringify(migrate(style)));
  */
 module.exports = function(style) {
-    var migrated = false;
+    let migrated = false;
 
     if (style.version === 6) {
         style = require('./migrate/v7')(style);

@@ -1,26 +1,26 @@
 'use strict';
 
-var VectorTile = require('vector-tile').VectorTile;
-var Pbf = require('pbf');
-var fs = require('fs');
-var createFilter = require('../../../js/style-spec').featureFilter;
-var filters = require('./filters.json');
-var path = require('path');
+const VectorTile = require('vector-tile').VectorTile;
+const Pbf = require('pbf');
+const fs = require('fs');
+const createFilter = require('../../../js/style-spec').featureFilter;
+const filters = require('./filters.json');
+const path = require('path');
 
-var tile = new VectorTile(new Pbf(fs.readFileSync(path.join(__dirname, './785.vector.pbf'))));
+const tile = new VectorTile(new Pbf(fs.readFileSync(path.join(__dirname, './785.vector.pbf'))));
 
-var layers = [];
-for (var name in tile.layers) {
-    var layer = tile.layers[name];
+const layers = [];
+for (const name in tile.layers) {
+    const layer = tile.layers[name];
     if (!layer.length) continue;
 
-    var features = [];
-    for (var j = 0; j < layer.length; j++) {
+    const features = [];
+    for (let j = 0; j < layer.length; j++) {
         features.push(layer.feature(j));
     }
 
-    var layerFilters = [];
-    for (j = 0; j < filters.length; j++) {
+    const layerFilters = [];
+    for (let j = 0; j < filters.length; j++) {
         if (filters[j].layer === name) layerFilters.push(filters[j].filter);
     }
 
@@ -32,11 +32,11 @@ for (var name in tile.layers) {
 }
 
 console.time('create filters');
-for (var m = 0; m < 100; m++) {
-    for (var i = 0; i < layers.length; i++) {
-        var layer = layers[i];
+for (let m = 0; m < 100; m++) {
+    for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i];
         layer.filters = [];
-        for (j = 0; j < layer.rawFilters.length; j++) {
+        for (let j = 0; j < layer.rawFilters.length; j++) {
             layer.filters.push(createFilter(layer.rawFilters[j]));
         }
     }
@@ -44,13 +44,13 @@ for (var m = 0; m < 100; m++) {
 console.timeEnd('create filters');
 
 console.time('apply filters');
-for (var m = 0; m < 100; m++) {
-    for (var i = 0; i < layers.length; i++) {
-        var layer = layers[i];
-        for (j = 0; j < layer.features.length; j++) {
-            var feature = layer.features[j];
-            for (var k = 0; k < layer.filters.length; k++) {
-                var filter = layer.filters[k];
+for (let m = 0; m < 100; m++) {
+    for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i];
+        for (let j = 0; j < layer.features.length; j++) {
+            const feature = layer.features[j];
+            for (let k = 0; k < layer.filters.length; k++) {
+                const filter = layer.filters[k];
                 filter(feature);
             }
         }

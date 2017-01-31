@@ -1,7 +1,7 @@
 'use strict';
 
 // Constants
-var Xn = 0.950470, // D65 standard referent
+const Xn = 0.950470, // D65 standard referent
     Yn = 1,
     Zn = 1.088830,
     t0 = 4 / 29,
@@ -31,7 +31,7 @@ function rgb2xyz(x) {
 
 // LAB
 function rgbToLab(rgbColor) {
-    var b = rgb2xyz(rgbColor[0]),
+    const b = rgb2xyz(rgbColor[0]),
         a = rgb2xyz(rgbColor[1]),
         l = rgb2xyz(rgbColor[2]),
         x = xyz2lab((0.4124564 * b + 0.3575761 * a + 0.1804375 * l) / Xn),
@@ -47,7 +47,7 @@ function rgbToLab(rgbColor) {
 }
 
 function labToRgb(labColor) {
-    var y = (labColor[0] + 16) / 116,
+    let y = (labColor[0] + 16) / 116,
         x = isNaN(labColor[1]) ? y : y + labColor[1] / 500,
         z = isNaN(labColor[2]) ? y : y - labColor[2] / 200;
     y = Yn * lab2xyz(y);
@@ -63,38 +63,38 @@ function labToRgb(labColor) {
 
 // HCL
 function rgbToHcl(rgbColor) {
-  var labColor = rgbToLab(rgbColor);
-  var l = labColor[0],
-    a = labColor[1],
-    b = labColor[2];
-  var h = Math.atan2(b, a) * rad2deg;
-  return [
-      h < 0 ? h + 360 : h,
-      Math.sqrt(a * a + b * b),
-      l,
-      rgbColor[3]
-  ];
+    const labColor = rgbToLab(rgbColor);
+    const l = labColor[0],
+        a = labColor[1],
+        b = labColor[2];
+    const h = Math.atan2(b, a) * rad2deg;
+    return [
+        h < 0 ? h + 360 : h,
+        Math.sqrt(a * a + b * b),
+        l,
+        rgbColor[3]
+    ];
 }
 
 function hclToRgb(hclColor) {
-  var h = hclColor[0] * deg2rad,
-    c = hclColor[1],
-    l = hclColor[2];
-  return labToRgb([
-      l,
-      Math.cos(h) * c,
-      Math.sin(h) * c,
-      hclColor[3]
-  ]);
+    const h = hclColor[0] * deg2rad,
+        c = hclColor[1],
+        l = hclColor[2];
+    return labToRgb([
+        l,
+        Math.cos(h) * c,
+        Math.sin(h) * c,
+        hclColor[3]
+    ]);
 }
 
 module.exports = {
-  lab: {
-    forward: rgbToLab,
-    reverse: labToRgb
-  },
-  hcl: {
-    forward: rgbToHcl,
-    reverse: hclToRgb
-  }
+    lab: {
+        forward: rgbToLab,
+        reverse: labToRgb
+    },
+    hcl: {
+        forward: rgbToHcl,
+        reverse: hclToRgb
+    }
 };

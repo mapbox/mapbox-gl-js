@@ -1,10 +1,10 @@
 'use strict';
 
-var test = require('tap').test;
-var composite = require('../../../js/style-spec/composite');
+const test = require('mapbox-gl-js-test').test;
+const composite = require('../../../js/style-spec/composite');
 
-test('composites Mapbox vector sources', function (t) {
-    var result = composite({
+test('composites Mapbox vector sources', (t) => {
+    const result = composite({
         "version": 7,
         "sources": {
             "mapbox-a": {
@@ -39,8 +39,8 @@ test('composites Mapbox vector sources', function (t) {
     t.end();
 });
 
-test('does not composite vector + raster', function (t) {
-    var result = composite({
+test('does not composite vector + raster', (t) => {
+    const result = composite({
         "version": 7,
         "sources": {
             "a": {

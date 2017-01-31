@@ -1,10 +1,10 @@
 'use strict';
 
-var t = require('tap').test,
-    declass = require('../../../js/style-spec/declass');
+const t = require('mapbox-gl-js-test').test;
+const declass = require('../../../js/style-spec/declass');
 
-t('declass a style, one class', function (t) {
-    var style = {
+t('declass a style, one class', (t) => {
+    const style = {
         layers: [{
             id: 'a',
             paint: {
@@ -18,7 +18,7 @@ t('declass a style, one class', function (t) {
         }]
     };
 
-    var declassed = declass(style, ['one']);
+    const declassed = declass(style, ['one']);
 
     t.notEqual(declassed, style, 'returns a new style object');
     t.notEqual(declassed.layers, style.layers, 'makes new style.layers array');
@@ -39,8 +39,8 @@ t('declass a style, one class', function (t) {
     t.end();
 });
 
-t('declass a style, missing class ==> noop', function (t) {
-    var style = {
+t('declass a style, missing class ==> noop', (t) => {
+    const style = {
         layers: [{
             id: 'a',
             paint: {
@@ -63,8 +63,8 @@ t('declass a style, missing class ==> noop', function (t) {
     t.end();
 });
 
-t('declass a style, multiple classes', function (t) {
-    var style = {
+t('declass a style, multiple classes', (t) => {
+    const style = {
         layers: [{
             id: 'a',
             paint: {
@@ -97,8 +97,8 @@ t('declass a style, multiple classes', function (t) {
     t.end();
 });
 
-t('declassing a style removes paint.CLASS definitions, whether or not they are applied', function (t) {
-    var style = {
+t('declassing a style removes paint.CLASS definitions, whether or not they are applied', (t) => {
+    const style = {
         layers: [{
             id: 'a',
             paint: {

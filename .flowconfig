@@ -3,7 +3,7 @@
 .*/node_modules/jsonlint/.*
 .*/node_modules/jsonlint-lines-primitives/.*
 .*/node_modules/unflowify/.*
-.*/node_modules/mapbox-gl-style-spec/test/fixture/.*
+.*/test/js/style-spec/fixture/invalidjson.input.json
 
 [include]
 

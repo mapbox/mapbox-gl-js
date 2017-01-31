@@ -1,10 +1,10 @@
 'use strict';
 
-var t = require('tape'),
+const t = require('mapbox-gl-js-test').test,
     migrate = require('../../../../js/style-spec/migrate/v9');
 
-t('deref layers', function (t) {
-    var input = {
+t('deref layers', (t) => {
+    const input = {
         version: 8,
         sources: {
             a: { type: 'vector', tiles: [ 'http://dev/null' ] }
@@ -41,8 +41,8 @@ t('deref layers', function (t) {
     t.end();
 });
 
-t('declass style', function (t) {
-    var input = {
+t('declass style', (t) => {
+    const input = {
         version: 8,
         sources: {
             a: { type: 'vector', tiles: [ 'http://dev/null' ] }

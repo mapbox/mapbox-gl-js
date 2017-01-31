@@ -1,13 +1,13 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var unbundle = require('../util/unbundle_jsonlint');
+const ValidationError = require('../error/validation_error');
+const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateEnum(options) {
-    var key = options.key;
-    var value = options.value;
-    var valueSpec = options.valueSpec;
-    var errors = [];
+    const key = options.key;
+    const value = options.value;
+    const valueSpec = options.valueSpec;
+    const errors = [];
 
     if (Array.isArray(valueSpec.values)) { // <=v7
         if (valueSpec.values.indexOf(unbundle(value)) === -1) {

@@ -1,21 +1,21 @@
 'use strict';
 
-var validate = require('./validate');
-var ValidationError = require('../error/validation_error');
-var getType = require('../util/get_type');
+const validate = require('./validate');
+const ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
 
 module.exports = function validateProperty(options, propertyType) {
-    var key = options.key;
-    var style = options.style;
-    var styleSpec = options.styleSpec;
-    var value = options.value;
-    var propertyKey = options.objectKey;
-    var layerSpec = styleSpec[propertyType + '_' + options.layerType];
+    const key = options.key;
+    const style = options.style;
+    const styleSpec = options.styleSpec;
+    const value = options.value;
+    const propertyKey = options.objectKey;
+    const layerSpec = styleSpec[`${propertyType}_${options.layerType}`];
 
     if (!layerSpec) return [];
 
-    var transitionMatch = propertyKey.match(/^(.*)-transition$/);
-    if (propertyType == 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
+    const transitionMatch = propertyKey.match(/^(.*)-transition$/);
+    if (propertyType === 'paint' && transitionMatch && layerSpec[transitionMatch[1]] && layerSpec[transitionMatch[1]].transition) {
         return validate({
             key: key,
             value: value,
@@ -25,19 +25,19 @@ module.exports = function validateProperty(options, propertyType) {
         });
     }
 
-    var valueSpec = options.valueSpec || layerSpec[propertyKey];
+    const valueSpec = options.valueSpec || layerSpec[propertyKey];
     if (!valueSpec) {
         return [new ValidationError(key, value, 'unknown property "%s"', propertyKey)];
     }
 
-    var tokenMatch;
+    let tokenMatch;
     if (getType(value) === 'string' && valueSpec['property-function'] && !valueSpec.tokens && (tokenMatch = /^{([^}]+)}$/.exec(value))) {
         return [new ValidationError(key, value, '"%s" does not support interpolation syntax\n' +
             'Use an identity property function instead: `{ "type": "identity", "property": %s` }`.',
             propertyKey, JSON.stringify(tokenMatch[1]))];
     }
 
-    var errors = [];
+    const errors = [];
 
     if (options.layerType === 'symbol') {
         if (propertyKey === 'icon-image' && style && !style.sprite) {

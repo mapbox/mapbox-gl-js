@@ -1,10 +1,10 @@
 'use strict';
 
-var refProperties = require('./util/ref_properties');
-var stringify = require('fast-stable-stringify');
+const refProperties = require('./util/ref_properties'),
+    stringify = require('fast-stable-stringify');
 
 function key(layer) {
-    return stringify(refProperties.map(function (k) {
+    return stringify(refProperties.map((k) => {
         return layer[k];
     }));
 }
@@ -25,20 +25,20 @@ module.exports = groupByLayout;
  * @returns {Array<Array<Layer>>}
  */
 function groupByLayout(layers) {
-    var groups = {}, i, k;
+    const groups = {};
 
-    for (i = 0; i < layers.length; i++) {
-        k = key(layers[i]);
-        var group = groups[k];
+    for (let i = 0; i < layers.length; i++) {
+        const k = key(layers[i]);
+        let group = groups[k];
         if (!group) {
             group = groups[k] = [];
         }
         group.push(layers[i]);
     }
 
-    var result = [];
+    const result = [];
 
-    for (k in groups) {
+    for (const k in groups) {
         result.push(groups[k]);
     }
 

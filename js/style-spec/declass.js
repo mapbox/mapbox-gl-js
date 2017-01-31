@@ -1,6 +1,6 @@
 'use strict';
 
-var extend = require('./util/extend');
+const extend = require('./util/extend');
 
 module.exports = declassStyle;
 
@@ -20,11 +20,11 @@ module.exports = declassStyle;
  */
 function declassStyle(style, classes) {
     return extend({}, style, {
-        layers: style.layers.map(function (layer) {
-            var result = classes.reduce(declassLayer, layer);
+        layers: style.layers.map((layer) => {
+            const result = classes.reduce(declassLayer, layer);
 
             // strip away all `paint.CLASS` definitions
-            for (var key in result) {
+            for (const key in result) {
                 if (/paint\..*/.test(key)) {
                     delete result[key];
                 }
@@ -37,6 +37,6 @@ function declassStyle(style, classes) {
 
 function declassLayer(layer, klass) {
     return extend({}, layer, {
-        paint: extend({}, layer.paint, layer['paint.' + klass])
+        paint: extend({}, layer.paint, layer[`paint.${klass}`])
     });
 }

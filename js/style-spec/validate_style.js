@@ -1,8 +1,8 @@
 'use strict';
 
-var validateStyleMin = require('./validate_style.min');
-var ParsingError = require('./error/parsing_error');
-var jsonlint = require('jsonlint-lines-primitives');
+const validateStyleMin = require('./validate_style.min');
+const ParsingError = require('./error/parsing_error');
+const jsonlint = require('jsonlint-lines-primitives');
 
 /**
  * Validate a Mapbox GL style against the style specification.
@@ -20,7 +20,7 @@ var jsonlint = require('jsonlint-lines-primitives');
  */
 
 module.exports = function validateStyle(style, styleSpec) {
-    var index = require('./');
+    const index = require('./');
 
     if (style instanceof String || typeof style === 'string' || style instanceof Buffer) {
         try {
@@ -30,7 +30,7 @@ module.exports = function validateStyle(style, styleSpec) {
         }
     }
 
-    styleSpec = styleSpec || index['v' + style.version];
+    styleSpec = styleSpec || index[`v${style.version}`];
 
     return validateStyleMin(style, styleSpec);
 };

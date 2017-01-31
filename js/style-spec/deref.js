@@ -1,17 +1,17 @@
 'use strict';
 
-var refProperties = require('./util/ref_properties');
+const refProperties = require('./util/ref_properties');
 
 function deref(layer, parent) {
-    var result = {};
+    const result = {};
 
-    for (var k in layer) {
+    for (const k in layer) {
         if (k !== 'ref') {
             result[k] = layer[k];
         }
     }
 
-    refProperties.forEach(function (k) {
+    refProperties.forEach((k) => {
         if (k in parent) {
             result[k] = parent[k];
         }
@@ -37,12 +37,12 @@ module.exports = derefLayers;
 function derefLayers(layers) {
     layers = layers.slice();
 
-    var map = Object.create(null), i;
-    for (i = 0; i < layers.length; i++) {
+    const map = Object.create(null);
+    for (let i = 0; i < layers.length; i++) {
         map[layers[i].id] = layers[i];
     }
 
-    for (i = 0; i < layers.length; i++) {
+    for (let i = 0; i < layers.length; i++) {
         if ('ref' in layers[i]) {
             layers[i] = deref(layers[i], map[layers[i].ref]);
         }

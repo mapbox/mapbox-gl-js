@@ -1,9 +1,9 @@
 'use strict';
 
-var t = require('tap').test,
+const t = require('mapbox-gl-js-test').test,
     deref = require('../../../js/style-spec/deref');
 
-t('derefs a ref layer which follows its parent', function (t) {
+t('derefs a ref layer which follows its parent', (t) => {
     t.deepEqual(deref([
         {
             'id': 'parent',
@@ -26,7 +26,7 @@ t('derefs a ref layer which follows its parent', function (t) {
     t.end();
 });
 
-t('derefs a ref layer which precedes its parent', function (t) {
+t('derefs a ref layer which precedes its parent', (t) => {
     t.deepEqual(deref([
         {
             'id': 'child',

@@ -1,12 +1,12 @@
 'use strict';
 
-var reference = require('./reference/latest.js'),
-    sortObject = require('sort-object');
+const reference = require('./reference/latest.js');
+const sortObject = require('sort-object');
 
 function sameOrderAs(reference) {
-    var keyOrder = {};
+    const keyOrder = {};
 
-    Object.keys(reference).forEach(function(k, i) {
+    Object.keys(reference).forEach((k, i) => {
         keyOrder[k] = i + 1;
     });
 
@@ -43,7 +43,7 @@ function format(style, space) {
     style = sortObject(style, sameOrderAs(reference.$root));
 
     if (style.layers) {
-        style.layers = style.layers.map(function(layer) {
+        style.layers = style.layers.map((layer) => {
             return sortObject(layer, sameOrderAs(reference.layer));
         });
     }

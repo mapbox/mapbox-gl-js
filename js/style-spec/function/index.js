@@ -1,13 +1,13 @@
 'use strict';
 
-var colorSpaces = require('./color_spaces');
+const colorSpaces = require('./color_spaces');
 
 function identityFunction(x) {
     return x;
 }
 
 function createFunction(parameters, defaultType) {
-    var fun;
+    let fun;
 
     if (!isFunctionDefinition(parameters)) {
         fun = function() {
@@ -17,12 +17,12 @@ function createFunction(parameters, defaultType) {
         fun.isZoomConstant = true;
 
     } else {
-        var zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
-        var featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
-        var zoomDependent = zoomAndFeatureDependent || !featureDependent;
-        var type = parameters.type || defaultType || 'exponential';
+        const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
+        const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
+        const zoomDependent = zoomAndFeatureDependent || !featureDependent;
+        const type = parameters.type || defaultType || 'exponential';
 
-        var innerFun;
+        let innerFun;
         if (type === 'exponential') {
             innerFun = evaluateExponentialFunction;
         } else if (type === 'interval') {
@@ -32,10 +32,10 @@ function createFunction(parameters, defaultType) {
         } else if (type === 'identity') {
             innerFun = evaluateIdentityFunction;
         } else {
-            throw new Error('Unknown function type "' + type + '"');
+            throw new Error(`Unknown function type "${type}"`);
         }
 
-        var outputFunction;
+        let outputFunction;
 
         // If we're interpolating colors in a color system other than RGBA,
         // first translate all stop values to that color system, then interpolate
@@ -43,10 +43,10 @@ function createFunction(parameters, defaultType) {
         // the result of that interpolation back into RGBA.
         if (parameters.colorSpace && parameters.colorSpace !== 'rgb') {
             if (colorSpaces[parameters.colorSpace]) {
-                var colorspace = colorSpaces[parameters.colorSpace];
+                const colorspace = colorSpaces[parameters.colorSpace];
                 // Avoid mutating the parameters value
                 parameters = JSON.parse(JSON.stringify(parameters));
-                for (var s = 0; s < parameters.stops.length; s++) {
+                for (let s = 0; s < parameters.stops.length; s++) {
                     parameters.stops[s] = [
                         parameters.stops[s][0],
                         colorspace.forward(parameters.stops[s][1])
@@ -54,7 +54,7 @@ function createFunction(parameters, defaultType) {
                 }
                 outputFunction = colorspace.reverse;
             } else {
-                throw new Error('Unknown color space: ' + parameters.colorSpace);
+                throw new Error(`Unknown color space: ${parameters.colorSpace}`);
             }
         } else {
             outputFunction = identityFunction;
@@ -62,18 +62,18 @@ function createFunction(parameters, defaultType) {
 
 
         // For categorical functions, generate an Object as a hashmap of the stops for fast searching
+        const hashedStops = Object.create(null);
         if (innerFun === evaluateCategoricalFunction) {
-          var hashedStops = Object.create(null);
-          for (var i = 0; i < parameters.stops.length; i++) {
-            hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
-          }
+            for (let i = 0; i < parameters.stops.length; i++) {
+                hashedStops[parameters.stops[i][0]] = parameters.stops[i][1];
+            }
         }
 
         if (zoomAndFeatureDependent) {
-            var featureFunctions = {};
-            var featureFunctionStops = [];
-            for (s = 0; s < parameters.stops.length; s++) {
-                var stop = parameters.stops[s];
+            const featureFunctions = {};
+            const featureFunctionStops = [];
+            for (let s = 0; s < parameters.stops.length; s++) {
+                const stop = parameters.stops[s];
                 if (featureFunctions[stop[0].zoom] === undefined) {
                     featureFunctions[stop[0].zoom] = {
                         zoom: stop[0].zoom,
@@ -85,13 +85,13 @@ function createFunction(parameters, defaultType) {
                 featureFunctions[stop[0].zoom].stops.push([stop[0].value, stop[1]]);
             }
 
-            for (var z in featureFunctions) {
+            for (const z in featureFunctions) {
                 featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z])]);
             }
             fun = function(zoom, feature) {
                 return outputFunction(evaluateExponentialFunction({
-                  stops: featureFunctionStops,
-                  base: parameters.base
+                    stops: featureFunctionStops,
+                    base: parameters.base
                 }, zoom)(zoom, feature));
             };
             fun.isFeatureConstant = false;
@@ -100,19 +100,20 @@ function createFunction(parameters, defaultType) {
         } else if (zoomDependent) {
             fun = function(zoom) {
                 if (innerFun === evaluateCategoricalFunction) {
-                  return outputFunction(innerFun(parameters, zoom, hashedStops));
+                    return outputFunction(innerFun(parameters, zoom, hashedStops));
+                } else {
+                    return outputFunction(innerFun(parameters, zoom));
                 }
-                else return outputFunction(innerFun(parameters, zoom));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
         } else {
             fun = function(zoom, feature) {
                 if (innerFun === evaluateCategoricalFunction) {
-                  return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
+                    return outputFunction(innerFun(parameters, feature[parameters.property], hashedStops));
+                } else {
+                    return outputFunction(innerFun(parameters, feature[parameters.property]));
                 }
-                else return outputFunction(
-                  innerFun(parameters, feature[parameters.property]));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
@@ -123,10 +124,10 @@ function createFunction(parameters, defaultType) {
 }
 
 function evaluateCategoricalFunction(parameters, input, hashedStops) {
-    var value = hashedStops[input];
+    const value = hashedStops[input];
     if (value === undefined) {
       // If the input is not found, return the first value from the original array by default
-      return parameters.stops[0][1];
+        return parameters.stops[0][1];
     }
 
     return value;
@@ -134,28 +135,28 @@ function evaluateCategoricalFunction(parameters, input, hashedStops) {
 
 function evaluateIntervalFunction(parameters, input) {
     // Edge cases
-    var n = parameters.stops.length;
+    const n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
     if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    var index = binarySearchForIndex(parameters.stops, input);
+    const index = binarySearchForIndex(parameters.stops, input);
 
     return parameters.stops[index][1];
 }
 
 function evaluateExponentialFunction(parameters, input) {
-    var base = parameters.base !== undefined ? parameters.base : 1;
+    const base = parameters.base !== undefined ? parameters.base : 1;
 
     // Edge cases
-    var n = parameters.stops.length;
+    const n = parameters.stops.length;
     if (n === 1) return parameters.stops[0][1];
     if (input === undefined || input === null) return parameters.stops[n - 1][1];
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    var index = binarySearchForIndex(parameters.stops, input);
+    const index = binarySearchForIndex(parameters.stops, input);
 
     return interpolate(
             input,
@@ -172,33 +173,33 @@ function evaluateIdentityFunction(parameters, input) {
 }
 
 function binarySearchForIndex(stops, input) {
-  var n = stops.length;
-  var lowerIndex = 0;
-  var upperIndex = n - 1;
-  var currentIndex = 0;
-  var currentValue, upperValue;
+    const n = stops.length;
+    let lowerIndex = 0;
+    let upperIndex = n - 1;
+    let currentIndex = 0;
+    let currentValue, upperValue;
 
-  while (lowerIndex <= upperIndex) {
-    currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
-    currentValue = stops[currentIndex][0];
-    upperValue = stops[currentIndex + 1][0];
-    if (input >= currentValue && input < upperValue) { // Search complete
-      return currentIndex;
-    } else if (currentValue < input) {
-      lowerIndex = currentIndex + 1;
-    } else if (currentValue > input) {
-      upperIndex = currentIndex - 1;
+    while (lowerIndex <= upperIndex) {
+        currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
+        currentValue = stops[currentIndex][0];
+        upperValue = stops[currentIndex + 1][0];
+        if (input >= currentValue && input < upperValue) { // Search complete
+            return currentIndex;
+        } else if (currentValue < input) {
+            lowerIndex = currentIndex + 1;
+        } else if (currentValue > input) {
+            upperIndex = currentIndex - 1;
+        }
     }
-  }
 
-  return Math.max(currentIndex - 1, 0);
+    return Math.max(currentIndex - 1, 0);
 }
 
 function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
     if (typeof outputLower === 'function') {
         return function() {
-            var evaluatedLower = outputLower.apply(undefined, arguments);
-            var evaluatedUpper = outputUpper.apply(undefined, arguments);
+            const evaluatedLower = outputLower.apply(undefined, arguments);
+            const evaluatedUpper = outputUpper.apply(undefined, arguments);
             return interpolate(input, base, inputLower, inputUpper, evaluatedLower, evaluatedUpper);
         };
     } else if (outputLower.length) {
@@ -209,10 +210,10 @@ function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpp
 }
 
 function interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    var difference = inputUpper - inputLower;
-    var progress = input - inputLower;
+    const difference = inputUpper - inputLower;
+    const progress = input - inputLower;
 
-    var ratio;
+    let ratio;
     if (base === 1) {
         ratio = progress / difference;
     } else {
@@ -223,8 +224,8 @@ function interpolateNumber(input, base, inputLower, inputUpper, outputLower, out
 }
 
 function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    var output = [];
-    for (var i = 0; i < outputLower.length; i++) {
+    const output = [];
+    for (let i = 0; i < outputLower.length; i++) {
         output[i] = interpolateNumber(input, base, inputLower, inputUpper, outputLower[i], outputUpper[i]);
     }
     return output;

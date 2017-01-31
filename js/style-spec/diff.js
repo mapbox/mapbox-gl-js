@@ -1,8 +1,8 @@
 'use strict';
 
-var isEqual = require('lodash.isequal');
+const isEqual = require('lodash.isequal');
 
-var operations = {
+const operations = {
 
     /*
      * { command: 'setStyle', args: [stylesheet] }
@@ -101,7 +101,7 @@ function diffSources(before, after, commands, sourcesRemoved) {
     before = before || {};
     after = after || {};
 
-    var sourceId;
+    let sourceId;
 
     // look for sources to remove
     for (sourceId in before) {
@@ -130,7 +130,7 @@ function diffLayerPropertyChanges(before, after, commands, layerId, klass, comma
     before = before || {};
     after = after || {};
 
-    var prop;
+    let prop;
 
     for (prop in before) {
         if (!before.hasOwnProperty(prop)) continue;
@@ -159,20 +159,20 @@ function diffLayers(before, after, commands) {
     after = after || [];
 
     // order of layers by id
-    var beforeOrder = before.map(pluckId);
-    var afterOrder = after.map(pluckId);
+    const beforeOrder = before.map(pluckId);
+    const afterOrder = after.map(pluckId);
 
     // index of layer by id
-    var beforeIndex = before.reduce(indexById, {});
-    var afterIndex = after.reduce(indexById, {});
+    const beforeIndex = before.reduce(indexById, {});
+    const afterIndex = after.reduce(indexById, {});
 
     // track order of layers as if they have been mutated
-    var tracker = beforeOrder.slice();
+    const tracker = beforeOrder.slice();
 
     // layers that have been added do not need to be diffed
-    var clean = Object.create(null);
+    const clean = Object.create(null);
 
-    var i, d, layerId, beforeLayer, afterLayer, insertBeforeLayerId, prop;
+    let i, d, layerId, beforeLayer, afterLayer, insertBeforeLayerId, prop;
 
     // remove layers
     for (i = 0, d = 0; i < beforeOrder.length; i++) {
@@ -242,8 +242,8 @@ function diffLayers(before, after, commands) {
         // handle all other layer props, including paint.*
         for (prop in beforeLayer) {
             if (!beforeLayer.hasOwnProperty(prop)) continue;
-            if (prop === 'layout' || prop === 'paint' || prop === 'filter'
-                || prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
+            if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
+                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
             if (prop.indexOf('paint.') === 0) {
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {
@@ -252,8 +252,8 @@ function diffLayers(before, after, commands) {
         }
         for (prop in afterLayer) {
             if (!afterLayer.hasOwnProperty(prop) || beforeLayer.hasOwnProperty(prop)) continue;
-            if (prop === 'layout' || prop === 'paint' || prop === 'filter'
-                || prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
+            if (prop === 'layout' || prop === 'paint' || prop === 'filter' ||
+                prop === 'metadata' || prop === 'minzoom' || prop === 'maxzoom') continue;
             if (prop.indexOf('paint.') === 0) {
                 diffLayerPropertyChanges(beforeLayer[prop], afterLayer[prop], commands, layerId, prop.slice(6), operations.setPaintProperty);
             } else if (!isEqual(beforeLayer[prop], afterLayer[prop])) {
@@ -283,7 +283,7 @@ function diffLayers(before, after, commands) {
 function diffStyles(before, after) {
     if (!before) return [{ command: operations.setStyle, args: [after] }];
 
-    var commands = [];
+    let commands = [];
 
     try {
         // Handle changes to top-level properties
@@ -318,10 +318,10 @@ function diffStyles(before, after) {
         // Handle changes to `sources`
         // If a source is to be removed, we also--before the removeSource
         // command--need to remove all the style layers that depend on it.
-        var sourcesRemoved = {};
+        const sourcesRemoved = {};
 
         // First collect the {add,remove}Source commands
-        var removeOrAddSourceCommands = [];
+        const removeOrAddSourceCommands = [];
         diffSources(before.sources, after.sources, removeOrAddSourceCommands, sourcesRemoved);
 
         // Push a removeLayer command for each style layer that depends on a
@@ -329,9 +329,9 @@ function diffStyles(before, after) {
         // Also, exclude any such layers them from the input to `diffLayers`
         // below, so that diffLayers produces the appropriate `addLayers`
         // command
-        var beforeLayers = [];
+        const beforeLayers = [];
         if (before.layers) {
-            before.layers.forEach(function (layer) {
+            before.layers.forEach((layer) => {
                 if (sourcesRemoved[layer.source]) {
                     commands.push({ command: operations.removeLayer, args: [layer.id] });
                 } else {

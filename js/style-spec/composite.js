@@ -1,16 +1,16 @@
 'use strict';
 
 module.exports = function (style) {
-    var styleIDs = [],
-        sourceIDs = [];
+    const styleIDs = [];
+    const sourceIDs = [];
 
-    for (var id in style.sources) {
-        var source = style.sources[id];
+    for (const id in style.sources) {
+        const source = style.sources[id];
 
         if (source.type !== "vector")
             continue;
 
-        var match = /^mapbox:\/\/(.*)/.exec(source.url);
+        const match = /^mapbox:\/\/(.*)/.exec(source.url);
         if (!match)
             continue;
 
@@ -21,18 +21,18 @@ module.exports = function (style) {
     if (styleIDs.length < 2)
         return style;
 
-    styleIDs.forEach(function (id) {
+    styleIDs.forEach((id) => {
         delete style.sources[id];
     });
 
-    var compositeID = sourceIDs.join(",");
+    const compositeID = sourceIDs.join(",");
 
     style.sources[compositeID] = {
         "type": "vector",
-        "url": "mapbox://" + compositeID
+        "url": `mapbox://${compositeID}`
     };
 
-    style.layers.forEach(function (layer) {
+    style.layers.forEach((layer) => {
         if (styleIDs.indexOf(layer.source) >= 0) {
             layer.source = compositeID;
         }

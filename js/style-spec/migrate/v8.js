@@ -1,36 +1,36 @@
 'use strict';
 
-var Reference = require('../reference/v8');
-var URL = require('url');
+const Reference = require('../reference/v8');
+const URL = require('url');
 
 function getPropertyReference(propertyName) {
-    for (var i = 0; i < Reference.layout.length; i++) {
-        for (var key in Reference[Reference.layout[i]]) {
+    for (let i = 0; i < Reference.layout.length; i++) {
+        for (const key in Reference[Reference.layout[i]]) {
             if (key === propertyName) return Reference[Reference.layout[i]][key];
         }
     }
-    for (i = 0; i < Reference.paint.length; i++) {
-        for (key in Reference[Reference.paint[i]]) {
+    for (let i = 0; i < Reference.paint.length; i++) {
+        for (const key in Reference[Reference.paint[i]]) {
             if (key === propertyName) return Reference[Reference.paint[i]][key];
         }
     }
 }
 
 function eachSource(style, callback) {
-    for (var k in style.sources) {
+    for (const k in style.sources) {
         callback(style.sources[k]);
     }
 }
 
 function eachLayer(style, callback) {
-    for (var k in style.layers) {
+    for (const k in style.layers) {
         callback(style.layers[k]);
         eachLayer(style.layers[k], callback);
     }
 }
 
 function eachLayout(layer, callback) {
-    for (var k in layer) {
+    for (const k in layer) {
         if (k.indexOf('layout') === 0) {
             callback(layer[k], k);
         }
@@ -38,7 +38,7 @@ function eachLayout(layer, callback) {
 }
 
 function eachPaint(layer, callback) {
-    for (var k in layer) {
+    for (const k in layer) {
         if (k.indexOf('paint') === 0) {
             callback(layer[k], k);
         }
@@ -63,7 +63,7 @@ function eachProperty(style, options, callback) {
     options.paint = options.paint === undefined ? true : options.paint;
 
     function inner(layer, properties) {
-        Object.keys(properties).forEach(function(key) {
+        Object.keys(properties).forEach((key) => {
             callback({
                 key: key,
                 value: properties[key],
@@ -75,14 +75,14 @@ function eachProperty(style, options, callback) {
         });
     }
 
-    eachLayer(style, function(layer) {
+    eachLayer(style, (layer) => {
         if (options.paint) {
-            eachPaint(layer, function(paint) {
+            eachPaint(layer, (paint) => {
                 inner(layer, paint);
             });
         }
         if (options.layout) {
-            eachLayout(layer, function(layout) {
+            eachLayout(layer, (layout) => {
                 inner(layer, layout);
             });
         }
@@ -101,25 +101,25 @@ module.exports = function(style) {
     style.version = 8;
 
     // Rename properties, reverse coordinates in source and layers
-    eachSource(style, function(source) {
+    eachSource(style, (source) => {
         if (source.type === 'video' && source.url !== undefined) {
             renameProperty(source, 'url', 'urls');
         }
         if (source.type === 'video') {
-            source.coordinates.forEach(function(coord) {
+            source.coordinates.forEach((coord) => {
                 return coord.reverse();
             });
         }
     });
 
-    eachLayer(style, function(layer) {
-        eachLayout(layer, function(layout) {
+    eachLayer(style, (layer) => {
+        eachLayout(layer, (layout) => {
             if (layout['symbol-min-distance'] !== undefined) {
                 renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
             }
         });
 
-        eachPaint(layer, function(paint) {
+        eachPaint(layer, (paint) => {
             if (paint['background-image'] !== undefined) {
                 renameProperty(paint, 'background-image', 'background-pattern');
             }
@@ -133,11 +133,11 @@ module.exports = function(style) {
     });
 
     // Inline Constants
-    eachProperty(style, function(property) {
-        var value = resolveConstant(style, property.value);
+    eachProperty(style, (property) => {
+        const value = resolveConstant(style, property.value);
 
         if (isFunction(value)) {
-            value.stops.forEach(function(stop) {
+            value.stops.forEach((stop) => {
                 stop[1] = resolveConstant(style, stop[1]);
             });
         }
@@ -146,17 +146,17 @@ module.exports = function(style) {
     });
     delete style.constants;
 
-    eachLayer(style, function(layer) {
+    eachLayer(style, (layer) => {
         // get rid of text-max-size, icon-max-size
         // turn text-size, icon-size into layout properties
         // https://github.com/mapbox/mapbox-gl-style-spec/issues/255
 
-        eachLayout(layer, function(layout) {
+        eachLayout(layer, (layout) => {
             delete layout['text-max-size'];
             delete layout['icon-max-size'];
         });
 
-        eachPaint(layer, function(paint) {
+        eachPaint(layer, (paint) => {
             if (paint['text-size']) {
                 if (!layer.layout) layer.layout = {};
                 layer.layout['text-size'] = paint['text-size'];
@@ -172,8 +172,8 @@ module.exports = function(style) {
     });
 
     function migrateFontstackURL(input) {
-        var inputParsed = URL.parse(input);
-        var inputPathnameParts = inputParsed.pathname.split('/');
+        const inputParsed = URL.parse(input);
+        const inputPathnameParts = inputParsed.pathname.split('/');
 
         if (inputParsed.protocol !== 'mapbox:') {
             return input;
@@ -186,7 +186,7 @@ module.exports = function(style) {
             assert(inputPathnameParts[1] === 'v1');
             assert(decodeURI(inputPathnameParts[3]) === '{fontstack}');
             assert(decodeURI(inputPathnameParts[4]) === '{range}.pbf');
-            return 'mapbox://fonts/' + inputPathnameParts[2] + '/{fontstack}/{range}.pbf';
+            return `mapbox://fonts/${inputPathnameParts[2]}/{fontstack}/{range}.pbf`;
 
         } else {
             assert(false);
@@ -194,7 +194,7 @@ module.exports = function(style) {
 
         function assert(predicate) {
             if (!predicate) {
-                throw new Error('Invalid font url: "' + input + '"');
+                throw new Error(`Invalid font url: "${input}"`);
             }
         }
     }
@@ -205,7 +205,7 @@ module.exports = function(style) {
 
     function migrateFontStack(font) {
         function splitAndTrim(string) {
-            return string.split(',').map(function(s) {
+            return string.split(',').map((s) => {
                 return s.trim();
             });
         }
@@ -218,7 +218,7 @@ module.exports = function(style) {
             return splitAndTrim(font);
 
         } else if (typeof font === 'object') {
-            font.stops.forEach(function(stop) {
+            font.stops.forEach((stop) => {
                 stop[1] = splitAndTrim(stop[1]);
             });
             return font;
@@ -228,8 +228,8 @@ module.exports = function(style) {
         }
     }
 
-    eachLayer(style, function(layer) {
-        eachLayout(layer, function(layout) {
+    eachLayer(style, (layer) => {
+        eachLayout(layer, (layout) => {
             if (layout['text-font']) {
                 layout['text-font'] = migrateFontStack(layout['text-font']);
             }
@@ -249,16 +249,16 @@ module.exports = function(style) {
     // Symbol layers that are at the top of the map preserve their priority.
     // Symbol layers that are below another type (line, fill) of layer preserve their draw order.
 
-    var firstSymbolLayer = 0;
-    for (var i = style.layers.length - 1; i >= 0; i--) {
-        var layer = style.layers[i];
+    let firstSymbolLayer = 0;
+    for (let i = style.layers.length - 1; i >= 0; i--) {
+        const layer = style.layers[i];
         if (layer.type !== 'symbol') {
             firstSymbolLayer = i + 1;
             break;
         }
     }
 
-    var symbolLayers = style.layers.splice(firstSymbolLayer);
+    const symbolLayers = style.layers.splice(firstSymbolLayer);
     symbolLayers.reverse();
     style.layers = style.layers.concat(symbolLayers);
 

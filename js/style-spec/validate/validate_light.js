@@ -1,18 +1,18 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var getType = require('../util/get_type');
-var validate = require('./validate');
+const ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
+const validate = require('./validate');
 
 module.exports = function validateLight(options) {
-    var light = options.value;
-    var styleSpec = options.styleSpec;
-    var lightSpec = styleSpec.light;
-    var style = options.style;
+    const light = options.value;
+    const styleSpec = options.styleSpec;
+    const lightSpec = styleSpec.light;
+    const style = options.style;
 
-    var errors = [];
+    let errors = [];
 
-    var rootType = getType(light);
+    const rootType = getType(light);
     if (light === undefined) {
         return errors;
     } else if (rootType !== 'object') {
@@ -20,8 +20,8 @@ module.exports = function validateLight(options) {
         return errors;
     }
 
-    for (var key in light) {
-        var transitionMatch = key.match(/^(.*)-transition$/);
+    for (const key in light) {
+        const transitionMatch = key.match(/^(.*)-transition$/);
 
         if (transitionMatch && lightSpec[transitionMatch[1]] && lightSpec[transitionMatch[1]].transition) {
             errors = errors.concat(validate({

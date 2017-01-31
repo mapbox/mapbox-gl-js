@@ -1,16 +1,16 @@
 'use strict';
 
-var ref = require('../reference/v7');
+const ref = require('../reference/v7');
 
 function eachLayer(layer, callback) {
-    for (var k in layer.layers) {
+    for (const k in layer.layers) {
         callback(layer.layers[k]);
         eachLayer(layer.layers[k], callback);
     }
 }
 
 function eachPaint(layer, callback) {
-    for (var k in layer) {
+    for (const k in layer) {
         if (k.indexOf('paint') === 0) {
             callback(layer[k], k);
         }
@@ -19,9 +19,9 @@ function eachPaint(layer, callback) {
 
 
 // dash migrations are only safe to run once per style
-var MIGRATE_DASHES = false;
+const MIGRATE_DASHES = false;
 
-var vec2props = {
+const vec2props = {
     "fill-translate": true,
     "line-translate": true,
     "icon-offset": true,
@@ -34,18 +34,18 @@ var vec2props = {
 module.exports = function(style) {
     style.version = 7;
 
-    var processedConstants = {};
+    const processedConstants = {};
 
-    eachLayer(style, function(layer) {
+    eachLayer(style, (layer) => {
 
-        var round = layer.layout && layer.layout['line-cap'] === 'round';
+        const round = layer.layout && layer.layout['line-cap'] === 'round';
 
-        eachPaint(layer, function(paint) {
+        eachPaint(layer, (paint) => {
 
 
             // split raster brightness
             if (paint['raster-brightness']) {
-                var bval = paint['raster-brightness'];
+                let bval = paint['raster-brightness'];
                 if (typeof bval === 'string') bval = style.constants[bval];
                 paint['raster-brightness-min'] = typeof bval[0] === 'string' ? style.constants[bval[0]] : bval[0];
                 paint['raster-brightness-max'] = typeof bval[1] === 'string' ? style.constants[bval[1]] : bval[1];
@@ -55,11 +55,11 @@ module.exports = function(style) {
 
 
             // Migrate vec2 prop functions
-            for (var vec2prop in vec2props) {
-                var val = paint[vec2prop];
+            for (const vec2prop in vec2props) {
+                const val = paint[vec2prop];
                 if (val && Array.isArray(val)) {
-                    var s = val[0];
-                    var t = val[1];
+                    let s = val[0];
+                    let t = val[1];
 
                     if (typeof s === 'string') {
                         s = style.constants[s];
@@ -72,27 +72,27 @@ module.exports = function(style) {
                     if (s === undefined || t === undefined) continue;
                     if (!s.stops && !t.stops) continue;
 
-                    var stopZooms = [];
-                    var base;
+                    const stopZooms = [];
+                    let base;
                     if (s.stops) {
-                        for (var i = 0; i < s.stops.length; i++) {
+                        for (let i = 0; i < s.stops.length; i++) {
                             stopZooms.push(s.stops[i][0]);
                         }
                         base = s.base;
                     }
                     if (t.stops) {
-                        for (var k = 0; k < t.stops.length; k++) {
+                        for (let k = 0; k < t.stops.length; k++) {
                             stopZooms.push(t.stops[k][0]);
                         }
                         base = base || t.base;
                     }
                     stopZooms.sort();
 
-                    var fn = parseNumberArray([s, t]);
+                    const fn = parseNumberArray([s, t]);
 
-                    var newStops = [];
-                    for (var h = 0; h < stopZooms.length; h++) {
-                        var z = stopZooms[h];
+                    const newStops = [];
+                    for (let h = 0; h < stopZooms.length; h++) {
+                        const z = stopZooms[h];
                         if (z === stopZooms[h - 1]) continue;
                         newStops.push([z, fn(z)]);
                     }
@@ -107,10 +107,10 @@ module.exports = function(style) {
 
 
             if (paint['line-dasharray'] && MIGRATE_DASHES) {
-                var w = paint['line-width'] ? paint['line-width'] : ref.class_line['line-width'].default;
+                let w = paint['line-width'] ? paint['line-width'] : ref.class_line['line-width'].default;
                 if (typeof w === 'string') w = style.constants[w];
 
-                var dasharray = paint['line-dasharray'];
+                let dasharray = paint['line-dasharray'];
                 if (typeof dasharray === 'string') {
                     // don't process a constant more than once
                     if (processedConstants[dasharray]) return;
@@ -126,15 +126,15 @@ module.exports = function(style) {
                     dasharray[1] = style.constants[dasharray[1]];
                 }
 
-                var widthFn = parseNumber(w);
-                var dashFn = parseNumberArray(dasharray);
+                const widthFn = parseNumber(w);
+                const dashFn = parseNumberArray(dasharray);
 
                 // since there is no perfect way to convert old functions,
                 // just use the values at z17 to make the new value.
-                var zoom = 17;
+                const zoom = 17;
 
-                var width = typeof widthFn === 'function' ? widthFn(zoom) : widthFn;
-                var dash = dashFn(zoom);
+                const width = typeof widthFn === 'function' ? widthFn(zoom) : widthFn;
+                const dash = dashFn(zoom);
 
                 dash[0] /= width;
                 dash[1] /= width;
@@ -153,7 +153,7 @@ module.exports = function(style) {
         });
     });
 
-    style.layers = style.layers.filter(function(layer) {
+    style.layers = style.layers.filter((layer) => {
         return !layer.layers;
     });
 
@@ -163,11 +163,11 @@ module.exports = function(style) {
 // from mapbox-gl-js/js/style/style_declaration.js
 
 function parseNumberArray(array) {
-    var widths = array.map(parseNumber);
+    const widths = array.map(parseNumber);
 
     return function(z) {
-        var result = [];
-        for (var i = 0; i < widths.length; i++) {
+        const result = [];
+        for (let i = 0; i < widths.length; i++) {
             result.push(typeof widths[i] === 'function' ? widths[i](z) : widths[i]);
         }
         return result;
@@ -177,22 +177,22 @@ function parseNumberArray(array) {
 
 function parseNumber(num) {
     if (num.stops) num = stopsFn(num);
-    var value = +num;
+    const value = +num;
     return !isNaN(value) ? value : num;
 }
 
 
 function stopsFn(params) {
-    var stops = params.stops;
-    var base = params.base || ref.function.base.default;
+    const stops = params.stops;
+    const base = params.base || ref.function.base.default;
 
     return function(z) {
 
         // find the two stops which the current z is between
-        var low, high;
+        let low, high;
 
-        for (var i = 0; i < stops.length; i++) {
-            var stop = stops[i];
+        for (let i = 0; i < stops.length; i++) {
+            const stop = stops[i];
             if (stop[0] <= z) low = stop;
             if (stop[0] > z) {
                 high = stop;
@@ -201,12 +201,11 @@ function stopsFn(params) {
         }
 
         if (low && high) {
-            var zoomDiff = high[0] - low[0],
-                zoomProgress = z - low[0],
-
-                t = base === 1 ?
-                    zoomProgress / zoomDiff :
-                    (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
+            const zoomDiff = high[0] - low[0];
+            const zoomProgress = z - low[0];
+            const t = base === 1 ?
+                zoomProgress / zoomDiff :
+                (Math.pow(base, zoomProgress) - 1) / (Math.pow(base, zoomDiff) - 1);
 
             return interp(low[1], high[1], t);
 
@@ -225,4 +224,3 @@ function stopsFn(params) {
 function interp(a, b, t) {
     return (a * (1 - t)) + (b * t);
 }
-

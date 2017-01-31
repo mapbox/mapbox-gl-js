@@ -1,8 +1,8 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var getType = require('../util/get_type');
-var extend = require('../util/extend');
+const ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
+const extend = require('../util/extend');
 
 // Main recursive validation function. Tracks:
 //
@@ -15,9 +15,9 @@ var extend = require('../util/extend');
 
 module.exports = function validate(options) {
 
-    var validateFunction = require('./validate_function');
-    var validateObject = require('./validate_object');
-    var VALIDATORS = {
+    const validateFunction = require('./validate_function');
+    const validateObject = require('./validate_object');
+    const VALIDATORS = {
         '*': function() {
             return [];
         },
@@ -36,11 +36,11 @@ module.exports = function validate(options) {
         'string': require('./validate_string')
     };
 
-    var value = options.value;
-    var valueSpec = options.valueSpec;
-    var key = options.key;
-    var styleSpec = options.styleSpec;
-    var style = options.style;
+    const value = options.value;
+    const valueSpec = options.valueSpec;
+    const key = options.key;
+    const styleSpec = options.styleSpec;
+    const style = options.style;
 
     if (getType(value) === 'string' && value[0] === '@') {
         if (styleSpec.$version > 7) {

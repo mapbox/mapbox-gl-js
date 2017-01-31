@@ -1,29 +1,29 @@
 'use strict';
 
-var ValidationError = require('../error/validation_error');
-var getType = require('../util/get_type');
-var validate = require('./validate');
-var validateObject = require('./validate_object');
-var validateArray = require('./validate_array');
-var validateNumber = require('./validate_number');
-var unbundle = require('../util/unbundle_jsonlint');
+const ValidationError = require('../error/validation_error');
+const getType = require('../util/get_type');
+const validate = require('./validate');
+const validateObject = require('./validate_object');
+const validateArray = require('./validate_array');
+const validateNumber = require('./validate_number');
+const unbundle = require('../util/unbundle_jsonlint');
 
 module.exports = function validateFunction(options) {
-    var functionValueSpec = options.valueSpec;
-    var functionType = unbundle(options.value.type);
-    var stopKeyType;
-    var stopDomainValues = {};
-    var previousStopDomainValue;
-    var previousStopDomainZoom;
+    const functionValueSpec = options.valueSpec;
+    const functionType = unbundle(options.value.type);
+    let stopKeyType;
+    const stopDomainValues = {};
+    let previousStopDomainValue;
+    let previousStopDomainZoom;
 
-    var isZoomFunction = functionType !== 'categorical' && options.value.property === undefined;
-    var isPropertyFunction = !isZoomFunction;
-    var isZoomAndPropertyFunction =
+    const isZoomFunction = functionType !== 'categorical' && options.value.property === undefined;
+    const isPropertyFunction = !isZoomFunction;
+    const isZoomAndPropertyFunction =
         getType(options.value.stops) === 'array' &&
         getType(options.value.stops[0]) === 'array' &&
         getType(options.value.stops[0][0]) === 'object';
 
-    var errors = validateObject({
+    const errors = validateObject({
         key: options.key,
         value: options.value,
         valueSpec: options.styleSpec.function,
@@ -41,11 +41,11 @@ module.exports = function validateFunction(options) {
     }
 
     if (options.styleSpec.$version >= 8) {
-       if (isPropertyFunction && !options.valueSpec['property-function']) {
-           errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
-       } else if (isZoomFunction && !options.valueSpec['zoom-function']) {
-           errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
-       }
+        if (isPropertyFunction && !options.valueSpec['property-function']) {
+            errors.push(new ValidationError(options.key, options.value, 'property functions not supported'));
+        } else if (isZoomFunction && !options.valueSpec['zoom-function']) {
+            errors.push(new ValidationError(options.key, options.value, 'zoom functions not supported'));
+        }
     }
 
     if ((functionType === 'categorical' || isZoomAndPropertyFunction) && options.value.property === undefined) {
@@ -59,8 +59,8 @@ module.exports = function validateFunction(options) {
             return [new ValidationError(options.key, options.value, 'identity function may not have a "stops" property')];
         }
 
-        var errors = [];
-        var value = options.value;
+        let errors = [];
+        const value = options.value;
 
         errors = errors.concat(validateArray({
             key: options.key,
@@ -79,9 +79,9 @@ module.exports = function validateFunction(options) {
     }
 
     function validateFunctionStop(options) {
-        var errors = [];
-        var value = options.value;
-        var key = options.key;
+        let errors = [];
+        const value = options.value;
+        const key = options.key;
 
         if (getType(value) !== 'array') {
             return [new ValidationError(key, value, 'array expected, %s found', getType(value))];
@@ -109,7 +109,7 @@ module.exports = function validateFunction(options) {
                 previousStopDomainValue = undefined;
             }
             errors = errors.concat(validateObject({
-                key: key + '[0]',
+                key: `${key}[0]`,
                 value: value[0],
                 valueSpec: { zoom: {} },
                 style: options.style,
@@ -118,7 +118,7 @@ module.exports = function validateFunction(options) {
             }));
         } else {
             errors = errors.concat(validateStopDomainValue({
-                key: key + '[0]',
+                key: `${key}[0]`,
                 value: value[0],
                 valueSpec: {},
                 style: options.style,
@@ -127,7 +127,7 @@ module.exports = function validateFunction(options) {
         }
 
         errors = errors.concat(validate({
-            key: key + '[1]',
+            key: `${key}[1]`,
             value: value[1],
             valueSpec: functionValueSpec,
             style: options.style,
@@ -136,7 +136,7 @@ module.exports = function validateFunction(options) {
 
         if (getType(value[0]) === 'number') {
             if (functionValueSpec.function === 'piecewise-constant' && value[0] % 1 !== 0) {
-                errors.push(new ValidationError(key + '[0]', value[0], 'zoom level for piecewise-constant functions must be an integer'));
+                errors.push(new ValidationError(`${key}[0]`, value[0], 'zoom level for piecewise-constant functions must be an integer'));
             }
         }
 
@@ -144,8 +144,8 @@ module.exports = function validateFunction(options) {
     }
 
     function validateStopDomainValue(options) {
-        var type = getType(options.value);
-        var value = unbundle(options.value);
+        const type = getType(options.value);
+        const value = unbundle(options.value);
 
         if (!stopKeyType) {
             stopKeyType = type;
@@ -158,7 +158,7 @@ module.exports = function validateFunction(options) {
         }
 
         if (type !== 'number' && functionType !== 'categorical') {
-            var message = 'number expected, %s found';
+            let message = 'number expected, %s found';
             if (functionValueSpec['property-function'] && functionType === undefined) {
                 message += '\nIf you intended to use a categorical function, specify `"type": "categorical"`.';
             }

@@ -1,16 +1,16 @@
 'use strict';
 
-var test = require('tape');
-var MapboxGLFunction = require('../').function.interpolated;
+const test = require('mapbox-gl-js-test').test;
+const createFunction = require('../../../js/style-spec').function.interpolated;
 
-test('function types', function(t) {
+test('function types', (t) => {
 
-    t.test('constant', function(t) {
+    t.test('constant', (t) => {
 
-        t.test('range types', function(t) {
+        t.test('range types', (t) => {
 
-            t.test('array', function(t) {
-                var f = MapboxGLFunction([1]);
+            t.test('array', (t) => {
+                const f = createFunction([1]);
 
                 t.deepEqual(f(0), [1]);
                 t.deepEqual(f(1), [1]);
@@ -19,8 +19,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('number', function(t) {
-                var f = MapboxGLFunction(1);
+            t.test('number', (t) => {
+                const f = createFunction(1);
 
                 t.equal(f(0), 1);
                 t.equal(f(1), 1);
@@ -29,8 +29,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('string', function(t) {
-                var f = MapboxGLFunction('mapbox');
+            t.test('string', (t) => {
+                const f = createFunction('mapbox');
 
                 t.equal(f(0), 'mapbox');
                 t.equal(f(1), 'mapbox');
@@ -39,14 +39,16 @@ test('function types', function(t) {
                 t.end();
             });
 
+            t.end();
         });
 
+        t.end();
     });
 
-    t.test('exponential', function(t) {
+    t.test('exponential', (t) => {
 
-        t.test('is the default', function(t) {
-            var f = MapboxGLFunction({
+        t.test('is the default', (t) => {
+            const f = createFunction({
                 stops: [[1, 2], [3, 6]],
                 base: 2
             });
@@ -56,8 +58,8 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('base', function(t) {
-            var f = MapboxGLFunction({
+        t.test('base', (t) => {
+            const f = createFunction({
                 type: 'exponential',
                 stops: [[1, 2], [3, 6]],
                 base: 2
@@ -72,9 +74,9 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('stops', function(t) {
-            t.test('one element', function(t) {
-                var f = MapboxGLFunction({
+        t.test('stops', (t) => {
+            t.test('one element', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     stops: [[1, 2]]
                 });
@@ -86,8 +88,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('two elements', function(t) {
-                var f = MapboxGLFunction({
+            t.test('two elements', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     stops: [[1, 2], [3, 6]]
                 });
@@ -101,8 +103,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('three elements', function(t) {
-                var f = MapboxGLFunction({
+            t.test('three elements', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     stops: [[1, 2], [3, 6], [5, 10]]
                 });
@@ -120,8 +122,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('four elements', function(t) {
-                var f = MapboxGLFunction({
+            t.test('four elements', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     stops: [[1, 2], [3, 6], [5, 10], [7, 14]]
                 });
@@ -143,8 +145,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('many elements', function(t) {
-              var stops = [
+            t.test('many elements', (t) => {
+                const stops = [
                 [2, 100],
                 [55, 200],
                 [132, 300],
@@ -155,61 +157,61 @@ test('function types', function(t) {
                 [3299, 800],
                 [3995, 900],
                 [4927, 1000],
-                [7147, 10000],//10
-                [10028, 100000],//11
+                [7147, 10000], //10
+                [10028, 100000], //11
                 [12889, 1000000],
                 [40000, 10000000]
-              ];
-              var f = MapboxGLFunction({
-                type: 'exponential',
-                "stops": stops
-              });
+                ];
+                const f = createFunction({
+                    type: 'exponential',
+                    "stops": stops
+                });
 
-              t.equal(f(2), 100);
-              t.equal(f(20), 133.9622641509434);
-              t.equal(f(607), 400);
-              t.equal(f(680), 410.7352941176471);
-              t.equal(f(4927), 1000); //86
-              t.equal(f(7300), 14779.590419993057);
-              t.equal(f(10000), 99125.30371398819);
-              t.equal(f(20000), 3360628.527166095);
-              t.equal(f(40000), 10000000);
+                t.equal(f(2), 100);
+                t.equal(f(20), 133.9622641509434);
+                t.equal(f(607), 400);
+                t.equal(f(680), 410.7352941176471);
+                t.equal(f(4927), 1000); //86
+                t.equal(f(7300), 14779.590419993057);
+                t.equal(f(10000), 99125.30371398819);
+                t.equal(f(20000), 3360628.527166095);
+                t.equal(f(40000), 10000000);
 
-              t.end();
+                t.end();
             });
 
-            t.test('three elements', function(t) {
-                var f = MapboxGLFunction({
+            t.test('three elements', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     colorSpace: 'lab',
                     stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
                 });
 
                 t.deepEqual(f(0), [0, 0, 0, 1]);
-                t.deepEqual(f(5).map(function (n) {
+                t.deepEqual(f(5).map((n) => {
                     return parseFloat(n.toFixed(3));
                 }), [0, 0.444, 0.444, 1]);
 
                 t.end();
             });
 
-            t.test('rgb colorspace', function(t) {
-                var f = MapboxGLFunction({
+            t.test('rgb colorspace', (t) => {
+                const f = createFunction({
                     type: 'exponential',
                     colorSpace: 'rgb',
                     stops: [[0, [0, 0, 0, 1]], [10, [1, 1, 1, 1]]]
                 });
 
-                t.deepEqual(f(5).map(function (n) {
+                t.deepEqual(f(5).map((n) => {
                     return parseFloat(n.toFixed(3));
                 }), [0.5, 0.5, 0.5, 1]);
 
                 t.end();
             });
 
-            t.test('unknown color spaces', function(t) {
-                t.throws(function () {
-                    MapboxGLFunction({
+            t.test('unknown color spaces', (t) => {
+                t.throws(() => {
+                    createFunction({
                         type: 'exponential',
                         colorSpace: 'unknown',
                         stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
@@ -219,22 +221,22 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('interpolation mutation avoidance', function(t) {
-                var params = {
+            t.test('interpolation mutation avoidance', (t) => {
+                const params = {
                     type: 'exponential',
                     colorSpace: 'lab',
                     stops: [[1, [0, 0, 0, 1]], [10, [0, 1, 1, 1]]]
                 };
-                var paramsCopy = JSON.parse(JSON.stringify(params));
-                MapboxGLFunction(params);
+                const paramsCopy = JSON.parse(JSON.stringify(params));
+                createFunction(params);
                 t.deepEqual(params, paramsCopy);
                 t.end();
             });
 
-            t.test('property', function(t) {
+            t.test('property', (t) => {
 
-                t.test('zoom function', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('zoom function', (t) => {
+                    const f = createFunction({
                         type: 'exponential',
                         stops: [[0, 0], [1, 2]]
                     });
@@ -244,8 +246,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('property function', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('property function', (t) => {
+                    const f = createFunction({
                         property: 'foo',
                         type: 'exponential',
                         stops: [[0, 0], [1, 2]]
@@ -256,8 +258,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('property function, missing property', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('property function, missing property', (t) => {
+                    const f = createFunction({
                         property: 'foo',
                         type: 'exponential',
                         stops: [[0, 0], [1, 2]]
@@ -268,8 +270,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('zoom-and-property function, one element', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('zoom-and-property function, one element', (t) => {
+                    const f = createFunction({
                         type: 'exponential',
                         property: 'prop',
                         stops: [[{ zoom: 1, value: 1 }, 2]]
@@ -288,8 +290,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('zoom-and-property function, two elements', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('zoom-and-property function, two elements', (t) => {
+                    const f = createFunction({
                         type: 'exponential',
                         property: 'prop',
                         base: 1,
@@ -314,8 +316,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('zoom-and-property function, three elements', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('zoom-and-property function, three elements', (t) => {
+                    const f = createFunction({
                         type: 'exponential',
                         property: 'prop',
                         base: 1,
@@ -335,8 +337,8 @@ test('function types', function(t) {
                     t.end();
                 });
 
-                t.test('zoom-and-property function, two elements, fractional zoom', function(t) {
-                    var f = MapboxGLFunction({
+                t.test('zoom-and-property function, two elements, fractional zoom', (t) => {
+                    const f = createFunction({
                         type: 'exponential',
                         property: 'prop',
                         base: 1,
@@ -362,10 +364,10 @@ test('function types', function(t) {
         t.end();
     });
 
-    t.test('categorical', function(t) {
+    t.test('categorical', (t) => {
 
-        t.test('one element', function(t) {
-            var f = MapboxGLFunction({
+        t.test('one element', (t) => {
+            const f = createFunction({
                 type: 'categorical',
                 stops: [['umpteen', 42]]
             });
@@ -376,8 +378,8 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('two elements', function(t) {
-            var f = MapboxGLFunction({
+        t.test('two elements', (t) => {
+            const f = createFunction({
                 type: 'categorical',
                 stops: [['umpteen', 42], ['eleventy', 110]]
             });
@@ -390,10 +392,10 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('property', function(t) {
+        t.test('property', (t) => {
 
-            t.test('zoom function', function(t) {
-                var f = MapboxGLFunction({
+            t.test('zoom function', (t) => {
+                const f = createFunction({
                     type: 'categorical',
                     stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
                 });
@@ -403,22 +405,20 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('property function', function(t) {
-                t.test('zoom function', function(t) {
-                    var f = MapboxGLFunction({
-                        property: 'foo',
-                        type: 'categorical',
-                        stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
-                    });
-
-                    t.equal(f(0, {foo: 1}), 'good');
-
-                    t.end();
+            t.test('property function', (t) => {
+                const f = createFunction({
+                    property: 'foo',
+                    type: 'categorical',
+                    stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
                 });
+
+                t.equal(f(0, {foo: 1}), 'good');
+
+                t.end();
             });
 
-            t.test('property function, missing property', function(t) {
-                var f = MapboxGLFunction({
+            t.test('property function, missing property', (t) => {
+                const f = createFunction({
                     property: 'foo',
                     type: 'categorical',
                     stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
@@ -435,10 +435,10 @@ test('function types', function(t) {
         t.end();
     });
 
-    t.test('interval', function(t) {
+    t.test('interval', (t) => {
 
-        t.test('one domain elements', function(t) {
-            var f = MapboxGLFunction({
+        t.test('one domain elements', (t) => {
+            const f = createFunction({
                 type: 'interval',
                 stops: [[0, 11]]
             });
@@ -450,8 +450,8 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('two domain elements', function(t) {
-            var f = MapboxGLFunction({
+        t.test('two domain elements', (t) => {
+            const f = createFunction({
                 type: 'interval',
                 stops: [[-1, 11], [0, 111]]
             });
@@ -464,8 +464,8 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('three domain elements', function(t) {
-            var f = MapboxGLFunction({
+        t.test('three domain elements', (t) => {
+            const f = createFunction({
                 type: 'interval',
                 stops: [[-1, 11], [0, 111], [1, 1111]]
             });
@@ -480,8 +480,8 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('four domain elements', function(t) {
-            var f = MapboxGLFunction({
+        t.test('four domain elements', (t) => {
+            const f = createFunction({
                 type: 'interval',
                 stops: [[-1, 11], [0, 111], [1, 1111], [2, 11111]]
             });
@@ -498,10 +498,10 @@ test('function types', function(t) {
             t.end();
         });
 
-        t.test('property', function(t) {
+        t.test('property', (t) => {
 
-            t.test('zoom function', function(t) {
-                var f = MapboxGLFunction({
+            t.test('zoom function', (t) => {
+                const f = createFunction({
                     type: 'interval',
                     stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
                 });
@@ -511,8 +511,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('property function', function(t) {
-                var f = MapboxGLFunction({
+            t.test('property function', (t) => {
+                const f = createFunction({
                     property: 'foo',
                     type: 'interval',
                     stops: [[0, 'bad'], [1, 'good'], [2, 'bad']]
@@ -523,8 +523,8 @@ test('function types', function(t) {
                 t.end();
             });
 
-            t.test('property function, missing property', function(t) {
-                var f = MapboxGLFunction({
+            t.test('property function, missing property', (t) => {
+                const f = createFunction({
                     property: 'foo',
                     type: 'interval',
                     stops: [[0, 'zero'], [1, 'one'], [2, 'two']]
@@ -544,10 +544,10 @@ test('function types', function(t) {
     t.end();
 });
 
-test('isConstant', function(t) {
+test('isConstant', (t) => {
 
-    t.test('constant', function(t) {
-        var f = MapboxGLFunction(1);
+    t.test('constant', (t) => {
+        const f = createFunction(1);
 
         t.ok(f.isZoomConstant);
         t.ok(f.isFeatureConstant);
@@ -555,8 +555,8 @@ test('isConstant', function(t) {
         t.end();
     });
 
-    t.test('zoom', function(t) {
-        var f = MapboxGLFunction({
+    t.test('zoom', (t) => {
+        const f = createFunction({
             stops: [[1, 1]]
         });
 
@@ -566,8 +566,8 @@ test('isConstant', function(t) {
         t.end();
     });
 
-    t.test('feature', function(t) {
-        var f = MapboxGLFunction({
+    t.test('feature', (t) => {
+        const f = createFunction({
             stops: [[1, 1]],
             property: 'mapbox'
         });
@@ -578,8 +578,8 @@ test('isConstant', function(t) {
         t.end();
     });
 
-    t.test('zoom + feature', function(t) {
-        var f = MapboxGLFunction({
+    t.test('zoom + feature', (t) => {
+        const f = createFunction({
             stops: [[{ zoom: 1, data: 1 }, 1]],
             property: 'mapbox'
         });
@@ -590,10 +590,10 @@ test('isConstant', function(t) {
         t.end();
     });
 
-    t.test('identity', function(t) {
+    t.test('identity', (t) => {
 
-        t.test('array', function(t) {
-            var f = MapboxGLFunction({type: 'identity'});
+        t.test('array', (t) => {
+            const f = createFunction({type: 'identity'});
 
             t.deepEqual(f([]), []);
             t.deepEqual(f([1]), [1]);
@@ -602,8 +602,8 @@ test('isConstant', function(t) {
             t.end();
         });
 
-        t.test('number', function(t) {
-            var f = MapboxGLFunction({type: 'identity'});
+        t.test('number', (t) => {
+            const f = createFunction({type: 'identity'});
 
             t.equal(f(0), 0);
             t.equal(f(1), 1);
@@ -612,8 +612,8 @@ test('isConstant', function(t) {
             t.end();
         });
 
-        t.test('string', function(t) {
-            var f = MapboxGLFunction({type: 'identity'});
+        t.test('string', (t) => {
+            const f = createFunction({type: 'identity'});
 
             t.equal(f(''), '');
             t.equal(f('0'), '0');
@@ -622,8 +622,8 @@ test('isConstant', function(t) {
             t.end();
         });
 
+        t.end();
     });
 
     t.end();
-
 });
