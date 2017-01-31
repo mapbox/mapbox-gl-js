@@ -295,6 +295,7 @@ class Camera extends Evented {
 
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
+     * This function will also reset the map's bearing to 0 if bearing is nonzero.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
@@ -340,27 +341,25 @@ class Camera extends Evented {
                 left: p
             };
         }
+
         bounds = LngLatBounds.convert(bounds);
 
         const offset = Point.convert(options.offset),
+
+            paddingOffset = [Math.min(options.padding.right, options.padding.left), Math.min(options.padding.top, options.padding.bottom)],
+            verticalPadding = Math.abs(options.padding.top - options.padding.bottom),
+            lateralPadding = Math.abs(options.padding.right - options.padding.left),
             tr = this.transform,
-            // add the appropriate paddings to the given bounds to adjust the viewport bounds.
-            // for NW: [x,y] = [w, n]
-            nwPadding = Point.convert([ options.padding.left || 0, options.padding.top || 0]),
-            // for SE: [x,y] = [e, s]
-            sePadding = Point.convert([ options.padding.right || 0, options.padding.bottom || 0]),
-            // because x decreases in the west direction and y decreases in the n direction in screen coordinates
-            // we subtract the nw padding, and add the se padding to get the appropriate bounds.
-            nw = tr.project(bounds.getNorthWest()).sub(nwPadding),
-            se = tr.project(bounds.getSouthEast()).add(sePadding),
+            nw = tr.project(bounds.getNorthWest()),
+            se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            scaleX = (tr.width - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
+
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
         options.bearing = 0;
-        // options.bearing = tr.bearing;
 
         return options.linear ?
             this.easeTo(options, eventData) :
