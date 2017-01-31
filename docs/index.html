@@ -1,15 +1,227 @@
 ---
+layout: docs
+section: developers
+title: Mapbox GL
+options: full bleed
+card: true
+image:
 ---
-<!DOCTYPE html>
-<html>
-  <head></head>
-  <body>
-      <script>
-          var redirect = '{{site.baseurl}}/api';
-          if (window.location && window.location.hash) {
-              window.location.href = redirect + window.location.hash;
-          } else { window.location.href = redirect }
-      </script>
-      <a href='{{site.baseurl}}/api'>if not redirected, click here.</a>
-  </body>
-</html>
+
+<div class='fill-gradient dark gl-header contain section'>
+  <div class='limiter clearfix contain z1'>
+    <div class='col6 space-bottom4'>
+      <h3 class='quiet space-bottom2 futura'>Mapbox GL for JavaScript</h3>
+      <h1 class='space-bottom0'>Vector maps unleashed</h1>
+      <p class='prose prose-big'>Create responsive vector maps with Mapbox GL, a client-side renderer with implementations in both native and web platforms utilizing OpenGL. Take full control over map styles for dynamic, interactive visual effects and custom&nbsp;branding.</p>
+    </div>
+    <div class='col6 pad4x small hide-mobile'>
+      <div class='keyline-bottom col12 clearfix pad1y'>
+        <div class='col4 center'>
+          <div id='gl-speed' class='inline'></div>
+        </div>
+        <div class='col8 pad1'>
+          Instant on-device rendering with realtime GPU hardware-acceleration using OpenGL.
+        </div>
+      </div>
+      <div class='keyline-bottom col12 clearfix pad1y'>
+        <div class='col4 center'>
+          <div id='gl-agility' class='inline'></div>
+        </div>
+        <div class='col8 pad1'>
+          Reads directly from lightweight vector tiles for streamlined loading and storage. No more bulky image&nbsp;tiles.
+        </div>
+      </div>
+      <div class='col12 clearfix pad1y'>
+        <div class='col4 center'>
+          <div id='gl-style' class='inline'></div>
+        </div>
+        <div class='col8 pad1'>
+          Cross-platform styling language for powerful map branding and visualization capabilities.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id='map' class='hide-mobile'>
+    <div id='map-controls' class='pin-bottomright pad1 z1'>
+      <div class='round space-bottom0 fill-lighten0'>
+        <a href='#' id='resetnorth' class='icon time quiet block'></a>
+      </div>
+      <div class='fill-lighten0 round clip'>
+        <a href='#' id='zoomin' class='icon plus short quiet block keyline-bottom'></a>
+        <a href='#' id='zoomout' class='icon minus short quiet block'></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='col12 clearfix space-bottom4'>
+  <div class='limiter clearfix'>
+    <h2 class='center pad4y quiet'>Get started in minutes</h2>
+    <div class='sliding h clip col12 clearfix active1 animate' style='height: 870px;'>
+      <div id='active1' class='col12 clearfix animate active'>
+        <div class='col8 margin2'>
+          <div class='prose prose-big space-bottom4'>
+            <p>
+            Include the <a href='https://github.com/mapbox/mapbox-gl-js/'><code>mapbox-gl.js</code></a> library in your HTML header:
+            </p>
+
+{% highlight html %}
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.js'></script>
+{% endhighlight %}
+
+            <h3>Authorize</h3>
+            <p>
+            Then, authorize your usage with an <a href='https://www.mapbox.com/account/apps/'>API access token</a> and initiate your map:
+            </p>
+
+            <div id='example-snippet' class='js-replace-token'>
+{% highlight html %}
+<script>
+// Provide your access token
+mapboxgl.accessToken = '<your access token here>';
+// Create a map in the div #map
+new mapboxgl.Map({
+  container: 'map',
+  style: 'path/to/style.json'
+});
+</script>
+{% endhighlight%}
+            </div>
+
+            <h3>Style</h3>
+            <p>
+            Define vector sources and style your map with a JSON <a href='/mapbox-gl-style-spec'>style</a> or grab an <a href='/mapbox-gl-js/examples'>example</a>.
+            </p>
+          </div>
+          <p><a href='https://github.com/mapbox/mapbox-gl-js' class='quiet micro icon github inline strong'>Fork mapbox-gl-js on Github</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.fill-gradient { background: linear-gradient(to bottom right, #8a8acb, #3887be); }
+.gl-header { padding:100px 0 60px; }
+.gl-header .limiter { pointer-events:none; }
+pre.dark { background: rgba(0,0,0,0.75); }
+#map {
+  z-index:0;
+  position:absolute;
+  top:0; bottom:0; left:0; right:0;
+  height: 100%;
+  cursor: pointer;
+}
+#gl-speed {
+  background: url('/img/gl-sprite.png') no-repeat -8px -9px;
+  background-size: 301px 91px;
+  width: 78px; height: 68px;
+}
+#gl-agility {
+  background: url('/img/gl-sprite.png') no-repeat -95px 0px;
+  background-size: 301px 91px;
+  width: 99px; height: 81px;
+}
+#gl-style {
+  background: url('/img/gl-sprite.png') no-repeat -205px -10px;
+  background-size: 301px 91px;
+  width: 86px; height: 68px;
+}
+.pill-free > a {
+  height: auto;
+}
+.prose.prose-big code {
+  font-size: 14px;
+  line-height: 24px;
+}
+#map-controls {
+  margin-bottom: 20px;
+}
+.mapboxgl-ctrl-attrib {
+  font-size: 10px;
+}
+.mapbox-improve-map {
+  display: none;
+}
+</style>
+
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.css' rel='stylesheet' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.8.0/mapbox-gl.js'></script>
+<script type='text/javascript'>
+(function() {
+  if (!App.user) {
+    $("#example-snippet .c1:contains('Provide your access token')")
+      .html('// <a href="/signup/">Sign up</a> to get an access token');
+  }
+
+  if (mapboxgl.supported()) {
+    mapboxgl.accessToken = window.mapbox_accessToken;
+
+    var center = [46.743374, -117.462629];
+    var map = new mapboxgl.Map({
+      container: 'map',
+      center: [46.743, -117.462],
+      minZoom: 4,
+      zoom: 10,
+      bearing: -90,
+      style: 'https://www.mapbox.com/mapbox-gl-styles/styles/dark-v7.json',
+      interactive: false,
+      hash: false
+    });
+    var canvas = $('#map canvas');
+
+    var t = 8000;
+    var over;
+    function go() {
+      map.stop();
+      var c = map.project(map.getCenter());
+      var coords = map.unproject({x: c.x+400, y: c.y-200});
+      map.easeTo({center: coords, zoom: map.getZoom()+0.01, bearing: map.getBearing()+30, duration: t, easing: function(n){return n;}});
+    }
+
+    function setupEvents() {
+      map.easeTo(center, 14.6, 0, {duration: 4000});
+      window.setInterval(function() {
+        if (map.zooming || map.rotating || over) return;
+        go();
+      }, 500);
+
+      canvas.on('mouseover', function() {
+        map.stop();
+        over = true;
+        map.addClass('over');
+        map.easeTo({zoom: map.getZoom()+0.8, bearing: map.getBearing()+10});
+      });
+      canvas.on('mouseout', function() {
+        map.stop();
+        over = false;
+        map.removeClass('over');
+        map.easeTo({zoom: map.getZoom()-0.8, bearing: map.getBearing()+10});
+      });
+      $(window).resize(function() {
+        map.resize();
+      });
+      canvas.on('click', function(e) {
+        var x = e.offsetX !== undefined ? e.offsetX : e.clientX;
+        var y = e.offsetY !== undefined ? e.offsetY : e.clientY;
+        var pos = map.unproject({x: x, y: y});
+        map.panTo(pos);
+      });
+      map.on('rotate', function() {
+        $('#resetnorth').css('-webkit-transform', 'rotate('+map.getBearing()+'deg)');
+      });
+      $('#resetnorth').on('click', function() {
+        map.resetNorth();
+      });
+      $('#zoomin').on('click', function() {
+        map.zoomTo(map.getZoom()+1);
+      });
+      $('#zoomout').on('click', function() {
+        map.zoomTo(map.getZoom()-1);
+      });
+    }
+    window.setTimeout(setupEvents, 400);
+  };
+})();
+</script>
