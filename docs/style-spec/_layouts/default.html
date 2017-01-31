@@ -1,0 +1,561 @@
+---
+footer:
+  mapbox:
+    - title: Products
+      path: /products
+    - title: Showcase
+      path: /showcase
+    - title: Pricing
+      path: /pricing
+    - title: Blog
+      path: /blog
+    - title: Platform
+      path: /platform
+    - title: Telemetry
+      path: /telemetry
+  aboutus:
+    - title: Our story
+      path: /about
+    - title: Team
+      path: /about/team
+    - title: Jobs
+      path: /jobs
+    - title: Events
+      path: /events
+    - title: Press
+      path: /about/press
+    - title: Green
+      path: /about/green
+    - title: Open source
+      path: /about/open
+    - title: Board and investors
+      path: /about/board
+  support:
+    - title: Help/FAQ
+      path: /help
+    - title: Status
+      path: /status
+    - title: Map feedback
+      path: /map-feedback
+    - title: Contact us
+      path: /contact
+    - title: Education
+      path: /education
+    - title: Humanitarian
+      path: /humanitarian
+    - title: Security
+      path: /security
+  mapdesign:
+    - title: Maps
+      path: /maps
+    - title: Mapbox Studio
+      path: /mapbox-studio
+    - title: Gallery
+      path: /gallery
+    - title: Vector tiles
+      path: /vector-tiles
+    - title: Maki icons
+      path: /maki-icons
+  developers:
+    - title: Mapbox API
+      path: /developers/api
+    - title: Mapbox.js
+      path: /mapbox.js
+    - title: iOS SDK
+      path: /ios-sdk
+    - title: Android SDK
+      path: /android-sdk
+    - title: Mapbox GL for JS
+      path: /mapbox-gl-js
+  industries:
+    - title: Real estate
+      path: /industries/realestate
+    - title: Transportation
+      path: /industries/transportation
+    - title: Agriculture
+      path: /industries/agriculture
+    - title: Social
+      path: /industries/social
+    - title: "GIS: Mapbox Esri Connect"
+      path: /esriconnect
+---
+<!DOCTYPE html >
+<html>
+<head>
+  {% if page.prehead %}{{page.prehead}}{% endif %}
+  <meta charset='UTF-8'/>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+  <meta name='robots' content='{% if page.hidden %}noindex{% else %}index{% endif %}'/>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <meta name='apple-mobile-web-app-capable' content='yes' />
+  {% if page.description %}<meta name='description' content='{{page.description | strip_html}}'/>{% endif %}
+  <title>{% if page.title == 'Mapbox' %}{{page.title}} | Design and publish beautiful maps{% else %}{{page.title}} | Mapbox{% endif %}</title>
+
+  <meta class='swiftype' name='title' data-type='string' content='{{page.title | escape | replace:"| Mapbox",""}}' />
+  <meta class='swiftype' name='type' data-type='enum' content='{% if page.section %}{{page.section}}{% elsif page.category %}{{page.category}}{% else %}site{% endif %}' />
+  <meta class='swiftype' name='info' data-type='string' content='{% if page.version %}{{page.version}}{% else %}site{% endif %}' />{% if page.date and site.baseurl == '/blog' %}
+  <meta class='swiftype' name='published_at' data-type='date' content='{{ page.date | date_to_xmlschema }}' />{% endif %}{% if page.tags %}
+  {% for tags in page.tags %}<meta class='swiftype' name='tags' data-type='string' content='{{tags}}' />
+  {% endfor %}{% endif %}{% if page.category and page.category !='none' %}
+  <meta class='swiftype' name='category' data-type='string' content='{{page.category}}' />{% endif %}{% if page.author %}
+  <meta class='swiftype' name='author' data-type='string' content='{{page.author}}' />{% endif %}{% if page.excerpt or page.description %}
+  <meta class='swiftype' name='excerpt' data-type='string' content='{% if page.description %}{{ page.description | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% endif %}' />{% endif %}
+  {% if site.baseurl == '/mapbox.js' %}{% if site.mapboxjs != page.version and page.version != 'latest' %}<meta name='robots' content='noindex'>{% endif %}{% endif %}
+  {% if page.card or layout.card %}
+  <meta name='twitter:site' content='@Mapbox' />
+  <meta property='og:site_name' content='Mapbox' />
+  <meta name='twitter:url' content='{{site.url}}{{site.baseurl}}{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
+  <meta property='og:url' content='{{site.url}}{{site.baseurl}}{% if page.permalink %}{{page.permalink}}{% else %}{{page.url | replace:"index.html",""}}{% endif %}' />
+  <meta name='twitter:title' content='{{page.title | escape }}' />
+  <meta property='og:title' content='{{page.title | escape }}' />
+  <meta name='twitter:description' content='{% if page.description %}{{ page.description | truncatewords: 30 | escape }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  <meta property='og:description' content='{% if page.description %}{{ page.description | truncatewords: 30 | escape}}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | escape | truncatewords: 30 }}{% else %}{{content | strip_html | truncatewords: 30 }}{% endif %}' />
+  {% if page.video or layout.video %}
+  <meta name='twitter:card' content='player' />
+  <meta name='twitter:player' content='{% if page.video %}{{page.video | replace: "http:" , "https:" }}{% else %}{{layout.video}}{% endif %}' />
+  <meta name='twitter:player:width' content='640' />
+  <meta name='twitter:player:height' content='480' />
+  <meta property='og:type' content='video.other' />
+  <meta property='og:video' content='{{page.video}}' />
+  <meta property='og:video:width' content='640' />
+  <meta property='og:video:height' content='480' />
+  {% elsif page.image or layout.image %}
+  <meta name='twitter:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
+  <meta name='st:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
+  <meta property='og:image' content='{% if page.image %}{{page.image | replace:"https:","http:"}}{% else %}{{layout.image | replace:"https:","http:"}}{% endif %}' />
+  <meta name='twitter:card' content='summary_large_image' />
+  <meta property='og:type' content='website' />
+  {% endif %}
+  {% endif %}
+  <meta name="p:domain_verify" content="57838af58c8045c2c024bc2f9d1577f9"/>
+
+  {% if site.localbase == true %}
+  <link href='/css/base/latest/base.css?v1.0' rel='stylesheet' />
+  {% else %}
+  <link href='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base/latest/base.css?v1.0' rel='stylesheet' />
+  {% endif %}
+  <link href='{{site.url}}/css/site.css' rel='stylesheet' />
+  <!--[if IE 9]><link href='{{site.url}}/css/site-ie9.css' rel='stylesheet' /><![endif]-->
+  <link rel='shortcut icon' href='{{site.url}}/img/favicon.ico' type='image/x-icon' />
+  <link rel='alternate' type='application/rss+xml' title='RSS' href='{{site.url}}/blog/blog.rss' />
+
+  {% unless page.nomapboxjs %}
+  <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
+  {% endunless %}
+
+  <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
+  <script src='https://js.stripe.com/v2/'></script>
+  <script>
+  var KM_COOKIE_DOMAIN = 'www.mapbox.com';
+
+  !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="3.1.0";
+  analytics.load(window.location.hostname.indexOf('mapbox.com') !== -1 ? 'fl0c8p240n' : '0biiejpgfj');
+  analytics.page()
+  }}();
+
+  Stripe.setPublishableKey(window.location.hostname.indexOf('mapbox.com') !== -1 ?
+    'pk_live_hI6mmOTIg7KkywK6vo3vJvpk' : 'pk_test_gmIyREg3sKzAiyMkAEeCsxUG');
+  </script>
+  {% unless page.nomapboxjs %}
+  <script src='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.js'></script>
+  {% endunless %}
+
+  <script>
+  window.mapbox_api = '{{site.api}}';
+  window.mapbox_tileApi = '{{site.tileApi}}';
+  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpbG10dnA3NzY3OTZ0dmtwejN2ZnUycjYifQ.1W5oTOnWXQ9R1w8u3Oo1yA'
+  if (typeof L !== 'undefined' && L.mapbox.VERSION[0] === '2') {
+      L.mapbox.accessToken = window.mapbox_accessToken;
+      L.mapbox.config.FORCE_HTTPS = true;
+      L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
+  }
+  </script>
+  <script src='{% if site.baseApi %}{{site.baseApi}}{% else %}https://www.mapbox.com{% endif %}/base.js/dist/base.js'></script>
+  {% if site.test %}<script src='{{site.url}}/test/tape.js'></script>{% endif %}
+  {% if page.head %}{{page.head}}{% endif %}{% if layout.head %}{{layout.head}}{% endif %}
+</head>
+<body class='{{page.class}} {{page.options}} {{layout.class}} {{layout.options}}{% if page.blog_featured == true %} bleed{% endif %}'>
+
+<div class='page-content'>
+{% if page.app %}
+{{content}}
+{% else %}
+
+<div class='main-subnav fill-midnight splash pin-top dark clearfix'>
+  <div class='prose dark keyline-top pad4y hover-area clearfix'>
+    <div class='limiter clearfix'>
+
+      <div class='subnav-group subnav-products clearfix'>
+        <div class='col6 clearfix'>
+          <h3><a href='/products/' class='rcon next'>Our products</a></h3>
+          <div class='col5'>
+            <a class='block pad1y icon map' href='/maps'>Maps</a>
+            <a class='block pad1y icon studio' href='/mapbox-studio'>Mapbox Studio</a>
+            <a class='block pad1y icon compass' href='/directions/'>Directions</a>
+            <a class='block pad1y icon marker' href='/geocoding/'>Geocoding</a>
+            <a class='block pad1y icon car' href='/drive/'>Drive</a>
+          </div>
+          <div class='col6'>
+            <a class='block pad1y icon bolt' href='/analysis/'>Analysis</a>
+            <a class='block pad1y icon mobile' href='/mobile/'>Mobile</a>
+            <a class='block pad1y icon satellite' href='/satellite/'>Satellite</a>
+            <a class='block pad1y icon globe' href='/atlas/'>Atlas Server</a>
+          </div>
+        </div>
+        <div class='col5 margin1r'>
+          <h3>Our platform</h3>
+          <a class='block pad1y icon mt' href='/showcase/'>Enterprise ready</a>
+          <a class='block pad1y icon building' href='/platform/'>Scalable infrastructure</a>
+          <a class='block pad1y icon lock' href='/platform/security/'>Security</a>
+          <a class='block pad1y icon data' href='/data-platform/'>Curated Data</a>
+        </div>
+      </div>
+
+      <div class='subnav-group subnav-use-cases clearfix'>
+        <div class='col7 clearfix'>
+          <h3><a href='/industries/' class='rcon next'>Industries</a></h3>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/social'>Web &amp; Social</a>
+            <a class='block pad0y' href='/industries/logistics'>Logistics</a>
+            <a class='block pad0y' href='/industries/outdoors'>Fitness &amp; Outdoors</a>
+            <a class='block pad0y' href='/industries/naturalresources'>Natural Resources</a>
+            <a class='block pad0y' href='/industries/agriculture'>Agriculture</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/transportation'>Transportation</a>
+            <a class='block pad0y' href='/industries/realestate'>Real Estate</a>
+            <a class='block pad0y' href='/industries/insurance'>Insurance</a>
+            <a class='block pad0y' href='/industries/security'>Security</a>
+            <a class='block pad0y' href='/industries/finance'>Finance</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad0y' href='/industries/drones'>Drones</a>
+            <a class='block pad0y' href='/industries/government'>Government</a>
+            <a class='block pad0y' href='/industries/health'>Health</a>
+            <a class='block pad0y' href='/industries/media'>Media</a>
+            <a class='block pad0y' href='/industries/travel'>Travel</a>
+          </div>
+        </div>
+        <div class='col4 margin1'>
+          <h3>Examples</h3>
+            <a class='block pad0y' href='/gallery/'>Map Gallery</a>
+            <a class='block pad0y' href='/showcase/'>Customer Showcase</a>
+        </div>
+      </div>
+
+      <div class='subnav-group subnav-documentation clearfix'>
+        <div class='col9 clearfix subnavcol'>
+          <h3><a href='/developers/' class='rcon next'>All developer tools</a></h3>
+          <div class='col4'>
+            <a class='block pad1y icon gl' href='/mapbox-gl-js/api/'>Mapbox GL JS</a>
+            <a class='block pad1y icon apple' href='/ios-sdk/'>Mapbox iOS SDK</a>
+            <a class='block pad1y icon android' href='/android-sdk/'>Mapbox Android SDK</a>
+            <a class='block pad1y icon globe' href='/mapbox.js/api/'>Mapbox.js</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad1y icon compass' href='/api-documentation/#directions'>Directions API</a>
+            <a class='block pad1y icon marker' href='/api-documentation/#geocoding'>Geocoding API</a>
+            <a class='block pad1y icon up' href='/api-documentation/#uploads'>Uploads API</a>
+            <a class='block pad1y icon picture' href='/api-documentation/#static'>Static API</a>
+          </div>
+          <div class='col4'>
+            <a class='block pad1y icon point-line' href='/api-documentation/#distance'>Distance API</a>
+            <a class='block pad1y icon line' href='/api-documentation/#map-matching'>Map Matching API</a>
+            <a class='block pad1y icon paint' href='/api-documentation/#styles'>Styles API</a>
+            <a class='block pad1y icon tileset' href='/api-documentation/#maps'>Maps API</a>
+          </div>
+        </div>
+        <div class='col3 subnavcol'>
+        <h3>References</h3>
+          <a class='block pad1y' href='/tos'>TOS</a>
+          <a class='block pad1y' href='/privacy/'>Privacy</a>
+          <a class='block pad1y' href='/about/open/'>Open source tools</a>
+          <a class='block pad1y' href='/telemetry/'>Telemetry</a>
+        </div>
+      </div>
+
+      <div class='subnav-group subnav-help clearfix'>
+        <div class='col3'>
+          <h3><a href='/help/' class='rcon next'>Help</a></h3>
+          <a class='block pad1y icon search' href='/help/'>Search</a>
+          <a class='block pad1y icon mapbox' href='/help/how-mapbox-works/'>How Mapbox works</a>
+          <a class='block pad1y icon book' href='/help/glossary/'>Glossary</a>
+        </div>
+        <div class='col8 margin1 clearfix'>
+          <h3>I would like to</h3>
+          <div class='col6'>
+            <a class='block pad1y icon paint' href='/help/#design-a-map'>Design a map</a>
+            <a class='block pad1y icon mobile' href='/help/#build-a-mobile-app'>Build a mobile app</a>
+            <a class='block pad1y icon globe' href='/help/#build-a-web-app'>Build a web app</a>
+            <a class='block pad1y icon bolt' href='/help/#extend-my-app-with-web-services'>Extend my app with web services</a>
+          </div>
+          <div class='col6'>
+            <a class='block pad1y icon satellite'  href='/help/#work-with-data-and-imagery'>Work with data &amp; Imagery</a>
+            <a class='block pad1y icon data' href='/help/#analyze-data'>Analyze Data</a>
+            <a class='block pad1y icon lock' href='/help/#learn-about-mapbox-privacy-and-policies'>Learn about privacy and policies</a>
+            <a class='block pad1y icon account' href='/help/#make-changes-to-my-account'>Make changes to my account</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class='masthead col12 clearfix {% unless page.options contains 'bleed' or layout.options contains 'bleed' %}fill-blue{% endunless %} {% unless page.options contains 'light' or layout.options contains 'light' %}dark{% endunless %} {% if page.title == 'Mapbox' %}home-nav{% endif %}  {% if page.title == 'Education' %}education-nav{% endif %} {% if page.url contains '/gallery' %}gallery-page{% endif %}' data-swiftype-index='false'>
+  <div class='limiter clearfix'>
+    <nav class='col12 text-right navigation-padding-top contain animate clearfix noprint'>
+      <a class='fl mb-logo' href='/'></a>
+      <h4 class='logo-enterpriseaddon pin-topleft text-aqua block-in-enterprise'>Enterprise</h4>
+
+      <!-- Desktop nav -->
+      <div class='text-right z10 strong small primary hide-mobile space-top0'>
+        <div class='inline align-top'>
+         <div class='dropdown inline fl contain'  data-category='products'> <a href='/products/' class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/products' %}active{% endif %}'>Products</a></div>
+         <div class='dropdown inline fl contain'  data-category='documentation'>  <a href='/developers/'  class='contain primary-nav-button fl pad1x pad0y round {% if page.url contains '/developers' %}active{% endif %}'>Developers</a></div>
+          <div class='inline fl '  > <a href='/showcase/'  class='primary-nav-button fl pad1x pad0y round  {% if page.url contains '/showcase' %}active{% endif %}'>Showcase</a></div>
+          <div class='inline fl'> <a href='/pricing/'  class='primary-nav-button fl pad1x pad0y round  {% if page.url contains '/pricing' %}active{% endif %}'>Pricing</a></div>
+
+           <div class='inline fl'>  <a href='/help/'  class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/help' %}active{% endif %}'>Help &amp; Guides</a></div>
+          <div class='inline fl'> <a href='/blog/'   class='primary-nav-button fl pad1x pad0y round quiet {% if page.url contains '/blog' %}active{% endif %}'>Blog</a></div>
+        </div>
+        <!-- Hardcoded width so content doesn't jump -->
+        <div style='width:130px' class='unfloat inline align-top' id='nav'></div>
+      </div>
+
+      <!-- Mobile nav -->
+      <div class='show-mobile contain dropdown-container pin-topright'>
+        <a href='#menu' class='dark contain z1 big inline icon menu round quiet dropdown-button js-dropdown-button pin-right'></a>
+        <div id='menu' class='js-dropdown-menu scroll-v dropdown-menu offcanvas-top fill-midnight clip col12 pin-top animate'>
+          <div class='keyline-bottom clearfix'>
+            <div class='mobile-cols pad4y keyline-bottom clearfix'>
+              <a class='pad1 block strong col6' href='/products/'>Products</a>
+              <a class='pad1 block strong col6' href='/mapbox-studio/'>Mapbox Studio</a>
+              <a class='pad1 block strong col6' href='/data-platform/'>Data</a>
+              <a class='pad1 block strong col6' href='/gallery/'>Gallery</a>
+              <a class='pad1 block strong col6' href='/industries/'>Industries</a>
+              <a class='pad1 block strong col6' href='/help/'>Help</a>
+              <a class='pad1 block strong col6' href='/developers/'>Developers</a>
+              <a class='pad1 block strong col6' href='/blog/'>Blog</a>
+              <a class='pad1 block strong col6' href='/pricing/'>Pricing</a>
+            </div>
+            <div id='mobile-nav' class='pad2y clearfix mobile-cols'>
+              <a class='pad1 block strong col6 signin' href='/studio/'>Log in</a>
+              <a class='pad1 block strong col6' href='/studio/signup/'>Sign up</a>
+            </div>
+          </div>
+
+          <div class='clearfix small'>
+            <div class='col12 clearfix pad4y keyline-bottom'>
+              <h3 class='pad0y pad1x strong space-bottom1'>Products</h3>
+              <div class='col12 pad1x clearfix  mobile-cols '>
+                <a class='pad0y block quiet col6' href='/maps/'>Maps</a>
+                <a class='pad0y block quiet col6' href='/geocoding/'>Geocoding</a>
+                <a class='pad0y block quiet col6' href='/directions/'>Directions</a>
+                <a class='pad0y block quiet col6' href='/developers/'>Developer tools</a>
+                <a class='pad0y block quiet col6' href='/satellite/'>Satellite</a>
+                <a class='pad0y block quiet col6' href='/analysis/'>Analysis</a>
+                <a class='pad0y block quiet col6' href='/atlas/'>Atlas</a>
+              </div>
+            </div>
+            <div class='col12 pad1x clearfix  mobile-cols pad4y '>
+              <a class='pad0y block strong quiet col6' href='/about/'>About</a>
+              <a class='pad0y block strong quiet col6' href='/about/team/'>Team</a>
+              <a class='pad0y block strong quiet col6' href='/jobs/'>Jobs</a>
+              <a class='pad0y block strong quiet col6' href='/events/'>events</a>
+              <a class='pad0y block strong quiet col6' href='/about/press/'>Press</a>
+              <a class='pad0y block strong quiet col6' href='/tos/'>Legal</a>
+              <a class='pad0y block strong quiet col6' href='/contact/'>Contact</a>
+              <a class='pad0y block strong quiet col6' href='/education/'>Education</a>
+              <a class='pad0y block strong quiet col6' href='/security/'>Security</a>
+              <a class='pad0y block strong quiet col6' href='/about/board'>Board</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </nav>
+  </div>
+</div>
+
+
+<div class='{% unless page.options contains 'full' or layout.options contains 'full' %} limiter clearfix{% endunless %}'>{{content}}</div>
+
+{% unless page.url contains '/hello/directions'  %}
+<div class='footer footer-in-docs clearfix contain hide-mobile noprint fill-light' data-swiftype-index='false'>
+  <div class='limiter clearfix'>
+    <div class='footer-in-docs footer-cols-in-docs clearfix col12 pad8y small'>
+      <div class='hide-in-docs col2'>
+        <h3 class='space-bottom1'>Overview</h3>
+        {% for item in layout.footer.mapbox %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 quiet col12 strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>About us</h3>
+        {% for item in layout.footer.aboutus %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Help</h3>
+        {% for item in layout.footer.support %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{{site.url}}{{item.path}}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+       <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Map design</h3>
+        {% for item in layout.footer.mapdesign %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+      </div>
+      <div class='col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Developers</h3>
+        {% for item in layout.footer.developers %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+        <a href='{{site.url}}/developers/' class='small rcon next quiet'>All developers</a>
+      </div>
+      <div class='hide-in-docs col2 footer-col-in-docs'>
+        <h3 class='space-bottom1'>Industries</h3>
+        {% for item in layout.footer.industries %}
+        <a id='footer-{{item.title | downcase | replace:' ','-'}}' class='space-bottom0 col12 quiet strong' href='{% if item.href %}{{item.href}}{% else %}{{site.url}}{{item.path}}{% endif %}/'>{{item.title}}</a>
+        {% endfor %}
+        <a href='{{site.url}}/showcase#industries-overview' class='small rcon next quiet'>All industries</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class='limiter newsletter-copyright hide-in-docs clearfix'>
+    <div class='contain col4 footer-social'>
+      <div class='animate footer-animation col6'></div>
+      <div class='footer-dialog fr small strong pad2 col6 contain round fill-darken0'>
+      Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, <a href='https://instagram.com/mapbox'>Instagram</a> and <a href="https://www.linkedin.com/company/mapbox">LinkedIn</a>.
+      </div>
+    </div>
+    <div class='margin1 col7 pad2 fill-darken0 round contain'>
+      <form id='newsletter' method='post'>
+        <h3 class='space-bottom1'>Sign up for our newsletter</h3>
+        <p class='quiet'>Keep up with Mapbox product announcements, events, and walkthroughs.</p>
+        <fieldset class='clearfix newsletter-in-docs input-pill col12 pill with-icon'>
+          <span class='icon mail quiet'></span>
+          <input type='text' value='' placeholder='Email address' name='email' class='col9 required email round-big clean'>
+          <input type='submit' value='Subscribe' class='button col3 round-big fill-denim'>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
+  <a href='{{site.url}}/tos'>Terms</a> +
+  <a href='{{site.url}}/privacy'>Privacy</a>
+  &copy; Mapbox
+</div>
+{% endunless %}
+
+{% if page.url contains '/hello/directions' %}
+<div class='footer-in-docs terms-in-docs col12 center footer-copyright small pad4 noprint fill-light contain' data-swiftype-index='false'>
+  <a href='{{site.url}}/tos'>Terms</a> +
+  <a href='{{site.url}}/privacy'>Privacy</a>
+  &copy; Mapbox
+</div>
+{% endif %}
+{% endif %}
+
+<div id='modal-content' class='animate modal modal-content'></div>
+</div>
+
+<script>
+var $dropdownTriggers = $('.dropdown');
+var $dropdownArea = $('.main-subnav');
+var $dropdownZone = $('.hover-area');
+
+$dropdownTriggers.each(function() {
+  var $this = $(this);
+  window.hoverintent(this, function() {
+    $dropdownTriggers.removeClass('show');
+    $('.subnav-group').removeClass('show');
+    $dropdownArea.addClass('show');
+    $('.subnav-' + $this.data('category')).addClass('show');
+    $this.addClass('show');
+  }, function() {
+    if (!$dropdownZone.hasClass('hovered') && $('.dropdown:hover').length === 0) {
+      $dropdownArea.removeClass('show');
+      $dropdownTriggers.removeClass('show');
+    }
+  }).options({
+    timeout: 1000
+  });
+});
+
+$dropdownZone.mouseover(function() {
+  $(this).addClass('hovered');
+  return false;
+}).mouseleave(function() {
+  $(this).removeClass('hovered');
+  window.setTimeout(function() {
+    if ($('.dropdown:hover').length === 0) {
+      $dropdownArea.removeClass('show');
+      $dropdownTriggers.removeClass('show');
+    }
+  }, 300);
+});
+
+
+
+// Signup tracking
+
+var $signupform = $('.signup-form-popup');
+App.onUserLoad(function() {
+  analytics.identify();
+  if (App.user){
+    // Show get started button
+     $('.mapbox-signup-button').removeClass('hidden');
+  } else {
+    // Show get signup input field
+    $('.mapbox-signup').removeClass('hidden');
+    // Submitting signup input form
+    $signupform.submit(function(ev) {
+      var form = App.form(ev.currentTarget);
+      if (!form.email || !App.validateEmail(form.email)) {
+        Views.modal.show('err', new Error('Please provide a valid email address'));
+        return false;
+      }
+      // Tracking based on anonymousId
+       analytics.identify(form.email, {
+          email: form.email
+       }, track);
+
+       var formData = $(this);
+
+      function track() {
+
+        analytics.track('Submitted email', {
+          page: window.location.href,
+          location: formData.data('location'),
+          intent: formData.data('intent'),
+          text: formData.data('text')
+        }, function(){
+          window.location.href = "/studio/signup?email=" + encodeURIComponent(form.email);
+        });
+      }
+      return false;
+    });
+  }
+});
+
+
+$('a.js-tracked-link').on("click", function(event){
+     analytics.track('Clicked Link', {
+      text: $(this).text(),
+      location: $(this).attr('data-location'),
+      intent: $(this).attr('data-intent')
+    });
+})
+
+</script>
+
+</body>
+</html>

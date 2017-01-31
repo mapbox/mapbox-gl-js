@@ -1,0 +1,14 @@
+[
+  {
+    "message": "missing required property \"version\"",
+    "line": 1
+  },
+  {
+    "message": "missing required property \"sources\"",
+    "line": 1
+  },
+  {
+    "message": "missing required property \"layers\"",
+    "line": 1
+  }
+]
