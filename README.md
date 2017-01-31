@@ -14,12 +14,12 @@ In addition to GL JS, this repository contains code, issues, and test fixtures t
 
 [<img width="981" alt="Mapbox GL gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
-## Mapbox-suported plugins
+## Mapbox-supported plugins
 
 * [mapbox-gl-draw](https://github.com/mapbox/mapbox-gl-draw) – Adds support for drawing and editing features on Mapbox GL JS maps
 * [mapbox-gl-filter-simplify](https://github.com/mapbox/mapbox-gl-filter-simplify) – Simplifies and complexifies filters in Mapbox GL Styles
 
-## Community-suported plugins
+## Community-supported plugins
 
 These projects are maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects!
 
