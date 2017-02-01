@@ -34,6 +34,17 @@ const Evented = require('../util/evented');
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
+/**
+ * Options for setting padding on a call to {@link Map#fitBounds}. All properties of this object must be
+ * non-negative integers.
+ *
+ * @typedef {Object} PaddingOptions
+ * @property {number} top Padding in pixels from the top of the map canvas.
+ * @property {number} bottom Padding in pixels from the bottom of the map canvas.
+ * @property {number} left Padding in pixels from the left of the map canvas.
+ * @property {number} right Padding in pixels from the right of the map canvas.
+ */
+
 class Camera extends Evented {
 
     constructor(transform, options) {
@@ -300,12 +311,11 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {Object} [options]
+     * @param {AnimationOptions | CameraOptions | PaddingOptions} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
      * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {number|Object} [options.padding] Sets padding around the given bounds on each side in pixels. Accepts a number for all padding edges or an object with padding for each compass direction (north, south, east, and west)
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object} [eventData] Data to propagate to any event listeners.
@@ -315,7 +325,7 @@ class Camera extends Evented {
 	 * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
-     *   padding: {north: 10, east:25, south: 15, west: 5}
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
