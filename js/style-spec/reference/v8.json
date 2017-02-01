@@ -1085,7 +1085,7 @@
       "property-function": true,
       "default": "",
       "tokens": true,
-      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.",
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.  (Token replacement is only supported for literal text-field values--not for data-driven property functions.)",
       "sdk-support": {
         "basic functionality": {
           "js": "0.10.0",

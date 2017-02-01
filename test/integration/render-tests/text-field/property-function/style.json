@@ -18,7 +18,7 @@
         "features": [
           {
             "type": "Feature",
-            "properties": { "x": 1, "units": "furlongs" },
+            "properties": { "x": 1 },
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -29,7 +29,7 @@
           },
           {
             "type": "Feature",
-            "properties": { "x": 0, "units": "parsecs" },
+            "properties": { "x": 0 },
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -60,8 +60,8 @@
           "type": "categorical",
           "property": "x",
           "stops": [
-            [0, "Zero {units}"],
-            [1, "One {units}"]
+            [0, "Zero"],
+            [1, "One"]
           ]
         },
         "text-font": [

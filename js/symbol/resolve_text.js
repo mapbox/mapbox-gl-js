@@ -3,7 +3,10 @@
 const resolveTokens = require('../util/token');
 
 module.exports = function resolveText(layer, globalProperties, featureProperties) {
-    let text = resolveTokens(featureProperties, layer.getLayoutValue('text-field', globalProperties, featureProperties));
+    let text = layer.getLayoutValue('text-field', globalProperties, featureProperties);
+    if (layer.isLayoutValueFeatureConstant('text-field')) {
+        text = resolveTokens(featureProperties, text);
+    }
     if (!text) {
         return;
     }
