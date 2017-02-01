@@ -8,7 +8,7 @@ fi
 source ./nvm/nvm.sh && nvm install ${NODE_VERSION}
 
 if [ "$CIRCLE_BRANCH" == "master" ]; then
-    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update && npm ls
+    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update && npm run postinstall && npm ls
 else
     source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install && npm ls
 fi
