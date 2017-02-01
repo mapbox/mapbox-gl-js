@@ -231,7 +231,7 @@ function determineLineBreaks(logicalInput, spacing, maxWidth, glyphs) {
 
 function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight) {
     // the y offset *should* be part of the font metadata
-    const yOffset = -17;
+    const yOffset = -17; // TODO: magic number
 
     let x = 0;
     let y = yOffset;
