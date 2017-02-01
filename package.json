@@ -71,7 +71,7 @@
     "jsonlint": "^1.6.2",
     "lodash.template": "^4.4.0",
     "lodash": "^4.16.0",
-    "mapbox-gl-rtl-text": "mapbox/mapbox-gl-rtl-text#497a92962075ea35eec22d4344d6310040551b7e",
+    "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",
