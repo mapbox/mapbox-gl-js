@@ -2,14 +2,12 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256
+      "height": 64,
+      "width": 64
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 14,
+  "center": [ 0, 0 ],
+  "zoom": 0,
   "sources": {
     "point": {
       "type": "geojson",
@@ -21,10 +19,7 @@
             "properties": {},
             "geometry": {
               "type": "Point",
-              "coordinates": [
-                13.418056,
-                52.499167
-              ]
+              "coordinates": [ 0, 0 ]
             }
           }
         ]
@@ -33,13 +28,6 @@
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "white"
-      }
-    },
     {
       "id": "text",
       "type": "symbol",

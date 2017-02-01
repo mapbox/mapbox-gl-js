@@ -2,17 +2,15 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
+      "height": 64,
+      "width": 64,
       "skipped": {
-        "native": "needs issue"
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/4860"
       }
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 14,
+  "center": [ 0, 0 ],
+  "zoom": 0,
   "sources": {
     "point": {
       "type": "geojson",
@@ -24,10 +22,7 @@
             "properties": { "x": 0 },
             "geometry": {
               "type": "Point",
-              "coordinates": [
-                13.413056,
-                52.499167
-              ]
+              "coordinates": [ 0, -10 ]
             }
           },
           {
@@ -35,10 +30,7 @@
             "properties": { "x": 1 },
             "geometry": {
               "type": "Point",
-              "coordinates": [
-                13.423056,
-                52.499167
-              ]
+              "coordinates": [ 0, 10 ]
             }
           }
         ]
@@ -47,13 +39,6 @@
   },
   "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
   "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "white"
-      }
-    },
     {
       "id": "text",
       "type": "symbol",
