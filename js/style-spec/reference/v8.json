@@ -1082,6 +1082,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "default": "",
       "tokens": true,
       "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.",
@@ -1369,6 +1370,7 @@
       "type": "enum",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "values": {
         "none": {
             "doc": "The text is not altered."
