@@ -81,4 +81,6 @@ class CircleBucket extends Bucket {
     }
 }
 
+CircleBucket.programInterface = circleInterface;
+
 module.exports = CircleBucket;
