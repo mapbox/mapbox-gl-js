@@ -18,9 +18,7 @@ class FullscreenControl {
     constructor() {
         this._fullscreen = false;
         util.bindAll([
-            '_isFullscreen',
             '_onClickFullscreen',
-            '_onKeyDown',
             '_changeIcon'
         ], this);
     }
