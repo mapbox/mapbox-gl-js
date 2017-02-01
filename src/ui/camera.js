@@ -342,13 +342,33 @@ class Camera extends Evented {
             };
         }
 
+        if (!util.deepEqual(Object.keys(options.padding).sort((a, b)=> {
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+        }), ["bottom", "left", "right", "top"])) {
+            util.warnOnce("options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'");
+            console.log(Object.keys(options.padding).sort((a, b)=> {
+                if (a < b) return -1;
+                if (a > b) return 1;
+                return 0;
+            }));
+            return;
+
+        }
+
         bounds = LngLatBounds.convert(bounds);
 
-        const offset = Point.convert(options.offset),
+        // we separate the passed padding option into two parts, the part that does not affect the map's center
+        // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
+        // to the options `offset` object where it can alter the map's center in the subsequent calls to
+        // `easeTo` and `flyTo`.
+        const paddingOffset = [options.padding.left - options.padding.right, options.padding.top - options.padding.bottom],
+            lateralPadding = Math.min(options.padding.right, options.padding.left),
+            verticalPadding = Math.min(options.padding.top, options.padding.bottom);
+        options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];
 
-            paddingOffset = [Math.min(options.padding.right, options.padding.left), Math.min(options.padding.top, options.padding.bottom)],
-            verticalPadding = Math.abs(options.padding.top - options.padding.bottom),
-            lateralPadding = Math.abs(options.padding.right - options.padding.left),
+        const offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
@@ -356,6 +376,10 @@ class Camera extends Evented {
             scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
             scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
 
+        if (scaleY < 0 || scaleX < 0) {
+            util.warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
+            return;
+        }
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
