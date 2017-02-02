@@ -9,6 +9,7 @@ machine:
 dependencies:
   cache_directories:
     - './nvm'
+    - '~/.yarn'
   override:
     - ./ci/dependencies.sh
 test:
