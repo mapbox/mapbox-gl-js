@@ -40,6 +40,7 @@
     "whoots-js": "^2.0.0"
   },
   "devDependencies": {
+    "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
     "babel-eslint": "^7.0.0",
     "benchmark": "~2.1.0",
     "browserify": "^13.0.0",
@@ -51,10 +52,10 @@
     "diff": "^3.0.0",
     "documentation": "4.0.0-beta12",
     "envify": "^3.4.0",
+    "eslint": "3.12.1",
     "eslint-config-mourner": "^2.0.0",
     "eslint-plugin-flowtype": "^2.20.0",
     "eslint-plugin-html": "^1.5.1",
-    "eslint": "3.12.1",
     "flow-bin": "^0.36.0",
     "flow-remove-types": "^1.0.4",
     "github-slugger": "^1.1.1",
@@ -65,9 +66,8 @@
     "in-publish": "^2.0.0",
     "jsdom": "^9.4.2",
     "jsonlint": "^1.6.2",
-    "lodash.template": "^4.4.0",
     "lodash": "^4.16.0",
-    "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
+    "lodash.template": "^4.4.0",
     "minifyify": "^7.0.1",
     "npm-run-all": "^3.0.0",
     "nyc": "^8.3.0",
@@ -79,8 +79,8 @@
     "sinon": "^1.15.4",
     "st": "^1.2.0",
     "tap": "^5.7.0",
-    "vinyl-fs": "2.4.4",
     "vinyl": "2.0.0",
+    "vinyl-fs": "2.4.4",
     "watchify": "^3.7.0"
   },
   "browserify": {
@@ -134,6 +134,6 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "postinstall": "cd js/style-spec && npm install"
+    "postinstall": "cd js/style-spec && yarn || npm install"
   }
 }
