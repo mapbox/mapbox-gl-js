@@ -41,11 +41,19 @@ const layoutVertexArrayType = createVertexArrayType([
 const symbolInterfaces = {
     glyph: {
         layoutVertexArrayType: layoutVertexArrayType,
-        elementArrayType: elementArrayType
+        elementArrayType: elementArrayType,
+        paintAttributes: [
+            {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
+            {name: 'a_halo_color', property: 'text-halo-color', type: 'Uint8'}
+        ]
     },
     icon: {
         layoutVertexArrayType: layoutVertexArrayType,
-        elementArrayType: elementArrayType
+        elementArrayType: elementArrayType,
+        paintAttributes: [
+            {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
+            {name: 'a_halo_color', property: 'icon-halo-color', type: 'Uint8'}
+        ]
     },
     collisionBox: {
         layoutVertexArrayType: createVertexArrayType([
@@ -182,6 +190,12 @@ class SymbolBucket {
             // Merge adjacent lines with the same text to improve labelling.
             // It's better to place labels on one long line than on many short segments.
             this.features = mergeLines(this.features);
+        }
+
+        // set up this mapping to allow for constant-time lookups in place()
+        this.featuresByIndex = {};
+        for (const feature of this.features) {
+            this.featuresByIndex[feature.index] = feature;
         }
     }
 
@@ -447,7 +461,7 @@ class SymbolBucket {
             this.symbolInstances.sort((a, b) => {
                 const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
                 const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
-                return (aRotated - bRotated) || (b.index - a.index);
+                return (aRotated - bRotated) || (b.featureIndex - a.featureIndex);
             });
         }
 
@@ -497,14 +511,14 @@ class SymbolBucket {
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
-                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle, symbolInstance.writingModes);
+                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle, symbolInstance.featureProperties, symbolInstance.writingModes);
                 }
             }
 
             if (hasIcon) {
                 collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
                 if (iconScale <= maxScale) {
-                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
+                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle, symbolInstance.featureProperties);
                 }
             }
 
@@ -513,7 +527,7 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quads, scale, keepUpright, alongLine, placementAngle, writingModes) {
+    addSymbols(arrays, quads, scale, keepUpright, alongLine, placementAngle, featureProperties, writingModes) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -561,6 +575,8 @@ class SymbolBucket {
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
         }
+
+        arrays.populatePaintArrays(featureProperties);
     }
 
     addToDebugBuffers(collisionTile) {
@@ -652,6 +668,8 @@ class SymbolBucket {
             glyphQuads,
             iconQuads,
             anchor,
+            featureIndex,
+            featureProperties,
             writingModes
         });
     }

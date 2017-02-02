@@ -2498,6 +2498,7 @@
       "default": "#000000",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "doc": "The color of the icon. This can only be used with sdf icons.",
       "requires": [
@@ -2518,6 +2519,7 @@
       "default": "rgba(0, 0, 0, 0)",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "doc": "The color of the icon's halo. Icon halos can only be used with SDF icons.",
       "requires": [
@@ -2659,6 +2661,7 @@
       "default": "#000000",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "requires": [
         "text-field"
@@ -2678,6 +2681,7 @@
       "default": "rgba(0, 0, 0, 0)",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
       "requires": [
