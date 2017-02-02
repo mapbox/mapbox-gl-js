@@ -5,13 +5,18 @@ if [[ ! -d ./nvm ]]; then
     git clone --depth 1 https://github.com/creationix/nvm.git ./nvm
 fi
 
-source ./nvm/nvm.sh && nvm install ${NODE_VERSION}
+source ./nvm/nvm.sh
 
-if [ "$CIRCLE_BRANCH" == "master" ]; then
-    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update && npm run postinstall && npm ls
-else
-    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install && npm ls
+nvm install ${NODE_VERSION}
+nvm use ${NODE_VERSION}
+
+if [[ ! -d ~/.yarn ]]; then
+    curl -o- -L https://yarnpkg.com/install.sh | bash
 fi
+
+PATH="~/.yarn/bin:$PATH"
+
+yarn
 
 if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then
     pip install --user --upgrade awscli
