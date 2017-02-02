@@ -13,7 +13,7 @@ const SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
 const GlyphAtlas = require('../../../js/symbol/glyph_atlas');
 const StyleLayer = require('../../../js/style/style_layer');
 const util = require('../../../js/util/util');
-const featureFilter = require('feature-filter');
+const featureFilter = require('../../../js/style-spec/feature_filter');
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

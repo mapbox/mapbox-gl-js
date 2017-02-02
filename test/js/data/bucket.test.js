@@ -6,7 +6,7 @@ const createVertexArrayType = require('../../../js/data/vertex_array_type');
 const createElementArrayType = require('../../../js/data/element_array_type');
 const FeatureIndex = require('../../../js/data/feature_index');
 const StyleLayer = require('../../../js/style/style_layer');
-const featureFilter = require('feature-filter');
+const featureFilter = require('../../../js/style-spec/feature_filter');
 const TileCoord = require('../../../js/source/tile_coord');
 
 test('Bucket', (t) => {
