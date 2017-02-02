@@ -2,7 +2,7 @@
 
 const StyleLayer = require('./style_layer');
 const util = require('../util/util');
-const featureFilter = require('feature-filter');
+const featureFilter = require('../style-spec/feature_filter');
 const groupByLayout = require('../style-spec/group_by_layout');
 
 class StyleLayerIndex {
