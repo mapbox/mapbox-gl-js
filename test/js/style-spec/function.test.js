@@ -693,8 +693,8 @@ test('categorical function', (t) => {
             type: 'string'
         });
 
-        t.equal(numberKeys(0, {foo: "0"}), 'default');
-        t.equal(numberKeys(0, {foo: "1"}), 'default');
+        t.equal(numberKeys(0, {foo: '0'}), 'default');
+        t.equal(numberKeys(0, {foo: '1'}), 'default');
         t.equal(numberKeys(0, {foo: false}), 'default');
         t.equal(numberKeys(0, {foo: true}), 'default');
 
@@ -702,7 +702,7 @@ test('categorical function', (t) => {
         t.equal(stringKeys(0, {foo: 1}), 'default');
         t.equal(stringKeys(0, {foo: false}), 'default');
         t.equal(stringKeys(0, {foo: true}), 'default');
-        
+
         t.end();
     });
 
