@@ -45,7 +45,11 @@ map.addControl(new mapboxgl.GeolocateControl({
     positionOptions: {
         enableHighAccuracy: true
     },
-    watchPosition: true
+    trackUserLocation: true,
+    showUserLocation: true,
+    fitBoundsOptions: {
+        maxZoom: 20
+    }
 }));
 map.addControl(new mapboxgl.ScaleControl());
 
