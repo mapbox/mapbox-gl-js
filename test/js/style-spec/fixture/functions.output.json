@@ -80,74 +80,78 @@
     "line": 354
   },
   {
-    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
   },
   {
-    "message": "layers[22].paint.background-color.stops: identity function may not have a \"stops\" property",
-    "line": 402
+    "message": "layers[22].paint.fill-color: missing required property \"property\"",
+    "line": 401
   },
   {
-    "message": "layers[23].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
-    "line": 421
+    "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
+    "line": 415
   },
   {
-    "message": "layers[24].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
-    "line": 443
+    "message": "layers[24].paint.fill-color.stops[1][0]: number stop domain type must match previous stop domain type string",
+    "line": 434
   },
   {
-    "message": "layers[25].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 461
+    "message": "layers[25].paint.fill-color.stops[1][0].value: number stop domain type must match previous stop domain type string",
+    "line": 456
   },
   {
-    "message": "layers[26].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 479
+    "message": "layers[26].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 474
   },
   {
-    "message": "layers[27].paint.fill-color.stops[0][0]: number expected, string found",
-    "line": 497
+    "message": "layers[27].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 492
   },
   {
-    "message": "layers[28].paint.fill-color.stops[0][0].value: number expected, string found",
-    "line": 515
+    "message": "layers[28].paint.fill-color.stops[0][0]: number expected, string found",
+    "line": 510
   },
   {
-    "message": "layers[30].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
-    "line": 551
+    "message": "layers[29].paint.fill-color.stops[0][0].value: number expected, string found",
+    "line": 528
   },
   {
-    "message": "layers[32].paint.fill-antialias: exponential functions not supported",
-    "line": 582
+    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
+    "line": 564
   },
   {
-    "message": "layers[33].paint.fill-antialias: \"property\" property is required",
-    "line": 603
+    "message": "layers[33].paint.fill-antialias: exponential functions not supported",
+    "line": 595
   },
   {
-    "message": "layers[33].paint.fill-antialias.stops[0][0].value: number expected, string found",
-    "line": 608
+    "message": "layers[34].paint.fill-antialias: \"property\" property is required",
+    "line": 616
   },
   {
-    "message": "layers[34].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
-    "line": 635
+    "message": "layers[34].paint.fill-antialias.stops[0][0].value: number expected, string found",
+    "line": 621
   },
   {
-    "message": "layers[35].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
-    "line": 653
+    "message": "layers[35].paint.fill-opacity.stops[2][0]: stop domain values must be unique",
+    "line": 648
   },
   {
-    "message": "layers[36].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
-    "line": 679
+    "message": "layers[36].paint.fill-opacity.stops[0][0]: integer expected, found 0.33",
+    "line": 666
   },
   {
-    "message": "layers[37].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
-    "line": 705
+    "message": "layers[37].paint.fill-opacity.stops[1][0].value: stop domain values must appear in ascending order",
+    "line": 692
   },
   {
-    "message": "layers[39].paint.fill-opacity.default: number expected, string found",
-    "line": 736
+    "message": "layers[38].paint.fill-opacity.stops[1]: stop zoom values must appear in ascending order",
+    "line": 718
   },
   {
-    "message": "layers[40].paint.fill-color.default: color expected, \"invalid\" found",
+    "message": "layers[40].paint.fill-opacity.default: number expected, string found",
     "line": 749
+  },
+  {
+    "message": "layers[41].paint.fill-color.default: color expected, \"invalid\" found",
+    "line": 762
   }
 ]
