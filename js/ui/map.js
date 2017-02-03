@@ -262,7 +262,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to add.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -282,7 +283,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to remove.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -303,7 +305,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {Array<string>} klasses The style classes to set.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -1465,15 +1468,6 @@ function removeNode(node) {
  * A [`Point`](#Point) or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
- */
-
-/**
- * Options common to {@link Map#addClass}, {@link Map#removeClass},
- * and {@link Map#setClasses}, controlling
- * whether or not to smoothly transition property changes triggered by a class change.
- *
- * @typedef {Object} StyleOptions
- * @property {boolean} transition If `true`, property changes will smootly transition.
  */
 
 /**

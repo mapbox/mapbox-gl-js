@@ -276,6 +276,7 @@ function diffLayers(before, after, commands) {
  *     { command: 'setPaintProperty', args: ['background', 'background-color', 'black'] }
  * ]
  *
+ * @private
  * @param {*} [before] stylesheet to compare from
  * @param {*} after stylesheet to compare to
  * @returns Array list of changes
