@@ -56,6 +56,16 @@ test('LogoControl appears in the position specified by the position option', (t)
         t.end();
     });
 });
+test('LogoControl position can be changed with map#setControlPosition', (t) => {
+    const map = createMap();
+    map.on('load', () => {
+        map.setControlPosition('LogoControl', 'top-left');
+        t.equal(map.getContainer().querySelectorAll(
+            '.mapboxgl-ctrl-top-left .mapboxgl-ctrl-logo'
+        ).length, 1);
+        t.end();
+    });
+});
 test('LogoControl is not added when the mapbox_logo property is false', (t) => {
     const map = createMap('top-left', false);
     map.on('load', () => {

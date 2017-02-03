@@ -254,7 +254,7 @@ class Map extends Camera {
     removeControl(control) {
         control.onRemove(this);
         if (this._controls[control.constructor.name]) {
-            delete this._controls[control.constructor.name]
+            // delete this._controls[control.constructor.name];
         }
         return this;
     }
@@ -274,7 +274,7 @@ class Map extends Camera {
      */
 
     setControlPosition(control, position) {
-        const _control = typeof controlType === "string" ? this._controls[control] : control;
+        const _control = typeof control === "string" ? this._controls[control] : control;
         this.removeControl(_control);
         this.addControl(_control, position);
         return this;
