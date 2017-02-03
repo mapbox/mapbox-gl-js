@@ -10,7 +10,8 @@ If you are reporting a bug, please:
  
 If you are requesting a new feature or suggesting a big change, please:
  - Copy the Mapbox GL RFC template into this ticket and fill out as much as you can https://raw.githubusercontent.com/mapbox/mapbox-gl-js/master/RFC_TEMPLATE.md
-  - Make the issue title a succinct but specific description of your use case or the desired functionality. Bad: "More clustering options". Good: "Compute and expose aggregated values when clustering GeoJSON".
+ - Make the issue title a succinct but specific description of your use case or the desired functionality. Bad: "More clustering options". Good: "Compute and expose aggregated values when clustering GeoJSON".
+ - If a change to shaders or the style specification is required, clearly mark the issue as a cross-platform issue so that this project’s maintainers know to apply the “cross platform” label.
 -->
 
 **mapbox-gl-js version**:
