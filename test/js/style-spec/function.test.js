@@ -674,6 +674,39 @@ test('categorical function', (t) => {
         t.end();
     });
 
+    t.test('strict type checking', (t) => {
+        const numberKeys = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[0, 'zero'], [1, 'one'], [2, 'two']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        const stringKeys = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [['0', 'zero'], ['1', 'one'], ['2', 'two'], ['true', 'yes'], ['false', 'no']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(numberKeys(0, {foo: '0'}), 'default');
+        t.equal(numberKeys(0, {foo: '1'}), 'default');
+        t.equal(numberKeys(0, {foo: false}), 'default');
+        t.equal(numberKeys(0, {foo: true}), 'default');
+
+        t.equal(stringKeys(0, {foo: 0}), 'default');
+        t.equal(stringKeys(0, {foo: 1}), 'default');
+        t.equal(stringKeys(0, {foo: false}), 'default');
+        t.equal(stringKeys(0, {foo: true}), 'default');
+
+        t.end();
+    });
+
+
     t.test('string spec default', (t) => {
         const f = createFunction({
             property: 'foo',
