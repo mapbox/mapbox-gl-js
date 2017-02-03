@@ -263,7 +263,7 @@ class Map extends Camera {
      *
      * @param {string} klass The style class to add.
      * @param {Object} [options]
-     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -284,7 +284,7 @@ class Map extends Camera {
      *
      * @param {string} klass The style class to remove.
      * @param {Object} [options]
-     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -306,7 +306,7 @@ class Map extends Camera {
      *
      * @param {Array<string>} klasses The style classes to set.
      * @param {Object} [options]
-     * @param {boolean} [options.transition] If `true`, property changes will smootly transition.
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
