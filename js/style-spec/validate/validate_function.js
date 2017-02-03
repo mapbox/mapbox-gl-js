@@ -156,8 +156,8 @@ module.exports = function validateFunction(options) {
             return [new ValidationError(options.key, options.value, '%s stop domain type must match previous stop domain type %s', type, stopKeyType)];
         }
 
-        if (type !== 'number' && type !== 'string') {
-            return [new ValidationError(options.key, options.value, 'property value must be a number or string')];
+        if (type !== 'number' && type !== 'string' && type !== 'boolean') {
+            return [new ValidationError(options.key, options.value, 'stop domain value must be a number, string, or boolean')];
         }
 
         if (type !== 'number' && functionType !== 'categorical') {

@@ -68,7 +68,7 @@
     "line": 284
   },
   {
-    "message": "layers[16].paint.fill-color.stops[0][0].value: property value must be a number or string",
+    "message": "layers[16].paint.fill-color.stops[0][0].value: stop domain value must be a number, string, or boolean",
     "line": 305
   },
   {
@@ -80,11 +80,11 @@
     "line": 341
   },
   {
-    "message": "layers[19].paint.fill-color: \"property\" property is required",
-    "line": 354
+    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
   },
   {
-    "message": "layers[31].paint.fill-color.stops[0][0]: property value must be a number or string"
+    "message": "layers[19].paint.fill-color: \"property\" property is required",
+    "line": 354
   },
   {
     "message": "layers[22].paint.background-color.stops: identity function may not have a \"stops\" property",
@@ -115,11 +115,7 @@
     "line": 515
   },
   {
-    "message": "layers[29].paint.fill-color.stops[0][0]: property value must be a number or string",
-    "line": 533
-  },
-  {
-    "message": "layers[30].paint.fill-color.stops[0][0]: property value must be a number or string",
+    "message": "layers[30].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean",
     "line": 551
   },
   {
