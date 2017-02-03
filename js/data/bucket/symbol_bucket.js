@@ -118,11 +118,12 @@ class SymbolBucket {
     }
 
     populate(features, options) {
-        const layout = this.layers[0].layout;
+        const layer = this.layers[0];
+        const layout = layer.layout;
         const textFont = layout['text-font'];
         const iconImage = layout['icon-image'];
 
-        const hasText = layout['text-field'] && textFont;
+        const hasText = textFont && (!layer.isLayoutValueFeatureConstant('text-field') || layout['text-field']);
         const hasIcon = iconImage;
 
         this.features = [];
@@ -137,13 +138,13 @@ class SymbolBucket {
 
         for (let i = 0; i < features.length; i++) {
             const feature = features[i];
-            if (!this.layers[0].filter(feature)) {
+            if (!layer.filter(feature)) {
                 continue;
             }
 
             let text;
             if (hasText) {
-                text = resolveText(this.layers[0], {zoom: this.zoom}, feature.properties);
+                text = resolveText(layer, {zoom: this.zoom}, feature.properties);
                 if (rtlTextPlugin.applyArabicShaping) {
                     text = rtlTextPlugin.applyArabicShaping(text);
                 }
