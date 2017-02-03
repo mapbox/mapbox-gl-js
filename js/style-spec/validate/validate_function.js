@@ -35,6 +35,10 @@ module.exports = function validateFunction(options) {
         }
     });
 
+    if (functionType === 'identity' && isZoomFunction) {
+        errors.push(new ValidationError(options.key, options.value, 'missing required property "property"'));
+    }
+
     if (functionType !== 'identity' && !options.value.stops) {
         errors.push(new ValidationError(options.key, options.value, 'missing required property "stops"'));
     }

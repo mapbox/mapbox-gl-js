@@ -382,23 +382,36 @@
     },
     {
       "id": "valid identity function",
-      "type": "background",
+      "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "background-color": {
+        "fill-color": {
+          "type": "identity",
+          "property": "foo"
+        }
+      }
+    },
+    {
+      "id": "invalid identity function missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
           "type": "identity"
         }
       }
     },
     {
       "id": "invalid identity function with stops",
-      "type": "background",
+      "type": "fill",
       "source": "source",
       "source-layer": "layer",
       "paint": {
-        "background-color": {
+        "fill-color": {
           "type": "identity",
+          "property": "foo",
           "stops": []
         }
       }
