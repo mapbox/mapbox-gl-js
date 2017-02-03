@@ -129,21 +129,13 @@ module.exports = function validateFunction(options) {
             }));
         }
 
-        errors = errors.concat(validate({
+        return errors.concat(validate({
             key: `${key}[1]`,
             value: value[1],
             valueSpec: functionValueSpec,
             style: options.style,
             styleSpec: options.styleSpec
         }));
-
-        if (getType(value[0]) === 'number') {
-            if (functionValueSpec.function === 'piecewise-constant' && value[0] % 1 !== 0) {
-                errors.push(new ValidationError(`${key}[0]`, value[0], 'zoom level for piecewise-constant functions must be an integer'));
-            }
-        }
-
-        return errors;
     }
 
     function validateStopDomainValue(options) {

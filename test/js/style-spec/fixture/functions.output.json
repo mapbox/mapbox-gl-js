@@ -48,10 +48,6 @@
     "line": 152
   },
   {
-    "message": "layers[11].paint.fill-antialias.stops[0][0]: zoom level for piecewise-constant functions must be an integer",
-    "line": 204
-  },
-  {
     "message": "layers[12].paint.fill-color.stops[1]: object expected, number found",
     "line": 227
   },
@@ -80,11 +76,11 @@
     "line": 341
   },
   {
-    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
-  },
-  {
     "message": "layers[19].paint.fill-color: \"property\" property is required",
     "line": 354
+  },
+  {
+    "message": "layers[31].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
   },
   {
     "message": "layers[22].paint.background-color.stops: identity function may not have a \"stops\" property",
