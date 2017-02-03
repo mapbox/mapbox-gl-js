@@ -520,7 +520,7 @@
       }
     },
     {
-      "id": "invalid boolean domain type",
+      "id": "valid boolean domain type",
       "type": "fill",
       "source": "source",
       "source-layer": "layer",

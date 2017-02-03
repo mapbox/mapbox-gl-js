@@ -737,6 +737,21 @@ test('categorical function', (t) => {
         t.end();
     });
 
+    t.test('boolean', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[true, 'true'], [false, 'false']]
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {foo: true}), 'true');
+        t.equal(f(0, {foo: false}), 'false');
+
+        t.end();
+    });
+
     t.end();
 });
 
