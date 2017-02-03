@@ -24,22 +24,22 @@
     <th>Diff</th>
     <th>Info</th>
 </tr>
-{{#each results}}
+<% for (r of results) { %>
 <tr>
-    <td><img style="width: {{width}}; height: {{height}}" src="data:image/png;base64,{{actual}}" data-alt-src="data:image/png;base64,{{expected}}"></td>
-    <td><img style="width: {{width}}; height: {{height}}" src="data:image/png;base64,{{diff}}"></td>
+    <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.actual %>" data-alt-src="data:image/png;base64,<%- r.expected %>"></td>
+    <td><img style="width: <%- r.width %>; height: <%- r.height %>" src="data:image/png;base64,<%- r.diff %>"></td>
     <td>
-        <h2 style="background: {{color}}"><a href="{{group}}/{{test}}/style.json">{{group}}/{{test}}</a></h2>
+        <h2 style="background: <%- r.color %>"><a href="<%- r.group %>/<%- r.test %>/style.json"><%- r.group %>/<%- r.test %></a></h2>
         <ul>
-            <li>diff: <strong>{{difference}}</strong></li>
-            {{#if zoom}}<li>zoom: <strong>{{zoom}}</strong></li>{{/if}}
-            {{#if center}}<li>center: <strong>{{center}}</strong></li>{{/if}}
-            {{#if bearing}}<li>bearing: <strong>{{bearing}}</strong></li>{{/if}}
-            {{#if pitch}}<li>pitch: <strong>{{pitch}}</strong></li>{{/if}}
-            <li>width: <strong>{{width}}</strong></li>
-            <li>height: <strong>{{height}}</strong></li>
+            <li>diff: <strong><%- r.difference %></strong></li>
+            <% if (r.zoom) { %><li>zoom: <strong><%- r.zoom %></strong></li><% } %>
+            <% if (r.center) { %><li>center: <strong><%- r.center %></strong></li><% } %>
+            <% if (r.bearing) { %><li>bearing: <strong><%- r.bearing %></strong></li><% } %>
+            <% if (r.pitch) { %><li>pitch: <strong><%- r.pitch %></strong></li><% } %>
+            <li>width: <strong><%- r.width %></strong></li>
+            <li>height: <strong><%- r.height %></strong></li>
         </ul>
     </td>
 </tr>
-{{/each}}
+<% } %>
 </table>
