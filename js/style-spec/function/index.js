@@ -48,6 +48,7 @@ function createFunction(parameters, propertySpec) {
 
         let innerFun;
         let hashedStops;
+        let categoricalKeyType;
         if (type === 'exponential') {
             innerFun = evaluateExponentialFunction;
         } else if (type === 'interval') {
@@ -60,6 +61,10 @@ function createFunction(parameters, propertySpec) {
             for (const stop of parameters.stops) {
                 hashedStops[stop[0]] = stop[1];
             }
+
+            // Infer key type based on first stop key-- used to encforce strict type checking later
+            categoricalKeyType = typeof parameters.stops[0][0];
+
         } else if (type === 'identity') {
             innerFun = evaluateIdentityFunction;
         } else {
@@ -121,7 +126,7 @@ function createFunction(parameters, propertySpec) {
 
         } else if (zoomDependent) {
             fun = function(zoom) {
-                return outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops));
+                return outputFunction(innerFun(parameters, propertySpec, zoom, hashedStops, categoricalKeyType));
             };
             fun.isFeatureConstant = true;
             fun.isZoomConstant = false;
@@ -131,7 +136,7 @@ function createFunction(parameters, propertySpec) {
                 if (value === undefined) {
                     return coalesce(parameters.default, propertySpec.default);
                 }
-                return outputFunction(innerFun(parameters, propertySpec, value, hashedStops));
+                return outputFunction(innerFun(parameters, propertySpec, value, hashedStops, categoricalKeyType));
             };
             fun.isFeatureConstant = false;
             fun.isZoomConstant = true;
@@ -147,8 +152,9 @@ function coalesce(a, b, c) {
     if (c !== undefined) return c;
 }
 
-function evaluateCategoricalFunction(parameters, propertySpec, input, hashedStops) {
-    return coalesce(hashedStops[input], parameters.default, propertySpec.default);
+function evaluateCategoricalFunction(parameters, propertySpec, input, hashedStops, keyType) {
+    const evaluated = typeof input === keyType ? hashedStops[input] : undefined; // Enforce strict typing on input
+    return coalesce(evaluated, parameters.default, propertySpec.default);
 }
 
 function evaluateIntervalFunction(parameters, propertySpec, input) {
