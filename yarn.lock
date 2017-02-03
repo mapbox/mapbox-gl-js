@@ -10,6 +10,17 @@
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-0.1.0.tgz#13525f45229deb53536f9377edb0891398b1fc88"
 
+"@mapbox/mapbox-gl-test-suite@file:test/integration":
+  version "0.0.0"
+  dependencies:
+    colors "^1.1.2"
+    d3-queue "^3.0.3"
+    diff "^3.0.0"
+    handlebars "^4.0.5"
+    pixelmatch "^4.0.2"
+    pngjs "^3.0.0"
+    st "^1.1.0"
+
 "@mapbox/unitbezier@^0.0.0":
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/@mapbox/unitbezier/-/unitbezier-0.0.0.tgz#15651bd553a67b8581fb398810c98ad86a34524e"
@@ -3508,7 +3519,7 @@ lodash.pickby@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash.pickby/-/lodash.pickby-4.6.0.tgz#7dea21d8c18d7703a27c704c15d3b84a67e33aff"
 
-lodash@^4.0.0, lodash@^4.11.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.0, lodash@^4.17.3, lodash@^4.2.0, lodash@^4.3.0:
+lodash@^4.0.0, lodash@^4.11.1, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.16.0, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.2.0, lodash@^4.3.0:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -5077,7 +5088,7 @@ sshpk@^1.7.0:
     jsbn "~0.1.0"
     tweetnacl "~0.14.0"
 
-st@^1.2.0:
+st@^1.1.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/st/-/st-1.2.0.tgz#e6313c1836a0889e8507be5bb189b2245266c2df"
   dependencies:
