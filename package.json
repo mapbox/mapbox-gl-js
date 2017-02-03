@@ -26,7 +26,6 @@
     "point-geometry": "^0.0.0",
     "quickselect": "^1.0.0",
     "request": "^2.39.0",
-    "rw": "^0.1.4",
     "shelf-pack": "^1.0.0",
     "sort-object": "^0.3.2",
     "supercluster": "^2.0.1",
