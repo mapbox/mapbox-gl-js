@@ -201,6 +201,8 @@ class Map extends Camera {
         if (options.classes) this.setClasses(options.classes);
         if (options.style) this.setStyle(options.style);
 
+        this._controls = {};
+
         if (options.attributionControl) this.addControl(new AttributionControl());
         this.addControl(new LogoControl(), options.logoPosition);
 
@@ -238,6 +240,8 @@ class Map extends Camera {
         } else {
             positionContainer.appendChild(controlElement);
         }
+        this._controls[control.constructor.name] = control;
+
         return this;
     }
 
@@ -249,6 +253,30 @@ class Map extends Camera {
      */
     removeControl(control) {
         control.onRemove(this);
+        if (this._controls[control.constructor.name]) {
+            delete this._controls[control.constructor.name]
+        }
+        return this;
+    }
+
+
+    /**
+     * Changes position of the control
+     *
+     * @param {string | IControl} control The [`IControl`](#IControl) or the name of the
+     * [`IControl`](#IControl) type you want to move.
+     * @param {string} position on the map to which the control will be moved.
+     * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+     * @returns {Map} `this`
+     * @example
+     * map.setControlPosition('LogoControl', 'top-right');
+     *
+     */
+
+    setControlPosition(control, position) {
+        const _control = typeof controlType === "string" ? this._controls[control] : control;
+        this.removeControl(_control);
+        this.addControl(_control, position);
         return this;
     }
 
