@@ -9,4 +9,8 @@ void main() {
     #pragma mapbox: initialize lowp vec4 color
 
     gl_FragColor = v_color;
+
+#ifdef OVERDRAW_INSPECTOR
+    gl_FragColor = vec4(0.0);
+#endif
 }
