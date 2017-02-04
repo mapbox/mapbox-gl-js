@@ -11,6 +11,6 @@ void main() {
     gl_FragColor = v_color;
 
 #ifdef OVERDRAW_INSPECTOR
-    gl_FragColor = vec4(0.0);
+    gl_FragColor = vec4(1.0);
 #endif
 }
