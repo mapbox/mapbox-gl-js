@@ -642,6 +642,30 @@ test('SourceCache#clearTiles', (t) => {
     t.end();
 });
 
+test('SourceCache#unloadTileFromCache', (t) => {
+    t.test('does not unload a tile present in _tiles', (t) => {
+        const coord = new TileCoord(0, 0, 0);
+        let unload = 0;
+
+        const sourceCache = createSourceCache({
+            unloadTile: function(tile) {
+                t.deepEqual(tile.coord, coord);
+                unload++;
+            }
+        });
+        sourceCache.onAdd();
+
+        sourceCache.addTile(coord);
+        sourceCache.unloadTileFromCache({ coord });
+
+        t.equal(unload, 0);
+
+        t.end();
+    });
+
+    t.end();
+});
+
 test('SourceCache#tilesIn', (t) => {
     t.test('graceful response before source loaded', (t) => {
         const sourceCache = createSourceCache({ noLoad: true });
@@ -871,7 +895,7 @@ test('SourceCache#findLoadedParent', (t) => {
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
         t.deepEqual(retain, expectedRetain);
-        t.equal(sourceCache._cache.order.length, 0);
+        t.equal(sourceCache._cache.order.length, 1);
 
         t.end();
     });
