@@ -97,6 +97,9 @@ class SourceCache extends Evented {
     }
 
     unloadTile(tile) {
+        if (this._tiles[tile.coord.id])
+            return;
+
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
     }
