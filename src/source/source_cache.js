@@ -47,7 +47,7 @@ class SourceCache extends Evented {
         this._source = Source.create(id, options, dispatcher, this);
 
         this._tiles = {};
-        this._cache = new Cache(0, this.unloadTile.bind(this));
+        this._cache = new Cache(0, this.unloadTileFromCache.bind(this));
         this._timers = {};
         this._cacheTimers = {};
 
@@ -97,11 +97,13 @@ class SourceCache extends Evented {
     }
 
     unloadTile(tile) {
-        if (this._tiles[tile.coord.id])
-            return;
-
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
+    }
+
+    unloadTileFromCache(tile) {
+        if (!this._tiles[tile.coord.id])
+            return this.unloadTile(tile);
     }
 
     abortTile(tile) {
