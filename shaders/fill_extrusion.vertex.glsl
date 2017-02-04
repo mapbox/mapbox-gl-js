@@ -2,7 +2,6 @@ uniform mat4 u_matrix;
 uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
-uniform lowp vec4 u_outline_color;
 
 attribute vec2 a_pos;
 attribute vec3 a_normal;
@@ -24,10 +23,6 @@ void main() {
     float t = mod(a_normal.x, 2.0);
 
     gl_Position = u_matrix * vec4(a_pos, t > 0.0 ? height : base, 1);
-
-#ifdef OUTLINE
-    color = u_outline_color;
-#endif
 
     // Relative luminance (how dark/bright is the surface color?)
     float colorvalue = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
