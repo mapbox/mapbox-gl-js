@@ -119,7 +119,7 @@
     "test-plugin": "tap test/plugins/",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/*-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "tap --reporter dot --no-coverage test/js",
+    "test-unit": "tap --reporter dot --no-coverage test/unit",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
