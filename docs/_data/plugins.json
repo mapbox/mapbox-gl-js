@@ -43,7 +43,7 @@
   },
   "mapbox-gl-directions": {
     "prefix": "mapbox-gl-directions",
-    "latest": "3.1.0",
+    "latest": "3.1.1",
     "v": {
       "0.0.0": {
         "files": [
@@ -105,7 +105,13 @@
           "mapbox-gl-directions.css"
         ]
       }
-    }
+    },
+      "3.1.1": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      }
   },
   "mapbox-gl-geocoder": {
     "prefix": "mapbox-gl-geocoder",
