@@ -62,7 +62,7 @@ class LRUCache<T> {
             this.order.push(key);
 
             if (this.order.length > this.max) {
-                this.remove(this.order[0]);
+                this.remove(this.order[0], true);
             }
         }
 
@@ -116,12 +116,16 @@ class LRUCache<T> {
      * @returns {LRUCache} this cache
      * @private
      */
-    remove(key: string) {
+    remove(key: string, expired: boolean) {
         if (!this.has(key)) { return this; }
 
         const data = this.data[key];
         delete this.data[key];
-        this.onRemove(data);
+
+        if (expired) {
+            this.onRemove(data);
+        }
+
         this.order.splice(this.order.indexOf(key), 1);
 
         return this;
@@ -138,7 +142,7 @@ class LRUCache<T> {
         this.max = max;
 
         while (this.order.length > this.max) {
-            this.remove(this.order[0]);
+            this.remove(this.order[0], true);
         }
 
         return this;

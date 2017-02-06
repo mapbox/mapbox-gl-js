@@ -47,7 +47,7 @@ class SourceCache extends Evented {
         this._source = Source.create(id, options, dispatcher, this);
 
         this._tiles = {};
-        this._cache = new Cache(0, this.unloadTileFromCache.bind(this));
+        this._cache = new Cache(0, this.unloadTile.bind(this));
         this._timers = {};
         this._cacheTimers = {};
 
@@ -99,11 +99,6 @@ class SourceCache extends Evented {
     unloadTile(tile) {
         if (this._source.unloadTile)
             return this._source.unloadTile(tile);
-    }
-
-    unloadTileFromCache(tile) {
-        if (!this._tiles[tile.coord.id])
-            return this.unloadTile(tile);
     }
 
     abortTile(tile) {
@@ -414,6 +409,7 @@ class SourceCache extends Evented {
         if (!tile) {
             tile = this._cache.get(wrapped.id);
             if (tile) {
+                this._cache.remove(wrapped.id);
                 tile.redoPlacement(this._source);
                 if (this._cacheTimers[wrapped.id]) {
                     clearTimeout(this._cacheTimers[wrapped.id]);
@@ -451,7 +447,7 @@ class SourceCache extends Evented {
         const tileExpires = tile.getExpiry();
         if (tileExpires) {
             this._cacheTimers[id] = setTimeout(() => {
-                this._cache.remove(id);
+                this._cache.remove(id, true);
                 this._cacheTimers[id] = undefined;
             }, tileExpires - new Date().getTime());
         }
