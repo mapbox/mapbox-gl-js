@@ -61,6 +61,7 @@ class DragRotateHandler {
     enable() {
         if (this.isEnabled()) return;
         this._el.addEventListener('mousedown', this._onDown);
+        this._el.addEventListener('touchstart', this._onTouchStart);
         this._enabled = true;
     }
 
@@ -73,7 +74,12 @@ class DragRotateHandler {
     disable() {
         if (!this.isEnabled()) return;
         this._el.removeEventListener('mousedown', this._onDown);
+        this._el.removeEventListener('touchstart', this._onTouchStart);
         this._enabled = false;
+    }
+
+    _onTouchStart() {
+        this.disable();
     }
 
     _onDown(e) {
