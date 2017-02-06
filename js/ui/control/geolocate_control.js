@@ -4,6 +4,7 @@ const Evented = require('../../util/evented');
 const DOM = require('../../util/dom');
 const window = require('../../util/window');
 const util = require('../../util/util');
+const LngLat = require('../../geo/lng_lat');
 
 const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 6sec */ };
 const className = 'mapboxgl-ctrl';
@@ -40,9 +41,12 @@ function checkGeolocationSupport(callback) {
  * geolocation support is not available, the GeolocateControl will not
  * be visible.
  *
+ * The zoom level applied will depend on the accuracy of the geolocation provided by the device.
+ *
  * @implements {IControl}
  * @param {Object} [options]
- * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.positionOptions={enableHighAccuracy: false, timeout: 6000}] A Geolocation API [PositionOptions](https://developer.mozilla.org/en-US/docs/Web/API/PositionOptions) object.
+ * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the device location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
  * @param {Object} [options.watchPosition=false] If `true` the map will reposition each time the position of the device changes and the control becomes a toggle.
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
@@ -77,12 +81,12 @@ class GeolocateControl extends Evented {
     }
 
     _onSuccess(position) {
-        this._map.jumpTo({
-            center: [position.coords.longitude, position.coords.latitude],
-            zoom: 17,
-            bearing: 0,
-            pitch: 0
-        });
+        const center = new LngLat(position.coords.longitude, position.coords.latitude);
+        const radius = position.coords.accuracy;
+
+        this._map.fitBounds(center.toBounds(radius), util.extend({
+            maxZoom: (this.options.maxZoom !== undefined) ? this.options.maxZoom : 18
+        }, this.options.fitBoundsOptions || {}));
 
         this.fire('geolocate', position);
         this._finish();
