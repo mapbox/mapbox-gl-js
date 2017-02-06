@@ -9,7 +9,7 @@
 
 [libs]
 
-./interfaces/
+./flow-interfaces/
 
 [options]
 
