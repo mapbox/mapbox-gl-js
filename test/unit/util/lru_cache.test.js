@@ -46,7 +46,11 @@ test('LRUCache - duplicate add', (t) => {
 });
 
 test('LRUCache - remove', (t) => {
-    const cache = new LRUCache(10, () => {});
+    let called;
+    const cache = new LRUCache(10, (removed) => {
+        t.equal(removed, 'dc');
+        called = true;
+    });
 
     cache.add('washington', 'dc');
     cache.add('baltimore', 'md');
@@ -61,6 +65,10 @@ test('LRUCache - remove', (t) => {
     t.notOk(cache.has('baltimore'));
 
     t.ok(cache.remove('baltimore'));
+
+    t.notOk(called);
+    cache.remove('washington', true);
+    t.ok(called);
 
     t.end();
 });
