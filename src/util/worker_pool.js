@@ -17,7 +17,7 @@ class WorkerPool {
             // Lazily look up the value of mapboxgl.workerCount.  This allows
             // client code a chance to set it while circumventing cyclic
             // dependency problems
-            const workerCount = require('../mapbox-gl').workerCount;
+            const workerCount = require('../').workerCount;
             assert(typeof workerCount === 'number' && workerCount < Infinity);
 
             this.workers = [];

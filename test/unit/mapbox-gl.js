@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const mapboxgl = require('../../src/mapbox-gl');
+const mapboxgl = require('../../src');
 
 test('mapboxgl', (t) => {
     t.test('version', (t) => {

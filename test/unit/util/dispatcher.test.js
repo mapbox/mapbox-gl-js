@@ -31,7 +31,7 @@ test('Dispatcher', (t) => {
     t.test('creates Actors with unique map id', (t) => {
         const Dispatcher = proxyquire('../../../src/util/dispatcher', {'./actor': Actor });
         const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../mapbox-gl': { workerCount: 1 }
+            '../': { workerCount: 1 }
         });
 
         const ids = [];
@@ -51,7 +51,7 @@ test('Dispatcher', (t) => {
             this.remove = function() { actorsRemoved.push(this); };
         }
         const WorkerPool = proxyquire('../../../src/util/worker_pool', {
-            '../mapbox-gl': { workerCount: 4 }
+            '../': { workerCount: 4 }
         });
 
         const workerPool = new WorkerPool();
