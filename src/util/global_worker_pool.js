@@ -1,5 +1,5 @@
 'use strict';
-const WorkerPool = require('./util/worker_pool');
+const WorkerPool = require('./worker_pool');
 
 let globalWorkerPool;
 
