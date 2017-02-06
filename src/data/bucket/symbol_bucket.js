@@ -222,9 +222,6 @@ class SymbolBucket {
     prepare(stacks, icons) {
         this.symbolInstances = [];
 
-        // the number of icon- and glyph- quads in this bucket.
-        this.quadCount = 0;
-
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
@@ -647,7 +644,6 @@ class SymbolBucket {
             (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
         );
 
-        this.quadCount += iconQuads.length + glyphQuads.length;
         this.symbolInstances.push({
             textBoxStartIndex,
             textBoxEndIndex,
