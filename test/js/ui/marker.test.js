@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const window = require('../../../js/util/window');
-const Map = require('../../../js/ui/map');
-const Marker = require('../../../js/ui/marker');
-const Popup = require('../../../js/ui/popup');
+const window = require('../../../src/util/window');
+const Map = require('../../../src/ui/map');
+const Marker = require('../../../src/ui/marker');
+const Popup = require('../../../src/ui/popup');
 
 function createMap() {
     const container = window.document.createElement('div');

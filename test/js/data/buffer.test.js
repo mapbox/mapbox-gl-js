@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Buffer = require('../../../js/data/buffer');
-const StructArrayType = require('../../../js/util/struct_array');
+const Buffer = require('../../../src/data/buffer');
+const StructArrayType = require('../../../src/util/struct_array');
 
 test('Buffer', (t) => {
 

@@ -2,11 +2,11 @@
 
 const test = require('mapbox-gl-js-test').test;
 const proxyquire = require('proxyquire');
-const Actor = require('../../../js/util/actor');
+const Actor = require('../../../src/util/actor');
 
 test('Actor', (t) => {
     t.test('forwards resopnses to correct callback', (t) => {
-        const WebWorker = proxyquire('../../../js/util/web_worker', {
+        const WebWorker = proxyquire('../../../src/util/web_worker', {
             '../source/worker': function Worker(self) {
                 this.self = self;
                 this.actor = new Actor(self, this);
@@ -35,7 +35,7 @@ test('Actor', (t) => {
     t.test('targets worker-initiated messages to correct map instance', (t) => {
         let workerActor;
 
-        const WebWorker = proxyquire('../../../js/util/web_worker', {
+        const WebWorker = proxyquire('../../../src/util/web_worker', {
             '../source/worker': function Worker(self) {
                 this.self = self;
                 this.actor = workerActor = new Actor(self, this);

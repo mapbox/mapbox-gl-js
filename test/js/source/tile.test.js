@@ -1,18 +1,18 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Tile = require('../../../js/source/tile');
-const GeoJSONWrapper = require('../../../js/source/geojson_wrapper');
-const TileCoord = require('../../../js/source/tile_coord');
+const Tile = require('../../../src/source/tile');
+const GeoJSONWrapper = require('../../../src/source/geojson_wrapper');
+const TileCoord = require('../../../src/source/tile_coord');
 const fs = require('fs');
 const path = require('path');
 const vtpbf = require('vt-pbf');
-const FeatureIndex = require('../../../js/data/feature_index');
-const CollisionTile = require('../../../js/symbol/collision_tile');
-const CollisionBoxArray = require('../../../js/symbol/collision_box');
-const SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
-const SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
-const util = require('../../../js/util/util');
+const FeatureIndex = require('../../../src/data/feature_index');
+const CollisionTile = require('../../../src/symbol/collision_tile');
+const CollisionBoxArray = require('../../../src/symbol/collision_box');
+const SymbolInstancesArray = require('../../../src/symbol/symbol_instances');
+const SymbolQuadsArray = require('../../../src/symbol/symbol_quads');
+const util = require('../../../src/util/util');
 
 test('querySourceFeatures', (t) => {
     const features = [{

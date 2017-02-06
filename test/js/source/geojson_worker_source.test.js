@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const GeoJSONWorkerSource = require('../../../js/source/geojson_worker_source');
-const StyleLayerIndex = require('../../../js/style/style_layer_index');
+const GeoJSONWorkerSource = require('../../../src/source/geojson_worker_source');
+const StyleLayerIndex = require('../../../src/style/style_layer_index');
 
 test('removeSource', (t) => {
     t.test('removes the source from _geoJSONIndexes', (t) => {

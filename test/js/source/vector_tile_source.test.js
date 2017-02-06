@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const VectorTileSource = require('../../../js/source/vector_tile_source');
-const TileCoord = require('../../../js/source/tile_coord');
-const window = require('../../../js/util/window');
-const Evented = require('../../../js/util/evented');
+const VectorTileSource = require('../../../src/source/vector_tile_source');
+const TileCoord = require('../../../src/source/tile_coord');
+const window = require('../../../src/util/window');
+const Evented = require('../../../src/util/evented');
 
 function createSource(options) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);

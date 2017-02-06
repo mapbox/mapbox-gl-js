@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const TileCoord = require('../../../js/source/tile_coord');
+const TileCoord = require('../../../src/source/tile_coord');
 
 test('TileCoord', (t) => {
     t.test('#constructor', (t) => {

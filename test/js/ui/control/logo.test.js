@@ -1,8 +1,8 @@
 'use strict';
 const test = require('mapbox-gl-js-test').test;
-const VectorTileSource = require('../../../../js/source/vector_tile_source');
-const window = require('../../../../js/util/window');
-const Map = require('../../../../js/ui/map');
+const VectorTileSource = require('../../../../src/source/vector_tile_source');
+const window = require('../../../../src/util/window');
+const Map = require('../../../../src/ui/map');
 
 function createMap(logoPosition, logoRequired) {
     const container = window.document.createElement('div');

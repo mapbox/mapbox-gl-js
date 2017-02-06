@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const spec = require('../../../js/style-spec');
+const spec = require('../../../src/style-spec');
 
 ['v6', 'v7', 'v8', 'latest'].forEach((version) => {
     ['', 'min'].forEach((kind) => {

@@ -5,7 +5,7 @@ const proxyquire = require('proxyquire');
 
 test('WorkerPool', (t) => {
     t.test('#acquire', (t) => {
-        const WorkerPool = proxyquire('../../../js/util/worker_pool', {
+        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
             '../mapbox-gl': { workerCount: 4 }
         });
 
@@ -24,7 +24,7 @@ test('WorkerPool', (t) => {
 
     t.test('#release', (t) => {
         let workersTerminated = 0;
-        const WorkerPool = proxyquire('../../../js/util/worker_pool', {
+        const WorkerPool = proxyquire('../../../src/util/worker_pool', {
             '../mapbox-gl': { workerCount: 4 }
         });
 

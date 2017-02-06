@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const StyleDeclaration = require('../../../js/style/style_declaration');
+const StyleDeclaration = require('../../../src/style/style_declaration');
 
 test('StyleDeclaration', (t) => {
     t.test('constant', (t) => {

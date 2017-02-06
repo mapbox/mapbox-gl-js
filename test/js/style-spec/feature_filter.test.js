@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const filter = require('../../../js/style-spec').featureFilter;
+const filter = require('../../../src/style-spec').featureFilter;
 
 test('degenerate', (t) => {
     t.equal(filter()(), true);

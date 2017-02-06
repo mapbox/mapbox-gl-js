@@ -1,11 +1,11 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Tile = require('../../../js/source/tile');
-const TileCoord = require('../../../js/source/tile_coord');
-const GeoJSONSource = require('../../../js/source/geojson_source');
-const Transform = require('../../../js/geo/transform');
-const LngLat = require('../../../js/geo/lng_lat');
+const Tile = require('../../../src/source/tile');
+const TileCoord = require('../../../src/source/tile_coord');
+const GeoJSONSource = require('../../../src/source/geojson_source');
+const Transform = require('../../../src/geo/transform');
+const LngLat = require('../../../src/geo/lng_lat');
 
 const mockDispatcher = {
     send: function () {}

@@ -1,13 +1,13 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Bucket = require('../../../js/data/bucket');
-const createVertexArrayType = require('../../../js/data/vertex_array_type');
-const createElementArrayType = require('../../../js/data/element_array_type');
-const FeatureIndex = require('../../../js/data/feature_index');
-const StyleLayer = require('../../../js/style/style_layer');
-const featureFilter = require('../../../js/style-spec/feature_filter');
-const TileCoord = require('../../../js/source/tile_coord');
+const Bucket = require('../../../src/data/bucket');
+const createVertexArrayType = require('../../../src/data/vertex_array_type');
+const createElementArrayType = require('../../../src/data/element_array_type');
+const FeatureIndex = require('../../../src/data/feature_index');
+const StyleLayer = require('../../../src/style/style_layer');
+const featureFilter = require('../../../src/style-spec/feature_filter');
+const TileCoord = require('../../../src/source/tile_coord');
 
 test('Bucket', (t) => {
     function createFeature(x, y) {

@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const StyleLayer = require('../../../js/style/style_layer');
-const resolveText = require('../../../js/symbol/resolve_text');
+const StyleLayer = require('../../../src/style/style_layer');
+const resolveText = require('../../../src/symbol/resolve_text');
 
 function createLayer(layout) {
     return new StyleLayer({

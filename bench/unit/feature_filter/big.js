@@ -1,6 +1,6 @@
 'use strict';
 
-const filter = require('../../../js/style-spec').featureFilter;
+const filter = require('../../../src/style-spec').featureFilter;
 
 const N = 64000;
 

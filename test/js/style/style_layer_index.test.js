@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const util = require('../../../js/util/util');
-const StyleLayerIndex = require('../../../js/style/style_layer_index');
+const util = require('../../../src/util/util');
+const StyleLayerIndex = require('../../../src/style/style_layer_index');
 
 test('StyleLayerIndex#replace', (t) => {
     const index = new StyleLayerIndex([

@@ -1,9 +1,9 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const StyleLayer = require('../../../js/style/style_layer');
-const FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
-const util = require('../../../js/util/util');
+const StyleLayer = require('../../../src/style/style_layer');
+const FillStyleLayer = require('../../../src/style/style_layer/fill_style_layer');
+const util = require('../../../src/util/util');
 
 test('StyleLayer', (t) => {
     t.test('instantiates the correct subclass', (t) => {

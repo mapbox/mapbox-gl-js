@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Camera = require('../../../js/ui/camera');
-const Transform = require('../../../js/geo/transform');
+const Camera = require('../../../src/ui/camera');
+const Transform = require('../../../src/geo/transform');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;

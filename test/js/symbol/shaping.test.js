@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const path = require('path');
-const shaping = require('../../../js/symbol/shaping');
+const shaping = require('../../../src/symbol/shaping');
 const WritingMode = shaping.WritingMode;
 
 let UPDATE = false;

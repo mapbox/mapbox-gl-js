@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('mapbox-gl-js-test').test,
-    migrate = require('../../../../js/style-spec/migrate/v7');
+    migrate = require('../../../../src/style-spec/migrate/v7');
 
 t('remove prerendered layer', (t) => {
     t.deepEqual(migrate({

@@ -5,15 +5,15 @@ const fs = require('fs');
 const path = require('path');
 const Protobuf = require('pbf');
 const VectorTile = require('vector-tile').VectorTile;
-const SymbolBucket = require('../../../js/data/bucket/symbol_bucket');
-const Collision = require('../../../js/symbol/collision_tile');
-const CollisionBoxArray = require('../../../js/symbol/collision_box');
-const SymbolInstancesArray = require('../../../js/symbol/symbol_instances');
-const SymbolQuadsArray = require('../../../js/symbol/symbol_quads');
-const GlyphAtlas = require('../../../js/symbol/glyph_atlas');
-const StyleLayer = require('../../../js/style/style_layer');
-const util = require('../../../js/util/util');
-const featureFilter = require('../../../js/style-spec/feature_filter');
+const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
+const Collision = require('../../../src/symbol/collision_tile');
+const CollisionBoxArray = require('../../../src/symbol/collision_box');
+const SymbolInstancesArray = require('../../../src/symbol/symbol_instances');
+const SymbolQuadsArray = require('../../../src/symbol/symbol_quads');
+const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
+const StyleLayer = require('../../../src/style/style_layer');
+const util = require('../../../src/util/util');
+const featureFilter = require('../../../src/style-spec/feature_filter');
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

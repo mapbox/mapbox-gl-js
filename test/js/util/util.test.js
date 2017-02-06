@@ -2,8 +2,8 @@
 // @flow
 
 const test = require('mapbox-gl-js-test').test;
-const Coordinate = require('../../../js/geo/coordinate');
-const util = require('../../../js/util/util');
+const Coordinate = require('../../../src/geo/coordinate');
+const util = require('../../../src/util/util');
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');

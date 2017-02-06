@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const Protobuf = require('pbf');
 const VectorTile = require('vector-tile').VectorTile;
-const classifyRings = require('../../../js/util/classify_rings');
+const classifyRings = require('../../../src/util/classify_rings');
 
 // Load a fill feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

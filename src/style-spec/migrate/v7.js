@@ -160,7 +160,7 @@ module.exports = function(style) {
     return style;
 };
 
-// from mapbox-gl-js/js/style/style_declaration.js
+// from mapbox-gl-js/src/style/style_declaration.js
 
 function parseNumberArray(array) {
     const widths = array.map(parseNumber);

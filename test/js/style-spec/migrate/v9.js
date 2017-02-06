@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('mapbox-gl-js-test').test,
-    migrate = require('../../../../js/style-spec/migrate/v9');
+    migrate = require('../../../../src/style-spec/migrate/v9');
 
 t('deref layers', (t) => {
     const input = {

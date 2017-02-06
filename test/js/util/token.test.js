@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const resolveTokens = require('../../../js/util/token');
+const resolveTokens = require('../../../src/util/token');
 
 test('token', (t) => {
     t.equal('literal', resolveTokens({name:'14th St NW'}, 'literal'));

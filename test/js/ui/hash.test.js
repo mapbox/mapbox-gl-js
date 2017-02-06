@@ -1,9 +1,9 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Hash = require('../../../js/ui/hash');
-const window = require('../../../js/util/window');
-const Map = require('../../../js/ui/map');
+const Hash = require('../../../src/ui/hash');
+const window = require('../../../src/util/window');
+const Map = require('../../../src/ui/map');
 
 test('hash', (t) => {
     function createHash() {

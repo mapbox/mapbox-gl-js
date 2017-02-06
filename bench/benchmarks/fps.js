@@ -1,6 +1,6 @@
 'use strict';
 
-const Evented = require('../../js/util/evented');
+const Evented = require('../../src/util/evented');
 const formatNumber = require('../lib/format_number');
 const measureFramerate = require('../lib/measure_framerate');
 const createMap = require('../lib/create_map');

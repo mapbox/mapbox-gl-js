@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const LngLat = require('../../../js/geo/lng_lat');
+const LngLat = require('../../../src/geo/lng_lat');
 
 test('LngLat', (t) => {
     t.test('#constructor', (t) => {

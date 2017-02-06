@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const composite = require('../../../js/style-spec/composite');
+const composite = require('../../../src/style-spec/composite');
 
 test('composites Mapbox vector sources', (t) => {
     const result = composite({

@@ -6,9 +6,9 @@ const path = require('path');
 const Protobuf = require('pbf');
 const VectorTile = require('vector-tile').VectorTile;
 const Point = require('point-geometry');
-const ArrayGroup = require('../../../js/data/array_group');
-const LineBucket = require('../../../js/data/bucket/line_bucket');
-const StyleLayer = require('../../../js/style/style_layer');
+const ArrayGroup = require('../../../src/data/array_group');
+const LineBucket = require('../../../src/data/bucket/line_bucket');
+const StyleLayer = require('../../../src/style/style_layer');
 
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

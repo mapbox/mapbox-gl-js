@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const Protobuf = require('pbf');
 const VectorTile = require('vector-tile').VectorTile;
-const loadGeometry = require('../../../js/data/load_geometry.js');
+const loadGeometry = require('../../../src/data/load_geometry.js');
 
 // Load a line feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));

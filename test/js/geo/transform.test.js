@@ -2,9 +2,9 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Point = require('point-geometry');
-const Transform = require('../../../js/geo/transform');
-const TileCoord = require('../../../js/source/tile_coord');
-const LngLat = require('../../../js/geo/lng_lat');
+const Transform = require('../../../src/geo/transform');
+const TileCoord = require('../../../src/source/tile_coord');
+const LngLat = require('../../../src/geo/lng_lat');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedLngLat = fixed.LngLat;

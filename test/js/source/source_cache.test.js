@@ -1,16 +1,16 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const SourceCache = require('../../../js/source/source_cache');
-const AnimationLoop = require('../../../js/style/animation_loop');
-const Source = require('../../../js/source/source');
-const Tile = require('../../../js/source/tile');
-const TileCoord = require('../../../js/source/tile_coord');
-const Transform = require('../../../js/geo/transform');
-const LngLat = require('../../../js/geo/lng_lat');
-const Coordinate = require('../../../js/geo/coordinate');
-const Evented = require('../../../js/util/evented');
-const util = require('../../../js/util/util');
+const SourceCache = require('../../../src/source/source_cache');
+const AnimationLoop = require('../../../src/style/animation_loop');
+const Source = require('../../../src/source/source');
+const Tile = require('../../../src/source/tile');
+const TileCoord = require('../../../src/source/tile_coord');
+const Transform = require('../../../src/geo/transform');
+const LngLat = require('../../../src/geo/lng_lat');
+const Coordinate = require('../../../src/geo/coordinate');
+const Evented = require('../../../src/util/evented');
+const util = require('../../../src/util/util');
 
 // Add a mocked source type for use in these tests
 function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {

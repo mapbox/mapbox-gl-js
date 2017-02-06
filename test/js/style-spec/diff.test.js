@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('mapbox-gl-js-test').test,
-    diffStyles = require('../../../js/style-spec/diff');
+    diffStyles = require('../../../src/style-spec/diff');
 
 t('diff', (t) => {
 

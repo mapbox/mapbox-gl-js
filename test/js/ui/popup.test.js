@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const window = require('../../../js/util/window');
-const Map = require('../../../js/ui/map');
-const Popup = require('../../../js/ui/popup');
-const LngLat = require('../../../js/geo/lng_lat');
+const window = require('../../../src/util/window');
+const Map = require('../../../src/ui/map');
+const Popup = require('../../../src/ui/popup');
+const LngLat = require('../../../src/geo/lng_lat');
 const Point = require('point-geometry');
 const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 

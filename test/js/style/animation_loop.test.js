@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const AnimationLoop = require('../../../js/style/animation_loop');
+const AnimationLoop = require('../../../src/style/animation_loop');
 
 test('animationloop', (t) => {
     const loop = new AnimationLoop();

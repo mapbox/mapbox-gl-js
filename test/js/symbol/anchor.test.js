@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Anchor = require('../../../js/symbol/anchor');
+const Anchor = require('../../../src/symbol/anchor');
 
 test('Anchor', (t) => {
     t.test('#constructor', (t) => {

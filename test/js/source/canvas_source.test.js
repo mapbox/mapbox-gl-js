@@ -1,11 +1,11 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const CanvasSource = require('../../../js/source/canvas_source');
-const Transform = require('../../../js/geo/transform');
-const Evented = require('../../../js/util/evented');
-const util = require('../../../js/util/util');
-const window = require('../../../js/util/window');
+const CanvasSource = require('../../../src/source/canvas_source');
+const Transform = require('../../../src/geo/transform');
+const Evented = require('../../../src/util/evented');
+const util = require('../../../src/util/util');
+const window = require('../../../src/util/window');
 
 function createSource(options) {
     window.useFakeHTMLCanvasGetContext();

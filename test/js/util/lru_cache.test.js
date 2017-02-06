@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const LRUCache = require('../../../js/util/lru_cache');
+const LRUCache = require('../../../src/util/lru_cache');
 
 test('LRUCache', (t) => {
     const cache = new LRUCache(10, (removed) => {

@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Wrapper = require('../../../js/source/geojson_wrapper');
+const Wrapper = require('../../../src/source/geojson_wrapper');
 
 test('geojsonwrapper', (t) => {
 

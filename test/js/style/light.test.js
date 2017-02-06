@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const Light = require('../../../js/style/light');
-const spec = require('../../../js/style-spec/reference/latest').light;
+const Light = require('../../../src/style/light');
+const spec = require('../../../src/style-spec/reference/latest').light;
 
 test('Light', (t) => {
     t.test('creates default light with no options', (t) => {

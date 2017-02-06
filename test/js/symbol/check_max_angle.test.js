@@ -2,8 +2,8 @@
 
 const test = require('mapbox-gl-js-test').test;
 const Point = require('point-geometry');
-const checkMaxAngle = require('../../../js/symbol/check_max_angle');
-const Anchor = require('../../../js/symbol/anchor');
+const checkMaxAngle = require('../../../src/symbol/check_max_angle');
+const Anchor = require('../../../src/symbol/anchor');
 
 test('line with no sharp angles', (t) => {
     const line = [ new Point(0, 0), new Point(20, -1), new Point(40, 1), new Point(60, 0) ];

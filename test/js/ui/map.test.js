@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const util = require('../../../js/util/util');
-const window = require('../../../js/util/window');
-const Map = require('../../../js/ui/map');
-const LngLat = require('../../../js/geo/lng_lat');
+const util = require('../../../src/util/util');
+const window = require('../../../src/util/window');
+const Map = require('../../../src/ui/map');
+const LngLat = require('../../../src/geo/lng_lat');
 
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedNum = fixed.Num;

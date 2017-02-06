@@ -1,11 +1,11 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const WorkerTile = require('../../../js/source/worker_tile');
-const Wrapper = require('../../../js/source/geojson_wrapper');
-const TileCoord = require('../../../js/source/tile_coord');
-const StyleLayerIndex = require('../../../js/style/style_layer_index');
-const util = require('../../../js/util/util');
+const WorkerTile = require('../../../src/source/worker_tile');
+const Wrapper = require('../../../src/source/geojson_wrapper');
+const TileCoord = require('../../../src/source/tile_coord');
+const StyleLayerIndex = require('../../../src/style/style_layer_index');
+const util = require('../../../src/util/util');
 
 function createWorkerTile() {
     return new WorkerTile({

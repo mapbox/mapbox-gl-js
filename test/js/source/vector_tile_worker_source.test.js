@@ -1,8 +1,8 @@
 'use strict';
 
 const test = require('mapbox-gl-js-test').test;
-const VectorTileWorkerSource = require('../../../js/source/vector_tile_worker_source');
-const StyleLayerIndex = require('../../../js/style/style_layer_index');
+const VectorTileWorkerSource = require('../../../src/source/vector_tile_worker_source');
+const StyleLayerIndex = require('../../../src/style/style_layer_index');
 
 test('abortTile', (t) => {
     t.test('aborts pending request', (t) => {

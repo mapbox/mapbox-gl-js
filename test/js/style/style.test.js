@@ -2,12 +2,12 @@
 
 const test = require('mapbox-gl-js-test').test;
 const proxyquire = require('proxyquire');
-const Style = require('../../../js/style/style');
-const SourceCache = require('../../../js/source/source_cache');
-const StyleLayer = require('../../../js/style/style_layer');
-const util = require('../../../js/util/util');
-const Evented = require('../../../js/util/evented');
-const window = require('../../../js/util/window');
+const Style = require('../../../src/style/style');
+const SourceCache = require('../../../src/source/source_cache');
+const StyleLayer = require('../../../src/style/style_layer');
+const util = require('../../../src/util/util');
+const Evented = require('../../../src/util/evented');
+const window = require('../../../src/util/window');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -92,7 +92,7 @@ test('Style', (t) => {
     });
 
     t.test('skips validation for mapbox:// styles', (t) => {
-        const Style = proxyquire('../../../js/style/style', {
+        const Style = proxyquire('../../../src/style/style', {
             '../util/mapbox': {
                 isMapboxURL: function(url) {
                     t.equal(url, 'mapbox://styles/test/test');
@@ -1108,7 +1108,7 @@ test('Style#setLayerZoomRange', (t) => {
 
 test('Style#queryRenderedFeatures', (t) => {
     let style; // eslint-disable-line prefer-const
-    const Style = proxyquire('../../../js/style/style', {
+    const Style = proxyquire('../../../src/style/style', {
         '../source/query_features': {
             rendered: function(source, layers, queryGeom, params) {
                 if (source.id !== 'mapbox') {
@@ -1353,7 +1353,7 @@ test('Style#query*Features', (t) => {
 
 test('Style#addSourceType', (t) => {
     const _types = { 'existing': function () {} };
-    const Style = proxyquire('../../../js/style/style', {
+    const Style = proxyquire('../../../src/style/style', {
         '../source/source': {
             getType: function (name) { return _types[name]; },
             setType: function (name, create) { _types[name] = create; }

@@ -1,7 +1,7 @@
 'use strict';
 
 const t = require('mapbox-gl-js-test').test,
-    deref = require('../../../js/style-spec/deref');
+    deref = require('../../../src/style-spec/deref');
 
 t('derefs a ref layer which follows its parent', (t) => {
     t.deepEqual(deref([
