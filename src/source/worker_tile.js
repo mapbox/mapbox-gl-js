@@ -5,8 +5,6 @@ const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
-const SymbolInstancesArray = require('../symbol/symbol_instances');
-const SymbolQuadsArray = require('../symbol/symbol_quads');
 const assert = require('assert');
 
 class WorkerTile {
@@ -32,8 +30,6 @@ class WorkerTile {
         this.data = data;
 
         this.collisionBoxArray = new CollisionBoxArray();
-        this.symbolInstancesArray = new SymbolInstancesArray();
-        this.symbolQuadsArray = new SymbolQuadsArray();
         const sourceLayerCoder = new DictionaryCoder(Object.keys(data.layers).sort());
 
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
@@ -90,9 +86,7 @@ class WorkerTile {
                     layers: family,
                     zoom: this.zoom,
                     overscaling: this.overscaling,
-                    collisionBoxArray: this.collisionBoxArray,
-                    symbolQuadsArray: this.symbolQuadsArray,
-                    symbolInstancesArray: this.symbolInstancesArray
+                    collisionBoxArray: this.collisionBoxArray
                 });
 
                 bucket.populate(features, options);
@@ -111,9 +105,7 @@ class WorkerTile {
                 buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),
                 collisionTile: collisionTile.serialize(transferables),
-                collisionBoxArray: this.collisionBoxArray.serialize(),
-                symbolInstancesArray: this.symbolInstancesArray.serialize(),
-                symbolQuadsArray: this.symbolQuadsArray.serialize()
+                collisionBoxArray: this.collisionBoxArray.serialize()
             }, transferables);
         };
 

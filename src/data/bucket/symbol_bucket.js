@@ -94,8 +94,6 @@ function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, place
 class SymbolBucket {
     constructor(options) {
         this.collisionBoxArray = options.collisionBoxArray;
-        this.symbolQuadsArray = options.symbolQuadsArray;
-        this.symbolInstancesArray = options.symbolInstancesArray;
 
         this.zoom = options.zoom;
         this.overscaling = options.overscaling;
@@ -222,7 +220,10 @@ class SymbolBucket {
     }
 
     prepare(stacks, icons) {
-        this.createArrays();
+        this.symbolInstances = [];
+
+        // the number of icon- and glyph- quads in this bucket.
+        this.quadCount = 0;
 
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
@@ -237,7 +238,6 @@ class SymbolBucket {
         this.tilePixelRatio = EXTENT / tileSize;
         this.compareText = {};
         this.iconsNeedLinear = false;
-        this.symbolInstancesStartIndex = this.symbolInstancesArray.length;
 
         const layout = this.layers[0].layout;
 
@@ -320,7 +320,6 @@ class SymbolBucket {
                 this.addFeature(feature, shapedTextOrientations, shapedIcon);
             }
         }
-        this.symbolInstancesEndIndex = this.symbolInstancesArray.length;
     }
 
     addFeature(feature, shapedTextOrientations, shapedIcon) {
@@ -359,7 +358,7 @@ class SymbolBucket {
             // the buffers for both tiles and clipped to tile boundaries at draw time.
             const addToBuffers = inside || mayOverlap;
             this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
-                addToBuffers, this.symbolInstancesArray.length, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
+                addToBuffers, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
                 textBoxScale, textPadding, textAlongLine,
                 iconBoxScale, iconPadding, iconAlongLine, {zoom: this.zoom}, feature.properties);
         };
@@ -443,24 +442,19 @@ class SymbolBucket {
         // Don't sort symbols that won't overlap because it isn't necessary and
         // because it causes more labels to pop in and out when rotating.
         if (mayOverlap) {
-            // Only need the symbol instances from the current tile to sort, so convert those instances into an array
-            // of `StructType`s to enable sorting
-            const symbolInstancesStructTypeArray = this.symbolInstancesArray.toArray(this.symbolInstancesStartIndex, this.symbolInstancesEndIndex);
-
             const angle = collisionTile.angle;
 
             const sin = Math.sin(angle),
                 cos = Math.cos(angle);
 
-            this.sortedSymbolInstances = symbolInstancesStructTypeArray.sort((a, b) => {
-                const aRotated = (sin * a.anchorPointX + cos * a.anchorPointY) | 0;
-                const bRotated = (sin * b.anchorPointX + cos * b.anchorPointY) | 0;
+            this.symbolInstances.sort((a, b) => {
+                const aRotated = (sin * a.anchor.x + cos * a.anchor.y) | 0;
+                const bRotated = (sin * b.anchor.x + cos * b.anchor.y) | 0;
                 return (aRotated - bRotated) || (b.index - a.index);
             });
         }
 
-        for (let p = this.symbolInstancesStartIndex; p < this.symbolInstancesEndIndex; p++) {
-            const symbolInstance = this.sortedSymbolInstances ? this.sortedSymbolInstances[p - this.symbolInstancesStartIndex] : this.symbolInstancesArray.get(p);
+        for (const symbolInstance of this.symbolInstances) {
             const textCollisionFeature = {
                 boxStartIndex: symbolInstance.textBoxStartIndex,
                 boxEndIndex: symbolInstance.textBoxEndIndex
@@ -506,14 +500,14 @@ class SymbolBucket {
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
-                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuadStartIndex, symbolInstance.glyphQuadEndIndex, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle, symbolInstance.writingModes);
+                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle, symbolInstance.writingModes);
                 }
             }
 
             if (hasIcon) {
                 collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
                 if (iconScale <= maxScale) {
-                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuadStartIndex, symbolInstance.iconQuadEndIndex, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
+                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle);
                 }
             }
 
@@ -522,17 +516,14 @@ class SymbolBucket {
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
     }
 
-    addSymbols(arrays, quadsStart, quadsEnd, scale, keepUpright, alongLine, placementAngle, writingModes) {
+    addSymbols(arrays, quads, scale, keepUpright, alongLine, placementAngle, writingModes) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
-        for (let k = quadsStart; k < quadsEnd; k++) {
-
-            const symbol = this.symbolQuadsArray.get(k).SymbolQuad;
-
+        for (const symbol of quads) {
             // drop incorrectly oriented glyphs
             const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
             if (writingModes & WritingMode.vertical) {
@@ -583,8 +574,7 @@ class SymbolBucket {
         const angle = -collisionTile.angle;
         const yStretch = collisionTile.yStretch;
 
-        for (let j = this.symbolInstancesStartIndex; j < this.symbolInstancesEndIndex; j++) {
-            const symbolInstance = this.symbolInstancesArray.get(j);
+        for (const symbolInstance of this.symbolInstances) {
             symbolInstance.textCollisionFeature = {boxStartIndex: symbolInstance.textBoxStartIndex, boxEndIndex: symbolInstance.textBoxEndIndex};
             symbolInstance.iconCollisionFeature = {boxStartIndex: symbolInstance.iconBoxStartIndex, boxEndIndex: symbolInstance.iconBoxEndIndex};
 
@@ -624,11 +614,12 @@ class SymbolBucket {
         }
     }
 
-    addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, layer, addToBuffers, index, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
+    addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, layer, addToBuffers, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
         textBoxScale, textPadding, textAlongLine,
         iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
-        let textCollisionFeature, iconCollisionFeature, iconQuads;
+        let textCollisionFeature, iconCollisionFeature;
+        let iconQuads = [];
         let glyphQuads = [];
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
@@ -636,14 +627,6 @@ class SymbolBucket {
             glyphQuads = glyphQuads.concat(addToBuffers ? getGlyphQuads(anchor, shapedTextOrientations[writingMode], textBoxScale, line, layer, textAlongLine, writingMode) : []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
-
-        const glyphQuadStartIndex = this.symbolQuadsArray.length;
-        if (glyphQuads && glyphQuads.length) {
-            for (let i = 0; i < glyphQuads.length; i++) {
-                this.addSymbolQuad(glyphQuads[i]);
-            }
-        }
-        const glyphQuadEndIndex = this.symbolQuadsArray.length;
 
         const textBoxStartIndex = textCollisionFeature ? textCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
         const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
@@ -653,71 +636,34 @@ class SymbolBucket {
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
         }
 
-        const iconQuadStartIndex = this.symbolQuadsArray.length;
-        if (iconQuads && iconQuads.length === 1) {
-            this.addSymbolQuad(iconQuads[0]);
-        }
-        const iconQuadEndIndex = this.symbolQuadsArray.length;
-
         const iconBoxStartIndex = iconCollisionFeature ? iconCollisionFeature.boxStartIndex : this.collisionBoxArray.length;
         const iconBoxEndIndex = iconCollisionFeature ? iconCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
-        if (iconQuadEndIndex > SymbolBucket.MAX_QUADS) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
-        if (glyphQuadEndIndex > SymbolBucket.MAX_QUADS) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+
+        if (textBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many symbols being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
+        if (iconBoxEndIndex > SymbolBucket.MAX_INSTANCES) util.warnOnce("Too many glyphs being rendered in a tile. See https://github.com/mapbox/mapbox-gl-js/issues/2907");
 
         const writingModes = (
             (shapedTextOrientations[WritingMode.vertical] ? WritingMode.vertical : 0) |
             (shapedTextOrientations[WritingMode.horizontal] ? WritingMode.horizontal : 0)
         );
 
-        return this.symbolInstancesArray.emplaceBack(
+        this.quadCount += iconQuads.length + glyphQuads.length;
+        this.symbolInstances.push({
             textBoxStartIndex,
             textBoxEndIndex,
             iconBoxStartIndex,
             iconBoxEndIndex,
-            glyphQuadStartIndex,
-            glyphQuadEndIndex,
-            iconQuadStartIndex,
-            iconQuadEndIndex,
-            anchor.x,
-            anchor.y,
-            index,
+            glyphQuads,
+            iconQuads,
+            anchor,
             writingModes
-        );
-    }
-
-    addSymbolQuad(symbolQuad) {
-        return this.symbolQuadsArray.emplaceBack(
-            // anchorPoints
-            symbolQuad.anchorPoint.x,
-            symbolQuad.anchorPoint.y,
-            // corners
-            symbolQuad.tl.x,
-            symbolQuad.tl.y,
-            symbolQuad.tr.x,
-            symbolQuad.tr.y,
-            symbolQuad.bl.x,
-            symbolQuad.bl.y,
-            symbolQuad.br.x,
-            symbolQuad.br.y,
-            // texture
-            symbolQuad.tex.h,
-            symbolQuad.tex.w,
-            symbolQuad.tex.x,
-            symbolQuad.tex.y,
-            //angle
-            symbolQuad.anchorAngle,
-            symbolQuad.glyphAngle,
-            // scales
-            symbolQuad.maxScale,
-            symbolQuad.minScale,
-            // writing mode
-            symbolQuad.writingMode);
+        });
     }
 }
 
-// this constant is based on the size of the glyphQuadEndIndex and iconQuadEndIndex
-// in the symbol_instances StructArrayType
+// this constant is based on the size of StructArray indexes used in a symbol
+// bucket--namely, iconBoxEndIndex and textBoxEndIndex
 // eg the max valid UInt16 is 65,535
-SymbolBucket.MAX_QUADS = 65535;
+SymbolBucket.MAX_INSTANCES = 65535;
 
 module.exports = SymbolBucket;
