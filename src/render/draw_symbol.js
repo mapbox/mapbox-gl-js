@@ -47,8 +47,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['icon-halo-width'],
         layer.paint['icon-halo-color'],
         layer.paint['icon-halo-blur'],
-        layer.paint['icon-opacity'],
-        layer.paint['icon-color']
+        layer.paint['icon-opacity']
     );
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
@@ -60,8 +59,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['text-halo-width'],
         layer.paint['text-halo-color'],
         layer.paint['text-halo-blur'],
-        layer.paint['text-opacity'],
-        layer.paint['text-color']
+        layer.paint['text-opacity']
     );
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -70,7 +68,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, size, haloWidth, haloColor, haloBlur, opacity, color) {
+        rotationAlignment, pitchAlignment, size, haloWidth, haloColor, haloBlur, opacity) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -96,11 +94,14 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         if (!bucket) continue;
         const buffers = isText ? bucket.buffers.glyph : bucket.buffers.icon;
         if (!buffers || !buffers.segments.length) continue;
+        const layerData = buffers.layerData[layer.id];
+        const programConfiguration = layerData.programConfiguration;
 
         const isSDF = isText || bucket.sdfIcons;
 
         if (!program || bucket.fontstack !== prevFontstack) {
-            program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon');
+            program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
+            programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
             setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, size,
                     bucket.iconsNeedLinear, isText ? bucket.adjustedTextSize : bucket.adjustedIconSize, opacity);
@@ -112,7 +113,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
-                pitchWithMap, size, haloWidth, haloColor, haloBlur, color);
+                pitchWithMap, size, haloWidth, haloColor, haloBlur);
 
         prevFontstack = bucket.fontstack;
     }
@@ -164,7 +165,7 @@ function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitc
 }
 
 function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
-        pitchWithMap, size, haloWidth, haloColor, haloBlur, color) {
+        pitchWithMap, size, haloWidth, haloColor, haloBlur) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -184,14 +185,14 @@ function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
 
         if (haloWidth) { // Draw halo underneath the text.
             gl.uniform1f(program.u_gamma, (haloBlur * blurOffset / sdfPx + gamma) / gammaScale);
-            gl.uniform4fv(program.u_color, haloColor);
             gl.uniform1f(program.u_buffer, (haloOffset - haloWidth / fontScale) / sdfPx);
+            gl.uniform1f(program.u_is_halo, 1);
 
             drawSymbolElements(buffers, layer, gl, program);
         }
 
+        gl.uniform1f(program.u_is_halo, 0);
         gl.uniform1f(program.u_gamma, gamma / gammaScale);
-        gl.uniform4fv(program.u_color, color);
         gl.uniform1f(program.u_buffer, (256 - 64) / 256);
     }
 
@@ -199,8 +200,11 @@ function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
 }
 
 function drawSymbolElements(buffers, layer, gl, program) {
+    const layerData = buffers.layerData[layer.id];
+    const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
+
     for (const segment of buffers.segments) {
-        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);
+        segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }
