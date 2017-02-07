@@ -3,7 +3,7 @@
 const VectorTile = require('vector-tile').VectorTile;
 const Pbf = require('pbf');
 const fs = require('fs');
-const createFilter = require('../../../js/style-spec').featureFilter;
+const createFilter = require('../../../src/style-spec').featureFilter;
 const filters = require('./filters.json');
 const path = require('path');
 

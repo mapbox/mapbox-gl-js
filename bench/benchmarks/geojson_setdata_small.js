@@ -1,6 +1,6 @@
 'use strict';
 
-const Evented = require('../../js/util/evented');
+const Evented = require('../../src/util/evented');
 const formatNumber = require('../lib/format_number');
 const setDataPerf = require('../lib/set_data_perf');
 const setupGeoJSONMap = require('../lib/setup_geojson_map');

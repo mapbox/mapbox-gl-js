@@ -4,7 +4,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var ref = require('../../../js/style-spec/reference/latest');
+var ref = require('../../../src/style-spec/reference/latest');
 var _ = require('lodash');
 var remark = require('remark');
 var html = require('remark-html');

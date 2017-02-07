@@ -1,7 +1,7 @@
 'use strict';
 
-const util = require('../../js/util/util');
-const mapboxgl = require('../../js/mapbox-gl');
+const util = require('../../src/util/util');
+const mapboxgl = require('../../src');
 
 module.exports = function createMap(options) {
     options = util.extend({width: 512, height: 512}, options);

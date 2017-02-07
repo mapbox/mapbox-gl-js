@@ -3,7 +3,7 @@
 const test = require('mapbox-gl-js-test').test;
 const fs = require('fs');
 const pkg = require('../../package.json');
-const reference = require('../../js/style-spec/reference/latest');
+const reference = require('../../src/style-spec/reference/latest');
 
 const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 

@@ -1,6 +1,6 @@
 function load() {
     ZeroClipboard.config({
-        swfPath: window.location.origin + '/mapbox-gl-js/js/ZeroClipboard.swf',
+        swfPath: window.location.origin + '/mapbox-gl-js/src/ZeroClipboard.swf',
         forceHandCursor: true
     });
 
