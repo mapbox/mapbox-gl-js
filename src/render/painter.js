@@ -373,6 +373,7 @@ class Painter {
         const fragmentSource = configuration.applyPragmas(definesSource + shaders.prelude.fragmentSource + definition.fragmentSource, 'fragment');
         const vertexSource = configuration.applyPragmas(definesSource + shaders.prelude.vertexSource + definition.vertexSource, 'vertex');
 
+        // console.log(fragmentSource.split('\n').map((l, i) => `${i}: ${l}`).join('\n'))
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragmentShader, fragmentSource);
         gl.compileShader(fragmentShader);

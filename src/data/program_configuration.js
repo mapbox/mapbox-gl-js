@@ -183,6 +183,7 @@ class ProgramConfiguration {
     setUniforms(gl, program, layer, globalProperties) {
         for (const uniform of this.uniforms) {
             const value = layer.getPaintValue(uniform.property, globalProperties);
+            console.log(uniform.name, value)
             if (uniform.components === 4) {
                 gl.uniform4fv(program[uniform.name], value);
             } else {

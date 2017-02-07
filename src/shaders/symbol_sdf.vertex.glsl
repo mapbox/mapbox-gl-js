@@ -8,6 +8,8 @@ attribute vec4 a_data;
 #pragma mapbox: define lowp vec4 fill_color
 #pragma mapbox: define lowp vec4 halo_color
 #pragma mapbox: define lowp float opacity
+#pragma mapbox: define lowp float halo_width
+#pragma mapbox: define lowp float halo_blur
 
 // matrix is for the vertex position.
 uniform mat4 u_matrix;
@@ -30,6 +32,8 @@ void main() {
     #pragma mapbox: initialize lowp vec4 fill_color
     #pragma mapbox: initialize lowp vec4 halo_color
     #pragma mapbox: initialize lowp float opacity
+    #pragma mapbox: initialize lowp float halo_width
+    #pragma mapbox: initialize lowp float halo_blur
 
     vec2 a_tex = a_texture_pos.xy;
     mediump float a_labelminzoom = a_data[0];
