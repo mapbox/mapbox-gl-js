@@ -2,7 +2,7 @@
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
   "version": "0.32.1",
-  "main": "js/mapbox-gl.js",
+  "main": "src/index.js",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
@@ -89,17 +89,17 @@
       "package-json-versionify",
       "unassertify",
       "brfs",
-      "./js/style-spec/minifyify_style_spec"
+      "./src/style-spec/minifyify_style_spec"
     ]
   },
   "browser": {
-    "./js/util/window.js": "./js/util/browser/window.js",
-    "./js/util/web_worker.js": "./js/util/browser/web_worker.js"
+    "./src/util/window.js": "./src/util/browser/window.js",
+    "./src/util/web_worker.js": "./src/util/browser/web_worker.js"
   },
   "scripts": {
-    "build-dev": "browserify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
-    "watch-dev": "watchify js/mapbox-gl.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
-    "build-min": "browserify js/mapbox-gl.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
+    "build-dev": "browserify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
+    "watch-dev": "watchify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
+    "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
     "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
@@ -119,12 +119,12 @@
     "test-plugin": "tap test/plugins/",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/*-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
-    "test-unit": "tap --reporter dot --no-coverage test/js",
+    "test-unit": "tap --reporter dot --no-coverage test/unit",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "postinstall": "cd js/style-spec && yarn || npm install"
+    "postinstall": "cd src/style-spec && yarn || npm install"
   }
 }
