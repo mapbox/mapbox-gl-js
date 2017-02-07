@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const createVertexArrayType = require('./vertex_array_type');
 const util = require('../util/util');
 
@@ -34,6 +35,7 @@ class ProgramConfiguration {
 
         for (const attributeConfig of attributes) {
             const attribute = normalizePaintAttribute(attributeConfig, layer);
+            assert(/^a_/.test(attribute.name));
             const name = attribute.name.slice(2);
 
             if (layer.isPaintValueFeatureConstant(attribute.property)) {
@@ -210,7 +212,13 @@ function getPaintAttributeValue(attribute, layer, globalProperties, featurePrope
 }
 
 function normalizePaintAttribute(attribute, layer) {
-    const name = attribute.property.replace(`${layer.type}-`, '').replace(/-/g, '_');
+    let name = attribute.name;
+
+    // by default, construct the shader variable name for paint attribute
+    // `layertype-some-property` as `some_property`
+    if (!name) {
+        name = attribute.property.replace(`${layer.type}-`, '').replace(/-/g, '_');
+    }
     const isColor = layer._paintSpecifications[attribute.property].type === 'color';
 
     return util.extend({
