@@ -173,8 +173,6 @@ function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
         gl.uniform1f(program.u_gamma_scale, gammaScale);
 
         if (hasHalo) { // Draw halo underneath the text.
-            console.log('u_font_scale', fontScale)
-            console.log('u_gamma_scale', gammaScale)
             gl.uniform1f(program.u_is_halo, 1);
             drawSymbolElements(buffers, layer, gl, program);
         }
