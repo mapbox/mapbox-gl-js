@@ -128,7 +128,7 @@ exports.setType = function (name, type) {
 /**
  * Loads a tile from the given params and parse it into buckets ready to send
  * back to the main thread for rendering.  Should call the callback with:
- * `{ buckets, featureIndex, collisionTile, symbolInstancesArray, symbolQuadsArray, rawTileData}`.
+ * `{ buckets, featureIndex, collisionTile, rawTileData}`.
  *
  * @method
  * @name loadTile

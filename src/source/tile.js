@@ -9,8 +9,6 @@ const GeoJSONFeature = require('../util/vectortile_to_geojson');
 const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
-const SymbolInstancesArray = require('../symbol/symbol_instances');
-const SymbolQuadsArray = require('../symbol/symbol_quads');
 
 /**
  * A tile object is the combination of a Coordinate, which defines
@@ -81,8 +79,6 @@ class Tile {
 
         this.collisionBoxArray = new CollisionBoxArray(data.collisionBoxArray);
         this.collisionTile = new CollisionTile(data.collisionTile, this.collisionBoxArray);
-        this.symbolInstancesArray = new SymbolInstancesArray(data.symbolInstancesArray);
-        this.symbolQuadsArray = new SymbolQuadsArray(data.symbolQuadsArray);
         this.featureIndex = new FeatureIndex(data.featureIndex, this.rawTileData, this.collisionTile);
         this.buckets = Bucket.deserialize(data.buckets, painter.style);
     }
@@ -124,8 +120,6 @@ class Tile {
         this.buckets = {};
 
         this.collisionBoxArray = null;
-        this.symbolQuadsArray = null;
-        this.symbolInstancesArray = null;
         this.collisionTile = null;
         this.featureIndex = null;
         this.state = 'unloaded';

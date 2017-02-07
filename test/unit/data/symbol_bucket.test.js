@@ -8,8 +8,6 @@ const VectorTile = require('vector-tile').VectorTile;
 const SymbolBucket = require('../../../src/data/bucket/symbol_bucket');
 const Collision = require('../../../src/symbol/collision_tile');
 const CollisionBoxArray = require('../../../src/symbol/collision_box');
-const SymbolInstancesArray = require('../../../src/symbol/symbol_instances');
-const SymbolQuadsArray = require('../../../src/symbol/symbol_quads');
 const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
 const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
@@ -22,8 +20,6 @@ const glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/
 
 /*eslint new-cap: 0*/
 const collisionBoxArray = new CollisionBoxArray();
-const symbolQuadsArray = new SymbolQuadsArray();
-const symbolInstancesArray = new SymbolInstancesArray();
 const collision = new Collision(0, 0, collisionBoxArray);
 const atlas = new GlyphAtlas();
 for (const id in glyphs) {
@@ -45,8 +41,6 @@ function bucketSetup() {
         overscaling: 1,
         zoom: 0,
         collisionBoxArray: collisionBoxArray,
-        symbolInstancesArray: symbolInstancesArray,
-        symbolQuadsArray: symbolQuadsArray,
         layers: [layer]
     });
 }
@@ -78,7 +72,7 @@ test('SymbolBucket', (t) => {
 
 test('SymbolBucket integer overflow', (t) => {
     t.stub(util, 'warnOnce');
-    t.stub(SymbolBucket, 'MAX_QUADS', 5);
+    t.stub(SymbolBucket, 'MAX_INSTANCES', 5);
 
     const bucket = bucketSetup();
     const options = {iconDependencies: {}, glyphDependencies: {}};

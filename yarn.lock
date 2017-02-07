@@ -16,7 +16,7 @@
     colors "^1.1.2"
     d3-queue "^3.0.3"
     diff "^3.0.0"
-    handlebars "^4.0.5"
+    lodash "^4.17.4"
     pixelmatch "^4.0.2"
     pngjs "^3.0.0"
     st "^1.1.0"
@@ -5088,7 +5088,7 @@ sshpk@^1.7.0:
     jsbn "~0.1.0"
     tweetnacl "~0.14.0"
 
-st@^1.1.0:
+st@^1.1.0, st@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/st/-/st-1.2.0.tgz#e6313c1836a0889e8507be5bb189b2245266c2df"
   dependencies:
