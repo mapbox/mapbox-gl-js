@@ -725,6 +725,83 @@
       }
     },
     {
+      "id": "invalid categorical zoom-and-property function - repeated stop",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "1"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid categorical zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "1"
+              },
+              1
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": "1"
+              },
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
       "id": "valid default",
       "type": "fill",
       "source": "source",
