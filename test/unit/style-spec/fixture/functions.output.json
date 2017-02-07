@@ -80,11 +80,11 @@
     "line": 354
   },
   {
-    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
-  },
-  {
     "message": "layers[22].paint.fill-color: missing required property \"property\"",
     "line": 401
+  },
+  {
+    "message": "layers[32].paint.fill-color.stops[0][0]: stop domain value must be a number, string, or boolean"
   },
   {
     "message": "layers[23].paint.fill-color.stops: identity function may not have a \"stops\" property",
@@ -147,11 +147,15 @@
     "line": 718
   },
   {
-    "message": "layers[40].paint.fill-opacity.default: number expected, string found",
-    "line": 749
+    "message": "layers[39].paint.fill-opacity.stops[2][0].value: stop domain values must be unique",
+    "line": 754
   },
   {
-    "message": "layers[41].paint.fill-color.default: color expected, \"invalid\" found",
-    "line": 762
+    "message": "layers[42].paint.fill-opacity.default: number expected, string found",
+    "line": 826
+  },
+  {
+    "message": "layers[43].paint.fill-color.default: color expected, \"invalid\" found",
+    "line": 839
   }
 ]

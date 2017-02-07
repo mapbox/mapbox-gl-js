@@ -12,7 +12,7 @@ module.exports = function validateFunction(options) {
     const functionValueSpec = options.valueSpec;
     const functionType = unbundle(options.value.type);
     let stopKeyType;
-    const stopDomainValues = {};
+    let stopDomainValues = {};
     let previousStopDomainValue;
     let previousStopDomainZoom;
 
@@ -114,6 +114,7 @@ module.exports = function validateFunction(options) {
             if (unbundle(value[0].zoom) !== previousStopDomainZoom) {
                 previousStopDomainZoom = unbundle(value[0].zoom);
                 previousStopDomainValue = undefined;
+                stopDomainValues = {};
             }
             errors = errors.concat(validateObject({
                 key: `${key}[0]`,
