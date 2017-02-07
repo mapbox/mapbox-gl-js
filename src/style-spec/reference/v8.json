@@ -2479,6 +2479,7 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "requires": [
         "icon-image"
@@ -2641,6 +2642,7 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "requires": [
         "text-field"

@@ -44,7 +44,8 @@ const symbolInterfaces = {
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'text-halo-color', type: 'Uint8'}
+            {name: 'a_halo_color', property: 'text-halo-color', type: 'Uint8'},
+            {name: 'a_opacity', property: 'text-opacity', type: 'Uint8', multiplier: 255}
         ]
     },
     icon: {
@@ -52,7 +53,8 @@ const symbolInterfaces = {
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
-            {name: 'a_halo_color', property: 'icon-halo-color', type: 'Uint8'}
+            {name: 'a_halo_color', property: 'icon-halo-color', type: 'Uint8'},
+            {name: 'a_opacity', property: 'icon-opacity', type: 'Uint8', multiplier: 255}
         ]
     },
     collisionBox: {

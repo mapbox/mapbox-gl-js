@@ -46,8 +46,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.layout['icon-size'],
         layer.paint['icon-halo-width'],
         layer.paint['icon-halo-color'],
-        layer.paint['icon-halo-blur'],
-        layer.paint['icon-opacity']
+        layer.paint['icon-halo-blur']
     );
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
@@ -58,8 +57,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.layout['text-size'],
         layer.paint['text-halo-width'],
         layer.paint['text-halo-color'],
-        layer.paint['text-halo-blur'],
-        layer.paint['text-opacity']
+        layer.paint['text-halo-blur']
     );
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -68,7 +66,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, size, haloWidth, haloColor, haloBlur, opacity) {
+        rotationAlignment, pitchAlignment, size, haloWidth, haloColor, haloBlur) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -104,7 +102,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
             setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, size,
-                    bucket.iconsNeedLinear, isText ? bucket.adjustedTextSize : bucket.adjustedIconSize, opacity);
+                    bucket.iconsNeedLinear, isText ? bucket.adjustedTextSize : bucket.adjustedIconSize);
         }
 
         painter.enableTileClippingMask(coord);
@@ -122,7 +120,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 }
 
 function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, size,
-        iconsNeedLinear, adjustedSize, opacity) {
+        iconsNeedLinear, adjustedSize) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -160,8 +158,6 @@ function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitc
     gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
     gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
-
-    gl.uniform1f(program.u_opacity, opacity);
 }
 
 function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
