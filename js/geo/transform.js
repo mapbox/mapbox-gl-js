@@ -468,5 +468,16 @@ Transform.prototype = {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
+
+        // line antialiasing matrix
+        m = mat2.create();
+        mat2.scale(m, m, [1, Math.cos(this._pitch)]);
+        mat2.rotate(m, m, this.angle);
+        this.lineAntialiasingMatrix = m;
+
+        // calculate how much longer the real world distance is at the top of the screen
+        // than at the middle of the screen.
+        var topedgelength = Math.sqrt(this.height * this.height / 4  * (1 + this.altitude * this.altitude));
+        this.lineStretch = (topedgelength + (this.height / 2 * Math.tan(this._pitch))) / topedgelength - 1;
     }
 };

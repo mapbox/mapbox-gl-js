@@ -512,3 +512,30 @@ exports.isClosedPolygon = function(points) {
     // polygon simplification can produce polygons with zero area and more than 3 points
     return (Math.abs(exports.calculateSignedArea(points)) > 0.01);
 };
+
+/**
+ * Converts spherical coordinates to cartesian coordinates.
+ * @param {Array<number>} spherical Spherical coordinates, in [radial, azimuthal, polar]
+ *
+ * @return {Array<number>} cartesian coordinates in [x, y, z]
+ */
+
+exports.sphericalToCartesian = function(spherical) {
+    var r = spherical[0],
+        azimuthal = spherical[1],
+        polar = spherical[2];
+    // We abstract "north"/"up" (compass-wise) to be 0° when really this is 90° (π/2):
+    // correct for that here
+    azimuthal += 90;
+
+    // Convert azimuthal and polar angles to radians
+    azimuthal *= Math.PI / 180;
+    polar *= Math.PI / 180;
+
+    // spherical to cartesian (x, y, z)
+    return [
+        r * Math.cos(azimuthal) * Math.sin(polar),
+        r * Math.sin(azimuthal) * Math.sin(polar),
+        r * Math.cos(polar)
+    ];
+};

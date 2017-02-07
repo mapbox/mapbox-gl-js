@@ -10,7 +10,8 @@ module.exports = function parseColor(input) {
 
     if (StyleFunction.isFunctionDefinition(input)) {
 
-        return util.extend({}, input, {
+        if (!input.stops) return input;
+        else return util.extend({}, input, {
             stops: input.stops.map(function(stop) {
                 return [stop[0], parseColor(stop[1])];
             })
@@ -33,6 +34,9 @@ module.exports = function parseColor(input) {
         }
 
         return cache[input];
+
+    } else if (Array.isArray(input)) {
+        return input;
 
     } else {
         throw new Error('Invalid color ' + input);

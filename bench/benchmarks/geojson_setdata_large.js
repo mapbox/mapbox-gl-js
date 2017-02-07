@@ -30,9 +30,8 @@ module.exports = function() {
 
         map.on('load', function() {
             map = setupGeoJSONMap(map);
-            var source = map.getSource('geojson');
 
-            setDataPerf(source, 50, data, function(err, ms) {
+            setDataPerf(map.style.sourceCaches.geojson, data, function(err, ms) {
                 if (err) return evented.fire('error', {error: err});
                 map.remove();
                 evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});

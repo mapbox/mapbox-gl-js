@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var StructArrayType = require('../../../js/util/struct_array');
 
 test('StructArray', function(t) {

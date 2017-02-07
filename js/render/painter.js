@@ -186,6 +186,7 @@ var draw = {
     circle: require('./draw_circle'),
     line: require('./draw_line'),
     fill: require('./draw_fill'),
+    extrusion: require('./draw_extrusion'),
     raster: require('./draw_raster'),
     background: require('./draw_background'),
     debug: require('./draw_debug')
@@ -223,18 +224,18 @@ Painter.prototype.renderPass = function(options) {
 
     for (var i = 0; i < groups.length; i++) {
         var group = groups[isOpaquePass ? groups.length - 1 - i : i];
-        var source = this.style.sources[group.source];
+        var sourceCache = this.style.sourceCaches[group.source];
 
         var j;
         var coords = [];
-        if (source) {
-            coords = source.getVisibleCoordinates();
+        if (sourceCache) {
+            coords = sourceCache.getVisibleCoordinates();
             for (j = 0; j < coords.length; j++) {
-                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], source.maxzoom);
+                coords[j].posMatrix = this.transform.calculatePosMatrix(coords[j], sourceCache.getSource().maxzoom);
             }
             this.clearStencil();
-            if (source.prepare) source.prepare();
-            if (source.isTileClipped) {
+            if (sourceCache.prepare) sourceCache.prepare();
+            if (sourceCache.getSource().isTileClipped) {
                 this._renderTileClippingMasks(coords);
             }
         }
@@ -253,11 +254,11 @@ Painter.prototype.renderPass = function(options) {
         for (j = 0; j < group.length; j++) {
             var layer = group[isOpaquePass ? group.length - 1 - j : j];
             this.currentLayer += isOpaquePass ? -1 : 1;
-            this.renderLayer(this, source, layer, coords);
+            this.renderLayer(this, sourceCache, layer, coords);
         }
 
-        if (source) {
-            draw.debug(this, source, coords);
+        if (sourceCache) {
+            draw.debug(this, sourceCache, coords);
         }
     }
 };
@@ -269,11 +270,20 @@ Painter.prototype.depthMask = function(mask) {
     }
 };
 
-Painter.prototype.renderLayer = function(painter, source, layer, coords) {
+Painter.prototype.renderLayer = function(painter, sourceCache, layer, coords) {
     if (layer.isHidden(this.transform.zoom)) return;
     if (layer.type !== 'background' && !coords.length) return;
     this.id = layer.id;
-    draw[layer.type](painter, source, layer, coords);
+
+    var type = layer.type;
+    if (type === 'fill' &&
+        (!layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+        !layer.isPaintValueZoomConstant('fill-extrude-height') ||
+        layer.getPaintValue('fill-extrude-height') !== 0)) {
+        type = 'extrusion';
+    }
+
+    draw[type](painter, sourceCache, layer, coords);
 };
 
 Painter.prototype.setDepthSublayer = function(n) {
@@ -305,7 +315,7 @@ Painter.prototype.translatePosMatrix = function(matrix, tile, translate, anchor)
     return translatedMatrix;
 };
 
-Painter.prototype.saveTexture = function(texture) {
+Painter.prototype.saveTileTexture = function(texture) {
     var textures = this.reusableTextures[texture.size];
     if (!textures) {
         this.reusableTextures[texture.size] = [texture];
@@ -314,10 +324,31 @@ Painter.prototype.saveTexture = function(texture) {
     }
 };
 
+Painter.prototype.saveViewportTexture = function(texture) {
+    if (!this.reusableTextures.viewport) this.reusableTextures.viewport = {};
+    this.reusableTextures.viewport.texture = texture;
+};
 
-Painter.prototype.getTexture = function(size) {
-    var textures = this.reusableTextures[size];
-    return textures && textures.length > 0 ? textures.pop() : null;
+Painter.prototype.getTileTexture = function(width, height) {
+    var widthTextures = this.reusableTextures[width];
+    if (widthTextures) {
+        var textures = widthTextures[height || width];
+        return textures && textures.length > 0 ? textures.pop() : null;
+    }
+};
+
+Painter.prototype.getViewportTexture = function(width, height) {
+    if (!this.reusableTextures.viewport) return;
+
+    var texture = this.reusableTextures.viewport.texture;
+
+    if (texture.width === width && texture.height === height) {
+        return texture;
+    } else {
+        this.gl.deleteTexture(texture);
+        this.reusableTextures.viewport.texture = null;
+        return;
+    }
 };
 
 Painter.prototype.lineWidth = function(width) {

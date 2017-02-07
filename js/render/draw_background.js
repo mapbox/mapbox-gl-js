@@ -7,7 +7,7 @@ var tileSize = 512;
 
 module.exports = drawBackground;
 
-function drawBackground(painter, source, layer) {
+function drawBackground(painter, sourceCache, layer) {
     var gl = painter.gl;
     var transform = painter.transform;
     var color = layer.paint['background-color'];
@@ -24,7 +24,7 @@ function drawBackground(painter, source, layer) {
         if (painter.isOpaquePass) return;
 
         // Draw texture fill
-        program = painter.useProgram('pattern');
+        program = painter.useProgram('fillPattern');
         gl.uniform1i(program.u_image, 0);
         gl.uniform2fv(program.u_pattern_tl_a, imagePosA.tl);
         gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);

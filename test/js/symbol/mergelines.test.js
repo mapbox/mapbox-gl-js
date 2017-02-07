@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var mergeLines = require('../../../js/symbol/mergelines');
 var Point = require('point-geometry');
 

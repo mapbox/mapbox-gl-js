@@ -28,6 +28,7 @@ VertexArrayObject.prototype.bind = function(gl, program, layoutVertexBuffer, ele
 
     if (!gl.extVertexArrayObject || isFreshBindRequired) {
         this.freshBind(gl, program, layoutVertexBuffer, elementBuffer, vertexBuffer2);
+        this.gl = gl;
     } else {
         gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
     }
@@ -38,7 +39,7 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
     var numNextAttributes = program.numAttributes;
 
     if (gl.extVertexArrayObject) {
-        if (this.vao) this.destroy(gl);
+        if (this.vao) this.destroy();
         this.vao = gl.extVertexArrayObject.createVertexArrayOES();
         gl.extVertexArrayObject.bindVertexArrayOES(this.vao);
         numPrevAttributes = 0;
@@ -80,17 +81,9 @@ VertexArrayObject.prototype.freshBind = function(gl, program, layoutVertexBuffer
     gl.currentNumAttributes = numNextAttributes;
 };
 
-VertexArrayObject.prototype.unbind = function(gl) {
-    var ext = gl.extVertexArrayObject;
-    if (ext) {
-        ext.bindVertexArrayOES(null);
-    }
-};
-
-VertexArrayObject.prototype.destroy = function(gl) {
-    var ext = gl.extVertexArrayObject;
-    if (ext && this.vao) {
-        ext.deleteVertexArrayOES(this.vao);
+VertexArrayObject.prototype.destroy = function() {
+    if (this.vao) {
+        this.gl.extVertexArrayObject.deleteVertexArrayOES(this.vao);
         this.vao = null;
     }
 };

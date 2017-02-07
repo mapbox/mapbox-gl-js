@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var StyleLayer = require('../../../js/style/style_layer');
 var FillStyleLayer = require('../../../js/style/style_layer/fill_style_layer');
 var util = require('../../../js/util/util');
@@ -559,52 +559,69 @@ test('StyleLayer#serialize', function(t) {
     t.end();
 });
 
-test('StyleLayer#getLayoutValue (default exceptions)', function(assert) {
-    assert.test('symbol-placement:point => *-rotation-alignment:viewport', function(assert) {
+test('StyleLayer#getLayoutValue (default exceptions)', function(t) {
+    t.test('symbol-placement:point => *-rotation-alignment:viewport', function(t) {
         var layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
                 "symbol-placement": "point"
             }
         });
-        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
-        assert.equal(layer.getLayoutValue('icon-rotation-alignment'), 'viewport');
-        assert.end();
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
+        t.equal(layer.getLayoutValue('icon-rotation-alignment'), 'viewport');
+        t.end();
     });
-    assert.test('symbol-placement:line => *-rotation-alignment:map', function(assert) {
+
+    t.test('symbol-placement:line => *-rotation-alignment:map', function(t) {
         var layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
                 "symbol-placement": "line"
             }
         });
-        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
-        assert.equal(layer.getLayoutValue('icon-rotation-alignment'), 'map');
-        assert.end();
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        t.equal(layer.getLayoutValue('icon-rotation-alignment'), 'map');
+        t.end();
     });
-    assert.test('text-rotation-alignment:map => text-pitch-alignment:map', function(assert) {
+
+    t.test('text-rotation-alignment:map => text-pitch-alignment:map', function(t) {
         var layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
                 "text-rotation-alignment": "map"
             }
         });
-        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
-        assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
-        assert.end();
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        t.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
+        t.end();
     });
-    assert.test('text-rotation-alignment:viewport => text-pitch-alignment:viewport', function(assert) {
+
+    t.test('text-rotation-alignment:viewport => text-pitch-alignment:viewport', function(t) {
         var layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
                 "text-rotation-alignment": "viewport"
             }
         });
-        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
-        assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'viewport');
-        assert.end();
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
+        t.equal(layer.getLayoutValue('text-pitch-alignment'), 'viewport');
+        t.end();
     });
-    assert.test('text-pitch-alignment respected when set', function(assert) {
+
+    t.test('text-pitch-alignment:auto defaults to text-rotation-alignment', function(t) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "text-rotation-alignment": "map",
+                "text-pitch-alignment": "auto"
+            }
+        });
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        t.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
+        t.end();
+    });
+
+    t.test('text-pitch-alignment respected when set', function(t) {
         var layer = StyleLayer.create({
             "type": "symbol",
             "layout": {
@@ -612,11 +629,60 @@ test('StyleLayer#getLayoutValue (default exceptions)', function(assert) {
                 "text-pitch-alignment": "map"
             }
         });
-        assert.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
-        assert.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
-        assert.end();
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
+        t.equal(layer.getLayoutValue('text-pitch-alignment'), 'map');
+        t.end();
     });
-    assert.end();
+
+    t.test('symbol-placement:point and text-rotation-alignment:auto  => text-rotation-alignment:viewport ', function(t) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "point",
+                "text-rotation-alignment": "auto"
+            }
+        });
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'viewport');
+        t.end();
+    });
+
+    t.test('symbol-placement:line and text-rotation-alignment:auto  => text-rotation-alignment:map ', function(t) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "line",
+                "text-rotation-alignment": "auto"
+            }
+        });
+        t.equal(layer.getLayoutValue('text-rotation-alignment'), 'map');
+        t.end();
+    });
+
+    t.test('symbol-placement:point and icon-rotation-alignment:auto  => icon-rotation-alignment:viewport ', function(t) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "point",
+                "icon-rotation-alignment": "auto"
+            }
+        });
+        t.equal(layer.getLayoutValue('icon-rotation-alignment'), 'viewport');
+        t.end();
+    });
+
+    t.test('symbol-placement:line and icon-rotation-alignment:auto  => icon-rotation-alignment:map ', function(t) {
+        var layer = StyleLayer.create({
+            "type": "symbol",
+            "layout": {
+                "symbol-placement": "line",
+                "icon-rotation-alignment": "auto"
+            }
+        });
+        t.equal(layer.getLayoutValue('icon-rotation-alignment'), 'map');
+        t.end();
+    });
+
+    t.end();
 });
 
 function createAnimationLoop() {

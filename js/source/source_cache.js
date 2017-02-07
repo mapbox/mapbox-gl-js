@@ -27,35 +27,25 @@ function SourceCache(id, options, dispatcher) {
     this.id = id;
     this.dispatcher = dispatcher;
 
-    var source = this._source = Source.create(id, options, dispatcher)
-    .on('load', function () {
+    this._source = Source.create(id, options, dispatcher, this);
+
+    this.on('source.load', function() {
         if (this.map && this._source.onAdd) { this._source.onAdd(this.map); }
-
         this._sourceLoaded = true;
+    });
 
-        this.tileSize = source.tileSize;
-        this.minzoom = source.minzoom;
-        this.maxzoom = source.maxzoom;
-        this.roundZoom = source.roundZoom;
-        this.reparseOverscaled = source.reparseOverscaled;
-        this.isTileClipped = source.isTileClipped;
-        this.attribution = source.attribution;
-
-        this.vectorLayerIds = source.vectorLayerIds;
-
-        this.fire('load');
-    }.bind(this))
-    .on('error', function (e) {
+    this.on('error', function() {
         this._sourceErrored = true;
-        this.fire('error', e);
-    }.bind(this))
-    .on('change', function () {
-        this.reload();
-        if (this.transform) {
-            this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+    });
+
+    this.on('data', function(event) {
+        if (this._sourceLoaded && event.dataType === 'source') {
+            this.reload();
+            if (this.transform) {
+                this.update(this.transform, this.map && this.map.style.rasterFadeDuration);
+            }
         }
-        this.fire('change');
-    }.bind(this));
+    });
 
     this._tiles = {};
     this._cache = new Cache(0, this.unloadTile.bind(this));
@@ -160,15 +150,16 @@ SourceCache.prototype = util.inherit(Evented, {
     _tileLoaded: function (tile, err) {
         if (err) {
             tile.state = 'errored';
-            this.fire('tile.error', {tile: tile, error: err});
-            this._source.fire('tile.error', {tile: tile, error: err});
+            this._source.fire('error', {tile: tile, error: err});
             return;
         }
 
-        tile.source = this;
+        tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
-        this.fire('tile.load', {tile: tile});
-        this._source.fire('tile.load', {tile: tile});
+        this._source.fire('data', {tile: tile, dataType: 'tile'});
+
+        // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
+        if (this.map) this.map.painter.tileExtentVAO.vao = null;
     },
 
     /**
@@ -198,7 +189,7 @@ SourceCache.prototype = util.inherit(Evented, {
      * @private
      */
     getZoom: function(transform) {
-        return transform.zoom + transform.scaleZoom(transform.tileSize / this.tileSize);
+        return transform.zoom + transform.scaleZoom(transform.tileSize / this._source.tileSize);
     },
 
     /**
@@ -221,7 +212,7 @@ SourceCache.prototype = util.inherit(Evented, {
             if (retain[id] || !tile.hasData() || tile.coord.z <= coord.z || tile.coord.z > maxCoveringZoom) continue;
 
             // disregard tiles that are not descendants of the given tile coordinate
-            var z2 = Math.pow(2, Math.min(tile.coord.z, this.maxzoom) - Math.min(coord.z, this.maxzoom));
+            var z2 = Math.pow(2, Math.min(tile.coord.z, this._source.maxzoom) - Math.min(coord.z, this._source.maxzoom));
             if (Math.floor(tile.coord.x / z2) !== coord.x ||
                 Math.floor(tile.coord.y / z2) !== coord.y)
                 continue;
@@ -232,7 +223,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
             // loop through parents; retain the topmost loaded one if found
             while (tile && tile.coord.z - 1 > coord.z) {
-                var parentId = tile.coord.parent(this.maxzoom).id;
+                var parentId = tile.coord.parent(this._source.maxzoom).id;
                 tile = this._tiles[parentId];
 
                 if (tile && tile.hasData()) {
@@ -256,7 +247,7 @@ SourceCache.prototype = util.inherit(Evented, {
      */
     findLoadedParent: function(coord, minCoveringZoom, retain) {
         for (var z = coord.z - 1; z >= minCoveringZoom; z--) {
-            coord = coord.parent(this.maxzoom);
+            coord = coord.parent(this._source.maxzoom);
             var tile = this._tiles[coord.id];
             if (tile && tile.hasData()) {
                 retain[coord.id] = true;
@@ -301,9 +292,9 @@ SourceCache.prototype = util.inherit(Evented, {
         this.updateCacheSize(transform);
 
         // Determine the overzooming/underzooming amounts.
-        var zoom = (this.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
-        var minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this.minzoom);
-        var maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this.minzoom);
+        var zoom = (this._source.roundZoom ? Math.round : Math.floor)(this.getZoom(transform));
+        var minCoveringZoom = Math.max(zoom - SourceCache.maxOverzooming, this._source.minzoom);
+        var maxCoveringZoom = Math.max(zoom + SourceCache.maxUnderzooming,  this._source.minzoom);
 
         // Retain is a list of tiles that we shouldn't delete, even if they are not
         // the most ideal tile for the current viewport. This may include tiles like
@@ -315,9 +306,23 @@ SourceCache.prototype = util.inherit(Evented, {
         // better, retained tiles. They are not drawn separately.
         this._coveredTiles = {};
 
-        var required = this.used ? transform.coveringTiles(this._source) : [];
-        for (i = 0; i < required.length; i++) {
-            coord = required[i];
+        var visibleCoords;
+        if (!this.used) {
+            visibleCoords = [];
+        } else if (this._source.coord) {
+            visibleCoords = [this._source.coord];
+        } else {
+            visibleCoords = transform.coveringTiles({
+                tileSize: this._source.tileSize,
+                minzoom: this._source.minzoom,
+                maxzoom: this._source.maxzoom,
+                roundZoom: this._source.roundZoom,
+                reparseOverscaled: this._source.reparseOverscaled
+            });
+        }
+
+        for (i = 0; i < visibleCoords.length; i++) {
+            coord = visibleCoords[i];
             tile = this.addTile(coord);
 
             retain[coord.id] = true;
@@ -391,15 +396,14 @@ SourceCache.prototype = util.inherit(Evented, {
 
         if (!tile) {
             var zoom = coord.z;
-            var overscaling = zoom > this.maxzoom ? Math.pow(2, zoom - this.maxzoom) : 1;
-            tile = new Tile(wrapped, this.tileSize * overscaling, this.maxzoom);
+            var overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
+            tile = new Tile(wrapped, this._source.tileSize * overscaling, this._source.maxzoom);
             this.loadTile(tile, this._tileLoaded.bind(this, tile));
         }
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this.fire('tile.add', {tile: tile});
-        this._source.fire('tile.add', {tile: tile});
+        this._source.fire('dataloading', {tile: tile, dataType: 'tile'});
 
         return tile;
     },
@@ -417,8 +421,7 @@ SourceCache.prototype = util.inherit(Evented, {
 
         tile.uses--;
         delete this._tiles[id];
-        this.fire('tile.remove', {tile: tile});
-        this._source.fire('tile.remove', {tile: tile});
+        this._source.fire('data', { tile: tile, dataType: 'tile' });
 
         if (tile.uses > 0)
             return;
@@ -510,7 +513,7 @@ SourceCache.prototype = util.inherit(Evented, {
         var ids = this.getIds();
         for (var i = 0; i < ids.length; i++) {
             var tile = this.getTileByID(ids[i]);
-            tile.redoPlacement(this);
+            tile.redoPlacement(this._source);
         }
     },
 

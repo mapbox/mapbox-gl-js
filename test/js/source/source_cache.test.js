@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var SourceCache = require('../../../js/source/source_cache');
 var Source = require('../../../js/source/source');
 var TileCoord = require('../../../js/source/tile_coord');
@@ -32,7 +32,7 @@ Source.setType('mock-source-type', function create (id, sourceOptions) {
         if (sourceOptions.error) {
             source.fire('error', { error: sourceOptions.error });
         } else {
-            source.fire('load');
+            source.fire('source.load');
         }
     }, 0);
     return source;
@@ -48,16 +48,6 @@ function createSourceCache(options, used) {
     sc.used = typeof used === 'boolean' ? used : true;
     return sc;
 }
-
-test('SourceCache#attribution is set', function(t) {
-    var sourceCache = createSourceCache({
-        attribution: 'Mapbox Heavy Industries'
-    });
-    sourceCache.on('load', function() {
-        t.equal(sourceCache.attribution, 'Mapbox Heavy Industries');
-        t.end();
-    });
-});
 
 test('SourceCache#addTile', function(t) {
     t.test('loads tile when uncached', function(t) {
@@ -75,7 +65,7 @@ test('SourceCache#addTile', function(t) {
     t.test('adds tile when uncached', function(t) {
         var coord = new TileCoord(0, 0, 0);
         var sourceCache = createSourceCache({})
-        .on('tile.add', function (data) {
+        .on('dataloading', function (data) {
             t.deepEqual(data.tile.coord, coord);
             t.equal(data.tile.uses, 1);
             t.end();
@@ -95,7 +85,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var tr = new Transform();
         tr.width = 512;
@@ -123,7 +113,7 @@ test('SourceCache#addTile', function(t) {
                 callback();
             }
         })
-        .on('tile.add', function () { add++; });
+        .on('dataloading', function () { add++; });
 
         var t1 = sourceCache.addTile(coord);
         var t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
@@ -141,12 +131,11 @@ test('SourceCache#addTile', function(t) {
 test('SourceCache#removeTile', function(t) {
     t.test('removes tile', function(t) {
         var coord = new TileCoord(0, 0, 0);
-        var sourceCache = createSourceCache({})
-        .on('tile.remove', function (data) {
-            var tile = data.tile;
-            t.deepEqual(tile.coord, coord);
-            t.equal(tile.uses, 0);
-            t.end();
+        var sourceCache = createSourceCache({});
+        sourceCache.once('data', function (event) {
+            if (event.dataType === 'tile') {
+                t.end();
+            }
         });
         sourceCache.addTile(coord);
         sourceCache.removeTile(coord.id);
@@ -205,18 +194,18 @@ test('SourceCache#removeTile', function(t) {
 test('SourceCache / Source lifecycle', function (t) {
     t.test('does not fire load or change before source load event', function (t) {
         createSourceCache({noLoad: true})
-            .on('load', t.fail)
-            .on('change', t.fail);
+            .on('source.load', t.fail)
+            .on('data', t.fail);
         setTimeout(t.end, 1);
     });
 
     t.test('forward load event', function (t) {
-        createSourceCache({}).on('load', t.end);
+        createSourceCache({}).on('source.load', t.end);
     });
 
     t.test('forward change event', function (t) {
-        var sourceCache = createSourceCache().on('change', t.end);
-        sourceCache.getSource().fire('change');
+        var sourceCache = createSourceCache().on('data', t.end);
+        sourceCache.getSource().fire('data');
     });
 
     t.test('forward error event', function (t) {
@@ -235,7 +224,7 @@ test('SourceCache / Source lifecycle', function (t) {
         });
     });
 
-    t.test('reloads tiles after source change event', function (t) {
+    t.test('reloads tiles after a "source" data event', function (t) {
         var transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -251,9 +240,9 @@ test('SourceCache / Source lifecycle', function (t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
-            sourceCache.getSource().fire('change');
+            sourceCache.getSource().fire('data', {dataType: 'source'});
         });
     });
 
@@ -267,7 +256,7 @@ test('SourceCache#update', function(t) {
         transform.zoom = 0;
 
         var sourceCache = createSourceCache({}, false);
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
 
             t.deepEqual(sourceCache.getIds(), []);
@@ -281,7 +270,7 @@ test('SourceCache#update', function(t) {
         transform.zoom = 0;
 
         var sourceCache = createSourceCache({});
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
             t.end();
@@ -299,7 +288,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
@@ -330,7 +319,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
@@ -361,7 +350,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
 
@@ -392,7 +381,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform, 100);
             t.deepEqual(sourceCache.getIds(), [
                 new TileCoord(2, 1, 1).id,
@@ -422,7 +411,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform, 100);
 
             transform.zoom = 2;
@@ -452,9 +441,7 @@ test('SourceCache#update', function(t) {
             }
         });
 
-        sourceCache.on('load', function () {
-            t.equal(sourceCache.maxzoom, 14);
-
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
             t.deepEqual(sourceCache.getRenderableIds(), [
                 new TileCoord(16, 8191, 8191, 0).id,
@@ -531,7 +518,7 @@ test('SourceCache#tilesIn', function (t) {
             }
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             sourceCache.update(transform);
 
             t.deepEqual(sourceCache.getIds(), [
@@ -572,7 +559,7 @@ test('SourceCache#tilesIn', function (t) {
             tileSize: 512
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             var transform = new Transform();
             transform.resize(512, 512);
             transform.zoom = 2.0;
@@ -616,7 +603,7 @@ test('SourceCache#tilesIn', function (t) {
             tileSize: 512
         });
 
-        sourceCache.on('load', function () {
+        sourceCache.on('source.load', function () {
             var transform = new Transform();
             transform.resize(512, 512);
             transform.zoom = 2.0;
@@ -638,7 +625,7 @@ test('SourceCache#loaded (no errors)', function (t) {
         }
     });
 
-    sourceCache.on('load', function () {
+    sourceCache.on('source.load', function () {
         var coord = new TileCoord(0, 0, 0);
         sourceCache.addTile(coord);
 
@@ -654,7 +641,7 @@ test('SourceCache#loaded (with errors)', function (t) {
         }
     });
 
-    sourceCache.on('load', function () {
+    sourceCache.on('source.load', function () {
         var coord = new TileCoord(0, 0, 0);
         sourceCache.addTile(coord);
 

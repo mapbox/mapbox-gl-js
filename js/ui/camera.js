@@ -53,6 +53,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setCenter([-74, 38]);
+     * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter: function(center, eventData) {
         this.jumpTo({center: center}, eventData);
@@ -68,6 +69,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy: function(offset, options, eventData) {
         this.panTo(this.transform.center,
@@ -181,6 +183,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * Returns the map's current bearing (rotation).
      *
      * @returns {number} The map's current bearing, measured in degrees counter-clockwise from north.
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     getBearing: function() { return this.transform.bearing; },
 
@@ -285,6 +288,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds: function(bounds, options, eventData) {
 
@@ -393,6 +397,7 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      * @fires zoomend
      * @fires moveend
      * @returns {Map} `this`
+     * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     easeTo: function(options, eventData) {
         this.stop();
@@ -434,6 +439,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
+
+        if (options.smoothEasing && options.duration !== 0) {
+            options.easing = this._smoothOutEasing(options.duration);
+        }
 
         if (!options.noMoveStart) {
             this.fire('movestart', eventData);
@@ -540,6 +549,9 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
      *     return t;
      *   }
      * });
+     * @see [Fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto/)
+     * @see [Slowly fly to a location](https://www.mapbox.com/mapbox-gl-js/example/flyto-options/)
+     * @see [Fly to a location based on scroll position](https://www.mapbox.com/mapbox-gl-js/example/scroll-fly-to/)
      */
     flyTo: function(options, eventData) {
         // This method implements an “optimal path” animation, as detailed in:
@@ -746,11 +758,12 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
         return bearing;
     },
 
-    _updateEasing: function(duration, zoom, bezier) {
-        var easing;
+    // only used on mouse-wheel zoom to smooth out animation
+    _smoothOutEasing: function(duration) {
+        var easing = util.ease;
 
-        if (this.ease) {
-            var ease = this.ease,
+        if (this._prevEase) {
+            var ease = this._prevEase,
                 t = (Date.now() - ease.start) / ease.duration,
                 speed = ease.easing(t + 0.01) - ease.easing(t),
 
@@ -759,14 +772,10 @@ util.extend(Camera.prototype, /** @lends Map.prototype */{
                 y = Math.sqrt(0.27 * 0.27 - x * x);
 
             easing = util.bezier(x, y, 0.25, 1);
-        } else {
-            easing = bezier ? util.bezier.apply(util, bezier) : util.ease;
         }
 
-        // store information on current easing
-        this.ease = {
+        this._prevEase = {
             start: (new Date()).getTime(),
-            to: Math.pow(2, zoom),
             duration: duration,
             easing: easing
         };

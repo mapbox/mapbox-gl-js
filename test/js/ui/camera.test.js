@@ -1,11 +1,12 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Camera = require('../../../js/ui/camera');
 var Evented = require('../../../js/util/evented');
 var Transform = require('../../../js/geo/transform');
 var util = require('../../../js/util/util');
-var fixed = require('../../testutil/fixed');
+
+var fixed = require('mapbox-gl-js-test/fixed');
 var fixedLngLat = fixed.LngLat;
 var fixedNum = fixed.Num;
 
@@ -32,6 +33,13 @@ test('camera', function(t) {
         t.test('sets center', function(t) {
             camera.jumpTo({center: [1, 2]});
             t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            t.throws(function() {
+                camera.jumpTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
@@ -141,6 +149,13 @@ test('camera', function(t) {
         t.test('sets center', function(t) {
             camera.setCenter([1, 2]);
             t.deepEqual(camera.getCenter(), { lng: 1, lat: 2 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            t.throws(function() {
+                camera.jumpTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
@@ -302,6 +317,14 @@ test('camera', function(t) {
             var camera = createCamera();
             camera.panTo([100, 0], { duration: 0 });
             t.deepEqual(camera.getCenter(), { lng: 100, lat: 0 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            var camera = createCamera();
+            t.throws(function() {
+                camera.panTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 
@@ -703,6 +726,14 @@ test('camera', function(t) {
             var camera = createCamera();
             camera.flyTo({ center: [100, 0], animate: false });
             t.deepEqual(fixedLngLat(camera.getCenter()), { lng: 100, lat: 0 });
+            t.end();
+        });
+
+        t.test('throws on invalid center argument', function(t) {
+            var camera = createCamera();
+            t.throws(function() {
+                camera.flyTo({center: 1});
+            }, Error, 'throws with non-LngLatLike argument');
             t.end();
         });
 

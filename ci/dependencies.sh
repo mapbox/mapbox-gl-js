@@ -8,11 +8,11 @@ fi
 source ./nvm/nvm.sh && nvm install ${NODE_VERSION}
 
 if [ "$CIRCLE_BRANCH" == "master" ]; then
-    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update
+    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm update && npm ls
 else
-    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install
+    source ./nvm/nvm.sh && nvm use ${NODE_VERSION} && npm install && npm ls
 fi
 
-if [ "$CIRCLE_BRANCH" == "master"] || [ -z "$CIRCLE_TAG" ]; then
+if [ "$CIRCLE_BRANCH" == "master" ] || [ -n "$CIRCLE_TAG" ]; then
     pip install --user --upgrade awscli
 fi

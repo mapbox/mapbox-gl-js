@@ -19,6 +19,7 @@ var Popup = require('./popup');
  * var marker = new mapboxgl.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
+ * @see [Add custom icons with Markers](https://www.mapbox.com/mapbox-gl-js/example/custom-marker-icons/)
  */
 function Marker(element, options) {
     this._offset = Point.convert(options && options.offset || [0, 0]);
@@ -44,6 +45,7 @@ Marker.prototype = {
         this._map = map;
         map.getCanvasContainer().appendChild(this._element);
         map.on('move', this._update);
+        map.on('moveend', this._update);
         this._update();
 
         // If we attached the `click` listener to the marker element, the popup
@@ -65,6 +67,7 @@ Marker.prototype = {
         if (this._map) {
             this._map.off('click', this._onMapClick);
             this._map.off('move', this._update);
+            this._map.off('moveend', this._update);
             this._map = null;
         }
         DOM.remove(this._element);
@@ -148,9 +151,13 @@ Marker.prototype = {
         else popup.addTo(this._map);
     },
 
-    _update: function () {
+    _update: function (e) {
         if (!this._map) return;
         var pos = this._map.project(this._lngLat)._add(this._offset);
+        // because rouding the coordinates at every `move` event causes stuttered zooming
+        // we only round them when _update is called with `moveend` or when its called with 
+        // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
+        if (!e || e.type === "moveend") pos = pos.round();
         DOM.setTransform(this._element, 'translate(' + pos.x + 'px,' + pos.y + 'px)');
     }
 };

@@ -35,7 +35,9 @@ WorkerPool.prototype = {
     release: function (mapId) {
         delete this.active[mapId];
         if (Object.keys(this.active).length === 0) {
-            this.workers.forEach(function (w) { w.terminate(); });
+            this.workers.forEach(function (w) {
+                w.terminate();
+            });
             this.workers = null;
         }
     }

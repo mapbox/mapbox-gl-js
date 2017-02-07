@@ -9,26 +9,11 @@ module.exports = GeoJSONSource;
 
 /**
  * A source containing GeoJSON.
+ * (See the [Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/#sources-geojson) for detailed documentation of options.)
  *
- * @class GeoJSONSource
- * @param {Object} [options]
- * @param {Object|string} [options.data] A GeoJSON data object or a URL to one. The latter is preferable in the case of large GeoJSON objects.
- * @param {number} [options.maxzoom=18] The maximum zoom level at which to preserve detail (1-20).
- * @param {number} [options.buffer=128] The tile buffer, measured in pixels. The buffer extends each
- *   tile's data just past its visible edges, helping to ensure seamless rendering across tile boundaries.
- *   The default value, 128, is a safe value for label layers, preventing text clipping at boundaries.
- *   You can read more about buffers and clipping in the
- *   [Mapbox Vector Tile Specification](https://www.mapbox.com/vector-tiles/specification/#clipping).
- * @param {number} [options.tolerance=0.375] The simplification tolerance, measured in pixels.
- *   This value is passed into a modified [Ramer–Douglas–Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
- *   to simplify (i.e. reduce the number of points) in curves. Higher values result in greater simplification.
- * @param {boolean} [options.cluster] If `true`, a collection of point features will be clustered into groups,
- *   according to `options.clusterRadius`.
- * @param {number} [options.clusterRadius=50] The radius of each cluster when clustering points, measured in pixels.
- * @param {number} [options.clusterMaxZoom] The maximum zoom level to cluster points in. By default, this value is
- *   one zoom level less than the map's `maxzoom`, so that at the highest zoom level features are not clustered.
- *
+ * @interface GeoJSONSource
  * @example
+ *
  * map.addSource('some id', {
  *     data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_ports.geojson'
  * });
@@ -40,6 +25,7 @@ module.exports = GeoJSONSource;
  *        "type": "FeatureCollection",
  *        "features": [{
  *            "type": "Feature",
+ *            "properties": {},
  *            "geometry": {
  *                "type": "Point",
  *                "coordinates": [
@@ -53,20 +39,21 @@ module.exports = GeoJSONSource;
  *
  * @example
  * map.getSource('some id').setData({
- *     data: {
- *        "type": "FeatureCollection",
- *        "features": [{
- *            "type": "Feature",
- *            "properties": { "name": "Null Island" },
- *            "geometry": {
- *                "type": "Point",
- *                "coordinates": [ 0, 0 ]
- *            }
- *        }]
- *     }
+ *   "type": "FeatureCollection",
+ *   "features": [{
+ *       "type": "Feature",
+ *       "properties": { "name": "Null Island" },
+ *       "geometry": {
+ *           "type": "Point",
+ *           "coordinates": [ 0, 0 ]
+ *       }
+ *   }]
  * });
+ * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Add a GeoJSON line](https://www.mapbox.com/mapbox-gl-js/example/geojson-line/)
+ * @see [Create a heatmap from points](https://www.mapbox.com/mapbox-gl-js/example/heatmap/)
  */
-function GeoJSONSource(id, options, dispatcher) {
+function GeoJSONSource(id, options, dispatcher, eventedParent) {
     options = options || {};
     this.id = id;
     this.dispatcher = dispatcher;
@@ -99,12 +86,15 @@ function GeoJSONSource(id, options, dispatcher) {
         }
     }, options.workerOptions);
 
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     this._updateWorkerData(function done(err) {
         if (err) {
             this.fire('error', {error: err});
             return;
         }
-        this.fire('load');
+        this.fire('data', {dataType: 'source'});
+        this.fire('source.load');
     }.bind(this));
 }
 
@@ -131,11 +121,12 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     setData: function(data) {
         this._data = data;
 
+        this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData(function (err) {
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('change');
+            this.fire('data', {dataType: 'source'});
         }.bind(this));
 
         return this;
@@ -183,7 +174,7 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
 
         tile.workerID = this.dispatcher.send('load tile', params, function(err, data) {
 
-            tile.unloadVectorData(this.map.painter);
+            tile.unloadVectorData();
 
             if (tile.aborted)
                 return;
@@ -209,8 +200,8 @@ GeoJSONSource.prototype = util.inherit(Evented, /** @lends GeoJSONSource.prototy
     },
 
     unloadTile: function(tile) {
-        tile.unloadVectorData(this.map.painter);
-        this.dispatcher.send('remove tile', { uid: tile.uid, source: this.id }, function() {}, tile.workerID);
+        tile.unloadVectorData();
+        this.dispatcher.send('remove tile', { uid: tile.uid, type: this.type, source: this.id }, function() {}, tile.workerID);
     },
 
     serialize: function() {

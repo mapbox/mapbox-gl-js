@@ -2,14 +2,14 @@
 
 module.exports = drawCollisionDebug;
 
-function drawCollisionDebug(painter, source, layer, coords) {
+function drawCollisionDebug(painter, sourceCache, layer, coords) {
     var gl = painter.gl;
     gl.enable(gl.STENCIL_TEST);
-    var program = painter.useProgram('collisionbox');
+    var program = painter.useProgram('collisionBox');
 
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
-        var tile = source.getTile(coord);
+        var tile = sourceCache.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
         var bufferGroups = bucket.bufferGroups.collisionBox;

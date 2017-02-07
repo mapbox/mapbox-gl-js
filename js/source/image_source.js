@@ -41,24 +41,23 @@ module.exports = ImageSource;
  * ]);
  *
  * map.removeSource('some id');  // remove
+ * @see [Add an image](https://www.mapbox.com/mapbox-gl-js/example/image-on-a-map/)
  */
-function ImageSource(id, options, dispatcher) {
+function ImageSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.dispatcher = dispatcher;
     this.url = options.url;
     this.coordinates = options.coordinates;
 
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     ajax.getImage(options.url, function(err, image) {
         if (err) return this.fire('error', {error: err});
 
         this.image = image;
-
-        this.image.addEventListener('load', function() {
-            this.map._rerender();
-        }.bind(this));
-
         this._loaded = true;
-        this.fire('load');
+        this.fire('data', {dataType: 'source'});
+        this.fire('source.load');
 
         if (this.map) {
             this.setCoordinates(options.coordinates);
@@ -103,7 +102,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
         centerCoord.row = Math.round(centerCoord.row);
 
         this.minzoom = this.maxzoom = centerCoord.zoom;
-        this._coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+        this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
         this._tileCoords = cornerZ0Coords.map(function(coord) {
             var zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
@@ -111,7 +110,7 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('change');
+        this.fire('data', {dataType: 'source'});
         return this;
     },
 
@@ -133,32 +132,32 @@ ImageSource.prototype = util.inherit(Evented, /** @lends ImageSource.prototype *
     },
 
     prepare: function() {
-        if (!this._loaded || !this.image || !this.image.complete) return;
-        if (!this.tile) return;
+        if (!this.tile || !this._loaded || !this.image || !this.image.complete) return;
+        this._prepareImage(this.map.painter.gl, this.image);
+    },
 
-        var painter = this.map.painter;
-        var gl = painter.gl;
-
+    _prepareImage: function (gl, image) {
         if (!this._prepared) {
+            this._prepared = true;
             this.tile.texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
-            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }
     },
 
     loadTile: function(tile, callback) {
-        // We have a single tile -- whoose coordinates are this._coord -- that
+        // We have a single tile -- whoose coordinates are this.coord -- that
         // covers the image we want to render.  If that's the one being
         // requested, set it up with the image; otherwise, mark the tile as
         // `errored` to indicate that we have no data for it.
-        if (this._coord && this._coord.toString() === tile.coord.toString()) {
+        if (this.coord && this.coord.toString() === tile.coord.toString()) {
             this._setTile(tile);
             callback(null);
         } else {

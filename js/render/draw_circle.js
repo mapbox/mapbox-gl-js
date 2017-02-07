@@ -4,7 +4,7 @@ var browser = require('../util/browser');
 
 module.exports = drawCircles;
 
-function drawCircles(painter, source, layer, coords) {
+function drawCircles(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
     var gl = painter.gl;
@@ -19,7 +19,7 @@ function drawCircles(painter, source, layer, coords) {
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
 
-        var tile = source.getTile(coord);
+        var tile = sourceCache.getTile(coord);
         var bucket = tile.getBucket(layer);
         if (!bucket) continue;
         var bufferGroups = bucket.bufferGroups.circle;

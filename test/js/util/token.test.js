@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var resolveTokens = require('../../../js/util/token');
 
 test('token', function(t) {

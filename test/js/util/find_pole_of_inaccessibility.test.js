@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Point = require('point-geometry');
 var findPoleOfInaccessibility = require('../../../js/util/find_pole_of_inaccessibility');
 

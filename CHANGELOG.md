@@ -1,3 +1,84 @@
+## 0.26.0 (October 13 2016)
+
+#### New Features & Improvements
+
+ * Add `fill-extrude-height` and `fill-extrude-base` style properties (3d buildings) :cityscape: #3223
+ * Add customizable `colorSpace` interpolation to functions #3245
+ * Add `identity` function type #3274
+ * Add depth testing for symbols with `'pitch-alignment': 'map'` #3243
+ * Add `dataloading` events for styles and sources #3306
+ * Add `Control` suffix to all controls :warning: BREAKING CHANGE :warning: #3355
+
+#### Performance Improvements
+
+ * Ensure removing style or source releases all tile resources #3359
+
+#### Bugfixes
+
+ * Fix bug causing an error when `Marker#setLngLat` is called #3294
+ * Fix bug causing incorrect coordinates in `touchend` on Android Chrome #3319
+ * Fix bug causing incorrect popup positioning at top of screen #3333
+ * Restore `tile` property to `data` events fired when a tile is removed #3328
+ * Fix bug causing "Improve this map" link to not preload map location #3356
+
+## 0.25.1 (September 30 2016)
+
+#### Bugfixes
+
+  * Fix bug causing attribution to not be shown #3278
+  * Fix bug causing exceptions when symbol text has a trailing newline #3281
+
+## 0.25.0 (September 29 2016)
+
+#### New Features & Improvements
+
+  * Consolidate undocumented data lifecycle events into `data` and `dataloading` events (#3255)
+  * Add `auto` value for style spec properties (#3203)
+
+#### Bugfixes
+
+  * Fix bug causing "Map#queryRenderedFeatures" to return no features after map rotation or filter change (#3233)
+  * Change webpack build process (#3235) :warning: BREAKING CHANGE :warning:
+  * Improved error messages for `LngLat#convert` (#3232)
+  * Fix bug where the `tiles` field is omitted from the `RasterTileSource#serialize` method (#3259)
+  * Comply with HTML spec by replacing the `div` within the `Navigation` control `<button>` with a `span` element (#3268)
+  * Fix bug causing `Marker` instances to be translated to non-whole pixel coordinates that caused blurriness (#3270)
+
+#### Performance Improvements
+
+  * Avoid unnecessary style validation (#3224)
+  * Share a single blob URL between all workers (#3239)
+
+## 0.24.0 (September 19 2016)
+
+#### New Features & Improvements
+
+ * Allow querystrings in `mapbox://` URLs #3113
+ * Allow "drag rotate" interaction to control pitch #3105
+ * Improve performance by decreasing `Worker` script `Blob` size #3158
+ * Improve vector tile performance #3067
+ * Decrease size of distributed library by removing `package.json` #3174
+ * Add support for new lines in `text-field` #3179
+ * Make keyboard navigation smoother #3190
+ * Make mouse wheel zooming smoother #3189
+ * Add better error message when calling `Map#queryRenderedFeatures` on nonexistent layer #3196
+ * Add support for imperial units on `Scale` control #3160
+ * Add map's pitch to URL hash #3218
+
+#### Bugfixes
+
+ * Fix exception thrown when using box zoom handler #3078
+ * Ensure style filters cannot be mutated by reference #3093
+ * Fix exceptions thrown when opening marker-bound popup by click #3104
+ * Fix bug causing fills with transparent colors and patterns to not render #3107
+ * Fix order of latitudes in `Map#getBounds` #3081
+ * Fix incorrect evaluation of zoom-and-property functions #2827 #3155
+ * Fix incorrect evaluation of property functions #2828 #3155
+ * Fix bug causing garbled text rendering when multiple maps are rendered on the page #3086
+ * Fix rendering defects caused by `Map#setFilter` and map rotation on iOS 10 #3207
+ * Fix bug causing image and video sources to disappear when zooming in #3010
+
+
 ## 0.23.0 (August 25 2016)
 
 #### New Features & Improvements

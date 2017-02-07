@@ -8,16 +8,20 @@ var normalizeURL = require('../util/mapbox').normalizeTileURL;
 
 module.exports = RasterTileSource;
 
-function RasterTileSource(id, options, dispatcher) {
+function RasterTileSource(id, options, dispatcher, eventedParent) {
     this.id = id;
     this.dispatcher = dispatcher;
     util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
+
+    this.setEventedParent(eventedParent);
+    this.fire('dataloading', {dataType: 'source'});
     loadTileJSON(options, function (err, tileJSON) {
         if (err) {
             return this.fire('error', err);
         }
         util.extend(this, tileJSON);
-        this.fire('load');
+        this.fire('data', {dataType: 'source'});
+        this.fire('source.load');
     }.bind(this));
 }
 
@@ -37,7 +41,8 @@ RasterTileSource.prototype = util.inherit(Evented, {
         return {
             type: 'raster',
             url: this.url,
-            tileSize: this.tileSize
+            tileSize: this.tileSize,
+            tiles: this.tiles
         };
     },
 
@@ -57,7 +62,7 @@ RasterTileSource.prototype = util.inherit(Evented, {
             }
 
             var gl = this.map.painter.gl;
-            tile.texture = this.map.painter.getTexture(img.width);
+            tile.texture = this.map.painter.getTileTexture(img.width);
             if (tile.texture) {
                 gl.bindTexture(gl.TEXTURE_2D, tile.texture);
                 gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
@@ -90,6 +95,6 @@ RasterTileSource.prototype = util.inherit(Evented, {
     },
 
     unloadTile: function(tile) {
-        if (tile.texture) this.map.painter.saveTexture(tile.texture);
+        if (tile.texture) this.map.painter.saveTileTexture(tile.texture);
     }
 });

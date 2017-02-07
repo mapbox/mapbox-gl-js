@@ -1,4 +1,4 @@
-Mapbox GL JS has [API documentation](#api-documentation) and [examples](#examples).
+Mapbox GL JS has [API documentation](#writing-api-documentation) and [examples](#writing-examples).
 
 ## Writing API Documentation
 
@@ -53,11 +53,11 @@ Ensure you have the right version of all dependencies
 npm install
 ```
 
-Ensure you are running Jekyll version 2.5.x
+Ensure you are running Jekyll version 3.2.x
 
 ```bash
 jekyll -v
- > jekyll 2.5.3
+ > jekyll 3.2.1
 ```
 
 ## Committing and Publishing Documentation

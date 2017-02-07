@@ -19,7 +19,7 @@ var Camera = require('./camera');
 var LngLat = require('../geo/lng_lat');
 var LngLatBounds = require('../geo/lng_lat_bounds');
 var Point = require('point-geometry');
-var Attribution = require('./control/attribution');
+var AttributionControl = require('./control/attribution_control');
 var isSupported = require('mapbox-gl-supported');
 
 var defaultMinZoom = 0;
@@ -86,8 +86,11 @@ var defaultOptions = {
  *  * `mapbox://styles/mapbox/satellite-v9`
  *  * `mapbox://styles/mapbox/satellite-streets-v9`
  *
- * @param {boolean} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, and bearing) will be synced with the hash fragment of the page's URL.
- *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1`.
+ * Tilesets hosted with Mapbox can be style-optimized if you append `?optimize=true` to the end of your style URL, like `mapbox://styles/mapbox/streets-v9?optimize=true`.
+ * Learn more about style-optimized vector tiles in our [API documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles).
+ *
+ * @param {boolean} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
+ *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing (rotation) will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
@@ -96,7 +99,7 @@ var defaultOptions = {
  *   Keep in mind that these classes are used for controlling a style layer's paint properties, so are *not* reflected
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
- * @param {boolean} [options.attributionControl=true] If `true`, an [Attribution](#Attribution) control will be added to the map.
+ * @param {boolean} [options.attributionControl=true] If `true`, an [AttributionControl](#AttributionControl) will be added to the map.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
@@ -121,9 +124,9 @@ var defaultOptions = {
  *   style: style_object,
  *   hash: true
  * });
+ * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
 var Map = module.exports = function(options) {
-
     options = util.extend({}, defaultOptions, options);
 
     this._interactive = options.interactive;
@@ -146,15 +149,6 @@ var Map = module.exports = function(options) {
     }
 
     util.bindAll([
-        '_forwardStyleEvent',
-        '_forwardSourceEvent',
-        '_forwardLayerEvent',
-        '_forwardTileEvent',
-        '_onStyleLoad',
-        '_onStyleChange',
-        '_onSourceAdd',
-        '_onSourceRemove',
-        '_onSourceUpdate',
         '_onWindowOnline',
         '_onWindowResize',
         '_contextLost',
@@ -197,13 +191,23 @@ var Map = module.exports = function(options) {
 
     if (options.classes) this.setClasses(options.classes);
     if (options.style) this.setStyle(options.style);
-    if (options.attributionControl) this.addControl(new Attribution(options.attributionControl));
 
-    var fireError = this.fire.bind(this, 'error');
-    this.on('style.error', fireError);
-    this.on('source.error', fireError);
-    this.on('tile.error', fireError);
-    this.on('layer.error', fireError);
+    if (options.attributionControl) this.addControl(new AttributionControl(options.attributionControl));
+
+    this.on('style.load', function() {
+        if (this.transform.unmodified) {
+            this.jumpTo(this.style.stylesheet);
+        }
+        this.style.update(this._classes, {transition: false});
+    });
+
+    this.on('data', function(event) {
+        if (event.dataType === 'style') {
+            this._update(true);
+        } else {
+            this._update();
+        }
+    });
 };
 
 util.extend(Map.prototype, Evented);
@@ -215,6 +219,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {Control} control The [`Control`](#Control) to add.
      * @returns {Map} `this`
+     * @see [Display map navigation controls](https://www.mapbox.com/mapbox-gl-js/example/navigation/)
      */
     addControl: function(control) {
         control.addTo(this);
@@ -435,6 +440,7 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {PointLike} point The pixel coordinates to unproject.
      * @returns {LngLat} The [`LngLat`](#LngLat) corresponding to `point`.
+     * @see [Show polygon information on click](https://www.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/)
      */
     unproject: function(point) {
         return this.transform.pointLocation(Point.convert(point));
@@ -471,11 +477,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * across the antimeridian at low zoom levels) are returned only once (though subject to the following caveat).
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
-     * results when they span multiple tiles. For example, suppose
-     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
-     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
-     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
+     * geometries may be split or duplicated across tile boundaries and, as a result, features may appear multiple
+     * times in query results. For example, suppose there is a highway running through the bounding rectangle of a query.
+     * The results of the query will be those parts of the highway that lie within the map tiles covering the bounding
+     * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
+     * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
+     * tiles due to tile buffering.
      *
      * @example
      * // Find all features at a point
@@ -503,6 +510,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @example
      * // Query all rendered features from a single layer
      * var features = map.queryRenderedFeatures({ layers: ['my-layer-name'] });
+     * @see [Get features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures/)
+     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     queryRenderedFeatures: function() {
         var params = {};
@@ -584,11 +594,14 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * visible viewport.
      *
      * Because features come from tiled vector data or GeoJSON data that is converted to tiles internally, feature
-     * geometries are clipped at tile boundaries and, as a result, features may appear multiple times in query
-     * results when they span multiple tiles. For example, suppose
-     * there is a highway running through the bounding rectangle of a query. The results of the query will be those
-     * parts of the highway that lie within the map tiles covering the bounding rectangle, even if the highway extends
-     * into other tiles, and the portion of the highway within each map tile will be returned as a separate feature.
+     * geometries may be split or duplicated across tile boundaries and, as a result, features may appear multiple
+     * times in query results. For example, suppose there is a highway running through the bounding rectangle of a query.
+     * The results of the query will be those parts of the highway that lie within the map tiles covering the bounding
+     * rectangle, even if the highway extends into other tiles, and the portion of the highway within each map tile
+     * will be returned as a separate feature. Similarly, a point feature near a tile boundary may appear in multiple
+     * tiles due to tile buffering.
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
     querySourceFeatures: function(sourceID, params) {
         return this.style.querySourceFeatures(sourceID, params);
@@ -600,27 +613,12 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {Object|string} style A JSON object conforming to the schema described in the
      *   [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to such JSON.
      * @returns {Map} `this`
+     * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
     setStyle: function(style) {
         if (this.style) {
-            this.style
-                .off('load', this._onStyleLoad)
-                .off('error', this._forwardStyleEvent)
-                .off('change', this._onStyleChange)
-                .off('source.add', this._onSourceAdd)
-                .off('source.remove', this._onSourceRemove)
-                .off('source.load', this._onSourceUpdate)
-                .off('source.error', this._forwardSourceEvent)
-                .off('source.change', this._onSourceUpdate)
-                .off('layer.add', this._forwardLayerEvent)
-                .off('layer.remove', this._forwardLayerEvent)
-                .off('layer.error', this._forwardLayerEvent)
-                .off('tile.add', this._forwardTileEvent)
-                .off('tile.remove', this._forwardTileEvent)
-                .off('tile.load', this._update)
-                .off('tile.error', this._forwardTileEvent)
-                .off('tile.stats', this._forwardTileEvent)
-                ._remove();
+            this.style.setEventedParent(null);
+            this.style._remove();
 
             this.off('rotate', this.style._redoPlacement);
             this.off('pitch', this.style._redoPlacement);
@@ -632,26 +630,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         } else if (style instanceof Style) {
             this.style = style;
         } else {
-            this.style = new Style(style, this.animationLoop);
+            this.style = new Style(style, this);
         }
 
-        this.style
-            .on('load', this._onStyleLoad)
-            .on('error', this._forwardStyleEvent)
-            .on('change', this._onStyleChange)
-            .on('source.add', this._onSourceAdd)
-            .on('source.remove', this._onSourceRemove)
-            .on('source.load', this._onSourceUpdate)
-            .on('source.error', this._forwardSourceEvent)
-            .on('source.change', this._onSourceUpdate)
-            .on('layer.add', this._forwardLayerEvent)
-            .on('layer.remove', this._forwardLayerEvent)
-            .on('layer.error', this._forwardLayerEvent)
-            .on('tile.add', this._forwardTileEvent)
-            .on('tile.remove', this._forwardTileEvent)
-            .on('tile.load', this._update)
-            .on('tile.error', this._forwardTileEvent)
-            .on('tile.stats', this._forwardTileEvent);
+        this.style.setEventedParent(this, {style: this.style});
 
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
@@ -679,6 +661,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} source.type The source type, which must be either one of the core Mapbox GL source types defined in the style specification or a custom type that has been added to the map with {@link Map#addSourceType}.
      * @fires source.add
      * @returns {Map} `this`
+     * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+     * @see [Style circles using data-driven styling](https://www.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
+     * @see [Set a point after Geocoder result](https://www.mapbox.com/mapbox-gl-js/example/point-from-geocoder-result/)
      */
     addSource: function(id, source) {
         this.style.addSource(id, source);
@@ -702,7 +687,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Removes a source from the map's style.
      *
      * @param {string} id The ID of the source to remove.
-     * @fires source.remove
      * @returns {Map} `this`
      */
     removeSource: function(id) {
@@ -717,6 +701,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} id The ID of the source to get.
      * @returns {?Object} The style source with the specified ID, or `undefined`
      *   if the ID corresponds to no existing sources.
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
+     * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
      */
     getSource: function(id) {
         return this.style.getSource(id);
@@ -732,8 +719,10 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *   [layer definition](https://www.mapbox.com/mapbox-gl-style-spec/#layers).
      * @param {string} [before] The ID of an existing layer to insert the new layer before.
      *   If this argument is omitted, the layer will be appended to the end of the layers array.
-     * @fires layer.add
      * @returns {Map} `this`
+     * @see [Create and style clusters](https://www.mapbox.com/mapbox-gl-js/example/cluster/)
+     * @see [Add a vector tile source](https://www.mapbox.com/mapbox-gl-js/example/vector-source/)
+     * @see [Add a WMS source](https://www.mapbox.com/mapbox-gl-js/example/wms/)
      */
     addLayer: function(layer, before) {
         this.style.addLayer(layer, before);
@@ -749,7 +738,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      *
      * @param {string} id The ID of the layer to remove.
      * @throws {Error} if no layer with the specified `id` exists.
-     * @fires layer.remove
      * @returns {Map} `this`
      */
     removeLayer: function(id) {
@@ -764,6 +752,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @param {string} id The ID of the layer to get.
      * @returns {?Object} The layer with the specified ID, or `undefined`
      *   if the ID corresponds to no existing layers.
+     * @see [Filter symbols by toggling a list](https://www.mapbox.com/mapbox-gl-js/example/filter-markers/)
+     * @see [Filter symbols by text input](https://www.mapbox.com/mapbox-gl-js/example/filter-markers-by-input/)
      */
     getLayer: function(id) {
         return this.style.getLayer(id);
@@ -778,6 +768,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setFilter('my-layer', ['==', 'name', 'USA']);
+     * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
+     * @see [Highlight features under the mouse pointer](calendar.google.com/calendar/render#main_7)
+     * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
      */
     setFilter: function(layer, filter) {
         this.style.setFilter(layer, filter);
@@ -822,6 +815,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @returns {Map} `this`
      * @example
      * map.setPaintProperty('my-layer', 'fill-color', '#faafee');
+     * @see [Change a layer's color with buttons](https://www.mapbox.com/mapbox-gl-js/example/color-switcher/)
+     * @see [Adjust a layer's opacity](https://www.mapbox.com/mapbox-gl-js/example/adjust-layer-opacity/)
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
      */
     setPaintProperty: function(layer, name, value, klass) {
         this.style.setPaintProperty(layer, name, value, klass);
@@ -869,6 +865,27 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
     },
 
     /**
+     * Sets the any combination of light values.
+     *
+     * @param {Object} options Light properties to set. Must conform to the [Mapbox Style Specification](https://www.mapbox.com/mapbox-gl-style-spec/).
+     * @returns {Map} `this`
+     */
+    setLight: function(lightOptions) {
+        this.style.setLight(lightOptions);
+        this._update(true);
+        return this;
+    },
+
+    /**
+     * Returns the value of the light object.
+     *
+     * @returns {Object} light Light properties of the style.
+     */
+    getLight: function() {
+        return this.style.getLight();
+    },
+
+    /**
      * Returns the map's containing HTML element.
      *
      * @returns {HTMLElement} The map's container.
@@ -887,6 +904,8 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * map controls.
      *
      * @returns {HTMLElement} The container of the map's `<canvas>`.
+     * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
+     * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
      */
     getCanvasContainer: function() {
         return this._canvasContainer;
@@ -896,6 +915,9 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * Returns the map's `<canvas>` element.
      *
      * @returns {HTMLCanvasElement} The map's `<canvas>` element.
+     * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+     * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+     * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
      */
     getCanvas: function() {
         return this._canvas;
@@ -1043,46 +1065,41 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
      * @private
      */
     _render: function() {
-        try {
-            if (this.style && this._styleDirty) {
-                this._styleDirty = false;
-                this.style.update(this._classes, this._classOptions);
-                this._classOptions = null;
-                this.style._recalculate(this.transform.zoom);
-            }
+        if (this.style && this._styleDirty) {
+            this._styleDirty = false;
+            this.style.update(this._classes, this._classOptions);
+            this._classOptions = null;
+            this.style._recalculate(this.transform.zoom);
+        }
 
-            if (this.style && this._sourcesDirty) {
-                this._sourcesDirty = false;
-                this.style._updateSources(this.transform);
-            }
+        if (this.style && this._sourcesDirty) {
+            this._sourcesDirty = false;
+            this.style._updateSources(this.transform);
+        }
 
-            this.painter.render(this.style, {
-                debug: this.showTileBoundaries,
-                showOverdrawInspector: this._showOverdrawInspector,
-                vertices: this.vertices,
-                rotating: this.rotating,
-                zooming: this.zooming
-            });
+        this.painter.render(this.style, {
+            debug: this.showTileBoundaries,
+            showOverdrawInspector: this._showOverdrawInspector,
+            vertices: this.vertices,
+            rotating: this.rotating,
+            zooming: this.zooming
+        });
 
-            this.fire('render');
+        this.fire('render');
 
-            if (this.loaded() && !this._loaded) {
-                this._loaded = true;
-                this.fire('load');
-            }
+        if (this.loaded() && !this._loaded) {
+            this._loaded = true;
+            this.fire('load');
+        }
 
-            this._frameId = null;
+        this._frameId = null;
 
-            if (!this.animationLoop.stopped()) {
-                this._styleDirty = true;
-            }
+        if (!this.animationLoop.stopped()) {
+            this._styleDirty = true;
+        }
 
-            if (this._sourcesDirty || this._repaint || this._styleDirty) {
-                this._rerender();
-            }
-
-        } catch (error) {
-            this.fire('error', {error: error});
+        if (this._sourcesDirty || this._repaint || this._styleDirty) {
+            this._rerender();
         }
 
         return this;
@@ -1112,54 +1129,6 @@ util.extend(Map.prototype, /** @lends Map.prototype */{
         if (this.style && !this._frameId) {
             this._frameId = browser.frame(this._render);
         }
-    },
-
-    _forwardStyleEvent: function(e) {
-        this.fire('style.' + e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardSourceEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardLayerEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _forwardTileEvent: function(e) {
-        this.fire(e.type, util.extend({style: e.target}, e));
-    },
-
-    _onStyleLoad: function(e) {
-        if (this.transform.unmodified) {
-            this.jumpTo(this.style.stylesheet);
-        }
-        this.style.update(this._classes, {transition: false});
-        this._forwardStyleEvent(e);
-    },
-
-    _onStyleChange: function(e) {
-        this._update(true);
-        this._forwardStyleEvent(e);
-    },
-
-    _onSourceAdd: function(e) {
-        var source = e.source;
-        if (source.onAdd)
-            source.onAdd(this);
-        this._forwardSourceEvent(e);
-    },
-
-    _onSourceRemove: function(e) {
-        var source = e.source;
-        if (source.onRemove)
-            source.onRemove(this);
-        this._forwardSourceEvent(e);
-    },
-
-    _onSourceUpdate: function(e) {
-        this._update();
-        this._forwardSourceEvent(e);
     },
 
     _onWindowOnline: function() {
@@ -1320,6 +1289,7 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
  */
 
 /**
@@ -1329,6 +1299,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
 
 /**
@@ -1338,6 +1310,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Create a draggable point](https://www.mapbox.com/mapbox-gl-js/example/drag-a-point/)
  */
 
 /**
@@ -1347,6 +1321,9 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+ * @see [Highlight features under the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/hover-styles/)
+ * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
  */
 
 /**
@@ -1392,6 +1369,8 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @property {MapMouseEvent} data
+ * @see [Measure distances](https://www.mapbox.com/mapbox-gl-js/example/measure/)
+ * @see [Center the map on a clicked symbol](https://www.mapbox.com/mapbox-gl-js/example/center-on-symbol/)
  */
 
 /**
@@ -1420,6 +1399,9 @@ function removeNode(node) {
  * @memberof Map
  * @instance
  * @type {Object}
+ * @see [Draw GeoJSON points](https://www.mapbox.com/mapbox-gl-js/example/geojson-markers/)
+ * @see [Add live realtime data](https://www.mapbox.com/mapbox-gl-js/example/live-geojson/)
+ * @see [Animate a point](https://www.mapbox.com/mapbox-gl-js/example/animate-point-along-line/)
  */
 
 /**
@@ -1429,7 +1411,7 @@ function removeNode(node) {
  * @event movestart
  * @memberof Map
  * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
+ * @property {{originalEvent: DragEvent}} data
  */
 
 /**
@@ -1449,11 +1431,13 @@ function removeNode(node) {
  * @event moveend
  * @memberof Map
  * @instance
- * @property {MapMouseEvent | MapTouchEvent} data
+ * @property {{originalEvent: DragEvent}} data
+ * @see [Play map locations as a slideshow](https://www.mapbox.com/mapbox-gl-js/example/playback-locations/)
+ * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
  */
 
  /**
-  * Fired if any error occurs. This is GL JS's primary error reporting
+  * Fired when an error occurs. This is GL JS's primary error reporting
   * mechanism. We use an event instead of `throw` to better accommodate
   * asyncronous operations. If no listeners are bound to the `error` event, the
   * error will be printed to the console.
@@ -1463,3 +1447,54 @@ function removeNode(node) {
   * @instance
   * @property {{error: {message: string}}} data
   */
+
+/**
+ * Fired when any map data (style, source, tile, etc) loads or changes. See
+ * [`MapDataEvent`](#MapDataEvent) for more information.
+ *
+ * @event data
+ * @memberof Map
+ * @instance
+ * @property {MapDataEvent} data
+ */
+
+ /**
+  * Fired when any map data (style, source, tile, etc) begins loading or
+  * changing asyncronously. All `dataloading` events are followed by a `data`
+  * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
+  *
+  * @event dataloading
+  * @memberof Map
+  * @instance
+  * @property {MapDataEvent} data
+  */
+
+ /**
+  * A `MapDataEvent` object is emitted with the [`Map#data`](#Map.event:data)
+  * and [`Map#data`](#Map.event:dataloading) events. Possible values for
+  * `dataType`s are:
+  *
+  * - `'source'`: The non-tile data associated with any source
+  * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
+  * - `'tile'`: A vector or raster tile
+  *
+  * @typedef {Object} MapDataEvent
+  * @property {string} type The event type.
+  * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`, or `'tile'`.
+  */
+
+ /**
+ * Fired immediately after the map has been removed with [`Map#remove`](#Map#remove).
+ *
+ * @event remove
+ * @memberof Map
+ * @instance
+ */
+
+  /**
+ * Fired immediately after the map has been resized.
+ *
+ * @event resize
+ * @memberof Map
+ * @instance
+ */

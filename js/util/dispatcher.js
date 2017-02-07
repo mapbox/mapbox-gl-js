@@ -67,8 +67,9 @@ Dispatcher.prototype = {
     },
 
     remove: function() {
-        this.workerPool.release(this.id);
+        this.actors.forEach(function (actor) { actor.remove(); });
         this.actors = [];
+        this.workerPool.release(this.id);
     }
 };
 

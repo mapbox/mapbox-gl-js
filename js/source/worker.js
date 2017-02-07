@@ -6,6 +6,8 @@ var util = require('../util/util');
 
 var VectorTileWorkerSource = require('./vector_tile_worker_source');
 var GeoJSONWorkerSource = require('./geojson_worker_source');
+var featureFilter = require('feature-filter');
+var assert = require('assert');
 
 module.exports = function createWorker(self) {
     return new Worker(self);
@@ -62,6 +64,7 @@ util.extend(Worker.prototype, {
                 serializedLayer.ref && layers[serializedLayer.ref]
             );
             styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
             layers[styleLayer.id] = styleLayer;
         }
 
@@ -88,40 +91,42 @@ util.extend(Worker.prototype, {
 
         function updateLayer(layer) {
             var refLayer = layers[layer.ref];
-            if (layers[layer.id]) {
-                layers[layer.id].set(layer, refLayer);
+            var styleLayer = layers[layer.id];
+            if (styleLayer) {
+                styleLayer.set(layer, refLayer);
             } else {
-                layers[layer.id] = StyleLayer.create(layer, refLayer);
+                styleLayer = layers[layer.id] = StyleLayer.create(layer, refLayer);
             }
-            layers[layer.id].updatePaintTransitions({}, {transition: false});
+            styleLayer.updatePaintTransitions({}, {transition: false});
+            styleLayer.filter = featureFilter(styleLayer.filter);
         }
 
         this.layerFamilies[mapId] = createLayerFamilies(this.layers[mapId]);
     },
 
     'load tile': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).loadTile(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).loadTile(params, callback);
     },
 
     'reload tile': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).reloadTile(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).reloadTile(params, callback);
     },
 
     'abort tile': function(mapId, params) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).abortTile(params);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).abortTile(params);
     },
 
     'remove tile': function(mapId, params) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).removeTile(params);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).removeTile(params);
     },
 
     'redo placement': function(mapId, params, callback) {
-        var type = params.type || 'vector';
-        this.getWorkerSource(mapId, type).redoPlacement(params, callback);
+        assert(params.type);
+        this.getWorkerSource(mapId, params.type).redoPlacement(params, callback);
     },
 
     /**
@@ -148,7 +153,16 @@ util.extend(Worker.prototype, {
                 getLayers: function () { return this.layers[mapId]; }.bind(this),
                 getLayerFamilies: function () { return this.layerFamilies[mapId]; }.bind(this)
             };
-            this.workerSources[mapId][type] = new this.workerSourceTypes[type](this.actor, layers);
+
+            // use a wrapped actor so that we can attach a target mapId param
+            // to any messages invoked by the WorkerSource
+            var actor = {
+                send: function (type, data, callback, buffers) {
+                    this.actor.send(type, data, callback, buffers, mapId);
+                }.bind(this)
+            };
+
+            this.workerSources[mapId][type] = new this.workerSourceTypes[type](actor, layers);
         }
 
         return this.workerSources[mapId][type];

@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var Marker = require('../../../js/ui/marker');
@@ -26,6 +26,15 @@ test('Marker', function (t) {
         var marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]);
         t.ok(marker.addTo(map) instanceof Marker, 'marker.addTo(map) returns Marker instance');
         t.ok(marker._map, 'marker instance is bound to map instance');
+        t.end();
+    });
+
+    t.test('marker\'s lngLat can be changed', function (t) {
+        var map = createMap();
+        var marker = new Marker(window.document.createElement('div')).setLngLat([-77.01866, 38.888]).addTo(map);
+        t.ok(marker.setLngLat([-76, 39]) instanceof Marker, 'marker.setLngLat() returns Marker instance');
+        var markerLngLat = marker.getLngLat();
+        t.ok(markerLngLat.lng === -76 &&  markerLngLat.lat === 39, 'marker\'s position can be updated');
         t.end();
     });
 

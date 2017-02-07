@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var QueryFeatures = require('../../../js/source/query_features.js');
 var SourceCache = require('../../../js/source/source_cache.js');
 

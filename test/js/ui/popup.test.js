@@ -1,13 +1,12 @@
 'use strict';
 
-var test = require('tap').test;
-var sinon = require('sinon');
+var test = require('mapbox-gl-js-test').test;
 var window = require('../../../js/util/window');
 var Map = require('../../../js/ui/map');
 var Popup = require('../../../js/ui/popup');
 var LngLat = require('../../../js/geo/lng_lat');
 var Point = require('point-geometry');
-var simulateClick = require('../../testutil/simulate_interaction').click;
+var simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 
 var containerWidth = 512;
 var containerHeight = 512;
@@ -84,7 +83,7 @@ test('Popup has no close button if closeButton option is false', function (t) {
 
 test('Popup fires close event when removed', function (t) {
     var map = createMap();
-    var onClose = sinon.spy();
+    var onClose = t.spy();
 
     new Popup()
         .setText("Test")
@@ -213,7 +212,7 @@ test('Popup anchors as specified by the anchor option', function (t) {
         popup._container.offsetWidth = 100;
         popup._container.offsetHeight = 100;
 
-        sinon.stub(map, 'project', function () { return point; });
+        t.stub(map, 'project', function () { return point; });
         popup.setLngLat([0, 0]);
 
         t.ok(popup._container.classList.contains(`mapboxgl-popup-anchor-${anchor}`));
@@ -222,7 +221,7 @@ test('Popup anchors as specified by the anchor option', function (t) {
 
     test(`Popup translation reflects offset and ${anchor} anchor`, function (t) {
         var map = createMap();
-        sinon.stub(map, 'project', function () { return new Point(0, 0); });
+        t.stub(map, 'project', function () { return new Point(0, 0); });
 
         var popup = new Popup({anchor: anchor, offset: 10})
             .setLngLat([0, 0])
@@ -234,9 +233,31 @@ test('Popup anchors as specified by the anchor option', function (t) {
     });
 });
 
+test('Popup automatically anchors to top if its bottom offset would push it off-screen', function (t) {
+    var map = createMap();
+    var point = new Point(containerWidth / 2, containerHeight / 2);
+    var options = { offset: {
+        'bottom': [0, -25],
+        'top': [0, 0]
+    }};
+    var popup = new Popup(options)
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    popup._container.offsetWidth = (containerWidth / 2);
+    popup._container.offsetHeight = (containerHeight / 2);
+
+    t.stub(map, 'project', function () { return point; });
+    popup.setLngLat([0, 0]);
+
+    t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top'));
+    t.end();
+});
+
 test('Popup is offset via a PointLike offset option', function (t) {
     var map = createMap();
-    sinon.stub(map, 'project', function () { return new Point(0, 0); });
+    t.stub(map, 'project', function () { return new Point(0, 0); });
 
     var popup = new Popup({anchor: 'top-left', offset: [5, 10]})
         .setLngLat([0, 0])
@@ -249,7 +270,7 @@ test('Popup is offset via a PointLike offset option', function (t) {
 
 test('Popup is offset via an object offset option', function (t) {
     var map = createMap();
-    sinon.stub(map, 'project', function () { return new Point(0, 0); });
+    t.stub(map, 'project', function () { return new Point(0, 0); });
 
     var popup = new Popup({anchor: 'top-left', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])

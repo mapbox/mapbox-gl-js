@@ -1,6 +1,6 @@
 'use strict';
 
-var test = require('tap').test;
+var test = require('mapbox-gl-js-test').test;
 var Wrapper = require('../../../js/source/geojson_wrapper');
 
 test('geojsonwrapper', function(t) {

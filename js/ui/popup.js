@@ -24,17 +24,31 @@ var window = require('../util/window');
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
  *   for `'bottom'`.
- * @param {number|PointLike|{[position: string]: PointLike}} [options.offset] -
+ * @param {number|PointLike|Object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
  *   - a [`PointLike`](#PointLike) specifying a constant offset
  *   - an object of [`PointLike`](#PointLike)s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @example
- * var popup = new mapboxgl.Popup()
+ * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
+ * var popupOffsets = {
+ *  'top': [0, 0],
+ *  'top-left': [0,0],
+ *  'top-right': [0,0],
+ *  'bottom': [0, -markerHeight],
+ *  'bottom-left': [linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+ *  'bottom-right': [-linearOffset, (markerHeight - markerRadius + linearOffset) * -1],
+ *  'left': [markerRadius, (markerHeight - markerRadius) * -1],
+ *  'right': [-markerRadius, (markerHeight - markerRadius) * -1]
+ *  };
+ * var popup = new mapboxgl.Popup({offset:popupOffsets})
  *   .setLngLat(e.lngLat)
  *   .setHTML("<h1>Hello World!</h1>")
  *   .addTo(map);
+ * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Display a popup on hover](https://www.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
+ * @see [Display a popup on click](https://www.mapbox.com/mapbox-gl-js/example/popup-on-click/)
  */
 function Popup(options) {
     util.setOptions(this, options);
@@ -223,7 +237,7 @@ Popup.prototype = util.inherit(Evented, /** @lends Popup.prototype */{
             var width = this._container.offsetWidth,
                 height = this._container.offsetHeight;
 
-            if (pos.y < height) {
+            if (pos.y + offset.bottom.y < height) {
                 anchor = ['top'];
             } else if (pos.y > this._map.transform.height - height) {
                 anchor = ['bottom'];

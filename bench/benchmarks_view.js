@@ -144,6 +144,8 @@ var BenchmarksView = React.createClass({
                 that.scrollToBenchmark(name, version);
                 that.runBenchmark(name, version, callback);
             }, callback);
+        }, function(err) {
+            if (err) throw err;
         });
     },
 

@@ -1,6 +1,5 @@
 'use strict';
 
-var featureFilter = require('feature-filter');
 var ArrayGroup = require('./array_group');
 var BufferGroup = require('./buffer_group');
 var util = require('../util/util');
@@ -18,11 +17,20 @@ module.exports = Bucket;
 Bucket.create = function(options) {
     var Classes = {
         fill: require('./bucket/fill_bucket'),
+        fillextrusion: require('./bucket/fill_extrusion_bucket'),
         line: require('./bucket/line_bucket'),
         circle: require('./bucket/circle_bucket'),
         symbol: require('./bucket/symbol_bucket')
     };
-    return new Classes[options.layer.type](options);
+
+    var type = options.layer.type;
+    if (type === 'fill' && (!options.layer.isPaintValueFeatureConstant('fill-extrude-height') ||
+        !options.layer.isPaintValueZoomConstant('fill-extrude-height') ||
+        options.layer.getPaintValue('fill-extrude-height') !== 0)) {
+        type = 'fillextrusion';
+    }
+
+    return new Classes[type](options);
 };
 
 
@@ -164,11 +172,11 @@ Bucket.prototype.createArrays = function() {
     }
 };
 
-Bucket.prototype.destroy = function(gl) {
+Bucket.prototype.destroy = function() {
     for (var programName in this.bufferGroups) {
         var programBufferGroups = this.bufferGroups[programName];
         for (var i = 0; i < programBufferGroups.length; i++) {
-            programBufferGroups[i].destroy(gl);
+            programBufferGroups[i].destroy();
         }
     }
 };
@@ -231,12 +239,6 @@ Bucket.prototype.serialize = function() {
             return layer.id;
         })
     };
-};
-
-Bucket.prototype.createFilter = function() {
-    if (!this.filter) {
-        this.filter = featureFilter(this.layer.filter);
-    }
 };
 
 var FAKE_ZOOM_HISTORY = { lastIntegerZoom: Infinity, lastIntegerZoomTime: 0, lastZoom: 0 };

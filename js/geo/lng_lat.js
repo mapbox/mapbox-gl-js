@@ -18,6 +18,10 @@ var wrap = require('../util/util').wrap;
  * @param {number} lat Latitude, measured in degrees.
  * @example
  * var ll = new mapboxgl.LngLat(-73.9749, 40.7736);
+ * @see [Get coordinates of the mouse pointer](https://www.mapbox.com/mapbox-gl-js/example/mouse-position/)
+ * @see [Display a popup](https://www.mapbox.com/mapbox-gl-js/example/popup/)
+ * @see [Highlight features within a bounding box](https://www.mapbox.com/mapbox-gl-js/example/using-box-queryrenderedfeatures/)
+ * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
  */
 function LngLat(lng, lat) {
     if (isNaN(lng) || isNaN(lat)) {
@@ -82,9 +86,11 @@ LngLat.prototype.toString = function () {
 LngLat.convert = function (input) {
     if (input instanceof LngLat) {
         return input;
-    }
-    if (Array.isArray(input)) {
+    } else if (input && input.hasOwnProperty('lng') && input.hasOwnProperty('lat')) {
+        return new LngLat(input.lng, input.lat);
+    } else if (Array.isArray(input) && input.length === 2) {
         return new LngLat(input[0], input[1]);
+    } else {
+        throw new Error("`LngLatLike` argument must be specified as a LngLat instance, an object {lng: <lng>, lat: <lat>}, or an array of [<lng>, <lat>]");
     }
-    return input;
 };
