@@ -1,6 +1,6 @@
 'use strict';
 
-const MapboxGLFunction = require('mapbox-gl-function');
+const MapboxGLFunction = require('../style-spec/function');
 const parseColor = require('./parse_color');
 const util = require('../util/util');
 

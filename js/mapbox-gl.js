@@ -10,6 +10,7 @@ mapboxgl.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
 
 mapboxgl.Map = require('./ui/map');
 mapboxgl.NavigationControl = require('./ui/control/navigation_control');
+mapboxgl.LogoControl = require('./ui/control/logo_control');
 mapboxgl.GeolocateControl = require('./ui/control/geolocate_control');
 mapboxgl.AttributionControl = require('./ui/control/attribution_control');
 mapboxgl.ScaleControl = require('./ui/control/scale_control');
@@ -33,6 +34,22 @@ mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 
 const config = require('./util/config');
 mapboxgl.config = config;
+
+const rtlTextPlugin = require('./source/rtl_text_plugin');
+
+mapboxgl.setRTLTextPlugin = rtlTextPlugin.setRTLTextPlugin;
+
+ /**
+  * Sets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text).
+  * Necessary for supporting languages like Arabic and Hebrew that are written right-to-left.
+  *
+  * @function setRTLTextPlugin
+  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
+  * @param {Function} callback Called with an error argument if there is an error.
+  * @example
+  * mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.0/mapbox-gl-rtl-text.js');
+  * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
+  */
 
 Object.defineProperty(mapboxgl, 'accessToken', {
     get: function() { return config.ACCESS_TOKEN; },

@@ -1,0 +1,46 @@
+[
+  {
+    "properties": {},
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "properties": {},
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "properties": {},
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "properties": {},
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0,
+        0
+      ]
+    }
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    52.499167,
+    13.418056
+  ],
+  "zoom": 16,
+  "sources": {
+    "source": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/alpha.png"
+      ],
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "orange"
+      }
+    },
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "source",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

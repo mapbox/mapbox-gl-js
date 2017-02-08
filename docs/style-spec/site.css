@@ -1,0 +1,15 @@
+.fill-gradient { background-image: linear-gradient( to bottom right, #7474BF, #348AC7); }
+.doc .property p { margin-bottom:0; }
+.doc .space-right { padding-right:10px; }
+.doc .icon.inline:before { vertical-align:middle; }
+.doc .uppercase { text-transform: uppercase; }
+.doc .indented { border-left: 4px solid rgba(255,255,255,0.2); }
+.doc.dark .keyline-bottom { border-color: rgba(0,0,0,0.15); }
+
+/* Supress `err` styling rouge applies from
+ * mapbox.com/base/ to favor shorthand documentation
+ * that doesn't always support formal syntax */
+pre .err {
+  background-color:transparent;
+  color:inherit;
+  }

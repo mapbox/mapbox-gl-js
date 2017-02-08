@@ -61,9 +61,13 @@ class VectorTileWorkerSource {
             workerTile.parse(vectorTile, this.layerIndex, this.actor, (err, result, transferrables) => {
                 if (err) return callback(err);
 
+                const cacheControl = {};
+                if (vectorTile.expires) cacheControl.expires = vectorTile.expires;
+                if (vectorTile.cacheControl) cacheControl.cacheControl = vectorTile.cacheControl;
+
                 // Not transferring rawTileData because the worker needs to retain its copy.
                 callback(null,
-                    util.extend({rawTileData: vectorTile.rawData}, result),
+                    util.extend({rawTileData: vectorTile.rawData}, result, cacheControl),
                     transferrables);
             });
 
@@ -81,10 +85,27 @@ class VectorTileWorkerSource {
      */
     reloadTile(params, callback) {
         const loaded = this.loaded[params.source],
-            uid = params.uid;
+            uid = params.uid,
+            vtSource = this;
         if (loaded && loaded[uid]) {
             const workerTile = loaded[uid];
-            workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, callback);
+
+            if (workerTile.status === 'parsing') {
+                workerTile.reloadCallback = callback;
+            } else if (workerTile.status === 'done') {
+                workerTile.parse(workerTile.vectorTile, this.layerIndex, this.actor, done.bind(workerTile));
+            }
+
+        }
+
+        function done(err, data) {
+            if (this.reloadCallback) {
+                const reloadCallback = this.reloadCallback;
+                delete this.reloadCallback;
+                this.parse(this.vectorTile, vtSource.layerIndex, vtSource.actor, reloadCallback);
+            }
+
+            callback(err, data);
         }
     }
 
@@ -146,10 +167,12 @@ class VectorTileWorkerSource {
     loadVectorData(params, callback) {
         const xhr = ajax.getArrayBuffer(params.url, done.bind(this));
         return function abort () { xhr.abort(); };
-        function done(err, arrayBuffer) {
+        function done(err, response) {
             if (err) { return callback(err); }
-            const vectorTile = new vt.VectorTile(new Protobuf(arrayBuffer));
-            vectorTile.rawData = arrayBuffer;
+            const vectorTile = new vt.VectorTile(new Protobuf(response.data));
+            vectorTile.rawData = response.data;
+            vectorTile.cacheControl = response.cacheControl;
+            vectorTile.expires = response.expires;
             callback(err, vectorTile);
         }
     }

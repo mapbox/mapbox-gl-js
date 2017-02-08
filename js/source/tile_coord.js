@@ -32,7 +32,7 @@ class TileCoord {
     }
 
     toCoordinate(sourceMaxZoom) {
-        const zoom = Math.min(this.z, sourceMaxZoom);
+        const zoom = Math.min(this.z, sourceMaxZoom === undefined ? this.z : sourceMaxZoom);
         const tileScale = Math.pow(2, zoom);
         const row = this.y;
         const column = this.x + tileScale * this.w;
@@ -144,17 +144,23 @@ function scanTriangle(a, b, c, ymin, ymax, scanLine) {
     if (bc.dy) scanSpans(ca, bc, ymin, ymax, scanLine);
 }
 
-TileCoord.cover = function(z, bounds, actualZ) {
+TileCoord.cover = function(z, bounds, actualZ, renderWorldCopies) {
+    if (renderWorldCopies === undefined) {
+        renderWorldCopies = true;
+    }
     const tiles = 1 << z;
     const t = {};
 
     function scanLine(x0, x1, y) {
-        let x, wx, coord;
+        let x, w, wx, coord;
         if (y >= 0 && y <= tiles) {
             for (x = x0; x < x1; x++) {
+                w = Math.floor(x / tiles);
                 wx = (x % tiles + tiles) % tiles;
-                coord = new TileCoord(actualZ, wx, y, Math.floor(x / tiles));
-                t[coord.id] = coord;
+                if (w === 0 || renderWorldCopies === true) {
+                    coord = new TileCoord(actualZ, wx, y, w);
+                    t[coord.id] = coord;
+                }
             }
         }
     }

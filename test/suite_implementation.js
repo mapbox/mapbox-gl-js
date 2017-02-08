@@ -7,6 +7,11 @@ const PNG = require('pngjs').PNG;
 const Map = require('../js/ui/map');
 const window = require('../js/util/window');
 const browser = require('../js/util/browser');
+const rtlTextPlugin = require('../js/source/rtl_text_plugin');
+const rtlText = require('mapbox-gl-rtl-text');
+
+rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
+rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
 
 module.exports = function(style, options, _callback) {
     let wasCallbackCalled = false;
@@ -131,8 +136,8 @@ sinon.stub(ajax, 'getArrayBuffer', (url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
     return request({url: url, encoding: null}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
-            cache[url] = body;
-            callback(null, body);
+            cache[url] = {data: body};
+            callback(null, {data: body});
         } else {
             callback(error || new Error(response.statusCode));
         }

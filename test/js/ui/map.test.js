@@ -9,6 +9,7 @@ const LngLat = require('../../../js/geo/lng_lat');
 const fixed = require('mapbox-gl-js-test/fixed');
 const fixedNum = fixed.Num;
 const fixedLngLat = fixed.LngLat;
+const fixedCoord = fixed.Coord;
 
 function createMap(options, callback) {
     const container = window.document.createElement('div');
@@ -56,6 +57,28 @@ test('Map', (t) => {
         t.ok(map.keyboard.isEnabled());
         t.ok(map.scrollZoom.isEnabled());
         t.ok(map.touchZoomRotate.isEnabled());
+        t.throws(() => {
+            new Map({
+                container: 'anElementIdWhichDoesNotExistInTheDocument'
+            });
+        }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+
+        t.end();
+    });
+
+    t.test('constructor, max size detection', (t) => {
+        t.stub(console, 'warn');
+
+        const container = window.document.createElement('div');
+        container.offsetWidth = 10000;
+        container.offsetHeight = 10000;
+        new Map({container});
+
+        t.match(
+            console.warn.getCall(0).args[0],
+            /Map is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
+        );
+
         t.end();
     });
 
@@ -133,20 +156,51 @@ test('Map', (t) => {
                 function recordEvent(event) { events.push(event.type); }
 
                 map.on('error', recordEvent);
-                map.on('source.load', recordEvent);
                 map.on('data', recordEvent);
                 map.on('dataloading', recordEvent);
 
                 map.style.fire('error');
-                map.style.fire('source.load');
                 map.style.fire('data');
                 map.style.fire('dataloading');
 
                 t.deepEqual(events, [
                     'error',
-                    'source.load',
                     'data',
                     'dataloading',
+                ]);
+
+                t.end();
+            });
+        });
+
+        t.test('fires *data and *dataloading events', (t) => {
+            createMap({}, (error, map) => {
+                t.error(error);
+
+                const events = [];
+                function recordEvent(event) { events.push(event.type); }
+
+                map.on('styledata', recordEvent);
+                map.on('styledataloading', recordEvent);
+                map.on('sourcedata', recordEvent);
+                map.on('sourcedataloading', recordEvent);
+                map.on('tiledata', recordEvent);
+                map.on('tiledataloading', recordEvent);
+
+                map.style.fire('data', {dataType: 'style'});
+                map.style.fire('dataloading', {dataType: 'style'});
+                map.style.fire('data', {dataType: 'source'});
+                map.style.fire('dataloading', {dataType: 'source'});
+                map.style.fire('data', {dataType: 'tile'});
+                map.style.fire('dataloading', {dataType: 'tile'});
+
+                t.deepEqual(events, [
+                    'styledata',
+                    'styledataloading',
+                    'sourcedata',
+                    'sourcedataloading',
+                    'tiledata',
+                    'tiledataloading'
                 ]);
 
                 t.end();
@@ -208,6 +262,16 @@ test('Map', (t) => {
             });
         });
 
+        t.test('passing null removes style', (t) => {
+            const map = createMap();
+            const style = map.style;
+            t.ok(style);
+            t.spy(style, '_remove');
+            map.setStyle(null);
+            t.equal(style._remove.callCount, 1);
+            t.end();
+        });
+
         t.end();
     });
 
@@ -264,6 +328,33 @@ test('Map', (t) => {
             });
         });
 
+        t.test('fires an error on checking if non-existant source is loaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /There is no source with ID/);
+                    t.end();
+                });
+                map.isSourceLoaded('geojson');
+            });
+        });
+
+        t.test('#isSourceLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('source.load', () => {
+                    t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                    t.end();
+                });
+                map.addSource('geojson', createStyleSource());
+                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
+            });
+        });
+
         t.test('returns the style with added layers', (t) => {
             const style = createStyle();
             const map = createMap({style: style});
@@ -275,6 +366,49 @@ test('Map', (t) => {
                 }));
                 t.end();
             });
+        });
+
+        t.test('returns the style with added source and layer', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+            const layer = util.extend(createStyleLayer(), {
+                source: createStyleSource()
+            });
+
+            map.on('load', () => {
+                map.addLayer(layer);
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                    sources: {background: createStyleSource()},
+                    layers: [util.extend(createStyleLayer(), {source: 'background'})]
+                }));
+                t.end();
+            });
+        });
+
+        t.test('creates a new Style if diff fails', (t) => {
+            const style = createStyle();
+            const map = createMap({ style: style });
+            t.stub(map.style, 'setState', () => {
+                throw new Error('Dummy error');
+            });
+
+            const previousStyle = map.style;
+            map.setStyle(style);
+            t.ok(map.style && map.style !== previousStyle);
+            t.end();
+        });
+
+        t.test('creates a new Style if diff option is false', (t) => {
+            const style = createStyle();
+            const map = createMap({ style: style });
+            t.stub(map.style, 'setState', () => {
+                t.fail();
+            });
+
+            const previousStyle = map.style;
+            map.setStyle(style, {diff: false});
+            t.ok(map.style && map.style !== previousStyle);
+            t.end();
         });
 
         t.end();
@@ -433,7 +567,7 @@ test('Map', (t) => {
         });
 
         function toFixed(bounds) {
-            const n = 10;
+            const n = 9;
             return [
                 [bounds[0][0].toFixed(n), bounds[0][1].toFixed(n)],
                 [bounds[1][0].toFixed(n), bounds[1][1].toFixed(n)]
@@ -587,7 +721,7 @@ test('Map', (t) => {
 
     t.test('#unproject', (t) => {
         const map = createMap();
-        t.deepEqual(map.unproject([100, 100]), { lng: 0, lat: 0 });
+        t.deepEqual(fixedLngLat(map.unproject([100, 100])), { lng: 0, lat: 0 });
         t.end();
     });
 
@@ -617,7 +751,7 @@ test('Map', (t) => {
                 const output = map.queryRenderedFeatures(map.project(new LngLat(0, 0)));
 
                 const args = map.style.queryRenderedFeatures.getCall(0).args;
-                t.deepEqual(args[0], [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
+                t.deepEqual(args[0].map(c => fixedCoord(c)), [{ column: 0.5, row: 0.5, zoom: 0 }]); // query geometry
                 t.deepEqual(args[1], {}); // params
                 t.deepEqual(args[2], 0); // bearing
                 t.deepEqual(args[3], 0); // zoom
@@ -666,8 +800,8 @@ test('Map', (t) => {
 
                 map.queryRenderedFeatures(map.project(new LngLat(360, 0)));
 
-                const coords = map.style.queryRenderedFeatures.getCall(0).args[0];
-                t.equal(parseFloat(coords[0].column.toFixed(4)), 1.5);
+                const coords = map.style.queryRenderedFeatures.getCall(0).args[0].map(c => fixedCoord(c));
+                t.equal(coords[0].column, 1.5);
                 t.equal(coords[0].row, 0.5);
                 t.equal(coords[0].zoom, 0);
 
@@ -730,6 +864,24 @@ test('Map', (t) => {
             }, Error, /load/i);
 
             t.end();
+        });
+
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
+            });
         });
 
         t.test('fires a data event', (t) => {
@@ -920,6 +1072,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setPaintProperty('non-existant', 'background-color', 'red');
+            });
+        });
+
         t.end();
     });
 
@@ -1016,6 +1186,23 @@ test('Map', (t) => {
                 }
             });
         });
+    });
+
+    t.test('Map#isMoving', (t) => {
+        t.plan(3);
+        const map = createMap();
+
+        t.equal(map.isMoving(), false, 'false before moving');
+
+        map.on('movestart', () => {
+            t.equal(map.isMoving(), true, 'true on movestart');
+        });
+
+        map.on('moveend', () => {
+            t.equal(map.isMoving(), false, 'false on moveend');
+        });
+
+        map.zoomTo(5, { duration: 0 });
     });
 
     t.end();

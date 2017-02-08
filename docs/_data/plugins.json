@@ -43,7 +43,7 @@
   },
   "mapbox-gl-directions": {
     "prefix": "mapbox-gl-directions",
-    "latest": "3.0.2",
+    "latest": "3.1.1",
     "v": {
       "0.0.0": {
         "files": [
@@ -88,6 +88,18 @@
         ]
       },
       "3.0.2": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      },
+      "3.0.3": {
+        "files": [
+          "mapbox-gl-directions.js",
+          "mapbox-gl-directions.css"
+        ]
+      },
+      "3.1.1": {
         "files": [
           "mapbox-gl-directions.js",
           "mapbox-gl-directions.css"
@@ -190,6 +202,17 @@
       "1.2.0": {
         "files": [
           "mapbox-gl-supported.js"
+        ]
+      }
+    }
+  },
+  "mapbox-gl-rtl-text": {
+    "prefix": "mapbox-gl-rtl-text",
+    "latest": "0.1.0",
+    "v": {
+      "0.1.0": {
+        "files": [
+          "mapbox-gl-rtl-text.js"
         ]
       }
     }

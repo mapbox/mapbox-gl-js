@@ -7,7 +7,8 @@ const sourceTypes = {
     'raster': require('../source/raster_tile_source'),
     'geojson': require('../source/geojson_source'),
     'video': require('../source/video_source'),
-    'image': require('../source/image_source')
+    'image': require('../source/image_source'),
+    'canvas': require('../source/canvas_source')
 };
 
 /*
@@ -21,7 +22,6 @@ const sourceTypes = {
  */
 exports.create = function(id, source, dispatcher, eventedParent) {
     source = new sourceTypes[source.type](id, source, dispatcher, eventedParent);
-    source.setEventedParent(eventedParent);
 
     if (source.id !== id) {
         throw new Error(`Expected Source id to be ${id} instead of ${source.id}`);

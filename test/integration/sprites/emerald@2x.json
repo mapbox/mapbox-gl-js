@@ -1,0 +1,492 @@
+{
+  "sand_noise": {
+    "width": 100,
+    "height": 100,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "grass_noise": {
+    "width": 100,
+    "height": 100,
+    "x": 100,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "interstate_3": {
+    "width": 100,
+    "height": 86,
+    "x": 0,
+    "y": 100,
+    "pixelRatio": 2
+  },
+  "interstate_2": {
+    "width": 92,
+    "height": 88,
+    "x": 200,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "interstate_1": {
+    "width": 80,
+    "height": 84,
+    "x": 200,
+    "y": 88,
+    "pixelRatio": 2
+  },
+  "dlr.london-overground.london-underground.national-rail": {
+    "width": 144,
+    "height": 32,
+    "x": 0,
+    "y": 186,
+    "pixelRatio": 2
+  },
+  "us_highway_3": {
+    "width": 74,
+    "height": 60,
+    "x": 100,
+    "y": 100,
+    "pixelRatio": 2
+  },
+  "us_highway_2": {
+    "width": 68,
+    "height": 60,
+    "x": 0,
+    "y": 218,
+    "pixelRatio": 2
+  },
+  "us_state_3": {
+    "width": 74,
+    "height": 54,
+    "x": 68,
+    "y": 218,
+    "pixelRatio": 2
+  },
+  "london-overground.london-underground.national-rail": {
+    "width": 108,
+    "height": 32,
+    "x": 144,
+    "y": 186,
+    "pixelRatio": 2
+  },
+  "dlr.london-underground.national-rail": {
+    "width": 108,
+    "height": 32,
+    "x": 142,
+    "y": 218,
+    "pixelRatio": 2
+  },
+  "us_state_1": {
+    "width": 60,
+    "height": 54,
+    "x": 292,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "us_state_2": {
+    "width": 60,
+    "height": 54,
+    "x": 292,
+    "y": 54,
+    "pixelRatio": 2
+  },
+  "rer.transilien": {
+    "width": 80,
+    "height": 40,
+    "x": 0,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "us_highway_1": {
+    "width": 52,
+    "height": 58,
+    "x": 292,
+    "y": 108,
+    "pixelRatio": 2
+  },
+  "default_6": {
+    "width": 84,
+    "height": 32,
+    "x": 80,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "s-bahn.u-bahn": {
+    "width": 72,
+    "height": 36,
+    "x": 352,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "metro.rer": {
+    "width": 68,
+    "height": 36,
+    "x": 352,
+    "y": 36,
+    "pixelRatio": 2
+  },
+  "default_5": {
+    "width": 74,
+    "height": 32,
+    "x": 164,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "dlr.london-underground": {
+    "width": 72,
+    "height": 32,
+    "x": 352,
+    "y": 72,
+    "pixelRatio": 2
+  },
+  "london-overground.national-rail": {
+    "width": 72,
+    "height": 32,
+    "x": 352,
+    "y": 104,
+    "pixelRatio": 2
+  },
+  "london-underground.national-rail": {
+    "width": 72,
+    "height": 32,
+    "x": 352,
+    "y": 136,
+    "pixelRatio": 2
+  },
+  "london-overground.london-underground": {
+    "width": 72,
+    "height": 32,
+    "x": 352,
+    "y": 168,
+    "pixelRatio": 2
+  },
+  "dlr.national-rail": {
+    "width": 72,
+    "height": 32,
+    "x": 352,
+    "y": 200,
+    "pixelRatio": 2
+  },
+  "default_4": {
+    "width": 64,
+    "height": 32,
+    "x": 352,
+    "y": 232,
+    "pixelRatio": 2
+  },
+  "default_3": {
+    "width": 54,
+    "height": 32,
+    "x": 352,
+    "y": 264,
+    "pixelRatio": 2
+  },
+  "dot": {
+    "width": 40,
+    "height": 40,
+    "x": 292,
+    "y": 166,
+    "pixelRatio": 2
+  },
+  "moscow-metro": {
+    "width": 42,
+    "height": 36,
+    "x": 292,
+    "y": 206,
+    "pixelRatio": 2
+  },
+  "default_2": {
+    "width": 44,
+    "height": 32,
+    "x": 292,
+    "y": 242,
+    "pixelRatio": 2
+  },
+  "post_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 0,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "police_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 36,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "cemetery_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 72,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "embassy_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 108,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "golf_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 144,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "religious-jewish_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 180,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "government_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 216,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "s-bahn": {
+    "width": 36,
+    "height": 36,
+    "x": 252,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "school_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 288,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "fire-station_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 324,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "generic_metro": {
+    "width": 36,
+    "height": 36,
+    "x": 360,
+    "y": 318,
+    "pixelRatio": 2
+  },
+  "hospital_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 0,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "zoo_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 36,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "generic_rail": {
+    "width": 36,
+    "height": 36,
+    "x": 72,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "harbor_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 108,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "library_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 144,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "monument_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 180,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "washington-metro": {
+    "width": 36,
+    "height": 36,
+    "x": 216,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "airport_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 252,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "park_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 288,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "generic_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 324,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "wiener-linien": {
+    "width": 36,
+    "height": 36,
+    "x": 360,
+    "y": 354,
+    "pixelRatio": 2
+  },
+  "college_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "religious-muslim_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 36,
+    "pixelRatio": 2
+  },
+  "marker_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 72,
+    "pixelRatio": 2
+  },
+  "rer": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 108,
+    "pixelRatio": 2
+  },
+  "u-bahn": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 144,
+    "pixelRatio": 2
+  },
+  "prison_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 180,
+    "pixelRatio": 2
+  },
+  "airfield_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 216,
+    "pixelRatio": 2
+  },
+  "metro": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 252,
+    "pixelRatio": 2
+  },
+  "religious-christian_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 288,
+    "pixelRatio": 2
+  },
+  "museum_icon": {
+    "width": 36,
+    "height": 36,
+    "x": 424,
+    "y": 324,
+    "pixelRatio": 2
+  },
+  "national-rail": {
+    "width": 36,
+    "height": 32,
+    "x": 252,
+    "y": 186,
+    "pixelRatio": 2
+  },
+  "london-overground": {
+    "width": 36,
+    "height": 32,
+    "x": 250,
+    "y": 218,
+    "pixelRatio": 2
+  },
+  "london-underground": {
+    "width": 36,
+    "height": 32,
+    "x": 238,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "dlr": {
+    "width": 36,
+    "height": 32,
+    "x": 274,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "default_1": {
+    "width": 34,
+    "height": 32,
+    "x": 310,
+    "y": 278,
+    "pixelRatio": 2
+  },
+  "oneway_motorway": {
+    "width": 40,
+    "height": 18,
+    "x": 352,
+    "y": 296,
+    "pixelRatio": 2
+  },
+  "oneway_road": {
+    "width": 40,
+    "height": 18,
+    "x": 100,
+    "y": 160,
+    "pixelRatio": 2
+  },
+  "school_striped": {
+    "width": 12,
+    "height": 12,
+    "x": 424,
+    "y": 360,
+    "pixelRatio": 2
+  },
+  "hospital_striped": {
+    "width": 12,
+    "height": 12,
+    "x": 436,
+    "y": 360,
+    "pixelRatio": 2
+  }
+}

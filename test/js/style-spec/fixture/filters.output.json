@@ -1,0 +1,54 @@
+[
+  {
+    "message": "layers[0].filter: array expected, object found",
+    "line": 15
+  },
+  {
+    "message": "layers[1].filter: filter array must have at least 1 element",
+    "line": 22
+  },
+  {
+    "message": "layers[2].filter[0]: expected one of [==, !=, >, >=, <, <=, in, !in, all, any, none, has, !has], = found",
+    "line": 30
+  },
+  {
+    "message": "layers[3].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 40
+  },
+  {
+    "message": "layers[4].filter: filter array for operator \"==\" must have 3 elements",
+    "line": 47
+  },
+  {
+    "message": "layers[5].filter[1]: string expected, number found",
+    "line": 59
+  },
+  {
+    "message": "layers[6].filter[2]: string, number, or boolean expected, array found",
+    "line": 71
+  },
+  {
+    "message": "layers[7].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "line": 82
+  },
+  {
+    "message": "layers[8].filter: \"$type\" cannot be use with operator \">\"",
+    "line": 90
+  },
+  {
+    "message": "layers[8].filter[2]: expected one of [Point, LineString, Polygon], value found",
+    "line": 93
+  },
+  {
+    "message": "layers[9].filter[1]: filter array must have at least 1 element",
+    "line": 103
+  },
+  {
+    "message": "layers[12].filter: filter array for \"has\" operator must have 2 elements",
+    "line": 131
+  },
+  {
+    "message": "layers[13].filter[1]: string expected, object found",
+    "line": 144
+  }
+]

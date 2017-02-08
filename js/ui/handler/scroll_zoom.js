@@ -37,14 +37,20 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
+     * @param {Object} [options]
+     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
+     *
      * @example
      *   map.scrollZoom.enable();
+     * @example
+     *  map.scrollZoom.enable({ around: 'center' })
      */
-    enable() {
+    enable(options) {
         if (this.isEnabled()) return;
         this._el.addEventListener('wheel', this._onWheel, false);
         this._el.addEventListener('mousewheel', this._onWheel, false);
         this._enabled = true;
+        this._aroundCenter = options && options.around === 'center';
     }
 
     /**
@@ -137,7 +143,7 @@ class ScrollZoomHandler {
 
         map.zoomTo(targetZoom, {
             duration: this._type === 'wheel' ? 200 : 0,
-            around: map.unproject(this._pos),
+            around: this._aroundCenter ? map.getCenter() : map.unproject(this._pos),
             delayEndEvents: 200,
             smoothEasing: true
         }, { originalEvent: e });

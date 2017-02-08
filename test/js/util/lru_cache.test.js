@@ -32,6 +32,26 @@ test('LRUCache - duplicate add', (t) => {
     t.end();
 });
 
+test('LRUCache - remove', (t) => {
+    const cache = new LRUCache(10, () => {});
+
+    cache.add('washington', 'dc');
+    cache.add('baltimore', 'md');
+    cache.add('richmond', 'va');
+
+    t.deepEqual(cache.keys(), ['washington', 'baltimore', 'richmond']);
+    t.ok(cache.has('baltimore'));
+
+    cache.remove('baltimore');
+
+    t.deepEqual(cache.keys(), ['washington', 'richmond']);
+    t.notOk(cache.has('baltimore'));
+
+    t.ok(cache.remove('baltimore'));
+
+    t.end();
+});
+
 test('LRUCache - overflow', (t) => {
     const cache = new LRUCache(1, (removed) => {
         t.equal(removed, 'b');

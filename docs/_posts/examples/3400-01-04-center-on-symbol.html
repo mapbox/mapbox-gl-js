@@ -18,55 +18,52 @@ var map = new mapboxgl.Map({
 
 map.on('load', function () {
 
-    // add geojson data as a new source
-    map.addSource("symbols", {
-        "type": "geojson",
-        "data": {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            -91.395263671875,
-                            -0.9145729757782163
-
-                        ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            -90.32958984375,
-                            -0.6344474832838974
-                        ]
-                    }
-                },
-                {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            -91.34033203125,
-                            0.01647949196029245
-                        ]
-                    }
-                }
-            ]
-        }
-    });
-
     // add source as a layer and apply some styles
     map.addLayer({
         "id": "symbols",
         "type": "symbol",
-        "source": "symbols",
+        "source": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -91.395263671875,
+                                -0.9145729757782163
+
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -90.32958984375,
+                                -0.6344474832838974
+                            ]
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [
+                                -91.34033203125,
+                                0.01647949196029245
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
         "layout": {
             "icon-image": "rocket-15"
         },

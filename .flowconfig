@@ -1,6 +1,9 @@
 [ignore]
 
-.*/node_modules/.*
+.*/node_modules/jsonlint/.*
+.*/node_modules/jsonlint-lines-primitives/.*
+.*/node_modules/unflowify/.*
+.*/test/js/style-spec/fixture/invalidjson.input.json
 
 [include]
 
@@ -9,3 +12,6 @@
 ./interfaces/
 
 [options]
+
+[version]
+0.36.0

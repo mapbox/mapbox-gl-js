@@ -1,0 +1,39 @@
+{
+  "version": 7,
+  "sources": {
+    "missing-type": {
+    },
+    "invalid-type": {
+      "type": "invalid"
+    },
+    "no-tilejson-properties-with-url": {
+      "type": "vector",
+      "url": "http://example.com",
+      "tiles": []
+    },
+    "no-unknown-properties-with-url": {
+      "type": "vector",
+      "url": "http://example.com",
+      "foo": 1
+    },
+    "video-valid": {
+      "type": "video",
+      "url": [],
+      "coordinates": [
+        [1, 2], [3, 4], [5, 6], [7, 8]
+      ]
+    },
+    "video-missing-coordinates": {
+      "type": "video",
+      "url": []
+    },
+    "video-wrong-coordinates": {
+      "type": "video",
+      "url": [],
+      "coordinates": [
+        1, "2", [3, "4"], []
+      ]
+    }
+  },
+  "layers": []
+}

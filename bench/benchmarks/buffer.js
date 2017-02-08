@@ -14,7 +14,7 @@ const config = require('../../js/util/config');
 const coordinates = require('../lib/coordinates');
 const formatNumber = require('../lib/format_number');
 const accessToken = require('../lib/access_token');
-const deref = require('mapbox-gl-style-spec/lib/deref');
+const deref = require('../../js/style-spec/deref');
 
 const SAMPLE_COUNT = 10;
 
@@ -108,8 +108,8 @@ function preloadAssets(stylesheet, callback) {
 
         function getTile(url, callback) {
             ajax.getArrayBuffer(url, (err, response) => {
-                assets.tiles[url] = response;
-                callback(err, response);
+                assets.tiles[url] = response.data;
+                callback(err, response.data);
             });
         }
 

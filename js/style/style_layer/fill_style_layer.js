@@ -6,11 +6,30 @@ const FillBucket = require('../../data/bucket/fill_bucket');
 class FillStyleLayer extends StyleLayer {
 
     getPaintValue(name, globalProperties, featureProperties) {
-        if (name === 'fill-outline-color' && this.getPaintProperty('fill-outline-color') === undefined) {
-            return super.getPaintValue('fill-color', globalProperties, featureProperties);
-        } else {
-            return super.getPaintValue(name, globalProperties, featureProperties);
+        if (name === 'fill-outline-color') {
+            // Special-case handling of undefined fill-outline-color values
+            if (this.getPaintProperty('fill-outline-color') === undefined) {
+                return super.getPaintValue('fill-color', globalProperties, featureProperties);
+            }
+
+            // Handle transitions from fill-outline-color: undefined
+            let transition = this._paintTransitions['fill-outline-color'];
+            while (transition) {
+                const declaredValue = (
+                    transition &&
+                    transition.declaration &&
+                    transition.declaration.value
+                );
+
+                if (!declaredValue) {
+                    return super.getPaintValue('fill-color', globalProperties, featureProperties);
+                }
+
+                transition = transition.oldTransition;
+            }
         }
+
+        return super.getPaintValue(name, globalProperties, featureProperties);
     }
 
     getPaintValueStopZoomLevels(name) {

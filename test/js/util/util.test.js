@@ -216,5 +216,23 @@ test('util', (t) => {
         t.end();
     });
 
+    t.test('parseCacheControl', (t) => {
+        t.test('max-age', (t) => {
+            t.deepEqual(util.parseCacheControl('max-age=123456789'), {
+                'max-age': 123456789
+            }, 'returns valid max-age header');
+
+            t.deepEqual(util.parseCacheControl('max-age=1000'), {
+                'max-age': 1000
+            }, 'returns valid max-age header');
+
+            t.deepEqual(util.parseCacheControl('max-age=null'), {}, 'does not return invalid max-age header');
+
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.end();
 });

@@ -30,6 +30,8 @@ class Tile {
         this.tileSize = size;
         this.sourceMaxZoom = sourceMaxZoom;
         this.buckets = {};
+        this.expires = null;
+        this.cacheControl = null;
 
         // `this.state` must be one of
         //
@@ -38,15 +40,17 @@ class Tile {
         // - `reloading`: Tile data has been loaded and is being updated. Tile can be rendered.
         // - `unloaded`:  Tile data has been deleted.
         // - `errored`:   Tile data was not loaded because of an error.
+        // - `expired`:   Tile data was previously loaded, but has expired per its HTTP headers and is in the process of refreshing.
         this.state = 'loading';
     }
 
-    setAnimationLoop(animationLoop, t) {
-        this.animationLoopEndTime = t + Date.now();
-        if (this.animationLoopId !== undefined) {
-            animationLoop.cancel(this.animationLoopId);
-        }
-        this.animationLoopId = animationLoop.set(t);
+    registerFadeDuration(animationLoop, duration) {
+        const fadeEndTime = duration + this.timeAdded;
+        if (fadeEndTime < Date.now()) return;
+        if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
+
+        this.fadeEndTime = fadeEndTime;
+        animationLoop.set(this.fadeEndTime - Date.now());
     }
 
     /**
@@ -98,7 +102,7 @@ class Tile {
 
         for (const id in this.buckets) {
             const bucket = this.buckets[id];
-            if (bucket.type === 'symbol') {
+            if (bucket.layers[0].type === 'symbol') {
                 bucket.destroy();
                 delete this.buckets[id];
             }
@@ -131,9 +135,11 @@ class Tile {
         if (source.type !== 'vector' && source.type !== 'geojson') {
             return;
         }
-
-        if (this.state !== 'loaded' || this.state === 'reloading') {
+        if (this.state !== 'loaded') {
             this.redoWhenDone = true;
+            return;
+        }
+        if (!this.collisionTile) { // empty tile
             return;
         }
 
@@ -146,21 +152,20 @@ class Tile {
             angle: source.map.transform.angle,
             pitch: source.map.transform.pitch,
             showCollisionBoxes: source.map.showCollisionBoxes
-        }, done.bind(this), this.workerID);
-
-        function done(_, data) {
+        }, (_, data) => {
             this.reloadSymbolData(data, source.map.style);
-            source.fire('data', {tile: this, dataType: 'tile'});
+            source.fire('data', {tile: this, coord: this.coord, dataType: 'tile'});
 
             // HACK this is nescessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
             if (source.map) source.map.painter.tileExtentVAO.vao = null;
 
             this.state = 'loaded';
+
             if (this.redoWhenDone) {
-                this.redoPlacement(source);
                 this.redoWhenDone = false;
+                this.redoPlacement(source);
             }
-        }
+        }, this.workerID);
     }
 
     getBucket(layer) {
@@ -192,7 +197,23 @@ class Tile {
     }
 
     hasData() {
-        return this.state === 'loaded' || this.state === 'reloading';
+        return this.state === 'loaded' || this.state === 'reloading' || this.state === 'expired';
+    }
+
+    setExpiryData(data) {
+        if (data.cacheControl) this.cacheControl = data.cacheControl;
+        if (data.expires) this.expires = data.expires;
+    }
+
+    getExpiry() {
+        if (this.cacheControl) {
+            // Cache-Control headers set max age (in seconds) from the time of request
+            const parsedCC = util.parseCacheControl(this.cacheControl);
+            if (parsedCC['max-age']) return this.timeAdded + parsedCC['max-age'] * 1000;
+        } else if (this.expires) {
+            // Expires headers set absolute expiration times
+            return new Date(this.expires).getTime();
+        }
     }
 }
 

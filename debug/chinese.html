@@ -41,7 +41,7 @@ map.addControl(new mapboxgl.NavigationControl());
 map.on('load', function () {
     map.addSource("points", {
         "type": "geojson",
-        "data": '/node_modules/mapbox-gl-test-suite/data/chinese.geojson'
+        "data": '/test/integration/data/chinese.geojson'
     });
 
     map.addLayer({

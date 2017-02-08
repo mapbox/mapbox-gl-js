@@ -1,0 +1,153 @@
+{
+  "version": 8,
+  "sources": {
+    "mapbox.mapbox-streets-v5": {
+      "type": "vector",
+      "tiles": []
+    }
+  },
+  "glyphs": "http://mapbox.s3.amazonaws.com/gl-glyphs-256/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#eee",
+        "background-color-transition": {
+          "duration": 500,
+          "delay": 0
+        }
+      }
+    },
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "landuse",
+      "filter": [
+        "==",
+        "class",
+        "park"
+      ],
+      "paint": {
+        "fill-color": "#bda"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#999"
+      }
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "building",
+      "paint": {
+        "fill-color": "#ddd",
+        "fill-opacity": {
+          "base": 1.01,
+          "stops": [
+            [
+              13,
+              0
+            ],
+            [
+              14,
+              1
+            ]
+          ]
+        },
+        "fill-opacity-transition": {
+          "duration": 500,
+          "delay": 500
+        },
+        "fill-outline-color": "#ccc"
+      }
+    },
+    {
+      "id": "borders",
+      "type": "line",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "admin",
+      "paint": {
+        "line-color": "rgba(0,0,0,0.3)",
+        "line-width": 1
+      }
+    },
+    {
+      "id": "road_label",
+      "type": "symbol",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "road_label",
+      "filter": [
+        "==",
+        "$type",
+        "LineString"
+      ],
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Regular",
+          "Arial Unicode MS Regular"
+        ],
+        "text-max-angle": 59.59,
+        "symbol-spacing": 250,
+        "text-size": {
+          "stops": [
+            [
+              4.770835839035499,
+              8.01
+            ],
+            [
+              15.477225251693334,
+              12
+            ]
+          ]
+        }
+      },
+      "paint": {
+        "text-color": "#000000",
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0.25
+      }
+    },
+    {
+      "id": "country_label",
+      "type": "symbol",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "country_label",
+      "filter": [
+        "==",
+        "$type",
+        "Point"
+      ],
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "Open Sans Regular",
+          "Arial Unicode MS Regular"
+        ],
+        "text-padding": 10
+      },
+      "paint": {
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0.25,
+        "text-color": "#000000"
+      }
+    },
+    {
+      "id": "poi",
+      "type": "symbol",
+      "source": "mapbox.mapbox-streets-v5",
+      "source-layer": "poi_label",
+      "layout": {
+        "icon-rotation-alignment": "viewport"
+      }
+    }
+  ]
+}

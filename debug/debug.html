@@ -41,13 +41,18 @@ var map = window.map = new mapboxgl.Map({
 });
 
 map.addControl(new mapboxgl.NavigationControl());
-map.addControl(new mapboxgl.GeolocateControl());
+map.addControl(new mapboxgl.GeolocateControl({
+    positionOptions: {
+        enableHighAccuracy: true
+    },
+    watchPosition: true
+}));
 map.addControl(new mapboxgl.ScaleControl());
 
 map.on('load', function() {
     map.addSource('geojson', {
         "type": "geojson",
-        "data": "/node_modules/mapbox-gl-test-suite/data/linestring.geojson"
+        "data": "/test/integration/data/linestring.geojson"
     });
     map.addLayer({
         "id": "route",

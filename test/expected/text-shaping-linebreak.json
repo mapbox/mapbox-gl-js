@@ -71,20 +71,6 @@
       "angle": 0
     },
     {
-      "codePoint": 32,
-      "x": 65,
-      "y": -29,
-      "glyph": {
-        "id": 32,
-        "width": 0,
-        "height": 0,
-        "left": 0,
-        "top": -26,
-        "advance": 6
-      },
-      "angle": 0
-    },
-    {
       "codePoint": 97,
       "x": -32.5,
       "y": -5,
@@ -158,7 +144,7 @@
   "text": "abcde abcde",
   "top": -24,
   "bottom": 24,
-  "left": -35.5,
-  "right": 35.5,
+  "left": -32.5,
+  "right": 32.5,
   "writingMode": 1
 }

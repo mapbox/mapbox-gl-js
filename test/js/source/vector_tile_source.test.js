@@ -8,14 +8,13 @@ const Evented = require('../../../js/util/evented');
 
 function createSource(options) {
     const source = new VectorTileSource('id', options, { send: function() {} }, options.eventedParent);
+    source.onAdd({
+        transform: { angle: 0, pitch: 0, showCollisionBoxes: false }
+    });
 
     source.on('error', (e) => {
         throw e.error;
     });
-
-    source.map = {
-        transform: { angle: 0, pitch: 0, showCollisionBoxes: false }
-    };
 
     return source;
 }
@@ -150,7 +149,8 @@ test('VectorTileSource', (t) => {
                 loadVectorData: function () {
                     this.state = 'loaded';
                     events.push('tileLoaded');
-                }
+                },
+                setExpiryData: function() {}
             };
             source.loadTile(tile, () => {});
             t.equal(tile.state, 'loading');

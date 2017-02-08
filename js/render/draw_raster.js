@@ -36,7 +36,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     const tile = sourceCache.getTile(coord);
     const posMatrix = painter.transform.calculatePosMatrix(coord, sourceCache.getSource().maxzoom);
 
-    tile.setAnimationLoop(painter.style.animationLoop, layer.paint['raster-fade-duration']);
+    tile.registerFadeDuration(painter.style.animationLoop, layer.paint['raster-fade-duration']);
 
     const program = painter.useProgram('raster');
     gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
@@ -49,7 +49,7 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform3fv(program.u_spin_weights, spinWeights(layer.paint['raster-hue-rotate']));
 
     const parentTile = tile.sourceCache && tile.sourceCache.findLoadedParent(coord, 0, {}),
-        opacities = getOpacities(tile, parentTile, layer, painter.transform);
+        fade = getFadeValues(tile, parentTile, layer, painter.transform);
 
     let parentScaleBy, parentTL;
 
@@ -71,8 +71,8 @@ function drawRasterTile(painter, sourceCache, layer, coord) {
     gl.uniform2fv(program.u_tl_parent, parentTL || [0, 0]);
     gl.uniform1f(program.u_scale_parent, parentScaleBy || 1);
     gl.uniform1f(program.u_buffer_scale, 1);
-    gl.uniform1f(program.u_opacity0, opacities[0]);
-    gl.uniform1f(program.u_opacity1, opacities[1]);
+    gl.uniform1f(program.u_fade_t, fade.mix);
+    gl.uniform1f(program.u_opacity, fade.opacity * layer.paint['raster-opacity']);
     gl.uniform1i(program.u_image0, 0);
     gl.uniform1i(program.u_image1, 1);
 
@@ -105,8 +105,7 @@ function saturationFactor(saturation) {
         -saturation;
 }
 
-function getOpacities(tile, parentTile, layer, transform) {
-    const opacities = [1, 0];
+function getFadeValues(tile, parentTile, layer, transform) {
     const fadeDuration = layer.paint['raster-fade-duration'];
 
     if (tile.sourceCache && fadeDuration > 0) {
@@ -123,13 +122,23 @@ function getOpacities(tile, parentTile, layer, transform) {
         // if no parent or parent is older, fade in; if parent is younger, fade out
         const fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
 
-        opacities[0] = util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
-        opacities[1] = parentTile ? 1 - opacities[0] : 0;
+        const childOpacity = util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+
+        if (parentTile) {
+            return {
+                opacity: 1,
+                mix: 1 - childOpacity
+            };
+        } else {
+            return {
+                opacity: childOpacity,
+                mix: 0
+            };
+        }
+    } else {
+        return {
+            opacity: 1,
+            mix: 0
+        };
     }
-
-    const opacity = layer.paint['raster-opacity'];
-    opacities[0] *= opacity;
-    opacities[1] *= opacity;
-
-    return opacities;
 }

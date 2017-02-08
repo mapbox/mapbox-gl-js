@@ -70,6 +70,7 @@ class GeoJSONSource extends Evented {
         this.reparseOverscaled = true;
 
         this.dispatcher = dispatcher;
+        this.setEventedParent(eventedParent);
 
         this._data = options.data;
 
@@ -98,8 +99,9 @@ class GeoJSONSource extends Evented {
                 log: false
             }
         }, options.workerOptions);
+    }
 
-        this.setEventedParent(eventedParent);
+    load() {
         this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData((err) => {
             if (err) {
@@ -112,6 +114,7 @@ class GeoJSONSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
     }
 
@@ -205,6 +208,10 @@ class GeoJSONSource extends Evented {
     unloadTile(tile) {
         tile.unloadVectorData();
         this.dispatcher.send('removeTile', { uid: tile.uid, type: this.type, source: this.id }, () => {}, tile.workerID);
+    }
+
+    onRemove() {
+        this.dispatcher.broadcast('removeSource', { type: this.type, source: this.id }, () => {});
     }
 
     serialize() {

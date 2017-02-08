@@ -50,20 +50,22 @@ class ImageSource extends Evented {
         this.dispatcher = dispatcher;
         this.coordinates = options.coordinates;
 
+        this.type = 'image';
         this.minzoom = 0;
         this.maxzoom = 22;
         this.tileSize = 512;
 
         this.setEventedParent(eventedParent);
-        this.fire('dataloading', {dataType: 'source'});
 
-        this._load(options);
+        this.options = options;
     }
 
-    _load(options) {
-        this.url = options.url;
+    load() {
+        this.fire('dataloading', {dataType: 'source'});
 
-        ajax.getImage(options.url, (err, image) => {
+        this.url = this.options.url;
+
+        ajax.getImage(this.options.url, (err, image) => {
             if (err) return this.fire('error', {error: err});
 
             this.image = image;
@@ -73,7 +75,6 @@ class ImageSource extends Evented {
     }
 
     _finishLoading() {
-        this.fire('data', {dataType: 'source'});
         this.fire('source.load');
 
         if (this.map) {
@@ -82,6 +83,7 @@ class ImageSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
         if (this.image) {
             this.setCoordinates(this.coordinates);
@@ -146,7 +148,7 @@ class ImageSource extends Evented {
         this._prepareImage(this.map.painter.gl, this.image);
     }
 
-    _prepareImage(gl, image) {
+    _prepareImage(gl, image, resize) {
         if (this.tile.state !== 'loaded') {
             this.tile.state = 'loaded';
             this.tile.texture = gl.createTexture();
@@ -156,7 +158,9 @@ class ImageSource extends Evented {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        } else if (image instanceof window.HTMLVideoElement) {
+        } else if (resize) {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        } else if (image instanceof window.HTMLVideoElement || image instanceof window.ImageData || image instanceof window.HTMLCanvasElement) {
             gl.bindTexture(gl.TEXTURE_2D, this.tile.texture);
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
         }

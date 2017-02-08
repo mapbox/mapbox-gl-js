@@ -1,7 +1,7 @@
 'use strict';
 // @flow
 
-const UnitBezier = require('unitbezier');
+const UnitBezier = require('@mapbox/unitbezier');
 const Coordinate = require('../geo/coordinate');
 const Point = require('point-geometry');
 
@@ -284,7 +284,7 @@ exports.filterObject = function(input: Object, iterator: Function, context?: Obj
  *
  * @private
  */
-exports.deepEqual = function(a: any, b: any): boolean {
+exports.deepEqual = function(a: ?mixed, b: ?mixed): boolean {
     if (Array.isArray(a)) {
         if (!Array.isArray(b) || a.length !== b.length) return false;
         for (let i = 0; i < a.length; i++) {
@@ -422,4 +422,31 @@ exports.sphericalToCartesian = function(spherical: Array<number>): Array<number>
         r * Math.sin(azimuthal) * Math.sin(polar),
         r * Math.cos(polar)
     ];
+};
+
+/**
+ * Parses data from 'Cache-Control' headers.
+ *
+ * @param cacheControl Value of 'Cache-Control' header
+ * @return object containing parsed header info.
+ */
+
+exports.parseCacheControl = function(cacheControl: string): Object {
+    // Taken from [Wreck](https://github.com/hapijs/wreck)
+    const re = /(?:^|(?:\s*\,\s*))([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)(?:\=(?:([^\x00-\x20\(\)<>@\,;\:\\"\/\[\]\?\=\{\}\x7F]+)|(?:\"((?:[^"\\]|\\.)*)\")))?/g;
+
+    const header = {};
+    cacheControl.replace(re, ($0, $1, $2, $3) => {
+        const value = $2 || $3;
+        header[$1] = value ? value.toLowerCase() : true;
+        return '';
+    });
+
+    if (header['max-age']) {
+        const maxAge = parseInt(header['max-age'], 10);
+        if (isNaN(maxAge)) delete header['max-age'];
+        else header['max-age'] = maxAge;
+    }
+
+    return header;
 };

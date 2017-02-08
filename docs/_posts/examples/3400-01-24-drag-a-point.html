@@ -66,7 +66,7 @@ function mouseDown() {
 
     // Mouse events
     map.on('mousemove', onMove);
-    map.on('mouseup', onUp);
+    map.once('mouseup', onUp);
 }
 
 function onMove(e) {
@@ -92,6 +92,9 @@ function onUp(e) {
     coordinates.innerHTML = 'Longitude: ' + coords.lng + '<br />Latitude: ' + coords.lat;
     canvas.style.cursor = '';
     isDragging = false;
+
+    // Unbind mouse events
+    map.off('mousemove', onMove);
 }
 
 map.on('load', function() {
