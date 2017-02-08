@@ -6,11 +6,6 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 module.exports = drawSymbols;
 
-const sdfPx = 8;
-const blurOffset = 1.19;
-const haloOffset = 6;
-const gamma = 0.105 / browser.devicePixelRatio;
-
 function drawSymbols(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
@@ -43,11 +38,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         // icon-pitch-alignment is not yet implemented
         // and we simply inherit the rotation alignment
         layer.layout['icon-rotation-alignment'],
-        layer.layout['icon-size'],
-        layer.paint['icon-halo-width'],
-        layer.paint['icon-halo-color'],
-        layer.paint['icon-halo-blur'],
-        layer.paint['icon-opacity']
+        layer.layout['icon-size']
     );
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
@@ -55,11 +46,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         layer.paint['text-translate-anchor'],
         layer.layout['text-rotation-alignment'],
         layer.layout['text-pitch-alignment'],
-        layer.layout['text-size'],
-        layer.paint['text-halo-width'],
-        layer.paint['text-halo-color'],
-        layer.paint['text-halo-blur'],
-        layer.paint['text-opacity']
+        layer.layout['text-size']
     );
 
     if (sourceCache.map.showCollisionBoxes) {
@@ -68,7 +55,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
 }
 
 function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate, translateAnchor,
-        rotationAlignment, pitchAlignment, size, haloWidth, haloColor, haloBlur, opacity) {
+        rotationAlignment, pitchAlignment, size) {
 
     if (!isText && painter.style.sprite && !painter.style.sprite.loaded())
         return;
@@ -104,7 +91,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
             setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, size,
-                    bucket.iconsNeedLinear, isText ? bucket.adjustedTextSize : bucket.adjustedIconSize, opacity);
+                    bucket.iconsNeedLinear, isText ? bucket.adjustedTextSize : bucket.adjustedIconSize);
         }
 
         painter.enableTileClippingMask(coord);
@@ -113,7 +100,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
-                pitchWithMap, size, haloWidth, haloColor, haloBlur);
+                pitchWithMap, size);
 
         prevFontstack = bucket.fontstack;
     }
@@ -122,7 +109,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 }
 
 function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, size,
-        iconsNeedLinear, adjustedSize, opacity) {
+        iconsNeedLinear, adjustedSize) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -160,12 +147,10 @@ function setSymbolDrawState(program, painter, isText, isSDF, rotateWithMap, pitc
     gl.uniform1f(program.u_pitch, tr.pitch / 360 * 2 * Math.PI);
     gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
-
-    gl.uniform1f(program.u_opacity, opacity);
 }
 
 function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
-        pitchWithMap, size, haloWidth, haloColor, haloBlur) {
+        pitchWithMap, size) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -181,19 +166,18 @@ function drawTileSymbols(program, painter, layer, tile, buffers, isText, isSDF,
     }
 
     if (isSDF) {
+        const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;
+        const hasHalo = !layer.isPaintValueFeatureConstant(haloWidthProperty) || layer.paint[haloWidthProperty];
         const gammaScale = fontScale * (pitchWithMap ? Math.cos(tr._pitch) : 1) * tr.cameraToCenterDistance;
+        gl.uniform1f(program.u_font_scale, fontScale);
+        gl.uniform1f(program.u_gamma_scale, gammaScale);
 
-        if (haloWidth) { // Draw halo underneath the text.
-            gl.uniform1f(program.u_gamma, (haloBlur * blurOffset / sdfPx + gamma) / gammaScale);
-            gl.uniform1f(program.u_buffer, (haloOffset - haloWidth / fontScale) / sdfPx);
+        if (hasHalo) { // Draw halo underneath the text.
             gl.uniform1f(program.u_is_halo, 1);
-
             drawSymbolElements(buffers, layer, gl, program);
         }
 
         gl.uniform1f(program.u_is_halo, 0);
-        gl.uniform1f(program.u_gamma, gamma / gammaScale);
-        gl.uniform1f(program.u_buffer, (256 - 64) / 256);
     }
 
     drawSymbolElements(buffers, layer, gl, program);

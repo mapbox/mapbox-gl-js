@@ -2479,6 +2479,7 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "requires": [
         "icon-image"
@@ -2541,6 +2542,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Distance of halo to the icon outline.",
@@ -2563,6 +2565,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Fade out the halo towards the outside.",
@@ -2641,6 +2644,7 @@
       "maximum": 1,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "requires": [
         "text-field"
@@ -2703,6 +2707,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
@@ -2725,6 +2730,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "transition": true,
       "units": "pixels",
       "doc": "The halo's fadeout distance towards the outside.",
