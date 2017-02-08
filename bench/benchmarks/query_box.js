@@ -1,6 +1,6 @@
 'use strict';
 
-const Evented = require('../../js/util/evented');
+const Evented = require('../../src/util/evented');
 const createMap = require('../lib/create_map');
 
 const width = 1024;

@@ -20,4 +20,4 @@ registerBenchmark('geojson-setdata-large', require('./benchmarks/geojson_setdata
 
 // Ensure the global worker pool is never drained. Browsers have resource limits
 // on the max number of workers that can be created per page.
-require('../js/global_worker_pool')().acquire(-1);
+require('../src/util/global_worker_pool')().acquire(-1);

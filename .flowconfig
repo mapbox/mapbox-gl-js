@@ -3,15 +3,15 @@
 .*/node_modules/jsonlint/.*
 .*/node_modules/jsonlint-lines-primitives/.*
 .*/node_modules/unflowify/.*
-.*/test/js/style-spec/fixture/invalidjson.input.json
+.*/test/unit/style-spec/fixture/invalidjson.input.json
 
 [include]
 
 [libs]
 
-./interfaces/
+./flow-interfaces/
 
 [options]
 
 [version]
-0.36.0
+0.38.0

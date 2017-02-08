@@ -4,7 +4,7 @@
     "test": {
       "width": 64,
       "height": 64,
-      "ignored": {
+      "skipped": {
         "native": "https://github.com/mapbox/mapbox-gl-native/issues/6745"
       },
       "operations": [
@@ -17,10 +17,7 @@
           "fill-extrusion-height",
           10
         ]
-      ],
-      "skipped": {
-        "native": "needs issue"
-      }
+      ]
     }
   },
   "transition": {

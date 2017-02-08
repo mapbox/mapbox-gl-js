@@ -1,6 +1,6 @@
 'use strict';
 
-const createFunction = require('../../../js/style-spec').function.interpolated;
+const createFunction = require('../../../src/style-spec').function.interpolated;
 
 function buildExponentialFunction(stopsCount) {
   // Build an exponential function with a long list of stops
