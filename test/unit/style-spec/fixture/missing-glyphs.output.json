@@ -1,0 +1,6 @@
+[
+  {
+    "message": "layers[0].layout.text-field: use of \"text-field\" requires a style \"glyphs\" property",
+    "line": 17
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "version": 8,
+  "sources": {
+    "vector": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    },
+    "raster": {
+      "type": "raster",
+      "url": "mapbox://mapbox.mapbox-satellite"
+    }
+  },
+  "layers": [
+    {
+      "id": "no-ref-or-type",
+      "source": "vector",
+      "source-layer": "layer"
+    },
+    {
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer"
+    },
+    {
+      "id": "ref",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer"
+    },
+    {
+      "id": "ref-prohibited-properties",
+      "ref": "ref",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "filter": ["any"],
+      "layout": {}
+    },
+    {
+      "id": "ref-not-found",
+      "ref": "not-found"
+    },
+    {
+      "id": "self-ref",
+      "ref": "self-ref"
+    },
+    {
+      "id": "missing-source",
+      "type": "line"
+    },
+    {
+      "id": "source-not-found",
+      "type": "line",
+      "source": "not-found"
+    },
+    {
+      "id": "vector-raster-mismatch",
+      "type": "line",
+      "source": "raster"
+    },
+    {
+      "id": "raster-vector-mismatch",
+      "type": "raster",
+      "source": "vector",
+      "source-layer": "source-layer"
+    },
+    {
+      "id": "duplicate",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer"
+    },
+    {
+      "id": "duplicate",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer"
+    },
+    {
+      "id": "invalid-type",
+      "type": "invalid",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "layout": {
+        "invalid-size": 42
+      },
+      "paint": {
+        "invalid-color": "red"
+      }
+    },
+    {
+      "id": "missing-source-layer",
+      "type": "line",
+      "source": "vector"
+    },
+    {
+      "id": "interactive-layer",
+      "type": "line",
+      "source": "vector",
+      "source-layer": "source-layer",
+      "interactive": true
+    }
+  ]
+}

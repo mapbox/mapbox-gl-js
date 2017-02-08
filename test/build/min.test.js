@@ -1,17 +1,30 @@
 'use strict';
 
-var test = require('tap').test;
-var fs = require('fs');
-var pkg = require('../../package.json');
+const test = require('mapbox-gl-js-test').test;
+const fs = require('fs');
+const pkg = require('../../package.json');
+const reference = require('../../src/style-spec/reference/latest');
 
-var minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
+const minBundle = fs.readFileSync('dist/mapbox-gl.js', 'utf8');
 
-test('production build removes asserts', function(t) {
+test('production build removes asserts', (t) => {
     t.assert(minBundle.indexOf('assert(') === -1);
     t.end();
 });
 
-test('trims package.json assets', function(t) {
-    t.assert(minBundle.indexOf('module.exports={"version":"' + pkg.version + '"}') !== -1);
+test('trims package.json assets', (t) => {
+    t.assert(minBundle.indexOf(`module.exports={"version":"${pkg.version}"}`) !== -1);
+    t.end();
+});
+
+test('trims reference.json fields', (t) => {
+    t.assert(reference.$root.version.doc);
+    t.assert(minBundle.indexOf(reference.$root.version.doc) === -1);
+    t.end();
+});
+
+test('does not include outdated reference.json files', (t) => {
+    t.assert(minBundle.indexOf('reference/v7.json') === -1);
+    t.assert(minBundle.indexOf('reference/v6.json') === -1);
     t.end();
 });

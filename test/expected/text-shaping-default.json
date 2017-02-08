@@ -11,7 +11,8 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 98,
@@ -24,7 +25,8 @@
         "left": 2,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 99,
@@ -37,7 +39,8 @@
         "left": 1,
         "top": -12,
         "advance": 11
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 100,
@@ -50,7 +53,8 @@
         "left": 1,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 101,
@@ -63,12 +67,14 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
+      },
+      "angle": 0
     }
   ],
   "text": "abcde",
   "top": -12,
   "bottom": 12,
   "left": -32.5,
-  "right": 32.5
+  "right": 32.5,
+  "writingMode": 1
 }

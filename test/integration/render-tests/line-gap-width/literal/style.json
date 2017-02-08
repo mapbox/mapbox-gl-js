@@ -1,0 +1,72 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "diff": 0.00075
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              -14,
+              -16
+            ],
+            [
+              -14,
+              0
+            ],
+            [
+              -14,
+              16
+            ]
+          ],
+          [
+            [
+              -3,
+              -16
+            ],
+            [
+              -3,
+              0
+            ],
+            [
+              0,
+              16
+            ]
+          ],
+          [
+            [
+              8,
+              -16
+            ],
+            [
+              12,
+              16
+            ],
+            [
+              16,
+              -16
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "line",
+      "type": "line",
+      "source": "geojson",
+      "paint": {
+        "line-gap-width": 3
+      }
+    }
+  ]
+}

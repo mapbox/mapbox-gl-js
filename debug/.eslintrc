@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "prefer-arrow-callback": "off",
+    "no-var": "off",
+    "strict": "off",
+    "no-unused-vars": "off",
+    "prefer-template": "off"
+  },
+  "env": {
+    "es6": false,
+    "browser": true
+  },
+  "globals": {
+    "mapboxgl": false
+  }
+}

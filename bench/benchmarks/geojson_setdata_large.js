@@ -1,26 +1,25 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var setDataPerf = require('../lib/set_data_perf');
-var setupGeoJSONMap = require('../lib/setup_geojson_map');
-var createMap = require('../lib/create_map');
-var ajax = require('../../js/util/ajax');
+const Evented = require('../../src/util/evented');
+const formatNumber = require('../lib/format_number');
+const setDataPerf = require('../lib/set_data_perf');
+const setupGeoJSONMap = require('../lib/setup_geojson_map');
+const createMap = require('../lib/create_map');
+const ajax = require('../../src/util/ajax');
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = new Evented();
 
-    setTimeout(function() {
+    setTimeout(() => {
         evented.fire('log', {message: 'downloading large geojson'});
     }, 0);
 
-    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', function(err, data) {
+    ajax.getJSON('http://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson', (err, data) => {
         evented.fire('log', {message: 'starting test'});
 
         if (err) return evented.fire('error', {error: err});
 
-        var map = createMap({
+        let map = createMap({
             width: 1024,
             height: 768,
             zoom: 5,
@@ -28,13 +27,13 @@ module.exports = function() {
             style: 'mapbox://styles/mapbox/bright-v9'
         });
 
-        map.on('load', function() {
+        map.on('load', () => {
             map = setupGeoJSONMap(map);
 
-            setDataPerf(map.style.sourceCaches.geojson, data, function(err, ms) {
+            setDataPerf(map.style.sourceCaches.geojson, data, (err, ms) => {
                 if (err) return evented.fire('error', {error: err});
                 map.remove();
-                evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
+                evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});
             });
         });
     });

@@ -1,14 +1,14 @@
 'use strict';
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "BenchmarksView|clipboard" }]*/
 
-var Clipboard = require('clipboard');
+const Clipboard = require('clipboard');
 
 // Benchmark results seem to be more consistent with a warmup and cooldown
 // period. These values are measured in milliseconds.
-var benchmarkCooldownTime = 250;
-var benchmarkWarmupTime  = 250;
+const benchmarkCooldownTime = 250;
+const benchmarkWarmupTime  = 250;
 
-var BenchmarksView = React.createClass({
+const BenchmarksView = React.createClass({
 
     render: function() {
         return <div style={{width: 960, paddingBottom: window.innerHeight, margin: '0 auto'}}>
@@ -49,8 +49,8 @@ var BenchmarksView = React.createClass({
     },
 
     renderSidebarBenchmarkVersion: function(name, version) {
-        var results = this.state.results[name][version];
-        var that = this;
+        const results = this.state.results[name][version];
+        const that = this;
 
         return <div
                 onClick={function() {
@@ -64,13 +64,28 @@ var BenchmarksView = React.createClass({
     },
 
     renderTextBenchmarks: function() {
-        var output = '# Benchmarks\n';
-        for (var name in this.state.results) {
-            output += '\n## ' + name + '\n\n';
-            for (var version in this.state.results[name]) {
-                var result = this.state.results[name][version];
-                output += '**' + version + ':** ' + (result.message || '...') + '\n';
+        const versions = [];
+        for (const name in this.state.results) {
+            for (const version in this.state.results[name]) {
+                if (versions.indexOf(version) < 0) {
+                    versions.push(version);
+                }
             }
+        }
+
+        let output = `benchmark | ${versions.join(' | ')}\n---`;
+        for (let i = 0; i < versions.length; i++) {
+            output += ' | ---';
+        }
+        output += '\n';
+
+        for (const name in this.state.results) {
+            output += `**${name}**`;
+            for (const version of versions) {
+                const result = this.state.results[name][version];
+                output += ` | ${result && result.message || 'n\/a'} `;
+            }
+            output += '\n';
         }
         return output;
     },
@@ -88,7 +103,7 @@ var BenchmarksView = React.createClass({
     },
 
     renderBenchmarkVersion: function(name, version) {
-        var results = this.state.results[name][version];
+        const results = this.state.results[name][version];
         return (
                 <div
                     style={{paddingTop: 40}}
@@ -97,32 +112,32 @@ var BenchmarksView = React.createClass({
                     className={results.status === 'waiting' ? 'quiet' : ''}>
 
                     <h2 className='space-bottom'>{name} on {version}</h2>
-                {results.logs.map(function(log, index) {
-                    return <div key={index} className={'pad1 dark fill-' + log.color}>{log.message}</div>;
+                {results.logs.map((log, index) => {
+                    return <div key={index} className={`pad1 dark fill-${log.color}`}>{log.message}</div>;
                 })}
             </div>
         );
     },
 
     scrollToBenchmark: function(name, version) {
-        var duration = 300;
-        var startTime = (new Date()).getTime();
-        var startYOffset = window.pageYOffset;
+        const duration = 300;
+        const startTime = (new Date()).getTime();
+        const startYOffset = window.pageYOffset;
 
         requestAnimationFrame(function frame() {
-            var endYOffset = document.getElementById(name + version).offsetTop;
-            var time = (new Date()).getTime();
-            var yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
+            const endYOffset = document.getElementById(name + version).offsetTop;
+            const time = (new Date()).getTime();
+            const yOffset = Math.min((time - startTime) / duration, 1) * (endYOffset - startYOffset) + startYOffset;
             window.scrollTo(0, yOffset);
             if (time < startTime + duration) requestAnimationFrame(frame);
         });
     },
 
     getInitialState: function() {
-        var results = {};
+        const results = {};
 
-        for (var name in this.props.benchmarks) {
-            for (var version in this.props.benchmarks[name]) {
+        for (const name in this.props.benchmarks) {
+            for (const version in this.props.benchmarks[name]) {
                 if (!this.props.benchmarkFilter || this.props.benchmarkFilter(name, version)) {
                     results[name] = results[name] || {};
                     results[name][version] = {
@@ -137,21 +152,21 @@ var BenchmarksView = React.createClass({
     },
 
     componentDidMount: function() {
-        var that = this;
+        const that = this;
 
-        asyncSeries(Object.keys(that.state.results), function(name, callback) {
-            asyncSeries(Object.keys(that.state.results[name]), function(version, callback) {
+        asyncSeries(Object.keys(that.state.results), (name, callback) => {
+            asyncSeries(Object.keys(that.state.results[name]), (version, callback) => {
                 that.scrollToBenchmark(name, version);
                 that.runBenchmark(name, version, callback);
             }, callback);
-        }, function(err) {
+        }, (err) => {
             if (err) throw err;
         });
     },
 
     runBenchmark: function(name, version, outerCallback) {
-        var that = this;
-        var results = this.state.results[name][version];
+        const that = this;
+        const results = this.state.results[name][version];
 
         function log(color, message) {
             results.logs.push({
@@ -169,15 +184,15 @@ var BenchmarksView = React.createClass({
         this.scrollToBenchmark(name, version);
         log('dark', 'starting');
 
-        setTimeout(function() {
-            var emitter = that.props.benchmarks[name][version]();
+        setTimeout(() => {
+            const emitter = that.props.benchmarks[name][version]();
 
-            emitter.on('log', function(event) {
+            emitter.on('log', (event) => {
                 log(event.color, event.message);
 
             });
 
-            emitter.on('end', function(event) {
+            emitter.on('end', (event) => {
                 results.message = event.message;
                 results.status = 'ended';
                 log('green', event.message);
@@ -185,7 +200,7 @@ var BenchmarksView = React.createClass({
 
             });
 
-            emitter.on('error', function(event) {
+            emitter.on('error', (event) => {
                 results.status = 'errored';
                 log('red', event.error);
                 callback();
@@ -221,13 +236,13 @@ function reduceStatuses(statuses) {
     }
 }
 
-var clipboard = new Clipboard('.clipboard');
+const clipboard = new Clipboard('.clipboard');
 
 ReactDOM.render(
     <BenchmarksView
         benchmarks={window.mapboxglBenchmarks}
         benchmarkFilter={function(name) {
-            var nameFilter = window.location.hash.substr(1);
+            const nameFilter = window.location.hash.substr(1);
             return !nameFilter || name === nameFilter;
         }}
     />,
@@ -236,7 +251,7 @@ ReactDOM.render(
 
 function asyncSeries(array, iterator, callback) {
     if (array.length) {
-        iterator(array[0], function(err) {
+        iterator(array[0], (err) => {
             if (err) callback(err);
             else asyncSeries(array.slice(1), iterator, callback);
         });

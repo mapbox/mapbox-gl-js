@@ -1,0 +1,157 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 512
+    }
+  },
+  "sources": {
+    "mapbox": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀觀人之之易"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -1.0546875,
+                30.14512718337613
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀觀人之之"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -5.625,
+                71.85622888185527
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀觀人之"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                1.40625,
+                -40.44694705960048
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀觀人"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -106.5234375,
+                72.18180355624855
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀觀"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -113.5546875,
+                32.54681317351514
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人觀"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -114.60937499999999,
+                -43.83452678223682
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "技指計代式灣文人"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                92.8125,
+                72.39570570653261
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Jingleheimerschmidt"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                94.21875,
+                34.30714385628804
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "mixed 技指計代式灣文人觀觀"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                97.03125,
+                -44.087585028245165
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "glyphs": "local://glyphs/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "white"
+      }
+    },
+    {
+      "id": "literal",
+      "type": "symbol",
+      "source": "mapbox",
+      "layout": {
+        "text-field": "{name}",
+        "text-font": [
+          "NotoCJK"
+        ],
+        "text-max-width": 5
+      }
+    }
+  ]
+}

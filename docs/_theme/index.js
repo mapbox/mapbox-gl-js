@@ -4,18 +4,24 @@ var fs = require('fs'),
   path = require('path'),
   File = require('vinyl'),
   vfs = require('vinyl-fs'),
-  _ = require('lodash'),
+  template = require('lodash').template,
   concat = require('concat-stream'),
-  formatMarkdown = require('./lib/format_markdown'),
-  formatParameters = require('./lib/format_parameters');
+  GithubSlugger = require('github-slugger'),
+  createFormatters = require('documentation').util.createFormatters,
+  createLinkerStack = require('documentation').util.createLinkerStack,
+  hljs = require('highlight.js');
 
 module.exports = function (comments, options, callback) {
 
-  var highlight = require('./lib/highlight')(options.hljs || {});
+  var linkerStack = createLinkerStack(options)
+    .namespaceResolver(comments, function (namespace) {
+      var slugger = new GithubSlugger();
+      return '#' + slugger.slug(namespace);
+    });
 
-  var namespaces = comments.map(function (comment) {
-    return comment.namespace;
-  });
+  var formatters = createFormatters(linkerStack.link);
+
+  hljs.configure(options.hljs || {});
 
   var imports = {
     shortSignature: function (section, hasSectionName) {
@@ -27,9 +33,9 @@ module.exports = function (comments, options, callback) {
         return '';
       }
       if (hasSectionName) {
-        return prefix + section.name + formatParameters(section, true);
-      } else if (!hasSectionName && formatParameters(section)) {
-        return formatParameters(section, true);
+        return prefix + section.name + formatters.parameters(section, true);
+      } else if (!hasSectionName && formatters.parameters(section)) {
+        return formatters.parameters(section, true);
       } else {
         return '()';
       }
@@ -44,13 +50,12 @@ module.exports = function (comments, options, callback) {
       }
       if (section.returns) {
         returns = ': ' +
-          formatMarkdown.type(section.returns[0].type, namespaces);
+          formatters.type(section.returns[0].type);
       }
       if (hasSectionName) {
-        return prefix + section.name +
-          formatParameters(section) + returns;
-      } else if (!hasSectionName && formatParameters(section)) {
-        return section.name + formatParameters(section) + returns;
+        return prefix + section.name + formatters.parameters(section) + returns;
+      } else if (!hasSectionName && formatters.parameters(section)) {
+        return section.name + formatters.parameters(section) + returns;
       } else {
         return section.name + '()' + returns;
       }
@@ -62,28 +67,27 @@ module.exports = function (comments, options, callback) {
           children: ast.children[0].children.concat(ast.children.slice(1))
         };
       }
-      return formatMarkdown(ast, namespaces);
+      return formatters.markdown(ast);
     },
-    formatType: function (section) {
-      return formatMarkdown.type(section.type, namespaces);
-    },
-    autolink: function (text) {
-      return formatMarkdown.link(namespaces, text);
-    },
-    highlight: function (str) {
-      return highlight(str);
+    formatType: formatters.type,
+    autolink: formatters.autolink,
+    highlight: function (example) {
+      if (options.hljs && options.hljs.highlightAuto) {
+        return hljs.highlightAuto(example).value;
+      }
+      return hljs.highlight('js', example).value;
     }
   };
 
-  var pageTemplate = _.template(fs.readFileSync(path.join(__dirname, 'index.hbs'), 'utf8'), {
+  var pageTemplate = template(fs.readFileSync(path.join(__dirname, 'index.hbs'), 'utf8'), {
     imports: {
-      renderSection: _.template(fs.readFileSync(path.join(__dirname, 'section.hbs'), 'utf8'), {
+      renderSection: template(fs.readFileSync(path.join(__dirname, 'section.hbs'), 'utf8'), {
         imports: imports
       }),
-      renderNote: _.template(fs.readFileSync(path.join(__dirname, 'note.hbs'), 'utf8'), {
+      renderNote: template(fs.readFileSync(path.join(__dirname, 'note.hbs'), 'utf8'), {
         imports: imports
       }),
-      renderSectionList: _.template(fs.readFileSync(path.join(__dirname, 'section_list.hbs'), 'utf8'), {
+      renderSectionList: template(fs.readFileSync(path.join(__dirname, 'section_list.hbs'), 'utf8'), {
         imports: imports
       }),
       highlight: function (str) {

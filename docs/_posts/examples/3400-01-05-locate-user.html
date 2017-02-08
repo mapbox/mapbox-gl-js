@@ -1,0 +1,20 @@
+---
+layout: example
+category: example
+title: Locate the user
+description: Geolocate the user and then center the map on their current location
+tags: 
+  - controls-and-overlays
+---
+<div id='map'></div>
+<script>
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/streets-v9',
+    center: [-96, 37.8], // starting position
+    zoom: 3 // starting zoom
+});
+
+// Add geolocate control to the map.
+map.addControl(new mapboxgl.GeolocateControl());
+</script>

@@ -11,7 +11,8 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 98,
@@ -24,7 +25,8 @@
         "left": 2,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 99,
@@ -37,7 +39,8 @@
         "left": 1,
         "top": -12,
         "advance": 11
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 100,
@@ -50,7 +53,8 @@
         "left": 1,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 101,
@@ -63,20 +67,8 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
-    },
-    {
-      "codePoint": 32,
-      "x": 65,
-      "y": -29,
-      "glyph": {
-        "id": 32,
-        "width": 0,
-        "height": 0,
-        "left": 0,
-        "top": -26,
-        "advance": 6
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 97,
@@ -89,7 +81,8 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 98,
@@ -102,7 +95,8 @@
         "left": 2,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 99,
@@ -115,7 +109,8 @@
         "left": 1,
         "top": -12,
         "advance": 11
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 100,
@@ -128,7 +123,8 @@
         "left": 1,
         "top": -7,
         "advance": 14
-      }
+      },
+      "angle": 0
     },
     {
       "codePoint": 101,
@@ -141,12 +137,14 @@
         "left": 1,
         "top": -12,
         "advance": 13
-      }
+      },
+      "angle": 0
     }
   ],
   "text": "abcde abcde",
   "top": -24,
   "bottom": 24,
-  "left": -35.5,
-  "right": 35.5
+  "left": -32.5,
+  "right": 32.5,
+  "writingMode": 1
 }

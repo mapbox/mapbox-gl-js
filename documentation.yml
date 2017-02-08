@@ -3,6 +3,7 @@ toc:
   - accessToken
   - supported
   - version
+  - setRTLTextPlugin
   - name: Geography
     description: |
       These are Mapbox GL JS's ways of representing locations
@@ -17,7 +18,7 @@ toc:
   - GeolocateControl
   - AttributionControl
   - ScaleControl
-  - Control
+  - LogoControl
   - name: Handlers
     description: |
       Handlers add different kinds of interactivity to the map -
@@ -37,6 +38,7 @@ toc:
   - GeoJSONSource
   - VideoSource
   - ImageSource
+  - CanvasSource
   - name: Options
     description: |
       These shared option can be supplied as arguments to various methods
@@ -51,7 +53,7 @@ toc:
     description: |
       This event functionality is used by Mapbox GL JS itself
       and can be useful to other developers who want to create
-      [Controls](#Control) or other extensions.
+      [IControls](#IControl) or other extensions.
   - Evented
   - MapMouseEvent
   - MapTouchEvent
@@ -65,3 +67,8 @@ toc:
   - LngLatBoundsLike
   - Point
   - PointLike
+  - name: Interfaces
+    description: |
+      Interfaces are specifications for plugin authors to follow in order to
+      create new extensions to Mapbox GL JS
+  - IControl

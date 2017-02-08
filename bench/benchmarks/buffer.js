@@ -1,29 +1,30 @@
 'use strict';
 
-var VT = require('vector-tile');
-var Protobuf = require('pbf');
-var assert = require('assert');
+const VT = require('vector-tile');
+const Protobuf = require('pbf');
+const assert = require('assert');
 
-var WorkerTile = require('../../js/source/worker_tile');
-var Worker = require('../../js/source/worker');
-var ajax = require('../../js/util/ajax');
-var Style = require('../../js/style/style');
-var util = require('../../js/util/util');
-var Evented = require('../../js/util/evented');
-var config = require('../../js/util/config');
-var coordinates = require('../lib/coordinates');
-var formatNumber = require('../lib/format_number');
-var accessToken = require('../lib/access_token');
+const WorkerTile = require('../../src/source/worker_tile');
+const ajax = require('../../src/util/ajax');
+const Style = require('../../src/style/style');
+const StyleLayerIndex = require('../../src/style/style_layer_index');
+const util = require('../../src/util/util');
+const Evented = require('../../src/util/evented');
+const config = require('../../src/util/config');
+const coordinates = require('../lib/coordinates');
+const formatNumber = require('../lib/format_number');
+const accessToken = require('../lib/access_token');
+const deref = require('../../src/style-spec/deref');
 
-var SAMPLE_COUNT = 10;
+const SAMPLE_COUNT = 10;
 
 module.exports = function run() {
     config.ACCESS_TOKEN = accessToken;
 
-    var evented = util.extend({}, Evented);
+    const evented = new Evented();
 
-    var stylesheetURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=' + accessToken;
-    ajax.getJSON(stylesheetURL, function(err, stylesheet) {
+    const stylesheetURL = `https://api.mapbox.com/styles/v1/mapbox/streets-v9?access_token=${accessToken}`;
+    ajax.getJSON(stylesheetURL, (err, stylesheet) => {
         if (err) return evented.fire('error', {error: err});
 
         evented.fire('log', {
@@ -31,7 +32,7 @@ module.exports = function run() {
             color: 'dark'
         });
 
-        preloadAssets(stylesheet, function(err, assets) {
+        preloadAssets(stylesheet, (err, assets) => {
             if (err) return evented.fire('error', {error: err});
 
             evented.fire('log', {
@@ -51,25 +52,25 @@ module.exports = function run() {
                 callback(null, assets.tiles[url]);
             }
 
-            var timeSum = 0;
-            var timeCount = 0;
+            let timeSum = 0;
+            let timeCount = 0;
 
-            asyncTimesSeries(SAMPLE_COUNT, function(callback) {
-                runSample(stylesheet, getGlyphs, getIcons, getTile, function(err, time) {
+            asyncTimesSeries(SAMPLE_COUNT, (callback) => {
+                runSample(stylesheet, getGlyphs, getIcons, getTile, (err, time) => {
                     if (err) return evented.fire('error', { error: err });
                     timeSum += time;
                     timeCount++;
-                    evented.fire('log', { message: formatNumber(time) + ' ms' });
+                    evented.fire('log', { message: `${formatNumber(time)} ms` });
                     callback();
                 });
-            }, function(err) {
+            }, (err) => {
                 if (err) {
                     evented.fire('error', { error: err });
 
                 } else {
-                    var timeAverage = timeSum / timeCount;
+                    const timeAverage = timeSum / timeCount;
                     evented.fire('end', {
-                        message: formatNumber(timeAverage) + ' ms',
+                        message: `${formatNumber(timeAverage)} ms`,
                         score: timeAverage
                     });
                 }
@@ -82,57 +83,57 @@ module.exports = function run() {
 };
 
 function preloadAssets(stylesheet, callback) {
-    var assets = {
+    const assets = {
         glyphs: {},
         icons: {},
         tiles: {}
     };
 
-    var style = new Style(stylesheet);
+    const style = new Style(stylesheet);
 
-    style.on('style.load', function() {
+    style.on('style.load', () => {
         function getGlyphs(params, callback) {
-            style['get glyphs'](0, params, function(err, glyphs) {
+            style.getGlyphs(0, params, (err, glyphs) => {
                 assets.glyphs[JSON.stringify(params)] = glyphs;
                 callback(err, glyphs);
             });
         }
 
         function getIcons(params, callback) {
-            style['get icons'](0, params, function(err, icons) {
+            style.getIcons(0, params, (err, icons) => {
                 assets.icons[JSON.stringify(params)] = icons;
                 callback(err, icons);
             });
         }
 
         function getTile(url, callback) {
-            ajax.getArrayBuffer(url, function(err, response) {
-                assets.tiles[url] = response;
-                callback(err, response);
+            ajax.getArrayBuffer(url, (err, response) => {
+                assets.tiles[url] = response.data;
+                callback(err, response.data);
             });
         }
 
-        runSample(stylesheet, getGlyphs, getIcons, getTile, function(err) {
+        runSample(stylesheet, getGlyphs, getIcons, getTile, (err) => {
             style._remove();
             callback(err, assets);
         });
     });
 
-    style.on('error', function(event) {
+    style.on('error', (event) => {
         callback(event.error);
     });
 
 }
 
 function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
-    var timeStart = performance.now();
+    const layerIndex = new StyleLayerIndex(deref(stylesheet.layers));
 
-    var layerFamilies = createLayerFamilies(stylesheet.layers);
+    const timeStart = performance.now();
 
-    util.asyncAll(coordinates, function(coordinate, eachCallback) {
-        var url = 'https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/' + coordinate.zoom + '/' + coordinate.row + '/' + coordinate.column + '.vector.pbf?access_token=' + config.ACCESS_TOKEN;
+    util.asyncAll(coordinates, (coordinate, eachCallback) => {
+        const url = `https://a.tiles.mapbox.com/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v6/${coordinate.zoom}/${coordinate.row}/${coordinate.column}.vector.pbf?access_token=${config.ACCESS_TOKEN}`;
 
-        var workerTile = new WorkerTile({
+        const workerTile = new WorkerTile({
             coord: coordinate,
             zoom: coordinate.zoom,
             tileSize: 512,
@@ -144,52 +145,39 @@ function runSample(stylesheet, getGlyphs, getIcons, getTile, callback) {
             uid: url
         });
 
-        var actor = {
+        const actor = {
             send: function(action, params, sendCallback) {
-                setTimeout(function() {
-                    if (action === 'get icons') {
+                setTimeout(() => {
+                    if (action === 'getIcons') {
                         getIcons(params, sendCallback);
-                    } else if (action === 'get glyphs') {
+                    } else if (action === 'getGlyphs') {
                         getGlyphs(params, sendCallback);
                     } else assert(false);
                 }, 0);
             }
         };
 
-        getTile(url, function(err, response) {
+        getTile(url, (err, response) => {
             if (err) throw err;
-            var data = new VT.VectorTile(new Protobuf(response));
-            workerTile.parse(data, layerFamilies, actor, function(err) {
+            const data = new VT.VectorTile(new Protobuf(response));
+            workerTile.parse(data, layerIndex, actor, (err) => {
                 if (err) return callback(err);
                 eachCallback();
             });
         });
-    }, function(err) {
-        var timeEnd = performance.now();
+    }, (err) => {
+        const timeEnd = performance.now();
         callback(err, timeEnd - timeStart);
     });
 }
 
 function asyncTimesSeries(times, work, callback) {
     if (times > 0) {
-        work(function(err) {
+        work((err) => {
             if (err) callback(err);
             else asyncTimesSeries(times - 1, work, callback);
         });
     } else {
         callback();
     }
-}
-
-var createLayerFamiliesCacheKey;
-var createLayerFamiliesCacheValue;
-function createLayerFamilies(layers) {
-    if (layers !== createLayerFamiliesCacheKey) {
-        var worker = new Worker({addEventListener: function() {} });
-        worker['set layers'](0, layers);
-
-        createLayerFamiliesCacheKey = layers;
-        createLayerFamiliesCacheValue = worker.layerFamilies[0];
-    }
-    return createLayerFamiliesCacheValue;
 }

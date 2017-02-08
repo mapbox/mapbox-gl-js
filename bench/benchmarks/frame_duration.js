@@ -1,14 +1,13 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var createMap = require('../lib/create_map');
+const Evented = require('../../src/util/evented');
+const formatNumber = require('../lib/format_number');
+const createMap = require('../lib/create_map');
 
-var DURATION_MILLISECONDS = 1 * 5000;
+const DURATION_MILLISECONDS = 1 * 5000;
 
-var zooms = [4, 8, 11, 13, 15, 17];
-var results = [];
+const zooms = [4, 8, 11, 13, 15, 17];
+const results = [];
 
 module.exports = function(options) {
     // The goal of this benchmark is to measure the time it takes to run the cpu
@@ -21,35 +20,35 @@ module.exports = function(options) {
     // impact the actual rendering has on this benchmark.
     window.devicePixelRatio = 1 / 16;
 
-    var evented = util.extend({}, Evented);
+    const evented = new Evented();
 
     asyncSeries(zooms.length, runZoom, done);
 
     function runZoom(times, callback) {
-        var index = zooms.length - times;
+        const index = zooms.length - times;
 
-        measureFrameTime(options, zooms[index], function(err_, result) {
+        measureFrameTime(options, zooms[index], (err_, result) => {
             results[index] = result;
             evented.fire('log', {
-                message: formatNumber(result.sum / result.count * 10) / 10 + ' ms, ' +
-                    formatNumber(result.countAbove16 / result.count * 100) + '% > 16 ms at zoom ' + zooms[index]
+                message: `${formatNumber(result.sum / result.count * 10) / 10} ms, ${
+                    formatNumber(result.countAbove16 / result.count * 100)}% > 16 ms at zoom ${zooms[index]}`
             });
             callback();
         });
     }
 
     function done() {
-        var sum = 0;
-        var count = 0;
-        var countAbove16 = 0;
-        for (var i = 0; i < results.length; i++) {
-            var result = results[i];
+        let sum = 0;
+        let count = 0;
+        let countAbove16 = 0;
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
             sum += result.sum;
             count += result.count;
             countAbove16 += result.countAbove16;
         }
         evented.fire('end', {
-            message: formatNumber(sum / count * 10) / 10 + ' ms, ' + formatNumber(countAbove16 / count * 100) + '% > 16ms',
+            message: `${formatNumber(sum / count * 10) / 10} ms, ${formatNumber(countAbove16 / count * 100)}% > 16ms`,
             score: sum / count
         });
     }
@@ -59,7 +58,7 @@ module.exports = function(options) {
 
 function measureFrameTime(options, zoom, callback) {
 
-    var map = createMap({
+    const map = createMap({
         width: 1024,
         height: 768,
         zoom: zoom,
@@ -67,26 +66,26 @@ function measureFrameTime(options, zoom, callback) {
         style: 'mapbox://styles/mapbox/streets-v9'
     });
 
-    map.on('load', function() {
+    map.on('load', () => {
 
         map.repaint = true;
 
         // adding a delay seems to make the results more consistent
-        window.setTimeout(function() {
-            var sum = 0;
-            var count = 0;
-            var countAbove16 = 0;
-            var start = performance.now();
+        window.setTimeout(() => {
+            let sum = 0;
+            let count = 0;
+            let countAbove16 = 0;
+            const start = performance.now();
 
             map._realrender = map._render;
             map._render = function() {
                 map._styleDirty = true;
                 map._sourcesDirty = true;
 
-                var frameStart = performance.now();
+                const frameStart = performance.now();
                 map._realrender();
-                var frameEnd = performance.now();
-                var duration = frameEnd - frameStart;
+                const frameEnd = performance.now();
+                const duration = frameEnd - frameStart;
 
                 sum += duration;
                 count++;
@@ -109,7 +108,7 @@ function measureFrameTime(options, zoom, callback) {
 
 function asyncSeries(times, work, callback) {
     if (times > 0) {
-        work(times, function(err) {
+        work(times, (err) => {
             if (err) callback(err);
             else asyncSeries(times - 1, work, callback);
         });

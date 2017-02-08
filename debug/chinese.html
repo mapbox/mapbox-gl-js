@@ -4,7 +4,6 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -27,8 +26,8 @@
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
-
 <script>
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -37,12 +36,12 @@ var map = window.map = new mapboxgl.Map({
     hash: true
 });
 
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.NavigationControl());
 
 map.on('load', function () {
     map.addSource("points", {
         "type": "geojson",
-        "data": '/node_modules/mapbox-gl-test-suite/data/chinese.geojson'
+        "data": '/test/integration/data/chinese.geojson'
     });
 
     map.addLayer({
@@ -62,6 +61,5 @@ map.on('load', function () {
 });
 
 </script>
-
 </body>
 </html>

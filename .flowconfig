@@ -1,0 +1,17 @@
+[ignore]
+
+.*/node_modules/jsonlint/.*
+.*/node_modules/jsonlint-lines-primitives/.*
+.*/node_modules/unflowify/.*
+.*/test/unit/style-spec/fixture/invalidjson.input.json
+
+[include]
+
+[libs]
+
+./flow-interfaces/
+
+[options]
+
+[version]
+0.38.0

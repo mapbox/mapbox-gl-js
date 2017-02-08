@@ -3,8 +3,7 @@
 <head>
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -12,6 +11,7 @@
     </style>
 </head>
 
+<body>
 <div class='map'></div>
 <div class='map'></div>
 <div class='map'></div>
@@ -19,8 +19,8 @@
 
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
-
 <script>
+
 var style = {
     "version": 8,
     "sources": {
@@ -54,31 +54,22 @@ var style = {
 };
 
 function addMap (container) {
-  var map = new mapboxgl.Map({
-    container: container,
-    minZoom: 14,
-    zoom: 15.5,
-    center: [-122.514426, 37.562984],
-    bearing: -96,
-    style: style,
-    hash: false
-  });
-  map.on('click', popup.bind(map))
+    var map = new mapboxgl.Map({
+        container: container,
+        minZoom: 14,
+        zoom: 15.5,
+        center: [-122.514426, 37.562984],
+        bearing: -96,
+        style: style,
+        hash: false
+    });
 }
 
-var containers = document.querySelectorAll('.map')
+var containers = document.querySelectorAll('.map');
 for (var i = 0; i < containers.length; i++) {
     addMap(containers[i]);
 }
 
-function popup(e) {
-    if (e.originalEvent.shiftKey) return;
-    (new mapboxgl.Popup())
-        .setLngLat(e.lngLat)
-        .setHTML('<h3>' + e.point.x + ', ' + e.point.y + '</h3>')
-        .addTo(this);
-}
 </script>
-
 </body>
 </html>

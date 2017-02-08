@@ -4,7 +4,6 @@
     <title>Mapbox GL JS debug page</title>
     <meta charset='utf-8'>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
     <link rel='stylesheet' href='/dist/mapbox-gl.css' />
     <style>
         body { margin: 0; padding: 0; }
@@ -14,10 +13,11 @@
 
 <body>
 <div id='map'></div>
+
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
-
 <script>
+
 var map = new mapboxgl.Map({
     container: 'map',
     zoom: 12.5,
@@ -26,9 +26,9 @@ var map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/streets-v9'
 });
 
-map.addControl(new mapboxgl.Navigation());
+map.addControl(new mapboxgl.NavigationControl());
 
-var emptyFc = { type: 'FeatureCollection', features: [] }
+var emptyFc = { type: 'FeatureCollection', features: [] };
 
 map.on('style.load', function() {
     map.addSource('queried', { type: 'geojson', data: emptyFc });
@@ -65,45 +65,36 @@ map.on('click', function(e) {
     }
     if (box.length === 2) {
         var boxcoords = box
-          .map(map.unproject.bind(map))
-          .map(function (latlng) { return [latlng.lng, latlng.lat]; })
-          .sort(function (a, b) { return a[0] - b[0]; });
+            .map(map.unproject.bind(map))
+            .map(function (latlng) { return [latlng.lng, latlng.lat]; })
+            .sort(function (a, b) { return a[0] - b[0]; });
 
         boxcoords = [
-          boxcoords[0],
-          [boxcoords[0][0], boxcoords[1][1]],
-          boxcoords[1],
-          [boxcoords[1][0], boxcoords[0][1]],
-          boxcoords[0]
+            boxcoords[0],
+            [boxcoords[0][0], boxcoords[1][1]],
+            boxcoords[1],
+            [boxcoords[1][0], boxcoords[0][1]],
+            boxcoords[0]
         ];
-        var results = map.queryRenderedFeatures(box, {})
+        var results = map.queryRenderedFeatures(box, {});
         map.getSource('queried').setData({
-          type: 'FeatureCollection',
-          features: results
+            type: 'FeatureCollection',
+            features: results
         });
 
         map.getSource('boxsource').setData({
-          type: 'FeatureCollection',
-          features: [{
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: boxcoords
-            }
-          }]
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'LineString',
+                    coordinates: boxcoords
+                }
+            }]
         });
     }
 });
-
-// keyboard shortcut for comparing rendering with Mapbox GL native
-document.onkeypress = function(e) {
-    if (e.charCode === 111 && !e.shiftKey && !e.metaKey && !e.altKey) {
-        var center = map.getCenter();
-        location.href = "mapboxgl://?center=" + center.lat + "," + center.lng + "&zoom=" + map.getZoom() + "&bearing=" + map.getBearing();
-        return false;
-    }
-};
 
 </script>
 </body>

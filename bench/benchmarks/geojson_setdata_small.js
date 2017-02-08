@@ -1,13 +1,12 @@
 'use strict';
 
-var Evented = require('../../js/util/evented');
-var util = require('../../js/util/util');
-var formatNumber = require('../lib/format_number');
-var setDataPerf = require('../lib/set_data_perf');
-var setupGeoJSONMap = require('../lib/setup_geojson_map');
-var createMap = require('../lib/create_map');
+const Evented = require('../../src/util/evented');
+const formatNumber = require('../lib/format_number');
+const setDataPerf = require('../lib/set_data_perf');
+const setupGeoJSONMap = require('../lib/setup_geojson_map');
+const createMap = require('../lib/create_map');
 
-var featureCollection = {
+const featureCollection = {
     'type': 'FeatureCollection',
     'features': [{
         'type': 'Feature',
@@ -20,9 +19,9 @@ var featureCollection = {
 };
 
 module.exports = function() {
-    var evented = util.extend({}, Evented);
+    const evented = new Evented();
 
-    var map = createMap({
+    let map = createMap({
         width: 1024,
         height: 768,
         zoom: 5,
@@ -30,13 +29,13 @@ module.exports = function() {
         style: 'mapbox://styles/mapbox/bright-v9'
     });
 
-    map.on('load', function() {
+    map.on('load', () => {
         map = setupGeoJSONMap(map);
 
-        setDataPerf(map.style.sourceCaches.geojson, featureCollection, function(err, ms) {
+        setDataPerf(map.style.sourceCaches.geojson, featureCollection, (err, ms) => {
             map.remove();
             if (err) return evented.fire('error', {error: err});
-            evented.fire('end', {message: formatNumber(ms) + ' ms', score: ms});
+            evented.fire('end', {message: `${formatNumber(ms)} ms`, score: ms});
         });
     });
 

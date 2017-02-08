@@ -97,6 +97,21 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
 
 * We use [`error` events](https://www.mapbox.com/mapbox-gl-js/api/#Map.event:error) to report user errors.
 * We use [`assert`](https://nodejs.org/api/assert.html) to check invariants that are not likely to be caused by user error. These `assert` statements are stripped out of production builds.
+* We use the following ES6 features:
+  * `let`/`const`
+  * `for...of` loops (for arraylike iteration only, i.e. what is supported by [Bublé's `dangerousForOf` transform](https://buble.surge.sh/guide/#dangerous-transforms))
+  * Arrow functions
+  * Classes
+  * Template strings
+  * Computed and shorthand object properties
+* The following ES6 features are not to be used, in order to maintain support for Node 4.x, IE 11, and older mobile browsers. This may change in the future.
+  * Default parameters
+  * Rest parameters
+  * Spread (`...`) operator
+  * Destructuring
+  * Iterators and generators
+  * "Library" features such as `Map`, `Set`, `array.find`, etc.
+  * Modules
 
 ### Version Control Conventions
 
@@ -105,19 +120,6 @@ See [`bench/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/bench
 ## Documentation Conventions
 
 See [`docs/README.md`](https://github.com/mapbox/mapbox-gl-js/blob/master/docs/README.md).
-
-## Sprint Planning
-
-* We use Github milestones to schedule tasks into two week sprints
-* We end each sprint and publish a release every other Wednesday unless there is an outstanding “release blocker” issue.
-    * If there is a "release blocker" issue, we fix it as soon as possible and do the release
-* We will prioritize feature work as follows:
-    1. “release blocker” bugs
-    3. in-progress things
-    2. things needed by customers
-    4. new things
-* We try to include one "testing and release process", one "refactoring", and one "bug" issue in each release.
-* We name releases alphabetically after [cities](https://en.wikipedia.org/wiki/List_of_towns_and_cities_with_100,000_or_more_inhabitants/cityname:_A). (Fun facts are encouraged!)
 
 ### Github Issue Labels
 
