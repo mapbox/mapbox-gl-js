@@ -3,7 +3,10 @@
   "metadata": {
     "test": {
       "width": 64,
-      "height": 64
+      "height": 64,
+      {
+        "skipped": "https://github.com/mapbox/mapbox-gl-native/issues/7866"
+      }
     }
   },
   "sources": {
