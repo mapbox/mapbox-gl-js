@@ -17,6 +17,9 @@ class FeatureWrapper {
             this.rawGeometry = feature.geometry;
         }
         this.properties = feature.tags;
+        if ('id' in feature) {
+            this.id = feature.id;
+        }
         this.extent = EXTENT;
     }
 
