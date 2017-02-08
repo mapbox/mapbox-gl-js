@@ -34,7 +34,7 @@ function compile(filter) {
         op === 'in' ? compileInOp(filter[1], filter.slice(2)) :
         op === '!in' ? compileNegation(compileInOp(filter[1], filter.slice(2))) :
         op === 'has' ? compileHasOp(filter[1]) :
-        op === '!has' ? compileNegation(compileHasOp([filter[1]])) :
+        op === '!has' ? compileNegation(compileHasOp(filter[1])) :
         'true';
     return `(${str})`;
 }
@@ -72,7 +72,7 @@ function compileInOp(property, values) {
 }
 
 function compileHasOp(property) {
-    return `${JSON.stringify(property)} in p`;
+    return property === '$id' ? '"id" in f' : `${JSON.stringify(property)} in p`;
 }
 
 function compileNegation(expression) {
