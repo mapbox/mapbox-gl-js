@@ -311,7 +311,8 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {AnimationOptions | CameraOptions | PaddingOptions} [options]
+     * @param {AnimationOptions | CameraOptions } [options]
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
