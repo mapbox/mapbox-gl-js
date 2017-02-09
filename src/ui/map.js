@@ -254,7 +254,7 @@ class Map extends Camera {
     removeControl(control) {
         control.onRemove(this);
         if (this._controls[control.constructor.name]) {
-            // delete this._controls[control.constructor.name];
+            delete this._controls[control.constructor.name];
         }
         return this;
     }
