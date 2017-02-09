@@ -24,13 +24,7 @@ mapboxgl.LngLatBounds = require('./geo/lng_lat_bounds');
 mapboxgl.Point = require('point-geometry');
 
 mapboxgl.Evented = require('./util/evented');
-mapboxgl.util = require('./util/util');
-
 mapboxgl.supported = require('./util/browser').supported;
-
-const ajax = require('./util/ajax');
-mapboxgl.util.getJSON = ajax.getJSON;
-mapboxgl.util.getArrayBuffer = ajax.getArrayBuffer;
 
 const config = require('./util/config');
 mapboxgl.config = config;
