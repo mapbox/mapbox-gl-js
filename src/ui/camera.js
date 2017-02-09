@@ -352,20 +352,13 @@ class Camera extends Evented {
                 left: p
             };
         }
-
-        if (!util.deepEqual(Object.keys(options.padding).sort((a, b)=> {
+        if (!util.deepEqual(Object.keys(options.padding).sort((a, b) => {
             if (a < b) return -1;
             if (a > b) return 1;
             return 0;
         }), ["bottom", "left", "right", "top"])) {
             util.warnOnce("options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'");
-            console.log(Object.keys(options.padding).sort((a, b)=> {
-                if (a < b) return -1;
-                if (a > b) return 1;
-                return 0;
-            }));
             return;
-
         }
 
         bounds = LngLatBounds.convert(bounds);
