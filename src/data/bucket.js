@@ -45,6 +45,10 @@ class Bucket {
         }
     }
 
+    getPaintPropertyStatistics() {
+        return this.arrays.paintPropertyStatistics;
+    }
+
     isEmpty() {
         return this.arrays.isEmpty();
     }

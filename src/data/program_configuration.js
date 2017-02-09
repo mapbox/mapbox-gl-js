@@ -160,7 +160,7 @@ class ProgramConfiguration {
         });
     }
 
-    populatePaintArray(layer, paintArray, length, globalProperties, featureProperties) {
+    populatePaintArray(layer, paintArray, paintPropertyStatistics, length, globalProperties, featureProperties) {
         const start = paintArray.length;
         paintArray.resize(length);
 
@@ -175,6 +175,13 @@ class ProgramConfiguration {
                     }
                 } else {
                     vertex[attribute.name] = value * attribute.multiplier;
+                    if (!paintPropertyStatistics[attribute.property]) {
+                        paintPropertyStatistics[attribute.property] = {
+                            max: -Infinity
+                        };
+                    }
+                    const stats = paintPropertyStatistics[attribute.property];
+                    stats.max = Math.max(stats.max, value);
                 }
             }
         }

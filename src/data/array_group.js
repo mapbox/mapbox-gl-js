@@ -44,6 +44,7 @@ class ArrayGroup {
         if (ElementArrayType2) this.elementArray2 = new ElementArrayType2();
 
         this.layerData = {};
+        this.paintPropertyStatistics = {};
         for (const layer of layers) {
             const programConfiguration = ProgramConfiguration.createDynamic(
                 programInterface.paintAttributes || [], layer, zoom);
@@ -52,6 +53,8 @@ class ArrayGroup {
                 programConfiguration: programConfiguration,
                 paintVertexArray: new programConfiguration.PaintVertexArray()
             };
+            // paint property name => { max }
+            this.paintPropertyStatistics[layer.id] = {};
         }
 
         this.segments = [];
@@ -79,10 +82,12 @@ class ArrayGroup {
     populatePaintArrays(featureProperties) {
         for (const key in this.layerData) {
             const layerData = this.layerData[key];
+            const paintPropertyStatistics = this.paintPropertyStatistics[key];
             if (layerData.paintVertexArray.bytesPerElement === 0) continue;
             layerData.programConfiguration.populatePaintArray(
                 layerData.layer,
                 layerData.paintVertexArray,
+                paintPropertyStatistics,
                 this.layoutVertexArray.length,
                 this.globalProperties,
                 featureProperties);

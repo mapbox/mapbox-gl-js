@@ -39,6 +39,7 @@ class FeatureIndex {
             this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
             this.rawTileData = rawTileData;
             this.bucketLayerIDs = serialized.bucketLayerIDs;
+            this.paintPropertyStatistics = serialized.paintPropertyStatistics;
         } else {
             this.grid = new Grid(EXTENT, 16, 0);
             this.featureIndexArray = new FeatureIndexArray();
@@ -86,7 +87,8 @@ class FeatureIndex {
             overscaling: this.overscaling,
             grid: grid,
             featureIndexArray: this.featureIndexArray.serialize(transferables),
-            bucketLayerIDs: this.bucketLayerIDs
+            bucketLayerIDs: this.bucketLayerIDs,
+            paintPropertyStatistics: this.paintPropertyStatistics
         };
     }
 
