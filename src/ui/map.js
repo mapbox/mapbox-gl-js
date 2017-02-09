@@ -1224,6 +1224,7 @@ class Map extends Camera {
         this.setStyle(null);
         if (typeof window !== 'undefined') {
             window.removeEventListener('resize', this._onWindowResize, false);
+            window.removeEventListener('online', this._onWindowOnline, false);
         }
         const extension = this.painter.gl.getExtension('WEBGL_lose_context');
         if (extension) extension.loseContext();
