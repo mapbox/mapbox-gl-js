@@ -209,8 +209,8 @@ class SymbolBucket {
         const statistics = {};
         for (const layer of this.layers) {
             statistics[layer.id] = util.extend({},
-                this.arrays.icon.paintPropertyStatistics[layer.id],
-                this.arrays.glyph.paintPropertyStatistics[layer.id]
+                this.arrays.icon.layerData[layer.id].paintPropertyStatistics,
+                this.arrays.glyph.layerData[layer.id].paintPropertyStatistics
             );
         }
         return statistics;
