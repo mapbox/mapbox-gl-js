@@ -205,6 +205,10 @@ class SymbolBucket {
             this.arrays.collisionBox.isEmpty();
     }
 
+    getPaintPropertyStatistics() {
+        return util.extend({}, this.arrays.icon.paintPropertyStatistics, this.arrays.glyph.paintPropertyStatistics);
+    }
+
     serialize(transferables) {
         return {
             zoom: this.zoom,

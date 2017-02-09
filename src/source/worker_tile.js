@@ -34,7 +34,6 @@ class WorkerTile {
 
         const featureIndex = new FeatureIndex(this.coord, this.overscaling);
         featureIndex.bucketLayerIDs = {};
-        featureIndex.paintPropertyStatistics = {};
 
         const buckets = {};
         let bucketIndex = 0;
@@ -92,7 +91,6 @@ class WorkerTile {
 
                 bucket.populate(features, options);
                 featureIndex.bucketLayerIDs[bucketIndex] = family.map((l) => l.id);
-                util.extend(featureIndex.paintPropertyStatistics, bucket.getPaintPropertyStatistics());
 
                 bucketIndex++;
             }
@@ -102,7 +100,14 @@ class WorkerTile {
         const done = (collisionTile) => {
             this.status = 'done';
 
+            // collect data-driven paint property statistics from each bucket
+            featureIndex.paintPropertyStatistics = {};
+            for (const id in buckets) {
+                util.extend(featureIndex.paintPropertyStatistics, buckets[id].getPaintPropertyStatistics());
+            }
+
             const transferables = [];
+
             callback(null, {
                 buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),
