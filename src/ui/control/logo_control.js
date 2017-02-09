@@ -9,6 +9,7 @@ const util = require('../../util/util');
  * vector tiles and core styles.
  *
  * @implements {IControl}
+ * @private
 **/
 
 class LogoControl {
