@@ -137,8 +137,8 @@ test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
 
     t.deepEqual(bucket.getPaintPropertyStatistics(), {
         test: {
-            'text-halo-width': 4,
-            'icon-halo-width': 5
+            'text-halo-width': { max: 4 },
+            'icon-halo-width': { max: 5 }
         }
     });
 
