@@ -1040,12 +1040,20 @@ navigation:
           </div>
 
           <p>
-            A filter's <var>key</var> must be a string that identifies a feature property, or
-            the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
-            (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
-            <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
-            against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-            <code>"LineString"</code>, or <code>"Polygon"</code>.
+            A <var>key</var> must be a string that identifies a feature property, or one of the following special keys:
+          </p>
+          <ul>
+            <li><code>"$type"</code>: the feature type. This key may be used with the <code>"=="</code>,
+                <code>"!="</code>, <code>"in"</code>, and <code>"!in"</code> operators. Possible values are
+                <code>"Point"</code>, <code>"LineString"</code>, and <code>"Polygon"</code>.</li>
+            <li><code>"$id"</code>: the feature identifier. This key may be used with the <code>"=="</code>,
+                <code>"!="</code>, <code>"has"</code>, <code>"!has"</code>, <code>"in"</code>,
+                and <code>"!in"</code> operators.</li>
+          </ul>
+          <p>
+            A <var>value</var> (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a
+              <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare
+              the property value against.
           </p>
 
           <p>
