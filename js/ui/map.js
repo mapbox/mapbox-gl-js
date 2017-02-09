@@ -1226,9 +1226,13 @@ class Map extends Camera {
     }
 
     /**
-     * Destroys the map's underlying resources, including web workers and DOM elements.
+     * Clean up and release all internal resources associated with this map.
      *
-     * After calling this method, you must not call any other methods on the map.
+     * This includes DOM elements, event bindings, web workers, and WebGL resources.
+     *
+     * Use this method when you are done using the map and wish to ensure that it no
+     * longer consumes browser resources. Afterwards, you must not call any other
+     * methods on the map.
      */
     remove() {
         if (this._hash) this._hash.remove();
