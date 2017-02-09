@@ -68,7 +68,7 @@ const defaultOptions = {
  *
  * @extends Evented
  * @param {Object} options
- * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
+ * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (1-20).
  * @param {number} [options.maxZoom=20] The maximum zoom level of the map (1-20).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
