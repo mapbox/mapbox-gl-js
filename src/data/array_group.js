@@ -53,8 +53,7 @@ class ArrayGroup {
                 programConfiguration: programConfiguration,
                 paintVertexArray: new programConfiguration.PaintVertexArray()
             };
-            // paint property name => { max }
-            this.paintPropertyStatistics[layer.id] = {};
+            this.paintPropertyStatistics[layer.id] = programConfiguration.createPaintPropertyStatistics();
         }
 
         this.segments = [];
