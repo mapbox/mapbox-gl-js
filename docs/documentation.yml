@@ -24,7 +24,6 @@ toc:
   - GeolocateControl
   - AttributionControl
   - ScaleControl
-  - LogoControl
   - Popup
   - Marker
   - name: User Interaction Handlers
