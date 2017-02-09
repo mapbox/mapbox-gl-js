@@ -206,7 +206,14 @@ class SymbolBucket {
     }
 
     getPaintPropertyStatistics() {
-        return util.extend({}, this.arrays.icon.paintPropertyStatistics, this.arrays.glyph.paintPropertyStatistics);
+        const statistics = {};
+        for (const layer of this.layers) {
+            statistics[layer.id] = util.extend({},
+                this.arrays.icon.paintPropertyStatistics[layer.id],
+                this.arrays.glyph.paintPropertyStatistics[layer.id]
+            );
+        }
+        return statistics;
     }
 
     serialize(transferables) {

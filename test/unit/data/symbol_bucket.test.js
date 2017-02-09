@@ -12,6 +12,7 @@ const GlyphAtlas = require('../../../src/symbol/glyph_atlas');
 const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const featureFilter = require('../../../src/style-spec/feature_filter');
+const AnimationLoop = require('../../../src/style/animation_loop');
 
 // Load a point feature from fixture tile.
 const vt = new VectorTile(new Protobuf(fs.readFileSync(path.join(__dirname, '/../../fixtures/mbsv5-6-18-23.vector.pbf'))));
@@ -95,6 +96,51 @@ test('SymbolBucket redo placement', (t) => {
     bucket.prepare(stacks, {});
     bucket.place(collision);
     bucket.place(collision);
+
+    t.end();
+});
+
+
+test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
+    const layer = new StyleLayer({
+        id: 'test',
+        type: 'symbol',
+        layout: {
+            'text-font': ['Test'],
+            'text-field': 'abcde',
+            'icon-image': 'dot',
+            'icon-allow-overlap': true,
+            'text-allow-overlap': true
+        },
+        paint: {
+            'text-halo-width': { property: 'scalerank', type: 'identity' },
+            'icon-halo-width': { property: 'foo', type: 'identity', default: 5 }
+        },
+        filter: featureFilter()
+    });
+
+    layer.updatePaintTransitions([], {}, { zoom: 5 }, new AnimationLoop(), {});
+
+    const bucket = new SymbolBucket({
+        overscaling: 1,
+        zoom: 0,
+        collisionBoxArray: collisionBoxArray,
+        layers: [layer]
+    });
+    const options = {iconDependencies: {}, glyphDependencies: {}};
+
+    bucket.populate([feature], options);
+    bucket.prepare(stacks, {
+        dot: { width: 10, height: 10, pixelRatio: 1, rect: { w: 10, h: 10 } }
+    });
+    bucket.place(collision);
+
+    t.deepEqual(bucket.getPaintPropertyStatistics(), {
+        test: {
+            'text-halo-width': 4,
+            'icon-halo-width': 5
+        }
+    });
 
     t.end();
 });
