@@ -100,7 +100,14 @@ class WorkerTile {
         const done = (collisionTile) => {
             this.status = 'done';
 
+            // collect data-driven paint property statistics from each bucket
+            featureIndex.paintPropertyStatistics = {};
+            for (const id in buckets) {
+                util.extend(featureIndex.paintPropertyStatistics, buckets[id].getPaintPropertyStatistics());
+            }
+
             const transferables = [];
+
             callback(null, {
                 buckets: serializeBuckets(util.values(buckets), transferables),
                 featureIndex: featureIndex.serialize(transferables),

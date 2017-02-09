@@ -56,8 +56,14 @@
       "source": "mapbox",
       "paint": {
         "circle-radius": {
-          "type": "identity",
-          "property": "radius"
+          "type": "exponential",
+          "property": "radius",
+          "stops": [
+            [{"zoom": 0, "value": 5}, 5],
+            [{"zoom": 0, "value": 20}, 20],
+            [{"zoom": 10, "value": 5}, 10],
+            [{"zoom": 10, "value": 20}, 40]
+          ]
         }
       }
     }

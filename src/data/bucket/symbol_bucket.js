@@ -205,6 +205,17 @@ class SymbolBucket {
             this.arrays.collisionBox.isEmpty();
     }
 
+    getPaintPropertyStatistics() {
+        const statistics = {};
+        for (const layer of this.layers) {
+            statistics[layer.id] = util.extend({},
+                this.arrays.icon.layerData[layer.id].paintPropertyStatistics,
+                this.arrays.glyph.layerData[layer.id].paintPropertyStatistics
+            );
+        }
+        return statistics;
+    }
+
     serialize(transferables) {
         return {
             zoom: this.zoom,

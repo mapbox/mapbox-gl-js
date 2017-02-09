@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const Point = require('point-geometry');
 const loadGeometry = require('./load_geometry');
 const EXTENT = require('./extent');
@@ -39,6 +40,7 @@ class FeatureIndex {
             this.featureIndexArray = new FeatureIndexArray(serialized.featureIndexArray);
             this.rawTileData = rawTileData;
             this.bucketLayerIDs = serialized.bucketLayerIDs;
+            this.paintPropertyStatistics = serialized.paintPropertyStatistics;
         } else {
             this.grid = new Grid(EXTENT, 16, 0);
             this.featureIndexArray = new FeatureIndexArray();
@@ -86,7 +88,8 @@ class FeatureIndex {
             overscaling: this.overscaling,
             grid: grid,
             featureIndexArray: this.featureIndexArray.serialize(transferables),
-            bucketLayerIDs: this.bucketLayerIDs
+            bucketLayerIDs: this.bucketLayerIDs,
+            paintPropertyStatistics: this.paintPropertyStatistics
         };
     }
 
@@ -109,17 +112,20 @@ class FeatureIndex {
         let additionalRadius = 0;
         for (const id in styleLayers) {
             const styleLayer = styleLayers[id];
-            const paint = styleLayer.paint;
 
             let styleLayerDistance = 0;
             if (styleLayer.type === 'line') {
-                styleLayerDistance = getLineWidth(paint) / 2 + Math.abs(paint['line-offset']) + translateDistance(paint['line-translate']);
+                const width = getLineWidth(this.getPaintValue('line-width', styleLayer),
+                    this.getPaintValue('line-gap-width', styleLayer));
+                const offset = this.getPaintValue('line-offset', styleLayer);
+                const translate = this.getPaintValue('line-translate', styleLayer);
+                styleLayerDistance = width / 2 + Math.abs(offset) + translateDistance(translate);
             } else if (styleLayer.type === 'fill') {
-                styleLayerDistance = translateDistance(paint['fill-translate']);
+                styleLayerDistance = translateDistance(this.getPaintValue('fill-translate', styleLayer));
             } else if (styleLayer.type === 'fill-extrusion') {
-                styleLayerDistance = translateDistance(paint['fill-extrusion-translate']);
+                styleLayerDistance = translateDistance(this.getPaintValue('fill-extrusion-translate', styleLayer));
             } else if (styleLayer.type === 'circle') {
-                styleLayerDistance = paint['circle-radius'] + translateDistance(paint['circle-translate']);
+                styleLayerDistance = this.getPaintValue('circle-radius', styleLayer) + translateDistance(this.getPaintValue('circle-translate', styleLayer));
             }
             additionalRadius = Math.max(additionalRadius, styleLayerDistance * pixelsToTileUnits);
         }
@@ -194,30 +200,34 @@ class FeatureIndex {
 
                     if (!geometry) geometry = loadGeometry(feature);
 
-                    const paint = styleLayer.paint;
-
                     if (styleLayer.type === 'line') {
                         translatedPolygon = translate(queryGeometry,
-                                paint['line-translate'], paint['line-translate-anchor'],
-                                bearing, pixelsToTileUnits);
-                        const halfWidth = getLineWidth(paint) / 2 * pixelsToTileUnits;
-                        if (paint['line-offset']) {
-                            geometry = offsetLine(geometry, paint['line-offset'] * pixelsToTileUnits);
+                            this.getPaintValue('line-translate', styleLayer, feature),
+                            this.getPaintValue('line-translate-anchor', styleLayer, feature),
+                            bearing, pixelsToTileUnits);
+                        const halfWidth = pixelsToTileUnits / 2 * getLineWidth(
+                            this.getPaintValue('line-width', styleLayer, feature),
+                            this.getPaintValue('line-gap-width', styleLayer, feature));
+                        const lineOffset = this.getPaintValue('line-offset', styleLayer, feature);
+                        if (lineOffset) {
+                            geometry = offsetLine(geometry, lineOffset * pixelsToTileUnits);
                         }
                         if (!multiPolygonIntersectsBufferedMultiLine(translatedPolygon, geometry, halfWidth)) continue;
 
                     } else if (styleLayer.type === 'fill' || styleLayer.type === 'fill-extrusion') {
                         const typePrefix = styleLayer.type;
                         translatedPolygon = translate(queryGeometry,
-                                paint[`${typePrefix}-translate`], paint[`${typePrefix}-translate-anchor`],
-                                bearing, pixelsToTileUnits);
+                            this.getPaintValue(`${typePrefix}-translate`, styleLayer, feature),
+                            this.getPaintValue(`${typePrefix}-translate-anchor`, styleLayer, feature),
+                            bearing, pixelsToTileUnits);
                         if (!multiPolygonIntersectsMultiPolygon(translatedPolygon, geometry)) continue;
 
                     } else if (styleLayer.type === 'circle') {
                         translatedPolygon = translate(queryGeometry,
-                                paint['circle-translate'], paint['circle-translate-anchor'],
-                                bearing, pixelsToTileUnits);
-                        const circleRadius = paint['circle-radius'] * pixelsToTileUnits;
+                            this.getPaintValue('circle-translate', styleLayer, feature),
+                            this.getPaintValue('circle-translate-anchor', styleLayer, feature),
+                            bearing, pixelsToTileUnits);
+                        const circleRadius = this.getPaintValue('circle-radius', styleLayer, feature) * pixelsToTileUnits;
                         if (!multiPolygonIntersectsBufferedMultiPoint(translatedPolygon, geometry, circleRadius)) continue;
                     }
                 }
@@ -232,6 +242,21 @@ class FeatureIndex {
             }
         }
     }
+
+    // Get the given paint property value; if a feature is not provided and the
+    // property is data-driven, then default to the maximum value that the
+    // property takes in the (tile, layer) that this FeatureIndex is associated with
+    getPaintValue(property, layer, feature) {
+        const featureConstant = layer.isPaintValueFeatureConstant(property);
+        if (featureConstant || feature) {
+            const featureProperties = feature ? feature.properties : {};
+            return layer.getPaintValue(property, { zoom: this.z }, featureProperties);
+        }
+
+        assert(property in this.paintPropertyStatistics[layer.id]);
+        return this.paintPropertyStatistics[layer.id][property].max;
+    }
+
 }
 
 module.exports = FeatureIndex;
@@ -244,11 +269,11 @@ function topDownFeatureComparator(a, b) {
     return b - a;
 }
 
-function getLineWidth(paint) {
-    if (paint['line-gap-width'] > 0) {
-        return paint['line-gap-width'] + 2 * paint['line-width'];
+function getLineWidth(lineWidth, lineGapWidth) {
+    if (lineGapWidth > 0) {
+        return lineGapWidth + 2 * lineWidth;
     } else {
-        return paint['line-width'];
+        return lineWidth;
     }
 }
 

@@ -6,7 +6,7 @@
       "height": 64,
       "queryGeometry": [
         32,
-        16
+        32
       ],
       "ignored": {
         "native": "https://github.com/mapbox/mapbox-gl-native/issues/8007"
@@ -14,34 +14,29 @@
     }
   },
   "sources": {
-    "mapbox": {
+    "geojson": {
       "type": "geojson",
       "data": {
         "type": "FeatureCollection",
         "features": [
           {
             "type": "Feature",
-            "properties": {
-              "radius": 20
-            },
+            "properties": { "gap": 20 },
             "geometry": {
-              "type": "Point",
+              "type": "LineString",
               "coordinates": [
-                0,
-                0
+                [10, 10],
+                [10, -10]
               ]
             }
-          },
-          {
+          }, {
             "type": "Feature",
-            "properties": {
-              "radius": 5
-            },
+            "properties": { "gap": 1 },
             "geometry": {
-              "type": "Point",
+              "type": "LineString",
               "coordinates": [
-                5,
-                15
+                [-10, 10],
+                [-10, -10]
               ]
             }
           }
@@ -51,15 +46,14 @@
   },
   "layers": [
     {
-      "id": "circle",
-      "type": "circle",
-      "source": "mapbox",
+      "id": "geojson",
+      "type": "line",
+      "source": "geojson",
       "paint": {
-        "circle-radius": {
-          "type": "identity",
-          "property": "radius"
-        }
-      }
+        "line-gap-width": { "property": "gap", "type": "identity" },
+        "line-width": 5
+      },
+      "interactive": true
     }
   ]
 }

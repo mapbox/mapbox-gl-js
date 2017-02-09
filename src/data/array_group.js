@@ -50,7 +50,8 @@ class ArrayGroup {
             this.layerData[layer.id] = {
                 layer: layer,
                 programConfiguration: programConfiguration,
-                paintVertexArray: new programConfiguration.PaintVertexArray()
+                paintVertexArray: new programConfiguration.PaintVertexArray(),
+                paintPropertyStatistics: programConfiguration.createPaintPropertyStatistics()
             };
         }
 
@@ -83,6 +84,7 @@ class ArrayGroup {
             layerData.programConfiguration.populatePaintArray(
                 layerData.layer,
                 layerData.paintVertexArray,
+                layerData.paintPropertyStatistics,
                 this.layoutVertexArray.length,
                 this.globalProperties,
                 featureProperties);
