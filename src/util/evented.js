@@ -71,8 +71,12 @@ class Evented {
      */
     fire(type, data) {
         if (this.listens(type)) {
-
             data = util.extend({}, data, {type: type, target: this});
+
+            // determine if source is loaded when event is fired
+            if (typeof data.isSourceLoaded === "function") {
+                data.isSourceLoaded = data.isSourceLoaded();
+            };
 
             // make sure adding or removing listeners inside other listeners won't cause an infinite loop
             const listeners = this._listeners && this._listeners[type] ? this._listeners[type].slice() : [];
