@@ -438,7 +438,7 @@ class SourceCache extends Evented {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
                 this._timers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), 2147483647));
+            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
         }
     }
 
@@ -448,7 +448,7 @@ class SourceCache extends Evented {
             this._cacheTimers[id] = setTimeout(() => {
                 this._cache.remove(id);
                 this._cacheTimers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), 2147483647));
+            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
         }
     }
 
