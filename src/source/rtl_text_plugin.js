@@ -13,6 +13,14 @@ module.exports.registerForPluginAvailability = function(callback) {
     } else {
         pluginAvailableCallbacks.push(callback);
     }
+    return callback;
+};
+
+module.exports.deregisterPluginCallback = function(callback) {
+    const i = pluginAvailableCallbacks.indexOf(callback);
+    if (i >= 0) {
+        pluginAvailableCallbacks.splice(i, 1);
+    }
 };
 
 module.exports.errorCallback = null;
@@ -30,8 +38,8 @@ module.exports.setRTLTextPlugin = function(pluginURL, callback) {
             pluginBlobURL =
                 window.URL.createObjectURL(new window.Blob([response.data]), {type: "text/javascript"});
 
-            for (const pluginAvailableCallback of pluginAvailableCallbacks) {
-                pluginAvailableCallback(pluginBlobURL);
+            while (pluginAvailableCallbacks.length > 0) {
+                pluginAvailableCallbacks.shift()(pluginBlobURL);
             }
         }
     });
