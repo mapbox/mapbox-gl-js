@@ -8,6 +8,7 @@ const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const Evented = require('../../../src/util/evented');
 const window = require('../../../src/util/window');
+const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -188,6 +189,20 @@ test('Style#_remove', (t) => {
             t.spy(sourceCache, 'clearTiles');
             style._remove();
             t.ok(sourceCache.clearTiles.calledOnce);
+            t.end();
+        });
+    });
+
+    t.test('deregisters plugin listener', (t) => {
+        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
+        t.spy(rtlTextPlugin, 'deregisterPluginCallback');
+        const style = new Style(createStyleJSON());
+        t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
+        t.notOk(rtlTextPlugin.deregisterPluginCallback.called);
+
+        style.on('style.load', () => {
+            style._remove();
+            t.ok(rtlTextPlugin.deregisterPluginCallback.calledOnce);
             t.end();
         });
     });

@@ -78,7 +78,7 @@ class Style extends Evented {
         this.fire('dataloading', {dataType: 'style'});
 
         const self = this;
-        rtlTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
+        this.rtlTextPluginCallback = rtlTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
             self.dispatcher.broadcast('loadRTLTextPlugin', pluginBlobURL, rtlTextPlugin.errorCallback);
             for (const id in self.sourceCaches) {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
@@ -824,6 +824,7 @@ class Style extends Evented {
     }
 
     _remove() {
+        rtlTextPlugin.deregisterPluginCallback(this.rtlTextPluginCallback);
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();
         }
