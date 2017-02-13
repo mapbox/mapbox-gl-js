@@ -9,8 +9,8 @@
       name: Property aggregation on clustered features
       issues: ["2412"]
     -
-      name: Property functions for symbol paint properties
-      issues: ["2730"]
+      name: Runtime sprite manipulation
+      issues: ["2059", "4086"]
 -
   term: "Upcoming"
   description: "Things we hope to start building in the next several months."
@@ -18,9 +18,6 @@
     -
       name: <code>Map#setCamera</code> method
       issues: ["3583", "2801"]
-    -
-      name: <code>Map#addImage</code> and <code>Map#removeImage</code>
-      issues: ["2059"]
     -
       name: Better benchmarking tools
       issues: ["3237", "3495", "3031", "2253", "3248"]
