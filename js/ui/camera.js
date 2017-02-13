@@ -29,7 +29,8 @@ const Evented = require('../util/evented');
  *
  * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
- * @property {Function} easing The animation's easing function.
+ * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is 
+ *                             the initial state and 1 is the final state.
  * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
  * @property {boolean} animate If `false`, no animation will occur.
  */
@@ -302,7 +303,8 @@ class Camera extends Evented {
      * @param {Object} [options]
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     *     {@link Map#flyTo} for information about the options specific to that animated transition.
+     *     those functions and @{link AnimationOptions} for information about options available.
+     * @param {Function} [options.easing] An easing function for the animated transition. See [AnimationOptions](#AnimationOptions).
      * @param {Function} [options.easing] An easing function for the animated transition.
      * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
@@ -411,7 +413,8 @@ class Camera extends Evented {
      * details not specified in `options`.
      *
      * @memberof Map#
-     * @param {CameraOptions|AnimationOptions} options Options describing the destination and animation of the transition.
+     * @param {Object} options Options describing the destination and animation of the transition.
+    *            Accepts [CameraOptions](#CameraOptions) and [AnimationOptions](#AnimationOptions).
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
@@ -553,7 +556,6 @@ class Camera extends Evented {
      *     It does not correspond to a fixed physical distance, but varies by zoom level.
      * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {Function} [options.easing] An easing function for the animated transition.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires zoomstart
