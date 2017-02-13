@@ -34,6 +34,17 @@ const Evented = require('../util/evented');
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
+/**
+ * Options for setting padding on a call to {@link Map#fitBounds}. All properties of this object must be
+ * non-negative integers.
+ *
+ * @typedef {Object} PaddingOptions
+ * @property {number} top Padding in pixels from the top of the map canvas.
+ * @property {number} bottom Padding in pixels from the bottom of the map canvas.
+ * @property {number} left Padding in pixels from the left of the map canvas.
+ * @property {number} right Padding in pixels from the right of the map canvas.
+ */
+
 class Camera extends Evented {
 
     constructor(transform, options) {
@@ -295,41 +306,84 @@ class Camera extends Evented {
 
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
+     * This function will also reset the map's bearing to 0 if bearing is nonzero.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {Object} [options]
+     * @param {AnimationOptions | CameraOptions } [options]
+     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
      *     {@link Map#flyTo} for information about the options specific to that animated transition.
      * @param {Function} [options.easing] An easing function for the animated transition.
-     * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
      * @param {Object} [eventData] Data to propagate to any event listeners.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
+	 * @example
+     * var bbox = [[-79, 43], [-73, 45]];
+     * map.fitBounds(bbox, {
+     *   padding: {top: 10, bottom:25, left: 15, right: 5}
+     * });
      * @see [Fit a map to a bounding box](https://www.mapbox.com/mapbox-gl-js/example/fitbounds/)
      */
     fitBounds(bounds, options, eventData) {
 
         options = util.extend({
-            padding: 0,
+            padding: {
+                top: 0,
+                bottom: 0,
+                right: 0,
+                left: 0
+            },
             offset: [0, 0],
-            maxZoom: this.getMaxZoom()
+            maxZoom: this.transform.maxZoom
         }, options);
 
+        if (typeof options.padding === 'number') {
+            const p = options.padding;
+            options.padding = {
+                top: p,
+                bottom: p,
+                right: p,
+                left: p
+            };
+        }
+        if (!util.deepEqual(Object.keys(options.padding).sort((a, b) => {
+            if (a < b) return -1;
+            if (a > b) return 1;
+            return 0;
+        }), ["bottom", "left", "right", "top"])) {
+            util.warnOnce("options.padding must be a positive number, or an Object with keys 'bottom', 'left', 'right', 'top'");
+            return;
+        }
+
         bounds = LngLatBounds.convert(bounds);
+
+        // we separate the passed padding option into two parts, the part that does not affect the map's center
+        // (lateral and vertical padding), and the part that does (paddingOffset). We add the padding offset
+        // to the options `offset` object where it can alter the map's center in the subsequent calls to
+        // `easeTo` and `flyTo`.
+        const paddingOffset = [options.padding.left - options.padding.right, options.padding.top - options.padding.bottom],
+            lateralPadding = Math.min(options.padding.right, options.padding.left),
+            verticalPadding = Math.min(options.padding.top, options.padding.bottom);
+        options.offset = [options.offset[0] + paddingOffset[0], options.offset[1] + paddingOffset[1]];
 
         const offset = Point.convert(options.offset),
             tr = this.transform,
             nw = tr.project(bounds.getNorthWest()),
             se = tr.project(bounds.getSouthEast()),
             size = se.sub(nw),
-            scaleX = (tr.width - options.padding * 2 - Math.abs(offset.x) * 2) / size.x,
-            scaleY = (tr.height - options.padding * 2 - Math.abs(offset.y) * 2) / size.y;
+            scaleX = (tr.width - lateralPadding * 2 - Math.abs(offset.x) * 2) / size.x,
+            scaleY = (tr.height - verticalPadding * 2 - Math.abs(offset.y) * 2) / size.y;
+
+        if (scaleY < 0 || scaleX < 0) {
+            util.warnOnce('Map cannot fit within canvas with the given bounds, padding, and/or offset.');
+            return;
+        }
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
