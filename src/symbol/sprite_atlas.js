@@ -217,7 +217,8 @@ function copyBitmap(src, srcStride, srcX, srcY, dst, dstStride, dstX, dstY, widt
     if (wrap) {
         // add 1 pixel wrapped padding on each side of the image
         dstI -= dstStride;
-        for (y = -1; y <= height; y++, srcI = ((y + height) % height + srcY) * srcStride + srcX, dstI += dstStride) {
+        for (y = -1; y <= height; y++, dstI += dstStride) {
+            srcI = ((y + height) % height + srcY) * srcStride + srcX;
             for (x = -1; x <= width; x++) {
                 dst[dstI + x] = src[srcI + ((x + width) % width)];
             }
