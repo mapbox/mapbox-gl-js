@@ -4,7 +4,7 @@ Mapbox GL JS is a JavaScript library that renders interactive maps from vector t
 
 In addition to GL JS, this repository contains code, issues, and test fixtures that are common to both GL JS and the native SDKs. For code and issues specific to the native SDKs, see the [mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
 
-- [Getting started](https://github.com/mapbox/mapbox-gl-js/blob/master/INSTALL.md)
+- [Getting started](https://www.mapbox.com/mapbox-gl-js/api/)
 - [API documentation](https://www.mapbox.com/mapbox-gl-js/api)
 - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://www.mapbox.com/mapbox-gl-style-spec)
@@ -27,3 +27,22 @@ These projects are maintained by the GL JS community. Feel free to open a PR add
  - [wtMapbox: Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
  - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
  - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
+
+## Using Mapbox with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
+
+You may use a Content Security Policy to restrict the resources your page has
+ access to, as a way of guarding against Cross-Site Scripting and other types of
+ attacks. If you do, Mapbox GL JS requires the following directives:
+
+```
+child-src blob: ;
+img-src data: blob: ;
+script-src 'unsafe-eval' ;
+```
+
+Requesting styles from Mapbox or other services will require additional
+ directives. For Mapbox, you can use this `connect-src` setting:
+
+```
+connect-src https://*.tiles.mapbox.com https://api.mapbox.com
+```

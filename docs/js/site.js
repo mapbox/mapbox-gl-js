@@ -50,7 +50,7 @@ if (filterInput) {
         for (i=0; i < headings.length; i++) {
             if (!value || value == undefined || value == "" || value.length == 0) {
                 headings[i].style.display = 'block';
-            } else { 
+            } else {
                 headings[i].style.display = 'none';
             }
         }

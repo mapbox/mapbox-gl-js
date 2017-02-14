@@ -53,8 +53,8 @@ window.addEventListener('hashchange', function() {
 
 showHashTarget(location.hash);
 
-var scriptExample = document.getElementById('script-example');
-var browserifyExample = document.getElementById('browserify-example');
+var quickstartCDN = document.getElementById('quickstart-cdn');
+var quickstartBundler = document.getElementById('quickstart-bundler');
 var toggles = document.getElementsByClassName('method-toggle');
 for (var i = 0; i < toggles.length; i++) {
   toggles[i].onclick = exampleToggle;
@@ -63,12 +63,12 @@ function exampleToggle(e) {
   for (var i = 0; i < toggles.length; i++) {
     toggles[i].className = this === toggles[i] ? 'method-toggle active' : 'method-toggle';
   }
-  if (this.getAttribute('data-target') === 'script-example') {
-    scriptExample.className = '';
-    browserifyExample.className = 'hidden';
+  if (this.getAttribute('data-target') === 'quickstart-cdn') {
+    quickstartCDN.className = '';
+    quickstartBundler.className = 'hidden';
   } else {
-    scriptExample.className = 'hidden';
-    browserifyExample.className = '';
+    quickstartCDN.className = 'hidden';
+    quickstartBundler.className = '';
   }
   e.preventDefault();
 }
