@@ -107,7 +107,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     gl.uniform1f(program.u_opacity, this.layer.paint['fill-extrusion-opacity']);
-    gl.uniform1i(program.u_texture, 1);
+    gl.uniform1i(program.u_image, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
         mat4.create(),
