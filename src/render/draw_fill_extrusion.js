@@ -121,8 +121,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
 
     gl.disable(gl.DEPTH_TEST);
 
-    gl.uniform1i(program.u_xdim, painter.width);
-    gl.uniform1i(program.u_ydim, painter.height);
+    gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     const array = new PosArray();
     array.emplaceBack(0, 0);
