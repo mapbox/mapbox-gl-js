@@ -11,7 +11,7 @@ uniform bool u_is_halo;
 uniform sampler2D u_texture;
 uniform sampler2D u_fadetexture;
 uniform lowp float u_font_scale;
-uniform lowp float u_gamma_scale;
+uniform highp float u_gamma_scale;
 
 varying vec2 v_tex;
 varying vec2 v_fade_tex;
@@ -35,8 +35,8 @@ void main() {
 
     lowp float dist = texture2D(u_texture, v_tex).a;
     lowp float fade_alpha = texture2D(u_fadetexture, v_fade_tex).a;
-    lowp float gamma_scaled = gamma * v_gamma_scale;
-    lowp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist) * fade_alpha;
+    highp float gamma_scaled = gamma * v_gamma_scale;
+    highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist) * fade_alpha;
 
     gl_FragColor = color * (alpha * opacity);
 
