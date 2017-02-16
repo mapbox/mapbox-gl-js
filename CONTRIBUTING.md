@@ -11,7 +11,6 @@ xcode-select --install
 
 Install [node.js](https://nodejs.org/) version 4 or greater
 ```bash
-brew update
 brew install node
 ```
 Install [yarn](https://yarnpkg.com/en/)
