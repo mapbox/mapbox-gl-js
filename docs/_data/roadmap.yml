@@ -10,7 +10,10 @@
       issues: ["2412"]
     -
       name: Runtime sprite manipulation
-      issues: ["2059", "4086"]
+      issues: ["2059", "4086"]  
+    -
+      name: Custom WebGL layer type
+      issues: ["281"]
 -
   term: "Upcoming"
   description: "Things we hope to start building in the next several months."
@@ -24,6 +27,3 @@
     -
       name: Custom source type API
       project: 2
-    -
-      name: Custom WebGL layer type
-      issues: ["281"]
