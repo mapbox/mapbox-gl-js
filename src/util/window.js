@@ -26,10 +26,6 @@ function restore() {
     };
     window.cancelAnimationFrame = clearImmediate;
 
-    // Stub some CSSOM-related properties that jsdom doesn't implement.
-    window.HTMLElement.prototype.clientLeft = 0;
-    window.HTMLElement.prototype.clientTop = 0;
-
     // Add webgl context with the supplied GL
     const originalGetContext = window.HTMLCanvasElement.prototype.getContext;
     window.HTMLCanvasElement.prototype.getContext = function (type, attributes) {
