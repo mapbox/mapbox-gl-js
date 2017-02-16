@@ -12,8 +12,8 @@ test('hash', (t) => {
 
     function createMap() {
         const container = window.document.createElement('div');
-        container.offsetWidth = 512;
-        container.offsetHeight = 512;
+        Object.defineProperty(container, 'offsetWidth', {value: 512});
+        Object.defineProperty(container, 'offsetHeight', {value: 512});
         return new Map({container: container});
     }
 
