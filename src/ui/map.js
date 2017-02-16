@@ -733,15 +733,6 @@ class Map extends Camera {
     }
 
     /**
-     * Returns a Boolean indicating whether the style is loaded.
-     *
-     * @returns {boolean} A boolean indicating whether the style is loaded.
-     */
-    isStyleLoaded(){
-        return this.style.loaded();
-    }
-
-    /**
      * Adds a source to the map's style.
      *
      * @param {string} id The ID of the source to add. Must not conflict with existing sources.
