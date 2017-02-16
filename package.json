@@ -67,7 +67,7 @@
     "handlebars": "^4.0.5",
     "highlight.js": "9.8.0",
     "in-publish": "^2.0.0",
-    "jsdom": "^9.4.2",
+    "jsdom": "^9.11.0",
     "jsonlint": "^1.6.2",
     "lodash.template": "^4.4.0",
     "lodash": "^4.16.0",

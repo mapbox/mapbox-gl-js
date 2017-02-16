@@ -13,8 +13,8 @@ const fixedCoord = fixed.Coord;
 
 function createMap(options, callback) {
     const container = window.document.createElement('div');
-    container.offsetWidth = 200;
-    container.offsetHeight = 200;
+    Object.defineProperty(container, 'offsetWidth', {value: 200, configurable: true});
+    Object.defineProperty(container, 'offsetHeight', {value: 200, configurable: true});
 
     const map = new Map(util.extend({
         container: container,
@@ -419,8 +419,8 @@ test('Map', (t) => {
             const map = createMap(),
                 container = map.getContainer();
 
-            container.offsetWidth = 250;
-            container.offsetHeight = 250;
+            Object.defineProperty(container, 'offsetWidth', {value: 250});
+            Object.defineProperty(container, 'offsetHeight', {value: 250});
             map.resize();
 
             t.equal(map.transform.width, 250);

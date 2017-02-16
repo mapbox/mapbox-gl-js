@@ -13,8 +13,8 @@ const containerHeight = 512;
 
 function createMap() {
     const container = window.document.createElement('div');
-    container.offsetWidth = containerWidth;
-    container.offsetHeight = containerHeight;
+    Object.defineProperty(container, 'offsetWidth', {value: containerWidth});
+    Object.defineProperty(container, 'offsetHeight', {value: containerHeight});
     return new Map({container: container});
 }
 
@@ -209,8 +209,8 @@ test('Popup anchors as specified by the anchor option', (t) => {
             .setText('Test')
             .addTo(map);
 
-        popup._container.offsetWidth = 100;
-        popup._container.offsetHeight = 100;
+        Object.defineProperty(popup._container, 'offsetWidth', {value: 100});
+        Object.defineProperty(popup._container, 'offsetHeight', {value: 100});
 
         t.stub(map, 'project', () => { return point; });
         popup.setLngLat([0, 0]);
@@ -245,8 +245,8 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
         .setText('Test')
         .addTo(map);
 
-    popup._container.offsetWidth = (containerWidth / 2);
-    popup._container.offsetHeight = (containerHeight / 2);
+    Object.defineProperty(popup._container, 'offsetWidth', {value: containerWidth / 2});
+    Object.defineProperty(popup._container, 'offsetHeight', {value: containerHeight / 2});
 
     t.stub(map, 'project', () => { return point; });
     popup.setLngLat([0, 0]);
