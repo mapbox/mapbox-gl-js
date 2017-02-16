@@ -1,5 +1,5 @@
-uniform float u_opacity0;
-uniform float u_opacity1;
+uniform float u_fade_t;
+uniform float u_opacity;
 uniform sampler2D u_image0;
 uniform sampler2D u_image1;
 varying vec2 v_pos0;
@@ -17,7 +17,8 @@ void main() {
     // read and cross-fade colors from the main and parent tiles
     vec4 color0 = texture2D(u_image0, v_pos0);
     vec4 color1 = texture2D(u_image1, v_pos1);
-    vec4 color = color0 * u_opacity0 + color1 * u_opacity1;
+    vec4 color = mix(color0, color1, u_fade_t);
+    color.a *= u_opacity;
     vec3 rgb = color.rgb;
 
     // spin
@@ -37,7 +38,7 @@ void main() {
     vec3 u_high_vec = vec3(u_brightness_low, u_brightness_low, u_brightness_low);
     vec3 u_low_vec = vec3(u_brightness_high, u_brightness_high, u_brightness_high);
 
-    gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb), color.a);
+    gl_FragColor = vec4(mix(u_high_vec, u_low_vec, rgb) * color.a, color.a);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);

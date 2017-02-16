@@ -70,6 +70,7 @@ class GeoJSONSource extends Evented {
         this.reparseOverscaled = true;
 
         this.dispatcher = dispatcher;
+        this.setEventedParent(eventedParent);
 
         this._data = options.data;
 
@@ -99,8 +100,9 @@ class GeoJSONSource extends Evented {
                 log: false
             }
         }, options.workerOptions);
+    }
 
-        this.setEventedParent(eventedParent);
+    load() {
         this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData((err) => {
             if (err) {
@@ -113,6 +115,7 @@ class GeoJSONSource extends Evented {
     }
 
     onAdd(map) {
+        this.load();
         this.map = map;
     }
 

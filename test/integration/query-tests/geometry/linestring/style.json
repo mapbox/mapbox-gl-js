@@ -1,0 +1,49 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 512,
+      "height": 512,
+      "debug": true,
+      "queryGeometry": [
+        [
+          0,
+          0
+        ],
+        [
+          512,
+          512
+        ]
+      ]
+    }
+  },
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 0,
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0,
+            0
+          ], [
+            45,
+            45
+          ]
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circles",
+      "type": "line",
+      "source": "geojson"
+    }
+  ]
+}

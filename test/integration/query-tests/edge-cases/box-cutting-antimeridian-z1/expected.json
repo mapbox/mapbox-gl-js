@@ -1,0 +1,28 @@
+[
+  {
+    "properties": {
+      "id": "B"
+    },
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        109.9951171875,
+        44.99588261816547
+      ]
+    }
+  },
+  {
+    "properties": {
+      "id": "C"
+    },
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -109.9951171875,
+        44.99588261816547
+      ]
+    }
+  }
+]

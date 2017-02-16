@@ -10,8 +10,8 @@ title: Mapbox GL JS Roadmap
 <style>
   .roadmap-block {
     margin: 10px;
-    box-sizing:border-box;  
-    -moz-box-sizing:border-box; 
+    box-sizing:border-box;
+    -moz-box-sizing:border-box;
     -webkit-box-sizing:border-box;
   }
   code a {
@@ -22,7 +22,7 @@ title: Mapbox GL JS Roadmap
   }
 </style>
 
-<div class='pad2y col12'> 
+<div class='pad2y col12'>
   <div class='pad1 contain space-bottom2'>
     <h1 class='space-bottom2'>
       Mapbox GL JS Roadmap
@@ -38,7 +38,8 @@ title: Mapbox GL JS Roadmap
     <div class='col6'>
       <div class='roadmap-block fill-white prose keyline-all'>
         <div class='pad2'>
-          <h2>{{r.term}}</h2>
+          <h2 style="margin-bottom: 0">{{r.term}}</h2>
+          <small class="quiet">{{r.description}}</small>
         </div>
         {% for item in r.items %}
         <div class='pad2x pad1y keyline-top'>
@@ -57,7 +58,7 @@ title: Mapbox GL JS Roadmap
       </div>
     </div>
     {% endfor %}
-    
+
   </div>
 </div>
 

@@ -166,6 +166,10 @@ class Popup extends Evented {
     /**
      * Sets the popup's content to the HTML provided as a string.
      *
+     * This method does not perform HTML filtering or sanitization, and must be
+     * used only with trusted content. Consider [`setText`](#Popup#setText) if
+     * the content is an untrusted text string.
+     *
      * @param {string} html A string representing HTML content for the popup.
      * @returns {Popup} `this`
      */
@@ -320,14 +324,14 @@ function normalizeOffset(offset) {
     } else {
         // input specifies an offset per position
         return {
-            'top': Point.convert(offset['top']),
-            'top-left': Point.convert(offset['top-left']),
-            'top-right': Point.convert(offset['top-right']),
-            'bottom': Point.convert(offset['bottom']),
-            'bottom-left': Point.convert(offset['bottom-left']),
-            'bottom-right': Point.convert(offset['bottom-right']),
-            'left': Point.convert(offset['left']),
-            'right': Point.convert(offset['right'])
+            'top': Point.convert(offset['top'] || [0, 0]),
+            'top-left': Point.convert(offset['top-left'] || [0, 0]),
+            'top-right': Point.convert(offset['top-right'] || [0, 0]),
+            'bottom': Point.convert(offset['bottom'] || [0, 0]),
+            'bottom-left': Point.convert(offset['bottom-left'] || [0, 0]),
+            'bottom-right': Point.convert(offset['bottom-right'] || [0, 0]),
+            'left': Point.convert(offset['left'] || [0, 0]),
+            'right': Point.convert(offset['right'] || [0, 0])
         };
     }
 }

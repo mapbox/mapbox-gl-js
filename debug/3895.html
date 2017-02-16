@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    center: [-68.13734351262877, 45.137451890638886],
+    zoom: 5,
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
+});
+
+map.on('load', function () {
+    const layer = {
+        id: 'test',
+        source: 'composite',
+        'source-layer': 'water',
+        type: 'fill',
+        paint: {
+            'fill-color': '#00ff00'
+        }
+    };
+
+    map.addLayer(layer);
+
+    setInterval(function() {
+        const test = map.getLayer('test');
+        if (test) {
+            map.removeLayer('test');
+            map.addLayer(layer);
+        }
+    }, 2000);
+});
+</script>
+</body>
+</html>

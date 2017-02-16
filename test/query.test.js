@@ -1,7 +1,7 @@
 'use strict';
 
 require('flow-remove-types/register');
-const querySuite = require('mapbox-gl-test-suite').query;
+const querySuite = require('./integration').query;
 const suiteImplementation = require('./suite_implementation');
 
 let tests;

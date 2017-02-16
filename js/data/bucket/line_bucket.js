@@ -60,7 +60,7 @@ function addLineVertex(layoutVertexBuffer, point, extrude, tx, ty, dir, linesofa
         (point.x << 1) | tx,
         (point.y << 1) | ty,
         // a_data
-        // add 128 to store an byte in an unsigned byte
+        // add 128 to store a byte in an unsigned byte
         Math.round(EXTRUDE_SCALE * extrude.x) + 128,
         Math.round(EXTRUDE_SCALE * extrude.y) + 128,
         // Encode the -1/0/1 direction value into the first two bits of .z of a_data.
@@ -159,8 +159,14 @@ class LineBucket extends Bucket {
 
             // Determine the normal of the join extrusion. It is the angle bisector
             // of the segments between the previous line and the next line.
-            let joinNormal = prevNormal.add(nextNormal)._unit();
-
+            // In the case of 180° angles, the prev and next normals cancel each other out:
+            // prevNormal + nextNormal = (0, 0), its magnitude is 0, so the unit vector would be
+            // undefined. In that case, we're keeping the joinNormal at (0, 0), so that the cosHalfAngle
+            // below will also become 0 and miterLength will become Infinity.
+            let joinNormal = prevNormal.add(nextNormal);
+            if (joinNormal.x !== 0 || joinNormal.y !== 0) {
+                joinNormal._unit();
+            }
             /*  joinNormal     prevNormal
              *             ↖      ↑
              *                .________. prevVertex
@@ -175,7 +181,7 @@ class LineBucket extends Bucket {
             // Find the cosine of the angle between the next and join normals
             // using dot product. The inverse of that is the miter length.
             const cosHalfAngle = joinNormal.x * nextNormal.x + joinNormal.y * nextNormal.y;
-            const miterLength = 1 / cosHalfAngle;
+            const miterLength = cosHalfAngle !== 0 ? 1 / cosHalfAngle : Infinity;
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
@@ -207,7 +213,7 @@ class LineBucket extends Bucket {
 
             if (currentJoin === 'bevel') {
                 // The maximum extrude length is 128 / 63 = 2 times the width of the line
-                // so if miterLength >= 2 we need to draw a different type of bevel where.
+                // so if miterLength >= 2 we need to draw a different type of bevel here.
                 if (miterLength > 2) currentJoin = 'flipbevel';
 
                 // If the miterLength is really small and the line bevel wouldn't be visible,
@@ -228,7 +234,7 @@ class LineBucket extends Bucket {
 
                 if (miterLength > 100) {
                     // Almost parallel lines
-                    joinNormal = nextNormal.clone();
+                    joinNormal = nextNormal.clone().mult(-1);
 
                 } else {
                     const direction = prevNormal.x * nextNormal.y - prevNormal.y * nextNormal.x > 0 ? -1 : 1;

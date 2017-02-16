@@ -55,7 +55,7 @@ class GeolocateControl extends Evented {
 
     constructor(options) {
         super();
-        this.options = options;
+        this.options = options || {};
         util.bindAll([
             '_onSuccess',
             '_onError',

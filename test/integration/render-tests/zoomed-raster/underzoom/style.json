@@ -1,0 +1,34 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "height": 256
+    }
+  },
+  "center": [
+    13.418056,
+    52.499167
+  ],
+  "zoom": 15,
+  "sources": {
+    "satellite": {
+      "type": "raster",
+      "tiles": [
+        "local://tiles/{z}-{x}-{y}.satellite.png"
+      ],
+      "minzoom": 17,
+      "maxzoom": 17,
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "raster",
+      "type": "raster",
+      "source": "satellite",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}

@@ -37,7 +37,10 @@ class Painter {
         this.gl = gl;
         this.transform = transform;
 
-        this.reusableTextures = {};
+        this.reusableTextures = {
+            tiles: {},
+            viewport: null
+        };
         this.preFbos = {};
 
         this.frameHistory = new FrameHistory();
@@ -214,7 +217,9 @@ class Painter {
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
-            draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+            if (sourceCache) {
+                draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
+            }
         }
     }
 
@@ -224,6 +229,14 @@ class Painter {
         let sourceCache, coords;
 
         this.currentLayer = this.isOpaquePass ? layerIds.length - 1 : 0;
+
+        if (this.isOpaquePass) {
+            if (!this._showOverdrawInspector) {
+                this.gl.disable(this.gl.BLEND);
+            }
+        } else {
+            this.gl.enable(this.gl.BLEND);
+        }
 
         for (let i = 0; i < layerIds.length; i++) {
             const layer = this.style._layers[layerIds[this.currentLayer]];
@@ -241,12 +254,7 @@ class Painter {
                     }
                 }
 
-                if (this.isOpaquePass) {
-                    if (!this._showOverdrawInspector) {
-                        this.gl.disable(this.gl.BLEND);
-                    }
-                } else {
-                    this.gl.enable(this.gl.BLEND);
+                if (!this.isOpaquePass) {
                     coords.reverse();
                 }
             }
@@ -301,37 +309,32 @@ class Painter {
     }
 
     saveTileTexture(texture) {
-        const textures = this.reusableTextures[texture.size];
+        const textures = this.reusableTextures.tiles[texture.size];
         if (!textures) {
-            this.reusableTextures[texture.size] = [texture];
+            this.reusableTextures.tiles[texture.size] = [texture];
         } else {
             textures.push(texture);
         }
     }
 
     saveViewportTexture(texture) {
-        if (!this.reusableTextures.viewport) this.reusableTextures.viewport = {};
-        this.reusableTextures.viewport.texture = texture;
+        this.reusableTextures.viewport = texture;
     }
 
-    getTileTexture(width, height) {
-        const widthTextures = this.reusableTextures[width];
-        if (widthTextures) {
-            const textures = widthTextures[height || width];
-            return textures && textures.length > 0 ? textures.pop() : null;
-        }
+    getTileTexture(size) {
+        const textures = this.reusableTextures.tiles[size];
+        return textures && textures.length > 0 ? textures.pop() : null;
     }
 
     getViewportTexture(width, height) {
-        if (!this.reusableTextures.viewport) return;
-
-        const texture = this.reusableTextures.viewport.texture;
+        const texture = this.reusableTextures.viewport;
+        if (!texture) return;
 
         if (texture.width === width && texture.height === height) {
             return texture;
         } else {
             this.gl.deleteTexture(texture);
-            this.reusableTextures.viewport.texture = null;
+            this.reusableTextures.viewport = null;
             return;
         }
     }

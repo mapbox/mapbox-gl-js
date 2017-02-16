@@ -1,0 +1,492 @@
+{
+  "sand_noise": {
+    "width": 50,
+    "height": 50,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "grass_noise": {
+    "width": 50,
+    "height": 50,
+    "x": 50,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "interstate_3": {
+    "width": 50,
+    "height": 43,
+    "x": 0,
+    "y": 50,
+    "pixelRatio": 1
+  },
+  "interstate_2": {
+    "width": 46,
+    "height": 44,
+    "x": 100,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "interstate_1": {
+    "width": 40,
+    "height": 42,
+    "x": 100,
+    "y": 44,
+    "pixelRatio": 1
+  },
+  "dlr.london-overground.london-underground.national-rail": {
+    "width": 72,
+    "height": 16,
+    "x": 0,
+    "y": 93,
+    "pixelRatio": 1
+  },
+  "us_highway_3": {
+    "width": 37,
+    "height": 30,
+    "x": 50,
+    "y": 50,
+    "pixelRatio": 1
+  },
+  "us_highway_2": {
+    "width": 34,
+    "height": 30,
+    "x": 0,
+    "y": 109,
+    "pixelRatio": 1
+  },
+  "us_state_3": {
+    "width": 37,
+    "height": 27,
+    "x": 34,
+    "y": 109,
+    "pixelRatio": 1
+  },
+  "london-overground.london-underground.national-rail": {
+    "width": 54,
+    "height": 16,
+    "x": 72,
+    "y": 93,
+    "pixelRatio": 1
+  },
+  "dlr.london-underground.national-rail": {
+    "width": 54,
+    "height": 16,
+    "x": 71,
+    "y": 109,
+    "pixelRatio": 1
+  },
+  "us_state_1": {
+    "width": 30,
+    "height": 27,
+    "x": 146,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "us_state_2": {
+    "width": 30,
+    "height": 27,
+    "x": 146,
+    "y": 27,
+    "pixelRatio": 1
+  },
+  "rer.transilien": {
+    "width": 40,
+    "height": 20,
+    "x": 0,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "us_highway_1": {
+    "width": 26,
+    "height": 29,
+    "x": 146,
+    "y": 54,
+    "pixelRatio": 1
+  },
+  "default_6": {
+    "width": 42,
+    "height": 16,
+    "x": 40,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "s-bahn.u-bahn": {
+    "width": 36,
+    "height": 18,
+    "x": 176,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "metro.rer": {
+    "width": 34,
+    "height": 18,
+    "x": 176,
+    "y": 18,
+    "pixelRatio": 1
+  },
+  "default_5": {
+    "width": 37,
+    "height": 16,
+    "x": 82,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "dlr.london-underground": {
+    "width": 36,
+    "height": 16,
+    "x": 176,
+    "y": 36,
+    "pixelRatio": 1
+  },
+  "london-overground.national-rail": {
+    "width": 36,
+    "height": 16,
+    "x": 176,
+    "y": 52,
+    "pixelRatio": 1
+  },
+  "london-underground.national-rail": {
+    "width": 36,
+    "height": 16,
+    "x": 176,
+    "y": 68,
+    "pixelRatio": 1
+  },
+  "london-overground.london-underground": {
+    "width": 36,
+    "height": 16,
+    "x": 176,
+    "y": 84,
+    "pixelRatio": 1
+  },
+  "dlr.national-rail": {
+    "width": 36,
+    "height": 16,
+    "x": 176,
+    "y": 100,
+    "pixelRatio": 1
+  },
+  "default_4": {
+    "width": 32,
+    "height": 16,
+    "x": 176,
+    "y": 116,
+    "pixelRatio": 1
+  },
+  "default_3": {
+    "width": 27,
+    "height": 16,
+    "x": 176,
+    "y": 132,
+    "pixelRatio": 1
+  },
+  "dot": {
+    "width": 20,
+    "height": 20,
+    "x": 146,
+    "y": 83,
+    "pixelRatio": 1
+  },
+  "moscow-metro": {
+    "width": 21,
+    "height": 18,
+    "x": 146,
+    "y": 103,
+    "pixelRatio": 1
+  },
+  "default_2": {
+    "width": 22,
+    "height": 16,
+    "x": 146,
+    "y": 121,
+    "pixelRatio": 1
+  },
+  "post_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 0,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "police_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 18,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "cemetery_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 36,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "embassy_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 54,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "golf_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 72,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "religious-jewish_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 90,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "government_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 108,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "s-bahn": {
+    "width": 18,
+    "height": 18,
+    "x": 126,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "school_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 144,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "fire-station_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 162,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "generic_metro": {
+    "width": 18,
+    "height": 18,
+    "x": 180,
+    "y": 159,
+    "pixelRatio": 1
+  },
+  "hospital_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 0,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "zoo_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 18,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "generic_rail": {
+    "width": 18,
+    "height": 18,
+    "x": 36,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "harbor_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 54,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "library_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 72,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "monument_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 90,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "washington-metro": {
+    "width": 18,
+    "height": 18,
+    "x": 108,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "airport_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 126,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "park_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 144,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "generic_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 162,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "wiener-linien": {
+    "width": 18,
+    "height": 18,
+    "x": 180,
+    "y": 177,
+    "pixelRatio": 1
+  },
+  "college_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 0,
+    "pixelRatio": 1
+  },
+  "religious-muslim_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 18,
+    "pixelRatio": 1
+  },
+  "marker_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 36,
+    "pixelRatio": 1
+  },
+  "rer": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 54,
+    "pixelRatio": 1
+  },
+  "u-bahn": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 72,
+    "pixelRatio": 1
+  },
+  "prison_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 90,
+    "pixelRatio": 1
+  },
+  "airfield_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 108,
+    "pixelRatio": 1
+  },
+  "metro": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 126,
+    "pixelRatio": 1
+  },
+  "religious-christian_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 144,
+    "pixelRatio": 1
+  },
+  "museum_icon": {
+    "width": 18,
+    "height": 18,
+    "x": 212,
+    "y": 162,
+    "pixelRatio": 1
+  },
+  "national-rail": {
+    "width": 18,
+    "height": 16,
+    "x": 126,
+    "y": 93,
+    "pixelRatio": 1
+  },
+  "london-overground": {
+    "width": 18,
+    "height": 16,
+    "x": 125,
+    "y": 109,
+    "pixelRatio": 1
+  },
+  "london-underground": {
+    "width": 18,
+    "height": 16,
+    "x": 119,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "dlr": {
+    "width": 18,
+    "height": 16,
+    "x": 137,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "default_1": {
+    "width": 17,
+    "height": 16,
+    "x": 155,
+    "y": 139,
+    "pixelRatio": 1
+  },
+  "oneway_motorway": {
+    "width": 20,
+    "height": 9,
+    "x": 176,
+    "y": 148,
+    "pixelRatio": 1
+  },
+  "oneway_road": {
+    "width": 20,
+    "height": 9,
+    "x": 50,
+    "y": 80,
+    "pixelRatio": 1
+  },
+  "school_striped": {
+    "width": 6,
+    "height": 6,
+    "x": 212,
+    "y": 180,
+    "pixelRatio": 1
+  },
+  "hospital_striped": {
+    "width": 6,
+    "height": 6,
+    "x": 218,
+    "y": 180,
+    "pixelRatio": 1
+  }
+}

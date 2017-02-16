@@ -625,6 +625,72 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('#3895 reloads source (instead of clearing) if adding this layer with the same type, immediately after removing it', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            },
+            layers: [{
+                "id": "my-layer",
+                "type": "symbol",
+                "source": "mapbox",
+                "source-layer": "boxmap",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+
+        const layer = {
+            "id": "my-layer",
+            "type": "symbol",
+            "source": "mapbox",
+            "source-layer": "boxmap"
+        };
+
+        style.on('style.load', () => {
+            style.sourceCaches['mapbox'].reload = t.end;
+            style.sourceCaches['mapbox'].clearTiles = t.fail;
+            style.removeLayer('my-layer');
+            style.addLayer(layer);
+            style.update();
+        });
+    });
+
+    t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            "sources": {
+                "mapbox": {
+                    "type": "vector",
+                    "tiles": []
+                }
+            },
+            layers: [{
+                "id": "my-layer",
+                "type": "symbol",
+                "source": "mapbox",
+                "source-layer": "boxmap",
+                "filter": ["==", "id", 0]
+            }]
+        }));
+
+        const layer = {
+            "id": "my-layer",
+            "type": "circle",
+            "source": "mapbox",
+            "source-layer": "boxmap"
+        };
+
+        style.on('style.load', () => {
+            style.sourceCaches['mapbox'].reload = t.fail;
+            style.sourceCaches['mapbox'].clearTiles = t.end;
+            style.removeLayer('my-layer');
+            style.addLayer(layer);
+            style.update();
+        });
+    });
+
     t.test('fires "data" event', (t) => {
         const style = new Style(createStyleJSON()),
             layer = {id: 'background', type: 'background'};
@@ -692,6 +758,33 @@ test('Style#addLayer', (t) => {
         });
     });
 
+    t.test('fires an error on non-existant source layer', (t) => {
+        const style = new Style(util.extend(createStyleJSON(), {
+            sources: {
+                dummy: {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                }
+            }
+        }));
+
+        const layer = {
+            id: 'dummy',
+            source: 'dummy',
+            type: 'background',
+            'source-layer': 'dummy'
+        };
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist on source/);
+                t.end();
+            });
+            style.addLayer(layer);
+        });
+
+    });
+
     t.end();
 });
 
@@ -745,14 +838,15 @@ test('Style#removeLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.removeLayer('background');
-            }, /Layer not found: background/);
-            t.end();
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
+                t.end();
+            });
+            style.removeLayer('background');
         });
     });
 
@@ -823,14 +917,15 @@ test('Style#moveLayer', (t) => {
         });
     });
 
-    t.test('throws on non-existence', (t) => {
+    t.test('fires an error on non-existence', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            t.throws(() => {
-                style.moveLayer('background');
-            }, /Layer not found: background/);
-            t.end();
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+                t.end();
+            });
+            style.moveLayer('background');
         });
     });
 
@@ -941,6 +1036,18 @@ test('Style#setFilter', (t) => {
         });
     });
 
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
+                t.end();
+            });
+            style.setFilter('non-existant', ['==', 'id', 1]);
+        });
+    });
+
     t.end();
 });
 
@@ -982,6 +1089,17 @@ test('Style#setLayerZoomRange', (t) => {
         }, Error, /load/i);
         style.on('style.load', () => {
             t.end();
+        });
+    });
+
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
+                t.end();
+            });
+            style.setLayerZoomRange('non-existant', 5, 12);
         });
     });
 
@@ -1192,7 +1310,7 @@ test('Style defers expensive methods', (t) => {
 test('Style#query*Features', (t) => {
 
     // These tests only cover filter validation. Most tests for these methods
-    // live in mapbox-gl-test-suite.
+    // live in the integration tests.
 
     let style;
     let onError;

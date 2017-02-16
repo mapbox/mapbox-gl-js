@@ -1,3 +1,73 @@
+## 0.32.1 (Jan 26, 2017)
+
+#### Bug Fixes
+
+ - Fix bug causing [`mapbox-gl-rtl-text` plugin](https://github.com/mapbox/mapbox-gl-rtl-text) to not work #4055
+
+## 0.32.0 (Jan 26, 2017)
+
+#### Deprecation Notices
+
+- [Style classes](https://www.mapbox.com/mapbox-gl-style-spec/#layer-paint.*) are deprecated and will be removed in an upcoming release of Mapbox GL JS.
+
+#### New Features
+
+ - Add `Map#isSourceLoaded` method #4033
+ - Automatically reload tiles based on their `Expires` and `Cache-Control` HTTP headers #3944
+ - Add `around=center` option to `scrollZoom` and `touchZoomRotate` interaction handlers #3876
+ - Add support for [`mapbox-gl-rtl-text` plugin](https://github.com/mapbox/mapbox-gl-rtl-text) to support right-to-left scripts #3758
+ - Add `canvas` source type #3765
+ - Add `Map#isMoving` method #2792
+
+#### Bug Fixes
+
+ - Fix bug causing garbled text on zoom #3962
+ - Fix bug causing crash in Firefox and Mobile Safari when rendering a large map #4037
+ - Fix bug causing raster tiles to flicker during zoom #2467
+ - Fix bug causing exception when unsetting and resetting fill-outline-color #3657
+ - Fix memory leak when removing raster sources #3951
+ - Fix bug causing exception when when zooming in / out on empty GeoJSON tile #3985
+ - Fix line join artifacts at very sharp angles #4008
+
+## 0.31.0 (Jan 10 2017)
+
+#### New Features
+
+- Add `renderWorldCopies` option to the `Map` constructor to give users control over whether multiple worlds are rendered in a map #3885
+
+#### Bug Fixes
+
+- Fix performance regression triggered when `Map` pitch or bearing is changed #3938
+- Fix null pointer exception caused by trying to clear an `undefined` source #3903
+
+#### Miscellaneous
+
+- Incorporate integration tests formerly at [`mapbox-gl-test-suite`](https://github.com/mapbox/mapbox-gl-test-suite) into this repository #3834
+
+## 0.30.0 (Jan 5 2017)
+
+#### New Features
+
+ - Fire an error when map canvas is larger than allowed by `gl.MAX_RENDERBUFFER_SIZE` #2893
+ - Improve error messages when referencing a nonexistent layer id #2597
+ - Fire an error when layer uses a `geojson` source and specifies a `source-layer` #3896
+ - Add inline source declaration syntax #3857
+ - Improve line breaking behavior #3887
+
+#### Performance Improvements
+
+ - Improve `Map#setStyle` performance in some cases #3853
+
+#### Bug Fixes
+
+ - Fix unexpected popup positioning when some offsets are unspecified #3367
+ - Fix incorrect interpolation in functions #3838
+ - Fix incorrect opacity when multiple backgrounds are rendered #3819
+ - Fix exception thrown when instantiating geolocation control in Safari #3844
+ - Fix exception thrown when setting `showTileBoundaries` with no sources #3849
+ - Fix incorrect rendering of transparent parts of raster layers in some cases #3723
+ - Fix non-terminating render loop when zooming in in some cases #3399
+
 ## 0.29.0 (December 20 2016)
 
 #### New Features

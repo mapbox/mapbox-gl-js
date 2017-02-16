@@ -62,6 +62,23 @@ test('Map', (t) => {
                 container: 'anElementIdWhichDoesNotExistInTheDocument'
             });
         }, new Error("Container 'anElementIdWhichDoesNotExistInTheDocument' not found"), 'throws on invalid map container id');
+
+        t.end();
+    });
+
+    t.test('constructor, max size detection', (t) => {
+        t.stub(console, 'warn');
+
+        const container = window.document.createElement('div');
+        container.offsetWidth = 10000;
+        container.offsetHeight = 10000;
+        new Map({container});
+
+        t.match(
+            console.warn.getCall(0).args[0],
+            /Map is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
+        );
+
         t.end();
     });
 
@@ -311,6 +328,33 @@ test('Map', (t) => {
             });
         });
 
+        t.test('fires an error on checking if non-existant source is loaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('error', ({ error }) => {
+                    t.match(error.message, /There is no source with ID/);
+                    t.end();
+                });
+                map.isSourceLoaded('geojson');
+            });
+        });
+
+        t.test('#isSourceLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('source.load', () => {
+                    t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                    t.end();
+                });
+                map.addSource('geojson', createStyleSource());
+                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
+            });
+        });
+
         t.test('returns the style with added layers', (t) => {
             const style = createStyle();
             const map = createMap({style: style});
@@ -319,6 +363,23 @@ test('Map', (t) => {
                 map.addLayer(createStyleLayer());
                 t.deepEqual(map.getStyle(), util.extend(createStyle(), {
                     layers: [createStyleLayer()]
+                }));
+                t.end();
+            });
+        });
+
+        t.test('returns the style with added source and layer', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+            const layer = util.extend(createStyleLayer(), {
+                source: createStyleSource()
+            });
+
+            map.on('load', () => {
+                map.addLayer(layer);
+                t.deepEqual(map.getStyle(), util.extend(createStyle(), {
+                    sources: {background: createStyleSource()},
+                    layers: [util.extend(createStyleLayer(), {source: 'background'})]
                 }));
                 t.end();
             });
@@ -805,6 +866,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
+            });
+        });
+
         t.test('fires a data event', (t) => {
             // background layers do not have a source
             const map = createMap({
@@ -993,6 +1072,24 @@ test('Map', (t) => {
             t.end();
         });
 
+        t.test('fires an error if layer not found', (t) => {
+            const map = createMap({
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: []
+                }
+            });
+
+            map.on('style.load', () => {
+                map.style.on('error', ({ error }) => {
+                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                    t.end();
+                });
+                map.setPaintProperty('non-existant', 'background-color', 'red');
+            });
+        });
+
         t.end();
     });
 
@@ -1089,6 +1186,23 @@ test('Map', (t) => {
                 }
             });
         });
+    });
+
+    t.test('Map#isMoving', (t) => {
+        t.plan(3);
+        const map = createMap();
+
+        t.equal(map.isMoving(), false, 'false before moving');
+
+        map.on('movestart', () => {
+            t.equal(map.isMoving(), true, 'true on movestart');
+        });
+
+        map.on('moveend', () => {
+            t.equal(map.isMoving(), false, 'false on moveend');
+        });
+
+        map.zoomTo(5, { duration: 0 });
     });
 
     t.end();

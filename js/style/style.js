@@ -23,6 +23,7 @@ const MapboxGLFunction = require('mapbox-gl-function');
 const getWorkerPool = require('../global_worker_pool');
 const deref = require('mapbox-gl-style-spec/lib/deref');
 const diff = require('mapbox-gl-style-spec/lib/diff');
+const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const supportedDiffOperations = util.pick(diff.operations, [
     'addLayer',
@@ -76,6 +77,14 @@ class Style extends Evented {
         this.setEventedParent(map);
         this.fire('dataloading', {dataType: 'style'});
 
+        const self = this;
+        rtlTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
+            self.dispatcher.broadcast('loadRTLTextPlugin', pluginBlobURL, rtlTextPlugin.errorCallback);
+            for (const id in self.sourceCaches) {
+                self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
+            }
+        });
+
         const stylesheetLoaded = (err, stylesheet) => {
             if (err) {
                 this.fire('error', {error: err});
@@ -94,8 +103,7 @@ class Style extends Evented {
             }
 
             if (stylesheet.sprite) {
-                this.sprite = new ImageSprite(stylesheet.sprite);
-                this.sprite.setEventedParent(this);
+                this.sprite = new ImageSprite(stylesheet.sprite, this);
             }
 
             this.glyphSource = new GlyphSource(stylesheet.glyphs);
@@ -129,9 +137,9 @@ class Style extends Evented {
         if (!layer.sourceLayer) return;
         if (!sourceCache) return;
         const source = sourceCache.getSource();
-        if (!source.vectorLayerIds) return;
 
-        if (source.vectorLayerIds.indexOf(layer.sourceLayer) === -1) {
+        if (source.type === 'geojson' || (source.vectorLayerIds &&
+            source.vectorLayerIds.indexOf(layer.sourceLayer) === -1)) {
             this.fire('error', {
                 error: new Error(
                     `Source layer "${layer.sourceLayer}" ` +
@@ -369,7 +377,7 @@ class Style extends Evented {
             throw new Error(`The type property must be defined, but the only the following properties were given: ${Object.keys(source)}.`);
         }
 
-        const builtIns = ['vector', 'raster', 'geojson', 'video', 'image'];
+        const builtIns = ['vector', 'raster', 'geojson', 'video', 'image', 'canvas'];
         const shouldValidate = builtIns.indexOf(source.type) >= 0;
         if (shouldValidate && this._validate(validateStyle.source, `sources.${id}`, source, null, options)) return;
 
@@ -426,6 +434,11 @@ class Style extends Evented {
 
         const id = layerObject.id;
 
+        if (typeof layerObject.source === 'object') {
+            this.addSource(id, layerObject.source);
+            layerObject = util.extend(layerObject, { source: id });
+        }
+
         // this layer is not in the style.layers array, so we pass an impossible array index
         if (this._validate(validateStyle.layer,
                 `layers.${id}`, layerObject, {arrayIndex: -1}, options)) return;
@@ -440,15 +453,17 @@ class Style extends Evented {
 
         this._layers[id] = layer;
 
-        if (this._removedLayers[id]) {
+        if (this._removedLayers[id] && layer.source) {
             // If, in the current batch, we have already removed this layer
-            // and we are now re-adding it, then we need to clear (rather
-            // than just reload) the underyling source's tiles.
-            // Otherwise, tiles marked 'reloading' will have buffers that are
-            // set up for the _previous_ version of this layer, confusing
+            // and we are now re-adding it with a different `type`, then we
+            // need to clear (rather than just reload) the underyling source's
+            // tiles.  Otherwise, tiles marked 'reloading' will have buckets /
+            // buffers that are set up for the _previous_ version of this
+            // layer, causing, e.g.:
             // https://github.com/mapbox/mapbox-gl-js/issues/3633
+            const removed = this._removedLayers[id];
             delete this._removedLayers[id];
-            this._updatedSources[layer.source] = 'clear';
+            this._updatedSources[layer.source] = removed.type !== layer.type ? 'clear' : 'reload';
         }
         this._updateLayer(layer);
 
@@ -470,7 +485,15 @@ class Style extends Evented {
         this._changed = true;
 
         const layer = this._layers[id];
-        if (!layer) throw new Error(`Layer not found: ${id}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${id}' does not exist in ` +
+                  `the map's style and cannot be moved.`
+                )
+            });
+            return;
+        }
 
         const index = this._order.indexOf(id);
         this._order.splice(index, 1);
@@ -495,7 +518,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this._layers[id];
-        if (!layer) throw new Error(`Layer not found: ${id}`);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${id}' does not exist in ` +
+                  `the map's style and cannot be removed.`
+                )
+            });
+            return;
+        }
 
         layer.setEventedParent(null);
 
@@ -507,7 +538,7 @@ class Style extends Evented {
         }
 
         this._changed = true;
-        this._removedLayers[id] = true;
+        this._removedLayers[id] = layer;
         delete this._layers[id];
         delete this._updatedLayers[id];
         delete this._updatedPaintProps[id];
@@ -527,6 +558,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot have zoom extent.`
+                )
+            });
+            return;
+        }
 
         if (layer.minzoom === minzoom && layer.maxzoom === maxzoom) return;
 
@@ -543,6 +583,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be filtered.`
+                )
+            });
+            return;
+        }
 
         if (filter !== null && filter !== undefined && this._validate(validateStyle.filter, `layers.${layer.id}.filter`, filter)) return;
 
@@ -565,6 +614,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be styled.`
+                )
+            });
+            return;
+        }
 
         if (util.deepEqual(layer.getLayoutProperty(name), value)) return;
 
@@ -586,6 +644,15 @@ class Style extends Evented {
         this._checkLoaded();
 
         const layer = this.getLayer(layerId);
+        if (!layer) {
+            this.fire('error', {
+                error: new Error(
+                  `The layer '${layerId}' does not exist in ` +
+                  `the map's style and cannot be styled.`
+                )
+            });
+            return;
+        }
 
         if (util.deepEqual(layer.getPaintProperty(name, klass), value)) return;
 

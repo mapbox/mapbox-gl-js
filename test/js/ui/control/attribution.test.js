@@ -20,7 +20,7 @@ function createMap() {
 
 test('AttributionControl appears in bottom-right by default', (t) => {
     const map = createMap();
-    map.addControl(new AttributionControl(), 'bottom-right');
+    map.addControl(new AttributionControl());
 
     t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-attrib').length, 1);
     t.end();

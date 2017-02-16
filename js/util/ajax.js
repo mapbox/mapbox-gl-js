@@ -38,7 +38,11 @@ exports.getArrayBuffer = function(url, callback) {
             return callback(new Error('http status 200 returned without content.'));
         }
         if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-            callback(null, xhr.response);
+            callback(null, {
+                data: xhr.response,
+                cacheControl: xhr.getResponseHeader('Cache-Control'),
+                expires: xhr.getResponseHeader('Expires')
+            });
         } else {
             callback(new Error(xhr.statusText));
         }
@@ -66,8 +70,10 @@ exports.getImage = function(url, callback) {
             callback(null, img);
             URL.revokeObjectURL(img.src);
         };
-        const blob = new window.Blob([new Uint8Array(imgData)], { type: 'image/png' });
-        img.src = imgData.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
+        const blob = new window.Blob([new Uint8Array(imgData.data)], { type: 'image/png' });
+        img.cacheControl = imgData.cacheControl;
+        img.expires = imgData.expires;
+        img.src = imgData.data.byteLength ? URL.createObjectURL(blob) : transparentPngUrl;
     });
 };
 

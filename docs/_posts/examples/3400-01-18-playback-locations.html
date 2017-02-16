@@ -139,17 +139,13 @@ description.textContent = locations[locations.length - 1].description;
 
 map.on('load', function() {
 
-    // Polygon fill for each borough of new york city.
-    // Used to highlight when its borough is active.
-    map.addSource("boroughs", {
-        "type": "vector",
-        "url": "mapbox://mapbox.8ibmsn6u"
-    });
-
     map.addLayer({
         "id": "highlight",
         "type": "fill",
-        "source": "boroughs",
+        "source": {
+            "type": "vector",
+            "url": "mapbox://mapbox.8ibmsn6u"
+        },
         "source-layer": "original",
         "paint": {
             "fill-color": "#fd6b50",

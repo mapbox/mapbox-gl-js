@@ -1,0 +1,54 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -10,
+              -10
+            ],
+            [
+              -10,
+              10
+            ],
+            [
+              10,
+              10
+            ],
+            [
+              10,
+              -10
+            ],
+            [
+              -10,
+              -10
+            ]
+          ]
+        ]
+      }
+    }
+  },
+  "sprite": "local://sprites/emerald",
+  "layers": [
+    {
+      "id": "fill",
+      "type": "fill",
+      "source": "geojson",
+      "paint": {
+          "fill-outline-color": "hsla(0, 0, 0, 0)",
+          "fill-color": "hsla(0, 0, 0, 0)",
+          "fill-pattern": "generic_icon"
+      }
+    }
+  ]
+}

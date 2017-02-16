@@ -3,6 +3,7 @@ toc:
   - accessToken
   - supported
   - version
+  - setRTLTextPlugin
   - name: Geography
     description: |
       These are Mapbox GL JS's ways of representing locations
@@ -36,6 +37,7 @@ toc:
   - GeoJSONSource
   - VideoSource
   - ImageSource
+  - CanvasSource
   - name: Options
     description: |
       These shared option can be supplied as arguments to various methods

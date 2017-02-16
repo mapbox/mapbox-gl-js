@@ -1,0 +1,26 @@
+<style>
+    body { font-family: Helvetica; }
+    h2 a { color:white; text-decoration:none; }
+</style>
+<table>
+<tr>
+    <th>Actual</th>
+    <th>Info</th>
+</tr>
+{{#each results}}
+<tr>
+    <td><img src="data:image/png;base64,{{actual}}"></td>
+    <td>
+        <h2 style="text-align:center; background:{{color}}"><a href="{{group}}/style.json">{{group}}/{{test}}</a></h2>
+        <ul>
+            <li>diff: <strong>{{difference}}</strong></li>
+            <li>zoom: <strong>{{zoom}}</strong></li>
+            <li>center: <strong>{{center}}</strong></li>
+            <li>bearing: <strong>{{bearing}}</strong></li>
+            <li>width: <strong>{{width}}</strong></li>
+            <li>height: <strong>{{height}}</strong></li>
+        </ul>
+    </td>
+</tr>
+{{/each}}
+</table>

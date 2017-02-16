@@ -23,7 +23,7 @@ module.exports = function bindHandlers(map, options) {
     for (const name in handlers) {
         map[name] = new handlers[name](map, options);
         if (options.interactive && options[name]) {
-            map[name].enable();
+            map[name].enable(options[name]);
         }
     }
 

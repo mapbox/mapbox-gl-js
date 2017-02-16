@@ -2,7 +2,7 @@
 
 const scriptDetection = require('../util/script_detection');
 const verticalizePunctuation = require('../util/verticalize_punctuation');
-
+const rtlTextPlugin = require('../source/rtl_text_plugin');
 
 const WritingMode = {
     horizontal: 1,
@@ -36,8 +36,6 @@ function Shaping(positionedGlyphs, text, top, bottom, left, right, writingMode) 
     this.writingMode = writingMode;
 }
 
-const newLine = 0x0a;
-
 function breakLines(text, lineBreakPoints) {
     const lines = [];
     let start = 0;
@@ -53,15 +51,18 @@ function breakLines(text, lineBreakPoints) {
 }
 
 function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, translate, verticalHeight, writingMode) {
-    text = text.trim();
-    if (writingMode === WritingMode.vertical) text = verticalizePunctuation(text);
+    let logicalInput = text.trim();
+    if (writingMode === WritingMode.vertical) logicalInput = verticalizePunctuation(logicalInput);
 
     const positionedGlyphs = [];
-    const shaping = new Shaping(positionedGlyphs, text, translate[1], translate[1], translate[0], translate[0], writingMode);
+    const shaping = new Shaping(positionedGlyphs, logicalInput, translate[1], translate[1], translate[0], translate[0], writingMode);
 
-    const lines = (writingMode === WritingMode.horizontal && maxWidth) ?
-        breakLines(text, determineLineBreaks(text, spacing, maxWidth, glyphs)) :
-        [text];
+    let lines;
+    if (rtlTextPlugin.processBidirectionalText) {
+        lines = rtlTextPlugin.processBidirectionalText(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    } else {
+        lines = breakLines(logicalInput, determineLineBreaks(logicalInput, spacing, maxWidth, glyphs));
+    }
 
     shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight);
 
@@ -71,7 +72,17 @@ function shapeText(text, glyphs, maxWidth, lineHeight, horizontalAlign, vertical
     return shaping;
 }
 
+const whitespace = {
+    0x09: true, // tab
+    0x0a: true, // newline
+    0x0b: true, // vertical tab
+    0x0c: true, // form feed
+    0x0d: true, // carriage return
+    0x20: true, // space
+};
+
 const breakable = {
+    0x0a:   true, // newline
     0x20:   true, // space
     0x26:   true, // ampersand
     0x28:   true, // left parenthesis
@@ -90,8 +101,6 @@ const breakable = {
     // See https://github.com/mapbox/mapbox-gl-js/issues/3658
 };
 
-breakable[newLine] = true;
-
 function determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphs) {
     let totalWidth = 0;
 
@@ -108,30 +117,35 @@ function determineAverageLineWidth(logicalInput, spacing, maxWidth, glyphs) {
 
 function calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) {
     const raggedness = Math.pow(lineWidth - targetWidth, 2);
-    if (isLastBreak && lineWidth < targetWidth) {
-        // Be more tolerant of short final lines
-        return Math.max(0, raggedness - 150);
+    if (isLastBreak) {
+        // Favor finals lines shorter than average over longer than average
+        if (lineWidth < targetWidth) {
+            return raggedness / 2;
+        } else {
+            return raggedness * 2;
+        }
     }
+
     return raggedness + Math.abs(penalty) * penalty;
 }
 
-function calculatePenalty(codePoint, previousCodePoint) {
+function calculatePenalty(codePoint, nextCodePoint) {
     let penalty = 0;
     // Force break on newline
     if (codePoint === 0x0a) {
         penalty -= 10000;
     }
     // Penalize open parenthesis at end of line
-    if (previousCodePoint && (previousCodePoint === 0x28 || previousCodePoint === 0xff08)) {
+    if (codePoint === 0x28 || codePoint === 0xff08) {
         penalty += 50;
     }
+
     // Penalize close parenthesis at beginning of line
-    if (codePoint === 0x29 || codePoint === 0xff09) {
+    if (nextCodePoint === 0x29 || nextCodePoint === 0xff09) {
         penalty += 50;
     }
     return penalty;
 }
-
 
 function evaluateBreak(breakIndex, breakX, targetWidth, potentialBreaks, penalty, isLastBreak) {
     // We could skip evaluating breaks where the line length (breakX - priorBreak.x) > maxWidth
@@ -139,20 +153,24 @@ function evaluateBreak(breakIndex, breakX, targetWidth, potentialBreaks, penalty
     //  ...and when targetWidth and maxWidth are close, strictly enforcing maxWidth can give
     //     more lopsided results.
 
-    const edges = [];
-    // We're iterating from last potential break towards the first
+    let bestPriorBreak = null;
+    let bestBreakBadness = calculateBadness(breakX, targetWidth, penalty, isLastBreak);
+
     for (const potentialBreak of potentialBreaks) {
         const lineWidth = breakX - potentialBreak.x;
-        edges.push({ priorBreak: potentialBreak, badness: calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) + potentialBreak.badness});
+        const breakBadness =
+            calculateBadness(lineWidth, targetWidth, penalty, isLastBreak) + potentialBreak.badness;
+        if (breakBadness <= bestBreakBadness) {
+            bestPriorBreak = potentialBreak;
+            bestBreakBadness = breakBadness;
+        }
     }
-    edges.push({ priorBreak: null, badness: calculateBadness(breakX, targetWidth, penalty, isLastBreak)});
-    edges.sort((a, b) => { return a.badness - b.badness; });
 
     return {
         index: breakIndex,
         x: breakX,
-        priorBreak: edges[0].priorBreak,
-        badness: edges[0].badness
+        priorBreak: bestPriorBreak,
+        badness: bestBreakBadness
     };
 }
 
@@ -179,26 +197,36 @@ function determineLineBreaks(logicalInput, spacing, maxWidth, glyphs) {
         const codePoint = logicalInput.charCodeAt(i);
         const glyph = glyphs[codePoint];
 
-        // newlines treatment slightly different from gl-native. See: https://github.com/mapbox/mapbox-gl-native/issues/7253
-        if (!glyph && codePoint !== newLine)
-            continue;
+        if (glyph && !whitespace[codePoint])
+            currentX += glyph.advance + spacing;
 
         // Ideographic characters, spaces, and word-breaking punctuation that often appear without
         // surrounding spaces.
-        if (breakable[codePoint] || scriptDetection.charAllowsIdeographicBreaking(codePoint)) {
-            const previousCodePoint = logicalInput.charCodeAt(i - 1);
+        if ((i < logicalInput.length - 1) &&
+            (breakable[codePoint] ||
+                scriptDetection.charAllowsIdeographicBreaking(codePoint))) {
 
-            potentialLineBreaks.unshift(
-                evaluateBreak(i, currentX, targetWidth, potentialLineBreaks, calculatePenalty(codePoint, previousCodePoint), false));
+            potentialLineBreaks.push(
+                evaluateBreak(
+                    i + 1,
+                    currentX,
+                    targetWidth,
+                    potentialLineBreaks,
+                    calculatePenalty(codePoint, logicalInput.charCodeAt(i + 1)),
+                    false));
         }
 
-        if (glyph)
-            currentX += glyph.advance + spacing;
-    }
-    potentialLineBreaks.unshift(
-        evaluateBreak(logicalInput.length, currentX, targetWidth, potentialLineBreaks, 0, true));
 
-    return leastBadBreaks(potentialLineBreaks.shift());
+    }
+
+    return leastBadBreaks(
+        evaluateBreak(
+            logicalInput.length,
+            currentX,
+            targetWidth,
+            potentialLineBreaks,
+            0,
+            true));
 }
 
 function shapeLines(shaping, glyphs, lines, lineHeight, horizontalAlign, verticalAlign, justify, translate, writingMode, spacing, verticalHeight) {
