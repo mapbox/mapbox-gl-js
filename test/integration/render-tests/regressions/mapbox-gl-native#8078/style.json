@@ -7,14 +7,14 @@
     }
   },
   "sources": {
-    "geojson": {
+    "sourceOne": {
       "type": "geojson",
       "data": {
         "type": "FeatureCollection",
         "features": [
           {
             "type": "Feature",
-            "properties": {"case": 1},
+            "properties": {},
             "id": "a",
             "geometry": {
               "type": "Point",
@@ -23,10 +23,18 @@
                 0
               ]
             }
-          },
+          }                   
+        ]
+      }
+    },
+    "sourceTwo": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
           {
             "type": "Feature",
-            "properties": {"case": 2},
+            "properties": {},
             "id": "a",
             "geometry": {
               "type": "Point",
@@ -35,10 +43,18 @@
                 0
               ]
             }
-          },
+          }                   
+        ]
+      }
+    },
+    "sourceThree": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
           {
             "type": "Feature",
-            "properties": {"case": 3},
+            "properties": {},
             "id": "a",
             "geometry": {
               "type": "Point",
@@ -47,47 +63,43 @@
                 -10
               ]
             }
-          }                    
+          }                   
         ]
       }
-    }
+    }        
   },
   "layers": [
     {
-      "id": "circle",
+      "id": "circleOne",
       "type": "circle",
-      "source": "geojson",
+      "source": "sourceOne",
       "paint": {
-        "circle-color": {
-          "property": "case",
-          "type": "categorical",
-          "stops": [
-            [1, "rgba(0,0,0,0)"],
-            [2, "black"],
-            [3, "white"]
-          ]
-        },
-        "circle-opacity": {
-          "property": "case",
-          "type": "categorical",
-          "stops": [
-            [1, 1.0],
-            [2, 0.0],
-            [3, 1.0]
-          ]
-        },
-        "circle-radius": {
-          "property": "case",
-          "type": "categorical",
-          "stops": [
-            [1, 10],
-            [2, 10],
-            [3, 0]
-          ]
-        },
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-radius": 10,
         "circle-stroke-color": "blue",
         "circle-stroke-width": 2
       }
-    }
+    },
+    {
+      "id": "circleTwo",
+      "type": "circle",
+      "source": "sourceTwo",
+      "paint": {
+        "circle-opacity": 0,
+        "circle-radius": 10,
+        "circle-stroke-color": "red",
+        "circle-stroke-width": 2
+      }
+    },
+    {
+      "id": "circleThree",
+      "type": "circle",
+      "source": "sourceThree",
+      "paint": {
+        "circle-radius": 0,
+        "circle-stroke-color": "green",
+        "circle-stroke-width": 2
+      }
+    }    
   ]
 }
