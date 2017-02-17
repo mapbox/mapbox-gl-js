@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <script src='/dist/mapbox-gl-dev.js'></script>
+    <script src='/debug/access_token_generated.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.4.0/d3.min.js"></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<style type='text/css'>
+    #info {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+        width: 50%;
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 12px;
+        text-align: center;
+        color: #222;
+        background: #fff;
+    }
+</style>
+<div id='map'></div>
+<pre id='info'></pre>
+<script>
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/streets-v9',//'mapbox://styles/gisfeedback/ciwmwq2gb00fa2ppabho4z39c/', //stylesheet location
+        center: [144.9, -37.83],
+        zoom: 15,
+        minZoom: 1,
+        pitch: 45
+    });
+
+    var posNo = 0;
+    var positions = [
+        [144.9, -37.83, 15],
+        [144.9, -37.87, 15]
+    ];
+    function moveCamera() {
+        var pos = positions[posNo];
+        posNo = (posNo + 1) % positions.length;
+        map.easeTo({
+            center: [pos[0], pos[1]],
+            zoom: pos[2],
+            duration: 2000
+        });
+    }
+    map.on('moveend', _ => setTimeout(moveCamera, 2000));
+    map.on('load', _ => setTimeout(moveCamera, 2000));
+
+    var max = 0;
+    var min = -100;
+
+    window.setInterval(function(){
+        lat = Math.round(map.transform._center.lat * 10000) / 10000;
+        max = Math.min(max, lat);
+        min = Math.max(min, lat);
+        document.getElementById('info').innerHTML =
+            'latitude: ' + JSON.stringify(lat) + '<br />' +
+            'max: ' + JSON.stringify(max) + '<br />' +
+            'min: ' + JSON.stringify(min);
+    }, 5);
+</script>
+</body>
+</html>
