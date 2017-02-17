@@ -306,7 +306,6 @@ class Camera extends Evented {
 
     /**
      * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     * This function will also reset the map's bearing to 0 if bearing is nonzero.
      *
      * @memberof Map#
      * @param {LngLatBoundsLike} bounds Center these bounds in the viewport and use the highest
@@ -387,7 +386,6 @@ class Camera extends Evented {
 
         options.center = tr.unproject(nw.add(se).div(2));
         options.zoom = Math.min(tr.scaleZoom(tr.scale * Math.min(scaleX, scaleY)), options.maxZoom);
-        options.bearing = 0;
 
         return options.linear ?
             this.easeTo(options, eventData) :
