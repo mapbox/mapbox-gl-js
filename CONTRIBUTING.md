@@ -13,6 +13,10 @@ Install [node.js](https://nodejs.org/) version 4 or greater
 ```bash
 brew install node
 ```
+Install [yarn](https://yarnpkg.com/en/)
+```bash
+brew install yarn
+```
 
 Clone the repository
 ```bash
@@ -22,15 +26,15 @@ git clone git@github.com:mapbox/mapbox-gl-js.git
 Install node module dependencies
 ```bash
 cd mapbox-gl-js &&
-npm install
+yarn install
 ```
 
 ### Linux
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [yarn](https://yarnpkg.com/en/docs/install#linux-tab), [GNU Make](http://www.gnu.org/software/make/), and libglew-dev
 ```bash
 sudo apt-get update &&
-sudo apt-get install build-essential git nodejs libglew-dev libxi-dev
+sudo apt-get install build-essential git nodejs yarn libglew-dev libxi-dev
 ```
 
 Clone the repository
@@ -41,22 +45,23 @@ git clone git@github.com:mapbox/mapbox-gl-js.git
 Install node module dependencies
 ```bash
 cd mapbox-gl-js &&
-npm install
+yarn install
 ```
 
 ### Windows
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version 4 or greater), [yarn](https://yarnpkg.com/en/docs/install#windows-tab), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
 
 Clone the repository
 ```bash
 git clone git@github.com:mapbox/mapbox-gl-js.git
 ```
 
+
 Install node module dependencies
 ```bash
 cd mapbox-gl-js
-npm install
+yarn install
 ```
 
 Install headless-gl dependencies https://github.com/stackgl/headless-gl#windows
@@ -69,7 +74,7 @@ copy node_modules/headless-gl/deps/windows/dll/x64/*.dll c:\windows\system32
 Start the debug server
 
 ```bash
-MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} npm run start-debug
+MAPBOX_ACCESS_TOKEN={YOUR MAPBOX ACCESS TOKEN} yarn run start-debug
 ```
 
 Open the debug page at [http://localhost:9966/debug](http://localhost:9966/debug)
@@ -80,7 +85,7 @@ A standalone build allows you to turn the contents of this repository into `mapb
 
 To create a standalone build, run
 ```bash
-npm run build-min
+yarn run build-min
 ```
 
 Once that command finishes, you will have a standalone build at `dist/mapbox-gl.js` and `dist/mapbox-gl.css`
