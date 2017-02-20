@@ -159,6 +159,20 @@ test('Evented', (t) => {
             t.end();
         });
 
+
+        t.test('eventedParent data function is evaluated on every fire', (t) => {
+            const eventedSource = new Evented();
+            const eventedParent = new Evented();
+            let i = 0;
+            eventedSource.setEventedParent(eventedParent, () => i++);
+            eventedSource.on('a', () => {});
+            eventedSource.fire('a');
+            t.equal(i, 1);
+            eventedSource.fire('a');
+            t.equal(i, 2);
+            t.end();
+        });
+
         t.end();
 
     });
