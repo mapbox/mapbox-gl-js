@@ -29,8 +29,8 @@ const Evented = require('../util/evented');
  *
  * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
- * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is 
- *                             the initial state and 1 is the final state.
+ * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
+ *   the initial state and 1 is the final state.
  * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
  * @property {boolean} animate If `false`, no animation will occur.
  */
