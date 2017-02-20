@@ -9,24 +9,11 @@ In addition to GL JS, this repository contains code, issues, and test fixtures t
 - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://www.mapbox.com/mapbox-gl-style-spec)
 - [Open source styles](https://github.com/mapbox/mapbox-gl-styles)
+- [Plugins](https://www.mapbox.com/mapbox-gl-js/plugins)
 - [Roadmap](https://www.mapbox.com/mapbox-gl-js/roadmap/)
 - [Contributor documentation](https://github.com/mapbox/mapbox-gl-js/blob/master/CONTRIBUTING.md)
 
 [<img width="981" alt="Mapbox GL gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
-
-## Mapbox-supported plugins
-
-* [mapbox-gl-draw](https://github.com/mapbox/mapbox-gl-draw) – Adds support for drawing and editing features on Mapbox GL JS maps
-* [mapbox-gl-filter-simplify](https://github.com/mapbox/mapbox-gl-filter-simplify) – Simplifies and complexifies filters in Mapbox GL Styles
-
-## Community-supported plugins
-
-These projects are maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects!
-
- - [Typescript Definitions on DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/mapbox-gl)
- - [wtMapbox: Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
- - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
- - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
 
 ## Using Mapbox with [CSP](https://developer.mozilla.org/en-US/docs/Web/Security/CSP)
 
