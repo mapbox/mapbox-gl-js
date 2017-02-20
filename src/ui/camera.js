@@ -499,7 +499,10 @@ class Camera extends Evented {
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         let toLngLat,
-            toPoint;
+            toPoint,
+            offsetLocation,
+            fromLocation,
+            toLocation;
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
@@ -530,6 +533,14 @@ class Camera extends Evented {
             this.fire('zoomstart', eventData);
         }
 
+        offsetLocation = tr.pointLocation(toPoint);
+        fromLocation = tr.pointLocation(tr.centerPoint);
+
+        toLocation = LngLat.convert([
+            toLngLat.lng - (offsetLocation.lng - fromLocation.lng),
+            toLngLat.lat - (offsetLocation.lat - fromLocation.lat)
+        ]);
+
         clearTimeout(this._onEaseEnd);
 
         this._ease(function (k) {
@@ -556,8 +567,8 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            var lng = interpolate(startCenter.lng, toLngLat.lng, k2);
-            var lat = interpolate(startCenter.lat, toLngLat.lat, k2);
+            var lng = interpolate(startCenter.lng, toLocation.lng, k2);
+            var lat = interpolate(startCenter.lat, toLocation.lat, k2);
             tr.center = LngLat.convert([lng, lat]);
 
             this.fire('move', eventData);
