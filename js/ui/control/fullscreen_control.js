@@ -21,6 +21,15 @@ class FullscreenControl {
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
+        if ('onfullscreenchange' in document) {
+            this._fullscreenchange = 'fullscreenchange';
+        } else if ('onmozfullscreenchange' in document) {
+            this._fullscreenchange = 'mozfullscreenchange';
+        } else if ('onwebkitfullscreenchange' in document) {
+            this._fullscreenchange = 'webkitfullscreenchange';
+        } else if ('onmsfullscreenchange' in document) {
+            this._fullscreenchange = 'MSFullscreenChange';
+        }
     }
 
     onAdd(map) {
@@ -30,20 +39,22 @@ class FullscreenControl {
         button.setAttribute("aria-label", "Toggle fullscreen");
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
         this._mapContainer = map.getContainer();
-        window.document.addEventListener('webkitfullscreenchange', this._changeIcon);
+        window.document.addEventListener(this._fullscreenchange, this._changeIcon);
         return container;
     }
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
         this._map = null;
+        window.document.removeEventListener(this._fullscreenchange);
     }
 
     _isFullscreen() {
         return this._fullscreen;
     }
 
-    _changeIcon() {
+    _changeIcon(e) {
+        console.log(e);
         this._fullscreen = !this._fullscreen;
         const className = 'mapboxgl-ctrl';
         this._fullscreenButton.classList.toggle(`${className}-shrink`);
