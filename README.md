@@ -39,3 +39,4 @@ These projects are maintained by the GL JS community. Feel free to open a PR add
  - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
  - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
  - [react-mapbox-gl: React binding of mapboxgl](https://github.com/alex3165/react-mapbox-gl)
+ - [AngularJS directive for mapboxgl](https://github.com/Naimikan/angular-mapboxgl-directive)
