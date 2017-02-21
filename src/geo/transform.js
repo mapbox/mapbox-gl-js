@@ -245,33 +245,30 @@ class Transform {
      * @returns {LngLat} lnglat location
      */
     pointLocation(p, v) {
-        let original,
-            location;
-
-        if (v != null) {
-            original = {
+        if (v == null) {
+            return this.coordinateLocation(this.pointCoordinate(p));
+        } else {
+            const originalViewport = {
                 center: this.center,
                 zoom: this.zoom,
                 bearing: this.bearing,
                 pitch: this.pitch
             };
 
-            this.center = v.center;
-            this.zoom = v.zoom;
-            this.bearing = v.bearing;
-            this.pitch = v.pitch;
+            if ('center' in v) this.center = v.center;
+            if ('zoom' in v) this.zoom = v.zoom;
+            if ('bearing' in v) this.bearing = v.bearing;
+            if ('pitch' in v) this.pitch = v.pitch;
+
+            const location = this.coordinateLocation(this.pointCoordinate(p));
+
+            if ('center' in v) this.center = originalViewport.center;
+            if ('zoom' in v) this.zoom = originalViewport.zoom;
+            if ('bearing' in v) this.bearing = originalViewport.bearing;
+            if ('pitch' in v) this.pitch = originalViewport.pitch;
+
+            return location;
         }
-
-        location = this.coordinateLocation(this.pointCoordinate(p));
-
-        if (v != null) {
-            this.center = original.center;
-            this.zoom = original.zoom;
-            this.bearing = original.bearing;
-            this.pitch = original.pitch;
-        }
-
-        return location;
     }
 
     /**
