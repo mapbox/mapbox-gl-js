@@ -1449,7 +1449,7 @@ function removeNode(node) {
  */
 
 /**
- * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects.
+ * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects in [sw, ne] order.
  *
  * @typedef {(LngLatBounds | Array<LngLatLike>)} LngLatBoundsLike
  * @example
