@@ -54,11 +54,12 @@ class FullscreenControl {
     }
 
     _changeIcon(e) {
-        console.log(e);
-        this._fullscreen = !this._fullscreen;
-        const className = 'mapboxgl-ctrl';
-        this._fullscreenButton.classList.toggle(`${className}-shrink`);
-        this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
+        if (e.target === this._mapContainer) {
+            this._fullscreen = !this._fullscreen;
+            const className = 'mapboxgl-ctrl';
+            this._fullscreenButton.classList.toggle(`${className}-shrink`);
+            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);    
+        }
     }
 
     _onClickFullscreen() {
@@ -67,14 +68,18 @@ class FullscreenControl {
                 window.document.exitFullscreen();
             } else if (window.document.mozCancelFullScreen) {
                 window.document.mozCancelFullScreen();
-            } else {
+            } else if (window.document.msExitFullscreen) {
+                window.document.msExitFullscreen();
+            } else if (window.document.webkitCancelFullScreen) {
                 window.document.webkitCancelFullScreen();
             }
         } else if (this._mapContainer.requestFullscreen) {
             this._mapContainer.requestFullscreen();
         } else if (this._mapContainer.mozRequestFullScreen) {
             this._mapContainer.mozRequestFullScreen();
-        } else {
+        } else if (this._mapContainer.msRequestFullscreen) {
+            this._mapContainer.msRequestFullscreen();
+        } else if (this._mapContainer.webkitRequestFullscreen) {
             this._mapContainer.webkitRequestFullscreen();
         }
     }
