@@ -70,8 +70,8 @@ test('Map', (t) => {
         t.stub(console, 'warn');
 
         const container = window.document.createElement('div');
-        container.offsetWidth = 10000;
-        container.offsetHeight = 10000;
+        Object.defineProperty(container, 'offsetWidth', {value: 10000, configurable: true});
+        Object.defineProperty(container, 'offsetHeight', {value: 10000, configurable: true});
         new Map({container});
 
         t.match(
