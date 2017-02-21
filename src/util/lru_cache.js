@@ -111,6 +111,21 @@ class LRUCache<T> {
     }
 
     /**
+     * Get the value attached to a specific key without removing data
+     * from the cache. If the key is not found, returns `null`
+     *
+     * @param {string} key the key to look up
+     * @returns {*} the data, or null if it isn't found
+     * @private
+     */
+    getWithoutRemoving(key: string): ?T {
+        if (!this.has(key)) { return null; }
+
+        const data = this.data[key];
+        return data;
+    }
+
+    /**
      * Remove a key/value combination from the cache.
      *
      * @param {string} key the key for the pair to delete
