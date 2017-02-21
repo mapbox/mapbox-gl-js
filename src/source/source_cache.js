@@ -262,7 +262,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(coord.id)) {
                 retain[coord.id] = true;
-                return this._cache.get(coord.id);
+                return this._cache.getWithoutRemoving(coord.id);
             }
         }
     }

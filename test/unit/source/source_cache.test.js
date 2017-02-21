@@ -871,7 +871,7 @@ test('SourceCache#findLoadedParent', (t) => {
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
         t.deepEqual(retain, expectedRetain);
-        t.equal(sourceCache._cache.order.length, 0);
+        t.equal(sourceCache._cache.order.length, 1);
 
         t.end();
     });
