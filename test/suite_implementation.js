@@ -25,8 +25,8 @@ module.exports = function(style, options, _callback) {
     window.devicePixelRatio = options.pixelRatio;
 
     const container = window.document.createElement('div');
-    container.offsetHeight = options.height;
-    container.offsetWidth = options.width;
+    Object.defineProperty(container, 'offsetWidth', {value: options.width});
+    Object.defineProperty(container, 'offsetHeight', {value: options.height});
 
     const map = new Map({
         container: container,
