@@ -502,7 +502,8 @@ class Camera extends Evented {
             toPoint,
             offsetLocation,
             fromLocation,
-            toLocation;
+            toLocation,
+            viewport;
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
@@ -533,8 +534,15 @@ class Camera extends Evented {
             this.fire('zoomstart', eventData);
         }
 
-        offsetLocation = tr.pointLocation(toPoint);
-        fromLocation = tr.pointLocation(tr.centerPoint);
+        viewport = {
+            center: tr.center,
+            zoom: zoom,
+            bearing: bearing,
+            pitch: 0
+        }
+
+        offsetLocation = tr.pointLocation(toPoint, viewport);
+        fromLocation = tr.pointLocation(tr.centerPoint, viewport);
 
         toLocation = LngLat.convert([
             toLngLat.lng - (offsetLocation.lng - fromLocation.lng),
