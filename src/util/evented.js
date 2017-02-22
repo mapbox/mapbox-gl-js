@@ -2,6 +2,20 @@
 
 const util = require('./util');
 
+function _addEventListener(type, listener, listenerList) {
+    listenerList[type] = listenerList[type] || [];
+    listenerList[type].push(listener);
+}
+
+function _removeEventListener(type, listener, listenerList) {
+    if (listenerList && listenerList[type]) {
+        const index = listenerList[type].indexOf(listener);
+        if (index !== -1) {
+            listenerList[type].splice(index, 1);
+        }
+    }
+}
+
 /**
  * Methods mixed in to other classes for event capabilities.
  *
@@ -20,8 +34,7 @@ class Evented {
      */
     on(type, listener) {
         this._listeners = this._listeners || {};
-        this._listeners[type] = this._listeners[type] || [];
-        this._listeners[type].push(listener);
+        _addEventListener(type, listener, this._listeners);
 
         return this;
     }
@@ -34,12 +47,8 @@ class Evented {
      * @returns {Object} `this`
      */
     off(type, listener) {
-        if (this._listeners && this._listeners[type]) {
-            const index = this._listeners[type].indexOf(listener);
-            if (index !== -1) {
-                this._listeners[type].splice(index, 1);
-            }
-        }
+        _removeEventListener(type, listener, this._listeners);
+        _removeEventListener(type, listener, this._oneTimeListeners);
 
         return this;
     }
@@ -54,11 +63,9 @@ class Evented {
      * @returns {Object} `this`
      */
     once(type, listener) {
-        const wrapper = (data) => {
-            this.off(type, wrapper);
-            listener.call(this, data);
-        };
-        this.on(type, wrapper);
+        this._oneTimeListeners = this._oneTimeListeners || {};
+        _addEventListener(type, listener, this._oneTimeListeners);
+
         return this;
     }
 
@@ -78,6 +85,13 @@ class Evented {
 
             for (let i = 0; i < listeners.length; i++) {
                 listeners[i].call(this, data);
+            }
+
+            const oneTimeListeners = this._oneTimeListeners && this._oneTimeListeners[type] ? this._oneTimeListeners[type].slice() : [];
+
+            for (let i = 0; i < oneTimeListeners.length; i++) {
+                oneTimeListeners[i].call(this, data);
+                _removeEventListener(type, oneTimeListeners[i], this._oneTimeListeners);
             }
 
             if (this._eventedParent) {
@@ -101,7 +115,8 @@ class Evented {
      */
     listens(type) {
         return (
-            (this._listeners && this._listeners[type]) ||
+            (this._listeners && this._listeners[type] && this._listeners[type].length > 0) ||
+            (this._oneTimeListeners && this._oneTimeListeners[type] && this._oneTimeListeners[type].length > 0) ||
             (this._eventedParent && this._eventedParent.listens(type))
         );
     }
