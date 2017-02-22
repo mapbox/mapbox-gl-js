@@ -56,6 +56,19 @@ test('Style', (t) => {
         new Style(createStyleJSON(), eventedParent);
     });
 
+    t.test('registers plugin listener', (t) => {
+        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
+        const style = new Style(createStyleJSON());
+        t.spy(style.dispatcher, 'broadcast');
+        t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
+
+        style.on('style.load', () => {
+            rtlTextPlugin.evented.fire('pluginAvailable');
+            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
+            t.end();
+        });
+    });
+
     t.test('can be constructed from a URL', (t) => {
         window.useFakeXMLHttpRequest();
         window.server.respondWith('/style.json', JSON.stringify(require('../../fixtures/style')));
@@ -195,14 +208,14 @@ test('Style#_remove', (t) => {
 
     t.test('deregisters plugin listener', (t) => {
         t.spy(rtlTextPlugin, 'registerForPluginAvailability');
-        t.spy(rtlTextPlugin, 'deregisterPluginCallback');
         const style = new Style(createStyleJSON());
-        t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
-        t.notOk(rtlTextPlugin.deregisterPluginCallback.called);
+        t.spy(style.dispatcher, 'broadcast');
 
         style.on('style.load', () => {
             style._remove();
-            t.ok(rtlTextPlugin.deregisterPluginCallback.calledOnce);
+
+            rtlTextPlugin.evented.fire('pluginAvailable');
+            t.notOk(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
             t.end();
         });
     });
