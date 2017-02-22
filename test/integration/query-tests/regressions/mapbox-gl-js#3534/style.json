@@ -3,7 +3,7 @@
   "metadata": {
     "test": {
       "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/6670"
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8193"
       },
       "collisionDebug": true,
       "width": 500,
@@ -12,7 +12,9 @@
         266,
         271
       ],
-      "layers": ["counties-symbol"]
+      "queryOptions": {
+        "layers": ["counties-symbol"]
+      }
     }
   },
   "center": [
