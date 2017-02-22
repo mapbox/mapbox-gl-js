@@ -556,7 +556,7 @@ class Camera extends Evented {
      *     It does not correspond to a fixed physical distance, but varies by zoom level.
      * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Data to propagate to any event listeners. Properties on the object will be copied onto the event argument.
      * @fires movestart
      * @fires zoomstart
      * @fires move
