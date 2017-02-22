@@ -126,7 +126,7 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error(\"NPM not supported, please use Yarn to install dependencies ($ yarn install).\")'",
+    "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath) && process.env.npm_package_name === \"mapbox-gl\")throw new Error(\"NPM not supported, please use Yarn to install dependencies ($ yarn install).\")'",
     "postinstall": "cd src/style-spec && yarn || npm install"
   }
 }
