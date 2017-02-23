@@ -194,9 +194,27 @@ test('transform', (t) => {
         t.end();
     });
 
-    t.test('throws on maxZoom smaller than minZoom', (t) => {
+    t.test('fire on maxZoom smaller than minZoom at init', (t) => {
         t.throws(() => {
             new Transform(20, 10);
+        }, Error, 'maxZoom must always be greater than minZoom');
+        t.end();
+    });
+
+    t.test('fire on maxZoom smaller than minZoom at set maxZoom', (t) => {
+        t.throws(() => {
+            const transform = new Transform(10, 15);
+
+            transform.maxZoom = 5;
+        }, Error, 'maxZoom must always be greater than minZoom');
+        t.end();
+    });
+
+    t.test('fire on maxZoom smaller than minZoom at set minZoom', (t) => {
+        t.throws(() => {
+            const transform = new Transform(10, 15);
+
+            transform.minZoom = 20;
         }, Error, 'maxZoom must always be greater than minZoom');
         t.end();
     });
