@@ -194,6 +194,13 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('throws on maxZoom smaller than minZoom', (t) => {
+        t.throws(() => {
+            new Transform(20, 10);
+        }, Error, 'maxZoom must always be greater than minZoom');
+        t.end();
+    });
+
     t.test('clamps pitch', (t) => {
         const transform = new Transform();
 
