@@ -44,7 +44,7 @@ class Transform {
         this._minZoom = zoom;
         this.zoom = Math.max(this.zoom, zoom);
         if (this._maxZoom != null && this._minZoom > this._maxZoom)
-            throw new Error("maxZoom must always be greater than minZoom");
+            return this.fire('error', new Error('maxZoom must always be greater than minZoom'));
     }
 
     get maxZoom() { return this._maxZoom; }
@@ -53,7 +53,7 @@ class Transform {
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
         if (this._minZoom != null && this._minZoom > this._maxZoom)
-            throw new Error("maxZoom must always be greater than minZoom");
+            return this.fire('error', new Error('maxZoom must always be greater than minZoom'));
     }
 
     get worldSize() {
