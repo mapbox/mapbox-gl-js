@@ -16,8 +16,7 @@ function load() {
                 setTimeout(function() {
                     $clip.text(text);
                 }, 1000);
-                var type = (location.pathname.split('plugins').length > 1) ? 'plugin' : 'example';
-                analytics.track('Copied ' + type + ' with clipboard');
+                analytics.track('Copied example with clipboard');
             });
         }
     });
