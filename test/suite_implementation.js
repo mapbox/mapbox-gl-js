@@ -68,7 +68,7 @@ module.exports = function(style, options, _callback) {
             }
 
             const results = options.queryGeometry ?
-                map.queryRenderedFeatures(options.queryGeometry, options) :
+                map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
                 [];
 
             map.remove();

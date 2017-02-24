@@ -1,0 +1,44 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 64,
+      "height": 64,
+      "queryGeometry": [
+        32,
+        32
+      ],
+      "queryOptions": {
+        "filter": ["==", "key", "nope"]
+      },
+      "ignored": {
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/7319"
+      }
+    }
+  },
+  "sources": {
+    "geojson": {
+      "type": "geojson",
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            0,
+            0
+          ]
+        },
+        "properties": {
+          "key": "value"
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "circle",
+      "type": "circle",
+      "source": "geojson"
+    }
+  ]
+}
