@@ -46,7 +46,7 @@ class FullscreenControl {
     onRemove() {
         this._container.parentNode.removeChild(this._container);
         this._map = null;
-        window.document.removeEventListener(this._fullscreenchange);
+        window.document.removeEventListener(this._fullscreenchange, this._changeIcon);
     }
 
     _isFullscreen() {
