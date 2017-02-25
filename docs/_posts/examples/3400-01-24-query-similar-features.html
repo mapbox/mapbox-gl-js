@@ -3,7 +3,7 @@ layout: example
 category: example
 title: Highlight features containing similar data
 description: 'Hover over counties to highlight counties that share the same name.'
-tags: 
+tags:
   - user-interaction
 ---
 <style>
@@ -72,24 +72,12 @@ map.on('load', function() {
         "filter": ["in", "COUNTY", ""]
     }, 'place-city-sm'); // Place polygon under these labels.
 
-    map.on('mousemove', function(e) {
-        var features = map.queryRenderedFeatures(e.point, {
-            layers: ['counties']
-        });
-
+    map.on('mousemove', 'counties', function(e) {
         // Change the cursor style as a UI indicator.
-        map.getCanvas().style.cursor = features.length ? 'pointer' : '';
+        map.getCanvas().style.cursor = 'pointer';
 
-        // Remove things if no feature was found.
-        if (!features.length) {
-            popup.remove();
-            map.setFilter('counties-highlighted', ['in', 'COUNTY', '']);
-            overlay.style.display = 'none';
-            return;
-        }
-
-        // Single out the first found feature on mouseove.
-        var feature = features[0];
+        // Single out the first found feature.
+        var feature = e.features[0];
 
         // Query the counties layer visible in the map. Use the filter
         // param to only collect results that share the same county name.
@@ -123,6 +111,13 @@ map.on('load', function() {
         popup.setLngLat(e.lngLat)
             .setText(feature.properties.COUNTY)
             .addTo(map);
+    });
+
+    map.on('mouseleave', 'counties', function() {
+        map.getCanvas().style.cursor = '';
+        popup.remove();
+        map.setFilter('counties-highlighted', ['in', 'COUNTY', '']);
+        overlay.style.display = 'none';
     });
 });
 </script>
