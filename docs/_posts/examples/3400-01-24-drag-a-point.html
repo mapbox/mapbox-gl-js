@@ -115,28 +115,21 @@ map.on('load', function() {
         }
     });
 
-    // If a feature is found on map movement,
-    // set a flag to permit a mousedown events.
-    map.on('mousemove', function(e) {
-        var features = map.queryRenderedFeatures(e.point, { layers: ['point'] });
-
-        // Change point and cursor style as a UI indicator
-        // and set a flag to enable other mouse events.
-        if (features.length) {
-            map.setPaintProperty('point', 'circle-color', '#3bb2d0');
-            canvas.style.cursor = 'move';
-            isCursorOverPoint = true;
-            map.dragPan.disable();
-        } else {
-            map.setPaintProperty('point', 'circle-color', '#3887be');
-            canvas.style.cursor = '';
-            isCursorOverPoint = false;
-            map.dragPan.enable();
-        }
+    // When the cursor enters a feature in the point layer, prepare for dragging.
+    map.on('mouseenter', 'point', function() {
+        map.setPaintProperty('point', 'circle-color', '#3bb2d0');
+        canvas.style.cursor = 'move';
+        isCursorOverPoint = true;
+        map.dragPan.disable();
     });
 
-    // Set `true` to dispatch the event before other functions call it. This
-    // is necessary for disabling the default map dragging behaviour.
-    map.on('mousedown', mouseDown, true);
+    map.on('mouseleave', 'point', function() {
+        map.setPaintProperty('point', 'circle-color', '#3887be');
+        canvas.style.cursor = '';
+        isCursorOverPoint = false;
+        map.dragPan.enable();
+    });
+
+    map.on('mousedown', mouseDown);
 });
 </script>
