@@ -742,6 +742,10 @@ class Style extends Evented {
 
         const includedSources = {};
         if (params && params.layers) {
+            if (!Array.isArray(params.layers)) {
+                this.fire('error', {error: 'parameters.layers must be an Array.'});
+                return;
+            }
             for (const layerId of params.layers) {
                 const layer = this._layers[layerId];
                 if (!layer) {
