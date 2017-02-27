@@ -40,3 +40,4 @@ These projects are maintained by the GL JS community. Feel free to open a PR add
  - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
  - [react-mapbox-gl: React binding of mapboxgl](https://github.com/alex3165/react-mapbox-gl)
  - [AngularJS directive for mapboxgl](https://github.com/Naimikan/angular-mapboxgl-directive)
+ - [`mapbox-gl-inspect`](https://github.com/aesqe/mapbox-gl-inspect) displays all features from the vector sources
