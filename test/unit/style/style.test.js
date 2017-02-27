@@ -1216,6 +1216,16 @@ test('Style#queryRenderedFeatures', (t) => {
             t.end();
         });
 
+        t.test('checks type of `layers` option', (t) => {
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
+            });
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
+            t.equals(errors, 1);
+            t.end();
+        });
+
         t.test('includes layout properties', (t) => {
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
             const layout = results[0].layer.layout;
