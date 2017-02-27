@@ -14,29 +14,3 @@ In addition to GL JS, this repository contains code, issues, and test fixtures t
 
 [<img width="981" alt="Mapbox GL gallery" src="https://cloud.githubusercontent.com/assets/281306/14547142/a3c98294-025f-11e6-92f4-d6b0f50c8e89.png">](https://www.mapbox.com/gallery/)
 
-## Mapbox-supported plugins
-
-* [`mapbox-gl-js-mock`](https://github.com/mapbox/mapbox-gl-js-mock) is a [mock](https://en.wikipedia.org/wiki/Mock_object) of Mapbox GL JS
-* [`mapbox-gl-layer-groups`](https://github.com/mapbox/mapbox-gl-layer-groups) manages layer groups in Mapbox GL JS
-* [`mapbox-gl-rtl-text`](https://github.com/mapbox/mapbox-gl-rtl-text) adds right-to-left text support to Mapbox GL JS
-* [`mapbox-gl-supported`](https://github.com/mapbox/mapbox-gl-supported) determines if the current browser supports Mapbox GL JS
-* [`mapbox-gl-sync-move`](https://github.com/mapbox/mapbox-gl-sync-move) syncs movement between two Mapbox GL JS maps
-* [`simplespec-to-gl-style`](https://github.com/mapbox/simplespec-to-gl-style) converts GeoJSON styled with [`simplestyle-spec`](https://github.com/mapbox/simplestyle-spec/) to a Mapbox GL Style
-
-### UI Controls
-
-* [`mapbox-gl-boundaries`](https://github.com/mapbox/mapbox-gl-boundaries) enables useres to show/hide disputed borders
-* [`mapbox-gl-compare`](https://github.com/mapbox/mapbox-gl-compare) enables users to compare two maps by swpiping left and right
-* [`mapbox-gl-draw`](https://github.com/mapbox/mapbox-gl-draw) adds support for drawing and editing features on Mapbox GL JS maps
-* [`mapbox-gl-geocoder`](https://github.com/mapbox/mapbox-gl-geocoder) adds a Geocoder control to Mapbox GL JS
-
-## Community-supported plugins
-
-These projects are maintained by the GL JS community. Feel free to open a PR add your own projects to this list. We :heart: third party projects!
-
- - [Typescript Definitions on DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/mapbox-gl)
- - [wtMapbox: Webtoolkit Integration](https://github.com/yvanvds/wtMapbox)
- - [deck.gl: Advanced WebGL visualization layers](https://github.com/uber/deck.gl)
- - [echartslayer: echarts extension for mapboxgl](https://github.com/lzxue/echartLayer)
- - [react-mapbox-gl: React binding of mapboxgl](https://github.com/alex3165/react-mapbox-gl)
- - [AngularJS directive for mapboxgl](https://github.com/Naimikan/angular-mapboxgl-directive)
