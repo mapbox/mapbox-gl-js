@@ -23,7 +23,7 @@ const LogoControl = require('./control/logo_control');
 const isSupported = require('mapbox-gl-supported');
 
 const defaultMinZoom = 0;
-const defaultMaxZoom = 20;
+const defaultMaxZoom = 22;
 const defaultOptions = {
     center: [0, 0],
     zoom: 0,
@@ -69,8 +69,8 @@ const defaultOptions = {
  * @extends Evented
  * @param {Object} options
  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (1-20).
- * @param {number} [options.maxZoom=20] The maximum zoom level of the map (1-20).
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
