@@ -57,7 +57,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {LngLatLike} center The centerpoint to set.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -76,7 +76,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {Array<number>} offset `x` and `y` coordinates by which to pan the map.
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -94,7 +94,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {LngLatLike} lnglat The location to pan the map to.
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -118,7 +118,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {number} zoom The zoom level to set (0-20).
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -141,7 +141,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} zoom The zoom level to transition to.
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -161,7 +161,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -180,7 +180,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -208,7 +208,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {number} bearing The bearing to set, measured in degrees counter-clockwise from north.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -227,7 +227,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} bearing The bearing to rotate the map to, measured in degrees counter-clockwise from north.
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -243,7 +243,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -258,7 +258,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {AnimationOptions} [options]
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -283,7 +283,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -309,7 +309,7 @@ class Camera extends Evented {
      * @param {number} [options.padding=0] The amount of padding, in pixels, to allow around the specified bounds.
      * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
      * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -349,7 +349,7 @@ class Camera extends Evented {
      *
      * @memberof Map#
      * @param {CameraOptions} options
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -415,7 +415,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {Object} options Options describing the destination and animation of the transition.
     *            Accepts [CameraOptions](#CameraOptions) and [AnimationOptions](#AnimationOptions).
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
@@ -556,7 +556,7 @@ class Camera extends Evented {
      *     It does not correspond to a fixed physical distance, but varies by zoom level.
      * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
      *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {Object} [eventData] Data to propagate to any event listeners.
+     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
      * @fires move
