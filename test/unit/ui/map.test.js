@@ -612,7 +612,7 @@ test('Map', (t) => {
 
     t.test('#getMaxZoom', (t) => {
         const map = createMap({zoom: 0});
-        t.equal(map.getMaxZoom(), 20, 'returns default value');
+        t.equal(map.getMaxZoom(), 22, 'returns default value');
         map.setMaxZoom(10);
         t.equal(map.getMaxZoom(), 10, 'returns custom value');
         t.end();
