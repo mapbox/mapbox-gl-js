@@ -859,6 +859,41 @@ test('camera', (t) => {
                 eventData);
         });
 
+        t.test('for short flights, emits (solely) move events, preserving eventData', (t) => {
+            //As I type this, the code path for guiding super-short flights is (and will probably remain) different.
+            //As such; it deserves a separate test case. This test case flies the map from A to A.
+            const fromTo = { center: [100, 0] };
+            const camera = createCamera(fromTo);
+            let movestarted, moved, rotated, pitched, zoomstarted, zoomed, zoomended;
+            const eventData = { data: 'ok' };
+
+            camera
+                .on('movestart', (d) => { movestarted = d.data; })
+                .on('move', (d) => { moved = d.data; })
+                .on('rotate', (d) => { rotated = d.data; })
+                .on('pitch', (d) => { pitched = d.data; })
+                .on('zoomstart', (d) => { zoomstarted = d.data; })
+                .on('zoom', (d) => { zoomed = d.data; })
+                .on('zoomend', (d) => { zoomended = d.data; })
+                .on('moveend', function(d) {
+                    t.notOk(this.zooming);
+                    t.notOk(this.panning);
+                    t.notOk(this.rotating);
+
+                    t.equal(movestarted, 'ok');
+                    t.equal(moved, 'ok');
+                    t.equal(zoomstarted, undefined);
+                    t.equal(zoomed, undefined);
+                    t.equal(zoomended, undefined);
+                    t.equal(rotated, undefined);
+                    t.equal(pitched, undefined);
+                    t.equal(d.data, 'ok');
+                    t.end();
+                });
+
+            camera.flyTo(fromTo, eventData);
+        });
+
         t.test('stops existing ease', (t) => {
             const camera = createCamera();
             camera.flyTo({ center: [200, 0], duration: 100 });
