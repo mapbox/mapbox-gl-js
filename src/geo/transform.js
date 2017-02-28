@@ -23,8 +23,8 @@ class Transform {
         this.tileSize = 512; // constant
 
         this._renderWorldCopies = renderWorldCopies === undefined ? true : renderWorldCopies;
-        this.minZoom = minZoom || 0;
-        this.maxZoom = maxZoom || 22;
+        this._minZoom = minZoom || 0;
+        this._maxZoom = maxZoom || 22;
 
         this.latRange = [-85.05113, 85.05113];
 
@@ -43,8 +43,6 @@ class Transform {
         if (this._minZoom === zoom) return;
         this._minZoom = zoom;
         this.zoom = Math.max(this.zoom, zoom);
-        if (this._maxZoom != null && this._minZoom > this._maxZoom)
-            return this.fire('error', new Error('maxZoom must always be greater than minZoom'));
     }
 
     get maxZoom() { return this._maxZoom; }
@@ -52,8 +50,6 @@ class Transform {
         if (this._maxZoom === zoom) return;
         this._maxZoom = zoom;
         this.zoom = Math.min(this.zoom, zoom);
-        if (this._minZoom != null && this._minZoom > this._maxZoom)
-            return this.fire('error', new Error('maxZoom must always be greater than minZoom'));
     }
 
     get worldSize() {
