@@ -10,9 +10,6 @@
       ],
       "queryOptions": {
         "layers": ["a", "b"]
-      },
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8193"
       }
     }
   },
