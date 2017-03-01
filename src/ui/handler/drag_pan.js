@@ -95,6 +95,7 @@ class DragPanHandler {
 
         if (!this.isActive()) {
             this._active = true;
+            this._map.moving = true;
             this._fireEvent('dragstart', e);
             this._fireEvent('movestart', e);
         }
@@ -123,7 +124,10 @@ class DragPanHandler {
         this._fireEvent('dragend', e);
         this._drainInertiaBuffer();
 
-        const finish = () => this._fireEvent('moveend', e);
+        const finish = () => {
+            this._map.moving = false;
+            this._fireEvent('moveend', e);
+        };
 
         const inertia = this._inertia;
         if (inertia.length < 2) {
