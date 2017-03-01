@@ -133,6 +133,10 @@ class Map extends Camera {
     constructor(options) {
         options = util.extend({}, defaultOptions, options);
 
+        if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
+            throw new Error(`maxZoom must be greater than minZoom`);
+        }
+
         const transform = new Transform(options.minZoom, options.maxZoom, options.renderWorldCopies);
         super(transform, options);
 

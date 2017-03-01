@@ -628,6 +628,20 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('throw on maxZoom smaller than minZoom at init', (t) => {
+        t.throws(() => {
+            createMap({minZoom:10, maxZoom:5});
+        }, new Error(`maxZoom must be greater than minZoom`));
+        t.end();
+    });
+
+    t.test('throw on maxZoom smaller than minZoom at init with falsey maxZoom', (t) => {
+        t.throws(() => {
+            createMap({minZoom:1, maxZoom:0});
+        }, new Error(`maxZoom must be greater than minZoom`));
+        t.end();
+    });
+
     t.test('#remove', (t) => {
         const map = createMap();
         t.equal(map.getContainer().childNodes.length, 2);
