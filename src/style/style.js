@@ -118,13 +118,15 @@ class Style extends Evented {
             browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
         }
 
-        this.on('source.load', (event) => {
-            const source = this.sourceCaches[event.sourceId].getSource();
-            if (source && source.vectorLayerIds) {
-                for (const layerId in this._layers) {
-                    const layer = this._layers[layerId];
-                    if (layer.source === source.id) {
-                        this._validateLayer(layer);
+        this.on('data', (event) => {
+            if (event.dataType === 'source') {
+                const source = this.sourceCaches[event.sourceId].getSource();
+                if (source && source.vectorLayerIds) {
+                    for (const layerId in this._layers) {
+                        const layer = this._layers[layerId];
+                        if (layer.source === source.id) {
+                            this._validateLayer(layer);
+                        }
                     }
                 }
             }

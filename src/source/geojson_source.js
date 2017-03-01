@@ -108,8 +108,8 @@ class GeoJSONSource extends Evented {
                 this.fire('error', {error: err});
                 return;
             }
-            this.fire('data', {dataType: 'source'});
             this.fire('source.load');
+            this.fire('data', {dataType: 'source'});
         });
     }
 
@@ -132,7 +132,7 @@ class GeoJSONSource extends Evented {
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('data', {dataType: 'source'});
+            this.fire('source.update');
         });
 
         return this;

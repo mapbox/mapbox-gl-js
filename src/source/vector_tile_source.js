@@ -39,7 +39,6 @@ class VectorTileSource extends Evented {
                 return;
             }
             util.extend(this, tileJSON);
-            this.fire('data', {dataType: 'source'});
             this.fire('source.load');
         });
     }
