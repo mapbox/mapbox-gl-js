@@ -36,7 +36,7 @@ class SourceCache extends Evented {
         });
 
         this.on('source.update', function(event) {
-            if (this._sourceLoaded && event.dataType === 'source') {
+            if (this._sourceLoaded) {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -297,6 +297,7 @@ class SourceCache extends Evented {
      * @private
      */
     update(transform) {
+        this.transform = transform;
         if (!this._sourceLoaded) { return; }
         let i;
         let coord;
@@ -395,8 +396,6 @@ class SourceCache extends Evented {
         for (i = 0; i < remove.length; i++) {
             this.removeTile(+remove[i]);
         }
-
-        this.transform = transform;
     }
 
     /**
