@@ -22,14 +22,14 @@ class LogoControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
 
-        this._map.on('data', this._updateLogo);
+        this._map.on('source.load', this._updateLogo);
         this._updateLogo();
         return this._container;
     }
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
-        this._map.off('data', this._updateLogo);
+        this._map.off('source.load', this._updateLogo);
     }
 
     getDefaultPosition() {

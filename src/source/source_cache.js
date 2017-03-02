@@ -423,17 +423,17 @@ class SourceCache extends Evented {
                 }
             }
         }
-
-        if (!tile) {
+        const cached = Boolean(tile);
+        if (!cached) {
             const zoom = coord.z;
             const overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
             tile = new Tile(wrapped, this._source.tileSize * overscaling, this._source.maxzoom);
-            this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'tile'});
             this.loadTile(tile, this._tileLoaded.bind(this, tile, coord.id));
         }
 
         tile.uses++;
         this._tiles[coord.id] = tile;
+        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
         return tile;
     }

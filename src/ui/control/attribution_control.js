@@ -44,7 +44,7 @@ class AttributionControl {
         this._updateAttributions();
         this._updateEditLink();
 
-        this._map.on('data', this._updateData);
+        this._map.on('source.load', this._updateData);
         this._map.on('moveend', this._updateEditLink);
 
         if (compact === undefined) {
@@ -58,7 +58,7 @@ class AttributionControl {
     onRemove() {
         this._container.parentNode.removeChild(this._container);
 
-        this._map.off('data', this._updateData);
+        this._map.off('source.load', this._updateData);
         this._map.off('moveend', this._updateEditLink);
         this._map.off('resize', this._updateCompact);
 
@@ -75,10 +75,8 @@ class AttributionControl {
     }
 
     _updateData(event) {
-        if (event.dataType === 'source') {
-            this._updateAttributions();
-            this._updateEditLink();
-        }
+        this._updateAttributions();
+        this._updateEditLink();
     }
 
     _updateAttributions() {

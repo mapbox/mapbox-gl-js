@@ -63,10 +63,10 @@ test('VectorTileSource', (t) => {
         window.server.respond();
     });
 
-    t.test('fires "data" event', (t) => {
+    t.test('fires "source.update" event', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({ url: "/source.json" });
-        source.on('data', t.end);
+        source.on('source.update', t.end);
         window.server.respond();
     });
 
@@ -78,7 +78,7 @@ test('VectorTileSource', (t) => {
             dataloadingFired = true;
         });
         const source = createSource({ url: "/source.json", eventedParent: evented });
-        source.on('data', () => {
+        source.on('source.load', () => {
             if (!dataloadingFired) t.fail();
             t.end();
         });

@@ -112,7 +112,7 @@ test('SourceCache#addTile', (t) => {
         sourceCache.addTile(coord);
 
         t.equal(load, 1);
-        t.equal(add, 2);
+        t.equal(add, 1);
 
         t.end();
     });
@@ -181,7 +181,7 @@ test('SourceCache#addTile', (t) => {
         const t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
 
         t.equal(load, 1);
-        t.equal(add, 2);
+        t.equal(add, 1);
         t.equal(t1, t2);
 
         t.end();
@@ -291,7 +291,7 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
-    t.test('reloads tiles after a "source" data event', (t) => {
+    t.test('reloads tiles after a "source.update" event', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -309,7 +309,7 @@ test('SourceCache / Source lifecycle', (t) => {
 
         sourceCache.on('source.load', () => {
             sourceCache.update(transform);
-            sourceCache.getSource().fire('data', {dataType: 'source'});
+            sourceCache.getSource().fire('source.update');
         });
 
         sourceCache.onAdd();

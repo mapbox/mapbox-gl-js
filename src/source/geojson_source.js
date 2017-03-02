@@ -126,13 +126,13 @@ class GeoJSONSource extends Evented {
      */
     setData(data) {
         this._data = data;
-
         this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData((err) => {
             if (err) {
                 return this.fire('error', { error: err });
             }
             this.fire('source.update');
+            this.fire('data', {dataType: 'source'});
         });
 
         return this;
