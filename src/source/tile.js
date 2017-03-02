@@ -30,14 +30,13 @@ class Tile {
         this.tileSize = size;
         this.sourceMaxZoom = sourceMaxZoom;
         this.buckets = {};
-        this.expires = null;
-        this.expired = false;
+        this.expirationTime = null;
 
         // Counts the number of times a response was already expired when
         // received. We're using this to add a delay when making a new request
         // so we don't have to keep retrying immediately in case of a server
         // serving expired tiles.
-        this.expiredRequests = 0;
+        this.expiredRequestCount = 0;
 
         // `this.state` must be one of
         //
@@ -203,60 +202,61 @@ class Tile {
     }
 
     setExpiryData(data) {
-        const prior = this.expires;
+        const prior = this.expirationTime;
 
         if (data.cacheControl) {
             const parsedCC = util.parseCacheControl(data.cacheControl);
-            if (parsedCC['max-age']) this.expires = Date.now() + parsedCC['max-age'] * 1000;
+            if (parsedCC['max-age']) this.expirationTime = Date.now() + parsedCC['max-age'] * 1000;
         } else if (data.expires) {
-            this.expires = new Date(data.expires).getTime();
+            this.expirationTime = new Date(data.expires).getTime();
         }
 
-        if (this.expires) {
+        if (this.expirationTime) {
             const now = Date.now();
+            let isExpired = false;
 
-            if (this.expires > now) {
-                this.expired = false;
+            if (this.expirationTime > now) {
+                isExpired = false;
             } else if (!prior) {
-                this.expired = true;
-            } else if (this.expires < prior) {
+                isExpired = true;
+            } else if (this.expirationTime < prior) {
                 // Expiring date is going backwards:
                 // fall back to exponential backoff
-                this.expired = true;
+                isExpired = true;
 
             } else {
-                const delta = this.expires - prior;
+                const delta = this.expirationTime - prior;
 
                 if (!delta) {
                     // Server is serving the same expired resource over and over: fall
                     // back to exponential backoff.
-                    this.expired = true;
+                    isExpired = true;
 
                 } else {
                     // Assume that either the client or the server clock is wrong and
                     // try to interpolate a valid expiration date (from the client POV)
                     // observing a minimum timeout.
-                    this.expires = now + Math.max(delta, CLOCK_SKEW_RETRY_TIMEOUT);
+                    this.expirationTime = now + Math.max(delta, CLOCK_SKEW_RETRY_TIMEOUT);
 
                 }
             }
 
-            if (this.expired) {
-                this.expiredRequests++;
+            if (isExpired) {
+                this.expiredRequestCount++;
                 this.state = 'expired';
             } else {
-                this.expiredRequests = 0;
+                this.expiredRequestCount = 0;
             }
         }
     }
 
     getExpiryTimeout() {
-        if (this.expires) {
-            if (this.expiredRequests) {
-                return 1000 * (1 << Math.min(this.expiredRequests - 1, 31));
+        if (this.expirationTime) {
+            if (this.expiredRequestCount) {
+                return 1000 * (1 << Math.min(this.expiredRequestCount - 1, 31));
             } else {
                 // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
-                return Math.min(this.expires - new Date().getTime(), Math.pow(2, 31) - 1);
+                return Math.min(this.expirationTime - new Date().getTime(), Math.pow(2, 31) - 1);
             }
         }
     }

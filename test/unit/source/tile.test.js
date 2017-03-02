@@ -182,7 +182,7 @@ test('expiring tiles', (t) => {
 
         // times are fuzzy, so we'll give this a little leeway:
         let expiryTimeout = tile.getExpiryTimeout();
-        t.ok(expiryTimeout > 58000 && expiryTimeout < 60000, 'cache-control parsed as expected');
+        t.ok(expiryTimeout >= 56000 && expiryTimeout <= 60000, 'cache-control parsed as expected');
 
         const date = new Date();
         date.setMinutes(date.getMinutes() + 10);
@@ -210,14 +210,29 @@ test('expiring tiles', (t) => {
         const expiryTimeout = tile.getExpiryTimeout();
         t.ok(expiryTimeout >= 8000 && expiryTimeout <= 10000, 'expiry timeout as expected when fresh');
 
-        tile.expiredRequests = 1;
+        let justNow = new Date();
+        justNow.setSeconds(justNow.getSeconds() - 1);
+
+        // every time we set a tile's expiration to a date already expired,
+        // it assumes it comes from a new HTTP response, so this is counted
+        // as an extra expired tile request
+        tile.setExpiryData({
+            expires: justNow
+        });
         t.equal(tile.getExpiryTimeout(), 1000, 'tile with one expired request retries after 1 second');
 
-        tile.expiredRequests++;
+        tile.setExpiryData({
+            expires: justNow
+        });
         t.equal(tile.getExpiryTimeout(), 2000, 'exponential backoff');
-        tile.expiredRequests++;
+        tile.setExpiryData({
+            expires: justNow
+        });
         t.equal(tile.getExpiryTimeout(), 4000, 'exponential backoff');
-        tile.expiredRequests++;
+
+        tile.setExpiryData({
+            expires: justNow
+        });
         t.equal(tile.getExpiryTimeout(), 8000, 'exponential backoff');
 
         t.end();
