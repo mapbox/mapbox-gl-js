@@ -142,6 +142,11 @@ class SourceCache extends Evented {
     reloadTile(id, state) {
         const tile = this._tiles[id];
 
+        // TODO potentially does not address all underlying
+        // issues https://github.com/mapbox/mapbox-gl-js/issues/4252
+        // - hard to tell without repro steps
+        if (!tile) return;
+
         // The difference between "loading" tiles and "reloading" or "expired"
         // tiles is that "reloading"/"expired" tiles are "renderable".
         // Therefore, a "loading" tile cannot become a "reloading" tile without
@@ -433,22 +438,22 @@ class SourceCache extends Evented {
     }
 
     _setTileReloadTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
                 this._timers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
     _setCacheInvalidationTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
                 this._cache.remove(id);
                 this._cacheTimers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
