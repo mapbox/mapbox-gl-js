@@ -155,10 +155,10 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
-        this.loadTile(tile, this._tileLoaded.bind(this, tile, id));
+        this.loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile, id, err) {
+    _tileLoaded(tile, id, previousState, err) {
         if (err) {
             tile.state = 'errored';
             this._source.fire('error', {tile: tile, error: err});
@@ -167,6 +167,7 @@ class SourceCache extends Evented {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
+        if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
