@@ -255,6 +255,7 @@ class Tile {
             if (this.expiredRequests) {
                 return 1000 * (1 << Math.min(this.expiredRequests - 1, 31));
             } else {
+                // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
                 return Math.min(this.expires - new Date().getTime(), Math.pow(2, 31) - 1);
             }
         }

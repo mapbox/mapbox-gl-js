@@ -207,7 +207,7 @@ test('expiring tiles', (t) => {
             cacheControl: 'max-age=10'
         });
 
-        let expiryTimeout = tile.getExpiryTimeout();
+        const expiryTimeout = tile.getExpiryTimeout();
         t.ok(expiryTimeout >= 8000 && expiryTimeout <= 10000, 'expiry timeout as expected when fresh');
 
         tile.expiredRequests = 1;
