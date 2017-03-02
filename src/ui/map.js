@@ -54,7 +54,9 @@ const defaultOptions = {
 
     trackResize: true,
 
-    renderWorldCopies: true
+    renderWorldCopies: true,
+
+    noRefreshOnExpiration: false
 };
 
 /**
@@ -145,6 +147,7 @@ class Map extends Camera {
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
+        this._noRefreshOnExpiration = options.noRefreshOnExpiration;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);

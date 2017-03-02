@@ -86,7 +86,7 @@ class VectorTileSource extends Evented {
                 return callback(err);
             }
 
-            tile.setExpiryData(data);
+            if (!this.map._noRefreshOnExpiration) tile.setExpiryData(data);
             tile.loadVectorData(data, this.map.painter);
 
             if (tile.redoWhenDone) {
