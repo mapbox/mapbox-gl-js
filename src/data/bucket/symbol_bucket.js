@@ -32,8 +32,7 @@ const getIconQuads = Quads.getIconQuads;
 const elementArrayType = createElementArrayType();
 
 const layoutVertexArrayType = createVertexArrayType([
-    {name: 'a_pos',         components: 2, type: 'Int16'},
-    {name: 'a_offset',      components: 2, type: 'Int16'},
+    {name: 'a_pos_offset',  components: 4, type: 'Int16'},
     {name: 'a_texture_pos', components: 2, type: 'Uint16'},
     {name: 'a_data',        components: 4, type: 'Uint8'}
 ]);
@@ -73,11 +72,9 @@ const symbolInterfaces = {
 
 function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
     array.emplaceBack(
-            // a_pos
+            // a_pos_offset
             x,
             y,
-
-            // a_offset
             Math.round(ox * 64),
             Math.round(oy * 64),
 
