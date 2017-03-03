@@ -210,7 +210,7 @@ test('expiring tiles', (t) => {
         const expiryTimeout = tile.getExpiryTimeout();
         t.ok(expiryTimeout >= 8000 && expiryTimeout <= 10000, 'expiry timeout as expected when fresh');
 
-        let justNow = new Date();
+        const justNow = new Date();
         justNow.setSeconds(justNow.getSeconds() - 1);
 
         // every time we set a tile's expiration to a date already expired,
