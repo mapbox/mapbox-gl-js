@@ -131,7 +131,7 @@ test('SourceCache#addTile', (t) => {
         };
         sourceCache.loadTile = (tile, callback) => {
             tile.state = 'loaded';
-            tile.getExpiry = () => time;
+            tile.getExpiryTimeout = () => time;
             sourceCache._setTileReloadTimer(coord.id, tile);
             callback();
         };
@@ -899,7 +899,7 @@ test('SourceCache reloads expiring tiles', (t) => {
         const coord = new TileCoord(1, 0, 0);
 
         const expiryDate = new Date();
-        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 5);
+        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 50);
         const sourceCache = createSourceCache({ expires: expiryDate });
 
         sourceCache.reloadTile = (id, state) => {

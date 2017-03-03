@@ -10,6 +10,8 @@ const featureFilter = require('../style-spec/feature_filter');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
 
+const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
+
 /**
  * A tile object is the combination of a Coordinate, which defines
  * its place, as well as a unique ID and data tracking for its content
@@ -28,8 +30,13 @@ class Tile {
         this.tileSize = size;
         this.sourceMaxZoom = sourceMaxZoom;
         this.buckets = {};
-        this.expires = null;
-        this.cacheControl = null;
+        this.expirationTime = null;
+
+        // Counts the number of times a response was already expired when
+        // received. We're using this to add a delay when making a new request
+        // so we don't have to keep retrying immediately in case of a server
+        // serving expired tiles.
+        this.expiredRequestCount = 0;
 
         // `this.state` must be one of
         //
@@ -195,18 +202,62 @@ class Tile {
     }
 
     setExpiryData(data) {
-        if (data.cacheControl) this.cacheControl = data.cacheControl;
-        if (data.expires) this.expires = data.expires;
+        const prior = this.expirationTime;
+
+        if (data.cacheControl) {
+            const parsedCC = util.parseCacheControl(data.cacheControl);
+            if (parsedCC['max-age']) this.expirationTime = Date.now() + parsedCC['max-age'] * 1000;
+        } else if (data.expires) {
+            this.expirationTime = new Date(data.expires).getTime();
+        }
+
+        if (this.expirationTime) {
+            const now = Date.now();
+            let isExpired = false;
+
+            if (this.expirationTime > now) {
+                isExpired = false;
+            } else if (!prior) {
+                isExpired = true;
+            } else if (this.expirationTime < prior) {
+                // Expiring date is going backwards:
+                // fall back to exponential backoff
+                isExpired = true;
+
+            } else {
+                const delta = this.expirationTime - prior;
+
+                if (!delta) {
+                    // Server is serving the same expired resource over and over: fall
+                    // back to exponential backoff.
+                    isExpired = true;
+
+                } else {
+                    // Assume that either the client or the server clock is wrong and
+                    // try to interpolate a valid expiration date (from the client POV)
+                    // observing a minimum timeout.
+                    this.expirationTime = now + Math.max(delta, CLOCK_SKEW_RETRY_TIMEOUT);
+
+                }
+            }
+
+            if (isExpired) {
+                this.expiredRequestCount++;
+                this.state = 'expired';
+            } else {
+                this.expiredRequestCount = 0;
+            }
+        }
     }
 
-    getExpiry() {
-        if (this.cacheControl) {
-            // Cache-Control headers set max age (in seconds) from the time of request
-            const parsedCC = util.parseCacheControl(this.cacheControl);
-            if (parsedCC['max-age']) return this.timeAdded + parsedCC['max-age'] * 1000;
-        } else if (this.expires) {
-            // Expires headers set absolute expiration times
-            return new Date(this.expires).getTime();
+    getExpiryTimeout() {
+        if (this.expirationTime) {
+            if (this.expiredRequestCount) {
+                return 1000 * (1 << Math.min(this.expiredRequestCount - 1, 31));
+            } else {
+                // Max value for `setTimeout` implementations is a 32 bit integer; cap this accordingly
+                return Math.min(this.expirationTime - new Date().getTime(), Math.pow(2, 31) - 1);
+            }
         }
     }
 }

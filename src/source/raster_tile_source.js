@@ -69,7 +69,7 @@ class RasterTileSource extends Evented {
                 return callback(err);
             }
 
-            tile.setExpiryData(img);
+            if (!this.map._refreshExpiredTiles) tile.setExpiryData(img);
             delete img.cacheControl;
             delete img.expires;
 

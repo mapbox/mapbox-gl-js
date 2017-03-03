@@ -142,6 +142,11 @@ class SourceCache extends Evented {
     reloadTile(id, state) {
         const tile = this._tiles[id];
 
+        // TODO potentially does not address all underlying
+        // issues https://github.com/mapbox/mapbox-gl-js/issues/4252
+        // - hard to tell without repro steps
+        if (!tile) return;
+
         // The difference between "loading" tiles and "reloading" or "expired"
         // tiles is that "reloading"/"expired" tiles are "renderable".
         // Therefore, a "loading" tile cannot become a "reloading" tile without
@@ -150,10 +155,10 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
-        this.loadTile(tile, this._tileLoaded.bind(this, tile, id));
+        this.loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile, id, err) {
+    _tileLoaded(tile, id, previousState, err) {
         if (err) {
             tile.state = 'errored';
             this._source.fire('error', {tile: tile, error: err});
@@ -162,6 +167,7 @@ class SourceCache extends Evented {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
+        if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
         this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
 
@@ -433,22 +439,22 @@ class SourceCache extends Evented {
     }
 
     _setTileReloadTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
                 this._timers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
     _setCacheInvalidationTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
                 this._cache.remove(id);
                 this._cacheTimers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
