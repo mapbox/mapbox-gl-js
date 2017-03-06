@@ -50,7 +50,7 @@ exports.setType = function (name, type) {
  * @param {string} options.type The source type, matching the value of `name` used in {@link Style#addSourceType}.
  * @param {Dispatcher} dispatcher A {@link Dispatcher} instance, which can be used to send messages to the workers.
  *
- * @fires load to indicate source data has been loaded, so that it's okay to call `loadTile`
+ * @fires data to indicate source data has been loaded, so that it's okay to call `loadTile`
  * @fires change to indicate source data has changed, so that any current caches should be flushed
  * @property {string} id The id for the source.  Must match the id passed to the constructor.
  * @property {number} minzoom

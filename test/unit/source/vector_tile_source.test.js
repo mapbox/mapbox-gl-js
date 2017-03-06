@@ -39,7 +39,7 @@ test('VectorTileSource', (t) => {
         });
 
         source.on('data', (e) => {
-            if (e.metadata) {
+            if (e.sourceDataType === 'metadata') {
                 t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
                 t.deepEqual(source.minzoom, 1);
                 t.deepEqual(source.maxzoom, 10);
@@ -55,7 +55,7 @@ test('VectorTileSource', (t) => {
         const source = createSource({ url: "/source.json" });
 
         source.on('data', (e) => {
-            if (e.metadata) {
+            if (e.sourceDataType === 'metadata') {
                 t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
                 t.deepEqual(source.minzoom, 1);
                 t.deepEqual(source.maxzoom, 10);
@@ -71,7 +71,7 @@ test('VectorTileSource', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({ url: "/source.json" });
         source.on('data', (e)=>{
-            if (e.metadata) t.end();
+            if (e.sourceDataType === 'metadata') t.end();
         });
         window.server.respond();
     });
@@ -85,7 +85,7 @@ test('VectorTileSource', (t) => {
         });
         const source = createSource({ url: "/source.json", eventedParent: evented });
         source.on('data', (e) => {
-            if (e.metadata && !dataloadingFired) t.fail();
+            if (e.sourceDataType === 'metadata' && !dataloadingFired) t.fail();
             t.end();
         });
         window.server.respond();
@@ -136,7 +136,7 @@ test('VectorTileSource', (t) => {
             };
 
             source.on('data', (e) => {
-                if (e.metadata) source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
+                if (e.sourceDataType === 'metadata') source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
             });
         });
     }
@@ -156,7 +156,7 @@ test('VectorTileSource', (t) => {
         };
 
         source.on('data', (e) => {
-            if (e.metadata) {
+            if (e.sourceDataType === 'metadata') {
                 const tile = {
                     coord: new TileCoord(10, 5, 5, 0),
                     state: 'loading',

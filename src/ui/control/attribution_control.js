@@ -81,7 +81,7 @@ class AttributionControl {
 
     _updateAttributions(e) {
         if (!this._map.style) return;
-        if (e && !e.metadata) return;
+        if (e && e.sourceDataType !== 'metadata') return;
         let attributions = [];
 
         const sourceCaches = this._map.style.sourceCaches;

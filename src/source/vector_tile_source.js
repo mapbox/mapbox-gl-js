@@ -39,7 +39,7 @@ class VectorTileSource extends Evented {
                 return;
             }
             util.extend(this, tileJSON);
-            this.fire('data', {dataType: 'source', metadata: true});
+            this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
         });
     }
 

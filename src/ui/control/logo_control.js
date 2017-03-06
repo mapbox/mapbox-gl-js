@@ -37,7 +37,7 @@ class LogoControl {
     }
 
     _updateLogo(e) {
-        if (e && e.metadata && this._logoRequired()) {
+        if (e && e.sourceDataType === 'metadata' && this._logoRequired()) {
             const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
             anchor.target = "_blank";
             anchor.href = "https://www.mapbox.com/";

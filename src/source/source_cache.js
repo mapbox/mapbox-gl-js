@@ -28,14 +28,14 @@ class SourceCache extends Evented {
         this.dispatcher = dispatcher;
 
         this.on('data', function(e) {
-            // this._sourceLoaded signifies that the TileJSON is loaded if applicable
+            // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (i.e geojson has been tiled on the worker and is ready)
-            if (e.dataType === 'source' && e.metadata) this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (this._sourceLoaded && e.dataType==="source" && e.update) {
+            if (e.dataType==="source" && (e.sourceDataType === 'metadata' || e.sourceDataType === 'update')) {
+                this._sourceLoaded = true;
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -112,6 +112,7 @@ class SourceCache extends Evented {
     serialize() {
         return this._source.serialize();
     }
+
 
     prepare() {
         if (this._sourceLoaded && this._source.prepare)
@@ -441,7 +442,7 @@ class SourceCache extends Evented {
     }
 
     _setTileReloadTimer(id, tile) {
-        const expiryTimeout = tile.getExpiryTimeout();
+        const expiryTimegoout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
@@ -477,8 +478,6 @@ class SourceCache extends Evented {
             clearTimeout(this._timers[id]);
             this._timers[id] = undefined;
         }
-        // TODO should we keep this??
-        this._source.fire('data', { tile: tile, coord: tile.coord, dataType: 'tile' });
 
         if (tile.uses > 0)
             return;

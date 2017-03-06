@@ -46,12 +46,12 @@ test('CanvasSource', (t) => {
     t.test('constructor', (t) => {
         const source = createSource();
 
+        t.equal(source.minzoom, 0);
+        t.equal(source.maxzoom, 22);
+        t.equal(source.tileSize, 512);
+        t.equal(source.animate, true);
         source.on('data', (e) => {
-            if (e.metadata && e.dataType === 'source') {
-                t.equal(source.minzoom, 0);
-                t.equal(source.maxzoom, 22);
-                t.equal(source.tileSize, 512);
-                t.equal(source.animate, true);
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.equal(typeof source.play, 'function');
                 t.end();
             }
@@ -84,7 +84,7 @@ test('CanvasSource', (t) => {
         });
 
         source.on('data', (e) => {
-            if (e.metadata && e.dataType === 'source') {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.ok(true, 'fires load event without rerendering');
                 t.end();
             }

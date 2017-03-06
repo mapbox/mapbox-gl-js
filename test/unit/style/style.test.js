@@ -451,7 +451,7 @@ test('Style#addSource', (t) => {
             style.on('error', () => { t.ok(true); });
             style.on('data', () => { t.ok(true); });
             style.on('data', (e) => {
-                if (e.metadata && e.dataType === 'source') {
+                if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
                     t.ok(true);
                 }
             });

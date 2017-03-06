@@ -152,7 +152,7 @@ test('GeoJSONSource#update', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
         source.on('data', (e) => {
-            if (e.metadata) t.end();
+            if (e.sourceDataType === 'metadata') t.end();
         });
 
         source.load();
@@ -192,7 +192,7 @@ test('GeoJSONSource#update', (t) => {
         };
 
         source.on('data', (e) => {
-            if (e.metadata) {
+            if (e.sourceDataType === 'metadata') {
                 source.setData({});
                 source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
             }

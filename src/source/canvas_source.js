@@ -75,7 +75,6 @@ class CanvasSource extends ImageSource {
         this.load();
         if (this.canvas) {
             if (this.animate) this.play();
-            this.setCoordinates(this.coordinates);
         }
     }
 
