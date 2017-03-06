@@ -38,12 +38,14 @@ test('VectorTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"]
         });
 
-        source.on('source.load', () => {
-            t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-            t.deepEqual(source.minzoom, 1);
-            t.deepEqual(source.maxzoom, 10);
-            t.deepEqual(source.attribution, "Mapbox");
-            t.end();
+        source.on('data', (e) => {
+            if (e.metadata) {
+                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+                t.deepEqual(source.minzoom, 1);
+                t.deepEqual(source.maxzoom, 10);
+                t.deepEqual(source.attribution, "Mapbox");
+                t.end();
+            }
         });
     });
 
@@ -52,21 +54,25 @@ test('VectorTileSource', (t) => {
 
         const source = createSource({ url: "/source.json" });
 
-        source.on('source.load', () => {
-            t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
-            t.deepEqual(source.minzoom, 1);
-            t.deepEqual(source.maxzoom, 10);
-            t.deepEqual(source.attribution, "Mapbox");
-            t.end();
+        source.on('data', (e) => {
+            if (e.metadata) {
+                t.deepEqual(source.tiles, ["http://example.com/{z}/{x}/{y}.png"]);
+                t.deepEqual(source.minzoom, 1);
+                t.deepEqual(source.maxzoom, 10);
+                t.deepEqual(source.attribution, "Mapbox");
+                t.end();
+            }
         });
 
         window.server.respond();
     });
 
-    t.test('fires "source.update" event', (t) => {
+    t.test('fires event with metadata property', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({ url: "/source.json" });
-        source.on('source.update', t.end);
+        source.on('data', (e)=>{
+            if (e.metadata) t.end();
+        });
         window.server.respond();
     });
 
@@ -78,8 +84,8 @@ test('VectorTileSource', (t) => {
             dataloadingFired = true;
         });
         const source = createSource({ url: "/source.json", eventedParent: evented });
-        source.on('source.load', () => {
-            if (!dataloadingFired) t.fail();
+        source.on('data', (e) => {
+            if (e.metadata && !dataloadingFired) t.fail();
             t.end();
         });
         window.server.respond();
@@ -129,8 +135,8 @@ test('VectorTileSource', (t) => {
                 t.end();
             };
 
-            source.on('source.load', () => {
-                source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
+            source.on('data', (e) => {
+                if (e.metadata) source.loadTile({coord: new TileCoord(10, 5, 5, 0)}, () => {});
             });
         });
     }
@@ -149,22 +155,24 @@ test('VectorTileSource', (t) => {
             return 1;
         };
 
-        source.on('source.load', () => {
-            const tile = {
-                coord: new TileCoord(10, 5, 5, 0),
-                state: 'loading',
-                loadVectorData: function () {
-                    this.state = 'loaded';
-                    events.push('tileLoaded');
-                },
-                setExpiryData: function() {}
-            };
-            source.loadTile(tile, () => {});
-            t.equal(tile.state, 'loading');
-            source.loadTile(tile, () => {
-                t.same(events, ['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']);
-                t.end();
-            });
+        source.on('data', (e) => {
+            if (e.metadata) {
+                const tile = {
+                    coord: new TileCoord(10, 5, 5, 0),
+                    state: 'loading',
+                    loadVectorData: function () {
+                        this.state = 'loaded';
+                        events.push('tileLoaded');
+                    },
+                    setExpiryData: function() {}
+                };
+                source.loadTile(tile, () => {});
+                t.equal(tile.state, 'loading');
+                source.loadTile(tile, () => {
+                    t.same(events, ['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']);
+                    t.end();
+                });
+            }
         });
     });
 

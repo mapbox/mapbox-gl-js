@@ -89,10 +89,12 @@ test('AttributionControl dedupes attributions that are substrings of others', (t
     });
 
     let times = 0;
-    map.on('source.load', () => {
-        if (++times === 5) {
-            t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
-            t.end();
+    map.on('data', (e) => {
+        if (e.dataType === 'source' && e.metadata) {
+            if (++times === 5) {
+                t.equal(attribution._container.innerHTML, 'Hello World | Another Source');
+                t.end();
+            }
         }
     });
 });
@@ -104,11 +106,13 @@ test('AttributionControl has the correct edit map link', (t) => {
 
     map.on('load', () => {
         map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});
-        map.on('source.load', () => {
-            t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/1', 'edit link contains map location data');
-            map.setZoom(2);
-            t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/3', 'edit link updates on mapmove');
-            t.end();
+        map.on('data', (e) => {
+            if (e.dataType === 'source' && e.metadata) {
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/1', 'edit link contains map location data');
+                map.setZoom(2);
+                t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/3', 'edit link updates on mapmove');
+                t.end();
+            }
         });
     });
 });

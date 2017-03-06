@@ -27,21 +27,24 @@ class SourceCache extends Evented {
         this.id = id;
         this.dispatcher = dispatcher;
 
-        this.on('source.load', function() {
-            this._sourceLoaded = true;
-        });
+        this.on('data', function(e) {
+            // this._sourceLoaded signifies that the TileJSON is loaded if applicable
+            // if the source type does not come with a TileJSON, the flag signifies the
+            // source data has loaded (i.e geojson has been tiled on the worker and is ready)
+            if (e.dataType === 'source' && e.metadata) this._sourceLoaded = true;
 
-        this.on('error', function() {
-            this._sourceErrored = true;
-        });
-
-        this.on('source.update', function(event) {
-            if (this._sourceLoaded) {
+            // for sources with mutable data, this event fires when the underlying data
+            // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
+            if (this._sourceLoaded && e.dataType==="source" && e.update) {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
                 }
             }
+        });
+
+        this.on('error', function() {
+            this._sourceErrored = true;
         });
 
         this._source = Source.create(id, options, dispatcher, this);
@@ -169,8 +172,7 @@ class SourceCache extends Evented {
         tile.timeAdded = new Date().getTime();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
-        if (this.loaded()) this.fire('data', {dataType: 'source'});
+        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -433,7 +435,7 @@ class SourceCache extends Evented {
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'tile'});
+        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'source'});
 
         return tile;
     }
@@ -475,6 +477,7 @@ class SourceCache extends Evented {
             clearTimeout(this._timers[id]);
             this._timers[id] = undefined;
         }
+        // TODO should we keep this??
         this._source.fire('data', { tile: tile, coord: tile.coord, dataType: 'tile' });
 
         if (tile.uses > 0)

@@ -32,8 +32,7 @@ class RasterTileSource extends Evented {
                 return this.fire('error', err);
             }
             util.extend(this, tileJSON);
-            this.fire('source.load');
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', metadata: true});
         });
     }
 

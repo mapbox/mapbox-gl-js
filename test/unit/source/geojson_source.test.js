@@ -142,7 +142,7 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).load();
     });
 
-    t.test('fires "source.load"', (t) => {
+    t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback, 0);
@@ -151,8 +151,8 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('source.load', () => {
-            t.end();
+        source.on('data', (e) => {
+            if (e.metadata) t.end();
         });
 
         source.load();
@@ -191,9 +191,11 @@ test('GeoJSONSource#update', (t) => {
             transform: {}
         };
 
-        source.on('source.load', () => {
-            source.setData({});
-            source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+        source.on('data', (e) => {
+            if (e.metadata) {
+                source.setData({});
+                source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+            }
         });
 
         source.load();

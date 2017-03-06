@@ -119,7 +119,7 @@ class Style extends Evented {
         }
 
         this.on('data', (event) => {
-            if (event.dataType === 'source') {
+            if (event.dataType === 'source' && event.metadata) {
                 const source = this.sourceCaches[event.sourceId].getSource();
                 if (source && source.vectorLayerIds) {
                     for (const layerId in this._layers) {

@@ -22,22 +22,22 @@ class LogoControl {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
 
-        this._map.on('source.load', this._updateLogo);
+        this._map.on('sourcedata', this._updateLogo);
         this._updateLogo();
         return this._container;
     }
 
     onRemove() {
         this._container.parentNode.removeChild(this._container);
-        this._map.off('source.load', this._updateLogo);
+        this._map.off('sourcedata', this._updateLogo);
     }
 
     getDefaultPosition() {
         return 'bottom-left';
     }
 
-    _updateLogo() {
-        if (this._logoRequired()) {
+    _updateLogo(e) {
+        if (e && e.metadata && this._logoRequired()) {
             const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
             anchor.target = "_blank";
             anchor.href = "https://www.mapbox.com/";

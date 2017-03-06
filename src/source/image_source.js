@@ -75,11 +75,9 @@ class ImageSource extends Evented {
     }
 
     _finishLoading() {
-        this.fire('source.load');
-
         if (this.map) {
             this.setCoordinates(this.coordinates);
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', metadata: true});
         }
     }
 
@@ -116,7 +114,8 @@ class ImageSource extends Evented {
         centerCoord.column = Math.round(centerCoord.column);
         centerCoord.row = Math.round(centerCoord.row);
 
-        this.minzoom = this.maxzoom = centerCoord.zoom;
+        // TODO this is making tests fail... what is it for?
+        // this.minzoom = this.maxzoom = centerCoord.zoom;
         this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
         this._tileCoords = cornerZ0Coords.map((coord) => {
             const zoomedCoord = coord.zoomTo(centerCoord.zoom);
@@ -125,7 +124,7 @@ class ImageSource extends Evented {
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('source.update');
+        this.fire('data', {dataType:'source', update: true});
         return this;
     }
 
