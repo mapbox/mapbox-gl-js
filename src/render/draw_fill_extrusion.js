@@ -75,8 +75,8 @@ ExtrusionTexture.prototype.bindFramebuffer = function() {
         const depthRenderBuffer = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.width, this.height);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, this.width, this.height);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
@@ -125,9 +125,9 @@ ExtrusionTexture.prototype.renderToMap = function() {
 
     const array = new PosArray();
     array.emplaceBack(0, 0);
-    array.emplaceBack(painter.width, 0);
-    array.emplaceBack(0, painter.height);
-    array.emplaceBack(painter.width, painter.height);
+    array.emplaceBack(1, 0);
+    array.emplaceBack(0, 1);
+    array.emplaceBack(1, 1);
     const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
 
     const vao = new VertexArrayObject();
