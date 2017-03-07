@@ -330,7 +330,7 @@ test('Map', (t) => {
 
             map.on('load', () => {
                 map.on('data', (e) => {
-                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                    if (e.dataType === 'source' && e.sourceDataType==='metadata') {
                         t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
                         t.end();
                     }
@@ -496,6 +496,7 @@ test('Map', (t) => {
             );
             t.end();
         });
+
         t.end();
 
         function toFixed(bounds) {

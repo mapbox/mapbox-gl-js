@@ -31,11 +31,11 @@ class SourceCache extends Evented {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (i.e geojson has been tiled on the worker and is ready)
+            if (e.dataType === 'source' && e.sourceDataType==='metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (e.dataType==="source" && (e.sourceDataType === 'metadata' || e.sourceDataType === 'update')) {
-                this._sourceLoaded = true;
+            if (this._sourceLoaded && e.dataType==="source" && e.sourceDataType==='update') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);

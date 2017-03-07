@@ -119,7 +119,7 @@ class Style extends Evented {
         }
 
         this.on('data', (event) => {
-            if (event.dataType === 'source' && event.metadata) {
+            if (event.dataType === 'source' && event.sourceDataType === 'metadata') {
                 const source = this.sourceCaches[event.sourceId].getSource();
                 if (source && source.vectorLayerIds) {
                     for (const layerId in this._layers) {
@@ -139,7 +139,6 @@ class Style extends Evented {
         if (!layer.sourceLayer) return;
         if (!sourceCache) return;
         const source = sourceCache.getSource();
-
         if (source.type === 'geojson' || (source.vectorLayerIds &&
             source.vectorLayerIds.indexOf(layer.sourceLayer) === -1)) {
             this.fire('error', {

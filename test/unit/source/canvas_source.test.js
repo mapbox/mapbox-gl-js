@@ -84,7 +84,7 @@ test('CanvasSource', (t) => {
         });
 
         source.on('data', (e) => {
-            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+            if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
                 t.ok(true, 'fires load event without rerendering');
                 t.end();
             }

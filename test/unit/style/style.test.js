@@ -158,7 +158,6 @@ test('Style', (t) => {
 
         style.on('error', (event) => {
             const err = event.error;
-
             t.ok(err);
             t.ok(err.toString().indexOf('-source-layer-') !== -1);
             t.ok(err.toString().indexOf('-source-id-') !== -1);
