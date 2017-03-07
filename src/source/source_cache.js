@@ -442,7 +442,7 @@ class SourceCache extends Evented {
     }
 
     _setTileReloadTimer(id, tile) {
-        const expiryTimegoout = tile.getExpiryTimeout();
+        const expiryTimeout = tile.getExpiryTimeout();
         if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');

@@ -63,7 +63,7 @@ test('GeoJSONSource#setData', (t) => {
     t.test('fires "data" event', (t) => {
         const source = createSource();
         source.once('data', () => {
-            source.on('data', t.end);
+            source.once('data', t.end);
             source.setData({});
         });
         source.load();
@@ -71,10 +71,7 @@ test('GeoJSONSource#setData', (t) => {
 
     t.test('fires "dataloading" event', (t) => {
         const source = createSource();
-        source.once('data', () => {
-            source.on('dataloading', t.end);
-            source.setData({});
-        });
+        source.on('dataloading', t.end);
         source.load();
     });
 

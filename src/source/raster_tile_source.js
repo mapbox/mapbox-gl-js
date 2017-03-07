@@ -37,6 +37,8 @@ class RasterTileSource extends Evented {
             // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
             // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
             this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
+            this.fire('data', {dataType: 'source', sourceDataType: 'update'});
+
         });
     }
 

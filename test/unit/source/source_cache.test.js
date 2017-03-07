@@ -195,11 +195,11 @@ test('SourceCache#removeTile', (t) => {
         const coord = new TileCoord(0, 0, 0);
         const sourceCache = createSourceCache({});
         sourceCache.addTile(coord);
-        sourceCache.on('data', (e)=> {
+        sourceCache.on('data', ()=> {
             sourceCache.removeTile(coord.id);
             t.notOk(sourceCache._tiles[coord.id]);
             t.end();
-        })
+        });
     });
 
     t.test('caches (does not unload) loaded tile', (t) => {
@@ -859,89 +859,89 @@ test('SourceCache#getIds (ascending order by zoom level)', (t) => {
 });
 
 
-// test('SourceCache#findLoadedParent', (t) => {
+test('SourceCache#findLoadedParent', (t) => {
 
-//     t.test('adds from previously used tiles (sourceCache._tiles)', (t) => {
-//         const sourceCache = createSourceCache({});
-//         sourceCache.onAdd();
-//         const tr = new Transform();
-//         tr.width = 512;
-//         tr.height = 512;
-//         sourceCache.updateCacheSize(tr);
+    t.test('adds from previously used tiles (sourceCache._tiles)', (t) => {
+        const sourceCache = createSourceCache({});
+        sourceCache.onAdd();
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
 
-//         const tile = {
-//             coord: new TileCoord(1, 0, 0),
-//             hasData: function() { return true; }
-//         };
+        const tile = {
+            coord: new TileCoord(1, 0, 0),
+            hasData: function() { return true; }
+        };
 
-//         sourceCache._tiles[tile.coord.id] = tile;
+        sourceCache._tiles[tile.coord.id] = tile;
 
-//         const retain = {};
-//         const expectedRetain = {};
-//         expectedRetain[tile.coord.id] = true;
+        const retain = {};
+        const expectedRetain = {};
+        expectedRetain[tile.coord.id] = true;
 
-//         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
-//         t.deepEqual(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
-//         t.deepEqual(retain, expectedRetain);
-//         t.end();
-//     });
+        t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
+        t.deepEqual(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.deepEqual(retain, expectedRetain);
+        t.end();
+    });
 
-//     t.test('retains parents', (t) => {
-//         const sourceCache = createSourceCache({});
-//         sourceCache.onAdd();
-//         const tr = new Transform();
-//         tr.width = 512;
-//         tr.height = 512;
-//         sourceCache.updateCacheSize(tr);
+    t.test('retains parents', (t) => {
+        const sourceCache = createSourceCache({});
+        sourceCache.onAdd();
+        const tr = new Transform();
+        tr.width = 512;
+        tr.height = 512;
+        sourceCache.updateCacheSize(tr);
 
-//         const tile = new Tile(new TileCoord(1, 0, 0), 512, 22);
-//         sourceCache._cache.add(tile.coord.id, tile);
+        const tile = new Tile(new TileCoord(1, 0, 0), 512, 22);
+        sourceCache._cache.add(tile.coord.id, tile);
 
-//         const retain = {};
-//         const expectedRetain = {};
-//         expectedRetain[tile.coord.id] = true;
+        const retain = {};
+        const expectedRetain = {};
+        expectedRetain[tile.coord.id] = true;
 
-//         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
-//         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
-//         t.deepEqual(retain, expectedRetain);
-//         t.equal(sourceCache._cache.order.length, 1);
+        t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
+        t.equal(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
+        t.deepEqual(retain, expectedRetain);
+        t.equal(sourceCache._cache.order.length, 1);
 
-//         t.end();
-//     });
+        t.end();
+    });
 
-//     t.end();
-// });
+    t.end();
+});
 
-// test('SourceCache#reload', (t) => {
-//     t.test('before loaded', (t) => {
-//         const sourceCache = createSourceCache({ noLoad: true });
-//         sourceCache.onAdd();
+test('SourceCache#reload', (t) => {
+    t.test('before loaded', (t) => {
+        const sourceCache = createSourceCache({ noLoad: true });
+        sourceCache.onAdd();
 
-//         t.doesNotThrow(() => {
-//             sourceCache.reload();
-//         }, null, 'reload ignored gracefully');
+        t.doesNotThrow(() => {
+            sourceCache.reload();
+        }, null, 'reload ignored gracefully');
 
-//         t.end();
-//     });
+        t.end();
+    });
 
-//     t.end();
-// });
+    t.end();
+});
 
-// test('SourceCache reloads expiring tiles', (t) => {
-//     t.test('calls reloadTile when tile expires', (t) => {
-//         const coord = new TileCoord(1, 0, 0);
+test('SourceCache reloads expiring tiles', (t) => {
+    t.test('calls reloadTile when tile expires', (t) => {
+        const coord = new TileCoord(1, 0, 0);
 
-//         const expiryDate = new Date();
-//         expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 50);
-//         const sourceCache = createSourceCache({ expires: expiryDate });
+        const expiryDate = new Date();
+        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 50);
+        const sourceCache = createSourceCache({ expires: expiryDate });
 
-//         sourceCache.reloadTile = (id, state) => {
-//             t.equal(state, 'expired');
-//             t.end();
-//         };
+        sourceCache.reloadTile = (id, state) => {
+            t.equal(state, 'expired');
+            t.end();
+        };
 
-//         sourceCache.addTile(coord);
-//     });
+        sourceCache.addTile(coord);
+    });
 
-//     t.end();
-// });
+    t.end();
+});
