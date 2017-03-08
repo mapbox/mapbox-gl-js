@@ -21,7 +21,6 @@ class LogoControl {
     onAdd(map) {
         this._map = map;
         this._container = DOM.create('div', 'mapboxgl-ctrl');
-
         this._map.on('data', this._updateLogo);
         this._updateLogo();
         return this._container;

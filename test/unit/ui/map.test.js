@@ -677,6 +677,18 @@ test('Map', (t) => {
         map.removeControl(control);
     });
 
+    t.test('#setControlPosition', (t) => {
+        const map = createMap();
+        map._controls['LogoControl'].onAdd = function() {
+            return window.document.createElement('div');
+        };
+        map._controls['LogoControl'].onRemove = function(_) {
+            t.equal(map, _, 'onRemove() called with map');
+            t.end();
+        };
+        map.setControlPosition('LogoControl', 'top-right');
+    });
+
     t.test('#addClass', (t) => {
         const map = createMap();
         map.addClass('night');
