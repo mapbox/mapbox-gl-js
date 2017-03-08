@@ -1,0 +1,19 @@
+<p>Include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.</p>
+{% copyable %}{% highlight html %}
+<script src='{{site.tileApi}}/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.js'></script>
+<link href='{{site.tileApi}}/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.css' rel='stylesheet' />
+{% endhighlight html %}{% endcopyable %}
+
+<p>Include the following code in the <code>&lt;body&gt;</code> of your HTML file.</p>
+<div class='js-replace-token'>
+{% copyable %}{% highlight html %}
+<div id='map' style='width: 400px; height: 300px;'></div>
+<script>
+mapboxgl.accessToken = '<your access token here>';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v9'
+});
+</script>
+{% endhighlight html %}{% endcopyable %}
+</div>

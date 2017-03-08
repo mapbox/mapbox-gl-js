@@ -897,7 +897,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
-      "doc": "A string with {tokens} replaced, referencing the data property to pull from.",
+      "doc": "Name of image in sprite to use for drawing an image background. A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true,
       "sdk-support": {
         "basic functionality": {

@@ -4,7 +4,7 @@ Mapbox GL JS is a JavaScript library that renders interactive maps from vector t
 
 In addition to GL JS, this repository contains code, issues, and test fixtures that are common to both GL JS and the native SDKs. For code and issues specific to the native SDKs, see the [mapbox/mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native/) repository.
 
-- [Getting started](https://github.com/mapbox/mapbox-gl-js/blob/master/INSTALL.md)
+- [Getting started](https://www.mapbox.com/mapbox-gl-js/api/)
 - [API documentation](https://www.mapbox.com/mapbox-gl-js/api)
 - [Examples](https://www.mapbox.com/mapbox-gl-js/examples/)
 - [Style documentation](https://www.mapbox.com/mapbox-gl-style-spec)

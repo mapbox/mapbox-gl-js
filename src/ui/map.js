@@ -70,7 +70,7 @@ const defaultOptions = {
  *
  * @extends Evented
  * @param {Object} options
- * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
+ * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
@@ -270,7 +270,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to add.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -290,7 +291,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to remove.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -311,7 +313,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {Array<string>} klasses The style classes to set.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -1222,9 +1225,13 @@ class Map extends Camera {
     }
 
     /**
-     * Destroys the map's underlying resources, including web workers and DOM elements.
+     * Clean up and release all internal resources associated with this map.
      *
-     * After calling this method, you must not call any other methods on the map.
+     * This includes DOM elements, event bindings, web workers, and WebGL resources.
+     *
+     * Use this method when you are done using the map and wish to ensure that it no
+     * longer consumes browser resources. Afterwards, you must not call any other
+     * methods on the map.
      */
     remove() {
         if (this._hash) this._hash.remove();
@@ -1442,7 +1449,7 @@ function removeNode(node) {
  */
 
 /**
- * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects.
+ * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects in [sw, ne] order.
  *
  * @typedef {(LngLatBounds | Array<LngLatLike>)} LngLatBoundsLike
  * @example
@@ -1465,15 +1472,6 @@ function removeNode(node) {
  * A [`Point`](#Point) or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
- */
-
-/**
- * Options common to {@link Map#addClass}, {@link Map#removeClass},
- * and {@link Map#setClasses}, controlling
- * whether or not to smoothly transition property changes triggered by a class change.
- *
- * @typedef {Object} StyleOptions
- * @property {boolean} transition If `true`, property changes will smootly transition.
  */
 
 /**
