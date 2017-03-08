@@ -158,7 +158,6 @@ test('Style', (t) => {
 
         style.on('error', (event) => {
             const err = event.error;
-
             t.ok(err);
             t.ok(err.toString().indexOf('-source-layer-') !== -1);
             t.ok(err.toString().indexOf('-source-id-') !== -1);
@@ -449,10 +448,17 @@ test('Style#addSource', (t) => {
             t.plan(4);
 
             style.on('error', () => { t.ok(true); });
-            style.on('data', () => { t.ok(true); });
-            style.on('source.load', () => { t.ok(true); });
+            style.on('data', (e) => {
+                if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                    t.ok(true);
+                } else if (e.sourceDataType === 'content' && e.dataType === 'source') {
+                    t.ok(true);
+                } else {
+                    t.ok(true);
+                }
+            });
 
-            style.addSource('source-id', source); // Fires 'source.load' and 'data'
+            style.addSource('source-id', source); // fires data twice
             style.sourceCaches['source-id'].fire('error');
             style.sourceCaches['source-id'].fire('data');
         });
@@ -645,11 +651,12 @@ test('Style#addLayer', (t) => {
             "filter": ["==", "id", 0]
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.addLayer(layer);
+                style.update();
+            }
         });
     });
 
@@ -677,13 +684,16 @@ test('Style#addLayer', (t) => {
             "source-layer": "boxmap"
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-            style.sourceCaches['mapbox'].clearTiles = t.fail;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.sourceCaches['mapbox'].clearTiles = t.fail;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
@@ -709,14 +719,16 @@ test('Style#addLayer', (t) => {
             "source": "mapbox",
             "source-layer": "boxmap"
         };
-
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.fail;
-            style.sourceCaches['mapbox'].clearTiles = t.end;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.fail;
+                style.sourceCaches['mapbox'].clearTiles = t.end;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('fires "data" event', (t) => {

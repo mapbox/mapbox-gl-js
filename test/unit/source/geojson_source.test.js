@@ -63,7 +63,7 @@ test('GeoJSONSource#setData', (t) => {
     t.test('fires "data" event', (t) => {
         const source = createSource();
         source.once('data', () => {
-            source.on('data', t.end);
+            source.once('data', t.end);
             source.setData({});
         });
         source.load();
@@ -71,10 +71,7 @@ test('GeoJSONSource#setData', (t) => {
 
     t.test('fires "dataloading" event', (t) => {
         const source = createSource();
-        source.once('data', () => {
-            source.on('dataloading', t.end);
-            source.setData({});
-        });
+        source.on('dataloading', t.end);
         source.load();
     });
 
@@ -142,7 +139,7 @@ test('GeoJSONSource#update', (t) => {
         }, mockDispatcher).load();
     });
 
-    t.test('fires "source.load"', (t) => {
+    t.test('fires event when metadata loads', (t) => {
         const mockDispatcher = {
             send: function(message, args, callback) {
                 setTimeout(callback, 0);
@@ -151,8 +148,8 @@ test('GeoJSONSource#update', (t) => {
 
         const source = new GeoJSONSource('id', {data: {}}, mockDispatcher);
 
-        source.on('source.load', () => {
-            t.end();
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') t.end();
         });
 
         source.load();
@@ -191,9 +188,11 @@ test('GeoJSONSource#update', (t) => {
             transform: {}
         };
 
-        source.on('source.load', () => {
-            source.setData({});
-            source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                source.setData({});
+                source.loadTile(new Tile(new TileCoord(0, 0, 0), 512), () => {});
+            }
         });
 
         source.load();

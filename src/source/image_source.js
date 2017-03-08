@@ -75,10 +75,9 @@ class ImageSource extends Evented {
     }
 
     _finishLoading() {
-        this.fire('source.load');
-
         if (this.map) {
             this.setCoordinates(this.coordinates);
+            this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
         }
     }
 
@@ -124,7 +123,7 @@ class ImageSource extends Evented {
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('data', {dataType: 'source'});
+        this.fire('data', {dataType:'source', sourceDataType: 'content'});
         return this;
     }
 

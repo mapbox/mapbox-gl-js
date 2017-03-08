@@ -20,7 +20,6 @@ function createSource(options) {
     }, options);
 
     const source = new CanvasSource('id', options, { send: function() {} }, options.eventedParent);
-
     source.canvas = c;
 
     return source;
@@ -47,13 +46,15 @@ test('CanvasSource', (t) => {
     t.test('constructor', (t) => {
         const source = createSource();
 
-        source.on('source.load', () => {
-            t.equal(source.minzoom, 0);
-            t.equal(source.maxzoom, 22);
-            t.equal(source.tileSize, 512);
-            t.equal(source.animate, true);
-            t.equal(typeof source.play, 'function');
-            t.end();
+        t.equal(source.minzoom, 0);
+        t.equal(source.maxzoom, 22);
+        t.equal(source.tileSize, 512);
+        t.equal(source.animate, true);
+        source.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                t.equal(typeof source.play, 'function');
+                t.end();
+            }
         });
 
         source.onAdd(new StubMap());
@@ -82,9 +83,11 @@ test('CanvasSource', (t) => {
             t.end();
         });
 
-        source.on('source.load', () => {
-            t.ok(true, 'fires load event without rerendering');
-            t.end();
+        source.on('data', (e) => {
+            if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                t.ok(true, 'fires load event without rerendering');
+                t.end();
+            }
         });
 
         source.onAdd(map);

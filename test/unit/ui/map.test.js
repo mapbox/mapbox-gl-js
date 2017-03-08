@@ -329,9 +329,11 @@ test('Map', (t) => {
             const map = createMap({style: style});
 
             map.on('load', () => {
-                map.on('source.load', () => {
-                    t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
-                    t.end();
+                map.on('data', (e) => {
+                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                        t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                        t.end();
+                    }
                 });
                 map.addSource('geojson', createStyleSource());
                 t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
@@ -494,6 +496,7 @@ test('Map', (t) => {
             );
             t.end();
         });
+
         t.end();
 
         function toFixed(bounds) {
