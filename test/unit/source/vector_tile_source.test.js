@@ -71,7 +71,7 @@ test('VectorTileSource', (t) => {
         window.server.respondWith('/source.json', JSON.stringify(require('../../fixtures/source')));
         const source = createSource({ url: "/source.json" });
         source.on('data', (e)=>{
-            if (e.sourceDataType === 'metadata') t.end();
+            if (e.sourceDataType === 'content') t.end();
         });
         window.server.respond();
     });
@@ -85,8 +85,10 @@ test('VectorTileSource', (t) => {
         });
         const source = createSource({ url: "/source.json", eventedParent: evented });
         source.on('data', (e) => {
-            if (e.sourceDataType === 'metadata' && !dataloadingFired) t.fail();
-            t.end();
+            if (e.sourceDataType === 'metadata') {
+                if (!dataloadingFired) t.fail();
+                t.end();
+            }
         });
         window.server.respond();
     });

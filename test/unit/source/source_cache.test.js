@@ -312,7 +312,7 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
-                sourceCache.getSource().fire('data', {dataType: 'source', sourceDataType: 'update'});
+                sourceCache.getSource().fire('data', {dataType: 'source', sourceDataType: 'content'});
             }
         });
 

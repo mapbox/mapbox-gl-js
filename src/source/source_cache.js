@@ -35,7 +35,7 @@ class SourceCache extends Evented {
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (this._sourceLoaded && e.dataType==="source" && e.sourceDataType==='update') {
+            if (this._sourceLoaded && e.dataType==="source" && e.sourceDataType==='content') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);

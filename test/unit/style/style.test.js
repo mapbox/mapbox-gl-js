@@ -448,14 +448,17 @@ test('Style#addSource', (t) => {
             t.plan(4);
 
             style.on('error', () => { t.ok(true); });
-            style.on('data', () => { t.ok(true); });
             style.on('data', (e) => {
                 if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                    t.ok(true);
+                } else if (e.sourceDataType === 'content' && e.dataType === 'source') {
+                    t.ok(true);
+                } else {
                     t.ok(true);
                 }
             });
 
-            style.addSource('source-id', source); // Fires 'source.load' and 'data'
+            style.addSource('source-id', source); // fires data twice
             style.sourceCaches['source-id'].fire('error');
             style.sourceCaches['source-id'].fire('data');
         });
@@ -648,11 +651,12 @@ test('Style#addLayer', (t) => {
             "filter": ["==", "id", 0]
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.addLayer(layer);
+                style.update();
+            }
         });
     });
 
@@ -680,13 +684,16 @@ test('Style#addLayer', (t) => {
             "source-layer": "boxmap"
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-            style.sourceCaches['mapbox'].clearTiles = t.fail;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.sourceCaches['mapbox'].clearTiles = t.fail;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
@@ -712,14 +719,16 @@ test('Style#addLayer', (t) => {
             "source": "mapbox",
             "source-layer": "boxmap"
         };
-
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.fail;
-            style.sourceCaches['mapbox'].clearTiles = t.end;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.fail;
+                style.sourceCaches['mapbox'].clearTiles = t.end;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('fires "data" event', (t) => {
@@ -819,629 +828,629 @@ test('Style#addLayer', (t) => {
     t.end();
 });
 
-// test('Style#removeLayer', (t) => {
-//     t.test('throw before loaded', (t) => {
-//         const style = new Style(createStyleJSON({
-//             "layers": [{id: 'background', type: 'background'}]
-//         }));
-//         t.throws(() => {
-//             style.removeLayer('background');
-//         }, Error, /load/i);
-//         style.on('style.load', () => {
-//             t.end();
-//         });
-//     });
-
-//     t.test('fires "data" event', (t) => {
-//         const style = new Style(createStyleJSON()),
-//             layer = {id: 'background', type: 'background'};
-
-//         style.once('data', t.end);
-
-//         style.on('style.load', () => {
-//             style.addLayer(layer);
-//             style.removeLayer('background');
-//             style.update();
-//         });
-//     });
-
-//     t.test('tears down layer event forwarding', (t) => {
-//         const style = new Style(createStyleJSON({
-//             layers: [{
-//                 id: 'background',
-//                 type: 'background'
-//             }]
-//         }));
-
-//         style.on('error', () => {
-//             t.fail();
-//         });
-
-//         style.on('style.load', () => {
-//             const layer = style._layers.background;
-//             style.removeLayer('background');
-
-//             // Bind a listener to prevent fallback Evented error reporting.
-//             layer.on('error', () => {});
-
-//             layer.fire('error', {mapbox: true});
-//             t.end();
-//         });
-//     });
-
-//     t.test('fires an error on non-existence', (t) => {
-//         const style = new Style(createStyleJSON());
-
-//         style.on('style.load', () => {
-//             style.on('error', ({ error }) => {
-//                 t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
-//                 t.end();
-//             });
-//             style.removeLayer('background');
-//         });
-//     });
-
-//     t.test('removes from the order', (t) => {
-//         const style = new Style(createStyleJSON({
-//             layers: [{
-//                 id: 'a',
-//                 type: 'background'
-//             }, {
-//                 id: 'b',
-//                 type: 'background'
-//             }]
-//         }));
-
-//         style.on('style.load', () => {
-//             style.removeLayer('a');
-//             t.deepEqual(style._order, ['b']);
-//             t.end();
-//         });
-//     });
-
-//     t.test('does not remove dereffed layers', (t) => {
-//         const style = new Style(createStyleJSON({
-//             layers: [{
-//                 id: 'a',
-//                 type: 'background'
-//             }, {
-//                 id: 'b',
-//                 ref: 'a'
-//             }]
-//         }));
-
-//         style.on('style.load', () => {
-//             style.removeLayer('a');
-//             t.equal(style.getLayer('a'), undefined);
-//             t.notEqual(style.getLayer('b'), undefined);
-//             t.end();
-//         });
-//     });
-
-//     t.end();
-// });
-
-// test('Style#moveLayer', (t) => {
-
-//     t.test('throw before loaded', (t) => {
-//         const style = new Style(createStyleJSON({
-//             "layers": [{id: 'background', type: 'background'}]
-//         }));
-//         t.throws(() => {
-//             style.moveLayer('background');
-//         }, Error, /load/i);
-//         style.on('style.load', () => {
-//             t.end();
-//         });
-//     });
-
-//     t.test('fires "data" event', (t) => {
-//         const style = new Style(createStyleJSON()),
-//             layer = {id: 'background', type: 'background'};
-
-//         style.once('data', t.end);
-
-//         style.on('style.load', () => {
-//             style.addLayer(layer);
-//             style.moveLayer('background');
-//             style.update();
-//         });
-//     });
-
-//     t.test('fires an error on non-existence', (t) => {
-//         const style = new Style(createStyleJSON());
-
-//         style.on('style.load', () => {
-//             style.on('error', ({ error }) => {
-//                 t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
-//                 t.end();
-//             });
-//             style.moveLayer('background');
-//         });
-//     });
-
-//     t.test('changes the order', (t) => {
-//         const style = new Style(createStyleJSON({
-//             layers: [
-//                 {id: 'a', type: 'background'},
-//                 {id: 'b', type: 'background'},
-//                 {id: 'c', type: 'background'}
-//             ]
-//         }));
-
-//         style.on('style.load', () => {
-//             style.moveLayer('a', 'c');
-//             t.deepEqual(style._order, ['b', 'a', 'c']);
-//             t.end();
-//         });
-//     });
-
-//     t.end();
-// });
-
-// test('Style#setFilter', (t) => {
-//     function createStyle() {
-//         return new Style({
-//             version: 8,
-//             sources: {
-//                 geojson: createGeoJSONSource()
-//             },
-//             layers: [
-//                 { id: 'symbol', type: 'symbol', source: 'geojson', filter: ['==', 'id', 0] }
-//             ]
-//         });
-//     }
-
-//     t.test('sets filter', (t) => {
-//         const style = createStyle();
-
-//         style.on('style.load', () => {
-//             style.dispatcher.broadcast = function(key, value) {
-//                 t.equal(key, 'updateLayers');
-//                 t.deepEqual(value.layers[0].id, 'symbol');
-//                 t.deepEqual(value.layers[0].filter, ['==', 'id', 1]);
-//                 t.end();
-//             };
-
-//             style.setFilter('symbol', ['==', 'id', 1]);
-//             t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
-//             style.update({}, {}); // trigger dispatcher broadcast
-//         });
-//     });
-
-//     t.test('gets a clone of the filter', (t) => {
-//         const style = createStyle();
-
-//         style.on('style.load', () => {
-//             const filter1 = ['==', 'id', 1];
-//             style.setFilter('symbol', filter1);
-//             const filter2 = style.getFilter('symbol');
-//             const filter3 = style.getLayer('symbol').filter;
-
-//             t.notEqual(filter1, filter2);
-//             t.notEqual(filter1, filter3);
-//             t.notEqual(filter2, filter3);
-
-//             t.end();
-//         });
-//     });
-
-//     t.test('sets again mutated filter', (t) => {
-//         const style = createStyle();
-
-//         style.on('style.load', () => {
-//             const filter = ['==', 'id', 1];
-//             style.setFilter('symbol', filter);
-//             style.update({}, {}); // flush pending operations
-
-//             style.dispatcher.broadcast = function(key, value) {
-//                 t.equal(key, 'updateLayers');
-//                 t.deepEqual(value.layers[0].id, 'symbol');
-//                 t.deepEqual(value.layers[0].filter, ['==', 'id', 2]);
-//                 t.end();
-//             };
-//             filter[2] = 2;
-//             style.setFilter('symbol', filter);
-//             style.update({}, {}); // trigger dispatcher broadcast
-//         });
-//     });
-
-//     t.test('throws if style is not loaded', (t) => {
-//         const style = createStyle();
-
-//         t.throws(() => {
-//             style.setFilter('symbol', ['==', 'id', 1]);
-//         }, Error, /load/i);
-
-//         t.end();
-//     });
-
-//     t.test('emits if invalid', (t) => {
-//         const style = createStyle();
-//         style.on('style.load', () => {
-//             style.on('error', () => {
-//                 t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
-//                 t.end();
-//             });
-//             style.setFilter('symbol', ['==', '$type', 1]);
-//         });
-//     });
-
-//     t.test('fires an error if layer not found', (t) => {
-//         const style = createStyle();
-
-//         style.on('style.load', () => {
-//             style.on('error', ({ error }) => {
-//                 t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
-//                 t.end();
-//             });
-//             style.setFilter('non-existant', ['==', 'id', 1]);
-//         });
-//     });
-
-//     t.end();
-// });
-
-// test('Style#setLayerZoomRange', (t) => {
-//     function createStyle() {
-//         return new Style({
-//             "version": 8,
-//             "sources": {
-//                 "geojson": createGeoJSONSource()
-//             },
-//             "layers": [{
-//                 "id": "symbol",
-//                 "type": "symbol",
-//                 "source": "geojson"
-//             }]
-//         });
-//     }
-
-//     t.test('sets zoom range', (t) => {
-//         const style = createStyle();
-
-//         style.on('style.load', () => {
-//             style.dispatcher.broadcast = function(key, value) {
-//                 t.equal(key, 'updateLayers');
-//                 t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
-//             };
-
-//             style.setLayerZoomRange('symbol', 5, 12);
-//             t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
-//             t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
-//             t.end();
-//         });
-//     });
-
-//     t.test('throw before loaded', (t) => {
-//         const style = createStyle();
-//         t.throws(() => {
-//             style.setLayerZoomRange('symbol', 5, 12);
-//         }, Error, /load/i);
-//         style.on('style.load', () => {
-//             t.end();
-//         });
-//     });
-
-//     t.test('fires an error if layer not found', (t) => {
-//         const style = createStyle();
-//         style.on('style.load', () => {
-//             style.on('error', ({ error }) => {
-//                 t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
-//                 t.end();
-//             });
-//             style.setLayerZoomRange('non-existant', 5, 12);
-//         });
-//     });
-
-//     t.end();
-// });
-
-// test('Style#queryRenderedFeatures', (t) => {
-//     let style; // eslint-disable-line prefer-const
-//     const Style = proxyquire('../../../src/style/style', {
-//         '../source/query_features': {
-//             rendered: function(source, layers, queryGeom, params) {
-//                 if (source.id !== 'mapbox') {
-//                     return [];
-//                 }
-
-//                 const features = {
-//                     'land': [{
-//                         type: 'Feature',
-//                         layer: style._layers.land,
-//                         geometry: {
-//                             type: 'Polygon'
-//                         }
-//                     }, {
-//                         type: 'Feature',
-//                         layer: style._layers.land,
-//                         geometry: {
-//                             type: 'Point'
-//                         }
-//                     }],
-//                     'landref': [{
-//                         type: 'Feature',
-//                         layer: style._layers.landref,
-//                         geometry: {
-//                             type: 'Line'
-//                         }
-//                     }]
-//                 };
-
-//                 if (params.layers) {
-//                     for (const l in features) {
-//                         if (params.layers.indexOf(l) < 0) {
-//                             delete features[l];
-//                         }
-//                     }
-//                 }
-
-//                 return features;
-//             }
-//         }
-//     });
-
-//     style = new Style({
-//         "version": 8,
-//         "sources": {
-//             "mapbox": {
-//                 "type": "vector",
-//                 "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
-//             },
-//             "other": {
-//                 "type": "vector",
-//                 "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
-//             }
-//         },
-//         "layers": [{
-//             "id": "land",
-//             "type": "line",
-//             "source": "mapbox",
-//             "source-layer": "water",
-//             "layout": {
-//                 'line-cap': 'round'
-//             },
-//             "paint": {
-//                 "line-color": "red"
-//             },
-//             "metadata": {
-//                 "something": "else"
-//             }
-//         }, {
-//             "id": "landref",
-//             "ref": "land",
-//             "paint": {
-//                 "line-color": "blue"
-//             }
-//         }, {
-//             "id": "land--other",
-//             "type": "line",
-//             "source": "other",
-//             "source-layer": "water",
-//             "layout": {
-//                 'line-cap': 'round'
-//             },
-//             "paint": {
-//                 "line-color": "red"
-//             },
-//             "metadata": {
-//                 "something": "else"
-//             }
-//         }]
-//     });
-
-//     style.on('style.load', () => {
-//         style._applyClasses([]);
-//         style._recalculate(0);
-
-//         t.test('returns feature type', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-//             t.equal(results[0].geometry.type, 'Line');
-//             t.end();
-//         });
-
-//         t.test('filters by `layers` option', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
-//             t.equal(results.length, 2);
-//             t.end();
-//         });
-
-//         t.test('checks type of `layers` option', (t) => {
-//             let errors = 0;
-//             t.stub(style, 'fire', (type, data) => {
-//                 if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
-//             });
-//             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
-//             t.equals(errors, 1);
-//             t.end();
-//         });
-
-//         t.test('includes layout properties', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-//             const layout = results[0].layer.layout;
-//             t.deepEqual(layout['line-cap'], 'round');
-//             t.end();
-//         });
-
-//         t.test('includes paint properties', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-//             t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
-//             t.end();
-//         });
-
-//         t.test('includes metadata', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
-
-//             const layer = results[1].layer;
-//             t.equal(layer.metadata.something, 'else');
-
-//             t.end();
-//         });
-
-//         t.test('include multiple layers', (t) => {
-//             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
-//             t.equals(results.length, 3);
-//             t.end();
-//         });
-
-//         t.test('does not query sources not implicated by `layers` parameter', (t) => {
-//             style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
-//             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']});
-//             t.end();
-//         });
-
-//         t.test('fires an error if layer included in params does not exist on the style', (t) => {
-//             let errors = 0;
-//             t.stub(style, 'fire', (type, data) => {
-//                 if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
-//             });
-//             style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
-//             t.equals(errors, 1);
-//             t.end();
-//         });
-
-//         t.end();
-//     });
-// });
-
-// test('Style defers expensive methods', (t) => {
-//     const style = new Style(createStyleJSON({
-//         "sources": {
-//             "streets": createGeoJSONSource(),
-//             "terrain": createGeoJSONSource()
-//         }
-//     }));
-
-//     style.on('style.load', () => {
-//         style.update();
-
-//         // spies to track defered methods
-//         t.spy(style, 'fire');
-//         t.spy(style, '_reloadSource');
-//         t.spy(style, '_updateWorkerLayers');
-
-//         style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
-//         style.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
-//         style.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
-
-//         style.setPaintProperty('first', 'text-color', 'black');
-//         style.setPaintProperty('first', 'text-halo-color', 'white');
-
-//         t.notOk(style.fire.called, 'fire is deferred');
-//         t.notOk(style._reloadSource.called, '_reloadSource is deferred');
-//         t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
-
-//         style.update();
-
-//         t.ok(style.fire.calledWith('data'), 'a data event was fired');
-
-//         // called per source
-//         t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
-//         t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
-//         t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
-
-//         // called once
-//         t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
-
-//         t.end();
-//     });
-// });
-
-// test('Style#query*Features', (t) => {
-
-//     // These tests only cover filter validation. Most tests for these methods
-//     // live in the integration tests.
-
-//     let style;
-//     let onError;
-
-//     t.beforeEach((callback) => {
-//         style = new Style({
-//             "version": 8,
-//             "sources": {
-//                 "geojson": createGeoJSONSource()
-//             },
-//             "layers": [{
-//                 "id": "symbol",
-//                 "type": "symbol",
-//                 "source": "geojson"
-//             }]
-//         });
-
-//         onError = t.spy();
-
-//         style.on('error', onError)
-//             .on('style.load', () => {
-//                 callback();
-//             });
-//     });
-
-//     t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
-//         t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
-//         t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
-//         t.end();
-//     });
-
-//     t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
-//         t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
-//         t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
-//         t.end();
-//     });
-
-//     t.end();
-// });
-
-// test('Style#addSourceType', (t) => {
-//     const _types = { 'existing': function () {} };
-//     const Style = proxyquire('../../../src/style/style', {
-//         '../source/source': {
-//             getType: function (name) { return _types[name]; },
-//             setType: function (name, create) { _types[name] = create; }
-//         }
-//     });
-
-//     t.test('adds factory function', (t) => {
-//         const style = new Style(createStyleJSON());
-//         const SourceType = function () {};
-
-//         // expect no call to load worker source
-//         style.dispatcher.broadcast = function (type) {
-//             if (type === 'loadWorkerSource') {
-//                 t.fail();
-//             }
-//         };
-
-//         style.addSourceType('foo', SourceType, () => {
-//             t.equal(_types['foo'], SourceType);
-//             t.end();
-//         });
-//     });
-
-//     t.test('triggers workers to load worker source code', (t) => {
-//         const style = new Style(createStyleJSON());
-//         const SourceType = function () {};
-//         SourceType.workerSourceURL = 'worker-source.js';
-
-//         style.dispatcher.broadcast = function (type, params) {
-//             if (type === 'loadWorkerSource') {
-//                 t.equal(_types['bar'], SourceType);
-//                 t.equal(params.name, 'bar');
-//                 t.equal(params.url, 'worker-source.js');
-//                 t.end();
-//             }
-//         };
-
-//         style.addSourceType('bar', SourceType, (err) => { t.error(err); });
-//     });
-
-//     t.test('refuses to add new type over existing name', (t) => {
-//         const style = new Style(createStyleJSON());
-//         style.addSourceType('existing', () => {}, (err) => {
-//             t.ok(err);
-//             t.end();
-//         });
-//     });
-
-//     t.end();
-// });
+test('Style#removeLayer', (t) => {
+    t.test('throw before loaded', (t) => {
+        const style = new Style(createStyleJSON({
+            "layers": [{id: 'background', type: 'background'}]
+        }));
+        t.throws(() => {
+            style.removeLayer('background');
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('fires "data" event', (t) => {
+        const style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.once('data', t.end);
+
+        style.on('style.load', () => {
+            style.addLayer(layer);
+            style.removeLayer('background');
+            style.update();
+        });
+    });
+
+    t.test('tears down layer event forwarding', (t) => {
+        const style = new Style(createStyleJSON({
+            layers: [{
+                id: 'background',
+                type: 'background'
+            }]
+        }));
+
+        style.on('error', () => {
+            t.fail();
+        });
+
+        style.on('style.load', () => {
+            const layer = style._layers.background;
+            style.removeLayer('background');
+
+            // Bind a listener to prevent fallback Evented error reporting.
+            layer.on('error', () => {});
+
+            layer.fire('error', {mapbox: true});
+            t.end();
+        });
+    });
+
+    t.test('fires an error on non-existence', (t) => {
+        const style = new Style(createStyleJSON());
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
+                t.end();
+            });
+            style.removeLayer('background');
+        });
+    });
+
+    t.test('removes from the order', (t) => {
+        const style = new Style(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                type: 'background'
+            }]
+        }));
+
+        style.on('style.load', () => {
+            style.removeLayer('a');
+            t.deepEqual(style._order, ['b']);
+            t.end();
+        });
+    });
+
+    t.test('does not remove dereffed layers', (t) => {
+        const style = new Style(createStyleJSON({
+            layers: [{
+                id: 'a',
+                type: 'background'
+            }, {
+                id: 'b',
+                ref: 'a'
+            }]
+        }));
+
+        style.on('style.load', () => {
+            style.removeLayer('a');
+            t.equal(style.getLayer('a'), undefined);
+            t.notEqual(style.getLayer('b'), undefined);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#moveLayer', (t) => {
+
+    t.test('throw before loaded', (t) => {
+        const style = new Style(createStyleJSON({
+            "layers": [{id: 'background', type: 'background'}]
+        }));
+        t.throws(() => {
+            style.moveLayer('background');
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('fires "data" event', (t) => {
+        const style = new Style(createStyleJSON()),
+            layer = {id: 'background', type: 'background'};
+
+        style.once('data', t.end);
+
+        style.on('style.load', () => {
+            style.addLayer(layer);
+            style.moveLayer('background');
+            style.update();
+        });
+    });
+
+    t.test('fires an error on non-existence', (t) => {
+        const style = new Style(createStyleJSON());
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+                t.end();
+            });
+            style.moveLayer('background');
+        });
+    });
+
+    t.test('changes the order', (t) => {
+        const style = new Style(createStyleJSON({
+            layers: [
+                {id: 'a', type: 'background'},
+                {id: 'b', type: 'background'},
+                {id: 'c', type: 'background'}
+            ]
+        }));
+
+        style.on('style.load', () => {
+            style.moveLayer('a', 'c');
+            t.deepEqual(style._order, ['b', 'a', 'c']);
+            t.end();
+        });
+    });
+
+    t.end();
+});
+
+test('Style#setFilter', (t) => {
+    function createStyle() {
+        return new Style({
+            version: 8,
+            sources: {
+                geojson: createGeoJSONSource()
+            },
+            layers: [
+                { id: 'symbol', type: 'symbol', source: 'geojson', filter: ['==', 'id', 0] }
+            ]
+        });
+    }
+
+    t.test('sets filter', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, ['==', 'id', 1]);
+                t.end();
+            };
+
+            style.setFilter('symbol', ['==', 'id', 1]);
+            t.deepEqual(style.getFilter('symbol'), ['==', 'id', 1]);
+            style.update({}, {}); // trigger dispatcher broadcast
+        });
+    });
+
+    t.test('gets a clone of the filter', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            const filter1 = ['==', 'id', 1];
+            style.setFilter('symbol', filter1);
+            const filter2 = style.getFilter('symbol');
+            const filter3 = style.getLayer('symbol').filter;
+
+            t.notEqual(filter1, filter2);
+            t.notEqual(filter1, filter3);
+            t.notEqual(filter2, filter3);
+
+            t.end();
+        });
+    });
+
+    t.test('sets again mutated filter', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            const filter = ['==', 'id', 1];
+            style.setFilter('symbol', filter);
+            style.update({}, {}); // flush pending operations
+
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.deepEqual(value.layers[0].id, 'symbol');
+                t.deepEqual(value.layers[0].filter, ['==', 'id', 2]);
+                t.end();
+            };
+            filter[2] = 2;
+            style.setFilter('symbol', filter);
+            style.update({}, {}); // trigger dispatcher broadcast
+        });
+    });
+
+    t.test('throws if style is not loaded', (t) => {
+        const style = createStyle();
+
+        t.throws(() => {
+            style.setFilter('symbol', ['==', 'id', 1]);
+        }, Error, /load/i);
+
+        t.end();
+    });
+
+    t.test('emits if invalid', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.on('error', () => {
+                t.deepEqual(style.getLayer('symbol').serialize().filter, ['==', 'id', 0]);
+                t.end();
+            });
+            style.setFilter('symbol', ['==', '$type', 1]);
+        });
+    });
+
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
+                t.end();
+            });
+            style.setFilter('non-existant', ['==', 'id', 1]);
+        });
+    });
+
+    t.end();
+});
+
+test('Style#setLayerZoomRange', (t) => {
+    function createStyle() {
+        return new Style({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+    }
+
+    t.test('sets zoom range', (t) => {
+        const style = createStyle();
+
+        style.on('style.load', () => {
+            style.dispatcher.broadcast = function(key, value) {
+                t.equal(key, 'updateLayers');
+                t.deepEqual(value.map((layer) => { return layer.id; }), ['symbol']);
+            };
+
+            style.setLayerZoomRange('symbol', 5, 12);
+            t.equal(style.getLayer('symbol').minzoom, 5, 'set minzoom');
+            t.equal(style.getLayer('symbol').maxzoom, 12, 'set maxzoom');
+            t.end();
+        });
+    });
+
+    t.test('throw before loaded', (t) => {
+        const style = createStyle();
+        t.throws(() => {
+            style.setLayerZoomRange('symbol', 5, 12);
+        }, Error, /load/i);
+        style.on('style.load', () => {
+            t.end();
+        });
+    });
+
+    t.test('fires an error if layer not found', (t) => {
+        const style = createStyle();
+        style.on('style.load', () => {
+            style.on('error', ({ error }) => {
+                t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
+                t.end();
+            });
+            style.setLayerZoomRange('non-existant', 5, 12);
+        });
+    });
+
+    t.end();
+});
+
+test('Style#queryRenderedFeatures', (t) => {
+    let style; // eslint-disable-line prefer-const
+    const Style = proxyquire('../../../src/style/style', {
+        '../source/query_features': {
+            rendered: function(source, layers, queryGeom, params) {
+                if (source.id !== 'mapbox') {
+                    return [];
+                }
+
+                const features = {
+                    'land': [{
+                        type: 'Feature',
+                        layer: style._layers.land,
+                        geometry: {
+                            type: 'Polygon'
+                        }
+                    }, {
+                        type: 'Feature',
+                        layer: style._layers.land,
+                        geometry: {
+                            type: 'Point'
+                        }
+                    }],
+                    'landref': [{
+                        type: 'Feature',
+                        layer: style._layers.landref,
+                        geometry: {
+                            type: 'Line'
+                        }
+                    }]
+                };
+
+                if (params.layers) {
+                    for (const l in features) {
+                        if (params.layers.indexOf(l) < 0) {
+                            delete features[l];
+                        }
+                    }
+                }
+
+                return features;
+            }
+        }
+    });
+
+    style = new Style({
+        "version": 8,
+        "sources": {
+            "mapbox": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            },
+            "other": {
+                "type": "vector",
+                "tiles": ["local://tiles/{z}-{x}-{y}.vector.pbf"]
+            }
+        },
+        "layers": [{
+            "id": "land",
+            "type": "line",
+            "source": "mapbox",
+            "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
+            "paint": {
+                "line-color": "red"
+            },
+            "metadata": {
+                "something": "else"
+            }
+        }, {
+            "id": "landref",
+            "ref": "land",
+            "paint": {
+                "line-color": "blue"
+            }
+        }, {
+            "id": "land--other",
+            "type": "line",
+            "source": "other",
+            "source-layer": "water",
+            "layout": {
+                'line-cap': 'round'
+            },
+            "paint": {
+                "line-color": "red"
+            },
+            "metadata": {
+                "something": "else"
+            }
+        }]
+    });
+
+    style.on('style.load', () => {
+        style._applyClasses([]);
+        style._recalculate(0);
+
+        t.test('returns feature type', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            t.equal(results[0].geometry.type, 'Line');
+            t.end();
+        });
+
+        t.test('filters by `layers` option', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
+            t.equal(results.length, 2);
+            t.end();
+        });
+
+        t.test('checks type of `layers` option', (t) => {
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
+            });
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
+            t.equals(errors, 1);
+            t.end();
+        });
+
+        t.test('includes layout properties', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            const layout = results[0].layer.layout;
+            t.deepEqual(layout['line-cap'], 'round');
+            t.end();
+        });
+
+        t.test('includes paint properties', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+            t.deepEqual(results[2].layer.paint['line-color'], [1, 0, 0, 1]);
+            t.end();
+        });
+
+        t.test('includes metadata', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {}, 0, 0);
+
+            const layer = results[1].layer;
+            t.equal(layer.metadata.something, 'else');
+
+            t.end();
+        });
+
+        t.test('include multiple layers', (t) => {
+            const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land', 'landref']}, 0, 0);
+            t.equals(results.length, 3);
+            t.end();
+        });
+
+        t.test('does not query sources not implicated by `layers` parameter', (t) => {
+            style.sourceCaches.mapbox.queryRenderedFeatures = function() { t.fail(); };
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land--other']});
+            t.end();
+        });
+
+        t.test('fires an error if layer included in params does not exist on the style', (t) => {
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error && data.error.includes('does not exist in the map\'s style and cannot be queried for features.')) errors++;
+            });
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:['merp']});
+            t.equals(errors, 1);
+            t.end();
+        });
+
+        t.end();
+    });
+});
+
+test('Style defers expensive methods', (t) => {
+    const style = new Style(createStyleJSON({
+        "sources": {
+            "streets": createGeoJSONSource(),
+            "terrain": createGeoJSONSource()
+        }
+    }));
+
+    style.on('style.load', () => {
+        style.update();
+
+        // spies to track defered methods
+        t.spy(style, 'fire');
+        t.spy(style, '_reloadSource');
+        t.spy(style, '_updateWorkerLayers');
+
+        style.addLayer({ id: 'first', type: 'symbol', source: 'streets' });
+        style.addLayer({ id: 'second', type: 'symbol', source: 'streets' });
+        style.addLayer({ id: 'third', type: 'symbol', source: 'terrain' });
+
+        style.setPaintProperty('first', 'text-color', 'black');
+        style.setPaintProperty('first', 'text-halo-color', 'white');
+
+        t.notOk(style.fire.called, 'fire is deferred');
+        t.notOk(style._reloadSource.called, '_reloadSource is deferred');
+        t.notOk(style._updateWorkerLayers.called, '_updateWorkerLayers is deferred');
+
+        style.update();
+
+        t.ok(style.fire.calledWith('data'), 'a data event was fired');
+
+        // called per source
+        t.ok(style._reloadSource.calledTwice, '_reloadSource is called per source');
+        t.ok(style._reloadSource.calledWith('streets'), '_reloadSource is called for streets');
+        t.ok(style._reloadSource.calledWith('terrain'), '_reloadSource is called for terrain');
+
+        // called once
+        t.ok(style._updateWorkerLayers.calledOnce, '_updateWorkerLayers is called once');
+
+        t.end();
+    });
+});
+
+test('Style#query*Features', (t) => {
+
+    // These tests only cover filter validation. Most tests for these methods
+    // live in the integration tests.
+
+    let style;
+    let onError;
+
+    t.beforeEach((callback) => {
+        style = new Style({
+            "version": 8,
+            "sources": {
+                "geojson": createGeoJSONSource()
+            },
+            "layers": [{
+                "id": "symbol",
+                "type": "symbol",
+                "source": "geojson"
+            }]
+        });
+
+        onError = t.spy();
+
+        style.on('error', onError)
+            .on('style.load', () => {
+                callback();
+            });
+    });
+
+    t.test('querySourceFeatures emits an error on incorrect filter', (t) => {
+        t.deepEqual(style.querySourceFeatures([10, 100], {filter: 7}), []);
+        t.match(onError.args[0][0].error.message, /querySourceFeatures\.filter/);
+        t.end();
+    });
+
+    t.test('queryRenderedFeatures emits an error on incorrect filter', (t) => {
+        t.deepEqual(style.queryRenderedFeatures([10, 100], {filter: 7}), []);
+        t.match(onError.args[0][0].error.message, /queryRenderedFeatures\.filter/);
+        t.end();
+    });
+
+    t.end();
+});
+
+test('Style#addSourceType', (t) => {
+    const _types = { 'existing': function () {} };
+    const Style = proxyquire('../../../src/style/style', {
+        '../source/source': {
+            getType: function (name) { return _types[name]; },
+            setType: function (name, create) { _types[name] = create; }
+        }
+    });
+
+    t.test('adds factory function', (t) => {
+        const style = new Style(createStyleJSON());
+        const SourceType = function () {};
+
+        // expect no call to load worker source
+        style.dispatcher.broadcast = function (type) {
+            if (type === 'loadWorkerSource') {
+                t.fail();
+            }
+        };
+
+        style.addSourceType('foo', SourceType, () => {
+            t.equal(_types['foo'], SourceType);
+            t.end();
+        });
+    });
+
+    t.test('triggers workers to load worker source code', (t) => {
+        const style = new Style(createStyleJSON());
+        const SourceType = function () {};
+        SourceType.workerSourceURL = 'worker-source.js';
+
+        style.dispatcher.broadcast = function (type, params) {
+            if (type === 'loadWorkerSource') {
+                t.equal(_types['bar'], SourceType);
+                t.equal(params.name, 'bar');
+                t.equal(params.url, 'worker-source.js');
+                t.end();
+            }
+        };
+
+        style.addSourceType('bar', SourceType, (err) => { t.error(err); });
+    });
+
+    t.test('refuses to add new type over existing name', (t) => {
+        const style = new Style(createStyleJSON());
+        style.addSourceType('existing', () => {}, (err) => {
+            t.ok(err);
+            t.end();
+        });
+    });
+
+    t.end();
+});

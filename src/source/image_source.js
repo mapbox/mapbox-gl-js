@@ -123,7 +123,7 @@ class ImageSource extends Evented {
                 Math.round((zoomedCoord.row - centerCoord.row) * EXTENT));
         });
 
-        this.fire('data', {dataType:'source', sourceDataType: 'update'});
+        this.fire('data', {dataType:'source', sourceDataType: 'content'});
         return this;
     }
 
