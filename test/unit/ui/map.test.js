@@ -65,22 +65,6 @@ test('Map', (t) => {
         t.end();
     });
 
-    t.test('constructor, max size detection', (t) => {
-        t.stub(console, 'warn');
-
-        const container = window.document.createElement('div');
-        Object.defineProperty(container, 'offsetWidth', {value: 10000, configurable: true});
-        Object.defineProperty(container, 'offsetHeight', {value: 10000, configurable: true});
-        new Map({container});
-
-        t.match(
-            console.warn.getCall(0).args[0],
-            /Map is larger than maximum size supported by this system \([0-9]+px by [0-9]+px\)./
-        );
-
-        t.end();
-    });
-
     t.test('disables handlers', (t) => {
         t.test('disables all handlers', (t) => {
             const map = createMap({interactive: false});
