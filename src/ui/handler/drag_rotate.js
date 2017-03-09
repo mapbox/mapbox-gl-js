@@ -210,7 +210,7 @@ class DragRotateHandler {
                 // using Control + left click
                 eventButton = 0;
             }
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : eventButton !== button);
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : !this.isActive() && eventButton !== button);
         }
     }
 
