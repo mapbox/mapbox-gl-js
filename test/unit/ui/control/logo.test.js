@@ -3,6 +3,7 @@ const test = require('mapbox-gl-js-test').test;
 const VectorTileSource = require('../../../../src/source/vector_tile_source');
 const window = require('../../../../src/util/window');
 const Map = require('../../../../src/ui/map');
+const LogoControl = require('../../../../src/ui/control/logo_control');
 
 function createMap(logoPosition, logoRequired) {
     const container = window.document.createElement('div');
@@ -47,6 +48,7 @@ test('LogoControl appears in bottom-left by default', (t) => {
         t.end();
     });
 });
+
 test('LogoControl appears in the position specified by the position option', (t) => {
     const map = createMap('top-left');
     map.on('load', () => {
@@ -56,6 +58,7 @@ test('LogoControl appears in the position specified by the position option', (t)
         t.end();
     });
 });
+
 test('LogoControl is not added when the mapbox_logo property is false', (t) => {
     const map = createMap('top-left', false);
     map.on('load', () => {
@@ -65,3 +68,24 @@ test('LogoControl is not added when the mapbox_logo property is false', (t) => {
         t.end();
     });
 });
+test('LogoControl is not added more than once', (t)=>{
+    const map = createMap();
+    const source = createSource({
+        minzoom: 1,
+        maxzoom: 10,
+        attribution: "Mapbox",
+        tiles: [
+            "http://example.com/{z}/{x}/{y}.png"
+        ]
+    });
+    map.on('load', ()=>{
+        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length,1, 'first LogoControl');
+        map.addSource('source2', source);
+        map.on('sourcedata', (e)=>{
+            if (e.isSourceLoaded && e.sourceId === 'source2' && e.sourceDataType ==='metadata') {
+                t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length, 1, 'only one LogoControl is added with multiple sources');
+                t.end();
+            }
+        })
+    })
+})
