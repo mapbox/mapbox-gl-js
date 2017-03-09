@@ -7,20 +7,20 @@
     <th>Actual</th>
     <th>Info</th>
 </tr>
-{{#each results}}
+<% for (r of results) { %>
 <tr>
-    <td><img src="data:image/png;base64,{{actual}}"></td>
+    <td><img src="data:image/png;base64,<%- r.actual %>"></td>
     <td>
-        <h2 style="text-align:center; background:{{color}}"><a href="{{group}}/style.json">{{group}}/{{test}}</a></h2>
+        <h2 style="text-align:center; background:<%- r.color %>"><a href="<%- r.group %>/style.json"><%- r.group %>/<%- r.test %></a></h2>
         <ul>
-            <li>diff: <strong>{{difference}}</strong></li>
-            <li>zoom: <strong>{{zoom}}</strong></li>
-            <li>center: <strong>{{center}}</strong></li>
-            <li>bearing: <strong>{{bearing}}</strong></li>
-            <li>width: <strong>{{width}}</strong></li>
-            <li>height: <strong>{{height}}</strong></li>
+            <li>diff: <strong><%- r.difference %></strong></li>
+            <li>zoom: <strong><%- r.zoom %></strong></li>
+            <li>center: <strong><%- r.center %></strong></li>
+            <li>bearing: <strong><%- r.bearing %></strong></li>
+            <li>width: <strong><%- r.width %></strong></li>
+            <li>height: <strong><%- r.height %></strong></li>
         </ul>
     </td>
 </tr>
-{{/each}}
+<% } %>
 </table>

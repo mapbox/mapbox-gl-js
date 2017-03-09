@@ -1,0 +1,10 @@
+[
+  {
+    "message": "constants.invalid: constants must start with \"@\"",
+    "line": 5
+  },
+  {
+    "message": "layers[0].paint.background-color: constant \"@missing\" not found",
+    "line": 13
+  }
+]

@@ -3,6 +3,7 @@ layout: default
 title: Mapbox GL JS API
 class: fill-light
 options: full
+category: api
 ---
 
 <div class='docnav hide-mobile'>
@@ -69,28 +70,14 @@ options: full
 </div>
 
 <div class='limiter clearfix'>
-  <div class='pad2y'>
-    <nav class='contain z10 margin3 col9 fill-gradient space-bottom round small'>
-      <div class='col3 dark round-left keyline-right pad1 center truncate'>
-        <div class='pad0y'>
-          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL JS
-        </div>
-      </div>
-      <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='{{site.baseurl}}/api' class='col3 truncate{% if page.category == "api" %} active{% endif %}'>API</a><!--
-        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3 truncate'>Style Reference</a><!--
-        --><a href='{{site.baseurl}}/examples' class='col3 truncate{% if page.category == "example" %} active{% endif %}'>Examples</a><!--
-        --><a href='{{site.baseurl}}/plugins' class='col3 truncate{% if page.url contains "plugins" %} active{% endif %}'>Plugins</a>
-      </div>
-    </nav>
-  </div>
+  {% include navigation.html %}
   <div class='contain margin3 col9'>
     <div class='round doc clip space-bottom4 fill-white'>
       <section class='pad4 contain'>
       <h1 class=''>Mapbox GL JS</h1>
       <div class='pad1y quiet small'>Current version: <span class='round fill-light pad0'><a class='' href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{{site.data.package.version}}</a></span></div>
       <div class='prose space-bottom2'>
-        <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.url}}/mapbox-gl-style-spec'>Mapbox styles</a>.
+        <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.baseurl}}/style-spec'>Mapbox styles</a>.
         It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a>, which includes <a href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
         <div class='col12 fill-light round pad2 clearfix space-top2'>
         <div class='space-bottom2 space-left1 space-top1 contain'>
@@ -117,65 +104,13 @@ options: full
 
         </div>
            <h2 class='strong'>Quickstart</h2>
-           <div class='space-bottom1'>To get started, you need to obtain an <a href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a href='https://www.mapbox.com/help/define-style-url/'>style URL</a>.
-             You can choose from one of our <a href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.
-           </div>
+           <div class='space-bottom1'>To get started, you need to obtain an <a href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a href='https://www.mapbox.com/help/define-style-url/'>style URL</a>. You can choose from one of our <a href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.</div>
            <div class='rounded-toggle space-bottom2 inline' id='method-toggle'>
-             <a class='method-toggle active' data-target='script-example' href='#'>&lt;script&gt; tag</a>
-             <a class='method-toggle' data-target='browserify-example'  href='#'>Browserify</a>
+             <a class='method-toggle active' data-target='quickstart-cdn' href='#'>Mapbox CDN</a>
+             <a class='method-toggle' data-target='quickstart-bundler'  href='#'>module bundler</a>
            </div>
-           <div id='script-example'>
-        <div class='space-top2 space-bottom2'>
-          To use Mapbox GL JS with a <code>&lt;script&gt;</code> tag, include the JavaScript and CSS files in the <code>&lt;head&gt;</code> of your HTML file.
-        </div>
-        <div class='contain ' id='head-code'>
-          {% highlight html %}
-<script src='{{site.tileApi}}/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.js'></script>
-<link href='{{site.tileApi}}/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.css' rel='stylesheet' />
-          {% endhighlight html %}
-          <a class='icon clipboard pin-bottom space-bottom1 text-right quiet js-clipboard space-right1' href='#' data-clipboard-target='head-code'></a>
-        </div>
-        <div class='space-top2 space-bottom2'>
-          Then include this code in the <code>&lt;body&gt;</code> of your HTML file to initialize a map on the page.
-        </div>
-        <div class='js-replace-token contain' id='body-code'>
-          {% capture getting_started_html %}
-<div id='map' style='width: 400px; height: 300px;'></div>
-<script>
-var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9'
-});
-</script>
-          {% endcapture %}
-          <a class='quiet pin-bottom space-right1 text-right icon clipboard js-clipboard space-bottom1' href='#' data-clipboard-target='body-code'></a>
-          {% highlight html %}{{ getting_started_html | insert_token }}{% endhighlight %}
-        </div>
-        </div>
-        <div id='browserify-example' class='hidden'>
-<p>Install the mapbox-gl npm package.</p>
-
-<pre>
-npm install --save mapbox-gl
-</pre>
-
-<p>Require mapbox-gl and create a map.</p>
-
-<div class='js-replace-token'>
-{% highlight javascript %}
-var mapboxgl = require('mapbox-gl');
-mapboxgl.accessToken = '<your access token here>';
-var map = new mapboxgl.Map({
-    container: '<your HTML element id>',
-    style: 'mapbox://styles/mapbox/streets-v9'
-});
-{% endhighlight %}
-</div>
-
-<p class="space-top2">Add the CSS file at <code>node_modules/mapbox-gl/dist/mapbox-gl.css</code> or <code>{{site.tileApi}}/mapbox-gl-js/v{{site.data.package.version}}/mapbox-gl.css</code>.</p>
-
-        </div>
-      </div>
+           <div id='quickstart-cdn'>{% include quickstart-cdn.html %}</div>
+           <div id='quickstart-bundler' class='hidden'>{% include quickstart-bundler.html %}</div>
       </section>
     </div>
 
@@ -197,6 +132,6 @@ var map = new mapboxgl.Map({
 
 <link href='{{site.url}}/css/docs.css' rel='stylesheet' />
 <link href='{{site.baseurl}}/site.css' rel='stylesheet' />
-<script src='{{site.baseurl}}/js/site.js'></script>
+<script src='{{site.baseurl}}/src/site.js'></script>
 <script src='{{site.baseurl}}/api/assets/anchor.js'></script>
 <script src='{{site.baseurl}}/api/assets/site.js'></script>

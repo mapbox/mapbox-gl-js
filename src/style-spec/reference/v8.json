@@ -1,0 +1,3012 @@
+{
+  "$version": 8,
+  "$root": {
+    "version": {
+      "required": true,
+      "type": "enum",
+      "values": [8],
+      "doc": "Style specification version number. Must be 8.",
+      "example": 8
+    },
+    "name": {
+      "type": "string",
+      "doc": "A human-readable name for the style.",
+      "example": "Bright"
+    },
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+    },
+    "center": {
+      "type": "array",
+      "value": "number",
+      "doc": "Default map center in longitude and latitude.  The style center will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": [-73.9749, 40.7736]
+    },
+    "zoom": {
+      "type": "number",
+      "doc": "Default zoom level.  The style zoom will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 12.5
+    },
+    "bearing": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "units": "degrees",
+      "doc": "Default bearing, in degrees clockwise from true north.  The style bearing will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 29
+    },
+    "pitch": {
+      "type": "number",
+      "default": 0,
+      "units": "degrees",
+      "doc": "Default pitch, in degrees. Zero is perpendicular to the surface, for a look straight down at the map, while a greater value like 60 looks ahead towards the horizon. The style pitch will be used only if the map has not been positioned by other means (e.g. map options or user interaction).",
+      "example": 50
+    },
+    "light": {
+      "type": "light",
+      "doc": "The global light source.",
+      "example": {
+        "anchor": "viewport",
+        "color": "white",
+        "intensity": 0.4
+      }
+    },
+    "sources": {
+      "required": true,
+      "type": "sources",
+      "doc": "Data source specifications.",
+      "example": {
+        "mapbox-streets": {
+          "type": "vector",
+          "url": "mapbox://mapbox.mapbox-streets-v6"
+        }
+      }
+    },
+    "sprite": {
+      "type": "string",
+      "doc": "A base URL for retrieving the sprite image and metadata. The extensions `.png`, `.json` and scale factor `@2x.png` will be automatically appended. This property is required if any layer uses the `background-pattern`, `fill-pattern`, `line-pattern`, `fill-extrusion-pattern`, or `icon-image` properties.",
+      "example": "mapbox://sprites/mapbox/bright-v8"
+    },
+    "glyphs": {
+      "type": "string",
+      "doc": "A URL template for loading signed-distance-field glyph sets in PBF format. The URL must include `{fontstack}` and `{range}` tokens. This property is required if any layer uses the `text-field` layout property.",
+      "example": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+    },
+    "transition": {
+      "type": "transition",
+      "doc": "A global transition definition to use as a default across properties.",
+      "example": {
+        "duration": 300,
+        "delay": 0
+      }
+    },
+    "layers": {
+      "required": true,
+      "type": "array",
+      "value": "layer",
+      "doc": "Layers will be drawn in the order of this array.",
+      "example": [
+        {
+          "id": "water",
+          "source": "mapbox-streets",
+          "source-layer": "water",
+          "type": "fill",
+          "paint": {
+            "fill-color": "#00ffff"
+          }
+        }
+      ]
+    }
+  },
+  "sources": {
+    "*": {
+      "type": "source",
+      "doc": "Specification of a data source. For vector and raster sources, either TileJSON or a URL to a TileJSON must be provided. For image and video sources, a URL must be provided. For GeoJSON sources, a URL or inline GeoJSON must be provided."
+    }
+  },
+  "source": [
+    "source_tile",
+    "source_geojson",
+    "source_video",
+    "source_image",
+    "source_canvas"
+  ],
+  "source_tile": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "vector": {
+            "doc": "A vector tile source."
+        },
+        "raster": {
+            "doc": "A raster tile source."
+        }
+      },
+      "doc": "The data type of the tile source."
+    },
+    "url": {
+      "type": "string",
+      "doc": "A URL to a TileJSON resource. Supported protocols are `http:`, `https:`, and `mapbox://<mapid>`."
+    },
+    "tiles": {
+      "type": "array",
+      "value": "string",
+      "doc": "An array of one or more tile source URLs, as in the TileJSON spec."
+    },
+    "minzoom": {
+      "type": "number",
+      "default": 0,
+      "doc": "Minimum zoom level for which tiles are available, as in the TileJSON spec."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 22,
+      "doc": "Maximum zoom level for which tiles are available, as in the TileJSON spec. Data from tiles at the maxzoom are used when displaying the map at higher zoom levels."
+    },
+    "tileSize": {
+      "type": "number",
+      "default": 512,
+      "units": "pixels",
+      "doc": "The minimum visual size to display tiles for this layer. Only configurable for raster layers."
+    },
+    "*": {
+      "type": "*",
+      "doc": "Other keys to configure the data source."
+    }
+  },
+  "source_geojson": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "geojson": {
+            "doc": "A GeoJSON data source."
+        }
+      },
+      "doc": "The data type of the GeoJSON source."
+    },
+    "data": {
+      "type": "*",
+      "doc": "A URL to a GeoJSON file, or inline GeoJSON."
+    },
+    "maxzoom": {
+      "type": "number",
+      "default": 18,
+      "doc": "Maximum zoom level at which to create vector tiles (higher means greater detail at high zoom levels)."
+    },
+    "buffer": {
+      "type": "number",
+      "default": 128,
+      "maximum": 512,
+      "minimum": 0,
+      "doc": "Size of the tile buffer on each side. A value of 0 produces no buffer. A value of 512 produces a buffer as wide as the tile itself. Larger values produce fewer rendering artifacts near tile edges and slower performance."
+    },
+    "tolerance": {
+      "type": "number",
+      "default": 0.375,
+      "doc": "Douglas-Peucker simplification tolerance (higher means simpler geometries and faster performance)."
+    },
+    "cluster": {
+      "type": "boolean",
+      "default": false,
+      "doc": "If the data is a collection of point features, setting this to true clusters the points by radius into groups."
+    },
+    "clusterRadius": {
+      "type": "number",
+      "default": 50,
+      "minimum": 0,
+      "doc": "Radius of each cluster if clustering is enabled. A value of 512 indicates a radius equal to the width of a tile."
+    },
+    "clusterMaxZoom": {
+      "type": "number",
+      "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+    }
+  },
+  "source_video": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "video": {
+            "doc": "A video data source."
+        }
+      },
+      "doc": "The data type of the video source."
+    },
+    "urls": {
+      "required": true,
+      "type": "array",
+      "value": "string",
+      "doc": "URLs to video content in order of preferred format."
+    },
+    "coordinates": {
+      "required": true,
+      "doc": "Corners of video specified in longitude, latitude pairs.",
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
+      }
+    }
+  },
+  "source_image": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "image": {
+            "doc": "An image data source."
+        }
+      },
+      "doc": "The data type of the image source."
+    },
+    "url": {
+      "required": true,
+      "type": "string",
+      "doc": "URL that points to an image."
+    },
+    "coordinates": {
+      "required": true,
+      "doc": "Corners of image specified in longitude, latitude pairs.",
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
+      }
+    }
+  },
+  "source_canvas": {
+    "type": {
+      "required": true,
+      "type": "enum",
+      "values": {
+        "canvas": {
+          "doc": "A canvas data source."
+        }
+      },
+      "doc": "The data type of the canvas source."
+    },
+    "coordinates": {
+      "required": true,
+      "doc": "Corners of canvas specified in longitude, latitude pairs.",
+      "type": "array",
+      "length": 4,
+      "value": {
+        "type": "array",
+        "length": 2,
+        "value": "number",
+        "doc": "A single longitude, latitude pair."
+      }
+    },
+    "animate": {
+      "type": "boolean",
+      "default": "true",
+      "doc": "Whether the canvas source is animated. If the canvas is static, `animate` should be set to `false` to improve performance."
+    },
+    "canvas": {
+      "type": "string",
+      "required": true,
+      "doc": "HTML ID of the canvas from which to read pixels."
+    }
+  },
+  "layer": {
+    "id": {
+      "type": "string",
+      "doc": "Unique layer name.",
+      "required": true
+    },
+    "type": {
+      "type": "enum",
+      "values": {
+        "fill": {
+          "doc": "A filled polygon with an optional stroked border.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "line": {
+          "doc": "A stroked line.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "symbol": {
+          "doc": "An icon or a text label.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "circle": {
+          "doc": "A filled circle.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "fill-extrusion": {
+          "doc": "An extruded (3D) polygon.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.27.0"
+            }
+          }
+        },
+        "raster": {
+          "doc": "Raster map textures such as satellite imagery.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        },
+        "background": {
+          "doc": "The background color or pattern of the map.",
+          "sdk-support": {
+            "basic functionality": {
+              "js": "0.10.0",
+              "android": "2.0.1",
+              "ios": "2.0.0",
+              "macos": "0.1.0"
+            }
+          }
+        }
+      },
+      "doc": "Rendering type of this layer."
+    },
+    "metadata": {
+      "type": "*",
+      "doc": "Arbitrary properties useful to track with the layer, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+    },
+    "ref": {
+      "type": "string",
+      "doc": "References another layer to copy `type`, `source`, `source-layer`, `minzoom`, `maxzoom`, `filter`, and `layout` properties from. This allows the layers to share processing and be more efficient."
+    },
+    "source": {
+      "type": "string",
+      "doc": "Name of a source description to be used for this layer."
+    },
+    "source-layer": {
+      "type": "string",
+      "doc": "Layer to use from a vector tile source. Required if the source supports multiple layers."
+    },
+    "minzoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 24,
+      "doc": "The minimum zoom level on which the layer gets parsed and appears on."
+    },
+    "maxzoom": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 24,
+      "doc": "The maximum zoom level on which the layer gets parsed and appears on."
+    },
+    "filter": {
+      "type": "filter",
+      "doc": "A expression specifying conditions on source features. Only features that match the filter are displayed."
+    },
+    "layout": {
+      "type": "layout",
+      "doc": "Layout properties for the layer."
+    },
+    "paint": {
+      "type": "paint",
+      "doc": "Default paint properties for this layer."
+    },
+    "paint.*": {
+      "type": "paint",
+      "doc": "[Deprecated] Class-specific paint properties for this layer. The class name is the part after the first dot. Note: style classes are deprecated and will be removed in the next version of this spec."
+    }
+  },
+  "layout": [
+    "layout_fill",
+    "layout_line",
+    "layout_circle",
+    "layout_fill-extrusion",
+    "layout_symbol",
+    "layout_raster",
+    "layout_background"
+  ],
+  "layout_background": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "layout_fill": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "layout_circle": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "layout_fill-extrusion": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    }
+  },
+  "layout_line": {
+    "line-cap": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "butt": {
+            "doc": "A cap with a squared-off end which is drawn to the exact endpoint of the line."
+        },
+        "round": {
+            "doc": "A cap with a rounded end which is drawn beyond the endpoint of the line at a radius of one-half of the line's width and centered on the endpoint of the line."
+        },
+        "square": {
+            "doc": "A cap with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
+        }
+      },
+      "default": "butt",
+      "doc": "The display of line endings.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-join": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "bevel": {
+            "doc": "A join with a squared-off end which is drawn beyond the endpoint of the line at a distance of one-half of the line's width."
+        },
+        "round": {
+            "doc": "A join with a rounded end which is drawn beyond the endpoint of the line at a radius of one-half of the line's width and centered on the endpoint of the line."
+        },
+        "miter": {
+            "doc": "A join with a sharp, angled corner which is drawn with the outer sides beyond the endpoint of the path until they meet."
+        }
+      },
+      "default": "miter",
+      "doc": "The display of lines when joining.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-miter-limit": {
+      "type": "number",
+      "default": 2,
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Used to automatically convert miter joins to bevel joins for sharp angles.",
+      "requires": [
+        {
+          "line-join": "miter"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-round-limit": {
+      "type": "number",
+      "default": 1.05,
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Used to automatically convert round joins to miter joins for shallow angles.",
+      "requires": [
+        {
+          "line-join": "round"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "layout_symbol": {
+    "symbol-placement": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+          "point": {
+              "doc": "The label is placed at the point where the geometry is located."
+          },
+          "line": {
+              "doc": "The label is placed along the line of the geometry. Can only be used on `LineString` and `Polygon` geometries."
+          }
+      },
+      "default": "point",
+      "doc": "Label placement relative to its geometry.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "symbol-spacing": {
+      "type": "number",
+      "default": 250,
+      "minimum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "units": "pixels",
+      "doc": "Distance between two symbol anchors.",
+      "requires": [
+        {
+          "symbol-placement": "line"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "symbol-avoid-edges": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, the symbols will not cross tile edges to avoid mutual collisions. Recommended in layers that don't have enough padding in the vector tile to prevent collisions, or if it is a point symbol layer placed after a line symbol layer.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-allow-overlap": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, the icon will be visible even if it collides with other previously drawn symbols.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-ignore-placement": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, other symbols can be visible even if they collide with the icon.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-optional": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, text will display without their corresponding icons when the icon collides with other symbols and the text does not.",
+      "requires": [
+        "icon-image",
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-rotation-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "When `symbol-placement` is set to `point`, aligns icons east-west. When `symbol-placement` is set to `line`, aligns icon x-axes with the line."
+        },
+        "viewport": {
+            "doc": "Produces icons whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`."
+        },
+        "auto": {
+            "doc": "When `symbol-placement` is set to `point`, this is equivalent to `viewport`. When `symbol-placement` is set to `line`, this is equivalent to `map`."
+        }
+      },
+      "default": "auto",
+      "doc": "In combination with `symbol-placement`, determines the rotation behavior of icons.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "`auto` value": {
+          "js": "0.25.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-size": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-text-fit": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "none": {
+            "doc": "The icon is displayed at its intrinsic aspect ratio."
+        },
+        "width": {
+            "doc": "The icon is scaled in the x-dimension to fit the width of the text."
+        },
+        "height": {
+            "doc": "The icon is scaled in the y-dimension to fit the height of the text."
+        },
+        "both": {
+            "doc": "The icon is scaled in both x- and y-dimensions."
+        }
+      },
+      "default": "none",
+      "doc": "Scales the icon to fit around the associated text.",
+      "requires": [
+        "icon-image",
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.21.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.2.1"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-text-fit-padding": {
+      "type": "array",
+      "value": "number",
+      "length": 4,
+      "default": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "units": "pixels",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Size of the additional area added to dimensions determined by `icon-text-fit`, in clockwise order: top, right, bottom, left.",
+      "requires": [
+        "icon-image",
+        "text-field",
+        {
+          "icon-text-fit": [
+            "both",
+            "width",
+            "height"
+          ]
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.21.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.2.1"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-image": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "doc": "Name of image in sprite to use for drawing an image background. A string with {tokens} replaced, referencing the data property to pull from.",
+      "tokens": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "units": "degrees",
+      "doc": "Rotates the icon clockwise.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.21.0"
+        }
+      }
+    },
+    "icon-padding": {
+      "type": "number",
+      "default": 2,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "units": "pixels",
+      "doc": "Size of the additional area around the icon bounding box used for detecting symbol collisions.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-keep-upright": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, the icon may be flipped to prevent it from being rendered upside-down.",
+      "requires": [
+        "icon-image",
+        {
+          "icon-rotation-alignment": "map"
+        },
+        {
+          "symbol-placement": "line"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-offset": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "doc": "Offset distance of icon from its anchor. Positive values indicate right and down, while negative values indicate left and up. When combined with `icon-rotate` the offset will be as if the rotated direction was up.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "text-pitch-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The text is aligned to the plane of the map."
+        },
+        "viewport": {
+            "doc": "The text is aligned to the plane of the viewport."
+        },
+        "auto": {
+            "doc": "Automatically matches the value of `text-rotation-alignment`."
+        }
+      },
+      "default": "auto",
+      "doc": "Orientation of text when map is pitched.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.21.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.2.1"
+        },
+        "`auto` value": {
+          "js": "0.25.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-rotation-alignment": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "When `symbol-placement` is set to `point`, aligns text east-west. When `symbol-placement` is set to `line`, aligns text x-axes with the line."
+        },
+        "viewport": {
+            "doc": "Produces glyphs whose x-axes are aligned with the x-axis of the viewport, regardless of the value of `symbol-placement`."
+        },
+        "auto": {
+            "doc": "When `symbol-placement` is set to `point`, this is equivalent to `viewport`. When `symbol-placement` is set to `line`, this is equivalent to `map`."
+        }
+      },
+      "default": "auto",
+      "doc": "In combination with `symbol-placement`, determines the rotation behavior of the individual glyphs forming the text.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "`auto` value": {
+          "js": "0.25.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.3.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-field": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": true,
+      "default": "",
+      "tokens": true,
+      "doc": "Value to use for a text label. Feature properties are specified using tokens like {field_name}.  (Token replacement is only supported for literal `text-field` values--not for property functions.)",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-font": {
+      "type": "array",
+      "value": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": ["Open Sans Regular", "Arial Unicode MS Regular"],
+      "doc": "Font stack to use for displaying text.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-size": {
+      "type": "number",
+      "default": 16,
+      "minimum": 0,
+      "units": "pixels",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Font size.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-max-width": {
+      "type": "number",
+      "default": 10,
+      "minimum": 0,
+      "units": "ems",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "The maximum line width for text wrapping.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-line-height": {
+      "type": "number",
+      "default": 1.2,
+      "units": "ems",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Text leading value for multi-line text.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-letter-spacing": {
+      "type": "number",
+      "default": 0,
+      "units": "ems",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Text tracking amount.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-justify": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "left": {
+            "doc": "The text is aligned to the left."
+        },
+        "center": {
+            "doc": "The text is centered."
+        },
+        "right": {
+            "doc": "The text is aligned to the right."
+        }
+      },
+      "default": "center",
+      "doc": "Text justification options.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "center": {
+            "doc": "The center of the text is placed closest to the anchor."
+        },
+        "left": {
+            "doc": "The left side of the text is placed closest to the anchor."
+        },
+        "right": {
+            "doc": "The right side of the text is placed closest to the anchor."
+        },
+        "top": {
+            "doc": "The top of the text is placed closest to the anchor."
+        },
+        "bottom": {
+            "doc": "The bottom of the text is placed closest to the anchor."
+        },
+        "top-left": {
+            "doc": "The top left corner of the text is placed closest to the anchor."
+        },
+        "top-right": {
+            "doc": "The top right corner of the text is placed closest to the anchor."
+        },
+        "bottom-left": {
+            "doc": "The bottom left corner of the text is placed closest to the anchor."
+        },
+        "bottom-right": {
+            "doc": "The bottom right corner of the text is placed closest to the anchor."
+        }
+      },
+      "default": "center",
+      "doc": "Part of the text placed closest to the anchor.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-max-angle": {
+      "type": "number",
+      "default": 45,
+      "units": "degrees",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Maximum angle change between adjacent characters.",
+      "requires": [
+        "text-field",
+        {
+          "symbol-placement": "line"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "units": "degrees",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Rotates the text clockwise.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-padding": {
+      "type": "number",
+      "default": 2,
+      "minimum": 0,
+      "units": "pixels",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Size of the additional area around the text bounding box used for detecting symbol collisions.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-keep-upright": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": true,
+      "doc": "If true, the text may be flipped vertically to prevent it from being rendered upside-down.",
+      "requires": [
+        "text-field",
+        {
+          "text-rotation-alignment": "map"
+        },
+        {
+          "symbol-placement": "line"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-transform": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "property-function": true,
+      "values": {
+        "none": {
+            "doc": "The text is not altered."
+        },
+        "uppercase": {
+            "doc": "Forces all letters to be displayed in uppercase."
+        },
+        "lowercase": {
+            "doc": "Forces all letters to be displayed in lowercase."
+        }
+      },
+      "default": "none",
+      "doc": "Specifies how to capitalize text, similar to the CSS `text-transform` property.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-offset": {
+      "type": "array",
+      "doc": "Offset distance of text from its anchor. Positive values indicate right and down, while negative values indicate left and up.",
+      "value": "number",
+      "units": "ems",
+      "function": "interpolated",
+      "zoom-function": true,
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-allow-overlap": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, the text will be visible even if it collides with other previously drawn symbols.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-ignore-placement": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, other symbols can be visible even if they collide with the text.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-optional": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": false,
+      "doc": "If true, icons will display without their corresponding text when the text collides with other symbols and the icon does not.",
+      "requires": [
+        "text-field",
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "layout_raster": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+            "doc": "The layer is shown."
+        },
+        "none": {
+            "doc": "The layer is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether this layer is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "filter": {
+    "type": "array",
+    "value": "*",
+    "doc": "A filter selects specific features from a layer."
+  },
+  "filter_operator": {
+    "type": "enum",
+    "values": {
+      "==": {
+          "doc": "`[\"==\", key, value]` equality: `feature[key] = value`"
+      },
+      "!=": {
+          "doc": "`[\"!=\", key, value]` inequality: `feature[key] ≠ value`"
+      },
+      ">": {
+          "doc": "`[\">\", key, value]` greater than: `feature[key] > value`"
+      },
+      ">=": {
+          "doc": "`[\">=\", key, value]` greater than or equal: `feature[key] ≥ value`"
+      },
+      "<": {
+          "doc": "`[\"<\", key, value]` less than: `feature[key] < value`"
+      },
+      "<=": {
+          "doc": "`[\"<=\", key, value]` less than or equal: `feature[key] ≤ value`"
+      },
+      "in": {
+          "doc": "`[\"in\", key, v0, ..., vn]` set inclusion: `feature[key] ∈ {v0, ..., vn}`"
+      },
+      "!in": {
+          "doc": "`[\"!in\", key, v0, ..., vn]` set exclusion: `feature[key] ∉ {v0, ..., vn}`"
+      },
+      "all": {
+          "doc": "`[\"all\", f0, ..., fn]` logical `AND`: `f0 ∧ ... ∧ fn`"
+      },
+      "any": {
+          "doc": "`[\"any\", f0, ..., fn]` logical `OR`: `f0 ∨ ... ∨ fn`"
+      },
+      "none": {
+          "doc": "`[\"none\", f0, ..., fn]` logical `NOR`: `¬f0 ∧ ... ∧ ¬fn`"
+      },
+      "has": {
+          "doc": "`[\"has\", key]` `feature[key]` exists"
+      },
+      "!has": {
+          "doc": "`[\"!has\", key]` `feature[key]` does not exist"
+      }
+    },
+    "doc": "The filter operator."
+  },
+  "geometry_type": {
+    "type": "enum",
+    "values": {
+      "Point": {
+          "doc": "Filter to point geometries."
+      },
+      "LineString": {
+          "doc": "Filter to line geometries."
+      },
+      "Polygon": {
+          "doc": "Filter to polygon geometries."
+      }
+    },
+    "doc": "The geometry type for the filter to select."
+  },
+  "function": {
+    "stops": {
+      "type": "array",
+      "doc": "An array of stops.",
+      "value": "function_stop"
+    },
+    "base": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With `1` the stops are interpolated linearly."
+    },
+    "property": {
+      "type": "string",
+      "doc": "The name of a feature property to use as the function input.",
+      "default": "$zoom"
+    },
+    "type": {
+      "type": "enum",
+      "values": {
+          "identity": {
+              "doc": "Return the input value as the output value."
+          },
+          "exponential": {
+              "doc": "Generate an output by interpolating between stops just less than and just greater than the function input."
+          },
+          "interval": {
+              "doc": "Return the output value of the stop just less than the function input."
+          },
+          "categorical": {
+              "doc": "Return the output value of the stop equal to the function input."
+          }
+      },
+      "doc": "The interpolation strategy to use in function evaluation.",
+      "default": "exponential"
+    },
+    "colorSpace": {
+      "type": "enum",
+      "values": {
+          "rgb": {
+              "doc": "Use the RGB color space to interpolate color values"
+          },
+          "lab": {
+              "doc": "Use the LAB color space to interpolate color values."
+          },
+          "hcl": {
+              "doc": "Use the HCL color space to interpolate color values, interpolating the Hue, Chroma, and Luminance channels individually."
+          }
+      },
+      "doc": "The color space in which colors interpolated. Interpolating colors in perceptual color spaces like LAB and HCL tend to produce color ramps that look more consistent and produce colors that can be differentiated more easily than those interpolated in RGB space.",
+      "default": "rgb"
+    },
+    "default": {
+      "type": "*",
+      "required": false,
+      "doc": "A value to serve as a fallback function result when a value isn't otherwise available. It is used in the following circumstances:\n* In categorical functions, when the feature value does not match any of the stop domain values.\n* In property and zoom-and-property functions, when a feature does not contain a value for the specified property.\n* In identity functions, when the feature value is not valid for the style property (for example, if the function is being used for a `circle-color` property but the feature property value is not a string or not a valid color).\n* In interval or exponential property and zoom-and-property functions, when the feature value is not numeric.\nIf no default is provided, the style property's default is used in these circumstances."
+    }
+  },
+  "function_stop": {
+    "type": "array",
+    "minimum": 0,
+    "maximum": 22,
+    "value": [
+      "number",
+      "color"
+    ],
+    "length": 2,
+    "doc": "Zoom level and value pair."
+  },
+  "light": {
+    "anchor": {
+      "type": "enum",
+      "default": "viewport",
+      "values": {
+        "map": {
+          "doc": "The position of the light source is aligned to the rotation of the map."
+        },
+        "viewport": {
+          "doc": "The position of the light source is aligned to the rotation of the viewport."
+        }
+      },
+      "transition": false,
+      "doc": "Whether extruded geometries are lit relative to the map or viewport.",
+      "example": "map",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "position": {
+      "type": "array",
+      "default": [1.15, 210, 30],
+      "length": 3,
+      "value": "number",
+      "transition": true,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "doc": "Position of the light source relative to lit (extruded) geometries, in [r radial coordinate, a azimuthal angle, p polar angle] where r indicates the distance from the center of the base of an object to its light, a indicates the position of the light relative to 0° (0° when `light.anchor` is set to `viewport` corresponds to the top of the viewport, or 0° when `light.anchor` is set to `map` corresponds to due north, and degrees proceed clockwise), and p indicates the height of the light (from 0°, directly above, to 180°, directly below).",
+      "example": [1.5, 90, 80],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "color": {
+      "type": "color",
+      "default": "#ffffff",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "doc": "Color tint for lighting extruded geometries.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "intensity": {
+      "type": "number",
+      "default": 0.5,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "transition": true,
+      "doc": "Intensity of lighting (on a scale from 0 to 1). Higher numbers will present as more extreme contrast.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    }
+  },
+  "paint": [
+    "paint_fill",
+    "paint_line",
+    "paint_circle",
+    "paint_fill-extrusion",
+    "paint_symbol",
+    "paint_raster",
+    "paint_background"
+  ],
+  "paint_fill": {
+    "fill-antialias": {
+      "type": "boolean",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "default": true,
+      "doc": "Whether or not the fill should be antialiased.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-opacity": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the entire fill layer. In contrast to the `fill-color`, this value will also affect the 1px stroke around the fill, if the stroke is used.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.21.0"
+        }
+      }
+    },
+    "fill-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The color of the filled part of this layer. This color can be specified as `rgba` with an alpha component and the color's opacity will not affect the opacity of the 1px stroke, if it is used.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.19.0"
+        }
+      }
+    },
+    "fill-outline-color": {
+      "type": "color",
+      "doc": "The outline color of the fill. Matches the value of `fill-color` if unspecified.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-pattern"
+        },
+        {
+          "fill-antialias": true
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.19.0"
+        }
+      }
+    },
+    "fill-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The fill is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The fill is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "fill-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-pattern": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "transition": true,
+      "doc": "Name of image in sprite to use for drawing image fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_fill-extrusion": {
+    "fill-extrusion-opacity": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": false,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity of the entire fill extrusion layer. This is rendered on a per-layer, not per-feature, basis, and data-driven styling is not available.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The base color of the extruded fill. The extrusion's surfaces will be shaded differently based on this color in combination with the root `light` settings. If this color is specified as `rgba` with an alpha component, the alpha component will be ignored; use `fill-extrusion-opacity` to set layer opacity.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "fill-extrusion-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up (on the flat plane), respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-extrusion-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The fill extrusion is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The fill extrusion is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "fill-extrusion-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-extrusion-pattern": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "transition": true,
+      "doc": "Name of image in sprite to use for drawing images on extruded fills. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "fill-extrusion-height": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 0,
+      "minimum": 0,
+      "units": "meters",
+      "doc": "The height with which to extrude this layer.",
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
+          "js": "0.27.0"
+        }
+      }
+    },
+    "fill-extrusion-base": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 0,
+      "minimum": 0,
+      "units": "meters",
+      "doc": "The height with which to extrude the base of this layer. Must be less than or equal to `fill-extrusion-height`.",
+      "transition": true,
+      "requires": [
+        "fill-extrusion-height"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.27.0"
+        },
+        "data-driven styling": {
+          "js": "0.27.0"
+        }
+      }
+    }
+  },
+  "paint_line": {
+    "line-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the line will be drawn.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "line-color": {
+      "type": "color",
+      "doc": "The color with which the line will be drawn.",
+      "default": "#000000",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "line-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.23.0"
+        }
+      }
+    },
+    "line-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The line is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The line is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "line-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-width": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Stroke thickness.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-gap-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "doc": "Draws a line casing outside of a line's actual path. Value indicates the width of the inner gap.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "line-offset": {
+      "type": "number",
+      "default": 0,
+      "doc": "The line's offset. For linear features, a positive value offsets the line to the right, relative to the direction of the line, and a negative value to the left. For polygon features, a positive value results in an inset, and a negative value results in an outset.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.12.1",
+          "android": "3.0.0",
+          "ios": "3.1.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "line-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Blur applied to the line, in pixels.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "line-dasharray": {
+      "type": "array",
+      "value": "number",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "doc": "Specifies the lengths of the alternating dashes and gaps that form the dash pattern. The lengths are later scaled by the line width. To convert a dash length to pixels, multiply the length by the current line width.",
+      "minimum": 0,
+      "transition": true,
+      "units": "line widths",
+      "requires": [
+        {
+          "!": "line-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "line-pattern": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "transition": true,
+      "doc": "Name of image in sprite to use for drawing image lines. For seamless patterns, image width must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_circle": {
+    "circle-radius": {
+      "type": "number",
+      "default": 5,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Circle radius.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.18.0"
+        }
+      }
+    },
+    "circle-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The fill color of the circle.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.18.0"
+        }
+      }
+    },
+    "circle-blur": {
+      "type": "number",
+      "default": 0,
+      "doc": "Amount to blur the circle. 1 blurs the circle such that only the centerpoint is full opacity.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.20.0"
+        }
+      }
+    },
+    "circle-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the circle will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {
+          "js": "0.20.0"
+        }
+      }
+    },
+    "circle-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [0, 0],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The geometry's offset. Values are [x, y] where negatives indicate left and up, respectively.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "circle-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The circle is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The circle is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "circle-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "circle-pitch-scale": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "Circles are scaled according to their apparent distance to the camera."
+        },
+        "viewport": {
+            "doc": "Circles are not scaled."
+        }
+      },
+      "default": "map",
+      "doc": "Controls the scaling behavior of the circle when the map is pitched.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.21.0",
+          "android": "4.2.0",
+          "ios": "3.4.0",
+          "macos": "0.2.1"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "circle-stroke-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The width of the circle's stroke. Strokes are placed outside of the `circle-radius`.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "circle-stroke-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The stroke color of the circle.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    },
+    "circle-stroke-opacity": {
+      "type": "number",
+      "doc": "The opacity of the circle's stroke.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.29.0"
+        },
+        "data-driven styling": {
+          "js": "0.29.0"
+        }
+      }
+    }
+  },
+  "paint_symbol": {
+    "icon-opacity": {
+      "doc": "The opacity at which the icon will be drawn.",
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-color": {
+      "type": "color",
+      "default": "#000000",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "doc": "The color of the icon. This can only be used with sdf icons.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-halo-color": {
+      "type": "color",
+      "default": "rgba(0, 0, 0, 0)",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "doc": "The color of the icon's halo. Icon halos can only be used with SDF icons.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-halo-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance of halo to the icon outline.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-halo-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Fade out the halo towards the outside.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance that the icon's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
+      "requires": [
+        "icon-image"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "icon-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "Icons are translated relative to the map."
+        },
+        "viewport": {
+            "doc": "Icons are translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "icon-image",
+        "icon-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the text will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-color": {
+      "type": "color",
+      "doc": "The color with which the text will be drawn.",
+      "default": "#000000",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-halo-color": {
+      "type": "color",
+      "default": "rgba(0, 0, 0, 0)",
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "doc": "The color of the text's halo, which helps it stand out from backgrounds.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-halo-width": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance of halo to the font outline. Max text halo width is 1/4 of the font-size.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-halo-blur": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "property-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "The halo's fadeout distance towards the outside.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-translate": {
+      "type": "array",
+      "value": "number",
+      "length": 2,
+      "default": [
+        0,
+        0
+      ],
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "pixels",
+      "doc": "Distance that the text's anchor is moved from its original placement. Positive values indicate right and down, while negative values indicate left and up.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "text-translate-anchor": {
+      "type": "enum",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "values": {
+        "map": {
+            "doc": "The text is translated relative to the map."
+        },
+        "viewport": {
+            "doc": "The text is translated relative to the viewport."
+        }
+      },
+      "doc": "Controls the translation reference point.",
+      "default": "map",
+      "requires": [
+        "text-field",
+        "text-translate"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_raster": {
+    "raster-opacity": {
+      "type": "number",
+      "doc": "The opacity at which the image will be drawn.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-hue-rotate": {
+      "type": "number",
+      "default": 0,
+      "period": 360,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "degrees",
+      "doc": "Rotates hues around the color wheel.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-brightness-min": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the minimum brightness.",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-brightness-max": {
+      "type": "number",
+      "function": "interpolated",
+      "zoom-function": true,
+      "doc": "Increase or reduce the brightness of the image. The value is the maximum brightness.",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-saturation": {
+      "type": "number",
+      "doc": "Increase or reduce the saturation of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-contrast": {
+      "type": "number",
+      "doc": "Increase or reduce the contrast of the image.",
+      "default": 0,
+      "minimum": -1,
+      "maximum": 1,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    },
+    "raster-fade-duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "units": "milliseconds",
+      "doc": "Fade duration when a new tile is added.",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        },
+        "data-driven styling": {}
+      }
+    }
+  },
+  "paint_background": {
+    "background-color": {
+      "type": "color",
+      "default": "#000000",
+      "doc": "The color with which the background will be drawn.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "requires": [
+        {
+          "!": "background-pattern"
+        }
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    },
+    "background-pattern": {
+      "type": "string",
+      "function": "piecewise-constant",
+      "zoom-function": true,
+      "transition": true,
+      "doc": "Name of image in sprite to use for drawing an image background. For seamless patterns, image width and height must be a factor of two (2, 4, 8, ..., 512).",
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    },
+    "background-opacity": {
+      "type": "number",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "doc": "The opacity at which the background will be drawn.",
+      "function": "interpolated",
+      "zoom-function": true,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.10.0",
+          "android": "2.0.1",
+          "ios": "2.0.0",
+          "macos": "0.1.0"
+        }
+      }
+    }
+  },
+  "transition": {
+    "duration": {
+      "type": "number",
+      "default": 300,
+      "minimum": 0,
+      "units": "milliseconds",
+      "doc": "Time allotted for transitions to complete."
+    },
+    "delay": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "units": "milliseconds",
+      "doc": "Length of time before a transition begins."
+    }
+  }
+}

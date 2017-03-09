@@ -1,0 +1,24 @@
+---
+layout: pages
+options: full
+class: fill-light
+title: Mapbox GL JS Plugins
+category: plugins
+---
+
+<div id='plugins' class='doc' data-swiftype-index=true>
+  {% for section in site.data.plugins %}
+    <div class='space-bottom4'>
+      <a id='{{section[0] | slugify}}'></a>
+      <h2 class='space-bottom1'>{{section[0]}}</h2>
+      {% for plugin in section[1] %}
+        <div class='space-bottom1 keyline-all pad2 fill-white'>
+          <a id='{{plugin[0] | slugify}}'></a>
+          <h3><a href='{{plugin[1].website}}'>{{plugin[0]}}</a></h3>
+          {% if plugin[1].example %}<a class="small quiet rcon" href='{{plugin[1].example}}'>view example</a>{% endif %}
+          {{plugin[1].description | markdownify}}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>

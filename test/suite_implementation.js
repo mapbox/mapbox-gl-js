@@ -1,14 +1,14 @@
 'use strict';
 
-const ajax =  require('../js/util/ajax');
+const ajax =  require('../src/util/ajax');
 const sinon = require('sinon');
 const request = require('request');
 const PNG = require('pngjs').PNG;
-const Map = require('../js/ui/map');
-const window = require('../js/util/window');
-const browser = require('../js/util/browser');
-const rtlTextPlugin = require('../js/source/rtl_text_plugin');
-const rtlText = require('mapbox-gl-rtl-text');
+const Map = require('../src/ui/map');
+const window = require('../src/util/window');
+const browser = require('../src/util/browser');
+const rtlTextPlugin = require('../src/source/rtl_text_plugin');
+const rtlText = require('@mapbox/mapbox-gl-rtl-text');
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -25,8 +25,8 @@ module.exports = function(style, options, _callback) {
     window.devicePixelRatio = options.pixelRatio;
 
     const container = window.document.createElement('div');
-    container.offsetHeight = options.height;
-    container.offsetWidth = options.width;
+    Object.defineProperty(container, 'offsetWidth', {value: options.width});
+    Object.defineProperty(container, 'offsetHeight', {value: options.height});
 
     const map = new Map({
         container: container,
@@ -68,7 +68,7 @@ module.exports = function(style, options, _callback) {
             }
 
             const results = options.queryGeometry ?
-                map.queryRenderedFeatures(options.queryGeometry, options) :
+                map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
                 [];
 
             map.remove();

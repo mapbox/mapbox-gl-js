@@ -1,9 +1,10 @@
-/docs/api/index.html
+/docs/api
+/docs/style-spec/index.html
 /_site
 /dist/mapbox-gl-dev.js
 /dist/mapbox-gl.js
 *.js.map
-/node_modules
+node_modules
 npm-debug.log
 *.sublime-*
 coverage
@@ -11,7 +12,6 @@ coverage
 .nyc_output
 *_generated.js
 *-generated.js
-yarn.lock
 test/integration/**/index.html
 test/integration/**/actual.png
 test/integration/**/diff.png

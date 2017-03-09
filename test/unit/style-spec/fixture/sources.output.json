@@ -1,0 +1,38 @@
+[
+  {
+    "message": "sources.missing-type: \"type\" is required",
+    "line": 4
+  },
+  {
+    "message": "sources.invalid-type.type: expected one of [vector, raster, geojson, video, image, canvas], invalid found",
+    "line": 7
+  },
+  {
+    "message": "sources.no-tilejson-properties-with-url.tiles: a source with a \"url\" property may not include a \"tiles\" property",
+    "line": 12
+  },
+  {
+    "message": "sources.no-unknown-properties-with-url.foo: a source with a \"url\" property may not include a \"foo\" property",
+    "line": 17
+  },
+  {
+    "message": "sources.video-missing-coordinates: missing required property \"coordinates\"",
+    "line": 26
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[0]: array expected, number found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[1]: array expected, string found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[2][1]: number expected, string found",
+    "line": 34
+  },
+  {
+    "message": "sources.video-wrong-coordinates.coordinates[3]: array length 2 expected, length 0 found",
+    "line": 34
+  }
+]

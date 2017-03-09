@@ -9,16 +9,17 @@ machine:
 dependencies:
   cache_directories:
     - './nvm'
+    - '~/.yarn'
   override:
-    - ./ci/dependencies.sh
+    - ./ci-scripts/dependencies.sh
 test:
   override:
-    - ./ci/test.sh
+    - ./ci-scripts/test.sh
 deployment:
   release:
     tag: /v[0-9]+\.[0-9]+\.[0-9]+(\-dev)?/
     commands:
-      - ./ci/deploy.sh
+      - ./ci-scripts/deploy.sh
 general:
   artifacts:
     - "node_modules/mapbox-gl-test-suite/render-tests/index.html"

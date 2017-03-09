@@ -3,20 +3,17 @@
   description: "Things actively being built right now."
   items:
     -
-      name: Custom canvas layer type
-      issues: ["3580"]
-    -
-      name: Source loading and errored patterns
-      issues: ["3280"]
-    -
       name: Client-side terrain rendering
       issues: ["3730"]
     -
-      name: Monorepo architecture
-      issues: ["3656"]
-    -
       name: Property aggregation on clustered features
       issues: ["2412"]
+    -
+      name: Runtime sprite manipulation
+      issues: ["2059", "4086"]  
+    -
+      name: Custom WebGL layer type
+      issues: ["281"]
 -
   term: "Upcoming"
   description: "Things we hope to start building in the next several months."
@@ -25,17 +22,8 @@
       name: <code>Map#setCamera</code> method
       issues: ["3583", "2801"]
     -
-      name: <code>Map#addImage</code> and <code>Map#removeImage</code>
-      issues: ["2059"]
-    -
       name: Better benchmarking tools
       issues: ["3237", "3495", "3031", "2253", "3248"]
     -
       name: Custom source type API
       project: 2
-    -
-      name: Property functions for symbol paint properties
-      issues: ["2730"]
-    -
-      name: Custom WebGL layer type
-      issues: ["281"]

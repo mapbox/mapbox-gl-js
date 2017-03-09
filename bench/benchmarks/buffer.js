@@ -4,17 +4,17 @@ const VT = require('vector-tile');
 const Protobuf = require('pbf');
 const assert = require('assert');
 
-const WorkerTile = require('../../js/source/worker_tile');
-const ajax = require('../../js/util/ajax');
-const Style = require('../../js/style/style');
-const StyleLayerIndex = require('../../js/style/style_layer_index');
-const util = require('../../js/util/util');
-const Evented = require('../../js/util/evented');
-const config = require('../../js/util/config');
+const WorkerTile = require('../../src/source/worker_tile');
+const ajax = require('../../src/util/ajax');
+const Style = require('../../src/style/style');
+const StyleLayerIndex = require('../../src/style/style_layer_index');
+const util = require('../../src/util/util');
+const Evented = require('../../src/util/evented');
+const config = require('../../src/util/config');
 const coordinates = require('../lib/coordinates');
 const formatNumber = require('../lib/format_number');
 const accessToken = require('../lib/access_token');
-const deref = require('mapbox-gl-style-spec/lib/deref');
+const deref = require('../../src/style-spec/deref');
 
 const SAMPLE_COUNT = 10;
 

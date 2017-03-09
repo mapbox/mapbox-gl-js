@@ -56,12 +56,14 @@ examples:
             {% endfor %}
         {% endif %}
         {% if page.url contains 'plugins' %}
-          <div class='space-bottom'>
-            <a class='block quiet strong small truncate active' href='{{site.baseurl}}/plugins/'>Plugins</a>
-          </div>
-          <div class='space-bottom'>
-            {% for plugin in site.categories.plugin %}
-            <a href='{{site.baseurl}}/plugins/#{{plugin.prefix}}' class='block small truncate'>{{plugin.title}}</a>
+          <div>
+            {% for section in site.data.plugins %}
+              <div class="space-bottom">
+                <a href='{{site.baseurl}}/plugins/#{{section[0] | slugify}}' class='dark-link block small truncate'>{{section[0]}}</a>
+                {% for plugin in section[1] %}
+                  <a href='{{site.baseurl}}/plugins/#{{plugin[0] | slugify}}' class='block small truncate'>{{plugin[0]}}</a>
+                {% endfor %}
+              </div>
             {% endfor %}
           </div>
         {% endif %}
@@ -77,25 +79,11 @@ examples:
 </div>
 
 <div class='limiter clearfix'>
-  <div class='pad2y'>
-    <nav class='contain z10 margin3 col9 fill-gradient space-bottom round small'>
-      <div class='col3 dark round-left keyline-right pad1 center truncate'>
-        <div class='pad0y'>
-          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL JS
-        </div>
-      </div>
-      <div class='col9 dark tabs mobile-cols pad1'><!--
-        --><a href='{{site.baseurl}}/api' class='col3 truncate{% if page.category == "api" %} active{% endif %}'>API</a><!--
-        --><a href='{{site.url}}/mapbox-gl-style-spec' class='col3 truncate'>Style Reference</a><!--
-        --><a href='{{site.baseurl}}/examples' class='col3 truncate{% if page.category == "example" %} active{% endif %}'>Examples</a><!--
-        --><a href='{{site.baseurl}}/plugins' class='col3 truncate{% if page.url contains "plugins" %} active{% endif %}'>Plugins</a>
-      </div>
-    </nav>
-  </div>
+  {% include navigation.html %}
 
   <div class='contain margin3 col9'>
     {{ content }}
   </div>
 </div>
 
-<script src='{{site.baseurl}}/js/site.js'></script>
+<script src='{{site.baseurl}}/src/site.js'></script>

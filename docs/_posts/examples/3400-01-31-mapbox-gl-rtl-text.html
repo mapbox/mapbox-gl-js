@@ -2,14 +2,14 @@
 layout: example
 category: example
 title: Add support for right-to-left scripts
-description: 'Use the <a target="_blank" href="https://github.com/mapbox/mapbox-gl-rtl-text">mapbox-gl-rtl-text</a> plugin to support scripts that use right-to-left layout (such as Arabic or Hebrew).'
+description: 'Use the <a target="_blank" href="https://github.com/mapbox/mapbox-gl-rtl-text">mapbox-gl-rtl-text</a> plugin to support scripts that use right-to-left layout (such as Arabic or Hebrew). Note that Studio does not yet support RTL text.'
 tags:
   - internationalization
 ---
 <div id='map'></div>
 
 <script>
-mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v{{site.data.plugins.mapbox-gl-rtl-text.latest}}/mapbox-gl-rtl-text.js');
+mapboxgl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.1.0/mapbox-gl-rtl-text.js');
 
 var map = new mapboxgl.Map({
     container: 'map',

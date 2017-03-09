@@ -1,3 +1,35 @@
+
+## 0.33.0 (March 8, 2017)
+
+#### :warning: Breaking changes
+- Automatically add Mapbox wordmark when required by Mapbox TOS #3933
+- Increase default `maxZoom` from 20 to 22 #4333
+- Deprecate `tiledata` and `tiledataloading` events in favor of `sourcedata` and `sourcedataloading`. #4347
+
+#### :white_check_mark: New features
+- Add property functions support for most symbol paint properties #4074, #4186, #4226
+- Add ability to specify default property value for undefined or invalid property values used in property functions. #4175
+- Improve `Map#fitBounds` to accept different values for top, bottom, left, and right `padding` #3890
+- Add a `FullscreenControl` for displaying a fullscreen map #3977
+
+#### :beetle: Bug fixes
+- Fix validation error on categorical zoom-and-property functions #4220
+- Fix bug causing expired resources to be re-requested causing an infinite loop #4255
+- Fix problem where `MapDataEvent#isSourceLoaded` always returned false #4254
+- Resolve an issue where tiles in the source cache were prematurely deleted, resulting in tiles flickering when zooming in and out and  #4311
+- Make sure `MapEventData` is passed through on calls `Map#flyTo` #4342
+- Fix incorrect returned values for `Map#isMoving` #4350
+- Fix categorical functions not allowing boolean stop domain values #4195
+- Fix piecewise-constant functions to allow non-integer zoom levels. #4196
+- Fix issues with `$id` in filters #4236 #4237
+- Fix a race condition with polygon centroid algorithm causing tiles not to load in some cases. #4273
+- Throw a meaningful error when giving non-array `layers` parameter to `queryRenderedFeatures` #4331
+- Throw a meaningful error when supplying invalid `minZoom` and `maxZoom` values #4324
+- Fix a memory leak when using the RTL Text plugin #4248
+
+#### Dev workflow changes
+- Merged the [Mapbox GL style specification](https://github.com/mapbox/mapbox-gl-style-spec) repo to this one (now under `src/style-spec` and `test/unit/style-spec`).
+
 ## 0.32.1 (Jan 26, 2017)
 
 #### Bug Fixes
