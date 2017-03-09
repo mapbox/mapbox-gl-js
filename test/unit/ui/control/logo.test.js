@@ -3,7 +3,6 @@ const test = require('mapbox-gl-js-test').test;
 const VectorTileSource = require('../../../../src/source/vector_tile_source');
 const window = require('../../../../src/util/window');
 const Map = require('../../../../src/ui/map');
-const LogoControl = require('../../../../src/ui/control/logo_control');
 
 function createMap(logoPosition, logoRequired) {
     const container = window.document.createElement('div');
@@ -79,13 +78,13 @@ test('LogoControl is not added more than once', (t)=>{
         ]
     });
     map.on('load', ()=>{
-        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length,1, 'first LogoControl');
+        t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length, 1, 'first LogoControl');
         map.addSource('source2', source);
         map.on('sourcedata', (e)=>{
-            if (e.isSourceLoaded && e.sourceId === 'source2' && e.sourceDataType ==='metadata') {
+            if (e.isSourceLoaded && e.sourceId === 'source2' && e.sourceDataType === 'metadata') {
                 t.equal(map.getContainer().querySelectorAll('.mapboxgl-ctrl-logo').length, 1, 'only one LogoControl is added with multiple sources');
                 t.end();
             }
-        })
-    })
-})
+        });
+    });
+});

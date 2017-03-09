@@ -37,7 +37,7 @@ class LogoControl {
     }
 
     _updateLogo(e) {
-        if (e && e.sourceDataType==='metadata'){
+        if (e && e.sourceDataType === 'metadata') {
             if (!this._container.childNodes.length && this._logoRequired()) {
                 const anchor = DOM.create('a', 'mapboxgl-ctrl-logo');
                 anchor.target = "_blank";
@@ -45,8 +45,8 @@ class LogoControl {
                 anchor.setAttribute("aria-label", "Mapbox logo");
                 this._container.appendChild(anchor);
                 this._map.off('data', this._updateLogo);
-            } else if (this._container.childNodes.length && !this._logoRequired()){
-                this.onRemove()
+            } else if (this._container.childNodes.length && !this._logoRequired()) {
+                this.onRemove();
             }
         }
     }
