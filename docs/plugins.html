@@ -15,7 +15,7 @@ category: plugins
         <div class='space-bottom1 keyline-all pad2 fill-white'>
           <a id='{{plugin[0] | slugify}}'></a>
           <h3><a href='{{plugin[1].website}}'>{{plugin[0]}}</a></h3>
-          {% if plugin[1].example %}<a class="small quiet rcon" href='{{plugin[1].example}}'>view example</a>{% endif %}
+          {% if plugin[1].example %}<a class="small quiet rcon" href='{{site.baseurl}}/example/{{plugin[1].example}}'>view example</a>{% endif %}
           {{plugin[1].description | markdownify}}
         </div>
       {% endfor %}
