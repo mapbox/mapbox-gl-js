@@ -29,7 +29,8 @@ class DragRotateHandler {
         util.bindAll([
             '_onDown',
             '_onMove',
-            '_onUp'
+            '_onUp',
+            '_onBlur'
         ], this);
 
     }
@@ -82,6 +83,7 @@ class DragRotateHandler {
 
         window.document.addEventListener('mousemove', this._onMove);
         window.document.addEventListener('mouseup', this._onUp);
+        window.addEventListener('blur', this._onBlur);
 
         this._active = false;
         this._inertia = [[Date.now(), this._map.getBearing()]];
@@ -89,6 +91,14 @@ class DragRotateHandler {
         this._center = this._map.transform.centerPoint;  // Center of rotation
 
         e.preventDefault();
+    }
+
+    /**
+     * Deactivates DragRotate when the window looses focus. Otherwise the mouseup event is never fired and when the
+     * window comes back in focus DragRotate is still active even though the mouse isn't down.
+     */
+    _onBlur(e) {
+        this._onUp(e);
     }
 
     _onMove(e) {
@@ -129,6 +139,7 @@ class DragRotateHandler {
         if (this._ignoreEvent(e)) return;
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onUp);
+        window.removeEventListener('blur', this._onBlur);
 
         if (!this.isActive()) return;
 
