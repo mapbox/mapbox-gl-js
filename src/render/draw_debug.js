@@ -183,4 +183,4 @@ function createTextVerticies(text, left, baseline, scale) {
     }
 
     return strokes;
-};
+}
