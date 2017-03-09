@@ -37,6 +37,7 @@ class FullscreenControl {
         const container = this._container = DOM.create('div', `${className} mapboxgl-ctrl-group`);
         const button = this._fullscreenButton = DOM.create('button', (`${className}-icon ${className}-fullscreen`), this._container);
         button.setAttribute("aria-label", "Toggle fullscreen");
+        button.type = 'button';
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
         this._mapContainer = map.getContainer();
         window.document.addEventListener(this._fullscreenchange, this._changeIcon);
