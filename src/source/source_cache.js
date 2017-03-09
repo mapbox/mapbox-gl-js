@@ -31,11 +31,11 @@ class SourceCache extends Evented {
             // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
             // if the source type does not come with a TileJSON, the flag signifies the
             // source data has loaded (i.e geojson has been tiled on the worker and is ready)
-            if (e.dataType === 'source' && e.sourceDataType==='metadata') this._sourceLoaded = true;
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
             // for sources with mutable data, this event fires when the underlying data
             // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
-            if (this._sourceLoaded && e.dataType==="source" && e.sourceDataType==='content') {
+            if (this._sourceLoaded && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
@@ -146,8 +146,8 @@ class SourceCache extends Evented {
     reloadTile(id, state) {
         const tile = this._tiles[id];
 
-        // TODO potentially does not address all underlying
-        // issues https://github.com/mapbox/mapbox-gl-js/issues/4252
+        // potentially does not address all underlying issues
+        // https://github.com/mapbox/mapbox-gl-js/issues/4252
         // - hard to tell without repro steps
         if (!tile) return;
 

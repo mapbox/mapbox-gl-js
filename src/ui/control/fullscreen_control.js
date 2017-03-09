@@ -21,13 +21,13 @@ class FullscreenControl {
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
-        if ('onfullscreenchange' in document) {
+        if ('onfullscreenchange' in window.document) {
             this._fullscreenchange = 'fullscreenchange';
-        } else if ('onmozfullscreenchange' in document) {
+        } else if ('onmozfullscreenchange' in window.document) {
             this._fullscreenchange = 'mozfullscreenchange';
-        } else if ('onwebkitfullscreenchange' in document) {
+        } else if ('onwebkitfullscreenchange' in window.document) {
             this._fullscreenchange = 'webkitfullscreenchange';
-        } else if ('onmsfullscreenchange' in document) {
+        } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
     }
@@ -58,7 +58,7 @@ class FullscreenControl {
             this._fullscreen = !this._fullscreen;
             const className = 'mapboxgl-ctrl';
             this._fullscreenButton.classList.toggle(`${className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);    
+            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
         }
     }
 
