@@ -4,6 +4,7 @@ const ShelfPack = require('@mapbox/shelf-pack');
 const browser = require('../util/browser');
 const util = require('../util/util');
 const window = require('../util/window');
+const Evented = require('../util/evented');
 
 class AtlasImage {
     constructor(rect, width, height, sdf, pixelRatio) {
@@ -15,9 +16,11 @@ class AtlasImage {
     }
 }
 
-class SpriteAtlas {
+class SpriteAtlas extends Evented {
 
     constructor(width, height) {
+        super();
+
         this.width = width;
         this.height = height;
 
@@ -64,22 +67,24 @@ class SpriteAtlas {
         }
 
         if (!(pixels instanceof Uint32Array)) {
-            throw new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.');
+            this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.')});
         }
 
         if (this.images[name]) {
-            throw new Error('An image with this name already exists.');
+            this.fire('error', {error: new Error('An image with this name already exists.')});
         }
 
         const rect = this.allocateImage(width, height);
         if (!rect) {
-            throw new Error('There is not enough space to add this image.');
+            this.fire('error', {error: new Error('There is not enough space to add this image.')});
         }
 
         const image = new AtlasImage(rect, width / this.pixelRatio, height / this.pixelRatio, false, 1);
         this.images[name] = image;
 
         this.copy(pixels, width, rect, {pixelRatio: this.pixelRatio, x: 0, y: 0, width, height}, false);
+
+        this.fire('data', {dataType: 'style'});
     }
 
     getImage(name, wrap) {

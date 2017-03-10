@@ -58,6 +58,7 @@ class Style extends Evented {
         this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.spriteAtlas = new SpriteAtlas(1024, 1024);
+        this.spriteAtlas.setEventedParent(this);
         this.lineAtlas = new LineAtlas(256, 512);
 
         this._layers = {};
