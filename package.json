@@ -14,6 +14,7 @@
   "dependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
     "@mapbox/unitbezier": "^0.0.0",
+    "@mapbox/whoots-js": "^3.0.0",
     "brfs": "^1.4.0",
     "bubleify": "^0.7.0",
     "earcut": "^2.0.3",
@@ -33,8 +34,7 @@
     "unflowify": "^1.0.0",
     "vector-tile": "^1.3.0",
     "vt-pbf": "^2.0.2",
-    "webworkify": "^1.4.0",
-    "whoots-js": "^2.0.0"
+    "webworkify": "^1.4.0"
   },
   "devDependencies": {
     "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
