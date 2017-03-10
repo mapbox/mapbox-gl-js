@@ -1,6 +1,6 @@
 'use strict';
 
-const ShelfPack = require('shelf-pack');
+const ShelfPack = require('@mapbox/shelf-pack');
 const browser = require('../util/browser');
 const util = require('../util/util');
 
@@ -20,7 +20,7 @@ class SpriteAtlas {
         this.width = width;
         this.height = height;
 
-        this.bin = new ShelfPack(width, height);
+        this.atlas = new ShelfPack(width, height);
         this.images = {};
         this.data = false;
         this.texture = 0; // WebGL ID
@@ -41,7 +41,7 @@ class SpriteAtlas {
         const packWidth = pixelWidth + padding + (4 - (pixelWidth + padding) % 4);
         const packHeight = pixelHeight + padding + (4 - (pixelHeight + padding) % 4);// + 4;
 
-        const rect = this.bin.packOne(packWidth, packHeight);
+        const rect = this.atlas.packOne(packWidth, packHeight);
         if (!rect) {
             util.warnOnce('SpriteAtlas out of space.');
             return null;
