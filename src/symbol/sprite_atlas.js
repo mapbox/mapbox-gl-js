@@ -3,6 +3,7 @@
 const ShelfPack = require('@mapbox/shelf-pack');
 const browser = require('../util/browser');
 const util = require('../util/util');
+const window = require('../util/window');
 
 class AtlasImage {
     constructor(rect, width, height, sdf, pixelRatio) {
@@ -50,6 +51,37 @@ class SpriteAtlas {
         return rect;
     }
 
+    // pixels may be a HTMLImageElement or ImageData object or URL string
+    addImage(name, pixels, width, height) {
+        if (pixels instanceof window.HTMLImageElement) {
+            width = pixels.width;
+            height = pixels.height;
+            pixels = browser.getImageData(pixels);
+        }
+
+        if (ArrayBuffer.isView(pixels)) {
+            pixels = new Uint32Array(pixels.buffer);
+        }
+
+        if (!(pixels instanceof Uint32Array)) {
+            throw new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.');
+        }
+
+        if (this.images[name]) {
+            throw new Error('An image with this name already exists.');
+        }
+
+        const rect = this.allocateImage(width, height);
+        if (!rect) {
+            throw new Error('There is not enough space to add this image.');
+        }
+
+        const image = new AtlasImage(rect, width / this.pixelRatio, height / this.pixelRatio, false, 1);
+        this.images[name] = image;
+
+        this.copy(pixels, width, rect, {pixelRatio: this.pixelRatio, x: 0, y: 0, width, height}, false);
+    }
+
     getImage(name, wrap) {
         if (this.images[name]) {
             return this.images[name];
@@ -72,7 +104,9 @@ class SpriteAtlas {
         const image = new AtlasImage(rect, pos.width / pos.pixelRatio, pos.height / pos.pixelRatio, pos.sdf, pos.pixelRatio / this.pixelRatio);
         this.images[name] = image;
 
-        this.copy(rect, pos, wrap);
+        if (!this.sprite.imgData) return null;
+        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
+        this.copy(srcImg, this.sprite.width, rect, pos, wrap);
 
         return image;
     }
@@ -108,10 +142,7 @@ class SpriteAtlas {
         }
     }
 
-    copy(dst, src, wrap) {
-        if (!this.sprite.imgData) return;
-        const srcImg = new Uint32Array(this.sprite.imgData.buffer);
-
+    copy(srcImg, srcImgWidth, dstPos, srcPos, wrap) {
         this.allocate();
         const dstImg = this.data;
 
@@ -119,16 +150,16 @@ class SpriteAtlas {
 
         copyBitmap(
             /* source buffer */  srcImg,
-            /* source stride */  this.sprite.width,
-            /* source x */       src.x,
-            /* source y */       src.y,
+            /* source stride */  srcImgWidth,
+            /* source x */       srcPos.x,
+            /* source y */       srcPos.y,
             /* dest buffer */    dstImg,
             /* dest stride */    this.width * this.pixelRatio,
-            /* dest x */         (dst.x + padding) * this.pixelRatio,
-            /* dest y */         (dst.y + padding) * this.pixelRatio,
-            /* icon dimension */ src.width,
-            /* icon dimension */ src.height,
-            /* wrap */ wrap
+            /* dest x */         (dstPos.x + padding) * this.pixelRatio,
+            /* dest y */         (dstPos.y + padding) * this.pixelRatio,
+            /* icon dimension */ srcPos.width,
+            /* icon dimension */ srcPos.height,
+            /* wrap */           wrap
         );
 
         this.dirty = true;
