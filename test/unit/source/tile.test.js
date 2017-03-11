@@ -87,7 +87,7 @@ test('querySourceFeatures', (t) => {
 
         tile.loadVectorData(null, painter);
 
-        t.ok(tile.unloadVectorData.calledWith(painter));
+        t.ok(tile.unloadVectorData.calledWith());
         t.end();
     });
 
