@@ -1,0 +1,94 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256
+    }
+  },
+  "zoom": 1,
+  "center": [
+    -60,
+    -50
+  ],
+  "sources": {
+    "LineStrings": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "LineString",
+            "coordinates": [
+              [-60, -60],
+              [-60, 60],
+              [60, 60],
+              [60, -60],
+              [-60, -60]
+            ]
+          },
+          {
+            "type": "LineString",
+            "coordinates": [
+              [-90, -50],
+              [-90, -40],
+              [-70, -40],
+              [-70, -50],
+              [-90, -50]
+            ]
+          }
+        ]
+      }
+    },
+    "Polygons": {
+      "type": "geojson",
+      "data": {
+        "type": "GeometryCollection",
+        "geometries": [
+          {
+            "type": "Polygon",
+            "coordinates": [[
+              [-50, -50],
+              [-50, 70],
+              [70, 70],
+              [70, -50],
+              [-50, -50]
+            ]]
+          },
+          {
+            "type": "Polygon",
+            "coordinates": [[
+              [-90, -65],
+              [-90, -55],
+              [-70, -55],
+              [-70, -65],
+              [-90, -65]
+            ]]
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "LineString",
+      "type": "line",
+      "source": "LineStrings",
+      "paint": {
+        "line-width": 20,
+        "line-opacity": 0.5,
+        "line-color": "green"
+      }
+    },
+    {
+      "id": "Polygon",
+      "type": "line",
+      "source": "Polygons",
+      "paint": {
+        "line-width": 20,
+        "line-opacity": 0.5,
+        "line-color": "blue"
+      }
+    }
+  ]
+}
