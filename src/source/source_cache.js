@@ -146,8 +146,8 @@ class SourceCache extends Evented {
     reloadTile(id, state) {
         const tile = this._tiles[id];
 
-        // potentially does not address all underlying issues
-        // https://github.com/mapbox/mapbox-gl-js/issues/4252
+        // this potentially does not address all underlying
+        // issues https://github.com/mapbox/mapbox-gl-js/issues/4252
         // - hard to tell without repro steps
         if (!tile) return;
 
