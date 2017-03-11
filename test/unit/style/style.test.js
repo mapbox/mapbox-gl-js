@@ -816,8 +816,8 @@ test('Style#addLayer', (t) => {
         };
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist on source/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist on source/);
                 t.end();
             });
             style.addLayer(layer);
@@ -882,8 +882,8 @@ test('Style#removeLayer', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be removed/);
                 t.end();
             });
             style.removeLayer('background');
@@ -961,8 +961,8 @@ test('Style#moveLayer', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be moved/);
                 t.end();
             });
             style.moveLayer('background');
@@ -1080,8 +1080,8 @@ test('Style#setFilter', (t) => {
         const style = createStyle();
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be filtered/);
                 t.end();
             });
             style.setFilter('non-existant', ['==', 'id', 1]);
@@ -1135,8 +1135,8 @@ test('Style#setLayerZoomRange', (t) => {
     t.test('fires an error if layer not found', (t) => {
         const style = createStyle();
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot have zoom extent/);
                 t.end();
             });
             style.setLayerZoomRange('non-existant', 5, 12);
