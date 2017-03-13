@@ -2,42 +2,90 @@
   "version": 8,
   "metadata": {
     "test": {
-      "height": 256,
-      "diff": 0.0002
+      "width": 64,
+      "height": 64
     }
   },
-  "center": [
-    13.418056,
-    52.499167
-  ],
-  "zoom": 14,
   "sources": {
-    "mapbox": {
-      "type": "vector",
-      "maxzoom": 14,
-      "tiles": [
-        "local://tiles/{z}-{x}-{y}.mvt"
-      ]
+    "a": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            -10
+          ],
+          [
+            10,
+            -10
+          ]
+        ]
+      }
+    },
+    "b": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ]
+      }
+    },
+    "c": {
+      "type": "geojson",
+      "data": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -10,
+            10
+          ],
+          [
+            10,
+            10
+          ]
+        ]
+      }
     }
   },
   "sprite": "local://sprites/emerald",
   "layers": [
     {
-      "id": "background",
-      "type": "background",
+      "id": "a",
+      "type": "line",
+      "source": "a",
       "paint": {
-        "background-color": "white"
+        "line-width": 2,
+        "line-opacity": 0.5,
+        "line-pattern": "generic_icon"
       }
     },
     {
-      "id": "road",
+      "id": "b",
       "type": "line",
-      "source": "mapbox",
-      "source-layer": "road",
+      "source": "b",
       "paint": {
-        "line-width": 20,
-        "line-pattern": "generic_icon",
-        "line-opacity": 0.5
+        "line-width": 4,
+        "line-opacity": 0.5,
+        "line-pattern": "generic_icon"
+      }
+    },
+    {
+      "id": "c",
+      "type": "line",
+      "source": "c",
+      "paint": {
+        "line-width": 8,
+        "line-opacity": 0.5,
+        "line-pattern": "generic_icon"
       }
     }
   ]
