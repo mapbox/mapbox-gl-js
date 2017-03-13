@@ -319,7 +319,7 @@ class SymbolBucket {
             layout['text-justify'] === 'left' ? 0 :
             0.5;
 
-        const oneEm = 24; // TODO: magic number
+        const oneEm = 24;
         const lineHeight = layout['text-line-height'] * oneEm;
         const maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
         const spacing = layout['text-letter-spacing'] * oneEm;
@@ -672,7 +672,6 @@ class SymbolBucket {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
             glyphQuads = glyphQuads.concat(addToBuffers ? getGlyphQuads(anchor, shapedTextOrientations[writingMode], textBoxScale, line, layer, textAlongLine) : []);
-            // TODO: Since (I believe) shapedTextOrientations can have more than one entry, it's unclear why we create this single textCollisionFeature within this loop.
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
 
