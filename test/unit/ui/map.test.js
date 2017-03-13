@@ -316,8 +316,8 @@ test('Map', (t) => {
             const map = createMap({style: style});
 
             map.on('load', () => {
-                map.on('error', ({ error }) => {
-                    t.match(error.message, /There is no source with ID/);
+                map.on('error', (e) => {
+                    t.match(e.error.message, /There is no source with ID/);
                     t.end();
                 });
                 map.isSourceLoaded('geojson');
@@ -876,8 +876,8 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                map.style.on('error', (e) => {
+                    t.match(e.error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
                 map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
@@ -1082,8 +1082,8 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                map.style.on('error', (e) => {
+                    t.match(e.error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
                 map.setPaintProperty('non-existant', 'background-color', 'red');

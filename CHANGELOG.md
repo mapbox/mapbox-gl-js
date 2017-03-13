@@ -1,3 +1,11 @@
+## 0.33.1 (March 10, 2017)
+
+#### Bug fixes :bug:
+- Prevent Mapbox logo from being added to the map more than once #4386
+- Add `type='button'` to `FullscreenControl` to prevent button from acting as a form submit #4397
+- Fix issue where map would continue to rotate if `Ctrl` key is released before the click during a `DragRotate` event #4389
+- Remove double `options.easing` description from the `Map#fitBounds` documentation #4402
+
 
 ## 0.33.0 (March 8, 2017)
 
@@ -5,6 +13,7 @@
 - Automatically add Mapbox wordmark when required by Mapbox TOS #3933
 - Increase default `maxZoom` from 20 to 22 #4333
 - Deprecate `tiledata` and `tiledataloading` events in favor of `sourcedata` and `sourcedataloading`. #4347
+- `mapboxgl.util` is no longer exported #1408
 
 #### :white_check_mark: New features
 - Add property functions support for most symbol paint properties #4074, #4186, #4226

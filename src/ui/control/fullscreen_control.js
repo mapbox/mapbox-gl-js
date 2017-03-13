@@ -21,13 +21,13 @@ class FullscreenControl {
             '_onClickFullscreen',
             '_changeIcon'
         ], this);
-        if ('onfullscreenchange' in document) {
+        if ('onfullscreenchange' in window.document) {
             this._fullscreenchange = 'fullscreenchange';
-        } else if ('onmozfullscreenchange' in document) {
+        } else if ('onmozfullscreenchange' in window.document) {
             this._fullscreenchange = 'mozfullscreenchange';
-        } else if ('onwebkitfullscreenchange' in document) {
+        } else if ('onwebkitfullscreenchange' in window.document) {
             this._fullscreenchange = 'webkitfullscreenchange';
-        } else if ('onmsfullscreenchange' in document) {
+        } else if ('onmsfullscreenchange' in window.document) {
             this._fullscreenchange = 'MSFullscreenChange';
         }
     }
@@ -37,6 +37,7 @@ class FullscreenControl {
         const container = this._container = DOM.create('div', `${className} mapboxgl-ctrl-group`);
         const button = this._fullscreenButton = DOM.create('button', (`${className}-icon ${className}-fullscreen`), this._container);
         button.setAttribute("aria-label", "Toggle fullscreen");
+        button.type = 'button';
         this._fullscreenButton.addEventListener('click', this._onClickFullscreen);
         this._mapContainer = map.getContainer();
         window.document.addEventListener(this._fullscreenchange, this._changeIcon);
@@ -58,7 +59,7 @@ class FullscreenControl {
             this._fullscreen = !this._fullscreen;
             const className = 'mapboxgl-ctrl';
             this._fullscreenButton.classList.toggle(`${className}-shrink`);
-            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);    
+            this._fullscreenButton.classList.toggle(`${className}-fullscreen`);
         }
     }
 
