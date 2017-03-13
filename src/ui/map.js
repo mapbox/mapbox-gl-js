@@ -817,8 +817,8 @@ class Map extends Camera {
         return this.style.getSource(id);
     }
 
-    addImage(name, image, width, height) {
-        this.style.spriteAtlas.addImage(name, image, width, height);
+    addImage(name, image, options) {
+        this.style.spriteAtlas.addImage(name, image, options);
     }
 
     removeImage(name) {

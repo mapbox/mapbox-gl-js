@@ -55,11 +55,17 @@ class SpriteAtlas extends Evented {
     }
 
     // pixels may be a HTMLImageElement or ImageData object or URL string
-    addImage(name, pixels, width, height) {
+    addImage(name, pixels, options) {
+        let width, height, pixelRatio;
         if (pixels instanceof window.HTMLImageElement) {
             width = pixels.width;
             height = pixels.height;
             pixels = browser.getImageData(pixels);
+            pixelRatio = this.pixelRatio;
+        } else {
+            width = options.width;
+            height = options.height;
+            pixelRatio = options.pixelRatio || this.pixelRatio;
         }
 
         if (ArrayBuffer.isView(pixels)) {
@@ -79,10 +85,10 @@ class SpriteAtlas extends Evented {
             this.fire('error', {error: new Error('There is not enough space to add this image.')});
         }
 
-        const image = new AtlasImage(rect, width / this.pixelRatio, height / this.pixelRatio, false, 1);
+        const image = new AtlasImage(rect, width / pixelRatio, height / pixelRatio, false, 1);
         this.images[name] = image;
 
-        this.copy(pixels, width, rect, {pixelRatio: this.pixelRatio, x: 0, y: 0, width, height}, false);
+        this.copy(pixels, width, rect, {pixelRatio, x: 0, y: 0, width, height}, false);
 
         this.fire('data', {dataType: 'style'});
     }
@@ -96,8 +102,15 @@ class SpriteAtlas extends Evented {
         }
 
         const rect = image.rect;
+        const pixelRatio = image.pixelRatio;
 
-        this.copy(new Uint32Array(image.width * image.height * this.pixelRatio * this.pixelRatio), image.width * this.pixelRatio, rect, {pixelRatio: this.pixelRatio, x: 0, y: 0, width: image.width * this.pixelRatio, height: image.width * this.pixelRatio}, false);
+        this.copy(
+            new Uint32Array(image.width * image.height * pixelRatio * pixelRatio),
+            image.width * pixelRatio,
+            rect,
+            {pixelRatio: pixelRatio, x: 0, y: 0, width: image.width * pixelRatio, height: image.width * pixelRatio},
+            false
+        );
 
         this.atlas.unref(rect);
 
