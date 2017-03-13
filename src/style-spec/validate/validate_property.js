@@ -40,9 +40,7 @@ module.exports = function validateProperty(options, propertyType) {
     const errors = [];
 
     if (options.layerType === 'symbol') {
-        if (propertyKey === 'icon-image' && style && !style.sprite) {
-            errors.push(new ValidationError(key, value, 'use of "icon-image" requires a style "sprite" property'));
-        } else if (propertyKey === 'text-field' && style && !style.glyphs) {
+        if (propertyKey === 'text-field' && style && !style.glyphs) {
             errors.push(new ValidationError(key, value, 'use of "text-field" requires a style "glyphs" property'));
         }
     }

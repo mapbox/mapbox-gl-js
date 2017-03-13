@@ -864,7 +864,7 @@ class Style extends Evented {
             this.spriteAtlas.setSprite(this.sprite);
             this.spriteAtlas.addIcons(params.icons, callback);
         };
-        if (this.sprite.loaded()) {
+        if (!this.sprite || this.sprite.loaded()) {
             updateSpriteAtlas();
         } else {
             this.sprite.on('data', updateSpriteAtlas);
