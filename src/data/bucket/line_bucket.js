@@ -435,4 +435,6 @@ class LineBucket extends Bucket {
     }
 }
 
+LineBucket.programInterface = lineInterface;
+
 module.exports = LineBucket;
