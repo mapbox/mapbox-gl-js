@@ -14,6 +14,7 @@
 - Increase default `maxZoom` from 20 to 22 #4333
 - Deprecate `tiledata` and `tiledataloading` events in favor of `sourcedata` and `sourcedataloading`. #4347
 - `mapboxgl.util` is no longer exported #1408
+- `"type": "categorical"` is now required for all categorical functions. Previously, some forms of "implicitly" categorical functions worked, and others did not. #3717
 
 #### :white_check_mark: New features
 - Add property functions support for most symbol paint properties #4074, #4186, #4226
