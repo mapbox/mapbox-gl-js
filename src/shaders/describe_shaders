@@ -2,28 +2,30 @@
 
 'use strict';
 
-// usage: describe_shaders path/to/style.json zoom
+// Shows (and describes) the shaders that would be generated for the given
+// style JSON
+// Usage: describe_shaders path/to/style.json zoom
 
 require('flow-remove-types/register');
 const fs = require('fs');
-const deref = require('mapbox-gl-style-spec/lib/deref');
-const util = require('../js/util/util');
-const shaders = require('../js/render/shaders');
-const ProgramConfiguration = require('../js/data/program_configuration');
-const StyleLayer = require('../js/style/style_layer');
-const AnimationLoop = require('../js/style/animation_loop');
+const deref = require('../style-spec/deref');
+const util = require('../util/util');
+const shaders = require('../render/shaders');
+const ProgramConfiguration = require('../data/program_configuration');
+const StyleLayer = require('../style/style_layer');
+const AnimationLoop = require('../style/animation_loop');
 
-const fillProgramInterface = require('../js/data/bucket/fill_bucket').programInterface;
-const circleProgramInterface = require('../js/data/bucket/circle_bucket').programInterface;
-const lineProgramInterface = require('../js/data/bucket/line_bucket').programInterface;
-const fillExtrusionProgramInterface = require('../js/data/bucket/fill_extrusion_bucket').programInterface;
+const fillProgramInterface = require('../data/bucket/fill_bucket').programInterface;
+const circleProgramInterface = require('../data/bucket/circle_bucket').programInterface;
+const lineProgramInterface = require('../data/bucket/line_bucket').programInterface;
+const fillExtrusionProgramInterface = require('../data/bucket/fill_extrusion_bucket').programInterface;
 
 const programInterfaces = util.extend({
     fill: fillProgramInterface,
     circle: circleProgramInterface,
     line: lineProgramInterface,
     fillExtrusion: fillExtrusionProgramInterface,
-}, require('../js/data/bucket/symbol_bucket').programInterfaces);
+}, require('../data/bucket/symbol_bucket').programInterfaces);
 
 const style = JSON.parse(fs.readFileSync(process.argv[2]));
 style.layers = deref(style.layers);
@@ -34,8 +36,18 @@ const programs = {};
 style.layers.forEach((layer) => {
     const shader = layer.type;
     const definition = shaders[shader];
-    const programInterface = programInterfaces[layer.type];
-    if (!programInterface) { return; }
+    if (layer.type === 'symbol') {
+        addProgramInfo(layer, programInterfaces['glyph'], shaders['symbolSDF']);
+        // output both types of icon shaders, since the choice is made at runtime
+        addProgramInfo(layer, programInterfaces['icon'], shaders['symbolSDF']);
+        addProgramInfo(layer, programInterfaces['icon'], shaders['symbolIcon']);
+    } else {
+        const programInterface = programInterfaces[layer.type];
+        if (programInterface) addProgramInfo(layer, programInterface, definition);
+    }
+});
+
+function addProgramInfo(layer, programInterface, shaderDefinition) {
     const styleLayer = new StyleLayer(layer);
     styleLayer.updatePaintTransitions([], {}, { zoom: zoom }, new AnimationLoop(), {});
     const configuration = ProgramConfiguration.createDynamic(
@@ -44,9 +56,9 @@ style.layers.forEach((layer) => {
     const program = programs[key] = programs[key] || { layers: [] };
     program.layers.push(layer);
     if (!program.shaderSource) {
-        program.shaderSource = createShaderSource(definition, configuration);
+        program.shaderSource = createShaderSource(shaderDefinition, configuration);
     }
-});
+}
 
 for (const key in programs) {
     const layers = programs[key].layers;
