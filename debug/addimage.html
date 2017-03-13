@@ -26,29 +26,35 @@ var map = window.map = new mapboxgl.Map({
 
 map.on('load', () => {
     const img = document.createElement('img');
-    img.src = '/test/integration/image/marker.png';
+    img.src = '/test/integration/image/0.png';
     img.onload = () => {
         map.addImage('img', img);
-        map.addLayer({
-            "id": "points",
-            "type": "symbol",
-            "source": {
-                "type": "geojson",
-                "data": {
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-122.414, 37.776]
-                        }
-                    }]
+        const img1 = document.createElement('img');
+        img1.src = '/test/integration/image/marker.png';
+        img1.onload = () => {
+            map.removeImage('img');
+            map.addImage('img', img1);
+            map.addLayer({
+                "id": "points",
+                "type": "symbol",
+                "source": {
+                    "type": "geojson",
+                    "data": {
+                        "type": "FeatureCollection",
+                        "features": [{
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [-122.414, 37.776]
+                            }
+                        }]
+                    }
+                },
+                "layout": {
+                    "icon-image": "img"
                 }
-            },
-            "layout": {
-                "icon-image": "img"
-            }
-        });
+            });
+        };
     };
 });
 
