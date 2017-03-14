@@ -4,6 +4,7 @@
 const test = require('mapbox-gl-js-test').test;
 const Coordinate = require('../../../src/geo/coordinate');
 const util = require('../../../src/util/util');
+const Point = require('point-geometry');
 
 test('util', (t) => {
     t.equal(util.easeCubicInOut(0), 0, 'easeCubicInOut=0');
@@ -232,7 +233,29 @@ test('util', (t) => {
             t.equal(util.arraysIntersect(a, b), false);
             t.end();
         });
-        
+
+        t.end();
+    });
+
+    t.test('isCounterClockwise ', (t) => {
+        t.test('counter clockwise', (t) => {
+            const a = new Point(0, 0);
+            const b = new Point(1, 0);
+            const c = new Point(1, 1);
+
+            t.equal(util.isCounterClockwise(a, b, c), true);
+            t.end();
+        });
+
+        t.test('clockwise', (t) => {
+            const a = new Point(0, 0);
+            const b = new Point(1, 0);
+            const c = new Point(1, 1);
+
+            t.equal(util.isCounterClockwise(c, b, a), false);
+            t.end();
+        });
+
         t.end();
     });
 
