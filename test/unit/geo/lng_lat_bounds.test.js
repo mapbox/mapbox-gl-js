@@ -103,7 +103,7 @@ test('LngLatBounds', (t) => {
         const bounds1 = new LngLatBounds(undefined, undefined);
         const bounds2 = new LngLatBounds([-10, -10], [10, 10]);
 
-        bounds1.extend(bounds2)
+        bounds1.extend(bounds2);
 
         t.equal(bounds1.getSouth(), -10);
         t.equal(bounds1.getWest(), -10);
