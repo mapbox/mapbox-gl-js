@@ -259,6 +259,31 @@ test('util', (t) => {
         t.end();
     });
 
+    t.test('isClosedPolygon', (t) => {
+        t.test('not enough points', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1)];
+
+            t.equal(util.isClosedPolygon(polygon), false);
+            t.end();
+        });
+
+        t.test('not equal first + last point', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(0, 1), new Point(1, 1)];
+
+            t.equal(util.isClosedPolygon(polygon), false);
+            t.end();
+        });
+
+        t.test('closed polygon', (t) => {
+            const polygon = [new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(0, 1), new Point(0, 0)];
+
+            t.equal(util.isClosedPolygon(polygon), true);
+            t.end();
+        });
+
+        t.end();
+    });
+
     t.test('parseCacheControl', (t) => {
         t.test('max-age', (t) => {
             t.deepEqual(util.parseCacheControl('max-age=123456789'), {
