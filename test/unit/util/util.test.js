@@ -216,6 +216,26 @@ test('util', (t) => {
         t.end();
     });
 
+    t.test('arraysIntersect', (t) => {
+        t.test('intersection', (t) => {
+            const a = ["1", "2", "3"];
+            const b = ["5", "4", "3"];
+
+            t.equal(util.arraysIntersect(a, b), true);
+            t.end();
+        });
+
+        t.test('no intersection', (t) => {
+            const a = ["1", "2", "3"];
+            const b = ["4", "5", "6"];
+
+            t.equal(util.arraysIntersect(a, b), false);
+            t.end();
+        });
+        
+        t.end();
+    });
+
     t.test('parseCacheControl', (t) => {
         t.test('max-age', (t) => {
             t.deepEqual(util.parseCacheControl('max-age=123456789'), {
