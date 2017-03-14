@@ -44,7 +44,7 @@ Tile
   +- buckets[...]: Bucket
         ...
 ```
-_Note that the a particular bucket may appear multiple times in `tile.bucket`--once for each layer in a given layout 'family'._
+_Note that a particular bucket may appear multiple times in `tile.buckets`--once for each layer in a given layout 'family'._
 
  - Rendering happens style-layer by style-layer, in `Painter#renderPass()`, which delegates to the layer-specific `drawXxxx()` methods in `src/render/draw_*.js`.
  - The `drawXxxx()` methods, in turn, render a layer tile by tile, by:
