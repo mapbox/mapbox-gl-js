@@ -817,10 +817,26 @@ class Map extends Camera {
         return this.style.getSource(id);
     }
 
+    /**
+     * Add an image to the style. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-patern`, and `line-pattern`.
+     *
+     * @param {string} name The name of the image.
+     * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
+     * @param {Object} [options] Only required if passing an `ArrayBufferView`
+     * @param {number} options.width The pixel width of the `ArrayBufferView` image
+     * @param {number} options.height The pixel height of the `ArrayBufferView` image
+     * @param {Object} options.pixelRatio The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
+     */
     addImage(name, image, options) {
         this.style.spriteAtlas.addImage(name, image, options);
     }
 
+    /**
+     * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
+     *
+     * @param {string} name The name of the image.
+     */
     removeImage(name) {
         this.style.spriteAtlas.removeImage(name);
     }

@@ -54,7 +54,6 @@ class SpriteAtlas extends Evented {
         return rect;
     }
 
-    // pixels may be a HTMLImageElement or ImageData object or URL string
     addImage(name, pixels, options) {
         let width, height, pixelRatio;
         if (pixels instanceof window.HTMLImageElement) {
