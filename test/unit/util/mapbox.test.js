@@ -213,6 +213,13 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('throw error on falsy url input', (t) => {
+            t.throws(() => {
+                mapbox.normalizeTileURL('', mapboxSource);
+            }, new Error('Unable to parse URL object'));
+            t.end();
+        });
+
         browser.supportsWebp = true;
 
         t.end();
