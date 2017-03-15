@@ -14,7 +14,7 @@ const UPDATE = !!process.env.UPDATE;
 
 t('does not migrate from version 5', (t) => {
     t.throws(() => {
-      migrate({version: 5, layers: []});
+        migrate({version: 5, layers: []});
     }, new Error('cannot migrate from', 5));
     t.end();
 });
