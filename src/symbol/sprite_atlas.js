@@ -105,22 +105,10 @@ class SpriteAtlas extends Evented {
         delete this.images[name];
 
         if (!image) {
-            this.fire('error', {error: new Error('No image with this name exists.')});
+            return this.fire('error', {error: new Error('No image with this name exists.')});
         }
 
-        const rect = image.rect;
-        const pixelRatio = image.pixelRatio;
-
-        this.copy(
-            new Uint32Array(image.width * image.height * pixelRatio * pixelRatio),
-            image.width * pixelRatio,
-            rect,
-            {pixelRatio: pixelRatio, x: 0, y: 0, width: image.width * pixelRatio, height: image.width * pixelRatio},
-            false
-        );
-
-        this.shelfPack.unref(rect);
-
+        this.shelfPack.unref(image.rect);
         this.fire('data', {dataType: 'style'});
     }
 
