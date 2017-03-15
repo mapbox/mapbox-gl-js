@@ -399,6 +399,69 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#moveLayer', (t) => {
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId1',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                },{
+                    id: 'layerId2',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
+        });
+
+        map.once('render', () => {
+            map.moveLayer('layerId1', 'layerId2');
+            t.equal(map.getLayer('layerId1').id, 'layerId1');
+            t.equal(map.getLayer('layerId2').id, 'layerId2');
+            t.end();
+        });
+    });
+
+    t.test('#getLayer', (t) => {
+        const layer = {
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        };
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [layer]
+            })
+        });
+
+        map.once('render', () => {
+            const mapLayer = map.getLayer('layerId');
+            t.equal(mapLayer.id, layer.id);
+            t.equal(mapLayer.type, layer.type);
+            t.equal(mapLayer.source, layer.source);
+            t.end();
+        });
+    });
+
     t.test('#resize', (t) => {
         t.test('sets width and height from container offsets', (t) => {
             const map = createMap(),
