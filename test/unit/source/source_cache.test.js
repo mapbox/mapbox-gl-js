@@ -284,12 +284,33 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
-    t.test('loaded() true after error', (t) => {
+    t.test('loaded() true after source error', (t) => {
         const sourceCache = createSourceCache({ error: 'Error loading source' })
         .on('error', () => {
             t.ok(sourceCache.loaded());
             t.end();
         });
+        sourceCache.onAdd();
+    });
+
+    t.test('loaded() true after tile error', (t)=>{
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+        const sourceCache = createSourceCache({
+            loadTile: function (tile, callback) {
+                callback("error");
+            }
+        }).on('data', (e)=>{
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+            }
+        }).on('error', ()=>{
+            t.true(sourceCache.loaded());
+            t.end();
+        });
+
+
         sourceCache.onAdd();
     });
 
