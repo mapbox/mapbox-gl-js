@@ -28,7 +28,7 @@ class StyleDeclaration {
                 }
             }
 
-            this.functionInterpolationT = createFunction({
+            this._functionInterpolationT = createFunction({
                 type: 'exponential',
                 stops: interpolationAmountStops,
                 base: value.base
@@ -46,8 +46,17 @@ class StyleDeclaration {
         return value;
     }
 
-    calculateInterpolationT(globalProperties, featureProperties) {
-        return this.functionInterpolationT(globalProperties && globalProperties.zoom, featureProperties || {});
+    /**
+     * Given a zoom level, calculate a possibly-fractional "index" into the
+     * composite function stops array, intended to be used for interpolating
+     * between paint values that have been evaluated at the surrounding stop
+     * values.
+     *
+     * Only valid for composite functions.
+     * @private
+     */
+    calculateInterpolationT(globalProperties) {
+        return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
     }
 }
 
