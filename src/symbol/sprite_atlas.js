@@ -26,7 +26,7 @@ class SpriteAtlas extends Evented {
         this.width = width;
         this.height = height;
 
-        this.atlas = new ShelfPack(width, height);
+        this.shelfPack = new ShelfPack(width, height);
         this.images = {};
         this.data = false;
         this.texture = 0; // WebGL ID
@@ -47,7 +47,7 @@ class SpriteAtlas extends Evented {
         const packWidth = pixelWidth + padding + (4 - (pixelWidth + padding) % 4);
         const packHeight = pixelHeight + padding + (4 - (pixelHeight + padding) % 4);// + 4;
 
-        const rect = this.atlas.packOne(packWidth, packHeight);
+        const rect = this.shelfPack.packOne(packWidth, packHeight);
         if (!rect) {
             util.warnOnce('SpriteAtlas out of space.');
             return null;
@@ -113,7 +113,7 @@ class SpriteAtlas extends Evented {
             false
         );
 
-        this.atlas.unref(rect);
+        this.shelfPack.unref(rect);
 
         this.fire('data', {dataType: 'style'});
     }
