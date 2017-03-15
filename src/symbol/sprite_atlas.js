@@ -16,6 +16,8 @@ class AtlasImage {
     }
 }
 
+// The SpriteAtlas class is responsible for turning a sprite and assorted
+// other images added at runtime into a texture that can be consumed by WebGL.
 class SpriteAtlas extends Evented {
 
     constructor(width, height) {
