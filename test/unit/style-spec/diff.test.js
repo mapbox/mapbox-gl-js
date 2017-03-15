@@ -292,5 +292,20 @@ t('diff', (t) => {
         { command: 'addLayer', args: [{id: 'b', source: 'foo'}, 'c'] }
     ], 'changing a source removes and re-adds dependent layers');
 
+    t.deepEqual(diffStyles({
+        sources: { foo: { data: 1 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' }
+        ]
+    }, {
+        sources: { foo: { data: 1 }, bar: {} },
+        layers: [
+            { id: 'a', source: 'bar' }
+        ],
+        transition: 'transition'
+    }), [
+        { command: 'setTransition', args: ['transition'] }
+    ], 'changing transition');
+
     t.end();
 });
