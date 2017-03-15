@@ -51,6 +51,6 @@ test('drag_rotate', (t) => {
         t.equals(dragRotateHandler.isEnabled(), false);
         t.end();
     });
-    
+
     t.end();
 });

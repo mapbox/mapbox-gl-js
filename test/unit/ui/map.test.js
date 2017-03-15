@@ -415,7 +415,7 @@ test('Map', (t) => {
                     type: 'circle',
                     source: 'mapbox',
                     'source-layer': 'sourceLayer'
-                },{
+                }, {
                     id: 'layerId2',
                     type: 'circle',
                     source: 'mapbox',
