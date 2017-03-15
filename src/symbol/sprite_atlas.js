@@ -6,16 +6,6 @@ const util = require('../util/util');
 const window = require('../util/window');
 const Evented = require('../util/evented');
 
-class AtlasImage {
-    constructor(rect, width, height, sdf, pixelRatio) {
-        this.rect = rect;
-        this.width = width;
-        this.height = height;
-        this.sdf = sdf;
-        this.pixelRatio = pixelRatio;
-    }
-}
-
 // The SpriteAtlas class is responsible for turning a sprite and assorted
 // other images added at runtime into a texture that can be consumed by WebGL.
 class SpriteAtlas extends Evented {
