@@ -190,6 +190,7 @@ class SpriteAtlas extends Evented {
         }
     }
 
+    // Copy some portion of srcImage into `SpriteAtlas#data`
     copy(srcImg, srcImgWidth, dstPos, srcPos, wrap) {
         this.allocate();
         const dstImg = this.data;
@@ -210,6 +211,8 @@ class SpriteAtlas extends Evented {
             /* wrap */           wrap
         );
 
+        // Indicates that `SpriteAtlas#data` has changed and needs to be
+        // reuploaded into the GL texture specified by `SpriteAtlas#texture`.
         this.dirty = true;
     }
 
