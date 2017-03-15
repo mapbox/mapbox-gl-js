@@ -86,7 +86,13 @@ class SpriteAtlas extends Evented {
             this.fire('error', {error: new Error('There is not enough space to add this image.')});
         }
 
-        const image = new AtlasImage(rect, width / pixelRatio, height / pixelRatio, false, 1);
+        const image = {
+            rect,
+            width: width / pixelRatio,
+            height: height / pixelRatio,
+            sdf: false,
+            pixelRatio: 1
+        };
         this.images[name] = image;
 
         this.copy(pixels, width, rect, {pixelRatio, x: 0, y: 0, width, height}, false);
@@ -137,7 +143,13 @@ class SpriteAtlas extends Evented {
             return null;
         }
 
-        const image = new AtlasImage(rect, pos.width / pos.pixelRatio, pos.height / pos.pixelRatio, pos.sdf, pos.pixelRatio / this.pixelRatio);
+        const image = {
+            rect,
+            width: pos.width / pos.pixelRatio,
+            height: pos.height / pos.pixelRatio,
+            sdf: pos.sdf,
+            pixelRatio: pos.pixelRatio / this.pixelRatio
+        };
         this.images[name] = image;
 
         if (!this.sprite.imgData) return null;
