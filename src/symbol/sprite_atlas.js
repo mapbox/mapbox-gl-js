@@ -74,16 +74,16 @@ class SpriteAtlas extends Evented {
         }
 
         if (!(pixels instanceof Uint32Array)) {
-            this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.')});
+            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.')});
         }
 
         if (this.images[name]) {
-            this.fire('error', {error: new Error('An image with this name already exists.')});
+            return this.fire('error', {error: new Error('An image with this name already exists.')});
         }
 
         const rect = this.allocateImage(width, height);
         if (!rect) {
-            this.fire('error', {error: new Error('There is not enough space to add this image.')});
+            return this.fire('error', {error: new Error('There is not enough space to add this image.')});
         }
 
         const image = {
