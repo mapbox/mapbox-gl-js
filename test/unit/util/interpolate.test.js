@@ -13,6 +13,11 @@ test('interpolate.number', (t) => {
     t.end();
 });
 
+test('interpolate.vec2', (t) => {
+    t.deepEqual(interpolate.vec2([0, 0], [1, 2], 0.5), [0.5, 1]);
+    t.end();
+});
+
 test('interpolate.color', (t) => {
     t.deepEqual(interpolate.color([0, 0, 0, 0], [1, 2, 3, 4], 0.5), [0.5, 1, 3 / 2, 2]);
     t.end();
