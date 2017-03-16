@@ -9,6 +9,8 @@ const window = require('../src/util/window');
 const browser = require('../src/util/browser');
 const rtlTextPlugin = require('../src/source/rtl_text_plugin');
 const rtlText = require('@mapbox/mapbox-gl-rtl-text');
+const fs = require('fs');
+const path = require('path');
 
 rtlTextPlugin['applyArabicShaping'] = rtlText.applyArabicShaping;
 rtlTextPlugin['processBidirectionalText'] = rtlText.processBidirectionalText;
@@ -68,7 +70,7 @@ module.exports = function(style, options, _callback) {
             }
 
             const results = options.queryGeometry ?
-                map.queryRenderedFeatures(options.queryGeometry, options) :
+                map.queryRenderedFeatures(options.queryGeometry, options.queryOptions || {}) :
                 [];
 
             map.remove();
@@ -99,6 +101,11 @@ function applyOperations(map, operations, callback) {
             }
         };
         wait();
+
+    } else if (operation[0] === 'addImage') {
+        const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
+        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: 1});
+        applyOperations(map, operations.slice(1), callback);
 
     } else {
         map[operation[0]].apply(map, operation.slice(1));

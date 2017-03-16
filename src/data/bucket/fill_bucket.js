@@ -89,4 +89,6 @@ class FillBucket extends Bucket {
     }
 }
 
+FillBucket.programInterface = fillInterface;
+
 module.exports = FillBucket;

@@ -5,6 +5,12 @@ const Buffer = require('./buffer');
 const ProgramConfiguration = require('./program_configuration');
 const VertexArrayObject = require('../render/vertex_array_object');
 
+/**
+ * A class containing vertex and element arrays for a bucket, ready for use in
+ * a WebGL program.  See {@link ArrayGroup} for details.
+ *
+ * @private
+ */
 class BufferGroup {
     constructor(programInterface, layers, zoom, arrays) {
         this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray,

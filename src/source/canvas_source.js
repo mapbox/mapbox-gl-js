@@ -44,7 +44,7 @@ class CanvasSource extends ImageSource {
         this.canvas = this.canvas || window.document.getElementById(this.options.canvas);
         this.width = this.canvas.width;
         this.height = this.canvas.height;
-        if (this._hasInvalidDimensions(this.canvas)) return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
+        if (this._hasInvalidDimensions()) return this.fire('error', new Error('Canvas dimensions cannot be less than or equal to zero.'));
 
         let loopID;
 
@@ -75,7 +75,6 @@ class CanvasSource extends ImageSource {
         this.load();
         if (this.canvas) {
             if (this.animate) this.play();
-            this.setCoordinates(this.coordinates);
         }
     }
 

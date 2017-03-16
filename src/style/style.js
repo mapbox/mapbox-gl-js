@@ -58,6 +58,7 @@ class Style extends Evented {
         this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.spriteAtlas = new SpriteAtlas(1024, 1024);
+        this.spriteAtlas.setEventedParent(this);
         this.lineAtlas = new LineAtlas(256, 512);
 
         this._layers = {};
@@ -78,8 +79,8 @@ class Style extends Evented {
         this.fire('dataloading', {dataType: 'style'});
 
         const self = this;
-        rtlTextPlugin.registerForPluginAvailability((pluginBlobURL) => {
-            self.dispatcher.broadcast('loadRTLTextPlugin', pluginBlobURL, rtlTextPlugin.errorCallback);
+        this._rtlTextPluginCallback = rtlTextPlugin.registerForPluginAvailability((args) => {
+            self.dispatcher.broadcast('loadRTLTextPlugin', args.pluginBlobURL, args.errorCallback);
             for (const id in self.sourceCaches) {
                 self.sourceCaches[id].reload(); // Should be a no-op if the plugin loads before any tiles load
             }
@@ -118,13 +119,15 @@ class Style extends Evented {
             browser.frame(stylesheetLoaded.bind(this, null, stylesheet));
         }
 
-        this.on('source.load', (event) => {
-            const source = this.sourceCaches[event.sourceId].getSource();
-            if (source && source.vectorLayerIds) {
-                for (const layerId in this._layers) {
-                    const layer = this._layers[layerId];
-                    if (layer.source === source.id) {
-                        this._validateLayer(layer);
+        this.on('data', (event) => {
+            if (event.dataType === 'source' && event.sourceDataType === 'metadata') {
+                const source = this.sourceCaches[event.sourceId].getSource();
+                if (source && source.vectorLayerIds) {
+                    for (const layerId in this._layers) {
+                        const layer = this._layers[layerId];
+                        if (layer.source === source.id) {
+                            this._validateLayer(layer);
+                        }
                     }
                 }
             }
@@ -137,7 +140,6 @@ class Style extends Evented {
         if (!layer.sourceLayer) return;
         if (!sourceCache) return;
         const source = sourceCache.getSource();
-
         if (source.type === 'geojson' || (source.vectorLayerIds &&
             source.vectorLayerIds.indexOf(layer.sourceLayer) === -1)) {
             this.fire('error', {
@@ -742,6 +744,10 @@ class Style extends Evented {
 
         const includedSources = {};
         if (params && params.layers) {
+            if (!Array.isArray(params.layers)) {
+                this.fire('error', {error: 'parameters.layers must be an Array.'});
+                return;
+            }
             for (const layerId of params.layers) {
                 const layer = this._layers[layerId];
                 if (!layer) {
@@ -824,6 +830,7 @@ class Style extends Evented {
     }
 
     _remove() {
+        rtlTextPlugin.evented.off('pluginAvailable', this._rtlTextPluginCallback);
         for (const id in this.sourceCaches) {
             this.sourceCaches[id].clearTiles();
         }
@@ -857,7 +864,7 @@ class Style extends Evented {
             this.spriteAtlas.setSprite(this.sprite);
             this.spriteAtlas.addIcons(params.icons, callback);
         };
-        if (this.sprite.loaded()) {
+        if (!this.sprite || this.sprite.loaded()) {
             updateSpriteAtlas();
         } else {
             this.sprite.on('data', updateSpriteAtlas);

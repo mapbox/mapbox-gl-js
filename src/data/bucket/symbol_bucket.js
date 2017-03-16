@@ -32,8 +32,7 @@ const getIconQuads = Quads.getIconQuads;
 const elementArrayType = createElementArrayType();
 
 const layoutVertexArrayType = createVertexArrayType([
-    {name: 'a_pos',         components: 2, type: 'Int16'},
-    {name: 'a_offset',      components: 2, type: 'Int16'},
+    {name: 'a_pos_offset',  components: 4, type: 'Int16'},
     {name: 'a_texture_pos', components: 2, type: 'Uint16'},
     {name: 'a_data',        components: 4, type: 'Uint8'}
 ]);
@@ -61,7 +60,7 @@ const symbolInterfaces = {
             {name: 'a_opacity', property: 'icon-opacity', type: 'Uint8', multiplier: 255}
         ]
     },
-    collisionBox: {
+    collisionBox: { // used to render collision boxes for debugging purposes
         layoutVertexArrayType: createVertexArrayType([
             {name: 'a_pos',     components: 2, type: 'Int16'},
             {name: 'a_extrude', components: 2, type: 'Int16'},
@@ -73,11 +72,9 @@ const symbolInterfaces = {
 
 function addVertex(array, x, y, ox, oy, tx, ty, minzoom, maxzoom, labelminzoom, labelangle) {
     array.emplaceBack(
-            // a_pos
+            // a_pos_offset
             x,
             y,
-
-            // a_offset
             Math.round(ox * 64),
             Math.round(oy * 64),
 
@@ -104,6 +101,32 @@ function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, place
         maxZoom * 10,
         placementZoom * 10);
 }
+
+/*
+ * Unlike other buckets, which simply implement #addFeature with type-specific
+ * logic for (essentially) triangulating feature geometries, SymbolBucket
+ * requires specialized behavior:
+ *
+ * 1. WorkerTile#parse(), the logical owner of the bucket creation process,
+ *    calls SymbolBucket#populate(), which resolves text and icon tokens on
+ *    each feature, adds each glyphs and symbols needed to the passed-in
+ *    collections options.glyphDependencies and options.iconDependencies, and
+ *    stores the feature data for use in subsequent step (this.features).
+ *
+ * 2. WorkerTile asynchronously requests from the main thread all of the glyphs
+ *    and icons needed (by this bucket and any others). When glyphs and icons
+ *    have been received, the WorkerTile creates a CollisionTile and invokes:
+ *
+ * 3. SymbolBucket#prepare(stacks, icons) to perform text shaping and layout, populating `this.symbolInstancesArray`, `this.symbolQuadsArray`, and `this.collisionBoxArray`.
+ *
+ * 4. SymbolBucket#place(collisionTile): taking collisions into account, decide on which labels and icons to actually draw and at which scale, populating the vertex arrays (`this.arrays.glyph`, `this.arrays.icon`) and thus completing the parsing / buffer population process.
+ *
+ * The reason that `prepare` and `place` are separate methods is that
+ * `prepare`, being independent of pitch and orientation, only needs to happen
+ * at tile load time, whereas `place` must be invoked on already-loaded tiles
+ * when the pitch/orientation are changed. (See `redoPlacement`.)
+ *
+ */
 
 class SymbolBucket {
     constructor(options) {
@@ -648,7 +671,7 @@ class SymbolBucket {
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
-            glyphQuads = glyphQuads.concat(addToBuffers ? getGlyphQuads(anchor, shapedTextOrientations[writingMode], textBoxScale, line, layer, textAlongLine, writingMode) : []);
+            glyphQuads = glyphQuads.concat(addToBuffers ? getGlyphQuads(anchor, shapedTextOrientations[writingMode], textBoxScale, line, layer, textAlongLine) : []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
 
@@ -685,6 +708,8 @@ class SymbolBucket {
         });
     }
 }
+
+SymbolBucket.programInterfaces = symbolInterfaces;
 
 // this constant is based on the size of StructArray indexes used in a symbol
 // bucket--namely, iconBoxEndIndex and textBoxEndIndex

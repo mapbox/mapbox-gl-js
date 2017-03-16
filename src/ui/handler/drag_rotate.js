@@ -96,6 +96,7 @@ class DragRotateHandler {
 
         if (!this.isActive()) {
             this._active = true;
+            this._map.moving = true;
             this._fireEvent('rotatestart', e);
             this._fireEvent('movestart', e);
         }
@@ -143,6 +144,7 @@ class DragRotateHandler {
             if (Math.abs(mapBearing) < this._bearingSnap) {
                 map.resetNorth({noMoveStart: true}, { originalEvent: e });
             } else {
+                this._map.moving = false;
                 this._fireEvent('moveend', e);
             }
         };
@@ -208,7 +210,7 @@ class DragRotateHandler {
                 // using Control + left click
                 eventButton = 0;
             }
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : eventButton !== button);
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : !this.isActive() && eventButton !== button);
         }
     }
 

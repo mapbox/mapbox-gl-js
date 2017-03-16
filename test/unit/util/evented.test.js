@@ -22,6 +22,7 @@ test('Evented', (t) => {
         evented.fire('a');
         evented.fire('a');
         t.ok(listener.calledOnce);
+        t.notOk(evented.listens('a'));
         t.end();
     });
 
@@ -62,11 +63,30 @@ test('Evented', (t) => {
         t.end();
     });
 
+    t.test('removes one-time listeners with "off"', (t) => {
+        const evented = new Evented();
+        const listener = t.spy();
+        evented.once('a', listener);
+        evented.off('a', listener);
+        evented.fire('a');
+        t.ok(listener.notCalled);
+        t.end();
+    });
+
     t.test('reports if an event has listeners with "listens"', (t) => {
         const evented = new Evented();
         evented.on('a', () => {});
         t.ok(evented.listens('a'));
         t.notOk(evented.listens('b'));
+        t.end();
+    });
+
+    t.test('does not report true to "listens" if all listeners have been removed', (t) => {
+        const evented = new Evented();
+        const listener = () => {};
+        evented.on('a', listener);
+        evented.off('a', listener);
+        t.notOk(evented.listens('a'));
         t.end();
     });
 

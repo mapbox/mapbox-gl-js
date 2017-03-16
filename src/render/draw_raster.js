@@ -122,7 +122,13 @@ function getFadeValues(tile, parentTile, layer, transform) {
         // if no parent or parent is older, fade in; if parent is younger, fade out
         const fadeIn = !parentTile || Math.abs(parentTile.coord.z - idealZ) > Math.abs(tile.coord.z - idealZ);
 
-        const childOpacity = util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+        const childOpacity = (fadeIn && tile.refreshedUponExpiration) ? 1 : util.clamp(fadeIn ? sinceTile : 1 - sinceParent, 0, 1);
+
+        // we don't crossfade tiles that were just refreshed upon expiring:
+        // once they're old enough to pass the crossfading threshold
+        // (fadeDuration), unset the `refreshedUponExpiration` flag so we don't
+        // incorrectly fail to crossfade them when zooming
+        if (tile.refreshedUponExpiration && sinceTile >= 1) tile.refreshedUponExpiration = false;
 
         if (parentTile) {
             return {

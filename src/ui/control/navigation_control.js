@@ -38,7 +38,7 @@ class NavigationControl {
         this._zoomOutButton = this._createButton(`${className}-icon ${className}-zoom-out`, 'Zoom Out', map.zoomOut.bind(map));
         this._compass = this._createButton(`${className}-icon ${className}-compass`, 'Reset North', map.resetNorth.bind(map));
 
-        this._compassArrow = DOM.create('span', 'arrow', this._compass);
+        this._compassArrow = DOM.create('span', `${className}-compass-arrow`, this._compass);
 
         this._compass.addEventListener('mousedown', this._onCompassDown.bind(this));
         this._onCompassMove = this._onCompassMove.bind(this);

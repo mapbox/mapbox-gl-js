@@ -18,6 +18,10 @@ const util = require('../util/util');
  * into the shader source code, create and link a program, and bind the uniforms and
  * vertex attributes in preparation for drawing.
  *
+ * When a vector tile is parsed, this same configuration information is used to
+ * populate the attribute buffers needed for data-driven styling using the zoom
+ * level and feature property data.
+ *
  * @private
  */
 class ProgramConfiguration {

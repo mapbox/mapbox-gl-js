@@ -82,21 +82,7 @@ navigation:
 </div>
 
 <div class='limiter clearfix'>
-  <div class='pad2y'>
-    <nav class='contain z10 margin3 col9 fill-gradient space-bottom small'>
-      <div class='col3 dark round-left keyline-right pad1 center truncate'>
-        <div class='pad0y'>
-          <span class='icon gl fill-lighten0 dot inline pad0'></span> Mapbox GL
-        </div>
-      </div>
-      <div class='col9 dark tabs mobile-cols pad1'><!--
-      --><a href='{{site.baseurl}}/api' class='col3 truncate'>API</a><!--
-        --><a href='#' class='col3 truncate active'>Style Specification</a><!--
-        --><a href='{{site.baseurl}}/examples' class='col3 truncate'>Examples</a><!--
-        --><a href='{{site.baseurl}}/plugins' class='col3 truncate'>Plugins</a>
-      </div>
-    </nav>
-  </div>
+  {% include navigation.html %}
 
   <div class='contain margin3 col9'>
     <div class='prose'>
@@ -901,6 +887,41 @@ navigation:
               <td class='center'>&gt;= 0.1.0</td>
             </tr>
             <tr>
+              <td><code>property</code></td>
+              <td class='center'>&gt;= 0.18.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>type</code></td>
+              <td class='center'>&gt;= 0.18.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>exponential</code> type</td>
+              <td class='center'>&gt;= 0.18.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>interval</code> type</td>
+              <td class='center'>&gt;= 0.18.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
+              <td><code>categorical</code> type</td>
+              <td class='center'>&gt;= 0.18.0</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+              <td class='center'>Not yet supported</td>
+            </tr>
+            <tr>
               <td><code>identity</code> type</td>
               <td class='center'>&gt;= 0.26.0</td>
               <td class='center'>Not yet supported</td>
@@ -1051,12 +1072,20 @@ navigation:
           </div>
 
           <p>
-            A filter's <var>key</var> must be a string that identifies a feature property, or
-            the special key <code>"$type"</code>, which identifies the feature type. A <var>value</var>
-            (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a <a href="#string">string</a>,
-            <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare the property value
-            against. For the <code>"$type"</code> key it must be one of <code>"Point"</code>,
-            <code>"LineString"</code>, or <code>"Polygon"</code>.
+            A <var>key</var> must be a string that identifies a feature property, or one of the following special keys:
+          </p>
+          <ul>
+            <li><code>"$type"</code>: the feature type. This key may be used with the <code>"=="</code>,
+                <code>"!="</code>, <code>"in"</code>, and <code>"!in"</code> operators. Possible values are
+                <code>"Point"</code>, <code>"LineString"</code>, and <code>"Polygon"</code>.</li>
+            <li><code>"$id"</code>: the feature identifier. This key may be used with the <code>"=="</code>,
+                <code>"!="</code>, <code>"has"</code>, <code>"!has"</code>, <code>"in"</code>,
+                and <code>"!in"</code> operators.</li>
+          </ul>
+          <p>
+            A <var>value</var> (and <var>v0</var>, ..., <var>vn</var> for set operators) must be a
+              <a href="#string">string</a>, <a href="#number">number</a>, or <a href="#boolean">boolean</a> to compare
+              the property value against.
           </p>
 
           <p>

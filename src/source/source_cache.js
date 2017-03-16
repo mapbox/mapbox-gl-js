@@ -27,21 +27,24 @@ class SourceCache extends Evented {
         this.id = id;
         this.dispatcher = dispatcher;
 
-        this.on('source.load', function() {
-            this._sourceLoaded = true;
-        });
+        this.on('data', function(e) {
+            // this._sourceLoaded signifies that the TileJSON is loaded if applicable.
+            // if the source type does not come with a TileJSON, the flag signifies the
+            // source data has loaded (i.e geojson has been tiled on the worker and is ready)
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') this._sourceLoaded = true;
 
-        this.on('error', function() {
-            this._sourceErrored = true;
-        });
-
-        this.on('data', function(event) {
-            if (this._sourceLoaded && event.dataType === 'source') {
+            // for sources with mutable data, this event fires when the underlying data
+            // to a source is changed. (i.e. GeoJSONSource#setData and ImageSource#serCoordinates)
+            if (this._sourceLoaded && e.dataType === "source" && e.sourceDataType === 'content') {
                 this.reload();
                 if (this.transform) {
                     this.update(this.transform);
                 }
             }
+        });
+
+        this.on('error', function() {
+            this._sourceErrored = true;
         });
 
         this._source = Source.create(id, options, dispatcher, this);
@@ -110,6 +113,7 @@ class SourceCache extends Evented {
         return this._source.serialize();
     }
 
+
     prepare() {
         if (this._sourceLoaded && this._source.prepare)
             return this._source.prepare();
@@ -142,6 +146,11 @@ class SourceCache extends Evented {
     reloadTile(id, state) {
         const tile = this._tiles[id];
 
+        // this potentially does not address all underlying
+        // issues https://github.com/mapbox/mapbox-gl-js/issues/4252
+        // - hard to tell without repro steps
+        if (!tile) return;
+
         // The difference between "loading" tiles and "reloading" or "expired"
         // tiles is that "reloading"/"expired" tiles are "renderable".
         // Therefore, a "loading" tile cannot become a "reloading" tile without
@@ -150,10 +159,10 @@ class SourceCache extends Evented {
             tile.state = state;
         }
 
-        this.loadTile(tile, this._tileLoaded.bind(this, tile, id));
+        this.loadTile(tile, this._tileLoaded.bind(this, tile, id, state));
     }
 
-    _tileLoaded(tile, id, err) {
+    _tileLoaded(tile, id, previousState, err) {
         if (err) {
             tile.state = 'errored';
             this._source.fire('error', {tile: tile, error: err});
@@ -162,8 +171,9 @@ class SourceCache extends Evented {
 
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
+        if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        this._source.fire('data', {tile: tile, coord: tile.coord, dataType: 'tile'});
+        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
@@ -262,7 +272,7 @@ class SourceCache extends Evented {
             }
             if (this._cache.has(coord.id)) {
                 retain[coord.id] = true;
-                return this._cache.get(coord.id);
+                return this._cache.getWithoutRemoving(coord.id);
             }
         }
     }
@@ -290,6 +300,7 @@ class SourceCache extends Evented {
      * @private
      */
     update(transform) {
+        this.transform = transform;
         if (!this._sourceLoaded) { return; }
         let i;
         let coord;
@@ -388,8 +399,6 @@ class SourceCache extends Evented {
         for (i = 0; i < remove.length; i++) {
             this.removeTile(+remove[i]);
         }
-
-        this.transform = transform;
     }
 
     /**
@@ -417,38 +426,38 @@ class SourceCache extends Evented {
                 }
             }
         }
-
-        if (!tile) {
+        const cached = Boolean(tile);
+        if (!cached) {
             const zoom = coord.z;
             const overscaling = zoom > this._source.maxzoom ? Math.pow(2, zoom - this._source.maxzoom) : 1;
             tile = new Tile(wrapped, this._source.tileSize * overscaling, this._source.maxzoom);
-            this.loadTile(tile, this._tileLoaded.bind(this, tile, coord.id));
+            this.loadTile(tile, this._tileLoaded.bind(this, tile, coord.id, tile.state));
         }
 
         tile.uses++;
         this._tiles[coord.id] = tile;
-        this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'tile'});
+        if (!cached) this._source.fire('dataloading', {tile: tile, coord: tile.coord, dataType: 'source'});
 
         return tile;
     }
 
     _setTileReloadTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._timers[id] = setTimeout(() => {
                 this.reloadTile(id, 'expired');
                 this._timers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
     _setCacheInvalidationTimer(id, tile) {
-        const tileExpires = tile.getExpiry();
-        if (tileExpires) {
+        const expiryTimeout = tile.getExpiryTimeout();
+        if (expiryTimeout) {
             this._cacheTimers[id] = setTimeout(() => {
                 this._cache.remove(id);
                 this._cacheTimers[id] = undefined;
-            }, Math.min(tileExpires - new Date().getTime(), Math.pow(2, 31) - 1));
+            }, expiryTimeout);
         }
     }
 
@@ -469,7 +478,6 @@ class SourceCache extends Evented {
             clearTimeout(this._timers[id]);
             this._timers[id] = undefined;
         }
-        this._source.fire('data', { tile: tile, coord: tile.coord, dataType: 'tile' });
 
         if (tile.uses > 0)
             return;

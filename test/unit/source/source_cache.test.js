@@ -38,7 +38,7 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             if (sourceOptions.error) {
                 this.fire('error', { error: sourceOptions.error });
             } else {
-                this.fire('source.load');
+                this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
             }
         }
         abortTile() {}
@@ -112,7 +112,7 @@ test('SourceCache#addTile', (t) => {
         sourceCache.addTile(coord);
 
         t.equal(load, 1);
-        t.equal(add, 2);
+        t.equal(add, 1);
 
         t.end();
     });
@@ -131,7 +131,7 @@ test('SourceCache#addTile', (t) => {
         };
         sourceCache.loadTile = (tile, callback) => {
             tile.state = 'loaded';
-            tile.getExpiry = () => time;
+            tile.getExpiryTimeout = () => time;
             sourceCache._setTileReloadTimer(coord.id, tile);
             callback();
         };
@@ -181,7 +181,7 @@ test('SourceCache#addTile', (t) => {
         const t2 = sourceCache.addTile(new TileCoord(0, 0, 0, 1));
 
         t.equal(load, 1);
-        t.equal(add, 2);
+        t.equal(add, 1);
         t.equal(t1, t2);
 
         t.end();
@@ -194,13 +194,12 @@ test('SourceCache#removeTile', (t) => {
     t.test('removes tile', (t) => {
         const coord = new TileCoord(0, 0, 0);
         const sourceCache = createSourceCache({});
-        sourceCache.once('data', (event) => {
-            if (event.dataType === 'tile') {
-                t.end();
-            }
-        });
         sourceCache.addTile(coord);
-        sourceCache.removeTile(coord.id);
+        sourceCache.on('data', ()=> {
+            sourceCache.removeTile(coord.id);
+            t.notOk(sourceCache._tiles[coord.id]);
+            t.end();
+        });
     });
 
     t.test('caches (does not unload) loaded tile', (t) => {
@@ -256,19 +255,22 @@ test('SourceCache#removeTile', (t) => {
 test('SourceCache / Source lifecycle', (t) => {
     t.test('does not fire load or change before source load event', (t) => {
         const sourceCache = createSourceCache({noLoad: true})
-            .on('source.load', t.fail)
             .on('data', t.fail);
         sourceCache.onAdd();
         setTimeout(t.end, 1);
     });
 
     t.test('forward load event', (t) => {
-        const sourceCache = createSourceCache({}).on('source.load', t.end);
+        const sourceCache = createSourceCache({}).on('data', (e)=>{
+            if (e.sourceDataType === 'metadata') t.end();
+        });
         sourceCache.onAdd();
     });
 
     t.test('forward change event', (t) => {
-        const sourceCache = createSourceCache().on('data', t.end);
+        const sourceCache = createSourceCache().on('data', (e)=>{
+            if (e.sourceDataType === 'metadata') t.end();
+        });
         sourceCache.onAdd();
         sourceCache.getSource().fire('data');
     });
@@ -282,7 +284,7 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
-    t.test('loaded() true after error', (t) => {
+    t.test('loaded() true after source error', (t) => {
         const sourceCache = createSourceCache({ error: 'Error loading source' })
         .on('error', () => {
             t.ok(sourceCache.loaded());
@@ -291,7 +293,28 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
-    t.test('reloads tiles after a "source" data event', (t) => {
+    t.test('loaded() true after tile error', (t)=>{
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 0;
+        const sourceCache = createSourceCache({
+            loadTile: function (tile, callback) {
+                callback("error");
+            }
+        }).on('data', (e)=>{
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+            }
+        }).on('error', ()=>{
+            t.true(sourceCache.loaded());
+            t.end();
+        });
+
+
+        sourceCache.onAdd();
+    });
+
+    t.test('reloads tiles after a data event where source is updated', (t) => {
         const transform = new Transform();
         transform.resize(511, 511);
         transform.zoom = 0;
@@ -307,9 +330,11 @@ test('SourceCache / Source lifecycle', (t) => {
             }
         });
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            sourceCache.getSource().fire('data', {dataType: 'source'});
+        sourceCache.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                sourceCache.getSource().fire('data', {dataType: 'source', sourceDataType: 'content'});
+            }
         });
 
         sourceCache.onAdd();
@@ -325,11 +350,12 @@ test('SourceCache#update', (t) => {
         transform.zoom = 0;
 
         const sourceCache = createSourceCache({}, false);
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-
-            t.deepEqual(sourceCache.getIds(), []);
-            t.end();
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), []);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -340,10 +366,12 @@ test('SourceCache#update', (t) => {
         transform.zoom = 0;
 
         const sourceCache = createSourceCache({});
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
-            t.end();
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -355,20 +383,22 @@ test('SourceCache#update', (t) => {
 
         const sourceCache = createSourceCache({});
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
-            transform.zoom = 1;
-            sourceCache.update(transform);
+                transform.zoom = 1;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(1, 0, 0).id,
-                new TileCoord(1, 1, 0).id,
-                new TileCoord(1, 0, 1).id,
-                new TileCoord(1, 1, 1).id
-            ]);
-            t.end();
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(1, 0, 0).id,
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 1).id,
+                    new TileCoord(1, 1, 1).id
+                ]);
+                t.end();
+            }
         });
 
         sourceCache.onAdd();
@@ -388,21 +418,23 @@ test('SourceCache#update', (t) => {
             }
         });
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
 
-            transform.zoom = 1;
-            sourceCache.update(transform);
+                transform.zoom = 1;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(0, 0, 0).id,
-                new TileCoord(1, 0, 0).id,
-                new TileCoord(1, 1, 0).id,
-                new TileCoord(1, 0, 1).id,
-                new TileCoord(1, 1, 1).id
-            ]);
-            t.end();
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(0, 0, 0).id,
+                    new TileCoord(1, 0, 0).id,
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 1).id,
+                    new TileCoord(1, 1, 1).id
+                ]);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -420,21 +452,23 @@ test('SourceCache#update', (t) => {
             }
         });
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0, 1).id]);
 
-            transform.zoom = 1;
-            sourceCache.update(transform);
+                transform.zoom = 1;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(0, 0, 0, 1).id,
-                new TileCoord(1, 0, 0, 1).id,
-                new TileCoord(1, 1, 0, 1).id,
-                new TileCoord(1, 0, 1, 1).id,
-                new TileCoord(1, 1, 1, 1).id
-            ]);
-            t.end();
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(0, 0, 0, 1).id,
+                    new TileCoord(1, 0, 0, 1).id,
+                    new TileCoord(1, 1, 0, 1).id,
+                    new TileCoord(1, 0, 1, 1).id,
+                    new TileCoord(1, 1, 1, 1).id
+                ]);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -456,20 +490,22 @@ test('SourceCache#update', (t) => {
 
         sourceCache._source.type = 'raster';
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(2, 1, 1).id,
-                new TileCoord(2, 2, 1).id,
-                new TileCoord(2, 1, 2).id,
-                new TileCoord(2, 2, 2).id
-            ]);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(2, 1, 1).id,
+                    new TileCoord(2, 2, 1).id,
+                    new TileCoord(2, 1, 2).id,
+                    new TileCoord(2, 2, 2).id
+                ]);
 
-            transform.zoom = 0;
-            sourceCache.update(transform);
+                transform.zoom = 0;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getRenderableIds().length, 5);
-            t.end();
+                t.deepEqual(sourceCache.getRenderableIds().length, 5);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -492,17 +528,19 @@ test('SourceCache#update', (t) => {
 
         sourceCache._source.type = 'raster';
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
 
-            transform.zoom = 2;
-            sourceCache.update(transform);
+                transform.zoom = 2;
+                sourceCache.update(transform);
 
-            transform.zoom = 1;
-            sourceCache.update(transform);
+                transform.zoom = 1;
+                sourceCache.update(transform);
 
-            t.equal(sourceCache._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
-            t.end();
+                t.equal(sourceCache._coveredTiles[(new TileCoord(0, 0, 0).id)], true);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -523,14 +561,16 @@ test('SourceCache#update', (t) => {
 
         sourceCache._source.type = 'raster';
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
 
-            transform.zoom = 0;
-            sourceCache.update(transform);
+                transform.zoom = 0;
+                sourceCache.update(transform);
 
-            t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
-            t.end();
+                t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -552,18 +592,20 @@ test('SourceCache#update', (t) => {
 
         sourceCache._source.type = 'raster';
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-
-            transform.zoom = 0;
-            sourceCache.update(transform);
-
-            t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
-            setTimeout(() => {
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
-                t.equal(sourceCache.getRenderableIds().length, 1, 'drops children after fading is complete');
-                t.end();
-            }, 100);
+
+                transform.zoom = 0;
+                sourceCache.update(transform);
+
+                t.equal(sourceCache.getRenderableIds().length, 5, 'retains 0/0/0 and its four children');
+                setTimeout(() => {
+                    sourceCache.update(transform);
+                    t.equal(sourceCache.getRenderableIds().length, 1, 'drops children after fading is complete');
+                    t.end();
+                }, 100);
+            }
         });
         sourceCache.onAdd();
     });
@@ -586,25 +628,27 @@ test('SourceCache#update', (t) => {
             }
         });
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
-            t.deepEqual(sourceCache.getRenderableIds(), [
-                new TileCoord(16, 8191, 8191, 0).id,
-                new TileCoord(16, 8192, 8191, 0).id,
-                new TileCoord(16, 8191, 8192, 0).id,
-                new TileCoord(16, 8192, 8192, 0).id
-            ]);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getRenderableIds(), [
+                    new TileCoord(16, 8191, 8191, 0).id,
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8192, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id
+                ]);
 
-            transform.zoom = 15;
-            sourceCache.update(transform);
+                transform.zoom = 15;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getRenderableIds(), [
-                new TileCoord(16, 8191, 8191, 0).id,
-                new TileCoord(16, 8192, 8191, 0).id,
-                new TileCoord(16, 8191, 8192, 0).id,
-                new TileCoord(16, 8192, 8192, 0).id
-            ]);
-            t.end();
+                t.deepEqual(sourceCache.getRenderableIds(), [
+                    new TileCoord(16, 8191, 8191, 0).id,
+                    new TileCoord(16, 8192, 8191, 0).id,
+                    new TileCoord(16, 8191, 8192, 0).id,
+                    new TileCoord(16, 8192, 8192, 0).id
+                ]);
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -666,35 +710,37 @@ test('SourceCache#tilesIn', (t) => {
             }
         });
 
-        sourceCache.on('source.load', () => {
-            sourceCache.update(transform);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(1, 0, 0).id,
-                new TileCoord(1, 1, 0).id,
-                new TileCoord(1, 0, 1).id,
-                new TileCoord(1, 1, 1).id
-            ]);
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(1, 0, 0).id,
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 0, 1).id,
+                    new TileCoord(1, 1, 1).id
+                ]);
 
-            const tiles = sourceCache.tilesIn([
-                new Coordinate(0.5, 0.25, 1),
-                new Coordinate(1.5, 0.75, 1)
-            ]);
+                const tiles = sourceCache.tilesIn([
+                    new Coordinate(0.5, 0.25, 1),
+                    new Coordinate(1.5, 0.75, 1)
+                ]);
 
-            tiles.sort((a, b) => { return a.tile.coord.x - b.tile.coord.x; });
-            tiles.forEach((result) => { delete result.tile.uid; });
+                tiles.sort((a, b) => { return a.tile.coord.x - b.tile.coord.x; });
+                tiles.forEach((result) => { delete result.tile.uid; });
 
-            t.equal(tiles[0].tile.coord.id, 1);
-            t.equal(tiles[0].tile.tileSize, 512);
-            t.equal(tiles[0].scale, 1);
-            t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
+                t.equal(tiles[0].tile.coord.id, 1);
+                t.equal(tiles[0].tile.tileSize, 512);
+                t.equal(tiles[0].scale, 1);
+                t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
-            t.equal(tiles[1].tile.coord.id, 33);
-            t.equal(tiles[1].tile.tileSize, 512);
-            t.equal(tiles[1].scale, 1);
-            t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
+                t.equal(tiles[1].tile.coord.id, 33);
+                t.equal(tiles[1].tile.tileSize, 512);
+                t.equal(tiles[1].scale, 1);
+                t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
-            t.end();
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -708,38 +754,40 @@ test('SourceCache#tilesIn', (t) => {
             tileSize: 512
         });
 
-        sourceCache.on('source.load', () => {
-            const transform = new Transform();
-            transform.resize(512, 512);
-            transform.zoom = 2.0;
-            sourceCache.update(transform);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const transform = new Transform();
+                transform.resize(512, 512);
+                transform.zoom = 2.0;
+                sourceCache.update(transform);
 
-            t.deepEqual(sourceCache.getIds(), [
-                new TileCoord(2, 0, 0).id,
-                new TileCoord(2, 1, 0).id,
-                new TileCoord(2, 0, 1).id,
-                new TileCoord(2, 1, 1).id
-            ]);
+                t.deepEqual(sourceCache.getIds(), [
+                    new TileCoord(2, 0, 0).id,
+                    new TileCoord(2, 1, 0).id,
+                    new TileCoord(2, 0, 1).id,
+                    new TileCoord(2, 1, 1).id
+                ]);
 
-            const tiles = sourceCache.tilesIn([
-                new Coordinate(0.5, 0.25, 1),
-                new Coordinate(1.5, 0.75, 1)
-            ]);
+                const tiles = sourceCache.tilesIn([
+                    new Coordinate(0.5, 0.25, 1),
+                    new Coordinate(1.5, 0.75, 1)
+                ]);
 
-            tiles.sort((a, b) => { return a.tile.coord.x - b.tile.coord.x; });
-            tiles.forEach((result) => { delete result.tile.uid; });
+                tiles.sort((a, b) => { return a.tile.coord.x - b.tile.coord.x; });
+                tiles.forEach((result) => { delete result.tile.uid; });
 
-            t.equal(tiles[0].tile.coord.id, 2);
-            t.equal(tiles[0].tile.tileSize, 1024);
-            t.equal(tiles[0].scale, 1);
-            t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
+                t.equal(tiles[0].tile.coord.id, 2);
+                t.equal(tiles[0].tile.tileSize, 1024);
+                t.equal(tiles[0].scale, 1);
+                t.deepEqual(tiles[0].queryGeometry, [[{x: 4096, y: 2048}, {x:12288, y: 6144}]]);
 
-            t.equal(tiles[1].tile.coord.id, 34);
-            t.equal(tiles[1].tile.tileSize, 1024);
-            t.equal(tiles[1].scale, 1);
-            t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
+                t.equal(tiles[1].tile.coord.id, 34);
+                t.equal(tiles[1].tile.tileSize, 1024);
+                t.equal(tiles[1].scale, 1);
+                t.deepEqual(tiles[1].queryGeometry, [[{x: -4096, y: 2048}, {x: 4096, y: 6144}]]);
 
-            t.end();
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -753,14 +801,16 @@ test('SourceCache#tilesIn', (t) => {
             tileSize: 512
         });
 
-        sourceCache.on('source.load', () => {
-            const transform = new Transform();
-            transform.resize(512, 512);
-            transform.zoom = 2.0;
-            sourceCache.update(transform);
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                const transform = new Transform();
+                transform.resize(512, 512);
+                transform.zoom = 2.0;
+                sourceCache.update(transform);
 
 
-            t.end();
+                t.end();
+            }
         });
         sourceCache.onAdd();
     });
@@ -776,12 +826,14 @@ test('SourceCache#loaded (no errors)', (t) => {
         }
     });
 
-    sourceCache.on('source.load', () => {
-        const coord = new TileCoord(0, 0, 0);
-        sourceCache.addTile(coord);
+    sourceCache.on('data', (e) => {
+        if (e.sourceDataType === 'metadata') {
+            const coord = new TileCoord(0, 0, 0);
+            sourceCache.addTile(coord);
 
-        t.ok(sourceCache.loaded());
-        t.end();
+            t.ok(sourceCache.loaded());
+            t.end();
+        }
     });
     sourceCache.onAdd();
 });
@@ -793,12 +845,14 @@ test('SourceCache#loaded (with errors)', (t) => {
         }
     });
 
-    sourceCache.on('source.load', () => {
-        const coord = new TileCoord(0, 0, 0);
-        sourceCache.addTile(coord);
+    sourceCache.on('data', (e) => {
+        if (e.sourceDataType === 'metadata') {
+            const coord = new TileCoord(0, 0, 0);
+            sourceCache.addTile(coord);
 
-        t.ok(sourceCache.loaded());
-        t.end();
+            t.ok(sourceCache.loaded());
+            t.end();
+        }
     });
     sourceCache.onAdd();
 });
@@ -871,7 +925,7 @@ test('SourceCache#findLoadedParent', (t) => {
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 3, 3), 0, retain), undefined);
         t.equal(sourceCache.findLoadedParent(new TileCoord(2, 0, 0), 0, retain), tile);
         t.deepEqual(retain, expectedRetain);
-        t.equal(sourceCache._cache.order.length, 0);
+        t.equal(sourceCache._cache.order.length, 1);
 
         t.end();
     });
@@ -899,7 +953,7 @@ test('SourceCache reloads expiring tiles', (t) => {
         const coord = new TileCoord(1, 0, 0);
 
         const expiryDate = new Date();
-        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 5);
+        expiryDate.setMilliseconds(expiryDate.getMilliseconds() + 50);
         const sourceCache = createSourceCache({ expires: expiryDate });
 
         sourceCache.reloadTile = (id, state) => {

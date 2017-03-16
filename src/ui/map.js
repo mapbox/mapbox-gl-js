@@ -23,7 +23,7 @@ const LogoControl = require('./control/logo_control');
 const isSupported = require('mapbox-gl-supported');
 
 const defaultMinZoom = 0;
-const defaultMaxZoom = 20;
+const defaultMaxZoom = 22;
 const defaultOptions = {
     center: [0, 0],
     zoom: 0,
@@ -54,7 +54,9 @@ const defaultOptions = {
 
     trackResize: true,
 
-    renderWorldCopies: true
+    renderWorldCopies: true,
+
+    refreshExpiredTiles: true
 };
 
 /**
@@ -68,9 +70,9 @@ const defaultOptions = {
  *
  * @extends Evented
  * @param {Object} options
- * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (1-20).
- * @param {number} [options.maxZoom=20] The maximum zoom level of the map (1-20).
+ * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
+ * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-22).
+ * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-22).
  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
  * such JSON.
@@ -104,6 +106,7 @@ const defaultOptions = {
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
+ * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
  * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
  * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to [`ScrollZoomHandler#enable`](#ScrollZoomHandler#enable).
  * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see [`BoxZoomHandler`](#BoxZoomHandler)).
@@ -133,6 +136,10 @@ class Map extends Camera {
     constructor(options) {
         options = util.extend({}, defaultOptions, options);
 
+        if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
+            throw new Error(`maxZoom must be greater than minZoom`);
+        }
+
         const transform = new Transform(options.minZoom, options.maxZoom, options.renderWorldCopies);
         super(transform, options);
 
@@ -141,6 +148,7 @@ class Map extends Camera {
         this._preserveDrawingBuffer = options.preserveDrawingBuffer;
         this._trackResize = options.trackResize;
         this._bearingSnap = options.bearingSnap;
+        this._refreshExpiredTiles = options.refreshExpiredTiles;
 
         if (typeof options.container === 'string') {
             this._container = window.document.getElementById(options.container);
@@ -262,7 +270,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to add.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -282,7 +291,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {string} klass The style class to remove.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -303,7 +313,8 @@ class Map extends Camera {
      * **Note:** Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.
      *
      * @param {Array<string>} klasses The style classes to set.
-     * @param {StyleOptions} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.transition] If `true`, property changes will smoothly transition.
      * @fires change
      * @returns {Map} `this`
      */
@@ -807,6 +818,32 @@ class Map extends Camera {
     }
 
     /**
+     * Add an image to the style. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-pattern`, and `line-pattern`. An
+     * {@link Map#error} event will be fired if there is not enough space in the
+     * sprite to add this image.
+     *
+     * @param {string} name The name of the image.
+     * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
+     * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
+     * @param {number} [options.width] The pixel width of the `ArrayBufferView` image
+     * @param {number} [options.height] The pixel height of the `ArrayBufferView` image
+     * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
+     */
+    addImage(name, image, options) {
+        this.style.spriteAtlas.addImage(name, image, options);
+    }
+
+    /**
+     * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
+     *
+     * @param {string} name The name of the image.
+     */
+    removeImage(name) {
+        this.style.spriteAtlas.removeImage(name);
+    }
+
+    /**
      * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map's style.
      *
@@ -1168,12 +1205,20 @@ class Map extends Camera {
     }
 
     /**
-     * Call when a (re-)render of the map is required, e.g. when the
-     * user panned or zoomed,f or new data is available.
+     * Call when a (re-)render of the map is required:
+     * - The style has changed (`setPaintProperty()`, etc.)
+     * - Source data has changed (e.g. tiles have finished loading)
+     * - The map has is moving (or just finished moving)
+     * - A transition is in progress
+     *
      * @returns {Map} this
      * @private
      */
     _render() {
+        // If the style has changed, the map is being zoomed, or a transition
+        // is in progress:
+        //  - Apply style changes (in a batch)
+        //  - Recalculate zoom-dependent paint properties.
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
             this.style.update(this._classes, this._classOptions);
@@ -1181,11 +1226,15 @@ class Map extends Camera {
             this.style._recalculate(this.transform.zoom);
         }
 
+        // If we are in _render for any reason other than an in-progress paint
+        // transition, update source caches to check for and load any tiles we
+        // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.style._updateSources(this.transform);
         }
 
+        // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
@@ -1202,10 +1251,16 @@ class Map extends Camera {
 
         this._frameId = null;
 
+        // Flag an ongoing transition
         if (!this.animationLoop.stopped()) {
             this._styleDirty = true;
         }
 
+        // Schedule another render frame if it's needed.
+        //
+        // Even though `_styleDirty` and `_sourcesDirty` are reset in this
+        // method, synchronous events fired during Style#update or
+        // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty) {
             this._rerender();
         }
@@ -1214,9 +1269,13 @@ class Map extends Camera {
     }
 
     /**
-     * Destroys the map's underlying resources, including web workers and DOM elements.
+     * Clean up and release all internal resources associated with this map.
      *
-     * After calling this method, you must not call any other methods on the map.
+     * This includes DOM elements, event bindings, web workers, and WebGL resources.
+     *
+     * Use this method when you are done using the map and wish to ensure that it no
+     * longer consumes browser resources. Afterwards, you must not call any other
+     * methods on the map.
      */
     remove() {
         if (this._hash) this._hash.remove();
@@ -1434,7 +1493,7 @@ function removeNode(node) {
  */
 
 /**
- * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects.
+ * A [`LngLatBounds`](#LngLatBounds) object or an array of [`LngLatLike`](#LngLatLike) objects in [sw, ne] order.
  *
  * @typedef {(LngLatBounds | Array<LngLatLike>)} LngLatBoundsLike
  * @example
@@ -1457,15 +1516,6 @@ function removeNode(node) {
  * A [`Point`](#Point) or an array of two numbers representing `x` and `y` screen coordinates in pixels.
  *
  * @typedef {(Point | Array<number>)} PointLike
- */
-
-/**
- * Options common to {@link Map#addClass}, {@link Map#removeClass},
- * and {@link Map#setClasses}, controlling
- * whether or not to smoothly transition property changes triggered by a class change.
- *
- * @typedef {Object} StyleOptions
- * @property {boolean} transition If `true`, property changes will smootly transition.
  */
 
 /**
@@ -1668,25 +1718,14 @@ function removeNode(node) {
  */
 
 /**
- * Fired when one of the map's sources loads or changes. This event is not fired
- * if a tile belonging to a source loads or changes (that is handled by
- * `tiledata`). See [`MapDataEvent`](#MapDataEvent) for more information.
+ * Fired when one of the map's sources loads or changes, including if a tile belonging
+ * to a source loads or changes. See [`MapDataEvent`](#MapDataEvent) for more information.
  *
  * @event sourcedata
  * @memberof Map
  * @instance
  * @property {MapDataEvent} data
  */
-
- /**
-  * Fired when one of the map's sources' tiles loads or changes. See
-  * [`MapDataEvent`](#MapDataEvent) for more information.
-  *
-  * @event tiledata
-  * @memberof Map
-  * @instance
-  * @property {MapDataEvent} data
-  */
 
 /**
  * Fired when any map data (style, source, tile, etc) begins loading or
@@ -1712,23 +1751,10 @@ function removeNode(node) {
 
 /**
  * Fired when one of the map's sources begins loading or changing asyncronously.
- * This event is not fired if a tile belonging to a source begins loading or
- * changing (that is handled by `tiledataloading`). All `sourcedataloading`
- * events are followed by a `sourcedata` or `error` event. See
- * [`MapDataEvent`](#MapDataEvent) for more information.
+ * All `sourcedataloading` events are followed by a `sourcedata` or `error` event.
+ * See [`MapDataEvent`](#MapDataEvent) for more information.
  *
  * @event sourcedataloading
- * @memberof Map
- * @instance
- * @property {MapDataEvent} data
- */
-
-/**
- * Fired when one of the map's sources' tiles begins loading or changing
- * asyncronously. All `tiledataloading` events are followed by a `tiledata`
- * or `error` event. See [`MapDataEvent`](#MapDataEvent) for more information.
- *
- * @event tiledataloading
  * @memberof Map
  * @instance
  * @property {MapDataEvent} data
@@ -1741,14 +1767,18 @@ function removeNode(node) {
   *
   * - `'source'`: The non-tile data associated with any source
   * - `'style'`: The [style](https://www.mapbox.com/mapbox-gl-style-spec/) used by the map
-  * - `'tile'`: A vector or raster tile
   *
   * @typedef {Object} MapDataEvent
   * @property {string} type The event type.
   * @property {string} dataType The type of data that has changed. One of `'source'`, `'style'`.
   * @property {boolean} [isSourceLoaded] True if the event has a `dataType` of `source` and the source has no outstanding network requests.
   * @property {Object} [source] The [style spec representation of the source](https://www.mapbox.com/mapbox-gl-style-spec/#sources) if the event has a `dataType` of `source`.
-  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `tile`.
+  * @property {string} [sourceDataType] Included if the event has a `dataType` of `source` and the event signals
+  * that internal data has been received or changed. Possible values are `metadata` and `content`.
+  * @property {Object} [tile] The tile being loaded or changed, if the event has a `dataType` of `source` and
+  * the event is related to loading of a tile.
+  * @property {Coordinate} [coord] The coordinate of the tile if the event has a `dataType` of `source` and
+  * the event is related to loading of a tile.
   */
 
  /**

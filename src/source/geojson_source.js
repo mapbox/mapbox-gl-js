@@ -108,8 +108,9 @@ class GeoJSONSource extends Evented {
                 this.fire('error', {error: err});
                 return;
             }
-            this.fire('data', {dataType: 'source'});
-            this.fire('source.load');
+            // although GeoJSON sources contain no metadata, we fire this event to let the SourceCache
+            // know its ok to start requesting tiles.
+            this.fire('data', {dataType: 'source', sourceDataType: 'metadata'});
         });
     }
 
@@ -126,13 +127,12 @@ class GeoJSONSource extends Evented {
      */
     setData(data) {
         this._data = data;
-
         this.fire('dataloading', {dataType: 'source'});
         this._updateWorkerData((err) => {
             if (err) {
                 return this.fire('error', { error: err });
             }
-            this.fire('data', {dataType: 'source'});
+            this.fire('data', {dataType: 'source', sourceDataType: 'content'});
         });
 
         return this;

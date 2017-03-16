@@ -10,6 +10,8 @@
  */
 class CollisionFeature {
     /**
+     * Create a CollisionFeature, adding its collision box data to the given collisionBoxArray in the process.
+     *
      * @param {Array<Point>} line The geometry the label is placed on.
      * @param {Anchor} anchor The point along the line around which the label is anchored.
      * @param {VectorTileFeature} feature The VectorTileFeature that this CollisionFeature was created for.

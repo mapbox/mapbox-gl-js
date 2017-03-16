@@ -8,6 +8,7 @@ const StyleLayer = require('../../../src/style/style_layer');
 const util = require('../../../src/util/util');
 const Evented = require('../../../src/util/evented');
 const window = require('../../../src/util/window');
+const rtlTextPlugin = require('../../../src/source/rtl_text_plugin');
 
 function createStyleJSON(properties) {
     return util.extend({
@@ -53,6 +54,19 @@ test('Style', (t) => {
         const eventedParent = new Evented();
         eventedParent.on('dataloading', t.end);
         new Style(createStyleJSON(), eventedParent);
+    });
+
+    t.test('registers plugin listener', (t) => {
+        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
+        const style = new Style(createStyleJSON());
+        t.spy(style.dispatcher, 'broadcast');
+        t.ok(rtlTextPlugin.registerForPluginAvailability.calledOnce);
+
+        style.on('style.load', () => {
+            rtlTextPlugin.evented.fire('pluginAvailable');
+            t.ok(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
+            t.end();
+        });
     });
 
     t.test('can be constructed from a URL', (t) => {
@@ -144,7 +158,6 @@ test('Style', (t) => {
 
         style.on('error', (event) => {
             const err = event.error;
-
             t.ok(err);
             t.ok(err.toString().indexOf('-source-layer-') !== -1);
             t.ok(err.toString().indexOf('-source-id-') !== -1);
@@ -188,6 +201,20 @@ test('Style#_remove', (t) => {
             t.spy(sourceCache, 'clearTiles');
             style._remove();
             t.ok(sourceCache.clearTiles.calledOnce);
+            t.end();
+        });
+    });
+
+    t.test('deregisters plugin listener', (t) => {
+        t.spy(rtlTextPlugin, 'registerForPluginAvailability');
+        const style = new Style(createStyleJSON());
+        t.spy(style.dispatcher, 'broadcast');
+
+        style.on('style.load', () => {
+            style._remove();
+
+            rtlTextPlugin.evented.fire('pluginAvailable');
+            t.notOk(style.dispatcher.broadcast.calledWith('loadRTLTextPlugin'));
             t.end();
         });
     });
@@ -421,10 +448,17 @@ test('Style#addSource', (t) => {
             t.plan(4);
 
             style.on('error', () => { t.ok(true); });
-            style.on('data', () => { t.ok(true); });
-            style.on('source.load', () => { t.ok(true); });
+            style.on('data', (e) => {
+                if (e.sourceDataType === 'metadata' && e.dataType === 'source') {
+                    t.ok(true);
+                } else if (e.sourceDataType === 'content' && e.dataType === 'source') {
+                    t.ok(true);
+                } else {
+                    t.ok(true);
+                }
+            });
 
-            style.addSource('source-id', source); // Fires 'source.load' and 'data'
+            style.addSource('source-id', source); // fires data twice
             style.sourceCaches['source-id'].fire('error');
             style.sourceCaches['source-id'].fire('data');
         });
@@ -617,11 +651,12 @@ test('Style#addLayer', (t) => {
             "filter": ["==", "id", 0]
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.addLayer(layer);
+                style.update();
+            }
         });
     });
 
@@ -649,13 +684,16 @@ test('Style#addLayer', (t) => {
             "source-layer": "boxmap"
         };
 
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.end;
-            style.sourceCaches['mapbox'].clearTiles = t.fail;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.end;
+                style.sourceCaches['mapbox'].clearTiles = t.fail;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('clears source (instead of reloading) if adding this layer with a different type, immediately after removing it', (t) => {
@@ -681,14 +719,16 @@ test('Style#addLayer', (t) => {
             "source": "mapbox",
             "source-layer": "boxmap"
         };
-
-        style.on('style.load', () => {
-            style.sourceCaches['mapbox'].reload = t.fail;
-            style.sourceCaches['mapbox'].clearTiles = t.end;
-            style.removeLayer('my-layer');
-            style.addLayer(layer);
-            style.update();
+        style.on('data', (e) => {
+            if (e.dataType === 'source' && e.sourceDataType === 'content') {
+                style.sourceCaches['mapbox'].reload = t.fail;
+                style.sourceCaches['mapbox'].clearTiles = t.end;
+                style.removeLayer('my-layer');
+                style.addLayer(layer);
+                style.update();
+            }
         });
+
     });
 
     t.test('fires "data" event', (t) => {
@@ -776,8 +816,8 @@ test('Style#addLayer', (t) => {
         };
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist on source/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist on source/);
                 t.end();
             });
             style.addLayer(layer);
@@ -842,8 +882,8 @@ test('Style#removeLayer', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be removed/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be removed/);
                 t.end();
             });
             style.removeLayer('background');
@@ -921,8 +961,8 @@ test('Style#moveLayer', (t) => {
         const style = new Style(createStyleJSON());
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be moved/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be moved/);
                 t.end();
             });
             style.moveLayer('background');
@@ -1040,8 +1080,8 @@ test('Style#setFilter', (t) => {
         const style = createStyle();
 
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot be filtered/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot be filtered/);
                 t.end();
             });
             style.setFilter('non-existant', ['==', 'id', 1]);
@@ -1095,8 +1135,8 @@ test('Style#setLayerZoomRange', (t) => {
     t.test('fires an error if layer not found', (t) => {
         const style = createStyle();
         style.on('style.load', () => {
-            style.on('error', ({ error }) => {
-                t.match(error.message, /does not exist in the map\'s style and cannot have zoom extent/);
+            style.on('error', (e) => {
+                t.match(e.error.message, /does not exist in the map\'s style and cannot have zoom extent/);
                 t.end();
             });
             style.setLayerZoomRange('non-existant', 5, 12);
@@ -1213,6 +1253,16 @@ test('Style#queryRenderedFeatures', (t) => {
         t.test('filters by `layers` option', (t) => {
             const results = style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers: ['land']}, 0, 0);
             t.equal(results.length, 2);
+            t.end();
+        });
+
+        t.test('checks type of `layers` option', (t) => {
+            let errors = 0;
+            t.stub(style, 'fire', (type, data) => {
+                if (data.error && data.error.includes('parameters.layers must be an Array.')) errors++;
+            });
+            style.queryRenderedFeatures([{column: 1, row: 1, zoom: 1}], {layers:'string'});
+            t.equals(errors, 1);
             t.end();
         });
 

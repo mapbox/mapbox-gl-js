@@ -1,8 +1,8 @@
 {
   "name": "mapbox-gl",
   "description": "A WebGL interactive maps library",
-  "version": "0.32.1",
-  "main": "src/index.js",
+  "version": "0.33.1",
+  "main": "dist/mapbox-gl.js",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@mapbox/gl-matrix": "^0.0.1",
+    "@mapbox/shelf-pack": "^3.0.0",
     "@mapbox/unitbezier": "^0.0.0",
+    "@mapbox/whoots-js": "^3.0.0",
     "brfs": "^1.4.0",
     "bubleify": "^0.7.0",
     "earcut": "^2.0.3",
@@ -25,7 +27,6 @@
     "pbf": "^1.3.2",
     "point-geometry": "^0.0.0",
     "quickselect": "^1.0.0",
-    "shelf-pack": "^1.0.0",
     "supercluster": "^2.0.1",
     "through2": "^2.0.3",
     "tinyqueue": "^1.1.0",
@@ -33,8 +34,7 @@
     "unflowify": "^1.0.0",
     "vector-tile": "^1.3.0",
     "vt-pbf": "^2.0.2",
-    "webworkify": "^1.4.0",
-    "whoots-js": "^2.0.0"
+    "webworkify": "^1.4.0"
   },
   "devDependencies": {
     "@mapbox/mapbox-gl-rtl-text": "^0.1.0",
@@ -109,15 +109,13 @@
     "start": "run-p build-token watch-dev watch-benchmarks watch-benchmarks-view start-server",
     "start-debug": "run-p build-token watch-dev start-server",
     "start-bench": "run-p build-token watch-benchmarks watch-benchmarks-view start-server",
-    "build-docs": "flow-node docs/style-spec/_generate/generate.js && documentation build --github --format html --config documentation.yml --theme ./docs/_theme --output docs/api/",
+    "build-docs": "flow-node docs/style-spec/_generate/generate.js && documentation build --github --format html --config ./docs/documentation.yml --theme ./docs/_theme --output docs/api/",
     "build": "npm run build-docs # invoked by publisher when publishing docs on the mb-pages branch",
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
-    "lint": "eslint --ignore-path .gitignore js test bench docs/_posts/examples/*.html debug/*.html",
-    "lint-docs": "documentation lint",
+    "lint": "eslint --ignore-path .gitignore src test bench docs/_posts/examples/*.html debug/*.html",
+    "lint-docs": "documentation lint src/index.js",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
-    "plugin-deploy": "set -e; node plugins/exists.js; aws s3 sync --exclude *.DS_Store --acl public-read plugins/src s3://mapbox-gl-js/plugins/; echo ' -- DEPLOYED --'",
-    "test": "run-s lint test-unit test-plugin test-flow",
-    "test-plugin": "tap test/plugins/",
+    "test": "run-s lint test-unit test-flow",
     "test-suite": "run-s test-render test-query",
     "test-suite-clean": "find test/integration/*-tests -mindepth 2 -type d  -not \\( -exec test -e \"{}/style.json\" \\; \\) -print | xargs -t rm -r",
     "test-unit": "tap --reporter dot --no-coverage test/unit",
@@ -126,7 +124,6 @@
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
-    "preinstall": "node -e 'if(!/yarn\\.js$/.test(process.env.npm_execpath))throw new Error(\"NPM not supported, please use Yarn to install dependencies ($ yarn install).\")'",
     "postinstall": "cd src/style-spec && yarn || npm install"
   }
 }

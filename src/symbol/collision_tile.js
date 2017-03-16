@@ -47,7 +47,7 @@ class CollisionTile {
 
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {
-            // the first collisionBoxArray is passed to a CollisionTile
+            // the first time collisionBoxArray is passed to a CollisionTile
 
             // tempCollisionBox
             collisionBoxArray.emplaceBack();

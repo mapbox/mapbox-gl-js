@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const WhooTS = require('whoots-js');
+const WhooTS = require('@mapbox/whoots-js');
 const Coordinate = require('../geo/coordinate');
 
 class TileCoord {
