@@ -65,6 +65,14 @@ module.exports = {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../shaders/raster.fragment.glsl'), 'utf8'),
         vertexSource: fs.readFileSync(path.join(__dirname, '../shaders/raster.vertex.glsl'), 'utf8')
     },
+    terrainPrepare: {
+      fragmentSource: fs.readFileSync(path.join(__dirname, '../shaders/terrain_prepare.fragment.glsl'), 'utf8'),
+      vertexSource: fs.readFileSync(path.join(__dirname, '../shaders/terrain_prepare.vertex.glsl'), 'utf8')
+    },
+    terrain: {
+      fragmentSource: fs.readFileSync(path.join(__dirname, '../shaders/terrain.fragment.glsl'), 'utf8'),
+      vertexSource: fs.readFileSync(path.join(__dirname, '../shaders/terrain.vertex.glsl'), 'utf8')
+    },
     symbolIcon: {
         fragmentSource: fs.readFileSync(path.join(__dirname, '../shaders/symbol_icon.fragment.glsl'), 'utf8'),
         vertexSource: fs.readFileSync(path.join(__dirname, '../shaders/symbol_icon.vertex.glsl'), 'utf8')

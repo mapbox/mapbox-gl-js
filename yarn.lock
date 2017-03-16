@@ -2778,6 +2778,10 @@ github-slugger@1.1.1, github-slugger@^1.0.0, github-slugger@^1.1.1:
   dependencies:
     emoji-regex "^6.0.0"
 
+gl-matrix@^2.3.1:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/gl-matrix/-/gl-matrix-2.3.2.tgz#aac808c74af7d5db05fe04cb60ca1a0fcb174d74"
+
 gl@^4.0.1:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/gl/-/gl-4.0.3.tgz#277f8bd542c84f99fa5bf98821b32d7b27a05627"
