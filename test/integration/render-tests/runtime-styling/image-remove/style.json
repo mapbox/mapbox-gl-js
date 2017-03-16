@@ -8,6 +8,15 @@
         [
           "addImage",
           "marker",
+          "./image/0.png"
+        ],
+        [
+          "removeImage",
+          "marker"
+        ],
+        [
+          "addImage",
+          "marker",
           "./image/marker.png"
         ],
         [

@@ -818,6 +818,32 @@ class Map extends Camera {
     }
 
     /**
+     * Add an image to the style. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-pattern`, and `line-pattern`. An
+     * {@link Map#error} event will be fired if there is not enough space in the
+     * sprite to add this image.
+     *
+     * @param {string} name The name of the image.
+     * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
+     * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
+     * @param {number} [options.width] The pixel width of the `ArrayBufferView` image
+     * @param {number} [options.height] The pixel height of the `ArrayBufferView` image
+     * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
+     */
+    addImage(name, image, options) {
+        this.style.spriteAtlas.addImage(name, image, options);
+    }
+
+    /**
+     * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
+     *
+     * @param {string} name The name of the image.
+     */
+    removeImage(name) {
+        this.style.spriteAtlas.removeImage(name);
+    }
+
+    /**
      * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map's style.
      *
