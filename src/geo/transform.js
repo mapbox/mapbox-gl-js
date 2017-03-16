@@ -240,35 +240,46 @@ class Transform {
 
     /**
      * Given a point on screen and viewport options, return its lnglat
-     * @param {Point} p screen point
-     * @param {CameraOptions} v viewport
+     * @param {Point} point screen point
+     * @param {CameraOptions} viewport viewport
      * @returns {LngLat} lnglat location
      */
-    pointLocation(p, v) {
+    pointLocation(point, viewport) {
         if (v == null) {
             return this.coordinateLocation(this.pointCoordinate(p));
         } else {
-            const originalViewport = {
-                center: this.center,
-                zoom: this.zoom,
-                bearing: this.bearing,
-                pitch: this.pitch
-            };
-
-            if ('center' in v) this.center = v.center;
-            if ('zoom' in v) this.zoom = v.zoom;
-            if ('bearing' in v) this.bearing = v.bearing;
-            if ('pitch' in v) this.pitch = v.pitch;
+            const originalViewport = getViewport();
+            this.setViewport(viewport);
 
             const location = this.coordinateLocation(this.pointCoordinate(p));
 
-            if ('center' in v) this.center = originalViewport.center;
-            if ('zoom' in v) this.zoom = originalViewport.zoom;
-            if ('bearing' in v) this.bearing = originalViewport.bearing;
-            if ('pitch' in v) this.pitch = originalViewport.pitch;
-
+            this.setViewport(originalViewport);
             return location;
         }
+    }
+
+    /**
+     * Returns the viewport of this transform
+     * @returns {CameraOptions} viewport
+     */
+    getViewport() {
+        return {
+            center: this.center,
+            zoom: this.zoom,
+            bearing: this.bearing,
+            pitch: this.pitch
+        };
+    }
+
+    /**
+     * Sets the viewport of this transform
+     * @param {CameraOptions} viewport
+     */
+    setViewport(viewport) {
+        if ('center' in viewport) this.center = viewport.center;
+        if ('zoom' in viewport) this.zoom = viewport.zoom;
+        if ('bearing' in viewport) this.bearing = viewport.bearing;
+        if ('pitch' in viewport) this.pitch = viewport.pitch;
     }
 
     /**
