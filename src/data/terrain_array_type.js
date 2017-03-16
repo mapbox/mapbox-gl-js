@@ -9,7 +9,7 @@ module.exports = createTerrainArrayType;
  * arguments, it defaults to three components per Terrain, forming triangles.
  * @private
  */
-function createTerrainArrayType(components) {
+function createTerrainArrayType() {
     return createStructArrayType({
         members: [{
             type: 'Uint32',

@@ -10,7 +10,7 @@ const TERRAIN_TILE_HEIGHT = 256;
 const DEG2RAD = Math.PI / 180.0;
 
 
-function drawTerrain(painter, sourceCache, layer, coords){
+function drawTerrain(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
     const gl = painter.gl;
@@ -28,61 +28,11 @@ function drawTerrain(painter, sourceCache, layer, coords){
 
         const tile = sourceCache.getTile(coord);
         if (!tile.texture) {
-            console.log('preparing', coord)
             prepareTerrain(painter, tile, layer);
         }
 
         tile.texture.render(tile, layer);
     }
-}
-
-function prepareTerrain(painter, tile, layer) {
-    const gl = painter.gl;
-    const terrainBucket = tile.getBucket(layer);
-    // set up terrain prepare textures
-
-    const levels = populateLevelPixels(terrainBucket.buffers.terrainArray);
-    const dem = gl.createTexture();
-
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, dem);
-    for (var i=0; i<levels.length; i++){
-        // console.log(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE);
-        gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, levels[i].data);
-    }
-    // TODO add texParameteri bindings here
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-    tile.texture = new TerrainTexture(gl, painter, layer, tile);
-
-    const matrix = mat4.create();
-    // Flip rendering at y axis.
-    mat4.ortho(matrix, 0, EXTENT, -EXTENT, 0, 0, 1);
-    mat4.translate(matrix, matrix, [0, -EXTENT, 0]);
-
-    gl.clearColor(1, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    const program = painter.useProgram('terrainPrepare');
-
-    gl.uniformMatrix4fv(program.u_matrix, false, matrix);
-
-    gl.uniform1f(program.u_zoom, tile.coord.z);
-    gl.uniform2fv(program.u_dimension, [512,512]);
-    gl.uniform1i(program.u_image, 1);
-
-    const buffer = painter.rasterBoundsBuffer;
-    const vao = painter.rasterBoundsVAO;
-
-    vao.bind(gl, program, buffer);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
-
-    tile.texture.unbindFramebuffer();
-
-    tile.prepared = true;
 }
 
 // TODO create OffscreenTexture class for extrusions + terrain
@@ -126,7 +76,7 @@ class TerrainTexture {
         gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
         gl.uniform1i(program.u_image, 0);
         gl.uniform1i(program.u_mode, 8); // todo: wtf?
-        gl.uniform2fv(program.u_dimension, [256,256]);
+        gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
         gl.uniform1f(program.u_zenith, 60 * DEG2RAD);
@@ -151,13 +101,59 @@ class TerrainTexture {
         this.painter.bindDefaultFramebuffer();
         gl.viewport(0, 0, this.painter.width, this.painter.height);
     }
+}
 
+function prepareTerrain(painter, tile, layer) {
+    const gl = painter.gl;
+    const terrainBucket = tile.getBucket(layer);
+    // set up terrain prepare textures
 
+    const levels = populateLevelPixels(terrainBucket.buffers.terrainArray);
+    const dem = gl.createTexture();
 
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, dem);
+    for (let i = 0; i < levels.length; i++) {
+        // console.log(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE);
+        gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, levels[i].data);
+    }
+    // TODO add texParameteri bindings here
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    tile.texture = new TerrainTexture(gl, painter, layer, tile);
+
+    const matrix = mat4.create();
+    // Flip rendering at y axis.
+    mat4.ortho(matrix, 0, EXTENT, -EXTENT, 0, 0, 1);
+    mat4.translate(matrix, matrix, [0, -EXTENT, 0]);
+
+    gl.clearColor(1, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const program = painter.useProgram('terrainPrepare');
+
+    gl.uniformMatrix4fv(program.u_matrix, false, matrix);
+
+    gl.uniform1f(program.u_zoom, tile.coord.z);
+    gl.uniform2fv(program.u_dimension, [512, 512]);
+    gl.uniform1i(program.u_image, 1);
+
+    const buffer = painter.rasterBoundsBuffer;
+    const vao = painter.rasterBoundsVAO;
+
+    vao.bind(gl, program, buffer);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+
+    tile.texture.unbindFramebuffer();
+
+    tile.prepared = true;
 }
 
 function populateLevelPixels(terrainArray) {
-    let levels = [];
+    const levels = [];
     let levelSize = TERRAIN_TILE_WIDTH;
     let prevIndex = 0;
     while (levelSize >= 2) {
@@ -165,7 +161,7 @@ function populateLevelPixels(terrainArray) {
         // (levelSize *2)^2 = levelSize*levelSize*4 = total pixels in a tile
         // 4 = bytesPerElement for a Uint32Array
         const levelByteLength = levelSize * levelSize * 4 * 4;
-        levels.push({height: levelSize*2, width:levelSize*2, data:new Uint8Array(terrainArray.arrayBuffer.slice(prevIndex,levelByteLength+prevIndex))});
+        levels.push({height: levelSize * 2, width:levelSize * 2, data:new Uint8Array(terrainArray.arrayBuffer.slice(prevIndex, levelByteLength + prevIndex))});
         prevIndex += levelByteLength;
         levelSize /= 2;
     }
