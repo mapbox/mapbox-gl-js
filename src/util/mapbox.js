@@ -4,7 +4,7 @@
 const config = require('./config');
 const browser = require('./browser');
 
-const help = 'See https://www.mapbox.com/developers/api/#access-tokens';
+const help = 'See https://www.mapbox.com/api-documentation/#access-tokens';
 
 type UrlObject = {|
     protocol: string,
