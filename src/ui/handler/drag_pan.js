@@ -84,6 +84,8 @@ class DragPanHandler {
             window.document.addEventListener('mousemove', this._onMove);
             window.document.addEventListener('mouseup', this._onMouseUp);
         }
+        /* Deactivate DragPan when the window looses focus. Otherwise if a mouseup occurs when the window isn't in focus, DragPan will still be active even though the mouse is no longer pressed. */
+        window.addEventListener('blur', this._onMouseUp);
 
         this._active = false;
         this._startPos = this._pos = DOM.mousePos(this._el, e);
@@ -169,6 +171,7 @@ class DragPanHandler {
         this._onUp(e);
         window.document.removeEventListener('mousemove', this._onMove);
         window.document.removeEventListener('mouseup', this._onMouseUp);
+        window.removeEventListener('blur', this._onMouseUp);
     }
 
     _onTouchEnd(e) {
@@ -193,7 +196,7 @@ class DragPanHandler {
             if (e.ctrlKey) return true;
             const buttons = 1,  // left button
                 button = 0;   // left button
-            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button !== button);
+            return (e.type === 'mousemove' ? e.buttons & buttons === 0 : e.button && e.button !== button);
         }
     }
 
