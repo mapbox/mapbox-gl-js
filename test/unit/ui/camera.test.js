@@ -641,6 +641,24 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('ease to position', (t) => {
+            const camera = createCamera({center: [144.9, -37.83],
+                zoom: 15,
+                minZoom: 1,
+                pitch: 45});
+            camera.easeTo({
+                center: [144.9, -37.87],
+                zoom: 15,
+                duration: 500
+            });
+
+            camera.once('move', () => {
+                t.equal(camera.getCenter().lat <= -37.83, true);
+                t.end();
+            });
+
+        });
+
         t.test('emits move, zoom, rotate, and pitch events, preserving eventData', (t) => {
             const camera = createCamera();
             let movestarted, moved, rotated, pitched, zoomstarted, zoomed;
