@@ -55,7 +55,7 @@ layout: pages
 
 <div class='fill-white js-replace-token keyline-top'>
 
-<div id='code'>{% highlight html %}
+<div id='code'>{% copyable %}{% highlight html %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -73,10 +73,8 @@ layout: pages
 
 {{content | insert_token}}
 </body>
-</html>{% endhighlight %}
+</html>{% endhighlight %}{% endcopyable %}
 </div>
-
-  <a class='button icon clipboard col12 round-bottom js-clipboard' href='#' data-clipboard-target='code' id='copy'>Copy example</a>
 </div>
 
 </div>
