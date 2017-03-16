@@ -501,11 +501,7 @@ class Camera extends Evented {
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
         let toLngLat,
-            toPoint,
-            offsetLocation,
-            fromLocation,
-            toLocation,
-            viewport;
+            toPoint;
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
@@ -536,17 +532,17 @@ class Camera extends Evented {
             this.fire('zoomstart', eventData);
         }
 
-        viewport = {
+        const viewport = {
             center: tr.center,
             zoom: zoom,
             bearing: bearing,
             pitch: 0
-        }
+        };
 
-        offsetLocation = tr.pointLocation(toPoint, viewport);
-        fromLocation = tr.pointLocation(tr.centerPoint, viewport);
+        const offsetLocation = tr.pointLocation(toPoint, viewport);
+        const fromLocation = tr.pointLocation(tr.centerPoint, viewport);
 
-        toLocation = LngLat.convert([
+        const toLocation = LngLat.convert([
             toLngLat.lng - (offsetLocation.lng - fromLocation.lng),
             toLngLat.lat - (offsetLocation.lat - fromLocation.lat)
         ]);
@@ -555,11 +551,11 @@ class Camera extends Evented {
 
         this._ease(function (k) {
             // When zooming we need to scale our lat/lon interpolation because the distances change over the course of the transition
-            var k2 = k,
-                deltaZoom = zoom - startZoom,
-                totalDistanceExpansion = Math.pow(0.5, deltaZoom) - 1,
+            let k2 = k,
                 currentDelta,
                 currentDistanceExpansion;
+            const deltaZoom = zoom - startZoom;
+            const totalDistanceExpansion = Math.pow(0.5, deltaZoom) - 1;
 
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
@@ -577,8 +573,8 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            var lng = interpolate(startCenter.lng, toLocation.lng, k2);
-            var lat = interpolate(startCenter.lat, toLocation.lat, k2);
+            const lng = interpolate(startCenter.lng, toLocation.lng, k2);
+            const lat = interpolate(startCenter.lat, toLocation.lat, k2);
             tr.center = LngLat.convert([lng, lat]);
 
             this.fire('move', eventData);

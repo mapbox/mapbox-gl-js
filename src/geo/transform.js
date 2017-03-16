@@ -245,13 +245,13 @@ class Transform {
      * @returns {LngLat} lnglat location
      */
     pointLocation(point, viewport) {
-        if (v == null) {
-            return this.coordinateLocation(this.pointCoordinate(p));
+        if (viewport == null) {
+            return this.coordinateLocation(this.pointCoordinate(point));
         } else {
-            const originalViewport = getViewport();
+            const originalViewport = this.getViewport();
             this.setViewport(viewport);
 
-            const location = this.coordinateLocation(this.pointCoordinate(p));
+            const location = this.coordinateLocation(this.pointCoordinate(point));
 
             this.setViewport(originalViewport);
             return location;
