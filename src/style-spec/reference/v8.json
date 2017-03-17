@@ -1093,7 +1093,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-font": {
@@ -1394,7 +1396,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-offset": {
@@ -2491,7 +2495,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-color": {
@@ -2512,7 +2518,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-color": {
@@ -2533,7 +2541,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-width": {
@@ -2556,7 +2566,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-halo-blur": {
@@ -2579,7 +2591,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "icon-translate": {
@@ -2656,7 +2670,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-color": {
@@ -2677,7 +2693,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-color": {
@@ -2698,7 +2716,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-width": {
@@ -2721,7 +2741,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-halo-blur": {
@@ -2744,7 +2766,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.33.0"
+        }
       }
     },
     "text-translate": {
