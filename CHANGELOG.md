@@ -1,3 +1,17 @@
+## 0.34.0 (March 17, 2017)
+
+#### New features :rocket:
+- Add `Map#addImage` and `Map#removeImage` API to allow adding icon images at runtime #4404
+- Simplify non-browserify bundler usage by making the distribution build the main entrypoint #4423
+
+#### Bug fixes :bug:
+- Fix issue where coincident start/end points of LineStrings were incorrectly rendered as joined #4413
+- Fix bug causing `queryRenderedFeatures` to fail in cases where both multiple sources and data-driven paint properties were present #4417
+- Fix bug where tile request errors caused `map.loaded()` to incorrectly return `false` #4425
+
+#### Testing improvements :white_check_mark:
+- Improve test coverage across several core modules #4432 #4431 #4422 #4244 :bowing_man:
+
 ## 0.33.1 (March 10, 2017)
 
 #### Bug fixes :bug:
