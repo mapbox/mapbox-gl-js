@@ -18,29 +18,12 @@
 <script src='/debug/access_token_generated.js'></script>
 <script>
 
-var tileset = 'lucaswoj.57aw96oc';
-var map = new mapboxgl.Map({
-    container: 'map', // container id
-    style: {
-        "version": 8,
-        "sources": {
-            "raster-tiles": {
-                "type": "raster",
-                "url": "mapbox://" + tileset,
-                "tileSize": 256
-            }
-        },
-        "layers": [{
-            "id": "simple-tiles",
-            "type": "raster",
-            "source": "raster-tiles",
-            "minzoom": 0,
-            "maxzoom": 22
-        }]
-    },
-    center: [-120.8, 39.1], // starting position
-    zoom: 11 // starting zoom
-
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: 'mapbox://styles/mapbox/streets-v10',
+    hash: true
 });
 
 </script>
