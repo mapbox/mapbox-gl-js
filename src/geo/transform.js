@@ -332,6 +332,7 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
+        viewport = this._constrainViewport(viewport);
         const pixelMatrixInverseViewport = this._calcMatricesViewport(viewport);
 
         vec4.transformMat4(coord0, coord0, pixelMatrixInverseViewport);
@@ -491,6 +492,69 @@ class Transform {
         m = mat4.invert(new Float64Array(16), this.pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
         this.pixelMatrixInverse = m;
+    }
+
+    _constrainViewport(viewport) {
+        if (!viewport.center || !this.width || !this.height || this._constraining) return;
+
+        this._constraining = true;
+
+        let minY, maxY, minX, maxX, sy, sx, x2, y2;
+        const size = this.size,
+            unmodified = this._unmodified;
+
+        if (this.latRange) {
+            minY = this.latY(this.latRange[1]);
+            maxY = this.latY(this.latRange[0]);
+            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+        }
+
+        if (this.lngRange) {
+            minX = this.lngX(this.lngRange[0]);
+            maxX = this.lngX(this.lngRange[1]);
+            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+        }
+
+        // how much the map should scale to fit the screen into given latitude/longitude ranges
+        const s = Math.max(sx || 0, sy || 0);
+
+        if (s) {
+            this.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : this.x,
+                sy ? (maxY + minY) / 2 : this.y));
+            this.zoom += this.scaleZoom(s);
+            this._unmodified = unmodified;
+            this._constraining = false;
+            return;
+        }
+
+        if (this.latRange) {
+            const y = this.y,
+                h2 = size.y / 2;
+
+            if (y - h2 < minY) y2 = minY + h2;
+            if (y + h2 > maxY) y2 = maxY - h2;
+        }
+
+        if (this.lngRange) {
+            const x = this.x,
+                w2 = size.x / 2;
+
+            if (x - w2 < minX) x2 = minX + w2;
+            if (x + w2 > maxX) x2 = maxX - w2;
+        }
+
+        // pan the map if the screen goes off the range
+        if (x2 !== undefined || y2 !== undefined) {
+            this.center = this.unproject(new Point(
+                x2 !== undefined ? x2 : this.x,
+                y2 !== undefined ? y2 : this.y));
+        }
+
+        this._unmodified = unmodified;
+        this._constraining = false;
+
+        return viewport;
     }
 
     _calcMatricesViewport(viewport) {
