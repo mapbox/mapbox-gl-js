@@ -490,22 +490,21 @@ class Transform {
         const size = this.size;
         const latRange = this.latRange;
         const lngRange = this.lngRange;
-        const x = this.x;
-        const y = this.y;
-
-        if (!center || !width || !height) return;
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        let x = this.lngX(viewport.center.lng);
+        let y = this.latY(viewport.center.lat);
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
 
         if (latRange) {
-            minY = this.latY(latRange[1]);
-            maxY = this.latY(latRange[0]);
+            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + latRange[1] * Math.PI / 360))) * worldSize / 360;
+            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + latRange[0] * Math.PI / 360))) * worldSize / 360;
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
         if (lngRange) {
-            minX = this.lngX(lngRange[0]);
-            maxX = this.lngX(lngRange[1]);
+            minX = (180 + lngRange[0]) * worldSize / 360;
+            maxX = (180 + lngRange[1]) * worldSize / 360;
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
@@ -517,20 +516,18 @@ class Transform {
                 sx ? (maxX + minX) / 2 : x,
                 sy ? (maxY + minY) / 2 : y));
             viewport.zoom += this.scaleZoom(s);
-            return;
+            return viewport;
         }
 
         if (latRange) {
-            const y = y,
-                h2 = size.y / 2;
+            const h2 = size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
         if (lngRange) {
-            const x = x,
-                w2 = size.x / 2;
+            const w2 = size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
@@ -539,8 +536,8 @@ class Transform {
         // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
             viewport.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : this.x,
-                y2 !== undefined ? y2 : this.y));
+                x2 !== undefined ? x2 : x,
+                y2 !== undefined ? y2 : y));
         }
 
         return viewport;
