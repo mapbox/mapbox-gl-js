@@ -309,8 +309,9 @@ class Transform {
             this.yLat(zoomedCoord.row * this.tileSize));
     }
 
-    pointCoordinate(p, zoom) {
+    pointCoordinate(p, zoom, viewport) {
         if (zoom === undefined) zoom = this.tileZoom;
+        if (viewport === undefined) viewport = this.getViewport();
 
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
@@ -320,8 +321,10 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
-        vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
-        vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
+        const pixelMatrixInverseViewport = this._calcMatricesViewport(viewport);
+
+        vec4.transformMat4(coord0, coord0, pixelMatrixInverseViewport);
+        vec4.transformMat4(coord1, coord1, pixelMatrixInverseViewport);
 
         const w0 = coord0[3];
         const w1 = coord1[3];
@@ -337,7 +340,7 @@ class Transform {
         return new Coordinate(
             interp(x0, x1, t) / this.tileSize,
             interp(y0, y1, t) / this.tileSize,
-            this.zoom)._zoomTo(zoom);
+            viewport.zoom)._zoomTo(zoom);
     }
 
     /**
