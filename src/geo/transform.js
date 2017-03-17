@@ -495,23 +495,28 @@ class Transform {
     }
 
     _constrainViewport(viewport) {
-        if (!viewport.center || !this.width || !this.height || this._constraining) return;
+        const width = this.width;
+        const height = this.height;
+        const center = viewport.center;
+        const size = this.size;
+        const latRange = this.latRange;
+        const lngRange = this.lngRange;
+        const x = this.x;
+        const y = this.y;
 
-        this._constraining = true;
+        if (!center || !width || !height) return;
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
-        const size = this.size,
-            unmodified = this._unmodified;
 
-        if (this.latRange) {
-            minY = this.latY(this.latRange[1]);
-            maxY = this.latY(this.latRange[0]);
+        if (latRange) {
+            minY = this.latY(latRange[1]);
+            maxY = this.latY(latRange[0]);
             sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
         }
 
-        if (this.lngRange) {
-            minX = this.lngX(this.lngRange[0]);
-            maxX = this.lngX(this.lngRange[1]);
+        if (lngRange) {
+            minX = this.lngX(lngRange[0]);
+            maxX = this.lngX(lngRange[1]);
             sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
         }
 
@@ -519,25 +524,23 @@ class Transform {
         const s = Math.max(sx || 0, sy || 0);
 
         if (s) {
-            this.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : this.x,
-                sy ? (maxY + minY) / 2 : this.y));
-            this.zoom += this.scaleZoom(s);
-            this._unmodified = unmodified;
-            this._constraining = false;
+            viewport.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : x,
+                sy ? (maxY + minY) / 2 : y));
+            viewport.zoom += this.scaleZoom(s);
             return;
         }
 
-        if (this.latRange) {
-            const y = this.y,
+        if (latRange) {
+            const y = y,
                 h2 = size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
-        if (this.lngRange) {
-            const x = this.x,
+        if (lngRange) {
+            const x = x,
                 w2 = size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
@@ -546,13 +549,10 @@ class Transform {
 
         // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
-            this.center = this.unproject(new Point(
+            viewport.center = this.unproject(new Point(
                 x2 !== undefined ? x2 : this.x,
                 y2 !== undefined ? y2 : this.y));
         }
-
-        this._unmodified = unmodified;
-        this._constraining = false;
 
         return viewport;
     }
