@@ -165,7 +165,7 @@ class SourceCache extends Evented {
     _tileLoaded(tile, id, previousState, err) {
         if (err) {
             tile.state = 'errored';
-            this._source.fire('error', {tile: tile, error: err});
+            if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
             return;
         }
 

@@ -2,6 +2,13 @@
 
 const window = require('./window');
 
+class AJAXError extends Error {
+    constructor(message, status) {
+        super(message);
+        this.status = status;
+    }
+}
+
 exports.getJSON = function(url, callback) {
     const xhr = new window.XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -19,7 +26,7 @@ exports.getJSON = function(url, callback) {
             }
             callback(null, data);
         } else {
-            callback(new Error(xhr.statusText));
+            callback(new AJAXError(xhr.statusText, xhr.status));
         }
     };
     xhr.send();
@@ -44,7 +51,7 @@ exports.getArrayBuffer = function(url, callback) {
                 expires: xhr.getResponseHeader('Expires')
             });
         } else {
-            callback(new Error(xhr.statusText));
+            callback(new AJAXError(xhr.statusText, xhr.status));
         }
     };
     xhr.send();

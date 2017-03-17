@@ -284,6 +284,13 @@ test('SourceCache / Source lifecycle', (t) => {
         sourceCache.onAdd();
     });
 
+    t.test('suppress 404 errors', (t) => {
+        const sourceCache = createSourceCache({status: 404, message: 'Not found'})
+        .on('error', t.fail);
+        sourceCache.onAdd();
+        t.end();
+    });
+
     t.test('loaded() true after source error', (t) => {
         const sourceCache = createSourceCache({ error: 'Error loading source' })
         .on('error', () => {
