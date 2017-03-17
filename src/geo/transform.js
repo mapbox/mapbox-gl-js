@@ -298,10 +298,12 @@ class Transform {
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
+     * @param {CameraOptions} viewport viewport
      * @returns {LngLat} lnglat
      */
-    coordinateLocation(coord) {
-        const zoomedCoord = coord.zoomTo(this.zoom);
+    coordinateLocation(coord, viewport) {
+        if (viewport === undefined) viewport = this.getViewport();
+        const zoomedCoord = coord.zoomTo(viewport.zoom);
         return new LngLat(
             this.xLng(zoomedCoord.column * this.tileSize),
             this.yLat(zoomedCoord.row * this.tileSize));
