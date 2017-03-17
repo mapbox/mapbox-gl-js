@@ -497,14 +497,14 @@ class Transform {
         const height = this.height;
         const width = this.width;
         const _fov = this._fov;
-        const _pitch = this._pitch;
-        const angle = this.angle;
-        const x = this.x;
-        const y = this.y;
-        const worldSize = this.worldSize;
-        const center = this.center;
+        const _pitch = util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI;
+        const angle = -util.wrap(viewport.bearing, -180, 180) * Math.PI / 180;
+        const x = this.lngX(viewport.center.lng);
+        const y = this.latY(viewport.center.lat);
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const center = viewport.center;
 
-        if (!this.height) return;
+        if (!height) return;
 
         const cameraToCenterDistance = 0.5 / Math.tan(_fov / 2) * height;
 
