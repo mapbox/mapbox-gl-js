@@ -1391,7 +1391,7 @@ function removeNode(node) {
  *     return this._container;
  * };
  *
- * HelloWorldControl.prototype.onRemove() {
+ * HelloWorldControl.prototype.onRemove = function () {
  *      this._container.parentNode.removeChild(this._container);
  *      this._map = undefined;
  * };
