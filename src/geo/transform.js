@@ -253,8 +253,6 @@ class Transform {
             if (!('bearing' in viewport)) viewport.bearing = this.bearing;
             if (!('pitch' in viewport)) viewport.pitch = this.pitch;
 
-            viewport = this.boundViewport(viewport);
-
             const location = this.coordinateLocation(this.pointCoordinate(point, viewport.zoom, viewport), viewport);
             return location;
         }
@@ -271,15 +269,6 @@ class Transform {
             bearing: this.bearing,
             pitch: this.pitch
         };
-    }
-
-    boundViewport(viewport) {
-        return {
-            center: viewport.center,
-            zoom: Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom),
-            bearing: -(-util.wrap(viewport.bearing, -180, 180) * Math.PI / 180) / Math.PI * 180,
-            pitch: (util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI) / Math.PI * 180
-        }
     }
 
     /**
