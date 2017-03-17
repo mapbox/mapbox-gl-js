@@ -75,13 +75,14 @@ class AttributionControl {
     }
 
     _updateData(e) {
-        this._updateAttributions(e);
-        this._updateEditLink();
+        if (e && e.sourceDataType === 'metadata') {
+            this._updateAttributions();
+            this._updateEditLink();
+        }
     }
 
-    _updateAttributions(e) {
+    _updateAttributions() {
         if (!this._map.style) return;
-        if (e && e.sourceDataType !== 'metadata') return;
         let attributions = [];
 
         const sourceCaches = this._map.style.sourceCaches;
