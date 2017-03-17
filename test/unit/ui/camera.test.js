@@ -641,7 +641,7 @@ test('camera', (t) => {
             t.end();
         });
 
-        t.test('ease to position', (t) => {
+        t.test('ease to position in correct direction', (t) => {
             const camera = createCamera({center: [144.9, -37.83],
                 zoom: 15,
                 minZoom: 1,
