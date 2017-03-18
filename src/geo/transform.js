@@ -307,7 +307,7 @@ class Transform {
         const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
         const x = (zoomedCoord.column * this.tileSize) * 360 / worldSize - 180;
         const y2 = 180 - (zoomedCoord.row * this.tileSize) * 360 / worldSize;
-        const y = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90
+        const y = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
         return new LngLat(
             x,
             y);
@@ -487,15 +487,12 @@ class Transform {
     }
 
     _constrainViewport(viewport) {
-        const width = this.width;
-        const height = this.height;
-        const center = viewport.center;
         const size = this.size;
         const latRange = this.latRange;
         const lngRange = this.lngRange;
         const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
-        let x = this.lngX(viewport.center.lng);
-        let y = this.latY(viewport.center.lat);
+        const x = this.lngX(viewport.center.lng);
+        const y = this.latY(viewport.center.lat);
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
 
