@@ -344,7 +344,7 @@ class Transform {
         return new Coordinate(
             interp(x0, x1, t) / this.tileSize,
             interp(y0, y1, t) / this.tileSize,
-            viewport.zoom)._zoomTo(viewport.zoom);
+            viewport.zoom)._zoomTo(zoom);
     }
 
     /**
