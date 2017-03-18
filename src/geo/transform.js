@@ -253,8 +253,8 @@ class Transform {
             if (!('bearing' in viewport)) viewport.bearing = this.bearing;
             if (!('pitch' in viewport)) viewport.pitch = this.pitch;
 
-            const location = this.coordinateLocation(this.pointCoordinate(point, viewport.zoom, viewport), viewport);
-            return location;
+            viewport = this._constrainViewport(viewport);
+            return this.coordinateLocation(this.pointCoordinate(point, Math.floor(viewport.zoom), viewport), viewport);
         }
     }
 
@@ -304,9 +304,13 @@ class Transform {
     coordinateLocation(coord, viewport) {
         if (viewport === undefined) viewport = this.getViewport();
         const zoomedCoord = coord.zoomTo(viewport.zoom);
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = (zoomedCoord.column * this.tileSize) * 360 / worldSize - 180;
+        const y2 = 180 - (zoomedCoord.row * this.tileSize) * 360 / worldSize;
+        const y = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90
         return new LngLat(
-            this.xLng(zoomedCoord.column * this.tileSize),
-            this.yLat(zoomedCoord.row * this.tileSize));
+            x,
+            y);
     }
 
     pointCoordinate(p, zoom, viewport) {
@@ -321,7 +325,6 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
-        viewport = this._constrainViewport(viewport);
         const pixelMatrixInverseViewport = this._calcMatricesViewport(viewport);
 
         vec4.transformMat4(coord0, coord0, pixelMatrixInverseViewport);
@@ -341,7 +344,7 @@ class Transform {
         return new Coordinate(
             interp(x0, x1, t) / this.tileSize,
             interp(y0, y1, t) / this.tileSize,
-            viewport.zoom)._zoomTo(zoom);
+            viewport.zoom)._zoomTo(viewport.zoom);
     }
 
     /**
@@ -516,6 +519,7 @@ class Transform {
                 sx ? (maxX + minX) / 2 : x,
                 sy ? (maxY + minY) / 2 : y));
             viewport.zoom += this.scaleZoom(s);
+            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
             return viewport;
         }
 
@@ -549,9 +553,9 @@ class Transform {
         const _fov = this._fov;
         const _pitch = util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI;
         const angle = -util.wrap(viewport.bearing, -180, 180) * Math.PI / 180;
-        const x = this.lngX(viewport.center.lng);
-        const y = this.latY(viewport.center.lat);
         const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = (180 + viewport.center.lng) * worldSize / 360;
+        const y = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + viewport.center.lat * Math.PI / 360))) * worldSize / 360;
         const center = viewport.center;
 
         if (!height) return;
