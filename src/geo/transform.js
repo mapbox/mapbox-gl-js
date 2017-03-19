@@ -272,17 +272,6 @@ class Transform {
     }
 
     /**
-     * Sets the viewport of this transform
-     * @param {CameraOptions} viewport
-     */
-    setViewport(viewport) {
-        if ('center' in viewport) this.center = viewport.center;
-        if ('zoom' in viewport) this.zoom = viewport.zoom;
-        if ('bearing' in viewport) this.bearing = viewport.bearing;
-        if ('pitch' in viewport) this.pitch = viewport.pitch;
-    }
-
-    /**
      * Given a geographical lnglat, return an unrounded
      * coordinate that represents it at this transform's zoom level.
      * @param {LngLat} lnglat
