@@ -314,10 +314,10 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
-        const pixelMatrixInverseViewport = this._calcMatricesViewport(viewport);
+        const pixelMatrixInverse = this._calcMatrices(viewport);
 
-        vec4.transformMat4(coord0, coord0, pixelMatrixInverseViewport);
-        vec4.transformMat4(coord1, coord1, pixelMatrixInverseViewport);
+        vec4.transformMat4(coord0, coord0, pixelMatrixInverse);
+        vec4.transformMat4(coord1, coord1, pixelMatrixInverse);
 
         const w0 = coord0[3];
         const w1 = coord1[3];
@@ -428,21 +428,36 @@ class Transform {
         this._constraining = false;
     }
 
-    _calcMatrices() {
+    _calcMatrices(viewport) {
+        let external = false;
+
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+        } else {
+            external = true;
+        }
+
+        const _pitch = util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI;
+        const angle = -util.wrap(viewport.bearing, -180, 180) * Math.PI / 180;
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = (180 + viewport.center.lng) * worldSize / 360;
+        const y = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + viewport.center.lat * Math.PI / 360))) * worldSize / 360;
+        const center = viewport.center;
+
         if (!this.height) return;
 
-        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
 
         // Find the distance from the center point [width/2, height/2] to the
         // center top point [width/2, 0] in Z units, using the law of sines.
         // 1 Z unit is equivalent to 1 horizontal px at the center of the map
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
         const halfFov = this._fov / 2;
-        const groundAngle = Math.PI / 2 + this._pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+        const groundAngle = Math.PI / 2 + _pitch;
+        const topHalfSurfaceDistance = Math.sin(halfFov) * cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
 
         // Calculate z distance of the farthest fragment that should be rendered.
-        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+        const furthestDistance = Math.cos(Math.PI / 2 - _pitch) * topHalfSurfaceDistance + cameraToCenterDistance;
         // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
         const farZ = furthestDistance * 1.01;
 
@@ -451,50 +466,55 @@ class Transform {
         mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
-        mat4.rotateX(m, m, this._pitch);
-        mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-this.x, -this.y, 0]);
+        mat4.translate(m, m, [0, 0, -cameraToCenterDistance]);
+        mat4.rotateX(m, m, _pitch);
+        mat4.rotateZ(m, m, angle);
+        mat4.translate(m, m, [-x, -y, 0]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
+        const verticalScale = worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(center.lat * (Math.PI / 180))));
         mat4.scale(m, m, [1, 1, verticalScale, 1]);
 
-        this.projMatrix = m;
-
+        const projMatrix = m;
+        if (!external) {
+            this.projMatrix = projMatrix;
+        }
         // matrix for conversion from location to screen coordinates
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
-
+        const pixelMatrix = mat4.multiply(new Float64Array(16), m, projMatrix);
+        if (!external) {
+            this.pixelMatrix = pixelMatrix;
+        }
         // inverse matrix for conversion from screen coordinaes to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
+        m = mat4.invert(new Float64Array(16), pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
-        this.pixelMatrixInverse = m;
+        const inversePixelMatix = m;
+        if (!external) {
+            this.inversePixelMatix = inversePixelMatix;
+        }
+        return inversePixelMatix;
     }
 
     _constrainViewport(viewport) {
-        const size = this.size;
-        const latRange = this.latRange;
-        const lngRange = this.lngRange;
         const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
         const x = this.lngX(viewport.center.lng);
         const y = this.latY(viewport.center.lat);
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
 
-        if (latRange) {
-            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + latRange[1] * Math.PI / 360))) * worldSize / 360;
-            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + latRange[0] * Math.PI / 360))) * worldSize / 360;
-            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+        if (this.latRange) {
+            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[1] * Math.PI / 360))) * worldSize / 360;
+            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[0] * Math.PI / 360))) * worldSize / 360;
+            sy = maxY - minY < this.size.y ? this.size.y / (maxY - minY) : 0;
         }
 
-        if (lngRange) {
-            minX = (180 + lngRange[0]) * worldSize / 360;
-            maxX = (180 + lngRange[1]) * worldSize / 360;
-            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+        if (this.lngRange) {
+            minX = (180 + this.lngRange[0]) * worldSize / 360;
+            maxX = (180 + this.lngRange[1]) * worldSize / 360;
+            sx = maxX - minX < this.size.x ? this.size.x / (maxX - minX) : 0;
         }
 
         // how much the map should scale to fit the screen into given latitude/longitude ranges
@@ -509,15 +529,15 @@ class Transform {
             return viewport;
         }
 
-        if (latRange) {
-            const h2 = size.y / 2;
+        if (this.latRange) {
+            const h2 = this.size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
-        if (lngRange) {
-            const w2 = size.x / 2;
+        if (this.lngRange) {
+            const w2 = this.size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
@@ -531,63 +551,6 @@ class Transform {
         }
 
         return viewport;
-    }
-
-    _calcMatricesViewport(viewport) {
-        const height = this.height;
-        const width = this.width;
-        const _fov = this._fov;
-        const _pitch = util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI;
-        const angle = -util.wrap(viewport.bearing, -180, 180) * Math.PI / 180;
-        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
-        const x = (180 + viewport.center.lng) * worldSize / 360;
-        const y = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + viewport.center.lat * Math.PI / 360))) * worldSize / 360;
-        const center = viewport.center;
-
-        if (!height) return;
-
-        const cameraToCenterDistance = 0.5 / Math.tan(_fov / 2) * height;
-
-        // Find the distance from the center point [width/2, height/2] to the
-        // center top point [width/2, 0] in Z units, using the law of sines.
-        // 1 Z unit is equivalent to 1 horizontal px at the center of the map
-        // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
-        const halfFov = _fov / 2;
-        const groundAngle = Math.PI / 2 + _pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
-
-        // Calculate z distance of the farthest fragment that should be rendered.
-        const furthestDistance = Math.cos(Math.PI / 2 - _pitch) * topHalfSurfaceDistance + cameraToCenterDistance;
-        // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
-        const farZ = furthestDistance * 1.01;
-
-        // matrix for conversion from location to GL coordinates (-1 .. 1)
-        let m = new Float64Array(16);
-        mat4.perspective(m, _fov, width / height, 1, farZ);
-
-        mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [0, 0, -cameraToCenterDistance]);
-        mat4.rotateX(m, m, _pitch);
-        mat4.rotateZ(m, m, angle);
-        mat4.translate(m, m, [-x, -y, 0]);
-
-        // scale vertically to meters per pixel (inverse of ground resolution):
-        // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        const verticalScale = worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(center.lat * (Math.PI / 180))));
-        mat4.scale(m, m, [1, 1, verticalScale, 1]);
-
-        const projMatrix = m;
-
-        // matrix for conversion from location to screen coordinates
-        m = mat4.create();
-        mat4.scale(m, m, [width / 2, -height / 2, 1]);
-        mat4.translate(m, m, [1, -1, 0]);
-        const pixelMatrix = mat4.multiply(new Float64Array(16), m, projMatrix);
-
-        // inverse matrix for conversion from screen coordinaes to location
-        m = mat4.invert(new Float64Array(16), pixelMatrix);
-        if (!m) throw new Error("failed to invert matrix");
-        return m;
     }
 }
 
