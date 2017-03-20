@@ -316,13 +316,13 @@ class Transform {
         const coord1 = [p.x, p.y, 1, 1];
 
         if (external) {
-            const pixelMatrixInverse = this._calcMatrices(viewport);
+            const inversePixelMatix = this._calcMatrices(viewport);
 
-            vec4.transformMat4(coord0, coord0, pixelMatrixInverse);
-            vec4.transformMat4(coord1, coord1, pixelMatrixInverse);
+            vec4.transformMat4(coord0, coord0, inversePixelMatix);
+            vec4.transformMat4(coord1, coord1, inversePixelMatix);
         } else {
-            vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
-            vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
+            vec4.transformMat4(coord0, coord0, this.inversePixelMatix);
+            vec4.transformMat4(coord1, coord1, this.inversePixelMatix);
         }
 
         const w0 = coord0[3];
