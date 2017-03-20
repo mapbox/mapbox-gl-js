@@ -768,7 +768,7 @@ class Camera extends Evented {
 
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
-            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
+            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale)).wrap();
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);

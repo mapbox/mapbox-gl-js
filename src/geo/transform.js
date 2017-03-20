@@ -230,7 +230,7 @@ class Transform {
 
     setLocationAtPoint(lnglat, point) {
         const translate = this.pointCoordinate(point)._sub(this.pointCoordinate(this.centerPoint));
-        this.center = this.coordinateLocation(this.locationCoordinate(lnglat)._sub(translate));
+        this.center = this.coordinateLocation(this.locationCoordinate(lnglat)._sub(translate)).wrap();
     }
 
     /**
