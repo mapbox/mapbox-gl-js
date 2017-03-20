@@ -667,7 +667,7 @@ class Camera extends Evented {
 
         // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
         // interpolating between the two endpoints will cross it.
-        if (Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
+        if (tr._renderWorldCopies && Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
             if (tr.center.lng > 0 && center.lng < 0) {
                 center.lng += 360;
             } else if (tr.center.lng < 0 && center.lng > 0) {

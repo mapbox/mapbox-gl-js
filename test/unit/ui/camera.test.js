@@ -1011,6 +1011,46 @@ test('camera', (t) => {
             camera.flyTo({ center: [170, 0], duration: 10 });
         });
 
+        t.test('does not pan eastward across the antimeridian if no world copies', (t) => {
+            const camera = createCamera();
+            camera.transform._renderWorldCopies = false;
+            camera.setCenter([170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng > 170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.notOk(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.flyTo({ center: [-170, 0], duration: 10 });
+        });
+
+        t.test('does not pan westward across the antimeridian if no world copies', (t) => {
+            const camera = createCamera();
+            camera.transform._renderWorldCopies = false;
+            camera.setCenter([-170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng < -170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.notOk(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.flyTo({ center: [170, 0], duration: 10 });
+        });
+
         t.test('peaks at the specified zoom level', (t) => {
             const camera = createCamera({zoom: 20});
             const minZoom = 1;
