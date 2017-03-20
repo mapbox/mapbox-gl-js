@@ -372,11 +372,11 @@ class Transform {
 
         if (viewport === undefined) {
             viewport = this.getViewport();
-        } else {
-            external = true;
             if (!this.center || !this.width || !this.height || this._constraining) return;
 
             this._constraining = true;
+        } else {
+            external = true;
         }
 
         const unmodified = this._unmodified;
