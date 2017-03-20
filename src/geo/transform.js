@@ -297,15 +297,16 @@ class Transform {
         const x = (zoomedCoord.column * this.tileSize) * 360 / worldSize - 180;
         const y2 = 180 - (zoomedCoord.row * this.tileSize) * 360 / worldSize;
         const y = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
-        return new LngLat(
-            x,
-            y);
+        return new LngLat(x, y);
     }
 
     pointCoordinate(p, zoom, viewport) {
+        let external = true;
         if (zoom === undefined) zoom = this.tileZoom;
-        if (viewport === undefined) viewport = this.getViewport();
-
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+            external = false;
+        }
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
@@ -314,10 +315,15 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
-        const pixelMatrixInverse = this._calcMatrices(viewport);
+        if (external) {
+            const pixelMatrixInverse = this._calcMatrices(viewport);
 
-        vec4.transformMat4(coord0, coord0, pixelMatrixInverse);
-        vec4.transformMat4(coord1, coord1, pixelMatrixInverse);
+            vec4.transformMat4(coord0, coord0, pixelMatrixInverse);
+            vec4.transformMat4(coord1, coord1, pixelMatrixInverse);
+        } else {
+            vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
+            vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
+        }
 
         const w0 = coord0[3];
         const w1 = coord1[3];
