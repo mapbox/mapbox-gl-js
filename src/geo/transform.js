@@ -447,6 +447,9 @@ class Transform {
         if (!this.height) return;
 
         const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        if (!external) {
+            this.cameraToCenterDistance = cameraToCenterDistance;
+        }
 
         // Find the distance from the center point [width/2, height/2] to the
         // center top point [width/2, 0] in Z units, using the law of sines.
