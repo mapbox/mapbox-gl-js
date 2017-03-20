@@ -406,12 +406,14 @@ class Transform {
                 sx ? (maxX + minX) / 2 : x,
                 sy ? (maxY + minY) / 2 : y));
             viewport.zoom += this.scaleZoom(s);
-            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
             if (!external) {
+                this.center = viewport.center;
                 this.zoom = viewport.zoom;
+
                 this._unmodified = unmodified;
                 this._constraining = false;
             }
+            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
             return viewport;
         }
 
