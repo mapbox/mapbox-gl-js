@@ -253,7 +253,7 @@ class Transform {
             if (!('bearing' in viewport)) viewport.bearing = this.bearing;
             if (!('pitch' in viewport)) viewport.pitch = this.pitch;
 
-            viewport = this._constrainViewport(viewport);
+            viewport = this._constrain(viewport);
             return this.coordinateLocation(this.pointCoordinate(point, Math.floor(viewport.zoom), viewport), viewport);
         }
     }
@@ -367,51 +367,63 @@ class Transform {
         return new Float32Array(posMatrix);
     }
 
-    _constrain() {
-        if (!this.center || !this.width || !this.height || this._constraining) return;
+    _constrain(viewport) {
+        let external = false;
 
-        this._constraining = true;
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+        } else {
+            external = true;
+            if (!this.center || !this.width || !this.height || this._constraining) return;
+
+            this._constraining = true;
+        }
+
+        const unmodified = this._unmodified;
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = this.lngX(viewport.center.lng);
+        const y = this.latY(viewport.center.lat);
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
-        const size = this.size,
-            unmodified = this._unmodified;
 
         if (this.latRange) {
-            minY = this.latY(this.latRange[1]);
-            maxY = this.latY(this.latRange[0]);
-            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[1] * Math.PI / 360))) * worldSize / 360;
+            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[0] * Math.PI / 360))) * worldSize / 360;
+            sy = maxY - minY < this.size.y ? this.size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
-            minX = this.lngX(this.lngRange[0]);
-            maxX = this.lngX(this.lngRange[1]);
-            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+            minX = (180 + this.lngRange[0]) * worldSize / 360;
+            maxX = (180 + this.lngRange[1]) * worldSize / 360;
+            sx = maxX - minX < this.size.x ? this.size.x / (maxX - minX) : 0;
         }
 
         // how much the map should scale to fit the screen into given latitude/longitude ranges
         const s = Math.max(sx || 0, sy || 0);
 
         if (s) {
-            this.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : this.x,
-                sy ? (maxY + minY) / 2 : this.y));
-            this.zoom += this.scaleZoom(s);
-            this._unmodified = unmodified;
-            this._constraining = false;
-            return;
+            viewport.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : x,
+                sy ? (maxY + minY) / 2 : y));
+            viewport.zoom += this.scaleZoom(s);
+            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
+            if (!external) {
+                this.zoom = viewport.zoom;
+                this._unmodified = unmodified;
+                this._constraining = false;
+            }
+            return viewport;
         }
 
         if (this.latRange) {
-            const y = this.y,
-                h2 = size.y / 2;
+            const h2 = this.size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
         if (this.lngRange) {
-            const x = this.x,
-                w2 = size.x / 2;
+            const w2 = this.size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
@@ -419,13 +431,16 @@ class Transform {
 
         // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
-            this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : this.x,
-                y2 !== undefined ? y2 : this.y));
+            viewport.center = this.unproject(new Point(
+                x2 !== undefined ? x2 : x,
+                y2 !== undefined ? y2 : y));
+            if (!external) this.center = viewport.center;
         }
 
         this._unmodified = unmodified;
         this._constraining = false;
+
+        return viewport;
     }
 
     _calcMatrices(viewport) {
@@ -499,61 +514,6 @@ class Transform {
             this.inversePixelMatix = inversePixelMatix;
         }
         return inversePixelMatix;
-    }
-
-    _constrainViewport(viewport) {
-        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
-        const x = this.lngX(viewport.center.lng);
-        const y = this.latY(viewport.center.lat);
-
-        let minY, maxY, minX, maxX, sy, sx, x2, y2;
-
-        if (this.latRange) {
-            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[1] * Math.PI / 360))) * worldSize / 360;
-            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[0] * Math.PI / 360))) * worldSize / 360;
-            sy = maxY - minY < this.size.y ? this.size.y / (maxY - minY) : 0;
-        }
-
-        if (this.lngRange) {
-            minX = (180 + this.lngRange[0]) * worldSize / 360;
-            maxX = (180 + this.lngRange[1]) * worldSize / 360;
-            sx = maxX - minX < this.size.x ? this.size.x / (maxX - minX) : 0;
-        }
-
-        // how much the map should scale to fit the screen into given latitude/longitude ranges
-        const s = Math.max(sx || 0, sy || 0);
-
-        if (s) {
-            viewport.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : x,
-                sy ? (maxY + minY) / 2 : y));
-            viewport.zoom += this.scaleZoom(s);
-            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
-            return viewport;
-        }
-
-        if (this.latRange) {
-            const h2 = this.size.y / 2;
-
-            if (y - h2 < minY) y2 = minY + h2;
-            if (y + h2 > maxY) y2 = maxY - h2;
-        }
-
-        if (this.lngRange) {
-            const w2 = this.size.x / 2;
-
-            if (x - w2 < minX) x2 = minX + w2;
-            if (x + w2 > maxX) x2 = maxX - w2;
-        }
-
-        // pan the map if the screen goes off the range
-        if (x2 !== undefined || y2 !== undefined) {
-            viewport.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : x,
-                y2 !== undefined ? y2 : y));
-        }
-
-        return viewport;
     }
 }
 
