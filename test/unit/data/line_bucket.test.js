@@ -34,33 +34,71 @@ test('LineBucket', (t) => {
     const layer = new StyleLayer({ id: 'test', type: 'line' });
     const bucket = new LineBucket({ layers: [layer] });
 
-    const pointWithScale = new Point(0, 0);
-    pointWithScale.scale = 10;
+    const line = {
+        type: 2,
+        properties: {}
+    };
 
-    // should throw in the future?
+    const polygon = {
+        type: 3,
+        properties: {}
+    };
+
     bucket.addLine([
         new Point(0, 0)
-    ], {});
+    ], line);
 
-    // should also throw in the future?
-    // this is a closed single-segment line
+    bucket.addLine([
+        new Point(0, 0)
+    ], polygon);
+
     bucket.addLine([
         new Point(0, 0),
         new Point(0, 0)
-    ], {});
+    ], line);
+
+    bucket.addLine([
+        new Point(0, 0),
+        new Point(0, 0)
+    ], polygon);
+
+    bucket.addLine([
+        new Point(0, 0),
+        new Point(10, 10),
+        new Point(0, 0)
+    ], line);
+
+    bucket.addLine([
+        new Point(0, 0),
+        new Point(10, 10),
+        new Point(0, 0)
+    ], polygon);
 
     bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20)
-    ], {});
+    ], line);
+
+    bucket.addLine([
+        new Point(0, 0),
+        new Point(10, 10),
+        new Point(10, 20)
+    ], polygon);
 
     bucket.addLine([
         new Point(0, 0),
         new Point(10, 10),
         new Point(10, 20),
         new Point(0, 0)
-    ], {});
+    ], line);
+
+    bucket.addLine([
+        new Point(0, 0),
+        new Point(10, 10),
+        new Point(10, 20),
+        new Point(0, 0)
+    ], polygon);
 
     bucket.addFeature(feature);
 

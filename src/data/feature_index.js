@@ -111,6 +111,10 @@ class FeatureIndex {
         // expanded by to include these features.
         let additionalRadius = 0;
         for (const id in styleLayers) {
+            // Since FeatureIndex is owned by a particular tile, make sure we
+            // only consider style layers whose data are present.
+            if (!this.hasLayer(id)) continue;
+
             const styleLayer = styleLayers[id];
 
             let styleLayerDistance = 0;
@@ -241,6 +245,16 @@ class FeatureIndex {
                 layerResult.push(geojsonFeature);
             }
         }
+    }
+
+    hasLayer(id) {
+        for (const index in this.bucketLayerIDs) {
+            for (const layerID of this.bucketLayerIDs[index]) {
+                if (id === layerID) return true;
+            }
+        }
+
+        return false;
     }
 
     // Get the given paint property value; if a feature is not provided and the

@@ -58,3 +58,23 @@ test('does not composite vector + raster', (t) => {
     t.deepEqual(Object.keys(result.sources), ["a", "b"]);
     t.end();
 });
+
+test('incorrect url match', (t) => {
+    const result = composite({
+        "version": 7,
+        "sources": {
+            "a": {
+                "type": "vector",
+                "url": "mapbox://a"
+            },
+            "b": {
+                "type": "vector",
+                "url": ""
+            }
+        },
+        "layers": []
+    });
+
+    t.deepEqual(Object.keys(result.sources), ["a", "b"]);
+    t.end();
+});

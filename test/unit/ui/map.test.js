@@ -316,8 +316,8 @@ test('Map', (t) => {
             const map = createMap({style: style});
 
             map.on('load', () => {
-                map.on('error', ({ error }) => {
-                    t.match(error.message, /There is no source with ID/);
+                map.on('error', (e) => {
+                    t.match(e.error.message, /There is no source with ID/);
                     t.end();
                 });
                 map.isSourceLoaded('geojson');
@@ -397,6 +397,69 @@ test('Map', (t) => {
         });
 
         t.end();
+    });
+
+    t.test('#moveLayer', (t) => {
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [{
+                    id: 'layerId1',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }, {
+                    id: 'layerId2',
+                    type: 'circle',
+                    source: 'mapbox',
+                    'source-layer': 'sourceLayer'
+                }]
+            })
+        });
+
+        map.once('render', () => {
+            map.moveLayer('layerId1', 'layerId2');
+            t.equal(map.getLayer('layerId1').id, 'layerId1');
+            t.equal(map.getLayer('layerId2').id, 'layerId2');
+            t.end();
+        });
+    });
+
+    t.test('#getLayer', (t) => {
+        const layer = {
+            id: 'layerId',
+            type: 'circle',
+            source: 'mapbox',
+            'source-layer': 'sourceLayer'
+        };
+        const map = createMap({
+            style: util.extend(createStyle(), {
+                sources: {
+                    mapbox: {
+                        type: 'vector',
+                        minzoom: 1,
+                        maxzoom: 10,
+                        tiles: ['http://example.com/{z}/{x}/{y}.png']
+                    }
+                },
+                layers: [layer]
+            })
+        });
+
+        map.once('render', () => {
+            const mapLayer = map.getLayer('layerId');
+            t.equal(mapLayer.id, layer.id);
+            t.equal(mapLayer.type, layer.type);
+            t.equal(mapLayer.source, layer.source);
+            t.end();
+        });
     });
 
     t.test('#resize', (t) => {
@@ -876,8 +939,8 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                map.style.on('error', (e) => {
+                    t.match(e.error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
                 map.setLayoutProperty('non-existant', 'text-transform', 'lowercase');
@@ -1082,8 +1145,8 @@ test('Map', (t) => {
             });
 
             map.on('style.load', () => {
-                map.style.on('error', ({ error }) => {
-                    t.match(error.message, /does not exist in the map\'s style and cannot be styled/);
+                map.style.on('error', (e) => {
+                    t.match(e.error.message, /does not exist in the map\'s style and cannot be styled/);
                     t.end();
                 });
                 map.setPaintProperty('non-existant', 'background-color', 'red');

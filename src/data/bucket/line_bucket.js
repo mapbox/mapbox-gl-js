@@ -5,6 +5,7 @@ const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
+const VectorTileFeature = require('vector-tile').VectorTileFeature;
 
 // NOTE ON EXTRUDE SCALE:
 // scale the extrusion vector so that the normal length is this value.
@@ -88,55 +89,51 @@ class LineBucket extends Bucket {
         const roundLimit = layout['line-round-limit'];
 
         for (const line of loadGeometry(feature, LINE_DISTANCE_BUFFER_BITS)) {
-            this.addLine(line, feature.properties, join, cap, miterLimit, roundLimit);
+            this.addLine(line, feature, join, cap, miterLimit, roundLimit);
         }
     }
 
-    addLine(vertices, featureProperties, join, cap, miterLimit, roundLimit) {
+    addLine(vertices, feature, join, cap, miterLimit, roundLimit) {
+        const featureProperties = feature.properties;
+        const isPolygon = VectorTileFeature.types[feature.type] === 'Polygon';
 
-        let len = vertices.length;
         // If the line has duplicate vertices at the end, adjust length to remove them.
-        while (len > 2 && vertices[len - 1].equals(vertices[len - 2])) {
+        let len = vertices.length;
+        while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
             len--;
         }
 
-        // a line must have at least two vertices
-        if (vertices.length < 2) return;
+        // Ignore invalid geometry.
+        if (len < (isPolygon ? 3 : 2)) return;
 
         if (join === 'bevel') miterLimit = 1.05;
 
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-        const firstVertex = vertices[0],
-            lastVertex = vertices[len - 1],
-            closed = firstVertex.equals(lastVertex);
-
+        const firstVertex = vertices[0];
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
         const segment = arrays.prepareSegment(len * 10);
 
-        // a line may not have coincident points
-        if (len === 2 && closed) return;
-
         this.distance = 0;
 
         const beginCap = cap,
-            endCap = closed ? 'butt' : cap;
+            endCap = isPolygon ? 'butt' : cap;
         let startOfLine = true;
         let currentVertex, prevVertex, nextVertex, prevNormal, nextNormal, offsetA, offsetB;
 
         // the last three vertices added
         this.e1 = this.e2 = this.e3 = -1;
 
-        if (closed) {
+        if (isPolygon) {
             currentVertex = vertices[len - 2];
             nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
         }
 
         for (let i = 0; i < len; i++) {
 
-            nextVertex = closed && i === len - 1 ?
+            nextVertex = isPolygon && i === len - 1 ?
                 vertices[1] : // if the line is closed, we treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
@@ -434,5 +431,7 @@ class LineBucket extends Bucket {
         }
     }
 }
+
+LineBucket.programInterface = lineInterface;
 
 module.exports = LineBucket;

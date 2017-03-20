@@ -126,6 +126,8 @@ class FillExtrusionBucket extends Bucket {
     }
 }
 
+FillExtrusionBucket.programInterface = fillExtrusionInterface;
+
 module.exports = FillExtrusionBucket;
 
 function isBoundaryEdge(p1, p2) {

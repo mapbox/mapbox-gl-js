@@ -1,3 +1,17 @@
+## 0.34.0 (March 17, 2017)
+
+#### New features :rocket:
+- Add `Map#addImage` and `Map#removeImage` API to allow adding icon images at runtime #4404
+- Simplify non-browserify bundler usage by making the distribution build the main entrypoint #4423
+
+#### Bug fixes :bug:
+- Fix issue where coincident start/end points of LineStrings were incorrectly rendered as joined #4413
+- Fix bug causing `queryRenderedFeatures` to fail in cases where both multiple sources and data-driven paint properties were present #4417
+- Fix bug where tile request errors caused `map.loaded()` to incorrectly return `false` #4425
+
+#### Testing improvements :white_check_mark:
+- Improve test coverage across several core modules #4432 #4431 #4422 #4244 :bowing_man:
+
 ## 0.33.1 (March 10, 2017)
 
 #### Bug fixes :bug:
@@ -14,6 +28,7 @@
 - Increase default `maxZoom` from 20 to 22 #4333
 - Deprecate `tiledata` and `tiledataloading` events in favor of `sourcedata` and `sourcedataloading`. #4347
 - `mapboxgl.util` is no longer exported #1408
+- `"type": "categorical"` is now required for all categorical functions. Previously, some forms of "implicitly" categorical functions worked, and others did not. #3717
 
 #### :white_check_mark: New features
 - Add property functions support for most symbol paint properties #4074, #4186, #4226

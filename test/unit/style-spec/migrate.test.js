@@ -12,7 +12,19 @@ const t = require('mapbox-gl-js-test').test,
 
 const UPDATE = !!process.env.UPDATE;
 
-t('migrates to latest version', (t) => {
+t('does not migrate from version 5', (t) => {
+    t.throws(() => {
+        migrate({version: 5, layers: []});
+    }, new Error('cannot migrate from', 5));
+    t.end();
+});
+
+t('migrates to latest version from version 6', (t) => {
+    t.deepEqual(migrate({version: 6, layers: []}).version, spec.latest.$version);
+    t.end();
+});
+
+t('migrates to latest version from version 7', (t) => {
     t.deepEqual(migrate({version: 7, layers: []}).version, spec.latest.$version);
     t.end();
 });

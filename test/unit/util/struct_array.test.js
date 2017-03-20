@@ -94,5 +94,22 @@ test('StructArray', (t) => {
         t.end();
     });
 
+    t.test('toArray', (t) => {
+        const array = new TestArray();
+
+        array.emplaceBack(1, 7, 3);
+        array.emplaceBack(4, 2, 5);
+
+        const subArray = array.toArray(0, 1);
+
+        t.equal(array.get(0).map0, subArray[0].map0);
+        t.equal(array.get(0).box0, subArray[0].box0);
+        t.equal(array.get(0).box1, subArray[0].box1);
+
+        t.equal(subArray.length, 1);
+
+        t.end();
+    });
+
     t.end();
 });

@@ -58,6 +58,7 @@ class Style extends Evented {
         this.animationLoop = (map && map.animationLoop) || new AnimationLoop();
         this.dispatcher = new Dispatcher(getWorkerPool(), this);
         this.spriteAtlas = new SpriteAtlas(1024, 1024);
+        this.spriteAtlas.setEventedParent(this);
         this.lineAtlas = new LineAtlas(256, 512);
 
         this._layers = {};
@@ -863,7 +864,7 @@ class Style extends Evented {
             this.spriteAtlas.setSprite(this.sprite);
             this.spriteAtlas.addIcons(params.icons, callback);
         };
-        if (this.sprite.loaded()) {
+        if (!this.sprite || this.sprite.loaded()) {
             updateSpriteAtlas();
         } else {
             this.sprite.on('data', updateSpriteAtlas);

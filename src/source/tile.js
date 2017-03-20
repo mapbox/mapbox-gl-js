@@ -69,7 +69,7 @@ class Tile {
      */
     loadVectorData(data, painter) {
         if (this.hasData()) {
-            this.unloadVectorData(painter);
+            this.unloadVectorData();
         }
 
         this.state = 'loaded';

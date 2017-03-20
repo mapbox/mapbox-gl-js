@@ -818,6 +818,32 @@ class Map extends Camera {
     }
 
     /**
+     * Add an image to the style. This image can be used in `icon-image`,
+     * `background-pattern`, `fill-pattern`, and `line-pattern`. An
+     * {@link Map#error} event will be fired if there is not enough space in the
+     * sprite to add this image.
+     *
+     * @param {string} name The name of the image.
+     * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
+     * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
+     * @param {number} [options.width] The pixel width of the `ArrayBufferView` image
+     * @param {number} [options.height] The pixel height of the `ArrayBufferView` image
+     * @param {number} [options.pixelRatio] The ratio of pixels in the `ArrayBufferView` image to physical pixels on the screen
+     */
+    addImage(name, image, options) {
+        this.style.spriteAtlas.addImage(name, image, options);
+    }
+
+    /**
+     * Remove an image from the style (such as one used by `icon-image` or `background-pattern`).
+     *
+     * @param {string} name The name of the image.
+     */
+    removeImage(name) {
+        this.style.spriteAtlas.removeImage(name);
+    }
+
+    /**
      * Adds a [Mapbox style layer](https://www.mapbox.com/mapbox-gl-style-spec/#layers)
      * to the map's style.
      *
@@ -1179,12 +1205,20 @@ class Map extends Camera {
     }
 
     /**
-     * Call when a (re-)render of the map is required, e.g. when the
-     * user panned or zoomed,f or new data is available.
+     * Call when a (re-)render of the map is required:
+     * - The style has changed (`setPaintProperty()`, etc.)
+     * - Source data has changed (e.g. tiles have finished loading)
+     * - The map has is moving (or just finished moving)
+     * - A transition is in progress
+     *
      * @returns {Map} this
      * @private
      */
     _render() {
+        // If the style has changed, the map is being zoomed, or a transition
+        // is in progress:
+        //  - Apply style changes (in a batch)
+        //  - Recalculate zoom-dependent paint properties.
         if (this.style && this._styleDirty) {
             this._styleDirty = false;
             this.style.update(this._classes, this._classOptions);
@@ -1192,11 +1226,15 @@ class Map extends Camera {
             this.style._recalculate(this.transform.zoom);
         }
 
+        // If we are in _render for any reason other than an in-progress paint
+        // transition, update source caches to check for and load any tiles we
+        // need for the current transform
         if (this.style && this._sourcesDirty) {
             this._sourcesDirty = false;
             this.style._updateSources(this.transform);
         }
 
+        // Actually draw
         this.painter.render(this.style, {
             showTileBoundaries: this.showTileBoundaries,
             showOverdrawInspector: this._showOverdrawInspector,
@@ -1213,10 +1251,16 @@ class Map extends Camera {
 
         this._frameId = null;
 
+        // Flag an ongoing transition
         if (!this.animationLoop.stopped()) {
             this._styleDirty = true;
         }
 
+        // Schedule another render frame if it's needed.
+        //
+        // Even though `_styleDirty` and `_sourcesDirty` are reset in this
+        // method, synchronous events fired during Style#update or
+        // Style#_updateSources could have caused them to be set again.
         if (this._sourcesDirty || this._repaint || this._styleDirty) {
             this._rerender();
         }

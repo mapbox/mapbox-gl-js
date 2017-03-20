@@ -81,6 +81,15 @@ test('transform', (t) => {
         t.end();
     });
 
+    t.test('set fov', (t) => {
+        const transform = new Transform();
+        transform.fov = 10;
+        t.equal(transform.fov, 10);
+        transform.fov = 10;
+        t.equal(transform.fov, 10);
+        t.end();
+    });
+
     t.test('lngRange & latRange constrain zoom and center', (t) => {
         const transform = new Transform();
         transform.center = new LngLat(0, 0);
