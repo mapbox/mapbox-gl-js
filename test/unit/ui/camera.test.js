@@ -9,17 +9,14 @@ const fixedLngLat = fixed.LngLat;
 const fixedNum = fixed.Num;
 
 test('camera', (t) => {
-    function createCamera(options, renderWorldCopies) {
-        const transform = new Transform(0, 20, renderWorldCopies);
+    function createCamera(options) {
+        options = options || {};
+
+        const transform = new Transform(0, 20, options.renderWorldCopies);
         transform.resize(512, 512);
 
-        const camera = new Camera(transform, {});
-
-        if (options) {
-            camera.jumpTo(options);
-        }
-
-        return camera;
+        return new Camera(transform, {})
+            .jumpTo(options);
     }
 
     t.test('#jumpTo', (t) => {
@@ -1012,7 +1009,7 @@ test('camera', (t) => {
         });
 
         t.test('does not pan eastward across the antimeridian if no world copies', (t) => {
-            const camera = createCamera(undefined, false);
+            const camera = createCamera({renderWorldCopies: false});
             camera.setCenter([170, 0]);
             let crossedAntimeridian;
 
@@ -1031,7 +1028,7 @@ test('camera', (t) => {
         });
 
         t.test('does not pan westward across the antimeridian if no world copies', (t) => {
-            const camera = createCamera(undefined, false);
+            const camera = createCamera({renderWorldCopies: false});
             camera.setCenter([-170, 0]);
             let crossedAntimeridian;
 
