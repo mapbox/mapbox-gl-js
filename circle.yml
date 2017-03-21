@@ -4,7 +4,7 @@ machine:
   environment:
     XCODE_SCHEME: "no"
     XCODE_WORKSPACE: "no"
-    NODE_VERSION: 6
+    NODE_VERSION: 6.10.0
 
 dependencies:
   cache_directories:
