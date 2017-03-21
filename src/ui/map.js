@@ -879,11 +879,12 @@ class Map extends Camera {
     }
 
     /**
-     * Removes a layer from the map's style.
+     * Removes the layer with the given id from the map's style.
      *
-     * @param {string} id The ID of the layer to remove.
-     * @throws {Error} if no layer with the specified `id` exists.
-     * @returns {Map} `this`
+     * If no such layer exists, an `error` event is fired.
+     *
+     * @param {string} id id of the layer to remove
+     * @fires error
      */
     removeLayer(id) {
         this.style.removeLayer(id);
