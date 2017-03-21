@@ -929,7 +929,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1002,7 +1004,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1094,7 +1098,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1397,7 +1403,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1778,7 +1786,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.21.0"
+          "js": "0.21.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1803,7 +1813,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.19.0"
+          "js": "0.19.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -1830,7 +1842,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.19.0"
+          "js": "0.19.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2060,7 +2074,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2085,7 +2101,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.23.0"
+          "js": "0.23.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2176,7 +2194,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2197,7 +2217,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2219,7 +2241,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2283,7 +2307,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.18.0"
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2303,7 +2329,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.18.0"
+          "js": "0.18.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2323,7 +2351,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.20.0"
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2345,7 +2375,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.20.0"
+          "js": "0.20.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2432,10 +2464,14 @@
       "doc": "The width of the circle's stroke. Strokes are placed outside of the `circle-radius`.",
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2449,10 +2485,14 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2468,10 +2508,14 @@
       "transition": true,
       "sdk-support": {
         "basic functionality": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         },
         "data-driven styling": {
-          "js": "0.29.0"
+          "js": "0.29.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     }
@@ -2498,7 +2542,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2521,7 +2567,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2544,7 +2592,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2569,7 +2619,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2594,7 +2646,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2673,7 +2727,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2696,7 +2752,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2719,7 +2777,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2744,7 +2804,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
@@ -2769,7 +2831,9 @@
           "macos": "0.1.0"
         },
         "data-driven styling": {
-          "js": "0.33.0"
+          "js": "0.33.0",
+          "android": "5.0.0",
+          "ios": "3.5.0"
         }
       }
     },
