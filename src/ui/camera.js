@@ -295,6 +295,7 @@ class Camera extends Evented {
      * @memberof Map#
      * @param {number} pitch The pitch to set, measured in degrees away from the plane of the screen (0-60).
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+     * @fires pitchstart
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -405,12 +406,14 @@ class Camera extends Evented {
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
+     * @fires pitchstart
+     * @fires rotate
      * @fires move
      * @fires zoom
-     * @fires rotate
      * @fires pitch
-     * @fires zoomend
      * @fires moveend
+     * @fires zoomend
+     * @fires pitchend
      * @returns {Map} `this`
      */
     jumpTo(options, eventData) {
@@ -454,7 +457,9 @@ class Camera extends Evented {
         }
 
         if (pitchChanged) {
-            this.fire('pitch', eventData);
+            this.fire('pitchstart', eventData)
+                .fire('pitch', eventData)
+                .fire('pitchend', eventData);
         }
 
         return this.fire('moveend', eventData);
@@ -471,12 +476,14 @@ class Camera extends Evented {
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
+     * @fires pitchstart
+     * @fires rotate
      * @fires move
      * @fires zoom
-     * @fires rotate
      * @fires pitch
-     * @fires zoomend
      * @fires moveend
+     * @fires zoomend
+     * @fires pitchend
      * @returns {Map} `this`
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
@@ -532,6 +539,9 @@ class Camera extends Evented {
         if (this.zooming) {
             this.fire('zoomstart', eventData);
         }
+        if (this.pitching) {
+            this.fire('pitchstart', eventData);
+        }
 
         clearTimeout(this._onEaseEnd);
 
@@ -573,6 +583,7 @@ class Camera extends Evented {
 
     _easeToEnd(eventData) {
         const wasZooming = this.zooming;
+        const wasPitching = this.pitching;
         this.moving = false;
         this.zooming = false;
         this.rotating = false;
@@ -580,6 +591,9 @@ class Camera extends Evented {
 
         if (wasZooming) {
             this.fire('zoomend', eventData);
+        }
+        if (wasPitching){
+            this.fire('pitchend', eventData);
         }
         this.fire('moveend', eventData);
 
@@ -612,12 +626,14 @@ class Camera extends Evented {
      * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
      * @fires movestart
      * @fires zoomstart
+     * @fires pitchstart
      * @fires move
      * @fires zoom
      * @fires rotate
      * @fires pitch
-     * @fires zoomend
      * @fires moveend
+     * @fires zoomend
+     * @fires pitchend
      * @returns {Map} `this`
      * @example
      * // fly with default options to null island
@@ -760,6 +776,7 @@ class Camera extends Evented {
 
         this.fire('movestart', eventData);
         this.fire('zoomstart', eventData);
+        if (this.pitching) this.fire('pitchstart', eventData);
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -786,11 +803,13 @@ class Camera extends Evented {
                 this.fire('pitch', eventData);
             }
         }, function() {
+            const wasPitching = this.pitching;
             this.moving = false;
             this.zooming = false;
             this.rotating = false;
             this.pitching = false;
 
+            if (this.pitching) this.fire('pitchend', eventData);
             this.fire('zoomend', eventData);
             this.fire('moveend', eventData);
         }, options);
