@@ -91,16 +91,42 @@ class ProgramConfiguration {
         this.cacheKey += `/a_${name}`;
     }
 
+    /*
+     * For composite functions, the idea here is to provide the shader with a
+     * _partially evaluated_ function for each feature (or rather, for each
+     * vertex associated with a feature).  If the composite function is
+     * F(properties, zoom), then for each feature we'll provide the following
+     * as a vertex attribute, built at layout time:
+     * [
+     *   F(feature.properties, zA),
+     *   F(feature.properties, zB),
+     *   F(feature.properties, zC),
+     *   F(feature.properties, zD)
+     * ]
+     * where zA, zB, zC, zD are specific zoom stops defined in the composite
+     * function.
+     *
+     * And then, at render time, we'll set a corresonding 'interpolation
+     * uniform', determined by the currently rendered zoom level, which is
+     * essentially a possibly-fractional index into the above vector. By
+     * interpolating between the appropriate pair of values, the shader can
+     * thus obtain the value of F(feature.properties, currentZoom).
+     *
+     * @private
+     */
     addZoomAndPropertyAttribute(name, attribute, layer, zoom) {
         const pragmas = this.getPragmas(name);
 
         pragmas.define.push(`varying {precision} {type} ${name};`);
 
-        // Pick the index of the first offset to add to the buffers.
-        let numStops = 0;
+        // Pick the index of the first zoom stop to add to the buffers
         const zoomLevels = layer.getPaintValueStopZoomLevels(attribute.property);
-        while (numStops < zoomLevels.length && zoomLevels[numStops] < zoom) numStops++;
-        const stopOffset = Math.max(0, Math.min(zoomLevels.length - 4, numStops - 2));
+        let stopOffset = 0;
+        if (zoomLevels.length > 4) {
+            while (stopOffset < (zoomLevels.length - 2) &&
+                zoomLevels[stopOffset] < zoom) stopOffset++;
+        }
+
 
         const tName = `u_${name}_t`;
 
