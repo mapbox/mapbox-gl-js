@@ -5,7 +5,8 @@
     "MapboxGeocoder": true,
     "MapboxDirections": true,
     "turf": true,
-    "d3": true
+    "d3": true,
+    "Uint8Array": true
   },
   "rules": {
     "strict": "off",
