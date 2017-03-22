@@ -12,12 +12,12 @@ varying vec4 v_color;
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
 
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define highp vec4 color
 
 void main() {
     #pragma mapbox: initialize lowp float base
     #pragma mapbox: initialize lowp float height
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize highp vec4 color
 
     float ed = a_edgedistance; // use each attrib in order to not trip a VAO assert
     float t = mod(a_normal.x, 2.0);

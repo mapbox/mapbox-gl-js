@@ -2,8 +2,8 @@
 #define EDGE_GAMMA 0.105/DEVICE_PIXEL_RATIO
 
 uniform bool u_is_halo;
-#pragma mapbox: define lowp vec4 fill_color
-#pragma mapbox: define lowp vec4 halo_color
+#pragma mapbox: define highp vec4 fill_color
+#pragma mapbox: define highp vec4 halo_color
 #pragma mapbox: define lowp float opacity
 #pragma mapbox: define lowp float halo_width
 #pragma mapbox: define lowp float halo_blur
@@ -18,8 +18,8 @@ varying vec2 v_fade_tex;
 varying float v_gamma_scale;
 
 void main() {
-    #pragma mapbox: initialize lowp vec4 fill_color
-    #pragma mapbox: initialize lowp vec4 halo_color
+    #pragma mapbox: initialize highp vec4 fill_color
+    #pragma mapbox: initialize highp vec4 halo_color
     #pragma mapbox: initialize lowp float opacity
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
