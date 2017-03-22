@@ -52,6 +52,10 @@ class Transform {
         this.zoom = Math.min(this.zoom, zoom);
     }
 
+    get renderWorldCopies() {
+        return this._renderWorldCopies;
+    }
+
     get worldSize() {
         return this.tileSize * this.scale;
     }

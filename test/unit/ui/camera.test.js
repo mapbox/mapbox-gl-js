@@ -10,16 +10,13 @@ const fixedNum = fixed.Num;
 
 test('camera', (t) => {
     function createCamera(options) {
-        const transform = new Transform(0, 20);
+        options = options || {};
+
+        const transform = new Transform(0, 20, options.renderWorldCopies);
         transform.resize(512, 512);
 
-        const camera = new Camera(transform, {});
-
-        if (options) {
-            camera.jumpTo(options);
-        }
-
-        return camera;
+        return new Camera(transform, {})
+            .jumpTo(options);
     }
 
     t.test('#jumpTo', (t) => {
@@ -1005,6 +1002,44 @@ test('camera', (t) => {
 
             camera.on('moveend', () => {
                 t.ok(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.flyTo({ center: [170, 0], duration: 10 });
+        });
+
+        t.test('does not pan eastward across the antimeridian if no world copies', (t) => {
+            const camera = createCamera({renderWorldCopies: false});
+            camera.setCenter([170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng > 170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.notOk(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.flyTo({ center: [-170, 0], duration: 10 });
+        });
+
+        t.test('does not pan westward across the antimeridian if no world copies', (t) => {
+            const camera = createCamera({renderWorldCopies: false});
+            camera.setCenter([-170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng < -170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.notOk(crossedAntimeridian);
                 t.end();
             });
 
