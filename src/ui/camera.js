@@ -592,7 +592,7 @@ class Camera extends Evented {
         if (wasZooming) {
             this.fire('zoomend', eventData);
         }
-        if (wasPitching){
+        if (wasPitching) {
             this.fire('pitchend', eventData);
         }
         this.fire('moveend', eventData);
@@ -809,7 +809,7 @@ class Camera extends Evented {
             this.rotating = false;
             this.pitching = false;
 
-            if (this.pitching) this.fire('pitchend', eventData);
+            if (wasPitching) this.fire('pitchend', eventData);
             this.fire('zoomend', eventData);
             this.fire('moveend', eventData);
         }, options);
@@ -900,7 +900,18 @@ class Camera extends Evented {
 }
 
 /**
- * Fired whenever the map's pitch (tilt) changes.
+ * Fired whenever the map's pitch (tilt) begins a change as
+ * the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ *
+ * @event pitchstart
+ * @memberof Map
+ * @instance
+ * @property {MapEventData} data
+ */
+
+/**
+ * Fired whenever the map's pitch (tilt) changes as.
+ * the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
  *
  * @event pitch
  * @memberof Map
@@ -908,4 +919,13 @@ class Camera extends Evented {
  * @property {MapEventData} data
  */
 
+/**
+ * Fired immediately after the map's pitch (tilt) finishes changing as
+ * the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ *
+ * @event pitchend
+ * @memberof Map
+ * @instance
+ * @property {MapEventData} data
+ */
 module.exports = Camera;
