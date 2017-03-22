@@ -234,7 +234,7 @@ class Popup extends Evented {
 
         let anchor = this.options.anchor;
         const offset = normalizeOffset(this.options.offset);
-        const pos = this._map.project(this._lngLat).round();
+        const pos = this._map.project(this._map.transform.renderWorldCopies ? this._lngLat.wrapToBestWorld(this._map.getCenter()) : this._lngLat).round();
 
         if (!anchor) {
             const width = this._container.offsetWidth,
