@@ -1046,6 +1046,24 @@ test('camera', (t) => {
             camera.flyTo({ center: [170, 0], duration: 10 });
         });
 
+        t.test('jumps back to world 0 when crossing the antimeridian', (t) => {
+            const camera = createCamera();
+            camera.setCenter([-170, 0]);
+
+            let leftWorld0 = false;
+
+            camera.on('move', () => {
+                leftWorld0 = leftWorld0 || (camera.getCenter().lng < -180);
+            });
+
+            camera.on('moveend', () => {
+                t.false(leftWorld0);
+                t.end();
+            });
+
+            camera.flyTo({ center: [170, 0], duration: 10 });
+        });
+
         t.test('peaks at the specified zoom level', (t) => {
             const camera = createCamera({zoom: 20});
             const minZoom = 1;
