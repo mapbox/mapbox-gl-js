@@ -56,28 +56,13 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
         }
         geojsonWrapper.rawData = pbf.buffer;
         callback(null, geojsonWrapper);
-    }
+    }   
 
-    getClusterChildren(params, callback) {
-        if(params.recursive){
-            callback(null, this._getClusterPoints(this._geoJSONIndexes[params.source], params.clusterId, params.zoom));
-        } else {
-            callback(null, this._geoJSONIndexes[params.source].getChildren(params.clusterId, params.zoom));
-        }
-    }
+    getLeaves(params, callback) {
+        const superclusterInstance = this._geoJSONIndexes[params.source];
+        const leaves = superclusterInstance.getLeaves(params.clusterId, params.clusterZoom, params.limit, params.offset);
 
-    _getClusterPoints(superClusterIndex, clusterId, zoom){
-        var points = [],
-            children = superClusterIndex.getChildren(clusterId, zoom);
-
-        for(let child of children){
-            if(child.properties.cluster){
-                points = points.concat(this._getClusterPoints(superClusterIndex, child.properties.cluster_id, zoom + 1));
-            } else {
-                points.push(child);
-            }
-        }
-        return points;
+        callback(null, leaves);
     }
 
     /**
@@ -152,9 +137,23 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @private
      */
     _indexData(data, params, callback) {
+        var superclusterOptions;
         try {
             if (params.cluster) {
-                callback(null, supercluster(params.superclusterOptions).load(data.features));
+                superclusterOptions = params.superclusterOptions;
+                if (superclusterOptions.aggregateBy) {
+                    superclusterOptions.reduce = function (accumulated, props) {
+                        console.log(JSON.stringify(props));
+                        accumulated.sum += props.sum;
+                    };
+                    superclusterOptions.map = function (props) {
+                        return {sum: props[superclusterOptions.aggregateBy] || 1};
+                    };
+                    superclusterOptions.initial = function () {
+                        return {sum: 0};
+                    };
+                }
+                callback(null, supercluster(superclusterOptions).load(data.features));
             } else {
                 callback(null, geojsonvt(data, params.geojsonVtOptions));
             }

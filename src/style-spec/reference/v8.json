@@ -202,6 +202,10 @@
     "clusterMaxZoom": {
       "type": "number",
       "doc": "Max zoom on which to cluster points if clustering is enabled. Defaults to one zoom less than maxzoom (so that last zoom features are not clustered)."
+    },
+    "aggregateBy": {
+      "type": "string",
+      "doc": "point_count will be an aggregate of this property in all the features in the cluster."
     }
   },
   "source_video": {

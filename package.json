@@ -27,7 +27,7 @@
     "pbf": "^1.3.2",
     "point-geometry": "^0.0.0",
     "quickselect": "^1.0.0",
-    "supercluster": "bewithjonam/supercluster#d4ac088377ec2f536b403f2afc01473fc7f129e4",
+    "supercluster": "^2.3.0",
     "through2": "^2.0.3",
     "tinyqueue": "^1.1.0",
     "unassertify": "^2.0.0",
@@ -100,7 +100,7 @@
   "scripts": {
     "build-dev": "browserify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
     "watch-dev": "watchify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
-    "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
+    "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output /Users/manoj/projects/citizen-connect/public/mapbox-gl.js.map] --standalone mapboxgl > /Users/manoj/projects/citizen-connect/vendor/assets/javascripts/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
     "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",

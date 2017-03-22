@@ -139,14 +139,15 @@ class GeoJSONSource extends Evented {
         return this;
     }
 
-    getClusterChildren(clusterId, zoom, recursive, callback){
-        const options = util.extend({clusterId: clusterId, zoom: Math.ceil(zoom), recursive: !!recursive}, this.workerOptions);
-        this.dispatcher.send(`${this.type}.getClusterChildren`, options, (err, children) => {
+    getLeaves(clusterId, clusterZoom, limit, offset, callback){
+        const options = util.extend({clusterId: clusterId, clusterZoom: Math.ceil(clusterZoom), limit: limit || 10, offset: offset || 0}, this.workerOptions);
+
+        this.dispatcher.send(`${this.type}.getLeaves`, options, (err, leaves) => {
             if (err) {
                 callback({success: false});
                 return this.fire('error', { error: err });
             }
-            callback({success: true, children: children});
+            callback({success: true, leaves: leaves});
         }, this.workerID);
     }
 
