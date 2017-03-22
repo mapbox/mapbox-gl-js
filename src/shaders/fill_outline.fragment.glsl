@@ -1,10 +1,10 @@
-#pragma mapbox: define lowp vec4 outline_color
+#pragma mapbox: define highp vec4 outline_color
 #pragma mapbox: define lowp float opacity
 
 varying vec2 v_pos;
 
 void main() {
-    #pragma mapbox: initialize lowp vec4 outline_color
+    #pragma mapbox: initialize highp vec4 outline_color
     #pragma mapbox: initialize lowp float opacity
 
     float dist = length(v_pos - gl_FragCoord.xy);

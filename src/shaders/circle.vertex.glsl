@@ -4,11 +4,11 @@ uniform vec2 u_extrude_scale;
 
 attribute vec2 a_pos;
 
-#pragma mapbox: define lowp vec4 color
+#pragma mapbox: define highp vec4 color
 #pragma mapbox: define mediump float radius
 #pragma mapbox: define lowp float blur
 #pragma mapbox: define lowp float opacity
-#pragma mapbox: define lowp vec4 stroke_color
+#pragma mapbox: define highp vec4 stroke_color
 #pragma mapbox: define mediump float stroke_width
 #pragma mapbox: define lowp float stroke_opacity
 
@@ -16,11 +16,11 @@ varying vec2 v_extrude;
 varying lowp float v_antialiasblur;
 
 void main(void) {
-    #pragma mapbox: initialize lowp vec4 color
+    #pragma mapbox: initialize highp vec4 color
     #pragma mapbox: initialize mediump float radius
     #pragma mapbox: initialize lowp float blur
     #pragma mapbox: initialize lowp float opacity
-    #pragma mapbox: initialize lowp vec4 stroke_color
+    #pragma mapbox: initialize highp vec4 stroke_color
     #pragma mapbox: initialize mediump float stroke_width
     #pragma mapbox: initialize lowp float stroke_opacity
 
