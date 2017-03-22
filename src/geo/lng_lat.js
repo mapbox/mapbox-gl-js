@@ -58,10 +58,10 @@ class LngLat {
      * @example
      * var ll = new mapboxgl.LngLat(170, 0);
      * var mapCenter = new mapboxgl.LngLat(-170, 0);
-     * var snapped = ll.wrapToWorld(mapCenter);
+     * var snapped = ll.wrapToBestWorld(mapCenter);
      * snapped; // = { lng: -190, lat: 0 }
      */
-    wrapToWorld(center) {
+    wrapToBestWorld(center) {
         const wrapped = new LngLat(this.lng, this.lat);
 
         if (Math.abs(this.lng - center.lng) > 180) {

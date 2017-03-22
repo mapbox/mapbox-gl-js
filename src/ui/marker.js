@@ -146,7 +146,7 @@ class Marker {
 
     _update(e) {
         if (!this._map) return;
-        let pos = this._map.project(this._map.transform.renderWorldCopies ? this._lngLat.wrapToWorld(this._map.getCenter()) : this._lngLat)._add(this._offset);
+        let pos = this._map.project(this._map.transform.renderWorldCopies ? this._lngLat.wrapToBestWorld(this._map.getCenter()) : this._lngLat)._add(this._offset);
         // because rouding the coordinates at every `move` event causes stuttered zooming
         // we only round them when _update is called with `moveend` or when its called with
         // no arguments (when the Marker is initialized or Marker#setLngLat is invoked).
