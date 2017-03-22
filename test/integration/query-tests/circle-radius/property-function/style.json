@@ -6,11 +6,10 @@
       "height": 64,
       "queryGeometry": [
         32,
-        32
+        16
       ],
       "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3604",
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/6518"
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8007"
       }
     }
   },
@@ -18,17 +17,35 @@
     "mapbox": {
       "type": "geojson",
       "data": {
-        "type": "Feature",
-        "properties": {
-          "radius": 20
-        },
-        "geometry": {
-          "type": "Point",
-          "coordinates": [
-            0,
-            0
-          ]
-        }
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "radius": 20
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                0,
+                0
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "radius": 5
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                5,
+                15
+              ]
+            }
+          }
+        ]
       }
     }
   },

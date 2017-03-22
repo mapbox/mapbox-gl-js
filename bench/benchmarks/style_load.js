@@ -1,9 +1,9 @@
 'use strict';
 
-const Evented = require('../../js/util/evented');
-const ajax = require('../../js/util/ajax');
-const config = require('../../js/util/config');
-const Style = require('../../js/style/style');
+const Evented = require('../../src/util/evented');
+const ajax = require('../../src/util/ajax');
+const config = require('../../src/util/config');
+const Style = require('../../src/style/style');
 const formatNumber = require('../lib/format_number');
 const accessToken = require('../lib/access_token');
 

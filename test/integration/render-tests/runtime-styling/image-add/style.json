@@ -4,12 +4,6 @@
     "test": {
       "width": 64,
       "height": 64,
-      "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/2059"
-      },
-      "skipped": {
-        "js": true
-      },
       "operations": [
         [
           "addImage",

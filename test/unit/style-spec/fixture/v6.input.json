@@ -1,0 +1,29 @@
+{
+  "version": 6,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": [
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          },
+          {
+            "base": 1,
+            "stops": [[15, 0], [16, -2]]
+          }
+        ]
+      }
+    }
+  ]
+}

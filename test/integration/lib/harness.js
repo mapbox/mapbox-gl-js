@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const queue = require('d3-queue').queue;
 const colors = require('colors/safe');
-const handlebars = require('handlebars');
+const template = require('lodash').template;
 
 module.exports = function (directory, implementation, options, run) {
     const q = queue(1);
@@ -157,9 +157,9 @@ module.exports = function (directory, implementation, options, run) {
                 failedCount, (100 * failedCount / totalCount).toFixed(1));
         }
 
-        const template = handlebars.compile(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
+        const resultsTemplate = template(fs.readFileSync(path.join(directory, 'results.html.tmpl'), 'utf8'));
         const p = path.join(directory, 'index.html');
-        fs.writeFileSync(p, template({results: results}));
+        fs.writeFileSync(p, resultsTemplate({results: results}));
         console.log(`Results at: ${p}`);
 
         process.exit(failedCount === 0 ? 0 : 1);

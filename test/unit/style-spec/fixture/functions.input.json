@@ -1,0 +1,844 @@
+{
+  "version": 8,
+  "sources": {
+    "source": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v5"
+    }
+  },
+  "layers": [
+    {
+      "id": "bad-base",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "base": "5",
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "missing-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+        }
+      }
+    },
+    {
+      "id": "zero-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "bad-stops",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": {}
+        }
+      }
+    },
+    {
+      "id": "bad-stop-type",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-length",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            []
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-zoom",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              "1",
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-value",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              1,
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "bad-stop-order",
+      "type": "line",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "line-width": {
+          "stops": [
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "v6-array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": [
+          {
+            "base": 1,
+            "stops": [
+              [
+                15,
+                0
+              ],
+              [
+                16,
+                -2
+              ]
+            ]
+          },
+          {
+            "base": 1,
+            "stops": [
+              [
+                15,
+                0
+              ],
+              [
+                16,
+                -2
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "v7-array-function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-translate": {
+          "base": 1,
+          "stops": [
+            [
+              15,
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              16,
+              [
+                -2,
+                -2
+              ]
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "non-integer-discrete-zoom",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [
+            [
+              0.5,
+              true
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "mixed-stop-key-types",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              "#fff"
+            ],
+            [
+              0.5,
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "missing stop zoom",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "value": "asdf"
+              },
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "missing stop feature value",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 1
+              },
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid stop zoom type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": "1",
+                "value": 0
+              },
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid stop feature value type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": {
+                  "asdf": true
+                }
+              },
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical function - missing type and property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "stops": [
+            [
+              "bad",
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical function - missing type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "stops": [
+            [
+              "bad",
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical function - missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "categorical",
+          "stops": [
+            [
+              "bad",
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid categorical function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "categorical",
+          "property": "mapbox",
+          "stops": [
+            [
+              "good",
+              "#fff"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid identity function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "identity",
+          "property": "foo"
+        }
+      }
+    },
+    {
+      "id": "invalid identity function missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "identity"
+        }
+      }
+    },
+    {
+      "id": "invalid identity function with stops",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "type": "identity",
+          "property": "foo",
+          "stops": []
+        }
+      }
+    },
+    {
+      "id": "invalid mixed domain types for property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              "good",
+              "green"
+            ],
+            [
+              1,
+              "blue"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid mixed domain types for zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ],
+            [
+              {"zoom": 0, "value": 1},
+              "blue"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for exponential property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "exponential",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for exponential zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "exponential",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for interval property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "interval",
+          "stops": [
+            [
+              "good",
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid domain type for interval zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "interval",
+          "stops": [
+            [
+              {"zoom": 0, "value": "good"},
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid boolean domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              true,
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid array domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              [],
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid null domain type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              null,
+              "green"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid explicit exponential function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "type": "exponential",
+          "stops": [
+            [
+              0,
+              true
+            ],
+            [
+              1,
+              false
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid zoom-and-property missing property",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-antialias": {
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": "v"
+              },
+              true
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical function repeating stops",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "type": "categorical",
+          "property": "mapbox",
+          "stops": [
+            [
+              "foo",
+              0
+            ],
+            [
+              "bar",
+              0
+            ],
+            [
+              "foo",
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical function fractional stop",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "type": "categorical",
+          "property": "mapbox",
+          "stops": [
+            [
+              0.33,
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid zoom-and-property function non-ascending stop values",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 0
+              },
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid zoom-and-property function non-ascending stop zooms",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "stops": [
+            [
+              {
+                "zoom": 1,
+                "value": 0
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": 1
+              },
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "invalid categorical zoom-and-property function - repeated stop",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "1"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid categorical zoom-and-property function",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "categorical",
+          "stops": [
+            [
+              {
+                "zoom": 0,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 0,
+                "value": "1"
+              },
+              1
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": "0"
+              },
+              0
+            ],
+            [
+              {
+                "zoom": 1,
+                "value": "1"
+              },
+              1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "valid default",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": 0
+        }
+      }
+    },
+    {
+      "id": "invalid default - wrong type",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-opacity": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": "0"
+        }
+      }
+    },
+    {
+      "id": "invalid default - color",
+      "type": "fill",
+      "source": "source",
+      "source-layer": "layer",
+      "paint": {
+        "fill-color": {
+          "property": "mapbox",
+          "type": "identity",
+          "default": "invalid"
+        }
+      }
+    }
+  ]
+}

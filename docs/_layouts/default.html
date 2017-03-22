@@ -143,11 +143,9 @@ footer:
   <link href='{% if site.mapboxjsbase %}{{site.mapboxjsbase}}{% else %}https://api.tiles.mapbox.com/mapbox.js/{% if site.mapboxjs %}{{site.mapboxjs}}{% else %}v1.6.5{% endif %}{% endif %}/mapbox.css' rel='stylesheet' />
   {% endunless %}
 
-  <!--[if lt IE 9 ]><script src='{{site.url}}/js/redirect-ie.js'></script><![endif]-->
+  <!--[if lt IE 9 ]><script src='{{site.url}}/src/redirect-ie.js'></script><![endif]-->
   <script src='https://js.stripe.com/v2/'></script>
   <script>
-  var KM_COOKIE_DOMAIN = 'www.mapbox.com';
-
   !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="3.1.0";
   analytics.load(window.location.hostname.indexOf('mapbox.com') !== -1 ? 'fl0c8p240n' : '0biiejpgfj');
   analytics.page()
@@ -163,8 +161,9 @@ footer:
   <script>
   window.mapbox_api = '{{site.api}}';
   window.mapbox_tileApi = '{{site.tileApi}}';
-  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpbG10dnA3NzY3OTZ0dmtwejN2ZnUycjYifQ.1W5oTOnWXQ9R1w8u3Oo1yA'
-  if (typeof L !== 'undefined' && L.mapbox.VERSION[0] === '2') {
+  window.mapbox_accessToken = '{{site.accessToken}}' || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA'
+  if (typeof L !== 'undefined' &&
+      (L.mapbox.VERSION[0] === '2' || L.mapbox.VERSION[0] === '3')) {
       L.mapbox.accessToken = window.mapbox_accessToken;
       L.mapbox.config.FORCE_HTTPS = true;
       L.mapbox.config.HTTPS_URL = window.mapbox_tileApi + '/v4';
@@ -198,7 +197,7 @@ footer:
           <div class='col6'>
             <a class='block pad1y icon bolt' href='/analysis/'>Analysis</a>
             <a class='block pad1y icon mobile' href='/mobile/'>Mobile</a>
-            <a class='block pad1y icon satellite' href='/satellite/'>Satellite</a>
+            <a class='block pad1y icon satellite' href='/maps/satellite/'>Satellite</a>
             <a class='block pad1y icon globe' href='/atlas/'>Atlas Server</a>
           </div>
         </div>
@@ -431,7 +430,7 @@ footer:
     <div class='contain col4 footer-social'>
       <div class='animate footer-animation col6'></div>
       <div class='footer-dialog fr small strong pad2 col6 contain round fill-darken0'>
-      Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, <a href='https://instagram.com/mapbox'>Instagram</a> and <a href="https://www.linkedin.com/company/mapbox">LinkedIn</a>.
+      Follow Mapbox on <a href='https://twitter.com/mapbox'>Twitter</a>, <a href='https://www.facebook.com/Mapbox'>Facebook</a>, <a href='https://instagram.com/mapbox'>Instagram,</a> and <a href="https://www.linkedin.com/company/mapbox">LinkedIn</a>.
       </div>
     </div>
     <div class='margin1 col7 pad2 fill-darken0 round contain'>
