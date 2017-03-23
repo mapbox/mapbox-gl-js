@@ -1,12 +1,7 @@
 'use strict';
 const window = require('../util/window');
 const assert = require('assert');
-const Canvas = function(width, height) {
-    const canvas = window.document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
-};
+const browser = require('../util/browser');
 
 
 class Level {
@@ -62,8 +57,9 @@ class DEMPyramid {
             const prev = this.levels[i];
             const width = Math.ceil(prev.width / 2);
             const height = Math.ceil(prev.height / 2);
-            const current = this.levels[i + 1] = new Level(width, height, Math.max(prev.border / 2, 1));
-            prev.resample(current);
+            const next =  new Level(width, height, Math.max(prev.border / 2, 1));
+            prev.resample(next);
+            this.levels.push(next);
         }
         // Build remaining two levels. They aren't actually used in rendering, but we
         // need them for OpenGL's mipmapping feature.
@@ -111,13 +107,7 @@ class DEMPyramid {
         // Build level 0
         this.levels = [ new Level(img.width, img.height, 1) ];
         const level = this.levels[0];
-
-        const canvas = new Canvas();
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = browser.getImageData(0, 0, canvas.width, canvas.height);
         const pixels = data.data;
 
         // unpack

@@ -75,7 +75,7 @@ class TerrainTexture {
 
         gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
         gl.uniform1i(program.u_image, 0);
-        gl.uniform1i(program.u_mode, 8); // todo: wtf?
+        gl.uniform1i(program.u_mode, 0); // todo: wtf?
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
@@ -108,7 +108,7 @@ function prepareTerrain(painter, tile, layer) {
     const terrainBucket = tile.getBucket(layer);
     // set up terrain prepare textures
 
-    const levels = populateLevelPixels(terrainBucket.buffers.terrainArray);
+    const levels = populateLevelPixels(terrainBucket.buffers.terrainArray, tile);
     const dem = gl.createTexture();
 
     gl.activeTexture(gl.TEXTURE1);
@@ -152,7 +152,7 @@ function prepareTerrain(painter, tile, layer) {
     tile.prepared = true;
 }
 
-function populateLevelPixels(terrainArray) {
+function populateLevelPixels(terrainArray, tile) {
     const levels = [];
     let levelSize = TERRAIN_TILE_WIDTH;
     let prevIndex = 0;
@@ -167,5 +167,6 @@ function populateLevelPixels(terrainArray) {
     }
     levels.push({height: 2, width: 2, data:new Uint8Array(16)});
     levels.push({height: 1, width: 1, data:new Uint8Array(4)});
+    if (tile.uid===6) console.log(tile, levels);
     return levels;
 }

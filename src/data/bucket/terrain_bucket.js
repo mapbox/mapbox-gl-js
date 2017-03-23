@@ -31,11 +31,12 @@ class TerrainBucket extends Bucket {
         this.terrainPrepared = false;
     }
 
-    addLevel(level) {
+    encodeLevel(level) {
         const arrays = this.arrays;
         for (let i = 0; i < level.data.length; i++) {
             arrays.terrainArray.emplaceBack(level.data[i]);
         }
+
     }
 
     populate(features) {
@@ -43,7 +44,7 @@ class TerrainBucket extends Bucket {
         this.pyramid = this.getDEMPyramid();
         if (this.pyramid && this.pyramid.loaded) {
             for (let i = 0; i < this.pyramid.levels.length; i++) {
-                this.addLevel(this.pyramid.levels[i]);
+                this.encodeLevel(this.pyramid.levels[i]);
             }
         }
     }
