@@ -18,6 +18,17 @@
     cursor: grabbing;
 }
 
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate {
+    -ms-touch-action: pan-x pan-y;
+    touch-action: pan-x pan-y;
+}
+.mapboxgl-canvas-container.mapboxgl-touch-drag-pan {
+    -ms-touch-action: pinch-zoom;
+}
+.mapboxgl-canvas-container.mapboxgl-touch-zoom-rotate.mapboxgl-touch-drag-pan {
+    -ms-touch-action: none;
+    touch-action: none;
+}
 .mapboxgl-ctrl-top-left,
 .mapboxgl-ctrl-top-right,
 .mapboxgl-ctrl-bottom-left,
