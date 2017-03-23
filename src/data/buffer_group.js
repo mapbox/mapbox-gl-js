@@ -3,6 +3,7 @@
 const util = require('../util/util');
 const Buffer = require('./buffer');
 const ProgramConfiguration = require('./program_configuration');
+const createVertexArrayType = require('./vertex_array_type');
 const VertexArrayObject = require('../render/vertex_array_object');
 
 /**
@@ -13,8 +14,9 @@ const VertexArrayObject = require('../render/vertex_array_object');
  */
 class BufferGroup {
     constructor(programInterface, layers, zoom, arrays) {
+        const LayoutVertexArrayType = createVertexArrayType(programInterface.layoutAttributes);
         this.layoutVertexBuffer = new Buffer(arrays.layoutVertexArray,
-            programInterface.layoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
+            LayoutVertexArrayType.serialize(), Buffer.BufferType.VERTEX);
 
         if (arrays.elementArray) {
             this.elementBuffer = new Buffer(arrays.elementArray,

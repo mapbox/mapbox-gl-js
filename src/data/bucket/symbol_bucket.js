@@ -3,7 +3,6 @@
 const Point = require('point-geometry');
 const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
-const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
 const Anchor = require('../../symbol/anchor');
@@ -30,15 +29,15 @@ const getIconQuads = Quads.getIconQuads;
 
 const elementArrayType = createElementArrayType();
 
-const layoutVertexArrayType = createVertexArrayType([
+const layoutAttributes = [
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
     {name: 'a_texture_pos', components: 2, type: 'Uint16'},
     {name: 'a_data',        components: 4, type: 'Uint8'}
-]);
+];
 
 const symbolInterfaces = {
     glyph: {
-        layoutVertexArrayType: layoutVertexArrayType,
+        layoutAttributes: layoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'text-color', type: 'Uint8'},
@@ -49,7 +48,7 @@ const symbolInterfaces = {
         ]
     },
     icon: {
-        layoutVertexArrayType: layoutVertexArrayType,
+        layoutAttributes: layoutAttributes,
         elementArrayType: elementArrayType,
         paintAttributes: [
             {name: 'a_fill_color', property: 'icon-color', type: 'Uint8'},
@@ -60,11 +59,11 @@ const symbolInterfaces = {
         ]
     },
     collisionBox: { // used to render collision boxes for debugging purposes
-        layoutVertexArrayType: createVertexArrayType([
+        layoutAttributes: [
             {name: 'a_pos',     components: 2, type: 'Int16'},
             {name: 'a_extrude', components: 2, type: 'Int16'},
             {name: 'a_data',    components: 2, type: 'Uint8'}
-        ]),
+        ],
         elementArrayType: createElementArrayType(2)
     }
 };

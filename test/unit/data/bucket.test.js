@@ -34,11 +34,11 @@ test('Bucket', (t) => {
         options = options || {};
 
         const programInterface = {
-            layoutVertexArrayType: createVertexArrayType(options.layoutAttributes || [{
+            layoutVertexArrayType: options.layoutAttributes || [{
                 name: 'a_box',
                 components: 2,
                 type: 'Int16'
-            }]),
+            }],
             elementArrayType: createElementArrayType(),
             elementArrayType2: createElementArrayType(2),
 
