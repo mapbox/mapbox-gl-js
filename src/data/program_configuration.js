@@ -244,7 +244,7 @@ class ProgramConfiguration {
             const stopInterp = layer.getPaintInterpolationT(uniform.property, globalProperties);
             // We can only store four stop values in the buffers. stopOffset is the number of stops that come
             // before the stops that were added to the buffers.
-            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(4, stopInterp - uniform.stopOffset)));
+            gl.uniform1f(program[uniform.name], Math.max(0, Math.min(3, stopInterp - uniform.stopOffset)));
         }
     }
 }
