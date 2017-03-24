@@ -51,6 +51,7 @@ class TouchZoomRotateHandler {
      */
     enable(options) {
         if (this.isEnabled()) return;
+        this._el.classList.add('mapboxgl-touch-zoom-rotate');
         this._el.addEventListener('touchstart', this._onStart, false);
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
@@ -64,6 +65,7 @@ class TouchZoomRotateHandler {
      */
     disable() {
         if (!this.isEnabled()) return;
+        this._el.classList.remove('mapboxgl-touch-zoom-rotate');
         this._el.removeEventListener('touchstart', this._onStart);
         this._enabled = false;
     }
