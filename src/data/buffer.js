@@ -56,6 +56,16 @@ class Buffer {
         }
     }
 
+    enableAttributes (gl, program) {
+        for (let j = 0; j < this.attributes.length; j++) {
+            const member = this.attributes[j];
+            const attribIndex = program[member.name];
+            if (attribIndex !== undefined) {
+                gl.enableVertexAttribArray(attribIndex);
+            }
+        }
+    }
+
     /**
      * Set the attribute pointers in a WebGL context
      * @param gl The WebGL context

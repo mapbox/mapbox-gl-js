@@ -3,6 +3,10 @@
 const createFunction = require('../style-spec/function');
 const util = require('../util/util');
 
+/**
+ * A style property declaration
+ * @private
+ */
 class StyleDeclaration {
 
     constructor(reference, value) {
@@ -35,6 +39,8 @@ class StyleDeclaration {
             }, {
                 type: 'number'
             });
+        } else if (!this.isZoomConstant) {
+            this.stopZoomLevels = this.value.stops.map(stop => stop[0]);
         }
     }
 

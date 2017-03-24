@@ -1137,6 +1137,7 @@
       "units": "pixels",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Font size.",
       "requires": [
         "text-field"

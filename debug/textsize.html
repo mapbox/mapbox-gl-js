@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+var stops = [
+    [ 0, 6 ],
+    [ 1, 6 ],
+    [ 2, 6 ],
+    [ 2.1, 3 ],
+    [ 2.2, 3 ],
+    [ 2.3, 3 ],
+    [ 2.4, 3 ],
+    [ 3, 12 ],
+    [ 10, 12 ]
+];
+
+var layer = (id, x, textSize, color) => ({
+    "id": id,
+    "type": "symbol",
+    "source": "geojson",
+    "filter": ["==", "x", x],
+    "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 1,
+        "text-anchor": "left",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-max-angle": 180,
+        "text-field": "abcdefghijklmnopqrstuvwxyz",
+        "text-font": [
+            "Open Sans Semibold",
+            "Arial Unicode MS Bold"
+        ],
+        "text-size": textSize
+    },
+    "paint": {
+        "text-color": color,
+        "text-opacity": 0.5
+    }
+});
+
+var style = {
+    "version": 8,
+    "metadata": {
+        "test": {
+            "width": 64,
+            "height": 64
+        }
+    },
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": { "x": 0 },
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [
+                                [ -10, -1 ],
+                                [ -20, -10 ],
+                                [ -30, -1 ],
+                                [ -40, -10 ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "layers": [
+        layer('symbol-camera', 0, {
+            "stops": stops
+        }, 'red'),
+
+        layer('symbol-composite', 0, {
+            "property": "x",
+            "stops": stops.map(s => [{value: 0, zoom: s[0]}, s[1]])
+        }, 'blue'),
+
+        {
+            "id": "line",
+            "type": "line",
+            "source": "geojson"
+        }
+    ]
+};
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 12.5,
+    center: [-77.01866, 38.888],
+    style: style,
+    hash: true
+});
+
+map.showTileBoundaries = true;
+
+setTimeout(() => console.log(JSON.stringify(map.getStyle())));
+
+
+</script>
+</body>
+</html>

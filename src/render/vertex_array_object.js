@@ -65,9 +65,9 @@ class VertexArrayObject {
             }
         }
 
-        // Enable all attributes for the new program.
-        for (let j = numPrevAttributes; j < numNextAttributes; j++) {
-            gl.enableVertexAttribArray(j);
+        layoutVertexBuffer.enableAttributes(gl, program);
+        if (vertexBuffer2) {
+            vertexBuffer2.enableAttributes(gl, program);
         }
 
         layoutVertexBuffer.bind(gl);
