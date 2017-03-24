@@ -45,6 +45,7 @@
     "clipboard": "^1.5.12",
     "concat-stream": "^1.6.0",
     "coveralls": "^2.11.8",
+    "cssnano-cli": "^1.0.5",
     "derequire": "^2.0.6",
     "documentation": "4.0.0-beta12",
     "envify": "^4.0.0",
@@ -102,6 +103,7 @@
     "build-dev": "browserify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl > dist/mapbox-gl-dev.js && tap --no-coverage test/build/dev.test.js",
     "watch-dev": "watchify src/index.js --debug --ignore-transform unassertify --standalone mapboxgl --outfile dist/mapbox-gl-dev.js --verbose",
     "build-min": "browserify src/index.js --debug --plugin [minifyify --map mapbox-gl.js.map --output dist/mapbox-gl.js.map] --standalone mapboxgl | derequire > dist/mapbox-gl.js && tap --no-coverage test/build/min.test.js",
+    "build-css": "cssnano ./src/mapbox-gl.css ./dist/mapbox-gl.css",
     "build-token": "browserify debug/access_token.js --debug --transform envify > debug/access_token_generated.js",
     "build-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" browserify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
     "watch-benchmarks": "BENCHMARK_VERSION=\"$(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short=7 HEAD)\" watchify bench/benchmarks.js --plugin [minifyify --no-map] --transform envify --outfile bench/benchmarks_generated.js --verbose",
@@ -124,7 +126,7 @@
     "test-query": "node test/query.test.js",
     "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
-    "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
+    "prepublish": "in-publish && run-s build-dev build-min build-css || not-in-publish",
     "postinstall": "cd src/style-spec && yarn || npm install"
   }
 }
