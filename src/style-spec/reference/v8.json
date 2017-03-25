@@ -1408,6 +1408,7 @@
       "units": "ems",
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "length": 2,
       "default": [
         0,
@@ -1423,7 +1424,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "text-allow-overlap": {
