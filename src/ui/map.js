@@ -883,9 +883,9 @@ class Map extends Camera {
       *
       * @returns {boolean} A Boolean indicating whether the style is fully loaded.
       */
-     isStyleLoaded() {
+    isStyleLoaded() {
         return this.style.loaded();
-     }
+    }
 
     /**
      * Adds a source to the map's style.
@@ -924,18 +924,25 @@ class Map extends Camera {
     }
 
     /**
-     * Returns a Boolean indicating whether a tile is loaded.
+     * Returns a Boolean indicating whether all tiles in the viewport from all sources on
+     * the style are loaded.
      *
      * @param {string} sourceId The ID of the source to be checked.
      * @param {number} tileCoordId The ID of the source to be checked.
      * @returns {boolean} A Boolean indicating whether the source is loaded.
      */
 
-    isTileLoaded(sourceId, tileCoordId){
-        const source = this.style && this.style.sourceCaches[sourceId];
-        const tile = source._tiles && source._tiles[tileCoordId];
-        if (tile && tile.state === 'loaded') return true;
-        return false
+    areTilesLoaded() {
+        const sources = this.style && this.style.sourceCaches;
+        for (const id in sources) {
+            const source = sources[id];
+            const tiles = source._tiles;
+            for (const t in tiles) {
+                const tile = tiles[t];
+                if (!(tile.state === 'loaded' || tile.state === 'errored')) return false;
+            }
+        }
+        return true;
     }
 
     /**
