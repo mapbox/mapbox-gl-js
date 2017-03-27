@@ -1,0 +1,17 @@
+{
+  "version": 8,
+  "center": [-122.39947682582311, 37.788342528987926],
+  "zoom": 17,
+  "metadata": {
+    "test": {
+      "width": 256,
+      "height": 256,
+      "operations": [
+        ["setStyle", "mapbox://styles/mapbox/streets-v10"],
+        ["wait"]
+      ]
+    }
+  },
+  "sources": {},
+  "layers": []
+}

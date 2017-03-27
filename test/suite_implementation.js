@@ -4,6 +4,7 @@ const ajax =  require('../src/util/ajax');
 const sinon = require('sinon');
 const request = require('request');
 const PNG = require('pngjs').PNG;
+const mapboxgl = require('../src');
 const Map = require('../src/ui/map');
 const window = require('../src/util/window');
 const browser = require('../src/util/browser');
@@ -30,6 +31,7 @@ module.exports = function(style, options, _callback) {
     Object.defineProperty(container, 'offsetWidth', {value: options.width});
     Object.defineProperty(container, 'offsetHeight', {value: options.height});
 
+    mapboxgl.accessToken = process.env.MAPBOX_ACCESS_TOKEN;
     const map = new Map({
         container: container,
         style: style,
@@ -141,7 +143,7 @@ sinon.stub(ajax, 'getJSON').callsFake((url, callback) => {
 
 sinon.stub(ajax, 'getArrayBuffer').callsFake((url, callback) => {
     if (cache[url]) return cached(cache[url], callback);
-    return request({url: url, encoding: null}, (error, response, body) => {
+    return request({url: url, encoding: null, gzip: true}, (error, response, body) => {
         if (!error && response.statusCode >= 200 && response.statusCode < 300) {
             cache[url] = {data: body};
             callback(null, {data: body});
