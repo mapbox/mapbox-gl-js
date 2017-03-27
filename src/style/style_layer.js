@@ -217,14 +217,6 @@ class StyleLayer extends Evented {
         }
     }
 
-    isLayoutValueSourceFunction(name) {
-        return this.isLayoutValueZoomConstant(name) && !this.isLayoutValueFeatureConstant(name);
-    }
-
-    isLayoutValueCompositeFunction(name) {
-        return !this.isLayoutValueZoomConstant(name) && !this.isLayoutValueFeatureConstant(name);
-    }
-
     isHidden(zoom) {
         if (this.minzoom && zoom < this.minzoom) return true;
         if (this.maxzoom && zoom >= this.maxzoom) return true;

@@ -120,7 +120,7 @@ function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, place
  *    and icons needed (by this bucket and any others). When glyphs and icons
  *    have been received, the WorkerTile creates a CollisionTile and invokes:
  *
- * 3. SymbolBucket#prepare(stacks, icons) to perform text shaping and layout, populating `this.symbolInstancesArray`, `this.symbolQuadsArray`, and `this.collisionBoxArray`.
+ * 3. SymbolBucket#prepare(stacks, icons) to perform text shaping and layout, populating `this.symbolInstances` and `this.collisionBoxArray`.
  *
  * 4. SymbolBucket#place(collisionTile): taking collisions into account, decide on which labels and icons to actually draw and at which scale, populating the vertex arrays (`this.arrays.glyph`, `this.arrays.icon`) and thus completing the parsing / buffer population process.
  *
@@ -142,43 +142,42 @@ class SymbolBucket {
         this.sdfIcons = options.sdfIcons;
         this.iconsNeedLinear = options.iconsNeedLinear;
         this.fontstack = options.fontstack;
+
+        // When {text-icon}-size is a zoom-dependent function, this is
+        // a pair of zoom stop levels ([lowerZoom, upperZoom]) that will be
+        // used at render-time to interpolate the size value at the map's zoom
+        // level.
         this.textSizeCoveringZoomStops = options.textSizeCoveringZoomStops;
         this.iconSizeCoveringZoomStops = options.iconSizeCoveringZoomStops;
-        this.adjustedTextSize = options.adjustedTextSize;
-        this.adjustedIconSize = options.adjustedIconSize;
 
+        // When {text,icon}-size is a camera function, this is the size value
+        // used during layout.  Needed by the shader to compute render-time
+        // adjustments to layout data.
+        this.layoutTextSize = options.layoutTextSize;
+        this.layoutIconSize = options.layoutIconSize;
+
+        // Set up 'program interfaces' dynamically based on the layer's style
+        // properties (specifically its text-size properties).
+        const layer = this.layers[0];
         this.symbolInterfaces = {
             glyph: util.extend({}, symbolInterfaces.glyph, {
-                layoutAttributes: [].concat(symbolInterfaces.glyph.layoutAttributes)
+                layoutAttributes: [].concat(
+                    symbolInterfaces.glyph.layoutAttributes,
+                    getSizeAttributeDeclarations(layer, 'text-size')
+                )
             }),
             icon: util.extend({}, symbolInterfaces.icon, {
-                layoutAttributes: [].concat(symbolInterfaces.icon.layoutAttributes)
+                layoutAttributes: [].concat(
+                    symbolInterfaces.icon.layoutAttributes,
+                    getSizeAttributeDeclarations(layer, 'icon-size')
+                )
             }),
             collisionBox: util.extend({}, symbolInterfaces.collisionBox, {
-                layoutAttributes: [].concat(symbolInterfaces.collisionBox.layoutAttributes)
+                layoutAttributes: [].concat(
+                    symbolInterfaces.collisionBox.layoutAttributes
+                )
             })
         };
-
-        const layer = this.layers[0];
-        if (layer.isLayoutValueSourceFunction('text-size')) {
-            this.symbolInterfaces.glyph.layoutAttributes.push({
-                name: 'a_size', components: 1, type: 'Uint16'
-            });
-        } else if (layer.isLayoutValueCompositeFunction('text-size')) {
-            this.symbolInterfaces.glyph.layoutAttributes.push({
-                name: 'a_size', components: 3, type: 'Uint16'
-            });
-        }
-
-        if (layer.isLayoutValueSourceFunction('icon-size')) {
-            this.symbolInterfaces.icon.layoutAttributes.push({
-                name: 'a_size', components: 2, type: 'Uint16'
-            });
-        } else if (layer.isLayoutValueCompositeFunction('text-size')) {
-            this.symbolInterfaces.icon.layoutAttributes.push({
-                name: 'a_size', components: 3, type: 'Uint16'
-            });
-        }
 
         if (options.arrays) {
             this.buffers = {};
@@ -289,8 +288,8 @@ class SymbolBucket {
             iconsNeedLinear: this.iconsNeedLinear,
             textSizeCoveringZoomStops: this.textSizeCoveringZoomStops,
             iconSizeCoveringZoomStops: this.iconSizeCoveringZoomStops,
-            adjustedTextSize: this.adjustedTextSize,
-            adjustedIconSize: this.adjustedIconSize,
+            layoutTextSize: this.layoutTextSize,
+            layoutIconSize: this.layoutIconSize,
             fontstack: this.fontstack,
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
@@ -324,7 +323,7 @@ class SymbolBucket {
             layer.isLayoutValueFeatureConstant('text-size') &&
             !layer.isLayoutValueZoomConstant('text-size')
         ) {
-            this.adjustedTextSize = layer.getLayoutValue('text-size', {zoom: this.zoom + 1});
+            this.layoutTextSize = layer.getLayoutValue('text-size', {zoom: this.zoom + 1});
         }
         if (!layer.isLayoutValueZoomConstant('text-size')) {
             this.textSizeCoveringZoomStops = this.layers[0].getLayoutValueCoveringZoomStops('text-size', this.zoom, this.zoom + 1);
@@ -334,7 +333,7 @@ class SymbolBucket {
             layer.isLayoutValueFeatureConstant('icon-size') &&
             !layer.isLayoutValueZoomConstant('icon-size')
         ) {
-            this.adjustedIconSize = layer.getLayoutValue('icon-size', {zoom: this.zoom + 1});
+            this.layoutIconSize = layer.getLayoutValue('icon-size', {zoom: this.zoom + 1});
         }
         if (!layer.isLayoutValueZoomConstant('icon-size')) {
             this.iconSizeCoveringZoomStops = this.layers[0].getLayoutValueCoveringZoomStops('icon-size', this.zoom, this.zoom + 1);
@@ -423,22 +422,33 @@ class SymbolBucket {
         }
     }
 
+    /**
+     * Given a feature and its shaped text and icon data, add a 'symbol
+     * instance' for each _possible_ placement of the symbol feature.
+     * (SymbolBucket#place() selects which of these instances to send to the
+     * renderer based on collisions with symbols in other layers from the same
+     * source.)
+     * @private
+     */
     addFeature(feature, shapedTextOrientations, shapedIcon) {
+        const layoutTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1}, feature.properties);
+        const layoutIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1}, feature.properties);
+
         // To reduce the number of labels that jump around when zooming we need
         // to use a text-size value that is the same for all zoom levels.
         // This calculates text-size at a high zoom level so that all tiles can
         // use the same value when calculating anchor positions.
-        const adjustedTextSize = this.layers[0].getLayoutValue('text-size', {zoom: this.zoom + 1}, feature.properties);
-        const adjustedIconSize = this.layers[0].getLayoutValue('icon-size', {zoom: this.zoom + 1}, feature.properties);
-        const adjustedTextMaxSize = this.layers[0].getLayoutValue('text-size', {zoom: 18}, feature.properties);
+        let textMaxSize = this.layers[0].getLayoutValue('text-size', {zoom: 18}, feature.properties);
+        if (textMaxSize === undefined) {
+            textMaxSize = layoutTextSize;
+        }
 
         const layout = this.layers[0].layout,
             glyphSize = 24,
-            fontScale = adjustedTextSize / glyphSize,
-            textMaxSize = adjustedTextMaxSize !== undefined ? adjustedTextMaxSize : adjustedTextSize,
+            fontScale = layoutTextSize / glyphSize,
             textBoxScale = this.tilePixelRatio * fontScale,
             textMaxBoxScale = this.tilePixelRatio * textMaxSize / glyphSize,
-            iconBoxScale = this.tilePixelRatio * adjustedIconSize,
+            iconBoxScale = this.tilePixelRatio * layoutIconSize,
             symbolMinDistance = this.tilePixelRatio * layout['symbol-spacing'],
             avoidEdges = layout['symbol-avoid-edges'],
             textPadding = layout['text-padding'] * this.tilePixelRatio,
@@ -468,8 +478,8 @@ class SymbolBucket {
             const addToBuffers = inside || mayOverlap;
             this.addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, this.layers[0],
                 addToBuffers, this.collisionBoxArray, feature.index, feature.sourceLayerIndex, this.index,
-                adjustedTextSize, textBoxScale, textPadding, textAlongLine,
-                adjustedIconSize, iconBoxScale, iconPadding, iconAlongLine,
+                layoutTextSize, textBoxScale, textPadding, textAlongLine,
+                layoutIconSize, iconBoxScale, iconPadding, iconAlongLine,
                 {zoom: this.zoom}, feature.properties);
         };
 
@@ -726,9 +736,25 @@ class SymbolBucket {
         }
     }
 
+    /**
+     * Add a single label & icon placement.
+     *
+     * Note that in the case of `symbol-placement: line`, the symbol instance's
+     * array of glyph 'quads' may include multiple copies of each glyph,
+     * corresponding to the different orientations it might take at different
+     * zoom levels as the text goes around bends in the line.
+     *
+     * As such, each glyph quad includes a minzoom and maxzoom at which it
+     * should be rendered.  This zoom range is calculated based on the 'layout'
+     * {text,icon} size -- i.e. text/icon-size at `z: tile.zoom + 1`. If the
+     * size is zoom-dependent, then the zoom range is adjusted at render time
+     * to account for the difference.
+     *
+     * @private
+     */
     addSymbolInstance(anchor, line, shapedTextOrientations, shapedIcon, layer, addToBuffers, collisionBoxArray, featureIndex, sourceLayerIndex, bucketIndex,
-        adjustedTextSize, textBoxScale, textPadding, textAlongLine,
-        adjustedIconSize, iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
+        layoutTextSize, textBoxScale, textPadding, textAlongLine,
+        layoutIconSize, iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
         let textCollisionFeature, iconCollisionFeature;
         let iconQuads = [];
@@ -787,18 +813,54 @@ class SymbolBucket {
     }
 }
 
+function getSizeAttributeDeclarations(layer, sizeProperty) {
+    // The contents of the a_size vertex attribute depend on the type of
+    // property value for {text,icon}-size.
+    if (
+        layer.isLayoutValueZoomConstant(sizeProperty) &&
+        !layer.isLayoutValueFeatureConstant(sizeProperty)
+    ) {
+        // source function: one size value per vertex
+        return [{
+            name: 'a_size', components: 1, type: 'Uint16'
+        }];
+    } else if (
+        !layer.isLayoutValueZoomConstant(sizeProperty) &&
+        !layer.isLayoutValueFeatureConstant(sizeProperty)
+    ) {
+        // composite function:
+        // [ text-size(lowerZoomStop, feature),
+        //   text-size(upperZoomStop, feature),
+        //   layoutSize == text-size(layoutZoomLevel, feature) ]
+        return [{
+            name: 'a_size', components: 3, type: 'Uint16'
+        }];
+    }
+    // constant or camera function
+    return [];
+}
+
 function getSizeAttributeData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties) {
-    if (layer.isLayoutValueSourceFunction(sizeProperty)) {
+    if (
+        layer.isLayoutValueZoomConstant(sizeProperty) &&
+        !layer.isLayoutValueFeatureConstant(sizeProperty)
+    ) {
+        // source function
         return [
             10 * layer.getLayoutValue(sizeProperty, {}, featureProperties)
         ];
-    } else if (layer.isLayoutValueCompositeFunction(sizeProperty)) {
+    } else if (
+        !layer.isLayoutValueZoomConstant(sizeProperty) &&
+        !layer.isLayoutValueFeatureConstant(sizeProperty)
+    ) {
+        // composite function
         return [
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[0]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
         ];
     }
+    // camera function or constant
     return null;
 }
 

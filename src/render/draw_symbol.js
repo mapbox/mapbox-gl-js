@@ -86,13 +86,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const isSDF = isText || bucket.sdfIcons;
 
         const sizeStopZoomLevels = isText ? bucket.textSizeCoveringZoomStops : bucket.iconSizeCoveringZoomStops;
-        const adjustedSize = isText ? bucket.adjustedTextSize : bucket.adjustedIconSize;
+        const layoutSize = isText ? bucket.layoutTextSize : bucket.layoutIconSize;
 
         if (!program || bucket.fontstack !== prevFontstack) {
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeStopZoomLevels, adjustedSize);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeStopZoomLevels, layoutSize);
         }
 
         painter.enableTileClippingMask(coord);
@@ -109,7 +109,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeStopZoomLevels, adjustedSize) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeStopZoomLevels, layoutSize) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -176,7 +176,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         const t = util.clamp((tr.zoom - lowerZoom) / (upperZoom - lowerZoom), 0, 1);
         const size = lowerValue + (upperValue - lowerValue) * t;
         gl.uniform1f(program.u_size, size);
-        gl.uniform1f(program.u_adjusted_size, adjustedSize);
+        gl.uniform1f(program.u_layout_size, layoutSize);
     } else if (isFeatureConstant && isZoomConstant) {
         const size = layer.getLayoutValue(sizeProp, {zoom: tr.zoom});
         gl.uniform1f(program.u_size, size);

@@ -23,8 +23,8 @@ class SymbolStyleLayer extends StyleLayer {
         }
     }
 
-    // return (indexes to) a pair of {text,icon}-size zoom stops
-    // that cover the given zoom range
+    // return a pair of {text,icon}-size zoom stops that cover the given zoom
+    // range
     getLayoutValueCoveringZoomStops(name, lowerZoom, upperZoom) {
         assert(!this.isLayoutValueZoomConstant(name));
         const levels = this.getLayoutValueStopZoomLevels(name);
