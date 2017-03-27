@@ -323,7 +323,6 @@ class SymbolBucket {
         const lineHeight = layout['text-line-height'] * oneEm;
         const maxWidth = layout['symbol-placement'] !== 'line' ? layout['text-max-width'] * oneEm : 0;
         const spacing = layout['text-letter-spacing'] * oneEm;
-        const textOffset = [layout['text-offset'][0] * oneEm, layout['text-offset'][1] * oneEm];
         const fontstack = this.fontstack = layout['text-font'].join(',');
         const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
 
@@ -332,6 +331,7 @@ class SymbolBucket {
             let shapedTextOrientations;
             if (feature.text) {
                 const allowsVerticalWritingMode = scriptDetection.allowsVerticalWritingMode(feature.text);
+                const textOffset = this.layers[0].getLayoutValue('text-offset', {zoom: this.zoom}, feature.properties).map((t)=> t * oneEm);
 
                 shapedTextOrientations = {
                     [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, WritingMode.horizontal),
