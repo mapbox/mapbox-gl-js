@@ -47,6 +47,23 @@ test('constant function', (t) => {
     t.end();
 });
 
+test('binary search', (t) => {
+    t.test('will eventually terminate.', (t) => {
+        const f = createFunction({
+            stops: [[9, 10], [17, 11], [17, 11], [18, 13]],
+            base: 2
+        }, {
+            type: 'number',
+            function: 'interpolated'
+        });
+        // Nan because the interpolation will fail when given to stops with the same value.
+        // This is however more desirable than looping forever.
+        t.equal(isNaN(f(17)), true);
+        t.end();
+    });
+    t.end();
+});
+
 test('exponential function', (t) => {
     t.test('is the default for interpolated properties', (t) => {
         const f = createFunction({

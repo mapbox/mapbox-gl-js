@@ -212,7 +212,7 @@ function binarySearchForIndex(stops, input) {
         currentIndex = Math.floor((lowerIndex + upperIndex) / 2);
         currentValue = stops[currentIndex][0];
         upperValue = stops[currentIndex + 1][0];
-        if (input >= currentValue && input < upperValue) { // Search complete
+        if (input === currentValue || input > currentValue && input < upperValue) { // Search complete
             return currentIndex;
         } else if (currentValue < input) {
             lowerIndex = currentIndex + 1;
