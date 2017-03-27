@@ -839,6 +839,20 @@
           "default": "invalid"
         }
       }
+    },
+    {
+      "id": "invalid duplicate stop pairs",
+      "type": "symbol",
+      "source": "source",
+      "source-layer": "layer",
+      "layout": {
+        "text-size": {
+          "stops": [
+            [0, 1],
+            [0, 1]
+          ]
+        }
+      }
     }
   ]
 }
