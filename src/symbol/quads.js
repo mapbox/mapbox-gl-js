@@ -157,15 +157,15 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
         let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true);
+            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getSegmentGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
+                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
             }
 
         } else {
             glyphInstances = [{
                 anchorPoint: new Point(anchor.x, anchor.y),
-                offset: 0,
+                upsideDown: false,
                 angle: 0,
                 maxScale: Infinity,
                 minScale: minScale
@@ -212,9 +212,10 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
 
             // Prevent label from extending past the end of the line
             const glyphMinScale = Math.max(instance.minScale, labelMinScale);
-
-            const anchorAngle = (anchor.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
-            const glyphAngle = (instance.angle + instance.offset + 2 * Math.PI) % (2 * Math.PI);
+             // All the glyphs for a label are tagged with either the "right side up" or "upside down" anchor angle,
+            //  which is used at placement time to determine which set to show
+            const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
+            const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode));
         }
     }
@@ -227,66 +228,203 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
  * curved lines we need an instance of a glyph for each segment it appears on.
  * This creates all the instances of a glyph that are necessary to render a label.
  *
- * We need a
- * @param {Array<Object>} glyphInstances An empty array that glyphInstances are added to.
- * @param {Anchor} anchor
- * @param {number} offset The glyph's offset from the center of the label.
- * @param {Array<Point>} line
- * @param {number} segment The index of the segment of the line on which the anchor exists.
- * @param {boolean} forward If true get the glyphs that come later on the line, otherwise get the glyphs that come earlier.
+ * Given (1) a glyph positioned relative to an anchor point and (2) a line to follow,
+ * calculates which segment of the line the glyph will fall on for each possible
+ * scale range, and for each range produces a "virtual" anchor point and an angle that will
+ * place the glyph on the right segment and rotated to the correct angle.
  *
- * @returns {Array<Object>} glyphInstances
+ * Because one glyph quad is made ahead of time for each possible orientation, the
+ * symbol_sdf shader can quickly handle changing layout as we zoom in and out
+ *
+ * If the "keepUpright" property is set, we call getLineGlyphs twice (once upright and
+ * once "upside down"). This will generate two sets of glyphs following the line in opposite
+ * directions. Later, SymbolLayout::place will look at the glyphs and based on the placement
+ * angle determine if their original anchor was "upright" or not -- based on that, it throws
+ * away one set of glyphs or the other (this work has to be done in the CPU, but it's just a
+ * filter so it's fast)
+ *
+ * We need a
+ * @param {Array<Object>} glyphs An empty array that glyphInstances are added to.
+ * @param {Anchor} anchor
+ * @param {number} glyphHorizontalOffsetFromAnchor The glyph's offset from the center of the label.
+ * @param {Array<Point>} line
+ * @param {number} anchorSegment The index of the segment of the line on which the anchor exists.
+ * @param {boolean} upsideDown
+ *
+ * @returns {number} minScale
  * @private
  */
-function getSegmentGlyphs(glyphs, anchor, offset, line, segment, forward) {
-    const upsideDown = !forward;
+function getLineGlyphs(glyphs, anchor, glyphHorizontalOffsetFromAnchor, line, anchorSegment, upsideDown) {
 
-    if (offset < 0) forward = !forward;
+    // This is true if the glyph is "logically forward" of the anchor point, based on the ordering of line segments
+    //  The actual angle of the line is irrelevant
+    //  If "upsideDown" is set, everything is flipped
+    const glyphIsLogicallyForward = (glyphHorizontalOffsetFromAnchor >= 0) ^ upsideDown;
+    const glyphDistanceFromAnchor = Math.abs(glyphHorizontalOffsetFromAnchor);
 
-    if (forward) segment++;
+    const initialSegmentAnchor = new Point(anchor.x, anchor.y);
+    const initialSegmentEnd = getSegmentEnd(glyphIsLogicallyForward, line, anchorSegment);
 
-    let newAnchorPoint = new Point(anchor.x, anchor.y);
-    let end = line[segment];
-    let prevScale = Infinity;
-
-    offset = Math.abs(offset);
-
-    const placementScale = minScale;
+    let virtualSegment = {
+        anchor: initialSegmentAnchor,
+        end: initialSegmentEnd,
+        index: anchorSegment,
+        minScale: getMinScaleForSegment(glyphDistanceFromAnchor, initialSegmentAnchor, initialSegmentEnd),
+        maxScale: Infinity
+    };
 
     while (true) {
-        const distance = newAnchorPoint.dist(end);
-        const scale = offset / distance;
+        insertSegmentGlyph(glyphs,
+                           virtualSegment,
+                           glyphIsLogicallyForward,
+                           upsideDown);
 
-        // Get the angle of the line segment
-        let angle = Math.atan2(end.y - newAnchorPoint.y, end.x - newAnchorPoint.x);
-        if (!forward) angle += Math.PI;
-
-        glyphs.push({
-            anchorPoint: newAnchorPoint,
-            offset: upsideDown ? Math.PI : 0,
-            minScale: scale,
-            maxScale: prevScale,
-            angle: (angle + 2 * Math.PI) % (2 * Math.PI)
-        });
-
-        if (scale <= placementScale) break;
-
-        newAnchorPoint = end;
-
-        // skip duplicate nodes
-        while (newAnchorPoint.equals(end)) {
-            segment += forward ? 1 : -1;
-            end = line[segment];
-            if (!end) {
-                return scale;
-            }
+        if (virtualSegment.minScale <= anchor.scale) {
+            // No need to calculate below the scale where the label starts showing
+            return anchor.scale;
         }
 
-        const unit = end.sub(newAnchorPoint)._unit();
-        newAnchorPoint = newAnchorPoint.sub(unit._mult(distance));
+        const nextVirtualSegment = getNextVirtualSegment(virtualSegment,
+                                                         line,
+                                                         glyphDistanceFromAnchor,
+                                                         glyphIsLogicallyForward);
+        if (!nextVirtualSegment) {
+            // There are no more segments, so we can't fit this glyph on the line at a lower scale
+            // This implies we can't show the label at all at lower scale, so we update the anchor's min scale
+            return virtualSegment.minScale;
+        } else {
+            virtualSegment = nextVirtualSegment;
+        }
+    }
+}
 
-        prevScale = scale;
+/**
+ * @param {Array<Object>} glyphs
+ * @param {Object} virtualSegment
+ * @param {boolean} glyphIsLogicallyForward
+ * @param {boolean} upsideDown
+ * @private
+ */
+function insertSegmentGlyph(glyphs, virtualSegment, glyphIsLogicallyForward, upsideDown) {
+    const segmentAngle = Math.atan2(virtualSegment.end.y - virtualSegment.anchor.y, virtualSegment.end.x - virtualSegment.anchor.x);
+    // If !glyphIsLogicallyForward, we're iterating through the segments in reverse logical order as well, so we need to flip the segment angle
+    const glyphAngle = glyphIsLogicallyForward ? segmentAngle : segmentAngle + Math.PI;
+
+    // Insert a glyph rotated at this angle for display in the range from [scale, previous(larger) scale].
+    glyphs.push({
+        anchorPoint: virtualSegment.anchor,
+        upsideDown: upsideDown,
+        minScale: virtualSegment.minScale,
+        maxScale: virtualSegment.maxScale,
+        angle: (glyphAngle + 2.0 * Math.PI) % (2.0 * Math.PI)});
+}
+
+/**
+ * Given the distance along the line from the label anchor to the beginning of the current segment,
+ * project a "virtual anchor" point at the same distance along the line extending out from this segment.
+ *
+ *                 B <-- beginning of current segment
+ * * . . . . . . . *--------* E <-- end of current segment
+ * VA              |
+ *                /        VA = "virtual segment anchor"
+ *               /
+ *     ---*-----`
+ *        A = label anchor
+ *
+ * Distance _along line_ from A to B == straight-line distance from VA to B.
+ *
+ * @param {Point} segmentBegin
+ * @param {Point} segmentEnd
+ * @param {number} distanceFromAnchorToSegmentBegin
+ *
+ * @returns {Point} virtualSegmentAnchor
+ * @private
+ */
+function getVirtualSegmentAnchor(segmentBegin, segmentEnd, distanceFromAnchorToSegmentBegin) {
+    const segmentDirectionUnitVector = segmentEnd.sub(segmentBegin)._unit();
+    return segmentBegin.sub(segmentDirectionUnitVector._mult(distanceFromAnchorToSegmentBegin));
+}
+
+/**
+ * Given the segment joining `segmentAnchor` and `segmentEnd` and a desired offset
+ * `glyphDistanceFromAnchor` at which a glyph is to be placed, calculate the minimum
+ * "scale" at which the glyph will fall on the segment (i.e., not past the end)
+ *
+ * "Scale" here refers to the ratio between the *rendered* zoom level and the text-layout
+ * zoom level, which is 1 + (source tile's zoom level).  `glyphDistanceFromAnchor`, although
+ * passed in units consistent with the text-layout zoom level, is based on text size.  So
+ * when the tile is being rendered at z < text-layout zoom, the glyph's actual distance from
+ * the anchor is larger relative to the segment's length than at layout time:
+ *
+ *
+ *                                                                   GLYPH
+ * z == layout-zoom, scale == 1:        segmentAnchor *--------------^-------------* segmentEnd
+ * z == layout-zoom - 1, scale == 0.5:  segmentAnchor *--------------^* segmentEnd
+ *
+ *                                                    <-------------->
+ *                                                    Anchor-to-glyph distance stays visually fixed,
+ *                                                    so it changes relative to the segment.
+ * @param {number} glyphDistanceFromAnchor
+ * @param {Point} segmentAnchor
+ * @param {Point} segmentEnd
+
+ * @returns {number} minScale
+ * @private
+ */
+function getMinScaleForSegment(glyphDistanceFromAnchor, segmentAnchor, segmentEnd) {
+    const distanceFromAnchorToEnd = segmentAnchor.dist(segmentEnd);
+    return glyphDistanceFromAnchor / distanceFromAnchorToEnd;
+}
+
+/**
+ * @param {boolean} glyphIsLogicallyForward
+ * @param {Array<Point>} line
+ * @param {number} segmentIndex
+ *
+ * @returns {Point} segmentEnd
+ * @private
+ */
+function getSegmentEnd(glyphIsLogicallyForward, line, segmentIndex) {
+    return glyphIsLogicallyForward ? line[segmentIndex + 1] : line[segmentIndex];
+}
+
+/**
+ * @param {Object} previousVirtualSegment
+ * @param {Array<Point>} line
+ * @param {number} glyphDistanceFromAnchor
+ * @param {boolean} glyphIsLogicallyForward
+
+ * @returns {Object} virtualSegment
+ * @private
+ */
+function getNextVirtualSegment(previousVirtualSegment, line, glyphDistanceFromAnchor, glyphIsLogicallyForward) {
+    const nextSegmentBegin = previousVirtualSegment.end;
+
+    let end = nextSegmentBegin;
+    let index = previousVirtualSegment.index;
+
+    // skip duplicate nodes
+    while (end.equals(nextSegmentBegin)) {
+        // look ahead by 2 points in the line because the segment index refers to the beginning
+        // of the segment, and we need an endpoint too
+        if (glyphIsLogicallyForward && (index + 2 < line.length)) {
+            index += 1;
+        } else if (!glyphIsLogicallyForward && index !== 0) {
+            index -= 1;
+        } else {
+            return null;
+        }
+
+        end = getSegmentEnd(glyphIsLogicallyForward, line, index);
     }
 
-    return placementScale;
+    const anchor = getVirtualSegmentAnchor(nextSegmentBegin, end,
+                                           previousVirtualSegment.anchor.dist(previousVirtualSegment.end));
+    return {
+        anchor: anchor,
+        end: end,
+        index: index,
+        minScale: getMinScaleForSegment(glyphDistanceFromAnchor, anchor, end),
+        maxScale: previousVirtualSegment.minScale
+    };
 }
