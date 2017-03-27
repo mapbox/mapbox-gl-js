@@ -4,6 +4,7 @@ const util = require('../util/util');
 const browser = require('../util/browser');
 const window = require('../util/window');
 const DOM = require('../util/dom');
+const ajax = require('../util/ajax');
 
 const Style = require('../style/style');
 const AnimationLoop = require('../style/animation_loop');
@@ -823,6 +824,8 @@ class Map extends Camera {
      * {@link Map#error} event will be fired if there is not enough space in the
      * sprite to add this image.
      *
+     * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
+     * @see [Add a generated icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image-generated/)
      * @param {string} name The name of the image.
      * @param {HTMLImageElement|ArrayBufferView} image The image as an `HTMLImageElement` or `ArrayBufferView` (using the format of [`ImageData#data`](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/data))
      * @param {Object} [options] Required if and only if passing an `ArrayBufferView`
@@ -841,6 +844,18 @@ class Map extends Camera {
      */
     removeImage(name) {
         this.style.spriteAtlas.removeImage(name);
+    }
+
+    /**
+     * Load an image from an external URL for use with `Map#addImage`. External
+     * domains must support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS).
+     *
+     * @param {string} url The URL of the image.
+     * @param {Function} callback Called when the image has loaded or with an error argument if there is an error.
+     * @see [Add an icon to the map](https://www.mapbox.com/mapbox-gl-js/example/add-image/)
+     */
+    loadImage(url, callback) {
+        ajax.getImage(url, callback);
     }
 
     /**
