@@ -40,13 +40,19 @@ var layer = (id, x, textSize, color) => ({
         "text-anchor": "left",
         "text-allow-overlap": true,
         "text-ignore-placement": true,
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
         "text-max-angle": 180,
         "text-field": "abcdefghijklmnopqrstuvwxyz",
         "text-font": [
             "Open Sans Semibold",
             "Arial Unicode MS Bold"
         ],
-        "text-size": textSize
+        "text-size": textSize,
+        "icon-size": Object.assign({}, textSize, {
+            stops: textSize.stops.map(s => [s[0], s[1] / 3])
+        }),
+        "icon-image": "airfield-11"
     },
     "paint": {
         "text-color": color,
@@ -85,7 +91,7 @@ var style = {
             }
         }
     },
-
+    "sprite": "mapbox://sprites/mapbox/streets-v10",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "layers": [
         layer('symbol-camera', 0, {

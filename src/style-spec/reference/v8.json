@@ -810,6 +810,7 @@
       "minimum": 0,
       "function": "interpolated",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Scale factor for icon. 1 is original size, 3 triples the size.",
       "requires": [
         "icon-image"
