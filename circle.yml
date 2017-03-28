@@ -22,5 +22,5 @@ deployment:
       - ./ci-scripts/deploy.sh
 general:
   artifacts:
-    - "node_modules/mapbox-gl-test-suite/render-tests/index.html"
-    - "node_modules/mapbox-gl-test-suite/query-tests/index.html"
+    - "test/integration/render-tests/index.html"
+    - "test/integration/query-tests/index.html"
