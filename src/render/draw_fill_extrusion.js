@@ -70,14 +70,14 @@ ExtrusionTexture.prototype.bindFramebuffer = function() {
 
     if (!this.fbos) {
         this.fbo = gl.createFramebuffer();
-        const stencil = gl.createRenderbuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        const colorRenderbuffer = gl.createRenderbuffer();
         const depthRenderBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, stencil);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.width, this.height);
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.width, this.height);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, stencil);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     } else {
@@ -107,7 +107,7 @@ ExtrusionTexture.prototype.renderToMap = function() {
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     gl.uniform1f(program.u_opacity, this.layer.paint['fill-extrusion-opacity']);
-    gl.uniform1i(program.u_texture, 1);
+    gl.uniform1i(program.u_image, 1);
 
     gl.uniformMatrix4fv(program.u_matrix, false, mat4.ortho(
         mat4.create(),
@@ -121,14 +121,13 @@ ExtrusionTexture.prototype.renderToMap = function() {
 
     gl.disable(gl.DEPTH_TEST);
 
-    gl.uniform1i(program.u_xdim, painter.width);
-    gl.uniform1i(program.u_ydim, painter.height);
+    gl.uniform2f(program.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     const array = new PosArray();
     array.emplaceBack(0, 0);
-    array.emplaceBack(painter.width, 0);
-    array.emplaceBack(0, painter.height);
-    array.emplaceBack(painter.width, painter.height);
+    array.emplaceBack(1, 0);
+    array.emplaceBack(0, 1);
+    array.emplaceBack(1, 1);
     const buffer = Buffer.fromStructArray(array, Buffer.BufferType.VERTEX);
 
     const vao = new VertexArrayObject();
