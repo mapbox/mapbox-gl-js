@@ -98,21 +98,24 @@ function createFunction(parameters, propertySpec) {
 
         if (zoomAndFeatureDependent) {
             const featureFunctions = {};
-            const featureFunctionStops = [];
+            const zoomStops = [];
             for (let s = 0; s < parameters.stops.length; s++) {
                 const stop = parameters.stops[s];
-                if (featureFunctions[stop[0].zoom] === undefined) {
-                    featureFunctions[stop[0].zoom] = {
-                        zoom: stop[0].zoom,
+                const zoom = stop[0].zoom;
+                if (featureFunctions[zoom] === undefined) {
+                    featureFunctions[zoom] = {
+                        zoom: zoom,
                         type: parameters.type,
                         property: parameters.property,
                         stops: []
                     };
+                    zoomStops.push(zoom);
                 }
-                featureFunctions[stop[0].zoom].stops.push([stop[0].value, stop[1]]);
+                featureFunctions[zoom].stops.push([stop[0].value, stop[1]]);
             }
 
-            for (const z in featureFunctions) {
+            const featureFunctionStops = [];
+            for (const z of zoomStops) {
                 featureFunctionStops.push([featureFunctions[z].zoom, createFunction(featureFunctions[z], propertySpec)]);
             }
             fun = function(zoom, feature) {

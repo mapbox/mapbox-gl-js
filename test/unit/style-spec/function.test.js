@@ -455,6 +455,30 @@ test('exponential function', (t) => {
         t.end();
     });
 
+    test('zoom-and-property function, four stops, integer and fractional zooms', (t) => {
+        const f = createFunction({
+            type: 'exponential',
+            property: 'prop',
+            base: 1,
+            stops: [
+                [{ zoom: 1, value: 0 }, 0],
+                [{ zoom: 1.5, value: 0 }, 1],
+                [{ zoom: 2, value: 0 }, 10],
+                [{ zoom: 2.5, value: 0 }, 20]
+            ]
+        }, {
+            type: 'number'
+        });
+
+        t.equal(f(1, { prop: 0 }), 0);
+        t.equal(f(1.5, { prop: 0 }), 1);
+        t.equal(f(2, { prop: 0 }), 10);
+        t.equal(f(2.5, { prop: 0 }), 20);
+
+        t.end();
+    });
+
+
     t.test('zoom-and-property function, no default', (t) => {
         // This can happen for fill-outline-color, where the spec has no default.
 
