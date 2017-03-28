@@ -872,6 +872,12 @@ test('Map', (t) => {
             });
         });
 
+        t.test('returns an empty array when no style is loaded', (t) => {
+            const map = createMap({style: undefined});
+            t.deepEqual(map.queryRenderedFeatures(), []);
+            t.end();
+        });
+
         t.end();
     });
 

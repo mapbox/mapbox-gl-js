@@ -601,6 +601,10 @@ class Map extends Camera {
             params = arguments[0];
         }
 
+        if (!this.style) {
+            return [];
+        }
+
         return this.style.queryRenderedFeatures(
             this._makeQueryGeometry(geometry),
             params,
