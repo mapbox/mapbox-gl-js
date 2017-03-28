@@ -1,6 +1,5 @@
 
 attribute vec4 a_pos_offset;
-attribute vec2 a_texture_pos;
 attribute vec4 a_data;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
@@ -32,9 +31,10 @@ void main() {
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
 
-    vec2 a_tex = a_texture_pos.xy;
-    mediump float a_labelminzoom = a_data[0];
-    mediump vec2 a_zoom = a_data.pq;
+    vec2 a_tex = a_data.xy;
+    mediump vec2 label_data = unpack_float(a_data[2]);
+    mediump float a_labelminzoom = label_data[0];
+    mediump vec2 a_zoom = unpack_float(a_data[3]);
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
 

@@ -5,6 +5,7 @@ const ArrayGroup = require('../array_group');
 const BufferGroup = require('../buffer_group');
 const createElementArrayType = require('../element_array_type');
 const EXTENT = require('../extent');
+const packUint8ToFloat = require('../../shaders/encode_attribute').packUint8ToFloat;
 const Anchor = require('../../symbol/anchor');
 const getAnchors = require('../../symbol/get_anchors');
 const resolveTokens = require('../../util/token');
@@ -31,8 +32,7 @@ const elementArrayType = createElementArrayType();
 
 const layoutAttributes = [
     {name: 'a_pos_offset',  components: 4, type: 'Int16'},
-    {name: 'a_texture_pos', components: 2, type: 'Uint16'},
-    {name: 'a_data',        components: 4, type: 'Uint8'}
+    {name: 'a_data',        components: 4, type: 'Uint16'}
 ];
 
 const symbolInterfaces = {
@@ -76,15 +76,18 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeData, minzoom, maxzoom, labe
         Math.round(ox * 64),
         Math.round(oy * 64),
 
-        // a_texture_pos
+        // a_data
         tx / 4, // x coordinate of symbol on glyph atlas texture
         ty / 4, // y coordinate of symbol on glyph atlas texture
+        packUint8ToFloat(
+            (labelminzoom || 0) * 10, // labelminzoom
+            labelangle % 256 // labelangle
+        ),
+        packUint8ToFloat(
+            (minzoom || 0) * 10, // minzoom
+            Math.min(maxzoom || 25, 25) * 10 // maxzoom
+        ),
 
-        // a_data
-        (labelminzoom || 0) * 10, // labelminzoom
-        labelangle, // labelangle
-        (minzoom || 0) * 10, // minzoom
-        Math.min(maxzoom || 25, 25) * 10, // maxzoom
         // a_size
         sizeData ? sizeData[0] : undefined,
         sizeData ? sizeData[1] : undefined,

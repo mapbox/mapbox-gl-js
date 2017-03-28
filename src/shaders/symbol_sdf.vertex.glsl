@@ -1,7 +1,6 @@
 const float PI = 3.141592653589793;
 
 attribute vec4 a_pos_offset;
-attribute vec2 a_texture_pos;
 attribute vec4 a_data;
 
 // contents of a_size vary based on the type of property value
@@ -54,9 +53,13 @@ void main() {
     vec2 a_pos = a_pos_offset.xy;
     vec2 a_offset = a_pos_offset.zw;
 
-    vec2 a_tex = a_texture_pos.xy;
-    mediump float a_labelminzoom = a_data[0];
-    mediump vec2 a_zoom = a_data.pq;
+    vec2 a_tex = a_data.xy;
+
+    mediump vec2 label_data = unpack_float(a_data[2]);
+    mediump float a_labelminzoom = label_data[0];
+    mediump float a_labelangle = label_data[1];
+
+    mediump vec2 a_zoom = unpack_float(a_data[3]);
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
 
@@ -88,12 +91,14 @@ void main() {
     mediump float zoomAdjust = log2(v_size / layoutSize);
     mediump float adjustedZoom = (u_zoom - zoomAdjust) * 10.0;
     // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
+    // Used below to move the vertex out of the clip space for when the current
+    // zoom is out of the glyph's zoom range.
     mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
     // pitch-alignment: map
     // rotation-alignment: map | viewport
     if (u_pitch_with_map) {
-        lowp float angle = u_rotate_with_map ? (a_data[1] / 256.0 * 2.0 * PI) : u_bearing;
+        lowp float angle = u_rotate_with_map ? (a_labelangle / 256.0 * 2.0 * PI) : u_bearing;
         lowp float asin = sin(angle);
         lowp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
@@ -109,7 +114,7 @@ void main() {
         // it goes from 0% foreshortening to up to around 70% foreshortening
         lowp float pitchfactor = 1.0 - cos(u_pitch * sin(u_pitch * 0.75));
 
-        lowp float lineangle = a_data[1] / 256.0 * 2.0 * PI;
+        lowp float lineangle = a_labelangle / 256.0 * 2.0 * PI;
 
         // use the lineangle to position points a,b along the line
         // project the points and calculate the label angle in projected space
