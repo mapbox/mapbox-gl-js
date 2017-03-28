@@ -5013,7 +5013,7 @@ sntp@1.x.x:
   dependencies:
     hoek "2.x.x"
 
-source-map-support@^0.4.2:
+source-map-support@^0.4.2, source-map-support@^0.4.3:
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.4.11.tgz#647f939978b38535909530885303daf23279f322"
   dependencies:
@@ -5333,9 +5333,9 @@ tap-parser@^5.1.0, tap-parser@^5.3.1:
   optionalDependencies:
     readable-stream "^2"
 
-tap@^10.0.2:
-  version "10.0.2"
-  resolved "https://registry.yarnpkg.com/tap/-/tap-10.0.2.tgz#54a902269cc68416d9fba5cf6c571963ef992671"
+tap@^10.3.0:
+  version "10.3.0"
+  resolved "https://registry.yarnpkg.com/tap/-/tap-10.3.0.tgz#7454c3ab3da89e5450ff0b90d0d9bacc2ee25a9a"
   dependencies:
     bind-obj-methods "^1.0.0"
     bluebird "^3.3.1"
@@ -5357,6 +5357,7 @@ tap@^10.0.2:
     own-or-env "^1.0.0"
     readable-stream "^2.0.2"
     signal-exit "^3.0.0"
+    source-map-support "^0.4.3"
     stack-utils "^1.0.0"
     tap-mocha-reporter "^3.0.1"
     tap-parser "^5.3.1"
