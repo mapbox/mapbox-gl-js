@@ -4,8 +4,8 @@
   "zoom": 17,
   "metadata": {
     "test": {
-      "width": 256,
-      "height": 256,
+      "width": 512,
+      "height": 512,
       "operations": [
         ["setStyle", "mapbox://styles/mapbox/streets-v10"],
         ["wait"]
