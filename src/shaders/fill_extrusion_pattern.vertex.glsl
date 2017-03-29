@@ -28,6 +28,9 @@ void main() {
     #pragma mapbox: initialize lowp float base
     #pragma mapbox: initialize lowp float height
 
+    base = max(0.0, base);
+    height = max(0.0, height);
+
     float t = mod(a_normal.x, 2.0);
     float z = t > 0.0 ? height : base;
 
