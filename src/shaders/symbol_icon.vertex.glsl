@@ -1,4 +1,3 @@
-
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 
@@ -9,6 +8,10 @@ uniform bool u_is_size_feature_constant;
 uniform mediump float u_size_t; // used to interpolate between zoom stops when size is a composite function
 uniform mediump float u_size; // used when size is both zoom and feature constant
 uniform mediump float u_layout_size; // used when size is feature constant
+uniform mediump float u_camera_to_center_distance;
+uniform mediump float u_pitch;
+uniform mediump float u_pitch_scale;
+uniform mediump float u_collision_y_stretch;
 
 #pragma mapbox: define lowp float opacity
 
@@ -69,14 +72,26 @@ void main() {
     // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
     mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
+    highp float perspective_ratio = 1.0;
+    highp float camera_to_anchor_distance;
     vec2 extrude = fontScale * u_extrude_scale * (a_offset / 64.0);
     if (u_rotate_with_map) {
         gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
+        camera_to_anchor_distance = gl_Position.w;
         gl_Position.z += z * gl_Position.w;
     } else {
-        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1);
+        camera_to_anchor_distance = gl_Position.w;
+        perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
+        extrude *= perspective_ratio;
+        gl_Position += vec4(extrude, 0, 0);
     }
 
     v_tex = a_tex / u_texsize;
-    v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
+    // See comments in symbol_sdf.vertex
+    highp float incidence_stretch  = camera_to_anchor_distance / (u_camera_to_center_distance * cos(u_pitch));
+    highp float collision_adjustment = incidence_stretch / u_collision_y_stretch;
+
+    highp float perspective_zoom_adjust = log2(perspective_ratio * collision_adjustment)*10.0 / 255.0;
+    v_fade_tex = vec2((a_labelminzoom / 255.0) + perspective_zoom_adjust, 0.0);
 }
