@@ -19,6 +19,9 @@ void main() {
     #pragma mapbox: initialize lowp float height
     #pragma mapbox: initialize highp vec4 color
 
+    base = max(0.0, base);
+    height = max(0.0, height);
+
     float ed = a_edgedistance; // use each attrib in order to not trip a VAO assert
     float t = mod(a_normal.x, 2.0);
 
