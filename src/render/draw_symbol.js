@@ -100,6 +100,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
+        gl.uniform1f(program.u_collision_y_stretch, tile.collisionTile.yStretch);
+
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap);
 

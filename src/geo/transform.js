@@ -394,6 +394,21 @@ class Transform {
         return new Float32Array(posMatrix);
     }
 
+    /**
+     * Calculate the distance from the center of a tile to the camera
+     * These distances are in view-space dimensions derived from the size of the
+     * viewport, similar to this.cameraToCenterDistance
+     * If the tile is dead-center in the viewport, then cameraToTileDistance == cameraToCenterDistance
+     *
+     * @param {Tile} tile
+     */
+    cameraToTileDistance(tile: Object) {
+        const posMatrix = this.calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
+        const tileCenter = [tile.tileSize / 2, tile.tileSize / 2, 0, 1];
+        vec4.transformMat4(tileCenter, tileCenter, posMatrix);
+        return tileCenter[3];
+    }
+
     _constrain() {
         if (!this.center || !this.width || !this.height || this._constraining) return;
 
