@@ -496,6 +496,12 @@ class Camera extends Evented {
             easing: util.ease
         }, options);
 
+        if (options.animate === false) options.duration = 0;
+
+        if (options.smoothEasing && options.duration !== 0) {
+            options.easing = this._smoothOutEasing(options.duration);
+        }
+
         const tr = this.transform,
             offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
@@ -506,8 +512,7 @@ class Camera extends Evented {
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-        let toLngLat,
-            toPoint;
+        let toLngLat, toPoint;
 
         if ('center' in options) {
             toLngLat = LngLat.convert(options.center);
@@ -522,26 +527,11 @@ class Camera extends Evented {
 
         const fromPoint = tr.locationPoint(toLngLat);
 
-        if (options.animate === false) options.duration = 0;
-
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
 
-        if (options.smoothEasing && options.duration !== 0) {
-            options.easing = this._smoothOutEasing(options.duration);
-        }
-
-        if (!options.noMoveStart) {
-            this.moving = true;
-            this.fire('movestart', eventData);
-        }
-        if (this.zooming) {
-            this.fire('zoomstart', eventData);
-        }
-        if (this.pitching) {
-            this.fire('pitchstart', eventData);
-        }
+        this._prepareEase(eventData, options.noMoveStart);
 
         clearTimeout(this._onEaseEnd);
 
@@ -560,25 +550,44 @@ class Camera extends Evented {
 
             tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
 
-            this.fire('move', eventData);
-            if (this.zooming) {
-                this.fire('zoom', eventData);
-            }
-            if (this.rotating) {
-                this.fire('rotate', eventData);
-            }
-            if (this.pitching) {
-                this.fire('pitch', eventData);
-            }
+            this._fireMoveEvents(eventData);
+
         }, () => {
             if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), options.delayEndEvents);
+                this._onEaseEnd = setTimeout(() => this._easeToEnd(eventData), options.delayEndEvents);
             } else {
                 this._easeToEnd(eventData);
             }
         }, options);
 
         return this;
+    }
+
+    _prepareEase(eventData, noMoveStart) {
+        this.moving = true;
+
+        if (!noMoveStart) {
+            this.fire('movestart', eventData);
+        }
+        if (this.zooming) {
+            this.fire('zoomstart', eventData);
+        }
+        if (this.pitching) {
+            this.fire('pitchstart', eventData);
+        }
+    }
+
+    _fireMoveEvents(eventData) {
+        this.fire('move', eventData);
+        if (this.zooming) {
+            this.fire('zoom', eventData);
+        }
+        if (this.rotating) {
+            this.fire('rotate', eventData);
+        }
+        if (this.pitching) {
+            this.fire('pitch', eventData);
+        }
     }
 
     _easeToEnd(eventData) {
@@ -596,7 +605,6 @@ class Camera extends Evented {
             this.fire('pitchend', eventData);
         }
         this.fire('moveend', eventData);
-
     }
 
     /**
@@ -769,14 +777,11 @@ class Camera extends Evented {
             options.duration = 1000 * S / V;
         }
 
-        this.moving = true;
         this.zooming = true;
-        if (startBearing !== bearing) this.rotating = true;
-        if (startPitch !== pitch) this.pitching = true;
+        this.rotating = (startBearing !== bearing);
+        this.pitching = (pitch !== startPitch);
 
-        this.fire('movestart', eventData);
-        this.fire('zoomstart', eventData);
-        if (this.pitching) this.fire('pitchstart', eventData);
+        this._prepareEase(eventData, false);
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -785,10 +790,8 @@ class Camera extends Evented {
 
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
-            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
-            if (tr.renderWorldCopies) {
-                tr.center = tr.center.wrap();
-            }
+            const newCenter = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
+            tr.center = tr.renderWorldCopies ? newCenter.wrap() : newCenter;
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
@@ -797,25 +800,9 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            this.fire('move', eventData);
-            this.fire('zoom', eventData);
-            if (this.rotating) {
-                this.fire('rotate', eventData);
-            }
-            if (this.pitching) {
-                this.fire('pitch', eventData);
-            }
-        }, function() {
-            const wasPitching = this.pitching;
-            this.moving = false;
-            this.zooming = false;
-            this.rotating = false;
-            this.pitching = false;
+            this._fireMoveEvents(eventData);
 
-            if (wasPitching) this.fire('pitchend', eventData);
-            this.fire('zoomend', eventData);
-            this.fire('moveend', eventData);
-        }, options);
+        }, () => this._easeToEnd(eventData), options);
 
         return this;
     }
