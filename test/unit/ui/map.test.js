@@ -373,7 +373,7 @@ test('Map', (t) => {
         t.test('creates a new Style if diff fails', (t) => {
             const style = createStyle();
             const map = createMap({ style: style });
-            t.stub(map.style, 'setState', () => {
+            t.stub(map.style, 'setState').callsFake(() => {
                 throw new Error('Dummy error');
             });
 
@@ -386,7 +386,7 @@ test('Map', (t) => {
         t.test('creates a new Style if diff option is false', (t) => {
             const style = createStyle();
             const map = createMap({ style: style });
-            t.stub(map.style, 'setState', () => {
+            t.stub(map.style, 'setState').callsFake(() => {
                 t.fail();
             });
 
@@ -1167,7 +1167,7 @@ test('Map', (t) => {
             const map = createMap({ style: { version: 8, sources: {}, layers: [] } });
 
             t.spy(map, 'fire');
-            t.stub(console, 'error', (error) => {
+            t.stub(console, 'error').callsFake((error) => {
                 if (error.message === 'version: expected one of [8], 7 found') {
                     t.notOk(map.fire.calledWith('error'));
                     console.error.restore();
