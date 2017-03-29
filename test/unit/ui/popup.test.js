@@ -212,7 +212,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
         Object.defineProperty(popup._container, 'offsetWidth', {value: 100});
         Object.defineProperty(popup._container, 'offsetHeight', {value: 100});
 
-        t.stub(map, 'project', () => { return point; });
+        t.stub(map, 'project').returns(point);
         popup.setLngLat([0, 0]);
 
         t.ok(popup._container.classList.contains(`mapboxgl-popup-anchor-${anchor}`));
@@ -221,7 +221,7 @@ test('Popup anchors as specified by the anchor option', (t) => {
 
     test(`Popup translation reflects offset and ${anchor} anchor`, (t) => {
         const map = createMap();
-        t.stub(map, 'project', () => { return new Point(0, 0); });
+        t.stub(map, 'project').returns(new Point(0, 0));
 
         const popup = new Popup({anchor: anchor, offset: 10})
             .setLngLat([0, 0])
@@ -248,7 +248,7 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
     Object.defineProperty(popup._container, 'offsetWidth', {value: containerWidth / 2});
     Object.defineProperty(popup._container, 'offsetHeight', {value: containerHeight / 2});
 
-    t.stub(map, 'project', () => { return point; });
+    t.stub(map, 'project').returns(point);
     popup.setLngLat([0, 0]);
 
     t.ok(popup._container.classList.contains('mapboxgl-popup-anchor-top'));
@@ -257,7 +257,7 @@ test('Popup automatically anchors to top if its bottom offset would push it off-
 
 test('Popup is offset via a PointLike offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: [5, 10]})
         .setLngLat([0, 0])
@@ -270,7 +270,7 @@ test('Popup is offset via a PointLike offset option', (t) => {
 
 test('Popup is offset via an object offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-left', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
@@ -283,7 +283,7 @@ test('Popup is offset via an object offset option', (t) => {
 
 test('Popup is offset via an incomplete object offset option', (t) => {
     const map = createMap();
-    t.stub(map, 'project', () => { return new Point(0, 0); });
+    t.stub(map, 'project').returns(new Point(0, 0));
 
     const popup = new Popup({anchor: 'top-right', offset: {'top-left': [5, 10]}})
         .setLngLat([0, 0])
