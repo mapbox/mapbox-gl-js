@@ -203,7 +203,7 @@ class CollisionTile {
         const sourceLayerFeatures = {};
         const result = [];
 
-        if (queryGeometry.length === 0 || (this.grid.length === 0 && this.ignoredGrid.length === 0)) {
+        if (queryGeometry.length === 0 || (this.grid.keys.length === 0 && this.ignoredGrid.keys.length === 0)) {
             return result;
         }
 
