@@ -1,0 +1,16 @@
+{
+   "labels": {
+       "release blocker": 25,
+       "high priority": 7,
+       "medium priority": 5,
+       "bug": 2
+   },
+   "reactions": {
+       "+1": 1,
+       "-1": -1,
+       "laugh": 1,
+       "hooray": 1,
+       "confused": 1,
+       "heart": 1
+   }
+}
