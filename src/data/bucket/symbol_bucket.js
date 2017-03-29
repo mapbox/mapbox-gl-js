@@ -523,6 +523,10 @@ class SymbolBucket {
         const layer = this.layers[0];
         const layout = layer.layout;
 
+        // Symbols that don't show until greater than the CollisionTile's maxScale won't even be added
+        // to the buffers. Even though pan operations on a tilted map might cause the symbol to be
+        // displayable, we have to stay conservative here because the CollisionTile didn't consider
+        // this scale range.
         const maxScale = collisionTile.maxScale;
 
         const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';

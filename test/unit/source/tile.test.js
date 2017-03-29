@@ -142,7 +142,7 @@ test('Tile#redoPlacement', (t) => {
                 send: () => {}
             },
             map: {
-                transform: {}
+                transform: { cameraToCenterDistance: 1, cameraToTileDistance: () => { return 1; } }
             }
         };
 
@@ -249,7 +249,7 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        collisionTile: (new CollisionTile(0, 0, collisionBoxArray)).serialize(),
+        collisionTile: (new CollisionTile(0, 0, 1, 1, collisionBoxArray)).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);
