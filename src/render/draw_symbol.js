@@ -193,6 +193,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
         gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
+    gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
