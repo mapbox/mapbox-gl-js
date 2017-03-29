@@ -27,7 +27,7 @@ class CollisionTile {
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
         }
 
-        this.minScale = 0.5;
+        this.minScale = 0;
         this.maxScale = 2;
 
         this.angle = angle;
@@ -43,6 +43,11 @@ class CollisionTile {
 
         // The amount the map is squished depends on the y position.
         // Sort of account for this by making all boxes a bit bigger.
+        // The shaders calculate a more accurate "incidence_stretch"
+        // at render time to calculate an effective scale for collision
+        // purposes, but we still want to use the yStretch approximation
+        // here because we can't adjust the aspect ratio of the collision
+        // boxes at render time.
         this.yStretch = Math.pow(this.yStretch, 1.3);
 
         this.collisionBoxArray = collisionBoxArray;
@@ -118,10 +123,16 @@ class CollisionTile {
             const x = anchorPoint.x;
             const y = anchorPoint.y;
 
-            const x1 = x + box.x1;
-            const y1 = y + box.y1 * yStretch;
-            const x2 = x + box.x2;
-            const y2 = y + box.y2 * yStretch;
+            // 'startBig'=8 forces calculation to account for how the tile would look up to 3
+            // zoom levels further out. This effectively prevents grid-index from saving us
+            // calculations... so it's probably not a very performant solution.
+            // Experimenting with placement time in the Washington DC area, I see placement
+            // taking about 4x longer with this change.
+            const startBig = 8;
+            const x1 = x + box.x1 * startBig;
+            const y1 = y + box.y1 * yStretch * startBig;
+            const x2 = x + box.x2 * startBig;
+            const y2 = y + box.y2 * yStretch * startBig;
 
             box.bbox0 = x1;
             box.bbox1 = y1;
