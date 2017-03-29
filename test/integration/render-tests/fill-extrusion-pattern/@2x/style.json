@@ -4,8 +4,7 @@
     "test": {
       "height": 256,
       "ignored": {
-        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3327",
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/6745"
+        "js": "https://github.com/mapbox/mapbox-gl-js/issues/3327"
       },
       "pixelRatio": 2
     }
