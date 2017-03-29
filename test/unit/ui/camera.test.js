@@ -124,6 +124,22 @@ test('camera', (t) => {
             t.end();
         });
 
+        t.test('emits pitch events, preserving eventData', (t)=>{
+            let started, pitched, ended;
+            const eventData = { data: 'ok'};
+
+            camera
+                .on('pitchstart', (d) => { started = d.data; })
+                .on('pitch', (d) => { pitched = d.data; })
+                .on('pitchend', (d) => { ended = d.data; });
+
+            camera.jumpTo({pitch: 10}, eventData);
+            t.equal(started, 'ok');
+            t.equal(pitched, 'ok');
+            t.equal(ended, 'ok');
+            t.end();
+        });
+
         t.test('cancels in-progress easing', (t) => {
             camera.panTo([3, 4]);
             t.ok(camera.isEasing());
@@ -861,7 +877,7 @@ test('camera', (t) => {
             //As such; it deserves a separate test case. This test case flies the map from A to A.
             const fromTo = { center: [100, 0] };
             const camera = createCamera(fromTo);
-            let movestarted, moved, rotated, pitched, zoomstarted, zoomed, zoomended;
+            let movestarted, moved, rotated, pitched, pitchstarted, pitchended, zoomstarted, zoomed, zoomended;
             const eventData = { data: 'ok' };
 
             camera
@@ -869,6 +885,8 @@ test('camera', (t) => {
                 .on('move', (d) => { moved = d.data; })
                 .on('rotate', (d) => { rotated = d.data; })
                 .on('pitch', (d) => { pitched = d.data; })
+                .on('pitchstart', (d) => { pitchstarted = d.data; })
+                .on('pitchend', (d) => { pitchended = d.data; })
                 .on('zoomstart', (d) => { zoomstarted = d.data; })
                 .on('zoom', (d) => { zoomed = d.data; })
                 .on('zoomend', (d) => { zoomended = d.data; })
@@ -884,6 +902,8 @@ test('camera', (t) => {
                     t.equal(zoomended, undefined);
                     t.equal(rotated, undefined);
                     t.equal(pitched, undefined);
+                    t.equal(pitchstarted, undefined);
+                    t.equal(pitchended, undefined);
                     t.equal(d.data, 'ok');
                     t.end();
                 });
