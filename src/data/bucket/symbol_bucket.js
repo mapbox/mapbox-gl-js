@@ -11,7 +11,7 @@ const getAnchors = require('../../symbol/get_anchors');
 const resolveTokens = require('../../util/token');
 const Quads = require('../../symbol/quads');
 const Shaping = require('../../symbol/shaping');
-const resolveText = require('../../symbol/resolve_text');
+const transformText = require('../../symbol/transform_text');
 const mergeLines = require('../../symbol/mergelines');
 const clipLine = require('../../symbol/clip_line');
 const util = require('../../util/util');
@@ -21,7 +21,6 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
-const rtlTextPlugin = require('../../source/rtl_text_plugin');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
@@ -169,6 +168,7 @@ class SymbolBucket {
         const icons = options.iconDependencies;
         const stacks = options.glyphDependencies;
         const stack = stacks[textFont] = stacks[textFont] || {};
+        const globalProperties =  {zoom: this.zoom};
 
         for (let i = 0; i < features.length; i++) {
             const feature = features[i];
@@ -178,15 +178,16 @@ class SymbolBucket {
 
             let text;
             if (hasText) {
-                text = resolveText(layer, {zoom: this.zoom}, feature.properties);
-                if (rtlTextPlugin.applyArabicShaping) {
-                    text = rtlTextPlugin.applyArabicShaping(text);
+                text = layer.getLayoutValue('text-field', globalProperties, feature.properties);
+                if (layer.isLayoutValueFeatureConstant('text-field')) {
+                    text = resolveTokens(feature.properties, text);
                 }
+                text = transformText(text, layer, globalProperties, feature.properties);
             }
 
             let icon;
             if (hasIcon) {
-                icon = layer.getLayoutValue('icon-image', {zoom: this.zoom}, feature.properties);
+                icon = layer.getLayoutValue('icon-image', globalProperties, feature.properties);
                 if (layer.isLayoutValueFeatureConstant('icon-image')) {
                     icon = resolveTokens(feature.properties, icon);
                 }
