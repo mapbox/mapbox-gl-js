@@ -671,7 +671,11 @@ class SymbolBucket {
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
-            glyphQuads = glyphQuads.concat(addToBuffers ? getGlyphQuads(anchor, shapedTextOrientations[writingMode], textBoxScale, line, layer, textAlongLine) : []);
+            glyphQuads = glyphQuads.concat(addToBuffers ?
+                getGlyphQuads(anchor, shapedTextOrientations[writingMode],
+                              textBoxScale, line, layer, textAlongLine,
+                              globalProperties, featureProperties) :
+                []);
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
 
@@ -679,7 +683,11 @@ class SymbolBucket {
         const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
         if (shapedIcon) {
-            iconQuads = addToBuffers ? getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer, iconAlongLine, shapedTextOrientations[WritingMode.horizontal], globalProperties, featureProperties) : [];
+            iconQuads = addToBuffers ?
+                getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer,
+                             iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
+                             globalProperties, featureProperties) :
+                [];
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
         }
 

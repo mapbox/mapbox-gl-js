@@ -53,6 +53,8 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
  * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the icon should be placed along the line.
  * @param {Shaping} shapedText Shaping for corresponding text
+ * @param {Object} globalProperties
+ * @param {Object} featureProperties
  * @returns {Array<SymbolQuad>}
  * @private
  */
@@ -132,12 +134,14 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * @param {Array<Array<Point>>} line
  * @param {StyleLayer} layer
  * @param {boolean} alongLine Whether the label should be placed along the line.
+ * @param {Object} globalProperties
+ * @param {Object} featureProperties
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, globalProperties, featureProperties) {
 
-    const textRotate = layer.layout['text-rotate'] * Math.PI / 180;
+    const textRotate = layer.getLayoutValue('text-rotate', globalProperties, featureProperties) * Math.PI / 180;
     const keepUpright = layer.layout['text-keep-upright'];
 
     const positionedGlyphs = shaping.positionedGlyphs;
