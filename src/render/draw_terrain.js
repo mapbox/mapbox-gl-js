@@ -23,7 +23,6 @@ function drawTerrain(painter, sourceCache, layer, coords) {
 
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     for (const coord of coords) {
 
         const tile = sourceCache.getTile(coord);
@@ -75,7 +74,7 @@ class TerrainTexture {
 
         gl.uniformMatrix4fv(program.u_matrix, false, posMatrix);
         gl.uniform1i(program.u_image, 0);
-        gl.uniform1i(program.u_mode, 0); // todo: wtf?
+        gl.uniform1i(program.u_mode, 7);
         gl.uniform2fv(program.u_dimension, [256, 256]);
         gl.uniform1f(program.u_zoom, tile.coord.z);
         gl.uniform1f(program.u_azimuth, azimuth);
@@ -87,8 +86,7 @@ class TerrainTexture {
         gl.uniform4fv(program.u_accent, layer.paint["terrain-accent-color"]);
 
 
-        // TODO dont know if these are the correct buffers
-        // should I be using PosArray instead??
+
         const buffer = tile.boundsBuffer || this.painter.rasterBoundsBuffer;
         const vao = tile.boundsVAO || this.painter.rasterBoundsVAO;
         vao.bind(gl, program, buffer);
@@ -167,6 +165,5 @@ function populateLevelPixels(terrainArray, tile) {
     }
     levels.push({height: 2, width: 2, data:new Uint8Array(16)});
     levels.push({height: 1, width: 1, data:new Uint8Array(4)});
-    if (tile.uid===6) console.log(tile, levels);
     return levels;
 }

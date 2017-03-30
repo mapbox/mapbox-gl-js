@@ -59,8 +59,8 @@ void main() {
         gl_FragColor = vec4(hillshade, hillshade, hillshade, 1.0);
     } else if (u_mode == mode_color) {
         float accent = cos(slope);
-        // vec4 accent_color = clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
-        vec4 accent_color = vec4(0.0);
+        vec4 accent_color = clamp((1.0 - accent) * 2.0, 0.0, 1.0) * u_accent;
+        // vec4 accent_color = vec4(0.0);
         float shade = abs(mod((aspect + u_azimuth) / PI + 0.5, 2.0) - 1.0);
         vec4 shade_color = mix(u_shadow, u_highlight, shade) * (slope) * sin(u_zenith);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
@@ -71,7 +71,7 @@ void main() {
         vec4 shade_color = u_exaggeration * slope * sin(u_zenith) * mix(u_shadow, u_highlight, shade);
         gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
     } else {
-        gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+        gl_FragColor = vec4(1.0, 0.0, 1.0, 0.0);
     }
 
 #ifdef OVERDRAW_INSPECTOR

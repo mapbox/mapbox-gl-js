@@ -1,8 +1,6 @@
 'use strict';
-const window = require('../util/window');
 const assert = require('assert');
-const browser = require('../util/browser');
-
+// const getImageData = require('../util/browser.js').getImageData;
 
 class Level {
     constructor(width, height, border) {
@@ -103,26 +101,26 @@ class DEMPyramid {
         }
     }
 
-    loadFromImage(img) {
-        // Build level 0
-        this.levels = [ new Level(img.width, img.height, 1) ];
-        const level = this.levels[0];
-        const data = browser.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = data.data;
+    // loadFromImage(img) {
+    //     // Build level 0
+    //     this.levels = [ new Level(img.width, img.height, 1) ];
+    //     const level = this.levels[0];
+    //     const data = getImageData(0, 0, canvas.width, canvas.height);
+    //     const pixels = data.data;
 
-        // unpack
-        for (let y = 0; y < data.height; y++) {
-            for (let x = 0; x < data.width; x++) {
-                const i = y * data.width + x;
-                const j = i * 4;
-                level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
-            }
-        }
+    //     // unpack
+    //     for (let y = 0; y < data.height; y++) {
+    //         for (let x = 0; x < data.width; x++) {
+    //             const i = y * data.width + x;
+    //             const j = i * 4;
+    //             level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
+    //         }
+    //     }
 
-        this.buildLevels();
+    //     this.buildLevels();
 
-        this.loaded = true;
-    }
+    //     this.loaded = true;
+    // }
 
 }
 

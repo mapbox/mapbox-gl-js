@@ -2,6 +2,7 @@
 
 const Bucket = require('../bucket');
 const util = require('../../util/util');
+const Pbf = require('pbf');
 const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const createTerrainArrayType = require('../terrain_array_type');
@@ -57,26 +58,47 @@ class TerrainBucket extends Bucket {
                 return this.terrainTile.pyramid;
             }
         }
+        const pbf = new Pbf(this.terrainTile._pbf.buf);
+        pbf.readFields((tag)=>{
+            if (tag === 3 /* layers */) {
+                var extent = 0;
+                pbf.readMessage(function(tag) {
+                    if (tag === 5 /* extent */) {
+                        extent = pbf.readVarint();
+                    } else if (tag === 2 /* feature */) {
+                        var bytes, type;
+                        pbf.readMessage(function(tag) {
+                            if (tag == 3 /* type */) {
+                                type = pbf.readVarint();
+                            } else if (tag === 4 /* geometry */) {
+                                bytes = pbf.readBytes();
+                            }
+                        });
 
-        const pbf = this.terrainTile._pbf;
-        pbf.pos = this.terrainTile._geometry;
+                        if (type === 4) {
+                            const pbfFeat = new Pbf(bytes);
+                            // decode first level:
+                            pyramid.levels.push(new Level(256, 256, 128));
 
-        // decode first level:
-        pyramid.levels.push(new Level(256, 256, 128));
-
-        const level = pyramid.levels[0];
-        for (let y = 0; y < level.height; y++) {
-            for (let x = 0; x < level.width; x++) {
-                const value = pbf.readSVarint();
-                const valueLeft = x ? level.get(x - 1, y) : 0;
-                const valueUp = y ? level.get(x, y - 1) : 0;
-                const valueUpLeft = x && y ? level.get(x - 1, y - 1) : 0;
-                level.set(x, y, value + valueLeft + valueUp - valueUpLeft);
+                            const level = pyramid.levels[0];
+                            for (let y = 0; y < level.height; y++) {
+                                for (let x = 0; x < level.width; x++) {
+                                    const value = pbfFeat.readSVarint();
+                                    const valueLeft = x ? level.get(x - 1, y) : 0;
+                                    const valueUp = y ? level.get(x, y - 1) : 0;
+                                    const valueUpLeft = x && y ? level.get(x - 1, y - 1) : 0;
+                                    level.set(x, y, value + valueLeft + valueUp - valueUpLeft);
+                                }
+                            }
+                            pyramid.buildLevels();
+                            pyramid.decodeBleed(pbfFeat);
+                        }
+                    }
+                });
             }
-        }
+        })
 
-        pyramid.buildLevels();
-        pyramid.decodeBleed(pbf);
+
         pyramid.loaded = true;
         return pyramid;
     }
