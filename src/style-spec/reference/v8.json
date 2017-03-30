@@ -897,6 +897,7 @@
       "type": "string",
       "function": "piecewise-constant",
       "zoom-function": true,
+      "property-function": true,
       "doc": "Name of image in sprite to use for drawing an image background. A string with {tokens} replaced, referencing the data property to pull from.",
       "tokens": true,
       "sdk-support": {
@@ -906,7 +907,9 @@
           "ios": "2.0.0",
           "macos": "0.1.0"
         },
-        "data-driven styling": {}
+        "data-driven styling": {
+          "js": "0.35.0"
+        }
       }
     },
     "icon-rotate": {

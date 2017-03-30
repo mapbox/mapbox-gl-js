@@ -156,10 +156,9 @@ class SymbolBucket {
         const layer = this.layers[0];
         const layout = layer.layout;
         const textFont = layout['text-font'];
-        const iconImage = layout['icon-image'];
 
-        const hasText = textFont && (!layer.isLayoutValueFeatureConstant('text-field') || layout['text-field']);
-        const hasIcon = iconImage;
+        const hasText = (!layer.isLayoutValueFeatureConstant('text-field') || layout['text-field']) && textFont;
+        const hasIcon = (!layer.isLayoutValueFeatureConstant('icon-image') || layout['icon-image']);
 
         this.features = [];
 
@@ -187,7 +186,10 @@ class SymbolBucket {
 
             let icon;
             if (hasIcon) {
-                icon = resolveTokens(feature.properties, iconImage);
+                icon = layer.getLayoutValue('icon-image', {zoom: this.zoom}, feature.properties);
+                if (layer.isLayoutValueFeatureConstant('icon-image')) {
+                    icon = resolveTokens(feature.properties, icon);
+                }
             }
 
             if (!text && !icon) {
