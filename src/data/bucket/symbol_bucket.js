@@ -571,6 +571,15 @@ class SymbolBucket {
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
+        if (typeof quads[0] === 'function') {
+            // Deferred quad creation
+            let instantiatedQuads = [];
+            for (const deferredQuad of quads) {
+                instantiatedQuads = instantiatedQuads.concat(deferredQuad());
+            }
+            quads = instantiatedQuads;
+        }
+
         for (const symbol of quads) {
             // drop incorrectly oriented glyphs
             const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
@@ -669,16 +678,20 @@ class SymbolBucket {
         iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
         let textCollisionFeature, iconCollisionFeature;
-        let iconQuads = [];
-        let glyphQuads = [];
+        const iconQuads = [];
+        const glyphQuads = [];
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
-            glyphQuads = glyphQuads.concat(addToBuffers ?
-                getGlyphQuads(anchor, shapedTextOrientations[writingMode],
+
+            if (addToBuffers) {
+                const deferredQuadCreator = function() {
+                    return getGlyphQuads(anchor, shapedTextOrientations[writingMode],
                               textBoxScale, line, layer, textAlongLine,
-                              globalProperties, featureProperties) :
-                []);
+                              globalProperties, featureProperties);
+                };
+                glyphQuads.push(deferredQuadCreator);
+            }
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
 
@@ -686,11 +699,14 @@ class SymbolBucket {
         const textBoxEndIndex = textCollisionFeature ? textCollisionFeature.boxEndIndex : this.collisionBoxArray.length;
 
         if (shapedIcon) {
-            iconQuads = addToBuffers ?
-                getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer,
-                             iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
-                             globalProperties, featureProperties) :
-                [];
+            if (addToBuffers) {
+                const deferredQuadCreator = function() {
+                    return getIconQuads(anchor, shapedIcon, iconBoxScale, line, layer,
+                                        iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
+                                        globalProperties, featureProperties);
+                };
+                iconQuads.push(deferredQuadCreator);
+            }
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
         }
 
