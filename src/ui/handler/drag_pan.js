@@ -190,6 +190,10 @@ class DragPanHandler {
     _ignoreEvent(e) {
         const map = this._map;
 
+        // if boxZoom is disabled and then re-enabled, the drag_pan event listener for mousedown will fire before
+        // the boxZoom event listener, so map.boxZoom.isActive() will return false resulting in an erroneous
+        // drag on mousemove once the boxZoom is released, so we need this additional check.
+        if (map.boxZoom && e.shiftKey && e.button === 0) return true;
         if (map.boxZoom && map.boxZoom.isActive()) return true;
         if (map.dragRotate && map.dragRotate.isActive()) return true;
         if (e.touches) {
