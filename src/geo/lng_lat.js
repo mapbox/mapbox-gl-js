@@ -1,4 +1,5 @@
 'use strict';
+// @Flow
 
 const wrap = require('../util/util').wrap;
 
@@ -21,7 +22,9 @@ const wrap = require('../util/util').wrap;
  * @see [Create a timeline animation](https://www.mapbox.com/mapbox-gl-js/example/timeline-animation/)
  */
 class LngLat {
-    constructor(lng, lat) {
+    lng: number;
+    lat: number;
+    constructor(lng: number, lat: number) {
         if (isNaN(lng) || isNaN(lat)) {
             throw new Error(`Invalid LngLat object: (${lng}, ${lat})`);
         }
@@ -61,7 +64,7 @@ class LngLat {
      * var snapped = ll.wrapToBestWorld(mapCenter);
      * snapped; // = { lng: -190, lat: 0 }
      */
-    wrapToBestWorld(center) {
+    wrapToBestWorld(center: LngLat) {
         const wrapped = new LngLat(this.lng, this.lat);
 
         if (Math.abs(this.lng - center.lng) > 180) {
@@ -100,6 +103,9 @@ class LngLat {
     }
 }
 
+
+/*:: export type LngLatLike = typeof LngLat | {lng: number, lat: number} | [number, number]; */
+
 /**
  * Converts an array of two numbers to a `LngLat` object.
  *
@@ -112,7 +118,7 @@ class LngLat {
  * var ll = mapboxgl.LngLat.convert(arr);
  * ll;   // = LngLat {lng: -73.9749, lat: 40.7736}
  */
-LngLat.convert = function (input) {
+LngLat.convert = function (input/*: LngLatLike */) {
     if (input instanceof LngLat) {
         return input;
     } else if (input && input.hasOwnProperty('lng') && input.hasOwnProperty('lat')) {

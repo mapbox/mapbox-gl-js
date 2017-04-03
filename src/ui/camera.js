@@ -1,4 +1,5 @@
 'use strict';
+// @Flow
 
 const util = require('../util/util');
 const interpolate = require('../util/interpolate');

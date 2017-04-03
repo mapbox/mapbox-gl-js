@@ -1,4 +1,5 @@
 'use strict';
+// @Flow
 
 const util = require('../util/util');
 const browser = require('../util/browser');
@@ -17,15 +18,18 @@ const bindHandlers = require('./bind_handlers');
 
 const Camera = require('./camera');
 const LngLat = require('../geo/lng_lat');
+/*:: import type LngLatLike from '../geo/lng_lat'; */
 const LngLatBounds = require('../geo/lng_lat_bounds');
 const Point = require('point-geometry');
 const AttributionControl = require('./control/attribution_control');
 const LogoControl = require('./control/logo_control');
 const isSupported = require('mapbox-gl-supported');
 
+/*:: import type MapboxGLStyle from '../types/mapbox-gl-style'; */
+
 const defaultMinZoom = 0;
 const defaultMaxZoom = 22;
-const defaultOptions = {
+const defaultOptions/*: MapOptions */ = {
     center: [0, 0],
     zoom: 0,
     bearing: 0,
@@ -132,11 +136,41 @@ const defaultOptions = {
  * });
  * @see [Display a map](https://www.mapbox.com/mapbox-gl-js/examples/)
  */
+
+/*:: type MapOptions = {
+  hash?: boolean,
+  interactive?: boolean,
+  bearingSnap?: number,
+  classes?: Array<string>,
+  attributionControl?: boolean,
+  logoPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+  failIfMajorPerformanceCaveat?: boolean,
+  preserveDrawingBuffer?: boolean,
+  refreshExpiredTiles?: boolean,
+  maxBounds?: LngLatBoundsLike,
+  scrollZoom?: boolean,
+  boxZoom?: boolean,
+  dragRotate?: boolean,
+  dragPan?: boolean,
+  keyboard?: boolean,
+  doubleClickZoom?: boolean,
+  touchZoomRotate?: boolean,
+  trackResize?: boolean,
+  center?: LngLatLike,
+  zoom?: number,
+  bearing?: number,
+  pitch?: number,
+  renderWorldCopies?: boolean
+}; */
+
 class Map extends Camera {
 
-    constructor(options) {
-        options = util.extend({}, defaultOptions, options);
+    _classes: Array<string>;
+    _classOptions: ?{transition: boolean};
+    _interactive: ?boolean;
 
+    constructor(options/*:: MapOptions */) {
+        options = (util.extend({}, defaultOptions, options) /*: MapOptions */);
         if (options.minZoom != null && options.maxZoom != null && options.minZoom > options.maxZoom) {
             throw new Error(`maxZoom must be greater than minZoom`);
         }
@@ -276,7 +310,7 @@ class Map extends Camera {
      * @fires change
      * @returns {Map} `this`
      */
-    addClass(klass, options) {
+    addClass(klass: string, options: ?{transition: boolean}) {
         util.warnOnce('Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.');
         if (this._classes.indexOf(klass) >= 0 || klass === '') return this;
         this._classes.push(klass);
@@ -297,7 +331,7 @@ class Map extends Camera {
      * @fires change
      * @returns {Map} `this`
      */
-    removeClass(klass, options) {
+    removeClass(klass: string, options: ?{transition: boolean}) {
         util.warnOnce('Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.');
         const i = this._classes.indexOf(klass);
         if (i < 0 || klass === '') return this;
@@ -319,7 +353,7 @@ class Map extends Camera {
      * @fires change
      * @returns {Map} `this`
      */
-    setClasses(klasses, options) {
+    setClasses(klasses: Array<string>, options: ?{transition: boolean}) {
         util.warnOnce('Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.');
         const uniqueClasses = {};
         for (let i = 0; i < klasses.length; i++) {
@@ -341,7 +375,7 @@ class Map extends Camera {
      * @param {string} klass The style class to test.
      * @returns {boolean} `true` if the map has the specified style class.
      */
-    hasClass(klass) {
+    hasClass(klass: string) {
         util.warnOnce('Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.');
         return this._classes.indexOf(klass) >= 0;
     }
@@ -353,7 +387,7 @@ class Map extends Camera {
      *
      * @returns {Array<string>} The map's style classes.
      */
-    getClasses() {
+    getClasses(): Array<string> {
         util.warnOnce('Style classes are deprecated and will be removed in an upcoming release of Mapbox GL JS.');
         return this._classes;
     }
@@ -811,7 +845,7 @@ class Map extends Camera {
      * @see [Filter features within map view](https://www.mapbox.com/mapbox-gl-js/example/filter-features-within-map-view/)
      * @see [Highlight features containing similar data](https://www.mapbox.com/mapbox-gl-js/example/query-similar-features/)
      */
-    querySourceFeatures(sourceID, parameters) {
+    querySourceFeatures(sourceID: string, parameters: {sourceLayer: string, filter: any}) {
         return this.style.querySourceFeatures(sourceID, parameters);
     }
 
@@ -829,7 +863,7 @@ class Map extends Camera {
      * @returns {Map} `this`
      * @see [Change a map's style](https://www.mapbox.com/mapbox-gl-js/example/setstyle/)
      */
-    setStyle(style, options) {
+    setStyle(style /*:: string | MapboxGLStyle */, options?: {diff: boolean}) {
         const shouldTryDiff = (!options || options.diff !== false) && this.style && style &&
             !(style instanceof Style) && typeof style !== 'string';
         if (shouldTryDiff) {

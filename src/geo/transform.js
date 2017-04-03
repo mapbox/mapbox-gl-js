@@ -1,4 +1,5 @@
 'use strict';
+// @Flow
 
 const LngLat = require('./lng_lat'),
     Point = require('point-geometry'),
