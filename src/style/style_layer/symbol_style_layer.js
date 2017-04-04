@@ -1,6 +1,5 @@
 'use strict';
 
-const assert = require('assert');
 const StyleLayer = require('../style_layer');
 const SymbolBucket = require('../../data/bucket/symbol_bucket');
 
@@ -21,20 +20,6 @@ class SymbolStyleLayer extends StyleLayer {
         default:
             return value;
         }
-    }
-
-    // return a pair of {text,icon}-size zoom stops that cover the given zoom
-    // range
-    getLayoutValueCoveringZoomStops(name, lowerZoom, upperZoom) {
-        assert(!this.isLayoutValueZoomConstant(name));
-        const levels = this.getLayoutValueStopZoomLevels(name);
-        let lower = 0;
-        while (lower < levels.length && levels[lower] <= lowerZoom) lower++;
-        lower = Math.max(0, lower - 1);
-        let upper = lower;
-        while (upper < levels.length && levels[upper] < upperZoom) upper++;
-        upper = Math.min(levels.length - 1, upper);
-        return [levels[lower], levels[upper]];
     }
 
     createBucket(options) {

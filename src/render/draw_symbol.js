@@ -4,6 +4,7 @@ const util = require('../util/util');
 const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
+const interpolationFactor = require('../style-spec/function').interpolationFactor;
 
 module.exports = drawSymbols;
 
@@ -85,14 +86,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 
         const isSDF = isText || bucket.sdfIcons;
 
-        const sizeStopZoomLevels = isText ? bucket.textSizeCoveringZoomStops : bucket.iconSizeCoveringZoomStops;
-        const layoutSize = isText ? bucket.layoutTextSize : bucket.layoutIconSize;
+        const sizeData = isText ? bucket.textSizeData : bucket.iconSizeData;
 
         if (!program || bucket.fontstack !== prevFontstack) {
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeStopZoomLevels, layoutSize);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
         }
 
         painter.enableTileClippingMask(coord);
@@ -109,7 +109,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeStopZoomLevels, layoutSize) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -151,35 +151,36 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     gl.uniform1f(program.u_bearing, tr.bearing / 360 * 2 * Math.PI);
     gl.uniform1f(program.u_aspect_ratio, tr.width / tr.height);
 
-    const sizeProp = isText ? 'text-size' : 'icon-size';
+    gl.uniform1i(program.u_is_size_zoom_constant, sizeData.isZoomConstant ? 1 : 0);
+    gl.uniform1i(program.u_is_size_feature_constant, sizeData.isFeatureConstant ? 1 : 0);
 
-    const isFeatureConstant = layer.isLayoutValueFeatureConstant(sizeProp);
-    const isZoomConstant = layer.isLayoutValueZoomConstant(sizeProp);
-    gl.uniform1i(program.u_is_size_zoom_constant, isZoomConstant ? 1 : 0);
-    gl.uniform1i(program.u_is_size_feature_constant, isFeatureConstant ? 1 : 0);
-
-    if (!isZoomConstant && !isFeatureConstant) {
+    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
         // composite function
-        const lower = sizeStopZoomLevels[0];
-        const upper = sizeStopZoomLevels[1];
-        const t = (tr.zoom - lower) / (upper - lower);
+        const t = interpolationFactor(tr.zoom,
+            sizeData.functionBase,
+            sizeData.coveringZoomRange[0],
+            sizeData.coveringZoomRange[1]
+        );
         gl.uniform1f(program.u_size_t, util.clamp(t, 0, 1));
-    } else if (isFeatureConstant && !isZoomConstant) {
+    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
+        // camera function
         // Even though we could get the exact value of the camera function at
         // z = tr.zoom, we intentionally do not: instead, we interpolate between
         // the camera function values at z = tileZoom and z = tileZoom + 1
         // to be consistent with this restriction on composite functions
-        const lowerZoom = sizeStopZoomLevels[0];
-        const upperZoom = sizeStopZoomLevels[1];
-        const lowerValue = layer.getLayoutValue(sizeProp, {zoom: lowerZoom});
-        const upperValue = layer.getLayoutValue(sizeProp, {zoom: upperZoom});
-        const t = util.clamp((tr.zoom - lowerZoom) / (upperZoom - lowerZoom), 0, 1);
-        const size = lowerValue + (upperValue - lowerValue) * t;
+
+        const t = interpolationFactor(tr.zoom,
+            sizeData.functionBase,
+            sizeData.coveringZoomRange[0],
+            sizeData.coveringZoomRange[1]
+        );
+        const lowerValue = sizeData.coveringStopValues[0];
+        const upperValue = sizeData.coveringStopValues[1];
+        const size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
         gl.uniform1f(program.u_size, size);
-        gl.uniform1f(program.u_layout_size, layoutSize);
-    } else if (isFeatureConstant && isZoomConstant) {
-        const size = layer.getLayoutValue(sizeProp, {zoom: tr.zoom});
-        gl.uniform1f(program.u_size, size);
+        gl.uniform1f(program.u_layout_size, sizeData.layoutSize);
+    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
+        gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
 }
 

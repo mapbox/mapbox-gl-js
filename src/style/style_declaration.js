@@ -40,7 +40,12 @@ class StyleDeclaration {
                 type: 'number'
             });
         } else if (!this.isZoomConstant) {
-            this.stopZoomLevels = this.value.stops.map(stop => stop[0]);
+            this.stopZoomLevels = [];
+            for (const stop of this.value.stops) {
+                if (this.stopZoomLevels.indexOf(stop[0]) < 0) {
+                    this.stopZoomLevels.push(stop[0]);
+                }
+            }
         }
     }
 
