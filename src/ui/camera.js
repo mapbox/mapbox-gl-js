@@ -31,7 +31,7 @@ const Evented = require('../util/evented');
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
  *   the initial state and 1 is the final state.
- * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
+ * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
@@ -77,8 +77,7 @@ class Camera extends Evented {
      * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter(center, eventData) {
-        this.jumpTo({center: center}, eventData);
-        return this;
+        return this.jumpTo({center: center}, eventData);
     }
 
     /**
@@ -94,9 +93,7 @@ class Camera extends Evented {
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset, options, eventData) {
-        this.panTo(this.transform.center,
-            util.extend({offset: Point.convert(offset).mult(-1)}, options), eventData);
-        return this;
+        return this.panTo(this.transform.center, util.extend({offset}, options), eventData);
     }
 
     /**
@@ -512,20 +509,18 @@ class Camera extends Evented {
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-        let toLngLat, toPoint;
+        const center = LngLat.convert(options.center || tr.center);
 
-        if ('center' in options) {
-            toLngLat = LngLat.convert(options.center);
-            toPoint = tr.centerPoint.add(offset);
-        } else if ('around' in options) {
-            toLngLat = LngLat.convert(options.around);
-            toPoint = tr.locationPoint(toLngLat);
-        } else {
-            toPoint = tr.centerPoint.add(offset);
-            toLngLat = tr.pointLocation(toPoint);
+        const from = tr.point;
+        const adjustedPoint = tr.locationPoint(center).add(offset.div(tr.zoomScale(zoom - startZoom)));
+        const to = tr.project(tr.pointLocation(adjustedPoint));
+
+        let around, aroundPoint;
+
+        if (options.around) {
+            around = LngLat.convert(options.around);
+            aroundPoint = tr.locationPoint(around);
         }
-
-        const fromPoint = tr.locationPoint(toLngLat);
 
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
@@ -540,15 +535,20 @@ class Camera extends Evented {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
 
+            if (around) {
+                tr.setLocationAtPoint(around, aroundPoint);
+            } else {
+                const scale = tr.zoomScale(tr.zoom - startZoom);
+                const newCenter = tr.unproject(from.add(to.sub(from).mult(k)).mult(scale));
+                tr.center = tr.renderWorldCopies ? newCenter.wrap() : newCenter;
+            }
+
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
-
             if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
-
-            tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
 
             this._fireMoveEvents(eventData);
 
@@ -785,12 +785,11 @@ class Camera extends Evented {
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
-            const s = k * S,
-                us = u(s);
-
+            const s = k * S;
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
-            const newCenter = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
+
+            const newCenter = tr.unproject(from.add(to.sub(from).mult(u(s))).mult(scale));
             tr.center = tr.renderWorldCopies ? newCenter.wrap() : newCenter;
 
             if (this.rotating) {
