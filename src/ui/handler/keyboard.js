@@ -119,6 +119,9 @@ class KeyboardHandler {
                 e.preventDefault();
             }
             break;
+
+        default:
+            return;
         }
 
         const map = this._map;
