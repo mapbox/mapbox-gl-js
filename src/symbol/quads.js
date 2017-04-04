@@ -139,10 +139,9 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
  * @returns {Array<SymbolQuad>}
  * @private
  */
-function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, globalProperties, featureProperties) {
+function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, globalProperties, featureProperties, upsideDown) {
 
     const textRotate = layer.getLayoutValue('text-rotate', globalProperties, featureProperties) * Math.PI / 180;
-    const keepUpright = layer.layout['text-keep-upright'];
 
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
@@ -161,11 +160,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
-            if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
-            }
-
+            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, upsideDown);
         } else {
             glyphInstances = [{
                 anchorPoint: new Point(anchor.x, anchor.y),

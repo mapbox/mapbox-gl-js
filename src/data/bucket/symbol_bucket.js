@@ -548,47 +548,74 @@ class SymbolBucket {
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
-                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuads, glyphScale, layout['text-keep-upright'], textAlongLine, collisionTile.angle, symbolInstance.featureProperties, symbolInstance.writingModes);
+                    // Choose which version of the quads we want
+                    const symbolOrientation = this.getSymbolOrientation(symbolInstance.anchor.angle, collisionTile.angle, symbolInstance.writingModes, layout['text-keep-upright'], textAlongLine);
+                    this.addSymbols(this.arrays.glyph, symbolInstance.glyphQuads, symbolInstance.deferredGlyphQuads, glyphScale, symbolInstance.featureProperties, symbolOrientation);
                 }
             }
 
             if (hasIcon) {
                 collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement']);
                 if (iconScale <= maxScale) {
-                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuads, iconScale, layout['icon-keep-upright'], iconAlongLine, collisionTile.angle, symbolInstance.featureProperties);
+                    this.addSymbols(this.arrays.icon, symbolInstance.iconQuads, symbolInstance.deferredIconQuads, iconScale, symbolInstance.featureProperties, [false, false]);
                 }
             }
 
         }
 
         if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
+        //console.log("Finished placement: " + performance.now());
     }
 
-    addSymbols(arrays, quads, scale, keepUpright, alongLine, placementAngle, featureProperties, writingModes) {
+    getSymbolOrientation(anchorAngle, placementAngle, writingModes, keepUpright, alongLine) {
+        const a = (anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
+        let upsideDown = false;
+        let vertical = false;
+        if (writingModes & WritingMode.vertical) {
+            // If we support vertical writing, divide into four quadrants at 45, 135, 225, and 315 degrees
+            if (keepUpright && alongLine) {
+                if (a > Math.PI / 4 && a <= Math.PI * 3 / 4) {
+                    vertical = true;
+                    upsideDown = true;
+                } else if (a <= Math.PI / 4 || a > Math.PI * 7 / 4) {
+                    upsideDown = true;
+                }
+            }
+            // If we're not supporting upside down glyphs, only display vertical symbols when they'll be mostly upright
+            // Use the horizontal symbols for all other orientations
+            if (a > (Math.PI * 5 / 4) && a <= (Math.PI * 7 / 4)) {
+                vertical = true;
+            }
+        } else if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) {
+            upsideDown = true;
+        }
+
+        if (Math.abs(a - Math.PI / 2) < .1 || Math.abs(a - Math.PI * 3 / 2) < .1) {
+            //console.log(`a ${a}, anchorAngle ${anchorAngle}, placementAngle ${placementAngle}, upsideDown: ${upsideDown}`);
+        }
+
+        return [upsideDown, vertical];
+    }
+
+    addSymbols(arrays, quads, deferredQuads, scale, featureProperties, symbolOrientation) {
         const elementArray = arrays.elementArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
-        if (typeof quads[0] === 'function') {
-            // Deferred quad creation
-            let instantiatedQuads = [];
-            for (const deferredQuad of quads) {
-                instantiatedQuads = instantiatedQuads.concat(deferredQuad());
-            }
-            quads = instantiatedQuads;
+        if (deferredQuads[symbolOrientation]) {
+            quads[symbolOrientation] = deferredQuads[symbolOrientation]();
+            // No need to hold onto creation function once we've instantiated the quads
+            deferredQuads[symbolOrientation] = null;
         }
 
-        for (const symbol of quads) {
-            // drop incorrectly oriented glyphs
-            const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
-            if (writingModes & WritingMode.vertical) {
-                if (alongLine && symbol.writingMode === WritingMode.vertical) {
-                    if (keepUpright && alongLine && a <= (Math.PI * 5 / 4) || a > (Math.PI * 7 / 4)) continue;
-                } else if (keepUpright && alongLine && a <= (Math.PI * 3 / 4) || a > (Math.PI * 5 / 4)) continue;
-            } else if (keepUpright && alongLine && (a <= Math.PI / 2 || a > Math.PI * 3 / 2)) continue;
+        if (!quads[symbolOrientation]) {
+            // There may not have been any symbols for this orientation
+            return;
+        }
 
+        for (const symbol of quads[symbolOrientation]) {
             const tl = symbol.tl,
                 tr = symbol.tr,
                 bl = symbol.bl,
@@ -678,19 +705,24 @@ class SymbolBucket {
         iconBoxScale, iconPadding, iconAlongLine, globalProperties, featureProperties) {
 
         let textCollisionFeature, iconCollisionFeature;
-        const iconQuads = [];
-        const glyphQuads = [];
+        const iconQuads = {};
+        const glyphQuads = {};
+        const deferredIconQuads = {};
+        const deferredGlyphQuads = {};
         for (const writingModeString in shapedTextOrientations) {
             const writingMode = parseInt(writingModeString, 10);
             if (!shapedTextOrientations[writingMode]) continue;
 
             if (addToBuffers) {
-                const deferredQuadCreator = function() {
-                    return getGlyphQuads(anchor, shapedTextOrientations[writingMode],
+                const deferredQuadCreator = function(upsideDown) {
+                    return function() {
+                        return getGlyphQuads(anchor, shapedTextOrientations[writingMode],
                               textBoxScale, line, layer, textAlongLine,
-                              globalProperties, featureProperties);
+                              globalProperties, featureProperties, upsideDown);
+                    };
                 };
-                glyphQuads.push(deferredQuadCreator);
+                deferredGlyphQuads[[false, writingMode === WritingMode.vertical]] = deferredQuadCreator(false);
+                deferredGlyphQuads[[true,  writingMode === WritingMode.vertical]] = deferredQuadCreator(true);
             }
             textCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedTextOrientations[writingMode], textBoxScale, textPadding, textAlongLine, false);
         }
@@ -705,7 +737,7 @@ class SymbolBucket {
                                         iconAlongLine, shapedTextOrientations[WritingMode.horizontal],
                                         globalProperties, featureProperties);
                 };
-                iconQuads.push(deferredQuadCreator);
+                deferredIconQuads[[false, false]] = deferredQuadCreator;
             }
             iconCollisionFeature = new CollisionFeature(collisionBoxArray, line, anchor, featureIndex, sourceLayerIndex, bucketIndex, shapedIcon, iconBoxScale, iconPadding, iconAlongLine, true);
         }
@@ -727,7 +759,9 @@ class SymbolBucket {
             iconBoxStartIndex,
             iconBoxEndIndex,
             glyphQuads,
+            deferredGlyphQuads,
             iconQuads,
+            deferredIconQuads,
             anchor,
             featureIndex,
             featureProperties,
