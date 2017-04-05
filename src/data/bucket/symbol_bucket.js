@@ -843,12 +843,14 @@ function getSizeData(tileZoom, layer, sizeProperty) {
             ];
         }
 
-        // also store the exponential function's base for use in calculating
-        // the interpolation factor each frame
+        // also store the function's base for use in calculating the
+        // interpolation factor each frame
         sizeData.functionBase = layer.getLayoutProperty(sizeProperty).base;
         if (typeof sizeData.functionBase === 'undefined') {
             sizeData.functionBase = 1;
         }
+        sizeData.functionType = layer.getLayoutProperty(sizeProperty).type ||
+            'exponential';
     }
 
     return sizeData;

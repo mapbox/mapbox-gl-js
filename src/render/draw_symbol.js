@@ -1,5 +1,6 @@
 'use strict';
 
+const assert = require('assert');
 const util = require('../util/util');
 const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
@@ -164,19 +165,28 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform1f(program.u_size_t, util.clamp(t, 0, 1));
     } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
         // camera function
-        // Even though we could get the exact value of the camera function at
-        // z = tr.zoom, we intentionally do not: instead, we interpolate between
-        // the camera function values at z = tileZoom and z = tileZoom + 1
-        // to be consistent with this restriction on composite functions
+        let size;
+        if (sizeData.functionType === 'interval') {
+            size = layer.getLayoutValue(isText ? 'text-size' : 'icon-size',
+                {zoom: tr.zoom});
+        } else {
+            assert(sizeData.functionType === 'exponential');
+            // Even though we could get the exact value of the camera function
+            // at z = tr.zoom, we intentionally do not: instead, we interpolate
+            // between the camera function values at z = tileZoom and z =
+            // tileZoom + 1 to be consistent with this restriction on composite
+            // functions
+            const t = sizeData.functionType === 'interval' ? 0 :
+                interpolationFactor(tr.zoom,
+                    sizeData.functionBase,
+                    sizeData.coveringZoomRange[0],
+                    sizeData.coveringZoomRange[1]);
 
-        const t = interpolationFactor(tr.zoom,
-            sizeData.functionBase,
-            sizeData.coveringZoomRange[0],
-            sizeData.coveringZoomRange[1]
-        );
-        const lowerValue = sizeData.coveringStopValues[0];
-        const upperValue = sizeData.coveringStopValues[1];
-        const size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
+            const lowerValue = sizeData.coveringStopValues[0];
+            const upperValue = sizeData.coveringStopValues[1];
+            size = lowerValue + (upperValue - lowerValue) * util.clamp(t, 0, 1);
+        }
+
         gl.uniform1f(program.u_size, size);
         gl.uniform1f(program.u_layout_size, sizeData.layoutSize);
     } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
