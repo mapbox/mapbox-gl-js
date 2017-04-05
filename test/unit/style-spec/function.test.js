@@ -74,7 +74,7 @@ test('exponential function', (t) => {
             function: 'interpolated'
         });
 
-        t.equal(f(2), 30 / 9);
+        t.equalWithPrecision(f(2), 30 / 9, 1e-6);
 
         t.end();
     });
@@ -88,11 +88,11 @@ test('exponential function', (t) => {
             type: 'number'
         });
 
-        t.equal(f(0), 2);
-        t.equal(f(1), 2);
-        t.equal(f(2), 30 / 9);
-        t.equal(f(3), 6);
-        t.equal(f(4), 6);
+        t.equalWithPrecision(f(0), 2, 1e-6);
+        t.equalWithPrecision(f(1), 2, 1e-6);
+        t.equalWithPrecision(f(2), 30 / 9, 1e-6);
+        t.equalWithPrecision(f(3), 6, 1e-6);
+        t.equalWithPrecision(f(4), 6, 1e-6);
 
         t.end();
     });
@@ -199,15 +199,15 @@ test('exponential function', (t) => {
             type: 'number'
         });
 
-        t.equal(f(2), 100);
-        t.equal(f(20), 133.9622641509434);
-        t.equal(f(607), 400);
-        t.equal(f(680), 410.7352941176471);
-        t.equal(f(4927), 1000); //86
-        t.equal(f(7300), 14779.590419993057);
-        t.equal(f(10000), 99125.30371398819);
-        t.equal(f(20000), 3360628.527166095);
-        t.equal(f(40000), 10000000);
+        t.equalWithPrecision(f(2), 100, 1e-6);
+        t.equalWithPrecision(f(20), 133.9622641509434, 1e-6);
+        t.equalWithPrecision(f(607), 400, 1e-6);
+        t.equalWithPrecision(f(680), 410.7352941176471, 1e-6);
+        t.equalWithPrecision(f(4927), 1000, 1e-6); //86
+        t.equalWithPrecision(f(7300), 14779.590419993057, 1e-6);
+        t.equalWithPrecision(f(10000), 99125.30371398819, 1e-6);
+        t.equalWithPrecision(f(20000), 3360628.527166095, 1e-6);
+        t.equalWithPrecision(f(40000), 10000000, 1e-6);
 
         t.end();
     });
