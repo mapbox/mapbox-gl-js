@@ -173,9 +173,9 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
             assert(sizeData.functionType === 'exponential');
             // Even though we could get the exact value of the camera function
             // at z = tr.zoom, we intentionally do not: instead, we interpolate
-            // between the camera function values at z = tileZoom and z =
-            // tileZoom + 1 to be consistent with this restriction on composite
-            // functions
+            // between the camera function values at a pair of zoom stops covering
+            // [tileZoom, tileZoom + 1] in order to be consistent with this
+            // restriction on composite functions
             const t = sizeData.functionType === 'interval' ? 0 :
                 interpolationFactor(tr.zoom,
                     sizeData.functionBase,
