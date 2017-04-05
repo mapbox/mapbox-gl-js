@@ -1,6 +1,7 @@
 const float PI = 3.141592653589793;
 
 attribute vec4 a_pos_offset;
+attribute vec2 a_label_pos;
 attribute vec4 a_data;
 
 // contents of a_size vary based on the type of property value
@@ -99,8 +100,10 @@ void main() {
 
     float fontScale = u_is_text ? v_size / 24.0 : v_size;
 
-    highp float perspective_ratio = 1.0;
-    highp float camera_to_anchor_distance;
+    vec4 projectedPoint = u_matrix * vec4(a_label_pos, 0, 1);
+    highp float camera_to_anchor_distance = projectedPoint.w;
+    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);;
+
     //mediump float z = clipUnusedGlyphAngles(v_size, layoutSize, a_minzoom, a_maxzoom);
     // pitch-alignment: map
     // rotation-alignment: map | viewport
@@ -110,13 +113,9 @@ void main() {
         lowp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
         vec2 offset = RotationMatrix * a_offset;
-        vec2 extrude = fontScale * u_extrude_scale * (offset / 64.0);
-        vec4 projectedPoint = u_matrix * vec4(a_pos, 0, 1);
-        camera_to_anchor_distance = projectedPoint.w;
+        vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (offset / 64.0);
 
-        perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-        extrude *= perspective_ratio;
-        gl_Position+= u_matrix * vec4(a_pos + extrude, 0, 1);
+        gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
         gl_Position.z += clipUnusedGlyphAngles(v_size*perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
     // pitch-alignment: viewport
     // rotation-alignment: map
@@ -140,25 +139,16 @@ void main() {
 
         vec2 offset = RotationMatrix * (vec2(foreshortening, 1.0) * a_offset);
         vec2 extrude = fontScale * u_extrude_scale * (offset / 64.0);
-        gl_Position = u_matrix * vec4(a_pos, 0, 1);
-        camera_to_anchor_distance = gl_Position.w;
 
-        perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-        extrude *= perspective_ratio;
-        gl_Position += vec4(extrude, 0, 0);
+        //extrude *= perspective_ratio;
 
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
         gl_Position.z += clipUnusedGlyphAngles(v_size*perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
     // pitch-alignment: viewport
     // rotation-alignment: viewport
     } else {
-        gl_Position = u_matrix * vec4(a_pos, 0, 1);
-        camera_to_anchor_distance = gl_Position.w;
-
-        vec2 extrude = fontScale * u_extrude_scale * (a_offset / 64.0);
-        perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
-        extrude *= perspective_ratio;
-
-        gl_Position += vec4(extrude, 0, 0);
+        vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (a_offset / 64.0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
     v_gamma_scale = gl_Position.w / perspective_ratio;
