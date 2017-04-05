@@ -15,6 +15,7 @@
         "features": [
           {
             "type": "Feature",
+            "properties": {},
             "geometry": {
               "type": "Point",
               "coordinates": [ -10, 0 ]
@@ -22,6 +23,7 @@
           },
           {
             "type": "Feature",
+            "properties": {},
             "geometry": {
               "type": "Point",
               "coordinates": [ 10, 0 ]
