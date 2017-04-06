@@ -141,6 +141,25 @@ class Transform {
     }
 
     /**
+     * Return any "wrapped" copies of a given tile coordinate that are visible
+     * in the current view.
+     *
+     * @private
+     */
+    getVisibleWrappedCoordinates(tileCoord) {
+        const ul = this.pointCoordinate(new Point(0, 0), 0);
+        const ur = this.pointCoordinate(new Point(this.width, 0), 0);
+        const w0 = Math.floor(ul.column);
+        const w1 = Math.floor(ur.column);
+        const result = [tileCoord];
+        for (let w = w0; w <= w1; w++) {
+            if (w === 0) continue;
+            result.push(new TileCoord(tileCoord.z, tileCoord.x, tileCoord.y, w));
+        }
+        return result;
+    }
+
+    /**
      * Return all coordinates that could cover this transform for a covering
      * zoom level.
      * @param {Object} options
