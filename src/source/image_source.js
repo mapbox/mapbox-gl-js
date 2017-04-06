@@ -106,16 +106,28 @@ class ImageSource extends Evented {
         // may be outside the tile, because raster tiles aren't clipped when rendering.
 
         const map = this.map;
+
+        // transform the geo coordinates into (zoom 0) tile space coordinates
         const cornerZ0Coords = coordinates.map((coord) => {
             return map.transform.locationCoordinate(LngLat.convert(coord)).zoomTo(0);
         });
 
+        // Compute the coordinates of the tile we'll use to hold this image's
+        // render data
         const centerCoord = this.centerCoord = util.getCoordinatesCenter(cornerZ0Coords);
-        centerCoord.column = Math.round(centerCoord.column);
-        centerCoord.row = Math.round(centerCoord.row);
-
-        this.minzoom = this.maxzoom = centerCoord.zoom;
+        // `column` and `row` may be fractional; round them down so that they
+        // represent integer tile coordinates
+        centerCoord.column = Math.floor(centerCoord.column);
+        centerCoord.row = Math.floor(centerCoord.row);
         this.coord = new TileCoord(centerCoord.zoom, centerCoord.column, centerCoord.row);
+
+        // Constrain min/max zoom to our tile's zoom level in order to force
+        // SourceCache to request this tile (no matter what the map's zoom
+        // level)
+        this.minzoom = this.maxzoom = centerCoord.zoom;
+
+        // Transform the corner coordinates into the coordinate space of our
+        // tile.
         this._tileCoords = cornerZ0Coords.map((coord) => {
             const zoomedCoord = coord.zoomTo(centerCoord.zoom);
             return new Point(
