@@ -10,12 +10,13 @@ uniform bool u_is_halo;
 
 uniform sampler2D u_texture;
 uniform sampler2D u_fadetexture;
-uniform lowp float u_font_scale;
 uniform highp float u_gamma_scale;
+uniform bool u_is_text;
 
 varying vec2 v_tex;
 varying vec2 v_fade_tex;
 varying float v_gamma_scale;
+varying float v_size;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -24,13 +25,15 @@ void main() {
     #pragma mapbox: initialize lowp float halo_width
     #pragma mapbox: initialize lowp float halo_blur
 
+    float fontScale = u_is_text ? v_size / 24.0 : v_size;
+
     lowp vec4 color = fill_color;
-    highp float gamma = EDGE_GAMMA / u_gamma_scale;
+    highp float gamma = EDGE_GAMMA / (fontScale * u_gamma_scale);
     lowp float buff = (256.0 - 64.0) / 256.0;
     if (u_is_halo) {
         color = halo_color;
-        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / u_gamma_scale;
-        buff = (6.0 - halo_width / u_font_scale) / SDF_PX;
+        gamma = (halo_blur * 1.19 / SDF_PX + EDGE_GAMMA) / (fontScale * u_gamma_scale);
+        buff = (6.0 - halo_width / fontScale) / SDF_PX;
     }
 
     lowp float dist = texture2D(u_texture, v_tex).a;

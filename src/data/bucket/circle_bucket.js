@@ -1,15 +1,14 @@
 'use strict';
 
 const Bucket = require('../bucket');
-const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 
 const circleInterface = {
-    layoutVertexArrayType: createVertexArrayType([
+    layoutAttributes: [
         {name: 'a_pos', components: 2, type: 'Int16'}
-    ]),
+    ],
     elementArrayType: createElementArrayType(),
 
     paintAttributes: [

@@ -168,7 +168,7 @@ function evaluateIntervalFunction(parameters, propertySpec, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    const index = binarySearchForIndex(parameters.stops, input);
+    const index = findStopLessThanOrEqualTo(parameters.stops, input);
 
     return parameters.stops[index][1];
 }
@@ -183,7 +183,7 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
     if (input <= parameters.stops[0][0]) return parameters.stops[0][1];
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
-    const index = binarySearchForIndex(parameters.stops, input);
+    const index = findStopLessThanOrEqualTo(parameters.stops, input);
 
     return interpolate(
             input,
@@ -204,7 +204,12 @@ function evaluateIdentityFunction(parameters, propertySpec, input) {
     return coalesce(input, parameters.default, propertySpec.default);
 }
 
-function binarySearchForIndex(stops, input) {
+/**
+ * Returns the index of the last stop <= input, or 0 if it doesn't exist.
+ *
+ * @private
+ */
+function findStopLessThanOrEqualTo(stops, input) {
     const n = stops.length;
     let lowerIndex = 0;
     let upperIndex = n - 1;
@@ -246,17 +251,8 @@ function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpp
 }
 
 function interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    const difference = inputUpper - inputLower;
-    const progress = input - inputLower;
-
-    let ratio;
-    if (base === 1) {
-        ratio = progress / difference;
-    } else {
-        ratio = (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
-    }
-
-    return (outputLower * (1 - ratio)) + (outputUpper * ratio);
+    const ratio = interpolationFactor(input, base, inputLower, inputUpper);
+    return outputLower + ratio * (outputUpper - outputLower);
 }
 
 function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
@@ -271,5 +267,56 @@ function isFunctionDefinition(value) {
     return typeof value === 'object' && (value.stops || value.type === 'identity');
 }
 
+/**
+ * Returns a ratio that can be used to interpolate between exponential function
+ * stops.
+ *
+ * How it works:
+ * Two consecutive stop values define a (scaled and shifted) exponential
+ * function `f(x) = a * base^x + b`, where `base` is the user-specified base,
+ * and `a` and `b` are constants affording sufficient degrees of freedom to fit
+ * the function to the given stops.
+ *
+ * Here's a bit of algebra that lets us compute `f(x)` directly from the stop
+ * values without explicitly solving for `a` and `b`:
+ *
+ * First stop value: `f(x0) = y0 = a * base^x0 + b`
+ * Second stop value: `f(x1) = y1 = a * base^x1 + b`
+ * => `y1 - y0 = a(base^x1 - base^x0)`
+ * => `a = (y1 - y0)/(base^x1 - base^x0)`
+ *
+ * Desired value: `f(x) = y = a * base^x + b`
+ * => `f(x) = y0 + a * (base^x - base^x0)`
+ *
+ * From the above, we can replace the `a` in `a * (base^x - base^x0)` and do a
+ * little algebra:
+ * ```
+ * a * (base^x - base^x0) = (y1 - y0)/(base^x1 - base^x0) * (base^x - base^x0)
+ *                     = (y1 - y0) * (base^x - base^x0) / (base^x1 - base^x0)
+ * ```
+ *
+ * If we let `(base^x - base^x0) / (base^x1 base^x0)`, then we have
+ * `f(x) = y0 + (y1 - y0) * ratio`.  In other words, `ratio` may be treated as
+ * an interpolation factor between the two stops' output values.
+ *
+ * (Note: a slightly different form for `ratio`,
+ * `(base^(x-x0) - 1) / (base^(x1-x0) - 1) `, is equivalent, but requires fewer
+ * expensive `Math.pow()` operations.)
+ *
+ * @private
+*/
+function interpolationFactor(input, base, lowerValue, upperValue) {
+    const difference = upperValue - lowerValue;
+    const progress = input - lowerValue;
+
+    if (base === 1) {
+        return progress / difference;
+    } else {
+        return (Math.pow(base, progress) - 1) / (Math.pow(base, difference) - 1);
+    }
+}
+
 module.exports = createFunction;
 module.exports.isFunctionDefinition = isFunctionDefinition;
+module.exports.interpolationFactor = interpolationFactor;
+module.exports.findStopLessThanOrEqualTo = findStopLessThanOrEqualTo;
