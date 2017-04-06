@@ -327,7 +327,7 @@ class SourceCache extends Evented {
         if (!this.used) {
             visibleCoords = [];
         } else if (this._source.coord) {
-            visibleCoords = [this._source.coord];
+            visibleCoords = transform.getVisibleWrappedCoordinates(this._source.coord);
         } else {
             visibleCoords = transform.coveringTiles({
                 tileSize: this._source.tileSize,

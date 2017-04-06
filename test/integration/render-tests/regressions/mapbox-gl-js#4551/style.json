@@ -1,0 +1,35 @@
+{
+  "version": 8,
+  "metadata": {
+    "test": {
+      "skipped": {
+        "native": "https://github.com/mapbox/mapbox-gl-native/issues/1350"
+      },
+      "width": 128,
+      "height": 64
+    }
+  },
+  "center": [-180, 0],
+  "sources": {
+    "image": {
+      "type": "image",
+      "coordinates": [
+        [ -180, 45 ],
+        [ 180, 45 ],
+        [ 180, -45 ],
+        [ -180, -45 ]
+      ],
+      "url": "local://image/0.png"
+    }
+  },
+  "layers": [
+    {
+      "id": "image",
+      "type": "raster",
+      "source": "image",
+      "paint": {
+        "raster-fade-duration": 0
+      }
+    }
+  ]
+}
