@@ -21,3 +21,18 @@ const map = new mapboxgl.Map({
 });
 {% endhighlight %}{% endcopyable %}
 <div>
+
+<p>If you're using <a target="_blank" href="https://webpack.js.org/">webpack</a>, add the following <a target="_blank" href="https://webpack.js.org/configuration/resolve/#resolve-alias">resolve.alias</a> to your config file</p>
+<div class='js-replace-token'>
+{% copyable %}{% highlight javascript %}
+{
+    resolve: {
+        alias: {
+          "mapbox-gl": "./node_modules/mapbox-gl/dist/mapbox-gl.js"
+          // or "mapbox-gl":path.resolve(__dirname, "./node_modules/mapbox-gl/dist/mapbox-gl.js")
+        }
+    }
+}
+{% endhighlight %}{% endcopyable %}
+<div>
+
