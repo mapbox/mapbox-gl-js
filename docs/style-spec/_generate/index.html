@@ -617,6 +617,20 @@ navigation:
 {% endhighlight %}
         </div>
         <% } %>
+        This URL template should include two tokens:
+        <ul>
+            <li><code>{fontstack}</code>
+                When requesting glyphs, this token is replaced with a comma separated list of fonts from a font
+                stack specified in the <a href="#layout-symbol-text-font"><code>text-font</code></a> property of
+                a symbol layer.
+            </li>
+            <li><code>{range}</code>
+                When requesting glyphs, this token is replaced with a range of 256 Unicode code points. For example,
+                to load glyphs for the <a href="https://en.wikipedia.org/wiki/Unicode_block">Unicode Basic Latin and
+                    Basic Latin-1 Supplement blocks</a>, the range would be <code>0-255</code>. The actual ranges that
+                are loaded are determined at runtime based on what text needs to be displayed.
+            </li>
+        </ul>
       </p>
     </div>
 
