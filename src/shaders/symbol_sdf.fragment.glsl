@@ -17,6 +17,7 @@ varying vec2 v_tex;
 varying vec2 v_fade_tex;
 varying float v_gamma_scale;
 varying float v_size;
+varying float v_hidden_glyphs;
 
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
@@ -41,7 +42,7 @@ void main() {
     highp float gamma_scaled = gamma * v_gamma_scale;
     highp float alpha = smoothstep(buff - gamma_scaled, buff + gamma_scaled, dist) * fade_alpha;
 
-    gl_FragColor = color * (alpha * opacity);
+    gl_FragColor = color * (alpha * opacity * (1.0 - v_hidden_glyphs));
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
