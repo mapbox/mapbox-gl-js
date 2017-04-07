@@ -59,7 +59,6 @@ class VectorTileSource extends Evented {
     }
 
     hasTile(coord) {
-        console.log('has tile');
         return !this.tileBounds || this.tileBounds.contains(coord);
     }
 
