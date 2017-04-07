@@ -10,7 +10,7 @@ module.exports = function(options, callback) {
             return callback(err);
         }
 
-        const result = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo']);
+        const result = util.pick(tileJSON, ['tiles', 'minzoom', 'maxzoom', 'attribution', 'mapbox_logo', 'bounds']);
 
         if (tileJSON.vector_layers) {
             result.vectorLayers = tileJSON.vector_layers;

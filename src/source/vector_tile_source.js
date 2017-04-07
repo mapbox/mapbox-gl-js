@@ -4,6 +4,7 @@ const Evented = require('../util/evented');
 const util = require('../util/util');
 const loadTileJSON = require('./load_tilejson');
 const normalizeURL = require('../util/mapbox').normalizeTileURL;
+const TileBounds = require('./tile_bounds');
 
 class VectorTileSource extends Evented {
 
@@ -39,6 +40,8 @@ class VectorTileSource extends Evented {
                 return;
             }
             util.extend(this, tileJSON);
+            this.setBounds(tileJSON.bounds);
+
              // `content` is included here to prevent a race condition where `Style#_updateSources` is called
             // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
             // ref: https://github.com/mapbox/mapbox-gl-js/pull/4347#discussion_r104418088
@@ -46,6 +49,18 @@ class VectorTileSource extends Evented {
             this.fire('data', {dataType: 'source', sourceDataType: 'content'});
 
         });
+    }
+
+    setBounds(bounds) {
+        this.bounds = bounds;
+        if (bounds) {
+            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
+        }
+    }
+
+    hasTile(coord) {
+        console.log('has tile');
+        return !this.tileBounds || this.tileBounds.contains(coord);
     }
 
     onAdd(map) {
