@@ -549,7 +549,9 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(around, aroundPoint);
             } else {
                 const scale = tr.zoomScale(tr.zoom - startZoom);
-                const k2 = k * Math.pow(2, 1 - k);
+                const k2 = k * (
+                    zoom > startZoom ? Math.pow(2, 1 - k) :
+                    zoom < startZoom ? Math.pow(2, k) : 1);
                 const newCenter = tr.unproject(from.add(to.sub(from).mult(k2)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, screenPoint);
             }
