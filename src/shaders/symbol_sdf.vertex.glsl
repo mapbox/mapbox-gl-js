@@ -60,6 +60,39 @@ float clipUnusedGlyphAngles(const float renderSize, const float layoutSize, cons
     return 2.0 - step(minZoom, adjustedZoom) - (1.0 - step(maxZoom, adjustedZoom));
 }
 
+float interpolateNextGlyphAngle(const float renderSize,
+                                const float layoutSize,
+                                const float minZoom,
+                                const float maxZoom,
+                                const float currentAngle,
+                                const float nextAngle,
+                                const bool hasNextGlyph) {
+
+    if (!hasNextGlyph) {
+        return currentAngle;
+    }
+    // We start showing the glyph on the "next" segment (which may be left or right of us)
+    // when we hit minZoom.
+    // Find the zoom that gives us a position X units less than the position we'd have at minZoom
+    // Interpolate between that zoom and minZoom
+    float zoomAdjust = log2(renderSize / layoutSize);
+    float adjustedZoom = (u_zoom - zoomAdjust) * 10.0;
+    float startInterpolationZoom = minZoom + (maxZoom - minZoom) * 0.2;
+    if (step(startInterpolationZoom, adjustedZoom) == 1.0) {
+        return currentAngle;
+    } else {
+        if (abs(nextAngle - currentAngle) > PI) {
+            if (nextAngle > currentAngle) {
+                return mod(mix(nextAngle, currentAngle + 2.0 * PI, (adjustedZoom - minZoom) / (startInterpolationZoom - minZoom)), 2.0 * PI);
+            } else {
+                return mod(mix(nextAngle + 2.0 * PI, currentAngle, (adjustedZoom - minZoom) / (startInterpolationZoom - minZoom)), 2.0 * PI);
+            }
+        } else {
+            return mix(nextAngle, currentAngle, (adjustedZoom - minZoom) / (startInterpolationZoom - minZoom));
+        }
+    }
+}
+
 void main() {
     #pragma mapbox: initialize highp vec4 fill_color
     #pragma mapbox: initialize highp vec4 halo_color
@@ -83,6 +116,8 @@ void main() {
     mediump float a_minzoom = a_zoom[0];
     mediump float a_maxzoom = a_zoom[1];
     mediump float a_anchorangle = a_more_data[0] / 10000.0 * 2.0 * PI;
+    bool a_has_next_glyph = a_more_data[2] <= 10000.0;
+    mediump float a_next_glyph_angle = a_more_data[2] / 10000.0 * 2.0 * PI;
 
     // In order to accommodate placing labels around corners in
     // symbol-placement: line, each glyph in a label could have multiple
@@ -111,7 +146,7 @@ void main() {
 
     vec4 projectedPoint = u_matrix * vec4(a_label_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
-    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);;
+    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
     v_hidden_glyphs = 0.0;
 
@@ -142,11 +177,30 @@ void main() {
     // pitch-alignment: viewport
     // rotation-alignment: map
     } else if (u_rotate_with_map) {
-        // use the lineangle to position points a,b along the line
-        // project the points and calculate the label angle in projected space
-        // this calculation allows labels to be rendered unskewed on pitched maps
+        // Calculate how vertical the label is in projected space, space out letters according to the angle of
+        //  incidence at the point of the label anchor
         vec4 a = u_matrix * vec4(a_pos, 0, 1);
-        vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_lineangle),sin(a_lineangle)), 0, 1);
+        vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_anchorangle),sin(a_anchorangle)), 0, 1);
+        highp float projected_label_angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
+        legibility_expansion += abs(sin(projected_label_angle)) * (incidence_stretch - 1.0);
+
+        // Place the center of the glyph in tile space
+        lowp float asin = sin(a_lineangle);
+        lowp float acos = cos(a_lineangle);
+        mat2 TileRotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
+        vec2 glyph_center_offset = TileRotationMatrix * a_glyph_offset;
+        vec2 glyph_center_extrude = fontScale * u_pitched_extrude_scale * perspective_ratio * legibility_expansion * (glyph_center_offset / 64.0) ;
+
+        // Rotate and extrude the corners of the glyph in projected space
+        highp float next_angle = interpolateNextGlyphAngle(v_size*perspective_ratio*legibility_expansion,
+                                                           layoutSize,
+                                                           a_minzoom,
+                                                           a_maxzoom,
+                                                           a_lineangle,
+                                                           a_next_glyph_angle,
+                                                           a_has_next_glyph);
+        a = u_matrix * vec4(a_pos, 0, 1);
+        b = u_matrix * vec4(a_pos + vec2(cos(next_angle),sin(next_angle)), 0, 1);
         highp float projected_line_angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
         highp float sin_projected_angle = sin(projected_line_angle);
         highp float cos_projected_angle = cos(projected_line_angle);
@@ -154,19 +208,6 @@ void main() {
                                             -1.0 * sin_projected_angle,
                                             sin_projected_angle,
                                             cos_projected_angle);
-
-
-        a = u_matrix * vec4(a_pos, 0, 1);
-        b = u_matrix * vec4(a_pos + vec2(cos(a_anchorangle),sin(a_anchorangle)), 0, 1);
-        highp float projected_label_angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
-        //highp float pitchfactor = 1.0 - cos(u_pitch * sin(u_pitch * 0.75));
-        legibility_expansion += abs(sin(projected_label_angle)) * (incidence_stretch - 1.0);
-
-        lowp float asin = sin(a_lineangle);
-        lowp float acos = cos(a_lineangle);
-        mat2 TileRotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
-        vec2 glyph_center_offset = TileRotationMatrix * a_glyph_offset;
-        vec2 glyph_center_extrude = fontScale * u_pitched_extrude_scale * perspective_ratio * legibility_expansion * (glyph_center_offset / 64.0) ;
 
         vec2 glyph_vertex_offset = ProjectedRotationMatrix * a_offset;
         vec2 glyph_vertex_extrude = fontScale * u_unpitched_extrude_scale * perspective_ratio * (glyph_vertex_offset / 64.0);

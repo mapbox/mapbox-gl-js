@@ -29,7 +29,7 @@ const minScale = 0.5; // underscale by 1 zoom level
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode, center) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode, center, nextGlyphAngle) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
@@ -42,6 +42,7 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
     this.maxScale = maxScale;
     this.writingMode = writingMode;
     this.center = center;
+    this.nextGlyphAngle = nextGlyphAngle;
 }
 
 /**
@@ -223,7 +224,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             //  which is used at placement time to determine which set to show
             const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode, glyphCenter));
+            const nextGlyphAngle = (instance.nextAngle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode, glyphCenter, nextGlyphAngle));
         }
     }
 
@@ -281,8 +283,14 @@ function getLineGlyphs(glyphs, anchor, glyphHorizontalOffsetFromAnchor, line, an
     };
 
     while (true) {
+        const nextVirtualSegment = getNextVirtualSegment(virtualSegment,
+                                                         line,
+                                                         glyphDistanceFromAnchor,
+                                                         glyphIsLogicallyForward);
+
         insertSegmentGlyph(glyphs,
                            virtualSegment,
+                           nextVirtualSegment,
                            glyphIsLogicallyForward,
                            upsideDown);
 
@@ -291,10 +299,6 @@ function getLineGlyphs(glyphs, anchor, glyphHorizontalOffsetFromAnchor, line, an
             return anchor.scale;
         }
 
-        const nextVirtualSegment = getNextVirtualSegment(virtualSegment,
-                                                         line,
-                                                         glyphDistanceFromAnchor,
-                                                         glyphIsLogicallyForward);
         if (!nextVirtualSegment) {
             // There are no more segments, so we can't fit this glyph on the line at a lower scale
             // This implies we can't show the label at all at lower scale, so we update the anchor's min scale
@@ -312,10 +316,17 @@ function getLineGlyphs(glyphs, anchor, glyphHorizontalOffsetFromAnchor, line, an
  * @param {boolean} upsideDown
  * @private
  */
-function insertSegmentGlyph(glyphs, virtualSegment, glyphIsLogicallyForward, upsideDown) {
+function insertSegmentGlyph(glyphs, virtualSegment, nextVirtualSegment, glyphIsLogicallyForward, upsideDown) {
     const segmentAngle = Math.atan2(virtualSegment.end.y - virtualSegment.anchor.y, virtualSegment.end.x - virtualSegment.anchor.x);
     // If !glyphIsLogicallyForward, we're iterating through the segments in reverse logical order as well, so we need to flip the segment angle
     const glyphAngle = glyphIsLogicallyForward ? segmentAngle : segmentAngle + Math.PI;
+    let nextGlyphAngle;
+    if (nextVirtualSegment) {
+        const nextSegmentAngle = Math.atan2(nextVirtualSegment.end.y - nextVirtualSegment.anchor.y, nextVirtualSegment.end.x - nextVirtualSegment.anchor.x);
+        // If !glyphIsLogicallyForward, we're iterating through the segments in reverse logical order as well, so we need to flip the segment angle
+        nextGlyphAngle = glyphIsLogicallyForward ? nextSegmentAngle : nextSegmentAngle + Math.PI;
+        nextGlyphAngle = (nextGlyphAngle + 2.0 * Math.PI) % (2.0 * Math.PI);
+    }
 
     // Insert a glyph rotated at this angle for display in the range from [scale, previous(larger) scale].
     glyphs.push({
@@ -323,7 +334,8 @@ function insertSegmentGlyph(glyphs, virtualSegment, glyphIsLogicallyForward, ups
         upsideDown: upsideDown,
         minScale: virtualSegment.minScale,
         maxScale: virtualSegment.maxScale,
-        angle: (glyphAngle + 2.0 * Math.PI) % (2.0 * Math.PI)});
+        angle: (glyphAngle + 2.0 * Math.PI) % (2.0 * Math.PI),
+        nextAngle: nextGlyphAngle});
 }
 
 /**

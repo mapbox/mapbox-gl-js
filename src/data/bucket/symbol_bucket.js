@@ -70,7 +70,7 @@ const symbolInterfaces = {
     }
 };
 
-function addVertex(array, x, y, ox, oy, labelX, labelY, glyphOffsetX, glyphOffsetY, tx, ty, sizeVertex, minzoom, maxzoom, labelminzoom, labelangle, anchorAngle) {
+function addVertex(array, x, y, ox, oy, labelX, labelY, glyphOffsetX, glyphOffsetY, tx, ty, sizeVertex, minzoom, maxzoom, labelminzoom, labelangle, anchorAngle, nextGlyphAngle) {
     array.emplaceBack(
         // a_pos_offset
         x,
@@ -87,7 +87,7 @@ function addVertex(array, x, y, ox, oy, labelX, labelY, glyphOffsetX, glyphOffse
         // a_more_data
         anchorAngle,
         labelangle,
-        0,
+        nextGlyphAngle,
         0,
 
         // a_data
@@ -691,6 +691,7 @@ class SymbolBucket {
             // Encode angle of glyph
             const glyphAngle = Math.round((symbol.glyphAngle / (Math.PI * 2)) * 10000);
             const anchorAngle = Math.round((symbol.anchorAngle / (Math.PI * 2)) * 10000);
+            const nextGlyphAngle = symbol.nextGlyphAngle ? Math.round((symbol.nextGlyphAngle / (Math.PI * 2)) * 10000) : 10001;
 
             const segment = arrays.prepareSegment(4);
             const index = segment.vertexLength;
@@ -701,10 +702,10 @@ class SymbolBucket {
             bl = bl.sub(glyphCenter);
             br = br.sub(glyphCenter);
 
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle);
-            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tl.x, tl.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle, nextGlyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, tr.x, tr.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x + tex.w, tex.y, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle, nextGlyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, bl.x, bl.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle, nextGlyphAngle);
+            addVertex(layoutVertexArray, anchorPoint.x, anchorPoint.y, br.x, br.y, labelAnchor.x, labelAnchor.y, glyphCenter.x, glyphCenter.y, tex.x + tex.w, tex.y + tex.h, sizeVertex, minZoom, maxZoom, placementZoom, glyphAngle, anchorAngle, nextGlyphAngle);
 
             elementArray.emplaceBack(index, index + 1, index + 2);
             elementArray.emplaceBack(index + 1, index + 2, index + 3);
