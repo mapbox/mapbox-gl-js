@@ -93,6 +93,7 @@ class Camera extends Evented {
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset, options, eventData) {
+        offset = Point.convert(offset).mult(-1);
         return this.panTo(this.transform.center, util.extend({offset}, options), eventData);
     }
 
@@ -511,9 +512,12 @@ class Camera extends Evented {
 
         const center = LngLat.convert(options.center || tr.center);
 
-        const from = tr.point;
-        const adjustedPoint = tr.locationPoint(center).add(offset.div(tr.zoomScale(zoom - startZoom)));
-        const to = tr.project(tr.pointLocation(adjustedPoint));
+        const screenPoint = tr.centerPoint.add(offset);
+
+        const from = tr.project(tr.pointLocation(screenPoint));
+        const to = tr.project(center);
+        const delta = to.sub(from);
+        const finalScale = tr.zoomScale(zoom - startZoom);
 
         let around, aroundPoint;
 
@@ -534,20 +538,20 @@ class Camera extends Evented {
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
             }
-
-            if (around) {
-                tr.setLocationAtPoint(around, aroundPoint);
-            } else {
-                const scale = tr.zoomScale(tr.zoom - startZoom);
-                const newCenter = tr.unproject(from.add(to.sub(from).mult(k)).mult(scale));
-                tr.center = tr.renderWorldCopies ? newCenter.wrap() : newCenter;
-            }
-
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
+            }
+
+            if (around) {
+                tr.setLocationAtPoint(around, aroundPoint);
+            } else {
+                const scale = tr.zoomScale(tr.zoom - startZoom);
+                const k2 = k * Math.pow(2, 1 - k);
+                const newCenter = tr.unproject(from.add(to.sub(from).mult(k2)).mult(scale));
+                tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, screenPoint);
             }
 
             this._fireMoveEvents(eventData);
