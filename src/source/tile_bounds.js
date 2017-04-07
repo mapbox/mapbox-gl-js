@@ -11,11 +11,13 @@ class TileBounds {
     }
 
     contains(coord) {
-        const level = [
-        [Math.floor(this.lngX(this.bounds.getWest(), coord.z)), Math.floor(this.latY(this.bounds.getNorth(), coord.z))],
-        [Math.ceil(this.lngX(this.bounds.getEast(), coord.z)), Math.ceil(this.latY(this.bounds.getSouth(), coord.z))]
-        ];
-        const hit = coord.x >= level[0][0] && coord.x < level[1][0] && coord.y >= level[0][1] && coord.y < level[1][1];
+        const level = {
+            minX: Math.floor(this.lngX(this.bounds.getWest(), coord.z)),
+            minY: Math.floor(this.latY(this.bounds.getNorth(), coord.z)),
+            maxX: Math.ceil(this.lngX(this.bounds.getEast(), coord.z)),
+            maxY: Math.ceil(this.latY(this.bounds.getSouth(), coord.z))
+        };
+        const hit = coord.x >= level.minX && coord.x < level.maxX && coord.y >= level.minY && coord.y < level.maxY;
         return hit;
     }
 
