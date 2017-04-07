@@ -178,5 +178,18 @@ test('VectorTileSource', (t) => {
         });
     });
 
+    t.test('respects TileJSON.bounds', (t)=>{
+        const source = createSource({
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+        });
+        source.setBounds([[-47, -7], [-45, -5]]);
+        t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
+        t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
+        t.end();
+    });
+
     t.end();
 });

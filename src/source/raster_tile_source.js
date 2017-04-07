@@ -26,15 +26,14 @@ class RasterTileSource extends Evented {
         util.extend(this, util.pick(options, ['url', 'scheme', 'tileSize']));
     }
 
-        this.setBounds(options.bounds);
-
-        this.setEventedParent(eventedParent);
+    load() {
         this.fire('dataloading', {dataType: 'source'});
         loadTileJSON(this.options, (err, tileJSON) => {
             if (err) {
                 return this.fire('error', err);
             }
             util.extend(this, tileJSON);
+            this.setBounds(tileJSON.bounds);
 
             // `content` is included here to prevent a race condition where `Style#_updateSources` is called
             // before the TileJSON arrives. this makes sure the tiles needed are loaded once TileJSON arrives
@@ -51,10 +50,10 @@ class RasterTileSource extends Evented {
     }
 
     setBounds(bounds) {
-      this.bounds = bounds;
-      if (bounds) {
-        this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
-      }
+        this.bounds = bounds;
+        if (bounds) {
+            this.tileBounds = new TileBounds(bounds, this.minzoom, this.maxzoom);
+        }
     }
 
     serialize() {
