@@ -103,7 +103,7 @@ const defaultOptions = {
  *   in an HTML element's `class` attribute. To learn more about Mapbox style classes, read about
  *   [Layers](https://www.mapbox.com/mapbox-gl-style-spec/#layers) in the style specification.
  * @param {boolean} [options.attributionControl=true] If `true`, an [AttributionControl](#AttributionControl) will be added to the map.
- * @param {boolean} [options.logoPosition='bottom-left'] Position of the Mapbox wordmark on the map. Valid options are ['top-left','top-right', 'bottom-left', 'bottom-right'].
+ * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the Mapbox wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of Mapbox
  *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
@@ -1028,11 +1028,12 @@ class Map extends Camera {
     }
 
     /**
-     * Removes a layer from the map's style.
+     * Removes the layer with the given id from the map's style.
      *
-     * @param {string} id The ID of the layer to remove.
-     * @throws {Error} if no layer with the specified `id` exists.
-     * @returns {Map} `this`
+     * If no such layer exists, an `error` event is fired.
+     *
+     * @param {string} id id of the layer to remove
+     * @fires error
      */
     removeLayer(id) {
         this.style.removeLayer(id);
@@ -1584,7 +1585,7 @@ function removeNode(node) {
  *     return this._container;
  * };
  *
- * HelloWorldControl.prototype.onRemove() {
+ * HelloWorldControl.prototype.onRemove = function () {
  *      this._container.parentNode.removeChild(this._container);
  *      this._map = undefined;
  * };

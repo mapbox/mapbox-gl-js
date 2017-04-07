@@ -63,3 +63,6 @@ Development Tools:
   mapbox-gl-js-mock:
     website: https://github.com/mapbox/mapbox-gl-js-mock
     description: is a [mock](https://en.wikipedia.org/wiki/Mock_object) of Mapbox GL JS
+  mapbox-gl-inspect:
+    website: https://github.com/lukasmartinelli/mapbox-gl-inspect
+    description: adds an inspect control to view vector source features and properties

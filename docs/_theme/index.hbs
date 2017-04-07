@@ -17,7 +17,7 @@ category: api
           <% docs.forEach(function(doc) { %>
             <% var hasMembers = doc.members.static.length || doc.members.instance.length %>
             <li class="<% if (doc.kind === 'note') { %>space-top1<% } %>"><a
-              href='#<%=doc.namespace%>'
+              href='#<%= doc.namespace.toLowerCase() %>'
               class="<% if (doc.kind === 'note') { %>dark-link<% } %><% if (hasMembers) { %> toggle-sibling rcon caret-right tight-icon<% } %>">
               <%- doc.name %>
             </a>
@@ -28,7 +28,7 @@ category: api
                 <li class='block small quiet truncate'>Static members</li>
                 <% doc.members.static.forEach(function(member) { %>
                   <li><a
-                    href='#<%=member.namespace%>'
+                    href='#<%= member.namespace.toLowerCase() %>'
                     class='block small truncate pre-open'>
                     .<%- member.name %>
                   </a></li>
@@ -40,7 +40,7 @@ category: api
                   <li class='block small quiet truncate'>Instance members</li>
                   <% doc.members.instance.forEach(function(member) { %>
                   <li><a
-                    href='#<%=member.namespace%>'
+                    href='#<%= member.namespace.toLowerCase() %>'
                     class='block small truncate pre-open'>
                     #<%- member.name %>
                   </a></li>
@@ -52,7 +52,7 @@ category: api
                   <li class='block small truncate quiet'>Events</li>
                   <% doc.members.events.forEach(function(member) { %>
                     <li><a
-                      href='#<%=member.namespace%>'
+                      href='#<%= member.namespace.toLowerCase() %>'
                       class='block small truncate pre-open'>
                       ⓔ <%- member.name %>
                     </a></li>
