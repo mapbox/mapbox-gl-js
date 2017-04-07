@@ -24,6 +24,9 @@ function MockSourceType(id, sourceOptions, _dispatcher, eventedParent) {
             this.maxzoom = 22;
             util.extend(this, sourceOptions);
             this.setEventedParent(eventedParent);
+            if (sourceOptions.hasTile) {
+                this.hasTile = sourceOptions.hasTile;
+            }
         }
         loadTile(tile, callback) {
             if (sourceOptions.expires) {
@@ -377,6 +380,27 @@ test('SourceCache#update', (t) => {
             if (e.sourceDataType === 'metadata') {
                 sourceCache.update(transform);
                 t.deepEqual(sourceCache.getIds(), [new TileCoord(0, 0, 0).id]);
+                t.end();
+            }
+        });
+        sourceCache.onAdd();
+    });
+
+    t.test('respects Source#hasTile method if it is present', (t) => {
+        const transform = new Transform();
+        transform.resize(511, 511);
+        transform.zoom = 1;
+
+        const sourceCache = createSourceCache({
+            hasTile: (coord) => (coord.x !== 0)
+        });
+        sourceCache.on('data', (e) => {
+            if (e.sourceDataType === 'metadata') {
+                sourceCache.update(transform);
+                t.deepEqual(sourceCache.getIds().sort(), [
+                    new TileCoord(1, 1, 0).id,
+                    new TileCoord(1, 1, 1).id
+                ].sort());
                 t.end();
             }
         });
