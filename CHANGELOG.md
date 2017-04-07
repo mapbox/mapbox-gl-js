@@ -1,3 +1,32 @@
+## 0.35.0 (April 7, 2017)
+
+#### New features :rocket:
+- Use anisotropic filtering to improve rendering of raster tiles on pitched maps #1064
+- Add `pitchstart` and `pitchend` events #2449
+- Add an optional `layers` parameter to `Map#on` #1002
+- Add data-driven styling support for `text-offset` #4495
+- Add data-driven styling support for `text-rotate` #3516
+- Add data-driven styling support for `icon-image` #4304
+- Add data-driven styling support for `{text,icon}-size` #4455
+
+#### Bug fixes :bug:
+- Suppress error messages in JS console due to missing tiles #1800
+- Fix bug wherein `GeoJSONSource#setData()` could cause unnecessary DOM updates #4447
+- Fix bug wherein `Map#flyTo` did not respect the `renderWorldCopies` setting #4449
+- Fix regression in browserify support # 4453
+- Fix bug causing poor touch event behavior on mobile devices #4259
+- Fix bug wherein duplicate stops in property functions could cause an infinite loop #4498
+- Respect image height/width in `addImage` api #4531
+- Fix bug preventing correct behavior of `shift+zoom` #3334
+- Fix bug preventing image source from rendering when coordinate area is too large #4550
+- Show image source on horizontally wrapped worlds #4555
+- Fix bug in the handling of `refreshedExpiredTiles` option #4549
+- Support the TileJSON `bounds` property #1775
+
+#### Development workflow improvements :computer:
+- Upgrade flow to 0.42.0 (#4500)
+
+
 ## 0.34.0 (March 17, 2017)
 
 #### New features :rocket:
