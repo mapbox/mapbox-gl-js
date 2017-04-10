@@ -19,7 +19,7 @@ var map = new mapboxgl.Map({
 
 map.on('load', function() {
     // Add a new source from our GeoJSON data and set the
-    // 'cluster' option to true. GL-JS will add the point_count property to your source data. 
+    // 'cluster' option to true. GL-JS will add the point_count property to your source data.
     map.addSource("earthquakes", {
         type: "geojson",
         // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
@@ -36,22 +36,22 @@ map.on('load', function() {
         source: 'earthquakes',
         filter: ['has', 'point_count'],
         paint: {
-          'circle-color': {
-            property: 'point_count',
-            stops: [
-                [0, '#f5ad6f'], 
+            'circle-color': {
+                property: 'point_count',
+                stops: [
+                [0, '#f5ad6f'],
                 [1000, '#f86767']
-            ]
-          },
-          'circle-radius': {
-            property: 'point_count',
-            stops: [
-                [0, 20], 
+                ]
+            },
+            'circle-radius': {
+                property: 'point_count',
+                stops: [
+                [0, 20],
                 [1000, 40]
-            ]
-          },
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#fff'
+                ]
+            },
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#fff'
         }
     });
 
@@ -61,12 +61,12 @@ map.on('load', function() {
         source: 'earthquakes',
         filter: ['has', 'point_count'],
         layout: {
-          'text-field': '{point_count_abbreviated}',
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': 12
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 12
         },
         paint: {
-          'text-color': '#fff'
+            'text-color': '#fff'
         }
     });
 
@@ -76,10 +76,10 @@ map.on('load', function() {
         source: 'earthquakes',
         filter: ['!has', 'point_count'],
         paint: {
-          'circle-color': '#11b4da',
-          'circle-radius': 6,
-          'circle-stroke-width': 3,
-          'circle-stroke-color': '#fff'
+            'circle-color': '#11b4da',
+            'circle-radius': 6,
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#fff'
         }
     });
 });
