@@ -551,7 +551,7 @@ class Camera extends Evented {
                 const scale = tr.zoomScale(tr.zoom - startZoom);
                 const k2 = k * (
                     zoom > startZoom ? Math.pow(2, 1 - k) :
-                    zoom < startZoom ? Math.pow(2, k) : 1);
+                    zoom < startZoom ? Math.pow(2, k - 1) : 1);
                 const newCenter = tr.unproject(from.add(to.sub(from).mult(k2)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, screenPoint);
             }
