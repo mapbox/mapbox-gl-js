@@ -337,7 +337,7 @@ class SourceCache extends Evented {
                 reparseOverscaled: this._source.reparseOverscaled
             });
 
-            if (this._source.hasTile) {
+            if (this._source.hasTile && zoom <= this._source.maxzoom) {
                 visibleCoords = visibleCoords.filter((coord) => this._source.hasTile(coord));
             }
         }
