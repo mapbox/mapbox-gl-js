@@ -35,6 +35,7 @@ map.on('load', function() {
         type: "circle",
         source: "earthquakes",
         filter: ["has", "point_count"],
+        colorSpace: "lab",
         paint: {
             "circle-color": {
                 property: "point_count",
@@ -63,7 +64,7 @@ map.on('load', function() {
         filter: ["has", "point_count"],
         layout: {
             "text-field": "{point_count_abbreviated}",
-            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
             "text-size": 12
         }
     });
