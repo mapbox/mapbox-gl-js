@@ -10,12 +10,16 @@ class TileBounds {
         this.maxzoom = maxzoom || 24;
     }
 
-    contains(coord) {
+    contains(coord, maxzoom) {
+        // TileCoord returns incorrect z for overscaled tiles, so we use this
+        // to make sure overzoomed tiles still get displayed.
+        const tileZ = maxzoom ? Math.min(coord.z, maxzoom) : coord.z;
+
         const level = {
-            minX: Math.floor(this.lngX(this.bounds.getWest(), coord.z)),
-            minY: Math.floor(this.latY(this.bounds.getNorth(), coord.z)),
-            maxX: Math.ceil(this.lngX(this.bounds.getEast(), coord.z)),
-            maxY: Math.ceil(this.latY(this.bounds.getSouth(), coord.z))
+            minX: Math.floor(this.lngX(this.bounds.getWest(), tileZ)),
+            minY: Math.floor(this.latY(this.bounds.getNorth(), tileZ)),
+            maxX: Math.ceil(this.lngX(this.bounds.getEast(), tileZ)),
+            maxY: Math.ceil(this.latY(this.bounds.getSouth(), tileZ))
         };
         const hit = coord.x >= level.minX && coord.x < level.maxX && coord.y >= level.minY && coord.y < level.maxY;
         return hit;
