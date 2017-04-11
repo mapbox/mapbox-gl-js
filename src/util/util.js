@@ -237,8 +237,9 @@ exports.getCoordinatesCenter = function(coords: Array<Coordinate>): Coordinate {
     const dx = maxX - minX;
     const dy = maxY - minY;
     const dMax = Math.max(dx, dy);
+    const zoom = Math.max(0, Math.floor(-Math.log(dMax) / Math.LN2));
     return new Coordinate((minX + maxX) / 2, (minY + maxY) / 2, 0)
-        .zoomTo(Math.floor(-Math.log(dMax) / Math.LN2));
+        .zoomTo(zoom);
 };
 
 /**
