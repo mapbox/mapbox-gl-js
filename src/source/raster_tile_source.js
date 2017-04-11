@@ -68,7 +68,7 @@ class RasterTileSource extends Evented {
     }
 
     hasTile(coord) {
-        return !this.tileBounds || this.tileBounds.contains(coord);
+        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
     }
 
     loadTile(tile, callback) {

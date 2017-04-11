@@ -59,7 +59,7 @@ class VectorTileSource extends Evented {
     }
 
     hasTile(coord) {
-        return !this.tileBounds || this.tileBounds.contains(coord);
+        return !this.tileBounds || this.tileBounds.contains(coord, this.maxzoom);
     }
 
     onAdd(map) {
