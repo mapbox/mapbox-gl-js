@@ -12,7 +12,7 @@ tags:
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v9',
+    style: 'mapbox://styles/mapbox/light-v9',
     center: [-103.59179687498357, 40.66995747013945],
     zoom: 3
 });
@@ -38,16 +38,18 @@ map.on('load', function() {
         paint: {
             "circle-color": {
                 property: "point_count",
+                type: "interval",
                 stops: [
-                [0, "#f5ad6f"],
-                [1000, "#f86767"]
+                    [0, "#f5ad6f"],
+                    [1000, "#f86767"]
                 ]
             },
             "circle-radius": {
                 property: "point_count",
+                type: "interval",
                 stops: [
-                [0, 20],
-                [1000, 40]
+                    [0, 20],
+                    [1000, 40]
                 ]
             },
             "circle-stroke-width": 3,
