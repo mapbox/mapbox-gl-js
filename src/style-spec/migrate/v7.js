@@ -1,6 +1,6 @@
 'use strict';
 
-const ref = require('../reference/v7');
+const ref = require('../reference/v7.json');
 
 function eachLayer(layer, callback) {
     for (const k in layer.layers) {
