@@ -35,15 +35,14 @@ map.on('load', function() {
         type: "circle",
         source: "earthquakes",
         filter: ["has", "point_count"],
-        colorSpace: "lab",
         paint: {
             "circle-color": {
                 property: "point_count",
                 type: "interval",
                 stops: [
                     [0, "#51bbd6"],
-                    [20, "#f1f075"],
-                    [150, "#f28cb1"],
+                    [100, "#f1f075"],
+                    [750, "#f28cb1"],
                 ]
             },
             "circle-radius": {
@@ -51,7 +50,8 @@ map.on('load', function() {
                 type: "interval",
                 stops: [
                     [0, 20],
-                    [1000, 40]
+                    [100, 30],
+                    [750, 40]
                 ]
             }
         }
