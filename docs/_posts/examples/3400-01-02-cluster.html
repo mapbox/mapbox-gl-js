@@ -12,7 +12,7 @@ tags:
 <script>
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
+    style: 'mapbox://styles/mapbox/dark-v9',
     center: [-103.59179687498357, 40.66995747013945],
     zoom: 3
 });
@@ -40,8 +40,9 @@ map.on('load', function() {
                 property: "point_count",
                 type: "interval",
                 stops: [
-                    [0, "#f5ad6f"],
-                    [1000, "#f86767"]
+                    [0, "#51bbd6"],
+                    [20, "#f1f075"],
+                    [150, "#f28cb1"],
                 ]
             },
             "circle-radius": {
@@ -51,9 +52,7 @@ map.on('load', function() {
                     [0, 20],
                     [1000, 40]
                 ]
-            },
-            "circle-stroke-width": 3,
-            "circle-stroke-color": "#fff"
+            }
         }
     });
 
@@ -66,9 +65,6 @@ map.on('load', function() {
             "text-field": "{point_count_abbreviated}",
             "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
             "text-size": 12
-        },
-        paint: {
-            "text-color": "#fff"
         }
     });
 
@@ -79,8 +75,8 @@ map.on('load', function() {
         filter: ["!has", "point_count"],
         paint: {
             "circle-color": "#11b4da",
-            "circle-radius": 6,
-            "circle-stroke-width": 3,
+            "circle-radius": 4,
+            "circle-stroke-width": 1,
             "circle-stroke-color": "#fff"
         }
     });
