@@ -1,7 +1,7 @@
 {
   "name": "@mapbox/mapbox-gl-style-spec",
   "description": "a specification for mapbox gl styles",
-  "version": "8.11.0-dev",
+  "version": "9.0.0",
   "author": "Mapbox",
   "keywords": [
     "mapbox",

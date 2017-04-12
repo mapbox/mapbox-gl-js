@@ -1,5 +1,11 @@
-## master
+## 9.0.0
 
+* Fix validation error on categorical zoom-and-property functions (#4220)
+* Relax requirement that styles using "icon-image" must have a "sprite"
+* Prevent infinite loop in binarySearchForIndex when duplicate stops are present. (#4503)
+* Ensure generated composite function stops are in the correct order (#4509)
+* Update SDK support matrices to be current as of GL JS v0.35.1, iOS SDK v3.5.0, Android SDK 5.0.0
+* Remove support for implicitly-categorical functions
 * BREAKING CHANGE: the API for the `function` module has changed. The `interpolated` and `piecewise-constant` exports
 were replaced with a single unnamed export, a function which accepts an object conforming to the style spec "function"
 definition, and an object defining a style spec property. It handles color parsing and validation of feature values
