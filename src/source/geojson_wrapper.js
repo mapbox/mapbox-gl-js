@@ -17,6 +17,13 @@ class FeatureWrapper {
             this.rawGeometry = feature.geometry;
         }
         this.properties = feature.tags;
+
+        // If the feature has a top-level `id` property, copy it over, but only
+        // if it can be coerced to an integer, because this wrapper is used for
+        // serializing geojson feature data into vector tile PBF data, and the
+        // vector tile spec only supports integer values for feature ids --
+        // allowing non-integer values here results in a non-compliant PBF
+        // that causes an exception when it is parsed with vector-tile-js
         if ('id' in feature && !isNaN(feature.id)) {
             this.id = parseInt(feature.id, 10);
         }
