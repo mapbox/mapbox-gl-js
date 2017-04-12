@@ -15,7 +15,7 @@
           {
             "type": "Feature",
             "properties": {},
-            "id": "a",
+            "id": 1,
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -27,7 +27,7 @@
           {
             "type": "Feature",
             "properties": {},
-            "id": "b",
+            "id": 2,
             "geometry": {
               "type": "Point",
               "coordinates": [
@@ -48,7 +48,7 @@
       "filter": [
         "==",
         "$id",
-        "a"
+        1
       ]
     }
   ]
