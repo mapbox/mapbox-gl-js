@@ -1,3 +1,13 @@
+## 0.35.1 (April 12, 2017)
+
+#### Bug fixes :bug:
+
+- Add `.json` extension to style-spec `require` statements for webpack compatibility #4563 @orangemug
+- Fix documentation type for `Map#fitBounde` #4569 @andrewharvey
+- Fix bug causing {Image,Video,Canvas}Source to throw exception if latitude is outside of +/-85.05113 #4574
+- Fix bug causing overzoomed raster tiles to disappear from map #4567
+- Fix bug causing queryRenderedFeatures to crash on polygon features that have an `id` field. #4581
+
 ## 0.35.0 (April 7, 2017)
 
 #### New features :rocket:
