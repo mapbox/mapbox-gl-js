@@ -15,7 +15,7 @@
           {
             "type": "Feature",
             "properties": {},
-            "id": "a",
+            "id": 1,
             "geometry": {
               "type": "Point",
               "coordinates": [
