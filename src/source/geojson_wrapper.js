@@ -17,8 +17,8 @@ class FeatureWrapper {
             this.rawGeometry = feature.geometry;
         }
         this.properties = feature.tags;
-        if ('id' in feature) {
-            this.id = feature.id;
+        if ('id' in feature && !isNaN(feature.id)) {
+            this.id = parseInt(feature.id, 10);
         }
         this.extent = EXTENT;
     }
