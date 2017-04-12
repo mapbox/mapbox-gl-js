@@ -47,6 +47,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
             return callback(null, null); // nothing in the given tile
         }
 
+        // Encode the geojson-vt tile into binary vector tile form form.  This
+        // is a convenience that allows `FeatureIndex` to operate the same way
+        // across `VectorTileSource` and `GeoJSONSource` data.
         const geojsonWrapper = new GeoJSONWrapper(geoJSONTile.features);
         geojsonWrapper.name = '_geojsonTileLayer';
         let pbf = vtpbf({ layers: { '_geojsonTileLayer': geojsonWrapper }});
