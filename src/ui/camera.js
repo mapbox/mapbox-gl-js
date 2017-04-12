@@ -515,8 +515,7 @@ class Camera extends Evented {
         const screenPoint = tr.centerPoint.add(offset);
 
         const from = tr.project(tr.pointLocation(screenPoint));
-        const to = tr.project(center);
-        const delta = to.sub(from);
+        const delta = tr.project(center).sub(from);
         const finalScale = tr.zoomScale(zoom - startZoom);
 
         let around, aroundPoint;
@@ -549,10 +548,11 @@ class Camera extends Evented {
                 tr.setLocationAtPoint(around, aroundPoint);
             } else {
                 const scale = tr.zoomScale(tr.zoom - startZoom);
-                const k2 = k * (
-                    zoom > startZoom ? Math.pow(2, 1 - k) :
-                    zoom < startZoom ? Math.pow(2, k - 1) : 1);
-                const newCenter = tr.unproject(from.add(to.sub(from).mult(k2)).mult(scale));
+                const base = zoom > startZoom ?
+                    Math.min(2, finalScale) :
+                    Math.max(0.5, finalScale);
+                const speedup = Math.pow(base, 1 - k);
+                const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, screenPoint);
             }
 
