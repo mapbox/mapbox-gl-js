@@ -179,8 +179,8 @@ void main() {
     } else if (u_rotate_with_map) {
         // Calculate how vertical the label is in projected space, space out letters according to the angle of
         //  incidence at the point of the label anchor
-        vec4 a = u_matrix * vec4(a_pos, 0, 1);
-        vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_anchorangle),sin(a_anchorangle)), 0, 1);
+        vec4 a = u_matrix * vec4(a_label_pos, 0, 1);
+        vec4 b = u_matrix * vec4(a_label_pos + vec2(cos(a_anchorangle),sin(a_anchorangle)), 0, 1);
         highp float projected_label_angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
         legibility_expansion += abs(sin(projected_label_angle)) * (incidence_stretch - 1.0);
 
