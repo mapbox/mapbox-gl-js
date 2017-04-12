@@ -1,6 +1,7 @@
 'use strict';
 
 mapboxgl.accessToken = getAccessToken();
+require('dotenv').config()
 
 function getAccessToken() {
     var accessToken = (
