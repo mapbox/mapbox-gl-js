@@ -1,8 +1,5 @@
 {
   "rules": {
-    "selector-class-pattern": "mapbox[a-z-]+",
-    "color-hex-case": "lower",
-    "color-hex-length": "short",
-    "color-no-invalid-hex": true
+    "selector-class-pattern": "mapbox-gl[a-z-]+"
   }
 }
