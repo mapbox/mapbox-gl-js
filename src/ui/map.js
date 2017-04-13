@@ -884,6 +884,7 @@ class Map extends Camera {
       * @returns {boolean} A Boolean indicating whether the style is fully loaded.
       */
     isStyleLoaded() {
+        if (!this.style) return util.warnOnce('There is no style added to the map.');
         return this.style.loaded();
     }
 
@@ -927,9 +928,7 @@ class Map extends Camera {
      * Returns a Boolean indicating whether all tiles in the viewport from all sources on
      * the style are loaded.
      *
-     * @param {string} sourceId The ID of the source to be checked.
-     * @param {number} tileCoordId The ID of the source to be checked.
-     * @returns {boolean} A Boolean indicating whether the source is loaded.
+     * @returns {boolean} A Boolean indicating whether all tiles are loaded.
      */
 
     areTilesLoaded() {
