@@ -150,6 +150,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
     const positionedGlyphs = shaping.positionedGlyphs;
     const quads = [];
 
+    let labelMinScale = minScale;
+
     for (let k = 0; k < positionedGlyphs.length; k++) {
         const positionedGlyph = positionedGlyphs[k];
         const glyph = positionedGlyph.glyph;
@@ -161,12 +163,11 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
         const centerX = (positionedGlyph.x + glyph.advance / 2) * boxScale;
 
         let glyphInstances;
-        let labelMinScale = minScale;
         if (alongLine) {
             glyphInstances = [];
-            labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
+            labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false));
             if (keepUpright) {
-                labelMinScale = Math.min(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
+                labelMinScale = Math.max(labelMinScale, getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, true));
             }
 
         } else {
