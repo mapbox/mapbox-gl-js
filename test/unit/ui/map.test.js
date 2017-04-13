@@ -35,6 +35,24 @@ function createMap(options, callback) {
     return map;
 }
 
+function createStyleSource() {
+    return {
+        type: "geojson",
+        data: {
+            type: "FeatureCollection",
+            features: []
+        }
+    };
+}
+
+function createStyleLayer() {
+    return {
+        id: 'background',
+        type: 'background'
+    };
+}
+
+
 test('Map', (t) => {
     t.beforeEach((callback) => {
         window.useFakeXMLHttpRequest();
@@ -258,36 +276,53 @@ test('Map', (t) => {
         t.end();
     });
 
+    t.test('#is_Loaded', (t)=>{
+
+        t.test('Map#isSourceLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            map.on('load', () => {
+                map.on('data', (e) => {
+                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
+                        t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
+                        t.end();
+                    }
+                });
+                map.addSource('geojson', createStyleSource());
+                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
+            });
+        });
+
+        t.test('Map#isStyleLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+
+            t.equal(map.isStyleLoaded(), false, 'false before style has loaded');
+            map.on('load', () => {
+                t.equal(map.isStyleLoaded(), true, 'true when style is loaded');
+                t.end();
+            });
+        });
+
+        t.test('Map#areTilesLoaded', (t) => {
+            const style = createStyle();
+            const map = createMap({style: style});
+            t.equal(map.areTilesLoaded(), true, 'returns true if there are no sources on the map');
+            map.on('load', ()=>{
+
+                map.addSource('geojson', createStyleSource());
+                map.style.sourceCaches.geojson._tiles.fakeTile = {state: 'loading'};
+                t.equal(map.areTilesLoaded(), false, 'returns false if tiles are loading');
+                map.style.sourceCaches.geojson._tiles.fakeTile.state = 'loaded';
+                t.equal(map.areTilesLoaded(), true, 'returns true if tiles are loaded');
+                t.end();
+            });
+        });
+        t.end();
+    });
+
     t.test('#getStyle', (t) => {
-        function createStyle() {
-            return {
-                version: 8,
-                center: [-73.9749, 40.7736],
-                zoom: 12.5,
-                bearing: 29,
-                pitch: 50,
-                sources: {},
-                layers: []
-            };
-        }
-
-        function createStyleSource() {
-            return {
-                type: "geojson",
-                data: {
-                    type: "FeatureCollection",
-                    features: []
-                }
-            };
-        }
-
-        function createStyleLayer() {
-            return {
-                id: 'background',
-                type: 'background'
-            };
-        }
-
         t.test('returns the style', (t) => {
             const style = createStyle();
             const map = createMap({style: style});
@@ -321,22 +356,6 @@ test('Map', (t) => {
                     t.end();
                 });
                 map.isSourceLoaded('geojson');
-            });
-        });
-
-        t.test('#isSourceLoaded', (t) => {
-            const style = createStyle();
-            const map = createMap({style: style});
-
-            map.on('load', () => {
-                map.on('data', (e) => {
-                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
-                        t.equal(map.isSourceLoaded('geojson'), true, 'true when loaded');
-                        t.end();
-                    }
-                });
-                map.addSource('geojson', createStyleSource());
-                t.equal(map.isSourceLoaded('geojson'), false, 'false before loaded');
             });
         });
 
