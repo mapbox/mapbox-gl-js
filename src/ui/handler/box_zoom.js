@@ -52,7 +52,14 @@ class BoxZoomHandler {
      */
     enable() {
         if (this.isEnabled()) return;
+
+        // the event listeners for the DragPanHandler have to fire _after_ the event listener for BoxZoomHandler in order,
+        // for the DragPanHandler's check on map.boxZoom.isActive() to tell whether or not to ignore a keydown event
+        // so this makes sure the firing order is preserved if the BoxZoomHandler is enabled after the DragPanHandler.
+        if (this._map.dragPan) this._map.dragPan.disable();
         this._el.addEventListener('mousedown', this._onMouseDown, false);
+        if (this._map.dragPan) this._map.dragPan.enable();
+
         this._enabled = true;
     }
 
