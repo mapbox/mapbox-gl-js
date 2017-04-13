@@ -7,10 +7,7 @@
       "queryGeometry": [
         32,
         16
-      ],
-      "ignored": {
-        "native": "https://github.com/mapbox/mapbox-gl-native/issues/8007"
-      }
+      ]
     }
   },
   "sources": {
