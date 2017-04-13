@@ -1,5 +1,5 @@
 {
   "rules": {
-    "selector-class-pattern": "mapbox-gl[a-z-]+"
+    "selector-class-pattern": "mapboxgl-[a-z-]+"
   }
 }
