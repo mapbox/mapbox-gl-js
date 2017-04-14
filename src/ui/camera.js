@@ -501,7 +501,6 @@ class Camera extends Evented {
         }
 
         const tr = this.transform,
-            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -510,11 +509,10 @@ class Camera extends Evented {
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-        const center = LngLat.convert(options.center || tr.center);
-
-        const screenPoint = tr.centerPoint.add(offset);
-
-        const from = tr.project(tr.pointLocation(screenPoint));
+        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const center = LngLat.convert(options.center || locationAtOffset);
+        const from = tr.project(locationAtOffset);
         const delta = tr.project(center).sub(from);
         const finalScale = tr.zoomScale(zoom - startZoom);
 
@@ -553,7 +551,7 @@ class Camera extends Evented {
                     Math.max(0.5, finalScale);
                 const speedup = Math.pow(base, 1 - k);
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
-                tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, screenPoint);
+                tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
 
             this._fireMoveEvents(eventData);
@@ -685,15 +683,18 @@ class Camera extends Evented {
         }, options);
 
         const tr = this.transform,
-            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        const center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
         const zoom = 'zoom' in options ?  +options.zoom : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
+
+        const scale = tr.zoomScale(zoom - startZoom);
+        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const center = LngLat.convert(options.center || locationAtOffset);
 
         // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
         // interpolating between the two endpoints will cross it.
@@ -705,9 +706,8 @@ class Camera extends Evented {
             }
         }
 
-        const scale = tr.zoomScale(zoom - startZoom),
-            from = tr.point,
-            to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
+        const from = tr.project(locationAtOffset);
+        const delta = tr.project(center).sub(from);
 
         let rho = options.curve;
 
@@ -717,7 +717,7 @@ class Camera extends Evented {
             w1 = w0 / scale,
             // Length of the flight path as projected onto the ground plane, measured in pixels from
             // the world image origin at the initial scale.
-            u1 = to.sub(from).mag();
+            u1 = delta.mag();
 
         if ('minZoom' in options) {
             const minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
@@ -795,15 +795,15 @@ class Camera extends Evented {
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
 
-            const newCenter = tr.unproject(from.add(to.sub(from).mult(u(s))).mult(scale));
-            tr.center = tr.renderWorldCopies ? newCenter.wrap() : newCenter;
-
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this.pitching) {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
+
+            const newCenter = tr.unproject(from.add(delta.mult(u(s))).mult(scale));
+            tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
 
             this._fireMoveEvents(eventData);
 
