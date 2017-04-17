@@ -11,10 +11,11 @@ const simulateClick = require('mapbox-gl-js-test/simulate_interaction').click;
 const containerWidth = 512;
 const containerHeight = 512;
 
-function createMap() {
+function createMap(options) {
+    options = options || {};
     const container = window.document.createElement('div');
-    Object.defineProperty(container, 'offsetWidth', {value: containerWidth});
-    Object.defineProperty(container, 'offsetHeight', {value: containerHeight});
+    Object.defineProperty(container, 'offsetWidth', {value: options.width || containerWidth});
+    Object.defineProperty(container, 'offsetHeight', {value: options.height || containerHeight});
     return new Map({container: container});
 }
 
@@ -173,6 +174,104 @@ test('Popup provides LngLat accessors', (t) => {
     t.ok(new Popup().setLngLat(new LngLat(1, 2)).getLngLat() instanceof LngLat);
     t.deepEqual(new Popup().setLngLat(new LngLat(1, 2)).getLngLat(), new LngLat(1, 2));
 
+    t.end();
+});
+
+test('Popup is positioned at the specified LngLat in a world copy', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map);
+
+    t.deepEqual(popup._pos, map.project([270, 0]));
+    t.end();
+});
+
+test('Popup preserves object constancy of position after map move', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+    t.deepEqual(popup._pos, map.project([270, 0]));
+
+    map.setCenter([-20, 0]); // longitude bounds: [-380, 340]
+    t.deepEqual(popup._pos, map.project([270, 0]));
+
+    t.end();
+});
+
+test('Popup preserves object constancy of position after auto-wrapping center (left)', (t) => {
+    const map = createMap({width: 1024});
+    map.setCenter([-175, 0]); // longitude bounds: [-535, 185]
+
+    const popup = new Popup()
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([175, 0]); // longitude bounds: [-185, 535]
+    t.deepEqual(popup._pos, map.project([360, 0]));
+
+    t.end();
+});
+
+test('Popup preserves object constancy of position after auto-wrapping center (right)', (t) => {
+    const map = createMap({width: 1024});
+    map.setCenter([175, 0]); // longitude bounds: [-185, 535]
+
+    const popup = new Popup()
+        .setLngLat([0, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-175, 0]); // longitude bounds: [-185, 535]
+    t.deepEqual(popup._pos, map.project([-360, 0]));
+
+    t.end();
+});
+
+test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([-355, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([10, 0]); // longitude bounds: [-350, 370]
+    t.deepEqual(popup._pos, map.project([5, 0]));
+    t.end();
+});
+
+test('Popup wraps position after map move if it would otherwise go offscreen (right)', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([355, 0])
+        .setText('Test')
+        .addTo(map);
+
+    map.setCenter([-10, 0]); // longitude bounds: [-370, 350]
+    t.deepEqual(popup._pos, map.project([-5, 0]));
+    t.end();
+});
+
+test('Popup is repositioned at the specified LngLat', (t) => {
+    const map = createMap({width: 1024}); // longitude bounds: [-360, 360]
+
+    const popup = new Popup()
+        .setLngLat([270, 0])
+        .setText('Test')
+        .addTo(map)
+        .setLngLat([0, 0]);
+
+    t.deepEqual(popup._pos, map.project([0, 0]));
     t.end();
 });
 
