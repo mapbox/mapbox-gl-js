@@ -78,3 +78,34 @@ test('incorrect url match', (t) => {
     t.deepEqual(Object.keys(result.sources), ["a", "b"]);
     t.end();
 });
+
+test('composites Mapbox vector sources with conflicting source layer names', (t) => {
+    t.throws(() => {
+        composite({
+            "version": 7,
+            "sources": {
+                "mapbox-a": {
+                    "type": "vector",
+                    "url": "mapbox://a"
+                },
+                "mapbox-b": {
+                    "type": "vector",
+                    "url": "mapbox://b"
+                }
+            },
+            "layers": [{
+                "id": "a",
+                "type": "line",
+                "source-layer": "sourcelayer",
+                "source": "mapbox-a"
+            }, {
+                "id": "b",
+                "type": "line",
+                "source-layer": "sourcelayer",
+                "source": "mapbox-b"
+            }]
+        });
+    }, /Conflicting source layer names/, 'throws error on conflicting source layer names');
+
+    t.end();
+});
