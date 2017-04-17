@@ -630,8 +630,8 @@ class Map extends Camera {
             return super.off(type, layer);
         }
 
-        const layers = Array.isArray(layer) ? layer : [layer];
         if (this._delegatedListeners && this._delegatedListeners[type]) {
+            const layers = Array.isArray(layer) ? layer : [layer];
             const listeners = this._delegatedListeners[type];
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
