@@ -26,7 +26,7 @@ void main() {
     // find distance to outline for alpha interpolation
 
     float dist = length(v_pos - gl_FragCoord.xy);
-    float alpha = smoothstep(1.0, 0.0, dist);
+    float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
 
 
     gl_FragColor = mix(color1, color2, u_mix) * alpha * opacity;
