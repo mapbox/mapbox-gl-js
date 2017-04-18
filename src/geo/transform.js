@@ -265,12 +265,36 @@ class Transform {
     }
 
     /**
-     * Given a point on screen, return its lnglat
-     * @param {Point} p screen point
+     * Given a point on screen and viewport options, return its lnglat
+     * @param {Point} point screen point
+     * @param {CameraOptions} viewport viewport
      * @returns {LngLat} lnglat location
      */
-    pointLocation(p) {
-        return this.coordinateLocation(this.pointCoordinate(p));
+    pointLocation(point, viewport) {
+        if (viewport == null) {
+            return this.coordinateLocation(this.pointCoordinate(point));
+        } else {
+            if (!('center' in viewport)) viewport.center = this.center;
+            if (!('zoom' in viewport)) viewport.zoom = this.zoom;
+            if (!('bearing' in viewport)) viewport.bearing = this.bearing;
+            if (!('pitch' in viewport)) viewport.pitch = this.pitch;
+
+            viewport = this._constrain(viewport);
+            return this.coordinateLocation(this.pointCoordinate(point, Math.floor(viewport.zoom), viewport), viewport);
+        }
+    }
+
+    /**
+     * Returns the viewport of this transform
+     * @returns {CameraOptions} viewport
+     */
+    getViewport() {
+        return {
+            center: this.center,
+            zoom: this.zoom,
+            bearing: this.bearing,
+            pitch: this.pitch
+        };
     }
 
     /**
@@ -289,18 +313,26 @@ class Transform {
     /**
      * Given a Coordinate, return its geographical position.
      * @param {Coordinate} coord
+     * @param {CameraOptions} viewport viewport
      * @returns {LngLat} lnglat
      */
-    coordinateLocation(coord) {
-        const zoomedCoord = coord.zoomTo(this.zoom);
-        return new LngLat(
-            this.xLng(zoomedCoord.column * this.tileSize),
-            this.yLat(zoomedCoord.row * this.tileSize));
+    coordinateLocation(coord, viewport) {
+        if (viewport === undefined) viewport = this.getViewport();
+        const zoomedCoord = coord.zoomTo(viewport.zoom);
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = (zoomedCoord.column * this.tileSize) * 360 / worldSize - 180;
+        const y2 = 180 - (zoomedCoord.row * this.tileSize) * 360 / worldSize;
+        const y = 360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90;
+        return new LngLat(x, y);
     }
 
-    pointCoordinate(p, zoom) {
+    pointCoordinate(p, zoom, viewport) {
+        let external = true;
         if (zoom === undefined) zoom = this.tileZoom;
-
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+            external = false;
+        }
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
@@ -309,8 +341,15 @@ class Transform {
         const coord0 = [p.x, p.y, 0, 1];
         const coord1 = [p.x, p.y, 1, 1];
 
-        vec4.transformMat4(coord0, coord0, this.pixelMatrixInverse);
-        vec4.transformMat4(coord1, coord1, this.pixelMatrixInverse);
+        if (external) {
+            const inversePixelMatix = this._calcMatrices(viewport);
+
+            vec4.transformMat4(coord0, coord0, inversePixelMatix);
+            vec4.transformMat4(coord1, coord1, inversePixelMatix);
+        } else {
+            vec4.transformMat4(coord0, coord0, this.inversePixelMatix);
+            vec4.transformMat4(coord1, coord1, this.inversePixelMatix);
+        }
 
         const w0 = coord0[3];
         const w1 = coord1[3];
@@ -326,7 +365,7 @@ class Transform {
         return new Coordinate(
             interp(x0, x1, t) / this.tileSize,
             interp(y0, y1, t) / this.tileSize,
-            this.zoom)._zoomTo(zoom);
+            viewport.zoom)._zoomTo(zoom);
     }
 
     /**
@@ -360,51 +399,65 @@ class Transform {
         return new Float32Array(posMatrix);
     }
 
-    _constrain() {
-        if (!this.center || !this.width || !this.height || this._constraining) return;
+    _constrain(viewport) {
+        let external = false;
 
-        this._constraining = true;
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+            if (!this.center || !this.width || !this.height || this._constraining) return;
+
+            this._constraining = true;
+        } else {
+            external = true;
+        }
+
+        const unmodified = this._unmodified;
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = this.lngX(viewport.center.lng);
+        const y = this.latY(viewport.center.lat);
 
         let minY, maxY, minX, maxX, sy, sx, x2, y2;
-        const size = this.size,
-            unmodified = this._unmodified;
 
         if (this.latRange) {
-            minY = this.latY(this.latRange[1]);
-            maxY = this.latY(this.latRange[0]);
-            sy = maxY - minY < size.y ? size.y / (maxY - minY) : 0;
+            minY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[1] * Math.PI / 360))) * worldSize / 360;
+            maxY = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + this.latRange[0] * Math.PI / 360))) * worldSize / 360;
+            sy = maxY - minY < this.size.y ? this.size.y / (maxY - minY) : 0;
         }
 
         if (this.lngRange) {
-            minX = this.lngX(this.lngRange[0]);
-            maxX = this.lngX(this.lngRange[1]);
-            sx = maxX - minX < size.x ? size.x / (maxX - minX) : 0;
+            minX = (180 + this.lngRange[0]) * worldSize / 360;
+            maxX = (180 + this.lngRange[1]) * worldSize / 360;
+            sx = maxX - minX < this.size.x ? this.size.x / (maxX - minX) : 0;
         }
 
         // how much the map should scale to fit the screen into given latitude/longitude ranges
         const s = Math.max(sx || 0, sy || 0);
 
         if (s) {
-            this.center = this.unproject(new Point(
-                sx ? (maxX + minX) / 2 : this.x,
-                sy ? (maxY + minY) / 2 : this.y));
-            this.zoom += this.scaleZoom(s);
-            this._unmodified = unmodified;
-            this._constraining = false;
-            return;
+            viewport.center = this.unproject(new Point(
+                sx ? (maxX + minX) / 2 : x,
+                sy ? (maxY + minY) / 2 : y));
+            viewport.zoom += this.scaleZoom(s);
+            if (!external) {
+                this.center = viewport.center;
+                this.zoom = viewport.zoom;
+
+                this._unmodified = unmodified;
+                this._constraining = false;
+            }
+            viewport.zoom = Math.min(Math.max(viewport.zoom, this.minZoom), this.maxZoom);
+            return viewport;
         }
 
         if (this.latRange) {
-            const y = this.y,
-                h2 = size.y / 2;
+            const h2 = this.size.y / 2;
 
             if (y - h2 < minY) y2 = minY + h2;
             if (y + h2 > maxY) y2 = maxY - h2;
         }
 
         if (this.lngRange) {
-            const x = this.x,
-                w2 = size.x / 2;
+            const w2 = this.size.x / 2;
 
             if (x - w2 < minX) x2 = minX + w2;
             if (x + w2 > maxX) x2 = maxX - w2;
@@ -412,30 +465,51 @@ class Transform {
 
         // pan the map if the screen goes off the range
         if (x2 !== undefined || y2 !== undefined) {
-            this.center = this.unproject(new Point(
-                x2 !== undefined ? x2 : this.x,
-                y2 !== undefined ? y2 : this.y));
+            viewport.center = this.unproject(new Point(
+                x2 !== undefined ? x2 : x,
+                y2 !== undefined ? y2 : y));
+            if (!external) this.center = viewport.center;
         }
 
         this._unmodified = unmodified;
         this._constraining = false;
+
+        return viewport;
     }
 
-    _calcMatrices() {
+    _calcMatrices(viewport) {
+        let external = false;
+
+        if (viewport === undefined) {
+            viewport = this.getViewport();
+        } else {
+            external = true;
+        }
+
+        const _pitch = util.clamp(viewport.pitch, 0, 60) / 180 * Math.PI;
+        const angle = -util.wrap(viewport.bearing, -180, 180) * Math.PI / 180;
+        const worldSize = this.tileSize * this.zoomScale(viewport.zoom);
+        const x = (180 + viewport.center.lng) * worldSize / 360;
+        const y = (180 - 180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + viewport.center.lat * Math.PI / 360))) * worldSize / 360;
+        const center = viewport.center;
+
         if (!this.height) return;
 
-        this.cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        const cameraToCenterDistance = 0.5 / Math.tan(this._fov / 2) * this.height;
+        if (!external) {
+            this.cameraToCenterDistance = cameraToCenterDistance;
+        }
 
         // Find the distance from the center point [width/2, height/2] to the
         // center top point [width/2, 0] in Z units, using the law of sines.
         // 1 Z unit is equivalent to 1 horizontal px at the center of the map
         // (the distance between[width/2, height/2] and [width/2 + 1, height/2])
         const halfFov = this._fov / 2;
-        const groundAngle = Math.PI / 2 + this._pitch;
-        const topHalfSurfaceDistance = Math.sin(halfFov) * this.cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
+        const groundAngle = Math.PI / 2 + _pitch;
+        const topHalfSurfaceDistance = Math.sin(halfFov) * cameraToCenterDistance / Math.sin(Math.PI - groundAngle - halfFov);
 
         // Calculate z distance of the farthest fragment that should be rendered.
-        const furthestDistance = Math.cos(Math.PI / 2 - this._pitch) * topHalfSurfaceDistance + this.cameraToCenterDistance;
+        const furthestDistance = Math.cos(Math.PI / 2 - _pitch) * topHalfSurfaceDistance + cameraToCenterDistance;
         // Add a bit extra to avoid precision problems when a fragment's distance is exactly `furthestDistance`
         const farZ = furthestDistance * 1.01;
 
@@ -444,29 +518,36 @@ class Transform {
         mat4.perspective(m, this._fov, this.width / this.height, 1, farZ);
 
         mat4.scale(m, m, [1, -1, 1]);
-        mat4.translate(m, m, [0, 0, -this.cameraToCenterDistance]);
-        mat4.rotateX(m, m, this._pitch);
-        mat4.rotateZ(m, m, this.angle);
-        mat4.translate(m, m, [-this.x, -this.y, 0]);
+        mat4.translate(m, m, [0, 0, -cameraToCenterDistance]);
+        mat4.rotateX(m, m, _pitch);
+        mat4.rotateZ(m, m, angle);
+        mat4.translate(m, m, [-x, -y, 0]);
 
         // scale vertically to meters per pixel (inverse of ground resolution):
         // worldSize / (circumferenceOfEarth * cos(lat * π / 180))
-        const verticalScale = this.worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(this.center.lat * (Math.PI / 180))));
+        const verticalScale = worldSize / (2 * Math.PI * 6378137 * Math.abs(Math.cos(center.lat * (Math.PI / 180))));
         mat4.scale(m, m, [1, 1, verticalScale, 1]);
 
-        this.projMatrix = m;
-
+        const projMatrix = m;
+        if (!external) {
+            this.projMatrix = projMatrix;
+        }
         // matrix for conversion from location to screen coordinates
         m = mat4.create();
         mat4.scale(m, m, [this.width / 2, -this.height / 2, 1]);
         mat4.translate(m, m, [1, -1, 0]);
-        this.pixelMatrix = mat4.multiply(new Float64Array(16), m, this.projMatrix);
-
+        const pixelMatrix = mat4.multiply(new Float64Array(16), m, projMatrix);
+        if (!external) {
+            this.pixelMatrix = pixelMatrix;
+        }
         // inverse matrix for conversion from screen coordinaes to location
-        m = mat4.invert(new Float64Array(16), this.pixelMatrix);
+        m = mat4.invert(new Float64Array(16), pixelMatrix);
         if (!m) throw new Error("failed to invert matrix");
-        this.pixelMatrixInverse = m;
-
+        const inversePixelMatix = m;
+        if (!external) {
+            this.inversePixelMatix = inversePixelMatix;
+        }
+        return inversePixelMatix;
     }
 }
 

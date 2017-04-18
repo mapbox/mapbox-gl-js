@@ -501,6 +501,7 @@ class Camera extends Evented {
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
+            startCenter = tr.center,
 
             zoom = 'zoom' in options ? +options.zoom : startZoom,
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
@@ -519,8 +520,6 @@ class Camera extends Evented {
             toPoint = tr.centerPoint.add(offset);
             toLngLat = tr.pointLocation(toPoint);
         }
-
-        const fromPoint = tr.locationPoint(toLngLat);
 
         if (options.animate === false) options.duration = 0;
 
@@ -543,11 +542,37 @@ class Camera extends Evented {
             this.fire('pitchstart', eventData);
         }
 
+        const viewport = {
+            center: tr.center,
+            zoom: zoom,
+            bearing: bearing,
+            pitch: 0
+        };
+
+        const offsetLocation = tr.pointLocation(toPoint, viewport);
+        const fromLocation = tr.pointLocation(tr.centerPoint, viewport);
+
+        const toLocation = LngLat.convert([
+            toLngLat.lng - (offsetLocation.lng - fromLocation.lng),
+            toLngLat.lat - (offsetLocation.lat - fromLocation.lat)
+        ]);
+
         clearTimeout(this._onEaseEnd);
 
         this._ease(function (k) {
+            // When zooming we need to scale our lat/lon interpolation because the distances change over the course of the transition
+            let k2 = k,
+                currentDelta,
+                currentDistanceExpansion;
+            const deltaZoom = zoom - startZoom;
+            const totalDistanceExpansion = Math.pow(0.5, deltaZoom) - 1;
+
             if (this.zooming) {
                 tr.zoom = interpolate(startZoom, zoom, k);
+                currentDelta = tr.zoom - startZoom;
+                currentDistanceExpansion = Math.pow(0.5, currentDelta) - 1;
+
+                k2 = currentDistanceExpansion / totalDistanceExpansion;
             }
 
             if (this.rotating) {
@@ -558,7 +583,9 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
+            const lng = interpolate(startCenter.lng, toLocation.lng, k2);
+            const lat = interpolate(startCenter.lat, toLocation.lat, k2);
+            tr.center = LngLat.convert([lng, lat]);
 
             this.fire('move', eventData);
             if (this.zooming) {
