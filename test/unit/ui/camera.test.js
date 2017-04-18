@@ -727,6 +727,44 @@ test('camera', (t) => {
             });
         });
 
+        t.test('pans eastward across the antimeridian', (t) => {
+            const camera = createCamera();
+            camera.setCenter([170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng > 170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.ok(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.easeTo({ center: [-170, 0], duration: 10 });
+        });
+
+        t.test('pans westward across the antimeridian', (t) => {
+            const camera = createCamera();
+            camera.setCenter([-170, 0]);
+            let crossedAntimeridian;
+
+            camera.on('move', () => {
+                if (camera.getCenter().lng < -170) {
+                    crossedAntimeridian = true;
+                }
+            });
+
+            camera.on('moveend', () => {
+                t.ok(crossedAntimeridian);
+                t.end();
+            });
+
+            camera.easeTo({ center: [170, 0], duration: 10 });
+        });
+
         t.end();
     });
 
