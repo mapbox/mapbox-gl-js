@@ -1053,7 +1053,7 @@ test('camera', (t) => {
             let crossedAntimeridian;
 
             camera.on('move', () => {
-                if (camera.getCenter().lng < -170) {
+                if (fixedLngLat(camera.getCenter(), 10).lng < -170) {
                     crossedAntimeridian = true;
                 }
             });

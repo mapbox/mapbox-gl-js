@@ -31,7 +31,7 @@ const Evented = require('../util/evented');
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
  *   the initial state and 1 is the final state.
- * @property {PointLike} offset `x` and `y` coordinates representing the animation's origin of movement relative to the map's center.
+ * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  */
 
@@ -77,8 +77,7 @@ class Camera extends Evented {
      * @see [Move symbol with the keyboard](https://www.mapbox.com/mapbox-gl-js/example/rotating-controllable-marker/)
      */
     setCenter(center, eventData) {
-        this.jumpTo({center: center}, eventData);
-        return this;
+        return this.jumpTo({center: center}, eventData);
     }
 
     /**
@@ -94,9 +93,8 @@ class Camera extends Evented {
      * @see [Navigate the map with game-like controls](https://www.mapbox.com/mapbox-gl-js/example/game-controls/)
      */
     panBy(offset, options, eventData) {
-        this.panTo(this.transform.center,
-            util.extend({offset: Point.convert(offset).mult(-1)}, options), eventData);
-        return this;
+        offset = Point.convert(offset).mult(-1);
+        return this.panTo(this.transform.center, util.extend({offset}, options), eventData);
     }
 
     /**
@@ -496,8 +494,13 @@ class Camera extends Evented {
             easing: util.ease
         }, options);
 
+        if (options.animate === false) options.duration = 0;
+
+        if (options.smoothEasing && options.duration !== 0) {
+            options.easing = this._smoothOutEasing(options.duration);
+        }
+
         const tr = this.transform,
-            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -506,34 +509,68 @@ class Camera extends Evented {
             bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing,
             pitch = 'pitch' in options ? +options.pitch : startPitch;
 
-        let toLngLat,
-            toPoint;
+        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const center = LngLat.convert(options.center || locationAtOffset);
+        const from = tr.project(locationAtOffset);
+        const delta = tr.project(center).sub(from);
+        const finalScale = tr.zoomScale(zoom - startZoom);
 
-        if ('center' in options) {
-            toLngLat = LngLat.convert(options.center);
-            toPoint = tr.centerPoint.add(offset);
-        } else if ('around' in options) {
-            toLngLat = LngLat.convert(options.around);
-            toPoint = tr.locationPoint(toLngLat);
-        } else {
-            toPoint = tr.centerPoint.add(offset);
-            toLngLat = tr.pointLocation(toPoint);
+        let around, aroundPoint;
+
+        if (options.around) {
+            around = LngLat.convert(options.around);
+            aroundPoint = tr.locationPoint(around);
         }
-
-        const fromPoint = tr.locationPoint(toLngLat);
-
-        if (options.animate === false) options.duration = 0;
 
         this.zooming = (zoom !== startZoom);
         this.rotating = (startBearing !== bearing);
         this.pitching = (pitch !== startPitch);
 
-        if (options.smoothEasing && options.duration !== 0) {
-            options.easing = this._smoothOutEasing(options.duration);
-        }
+        this._prepareEase(eventData, options.noMoveStart);
 
-        if (!options.noMoveStart) {
-            this.moving = true;
+        clearTimeout(this._onEaseEnd);
+
+        this._ease(function (k) {
+            if (this.zooming) {
+                tr.zoom = interpolate(startZoom, zoom, k);
+            }
+            if (this.rotating) {
+                tr.bearing = interpolate(startBearing, bearing, k);
+            }
+            if (this.pitching) {
+                tr.pitch = interpolate(startPitch, pitch, k);
+            }
+
+            if (around) {
+                tr.setLocationAtPoint(around, aroundPoint);
+            } else {
+                const scale = tr.zoomScale(tr.zoom - startZoom);
+                const base = zoom > startZoom ?
+                    Math.min(2, finalScale) :
+                    Math.max(0.5, finalScale);
+                const speedup = Math.pow(base, 1 - k);
+                const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
+                tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
+            }
+
+            this._fireMoveEvents(eventData);
+
+        }, () => {
+            if (options.delayEndEvents) {
+                this._onEaseEnd = setTimeout(() => this._easeToEnd(eventData), options.delayEndEvents);
+            } else {
+                this._easeToEnd(eventData);
+            }
+        }, options);
+
+        return this;
+    }
+
+    _prepareEase(eventData, noMoveStart) {
+        this.moving = true;
+
+        if (!noMoveStart) {
             this.fire('movestart', eventData);
         }
         if (this.zooming) {
@@ -542,43 +579,19 @@ class Camera extends Evented {
         if (this.pitching) {
             this.fire('pitchstart', eventData);
         }
+    }
 
-        clearTimeout(this._onEaseEnd);
-
-        this._ease(function (k) {
-            if (this.zooming) {
-                tr.zoom = interpolate(startZoom, zoom, k);
-            }
-
-            if (this.rotating) {
-                tr.bearing = interpolate(startBearing, bearing, k);
-            }
-
-            if (this.pitching) {
-                tr.pitch = interpolate(startPitch, pitch, k);
-            }
-
-            tr.setLocationAtPoint(toLngLat, fromPoint.add(toPoint.sub(fromPoint)._mult(k)));
-
-            this.fire('move', eventData);
-            if (this.zooming) {
-                this.fire('zoom', eventData);
-            }
-            if (this.rotating) {
-                this.fire('rotate', eventData);
-            }
-            if (this.pitching) {
-                this.fire('pitch', eventData);
-            }
-        }, () => {
-            if (options.delayEndEvents) {
-                this._onEaseEnd = setTimeout(this._easeToEnd.bind(this, eventData), options.delayEndEvents);
-            } else {
-                this._easeToEnd(eventData);
-            }
-        }, options);
-
-        return this;
+    _fireMoveEvents(eventData) {
+        this.fire('move', eventData);
+        if (this.zooming) {
+            this.fire('zoom', eventData);
+        }
+        if (this.rotating) {
+            this.fire('rotate', eventData);
+        }
+        if (this.pitching) {
+            this.fire('pitch', eventData);
+        }
     }
 
     _easeToEnd(eventData) {
@@ -596,7 +609,6 @@ class Camera extends Evented {
             this.fire('pitchend', eventData);
         }
         this.fire('moveend', eventData);
-
     }
 
     /**
@@ -671,15 +683,18 @@ class Camera extends Evented {
         }, options);
 
         const tr = this.transform,
-            offset = Point.convert(options.offset),
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        const center = 'center' in options ? LngLat.convert(options.center) : this.getCenter();
         const zoom = 'zoom' in options ?  +options.zoom : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
+
+        const scale = tr.zoomScale(zoom - startZoom);
+        const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
+        const locationAtOffset = tr.pointLocation(pointAtOffset);
+        const center = LngLat.convert(options.center || locationAtOffset);
 
         // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
         // interpolating between the two endpoints will cross it.
@@ -691,9 +706,8 @@ class Camera extends Evented {
             }
         }
 
-        const scale = tr.zoomScale(zoom - startZoom),
-            from = tr.point,
-            to = 'center' in options ? tr.project(center).sub(offset.div(scale)) : from;
+        const from = tr.project(locationAtOffset);
+        const delta = tr.project(center).sub(from);
 
         let rho = options.curve;
 
@@ -703,7 +717,7 @@ class Camera extends Evented {
             w1 = w0 / scale,
             // Length of the flight path as projected onto the ground plane, measured in pixels from
             // the world image origin at the initial scale.
-            u1 = to.sub(from).mag();
+            u1 = delta.mag();
 
         if ('minZoom' in options) {
             const minZoom = util.clamp(Math.min(options.minZoom, startZoom, zoom), tr.minZoom, tr.maxZoom);
@@ -769,26 +783,17 @@ class Camera extends Evented {
             options.duration = 1000 * S / V;
         }
 
-        this.moving = true;
         this.zooming = true;
-        if (startBearing !== bearing) this.rotating = true;
-        if (startPitch !== pitch) this.pitching = true;
+        this.rotating = (startBearing !== bearing);
+        this.pitching = (pitch !== startPitch);
 
-        this.fire('movestart', eventData);
-        this.fire('zoomstart', eventData);
-        if (this.pitching) this.fire('pitchstart', eventData);
+        this._prepareEase(eventData, false);
 
         this._ease(function (k) {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
-            const s = k * S,
-                us = u(s);
-
+            const s = k * S;
             const scale = 1 / w(s);
             tr.zoom = startZoom + tr.scaleZoom(scale);
-            tr.center = tr.unproject(from.add(to.sub(from).mult(us)).mult(scale));
-            if (tr.renderWorldCopies) {
-                tr.center = tr.center.wrap();
-            }
 
             if (this.rotating) {
                 tr.bearing = interpolate(startBearing, bearing, k);
@@ -797,25 +802,12 @@ class Camera extends Evented {
                 tr.pitch = interpolate(startPitch, pitch, k);
             }
 
-            this.fire('move', eventData);
-            this.fire('zoom', eventData);
-            if (this.rotating) {
-                this.fire('rotate', eventData);
-            }
-            if (this.pitching) {
-                this.fire('pitch', eventData);
-            }
-        }, function() {
-            const wasPitching = this.pitching;
-            this.moving = false;
-            this.zooming = false;
-            this.rotating = false;
-            this.pitching = false;
+            const newCenter = tr.unproject(from.add(delta.mult(u(s))).mult(scale));
+            tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
 
-            if (wasPitching) this.fire('pitchend', eventData);
-            this.fire('zoomend', eventData);
-            this.fire('moveend', eventData);
-        }, options);
+            this._fireMoveEvents(eventData);
+
+        }, () => this._easeToEnd(eventData), options);
 
         return this;
     }
