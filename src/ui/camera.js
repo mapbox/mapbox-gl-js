@@ -512,6 +512,8 @@ class Camera extends Evented {
         const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
+        this._normalizeCenter(center);
+
         const from = tr.project(locationAtOffset);
         const delta = tr.project(center).sub(from);
         const finalScale = tr.zoomScale(zoom - startZoom);
@@ -695,16 +697,7 @@ class Camera extends Evented {
         const pointAtOffset = tr.centerPoint.add(Point.convert(options.offset));
         const locationAtOffset = tr.pointLocation(pointAtOffset);
         const center = LngLat.convert(options.center || locationAtOffset);
-
-        // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
-        // interpolating between the two endpoints will cross it.
-        if (tr.renderWorldCopies && Math.abs(tr.center.lng) + Math.abs(center.lng) > 180) {
-            if (tr.center.lng > 0 && center.lng < 0) {
-                center.lng += 360;
-            } else if (tr.center.lng < 0 && center.lng > 0) {
-                center.lng -= 360;
-            }
-        }
+        this._normalizeCenter(center);
 
         const from = tr.project(locationAtOffset);
         const delta = tr.project(center).sub(from);
@@ -866,6 +859,18 @@ class Camera extends Evented {
         if (Math.abs(bearing - 360 - currentBearing) < diff) bearing -= 360;
         if (Math.abs(bearing + 360 - currentBearing) < diff) bearing += 360;
         return bearing;
+    }
+
+    // If a path crossing the antimeridian would be shorter, extend the final coordinate so that
+    // interpolating between the two endpoints will cross it.
+    _normalizeCenter(center) {
+        const tr = this.transform;
+        if (!tr.renderWorldCopies || tr.lngRange) return;
+
+        const delta = center.lng - tr.center.lng;
+        center.lng +=
+            delta > 180 ? -360 :
+            delta < -180 ? 360 : 0;
     }
 
     // only used on mouse-wheel zoom to smooth out animation
