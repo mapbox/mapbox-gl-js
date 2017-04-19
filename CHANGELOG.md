@@ -1,3 +1,22 @@
+## 0.36.0 (April 19, 2017)
+
+#### New features :sparkles:
+
+- Replace LogoControl logo with the new Mapbox logo #4598
+
+#### Bug fixes :bug:
+
+- Fix bug with the BoxZoomHandler that made it glitchy if it is enabled after the DragPanHandler #4528
+- Fix undefined behavior in `fill_outline` shaders #4600
+- Fix `Camera#easeTo` interpolation on pitched maps #4540
+- Choose property function interpolation method by the `property`'s type #4614
+
+#### Development workflow improvements :nerd_face:
+
+- Fix crash on missing `style.json` in integration tests
+- `gl-style-composite` is now executable in line with the other tools @andrewharvey #4595
+- `gl-style-composite` utility now throws an error if a name conflict would occur between layers @andrewharvey #4595
+
 ## 0.35.1 (April 12, 2017)
 
 #### Bug fixes :bug:
