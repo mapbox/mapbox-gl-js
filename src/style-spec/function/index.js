@@ -185,13 +185,28 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
     if (input >= parameters.stops[n - 1][0]) return parameters.stops[n - 1][1];
 
     const index = findStopLessThanOrEqualTo(parameters.stops, input);
+    const t = interpolationFactor(
+        input, base,
+        parameters.stops[index][0],
+        parameters.stops[index + 1][0]);
 
-    return interp(
-        parameters.stops[index][1],
-        parameters.stops[index + 1][1],
-        interpolationFactor(input, base,
-            parameters.stops[index][0],
-            parameters.stops[index + 1][0]));
+    const outputLower = parameters.stops[index][1];
+    const outputUpper = parameters.stops[index + 1][1];
+    const interp = interpolate[propertySpec.type] || identityFunction;
+
+    if (typeof outputLower === 'function') {
+        return function() {
+            const evaluatedLower = outputLower.apply(undefined, arguments);
+            const evaluatedUpper = outputUpper.apply(undefined, arguments);
+            // Special case for fill-outline-color, which has no spec default.
+            if (evaluatedLower === undefined || evaluatedUpper === undefined) {
+                return undefined;
+            }
+            return interp(evaluatedLower, evaluatedUpper, t);
+        };
+    }
+
+    return interp(outputLower, outputUpper, t);
 }
 
 function evaluateIdentityFunction(parameters, propertySpec, input) {
@@ -229,26 +244,6 @@ function findStopLessThanOrEqualTo(stops, input) {
     }
 
     return Math.max(currentIndex - 1, 0);
-}
-
-function interp(outputLower, outputUpper, t) {
-    if (typeof outputLower === 'function') {
-        return function() {
-            const evaluatedLower = outputLower.apply(undefined, arguments);
-            const evaluatedUpper = outputUpper.apply(undefined, arguments);
-            // Special case for fill-outline-color, which has no spec default.
-            if (evaluatedLower === undefined || evaluatedUpper === undefined) {
-                return undefined;
-            }
-            return interp(evaluatedLower, evaluatedUpper, t);
-        };
-    }
-
-    if (outputLower.length) {
-        return interpolate.array(outputLower, outputUpper, t);
-    } else {
-        return interpolate.number(outputLower, outputUpper, t);
-    }
 }
 
 function isFunctionDefinition(value) {
