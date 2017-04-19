@@ -1,7 +1,7 @@
 'use strict';
 
 const util = require('../util/util');
-const interpolate = require('../util/interpolate');
+const interpolate = require('../style-spec/util/interpolate');
 
 const fakeZoomHistory = { lastIntegerZoom: 0, lastIntegerZoomTime: 0, lastZoom: 0 };
 
