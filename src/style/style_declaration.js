@@ -67,6 +67,7 @@ class StyleDeclaration {
      * @private
      */
     calculateInterpolationT(globalProperties) {
+        if (this.isFeatureConstant || this.isZoomConstant) return 0;
         return this._functionInterpolationT(globalProperties && globalProperties.zoom, {});
     }
 }
