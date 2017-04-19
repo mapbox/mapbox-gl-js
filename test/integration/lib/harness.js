@@ -39,9 +39,17 @@ module.exports = function (directory, implementation, options, run) {
             if (!shouldRunTest(group, test))
                 return;
 
-            if (!fs.lstatSync(path.join(directory, group, test)).isDirectory() ||
-                !fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+            if (!fs.lstatSync(path.join(directory, group, test)).isDirectory())
+                // Skip files in this folder.
                 return;
+
+            try {
+                if (!fs.lstatSync(path.join(directory, group, test, 'style.json')).isFile())
+                    return;
+            } catch (err) {
+                console.log(colors.blue(`* omitting ${group} ${test} due to missing style`));
+                return;
+            }
 
             const style = require(path.join(directory, group, test, 'style.json'));
 
