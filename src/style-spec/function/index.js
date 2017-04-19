@@ -4,6 +4,7 @@ const colorSpaces = require('./color_spaces');
 const parseColor = require('../util/parse_color');
 const extend = require('../util/extend');
 const getType = require('../util/get_type');
+const interpolate = require('../util/interpolate');
 
 function identityFunction(x) {
     return x;
@@ -185,14 +186,12 @@ function evaluateExponentialFunction(parameters, propertySpec, input) {
 
     const index = findStopLessThanOrEqualTo(parameters.stops, input);
 
-    return interpolate(
-            input,
-            base,
+    return interp(
+        parameters.stops[index][1],
+        parameters.stops[index + 1][1],
+        interpolationFactor(input, base,
             parameters.stops[index][0],
-            parameters.stops[index + 1][0],
-            parameters.stops[index][1],
-            parameters.stops[index + 1][1]
-    );
+            parameters.stops[index + 1][0]));
 }
 
 function evaluateIdentityFunction(parameters, propertySpec, input) {
@@ -232,7 +231,7 @@ function findStopLessThanOrEqualTo(stops, input) {
     return Math.max(currentIndex - 1, 0);
 }
 
-function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpper) {
+function interp(outputLower, outputUpper, t) {
     if (typeof outputLower === 'function') {
         return function() {
             const evaluatedLower = outputLower.apply(undefined, arguments);
@@ -241,26 +240,15 @@ function interpolate(input, base, inputLower, inputUpper, outputLower, outputUpp
             if (evaluatedLower === undefined || evaluatedUpper === undefined) {
                 return undefined;
             }
-            return interpolate(input, base, inputLower, inputUpper, evaluatedLower, evaluatedUpper);
+            return interp(evaluatedLower, evaluatedUpper, t);
         };
-    } else if (outputLower.length) {
-        return interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper);
+    }
+
+    if (outputLower.length) {
+        return interpolate.array(outputLower, outputUpper, t);
     } else {
-        return interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper);
+        return interpolate.number(outputLower, outputUpper, t);
     }
-}
-
-function interpolateNumber(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    const ratio = interpolationFactor(input, base, inputLower, inputUpper);
-    return outputLower + ratio * (outputUpper - outputLower);
-}
-
-function interpolateArray(input, base, inputLower, inputUpper, outputLower, outputUpper) {
-    const output = [];
-    for (let i = 0; i < outputLower.length; i++) {
-        output[i] = interpolateNumber(input, base, inputLower, inputUpper, outputLower[i], outputUpper[i]);
-    }
-    return output;
 }
 
 function isFunctionDefinition(value) {
