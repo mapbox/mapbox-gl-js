@@ -69,7 +69,7 @@ test('util', (t) => {
                 callback(new Error('hi'), data);
             }, data);
         }, (err, results) => {
-            t.equal(err.message, 'hi');
+            t.equal(err && err.message, 'hi');
             t.deepEqual(results, [4, 0, 1, 2]);
             t.end();
         }));
@@ -118,7 +118,7 @@ test('util', (t) => {
         util.asyncAll([1, 2, 3], (number, callback) => {
             t.equal(number, expect++);
             t.ok(callback instanceof Function);
-            callback();
+            callback(null, 0);
         }, () => {
             t.end();
         });

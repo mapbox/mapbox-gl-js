@@ -1,37 +1,32 @@
 'use strict';
+// @Flow
 
 const browser = require('./util/browser');
 
-// jshint -W079
-const mapboxgl = module.exports = {};
+const version: string = require('../package.json').version;
+const workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
 
-mapboxgl.version = require('../package.json').version;
-mapboxgl.workerCount = Math.max(Math.floor(browser.hardwareConcurrency / 2), 1);
+const Map = require('./ui/map');
+const NavigationControl = require('./ui/control/navigation_control');
+const GeolocateControl = require('./ui/control/geolocate_control');
+const AttributionControl = require('./ui/control/attribution_control');
+const ScaleControl = require('./ui/control/scale_control');
+const FullscreenControl = require('./ui/control/fullscreen_control');
+const Popup = require('./ui/popup');
+const Marker = require('./ui/marker');
 
-mapboxgl.Map = require('./ui/map');
-mapboxgl.NavigationControl = require('./ui/control/navigation_control');
-mapboxgl.GeolocateControl = require('./ui/control/geolocate_control');
-mapboxgl.AttributionControl = require('./ui/control/attribution_control');
-mapboxgl.ScaleControl = require('./ui/control/scale_control');
-mapboxgl.FullscreenControl = require('./ui/control/fullscreen_control');
-mapboxgl.Popup = require('./ui/popup');
-mapboxgl.Marker = require('./ui/marker');
+const Style = require('./style/style');
 
-mapboxgl.Style = require('./style/style');
+const LngLat = require('./geo/lng_lat');
+const LngLatBounds = require('./geo/lng_lat_bounds');
+const Point = require('point-geometry');
 
-mapboxgl.LngLat = require('./geo/lng_lat');
-mapboxgl.LngLatBounds = require('./geo/lng_lat_bounds');
-mapboxgl.Point = require('point-geometry');
-
-mapboxgl.Evented = require('./util/evented');
-mapboxgl.supported = require('./util/browser').supported;
+const Evented = require('./util/evented');
+const supported = require('./util/browser').supported;
 
 const config = require('./util/config');
-mapboxgl.config = config;
 
 const rtlTextPlugin = require('./source/rtl_text_plugin');
-
-mapboxgl.setRTLTextPlugin = rtlTextPlugin.setRTLTextPlugin;
 
  /**
   * Sets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text).
@@ -45,10 +40,33 @@ mapboxgl.setRTLTextPlugin = rtlTextPlugin.setRTLTextPlugin;
   * @see [Add support for right-to-left scripts](https://www.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/)
   */
 
+const mapboxgl = {
+    version,
+    workerCount,
+    Map,
+    NavigationControl,
+    GeolocateControl,
+    AttributionControl,
+    ScaleControl,
+    FullscreenControl,
+    Popup,
+    Marker,
+    Style,
+    LngLat,
+    LngLatBounds,
+    Point,
+    Evented,
+    supported,
+    config,
+    setRTLTextPlugin: rtlTextPlugin.setRTLTextPlugin
+};
+
 Object.defineProperty(mapboxgl, 'accessToken', {
     get: function() { return config.ACCESS_TOKEN; },
     set: function(token) { config.ACCESS_TOKEN = token; }
 });
+
+module.exports = mapboxgl;
 
 /**
  * Gets and sets the map's [access token](https://www.mapbox.com/help/define-access-token/).

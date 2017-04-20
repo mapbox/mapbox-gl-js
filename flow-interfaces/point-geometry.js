@@ -1,3 +1,5 @@
+// @Flow
+'use strict';
 declare module "point-geometry" {
     declare class Point {
         x: number;
