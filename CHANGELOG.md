@@ -1,3 +1,9 @@
+## master
+
+#### :warning: Breaking changes
+
+- Removed `LngLat#wrapToBestWorld`
+
 ## 0.36.0 (April 19, 2017)
 
 #### New features :sparkles:
