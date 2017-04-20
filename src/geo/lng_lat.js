@@ -49,36 +49,6 @@ class LngLat {
     }
 
     /**
-     * Returns a new `LngLat` object wrapped to the best world to draw it provided a map `center` `LngLat`.
-     *
-     * When the map is close to the anti-meridian showing a point on world -1 or 1 is a better
-     * choice. The heuristic used is to minimize the distance from the map center to the point.
-     *
-     * Only works where the `LngLat` is wrapped with `LngLat.wrap()` and `center` is within the main world map.
-     *
-     * @param {LngLat} center Map center within the main world.
-     * @return {LngLat} The `LngLat` object in the best world to draw it for the provided map `center`.
-     * @example
-     * var ll = new mapboxgl.LngLat(170, 0);
-     * var mapCenter = new mapboxgl.LngLat(-170, 0);
-     * var snapped = ll.wrapToBestWorld(mapCenter);
-     * snapped; // = { lng: -190, lat: 0 }
-     */
-    wrapToBestWorld(center: LngLat) {
-        const wrapped = new LngLat(this.lng, this.lat);
-
-        if (Math.abs(this.lng - center.lng) > 180) {
-            if (center.lng < 0) {
-                wrapped.lng -= 360;
-            } else {
-                wrapped.lng += 360;
-            }
-        }
-
-        return wrapped;
-    }
-
-    /**
      * Returns the coordinates represented as an array of two numbers.
      *
      * @returns {Array<number>} The coordinates represeted as an array of longitude and latitude.
