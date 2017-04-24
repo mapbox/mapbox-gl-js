@@ -158,8 +158,7 @@ class Painter {
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.STENCIL_TEST);
 
-        // Only write clipping IDs to the last 5 bits. The first three are used for drawing fills.
-        gl.stencilMask(0xF8);
+        gl.stencilMask(0xFF);
         // Tests will always pass, and ref value will be written to stencil buffer.
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
@@ -167,9 +166,9 @@ class Painter {
         this._tileClippingMaskIDs = {};
 
         for (const coord of coords) {
-            const id = this._tileClippingMaskIDs[coord.id] = (idNext++) << 3;
+            const id = this._tileClippingMaskIDs[coord.id] = idNext++;
 
-            gl.stencilFunc(gl.ALWAYS, id, 0xF8);
+            gl.stencilFunc(gl.ALWAYS, id, 0xFF);
 
             const program = this.useProgram('fill', this.basicFillProgramConfiguration);
             gl.uniformMatrix4fv(program.u_matrix, false, coord.posMatrix);
@@ -187,7 +186,7 @@ class Painter {
 
     enableTileClippingMask(coord) {
         const gl = this.gl;
-        gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xF8);
+        gl.stencilFunc(gl.EQUAL, this._tileClippingMaskIDs[coord.id], 0xFF);
     }
 
     // Overridden by headless tests.
