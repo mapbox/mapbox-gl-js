@@ -83,7 +83,11 @@ exports.wrap = function (n: number, min: number, max: number): number {
  * called with an array, containing the results of each async call.
  * @private
  */
-exports.asyncAll = function (array: Array<any>, fn: Function, callback: Function) {
+exports.asyncAll = function<Item, Result> (
+  array: Array<Item>,
+  fn: (item: Item, fnCallback: (error: Error | null, result: Result) => void) => void,
+  callback: (error: Error | null, results: Array<Result>) => void
+) {
     if (!array.length) { return callback(null, []); }
     let remaining = array.length;
     const results = new Array(array.length);
@@ -103,7 +107,7 @@ exports.asyncAll = function (array: Array<any>, fn: Function, callback: Function
  *
  * @private
  */
-exports.values = function (obj: Object): Array<string> {
+exports.values = function (obj: {[key: string]: string}): Array<string> {
     const result = [];
     for (const k in obj) {
         result.push(obj[k]);
@@ -118,7 +122,7 @@ exports.values = function (obj: Object): Array<string> {
  * @returns keys difference
  * @private
  */
-exports.keysDifference = function (obj: Object, other: Object): Array<string> {
+exports.keysDifference = function (obj: {[key: string]: mixed}, other: {[key: string]: mixed}): Array<string> {
     const difference = [];
     for (const i in obj) {
         if (!(i in other)) {
@@ -325,7 +329,7 @@ exports.clone = function<T>(input: T): T {
  *
  * @private
  */
-exports.arraysIntersect = function(a: Array<any>, b: Array<any>): boolean {
+exports.arraysIntersect = function(a: Array<mixed>, b: Array<mixed>): boolean {
     for (let l = 0; l < a.length; l++) {
         if (b.indexOf(a[l]) >= 0) return true;
     }
@@ -338,7 +342,7 @@ exports.arraysIntersect = function(a: Array<any>, b: Array<any>): boolean {
  *
  * @private
  */
-const warnOnceHistory = {};
+const warnOnceHistory: {[key: string]: boolean} = {};
 exports.warnOnce = function(message: string): void {
     if (!warnOnceHistory[message]) {
         // console isn't defined in some WebWorkers, see #2558
