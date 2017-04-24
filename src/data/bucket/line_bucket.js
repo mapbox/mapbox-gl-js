@@ -96,10 +96,14 @@ class LineBucket extends Bucket {
         const featureProperties = feature.properties;
         const isPolygon = VectorTileFeature.types[feature.type] === 'Polygon';
 
-        // If the line has duplicate vertices at the end, adjust length to remove them.
+        // If the line has duplicate vertices at the ends, adjust start/length to remove them.
         let len = vertices.length;
         while (len >= 2 && vertices[len - 1].equals(vertices[len - 2])) {
             len--;
+        }
+        let first = 0;
+        while (first < len - 1 && vertices[first].equals(vertices[first + 1])) {
+            first++;
         }
 
         // Ignore invalid geometry.
@@ -109,7 +113,7 @@ class LineBucket extends Bucket {
 
         const sharpCornerOffset = SHARP_CORNER_OFFSET * (EXTENT / (512 * this.overscaling));
 
-        const firstVertex = vertices[0];
+        const firstVertex = vertices[first];
         const arrays = this.arrays;
 
         // we could be more precise, but it would only save a negligible amount of space
@@ -130,10 +134,10 @@ class LineBucket extends Bucket {
             nextNormal = firstVertex.sub(currentVertex)._unit()._perp();
         }
 
-        for (let i = 0; i < len; i++) {
+        for (let i = first; i < len; i++) {
 
             nextVertex = isPolygon && i === len - 1 ?
-                vertices[1] : // if the line is closed, we treat the last vertex like the first
+                vertices[first + 1] : // if the line is closed, we treat the last vertex like the first
                 vertices[i + 1]; // just the next vertex
 
             // if two consecutive vertices exist, skip the current one
@@ -181,7 +185,7 @@ class LineBucket extends Bucket {
 
             const isSharpCorner = cosHalfAngle < COS_HALF_SHARP_CORNER && prevVertex && nextVertex;
 
-            if (isSharpCorner && i > 0) {
+            if (isSharpCorner && i > first) {
                 const prevSegmentLength = currentVertex.dist(prevVertex);
                 if (prevSegmentLength > 2 * sharpCornerOffset) {
                     const newPrevVertex = currentVertex.sub(currentVertex.sub(prevVertex)._mult(sharpCornerOffset / prevSegmentLength)._round());
