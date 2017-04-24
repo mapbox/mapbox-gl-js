@@ -1,3 +1,5 @@
+declare type PointLike = Point | [number, number];
+
 declare module "point-geometry" {
     declare class Point {
         x: number;
@@ -36,6 +38,7 @@ declare module "point-geometry" {
         _rotate(angle: number): Point;
         _rotateAround(angle: number, point: Point): Point;
         _round(): Point;
+        static convert(a: PointLike): Point;
     }
-    declare var exports: typeof Point;
+    declare module.exports: typeof Point;
 }
