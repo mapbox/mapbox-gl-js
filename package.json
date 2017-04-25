@@ -116,7 +116,7 @@
     "start-docs": "npm run build-min && npm run build-docs && jekyll serve --watch",
     "lint": "eslint --cache --ignore-path .gitignore src test bench docs/_posts/examples/*.html debug/*.html",
     "lint-docs": "documentation lint src/index.js",
-    "lint-css": "stylelint 'dist/mapbox-gl.css' || true",
+    "lint-css": "stylelint 'dist/mapbox-gl.css'",
     "open-changed-examples": "git diff --name-only mb-pages HEAD -- docs/_posts/examples/*.html | awk '{print \"http://127.0.0.1:4000/mapbox-gl-js/example/\" substr($0,33,length($0)-37)}' | xargs open",
     "test": "run-s lint lint-css test-unit test-flow",
     "test-suite": "run-s test-render test-query",
@@ -124,7 +124,7 @@
     "test-unit": "tap --reporter dot --no-coverage test/unit",
     "test-render": "node test/render.test.js",
     "test-query": "node test/query.test.js",
-    "test-flow": "flow . || true",
+    "test-flow": "flow .",
     "test-cov": "nyc --require=flow-remove-types/register --reporter=text-summary --reporter=lcov --cache run-s test-unit test-render test-query",
     "prepublish": "in-publish && run-s build-dev build-min || not-in-publish",
     "postinstall": "cd src/style-spec && yarn || npm install"
