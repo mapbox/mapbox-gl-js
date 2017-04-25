@@ -119,13 +119,13 @@ class GeolocateControl extends Evented {
         if (this.options.watchPosition) {
             if (this._geolocationWatchID !== undefined) {
                 // clear watchPosition
-                this._geolocateButton.classList.remove('watching');
+                this._geolocateButton.classList.remove('mapboxgl-watching');
                 this._geolocateButton.setAttribute('aria-pressed', false);
                 window.navigator.geolocation.clearWatch(this._geolocationWatchID);
                 this._geolocationWatchID = undefined;
             } else {
                 // enable watchPosition
-                this._geolocateButton.classList.add('watching');
+                this._geolocateButton.classList.add('mapboxgl-watching');
                 this._geolocateButton.setAttribute('aria-pressed', true);
                 this._geolocationWatchID = window.navigator.geolocation.watchPosition(
                     this._onSuccess, this._onError, positionOptions);
