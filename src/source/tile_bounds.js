@@ -5,9 +5,15 @@ const clamp = require('../util/util').clamp;
 
 class TileBounds {
     constructor(bounds, minzoom, maxzoom) {
-        this.bounds = LngLatBounds.convert(bounds);
+        this.bounds = this.validateBounds(bounds) ? LngLatBounds.convert(bounds) : LngLatBounds.convert([-180, -90, 180, 90]);
         this.minzoom = minzoom || 0;
         this.maxzoom = maxzoom || 24;
+    }
+
+    validateBounds(bounds) {
+        if (!Array.isArray(bounds) || bounds.length !== 4) return false;
+        if (bounds[0] < -180 || bounds[1] < -90 || bounds[2] > 180 || bounds[3] > 90) return false;
+        return true;
     }
 
     contains(coord, maxzoom) {
