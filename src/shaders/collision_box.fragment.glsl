@@ -3,6 +3,7 @@ uniform float u_maxzoom;
 
 varying float v_max_zoom;
 varying float v_placement_zoom;
+varying float v_perspective_zoom_adjust;
 
 void main() {
 
@@ -21,9 +22,9 @@ void main() {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0) * alpha;
     }
 
-    if (v_placement_zoom >= u_maxzoom) {
     // Blue = this collision box will not be placed at tile zoom + 1
     //  e.g. The only way to show this is overzooming
+    if (v_placement_zoom >= u_maxzoom + v_perspective_zoom_adjust) {
         gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0) * alpha;
     }
 }
