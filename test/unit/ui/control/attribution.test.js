@@ -45,7 +45,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
 
     const container = map.getContainer();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.compact').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);
     map.removeControl(attributionControl);
 
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 600, configurable: true});
@@ -54,7 +54,7 @@ test('AttributionControl appears in compact mode if compact option is used', (t)
     });
 
     map.addControl(attributionControl);
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.compact)').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.mapboxgl-compact)').length, 1);
     t.end();
 });
 
@@ -65,12 +65,12 @@ test('AttributionControl appears in compact mode if container is less then 640 p
 
     const container = map.getContainer();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.compact)').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib:not(.mapboxgl-compact)').length, 1);
 
     Object.defineProperty(map.getCanvasContainer(), 'offsetWidth', {value: 600, configurable: true});
     map.resize();
 
-    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.compact').length, 1);
+    t.equal(container.querySelectorAll('.mapboxgl-ctrl-attrib.mapboxgl-compact').length, 1);
     t.end();
 });
 
@@ -105,7 +105,7 @@ test('AttributionControl has the correct edit map link', (t) => {
     map.addControl(attribution);
 
     map.on('load', () => {
-        map.addSource('1', {type: 'vector', attribution: '<a class="mapbox-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});
+        map.addSource('1', {type: 'vector', attribution: '<a class="mapboxgl-improve-map" href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a>'});
         map.on('data', (e) => {
             if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                 t.equal(attribution._editLink.href, 'https://www.mapbox.com/map-feedback/#/0/0/1', 'edit link contains map location data');

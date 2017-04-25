@@ -38,7 +38,7 @@ class AttributionControl {
         this._container = DOM.create('div', 'mapboxgl-ctrl mapboxgl-ctrl-attrib');
 
         if (compact) {
-            this._container.classList.add('compact');
+            this._container.classList.add('mapboxgl-compact');
         }
 
         this._updateAttributions();
@@ -66,7 +66,7 @@ class AttributionControl {
     }
 
     _updateEditLink() {
-        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
+        if (!this._editLink) this._editLink = this._container.querySelector('.mapboxgl-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
             this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
@@ -110,7 +110,7 @@ class AttributionControl {
     _updateCompact() {
         const compact = this._map.getCanvasContainer().offsetWidth <= 640;
 
-        this._container.classList[compact ? 'add' : 'remove']('compact');
+        this._container.classList[compact ? 'add' : 'remove']('mapboxgl-compact');
     }
 
 }
