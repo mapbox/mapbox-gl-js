@@ -44,14 +44,6 @@ class ImageSprite extends Evented {
 
             this.imgData = browser.getImageData(img);
 
-            // premultiply the sprite
-            for (let i = 0; i < this.imgData.length; i += 4) {
-                const alpha = this.imgData[i + 3] / 255;
-                this.imgData[i + 0] *= alpha;
-                this.imgData[i + 1] *= alpha;
-                this.imgData[i + 2] *= alpha;
-            }
-
             this.width = img.width;
 
             if (this.data) this.fire('data', {dataType: 'style'});

@@ -61,6 +61,8 @@ class SpriteAtlas extends Evented {
 
         if (ArrayBuffer.isView(pixels)) {
             pixels = new Uint32Array(pixels.buffer);
+        } else if (pixels.data) {   //Support ImageData correctly
+            pixels = new Uint32Array(pixels.data);
         }
 
         if (!(pixels instanceof Uint32Array)) {
@@ -221,6 +223,7 @@ class SpriteAtlas extends Evented {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
             first = true;
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
