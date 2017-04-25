@@ -167,7 +167,9 @@ void main() {
     // adjust the size of only one axis. So, we do a crude approximation at placement time to get the aspect ratio
     // about right, and then do the rest of the adjustment here: there will be some extra padding on the x-axis,
     // but hopefully not too much.
-    highp float collision_adjustment = incidence_stretch / u_collision_y_stretch;
+    // Never make the adjustment less than 1.0: instead of allowing collisions on the x-axis, be conservative on
+    // the y-axis.
+    highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
 
     highp float perspective_zoom_adjust = log2(perspective_ratio * collision_adjustment)*10.0 / 255.0;
     v_fade_tex = vec2((a_labelminzoom / 255.0) + perspective_zoom_adjust, 0.0);
