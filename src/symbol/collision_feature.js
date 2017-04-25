@@ -1,5 +1,10 @@
 'use strict';
 
+// We calculate line collision boxes out to 150% of what would normally be our
+// max size, to allow collision detection to work on labels that expand as
+// they move into the distance
+const pitchExpansionFactor = 1.5;
+
 /**
  * A CollisionFeature represents the area of the tile covered by a single label.
  * It is used with CollisionTile to check if the label overlaps with any
@@ -32,7 +37,7 @@ class CollisionFeature {
         if (alignLine) {
 
             let height = y2 - y1;
-            const length = x2 - x1;
+            const length = (x2 - x1) * pitchExpansionFactor;
 
             if (height > 0) {
                 // set minimum box height to avoid very many small labels
@@ -120,7 +125,7 @@ class CollisionFeature {
             const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
             const distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
-            const maxScale = labelLength / 2 / distanceToInnerEdge;
+            const maxScale = labelLength / 2 / distanceToInnerEdge / pitchExpansionFactor;
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                     -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,
