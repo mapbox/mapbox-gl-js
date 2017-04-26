@@ -49,7 +49,7 @@ test('RasterTileSource', (t) => {
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
         });
         source.setBounds([-47, -7, -45, 91]);
-        t.true(source.hasTile({z: 8, x:50, y: 50}), 'returns true for all tiles');
+        t.deepEqual(source.tileBounds.bounds, {_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}}, 'converts invalid bounds to closest valid bounds');
         t.end();
     });
 
