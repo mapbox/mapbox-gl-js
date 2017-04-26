@@ -33,6 +33,8 @@ class CollisionTile {
         this.angle = angle;
         this.pitch = pitch;
 
+        this.minimumPitchScaling = 1;
+
         const sin = Math.sin(angle),
             cos = Math.cos(angle);
         this.rotationMatrix = [cos, -sin, sin, cos];
@@ -314,7 +316,8 @@ class CollisionTile {
      * @param {number} minPlacementScale
      * @private
      */
-    insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement) {
+    insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement, pitchScaling) {
+        this.minimumPitchScaling = Math.min(pitchScaling, this.minimumPitchScaling);
 
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;
