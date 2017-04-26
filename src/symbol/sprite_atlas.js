@@ -81,7 +81,7 @@ class SpriteAtlas extends Evented {
             width: width / pixelRatio,
             height: height / pixelRatio,
             sdf: false,
-            pixelRatio: 1
+            pixelRatio: 1 / this.pixelRatio
         };
         this.images[name] = image;
 
