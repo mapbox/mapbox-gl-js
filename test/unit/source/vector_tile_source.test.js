@@ -186,12 +186,23 @@ test('VectorTileSource', (t) => {
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
         });
-        source.setBounds([[-47, -7], [-45, -5]]);
+        source.setBounds([-47, -7, -45, -5]);
         t.false(source.hasTile({z: 8, x:96, y: 132}), 'returns false for tiles outside bounds');
         t.true(source.hasTile({z: 8, x:95, y: 132}), 'returns true for tiles inside bounds');
         t.end();
     });
 
+    t.test('does not error on invalid bounds', (t)=>{
+        const source = createSource({
+            minzoom: 0,
+            maxzoom: 22,
+            attribution: "Mapbox",
+            tiles: ["http://example.com/{z}/{x}/{y}.png"],
+        });
+        source.setBounds([-47, -7, -45, 91]);
+        t.deepEqual(source.tileBounds.bounds, {_sw:{lng: -47, lat: -7}, _ne:{lng: -45, lat: 90}}, 'converts invalid bounds to closest valid bounds');
+        t.end();
+    });
 
     t.test('respects TileJSON.bounds when loaded from TileJSON', (t)=>{
         window.server.respondWith('/source.json', JSON.stringify({
@@ -199,7 +210,7 @@ test('VectorTileSource', (t) => {
             maxzoom: 22,
             attribution: "Mapbox",
             tiles: ["http://example.com/{z}/{x}/{y}.png"],
-            bounds: [[-47, -7], [-45, -5]]
+            bounds: [-47, -7, -45, -5]
         }));
         const source = createSource({ url: "/source.json" });
 
