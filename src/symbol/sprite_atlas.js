@@ -61,12 +61,10 @@ class SpriteAtlas extends Evented {
 
         if (ArrayBuffer.isView(pixels)) {
             pixels = new Uint32Array(pixels.buffer);
-        } else if (pixels.data) {   //Support ImageData correctly
-            pixels = new Uint32Array(pixels.data);
         }
 
         if (!(pixels instanceof Uint32Array)) {
-            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.')});
+            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement and ArrayBufferView.')});
         }
 
         if (this.images[name]) {
