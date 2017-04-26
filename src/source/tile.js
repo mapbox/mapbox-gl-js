@@ -20,7 +20,7 @@ const CLOCK_SKEW_RETRY_TIMEOUT = 30000;
  */
 class Tile {
     /**
-     * @param {Coordinate} coord
+     * @param {TileCoord} coord
      * @param {number} size
      */
     constructor(coord, size, sourceMaxZoom) {
