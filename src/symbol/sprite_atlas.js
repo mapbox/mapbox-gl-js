@@ -64,7 +64,7 @@ class SpriteAtlas extends Evented {
         }
 
         if (!(pixels instanceof Uint32Array)) {
-            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement, ImageData, and ArrayBufferView.')});
+            return this.fire('error', {error: new Error('Image provided in an invalid format. Supported formats are HTMLImageElement and ArrayBufferView.')});
         }
 
         if (this.images[name]) {
@@ -221,6 +221,7 @@ class SpriteAtlas extends Evented {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
             first = true;
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
