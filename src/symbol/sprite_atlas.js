@@ -21,7 +21,7 @@ class SpriteAtlas extends Evented {
         this.data = false;
         this.texture = 0; // WebGL ID
         this.filter = 0; // WebGL ID
-        this.pixelRatio = 1;
+        this.pixelRatio = browser.devicePixelRatio > 1 ? 2 : 1;
         this.dirty = true;
     }
 
@@ -52,11 +52,11 @@ class SpriteAtlas extends Evented {
             width = pixels.width;
             height = pixels.height;
             pixels = browser.getImageData(pixels);
-            pixelRatio = this.pixelRatio;
+            pixelRatio = 1;
         } else {
             width = options.width;
             height = options.height;
-            pixelRatio = options.pixelRatio || this.pixelRatio;
+            pixelRatio = options.pixelRatio || 1;
         }
 
         if (ArrayBuffer.isView(pixels)) {
@@ -81,8 +81,9 @@ class SpriteAtlas extends Evented {
             width: width / pixelRatio,
             height: height / pixelRatio,
             sdf: false,
-            pixelRatio: 1 / this.pixelRatio
+            pixelRatio: pixelRatio / this.pixelRatio
         };
+        console.log(`computed pixelratio - ${image.pixelRatio}`);
         this.images[name] = image;
 
         this.copy(pixels, width, rect, {pixelRatio, x: 0, y: 0, width, height}, false);
@@ -195,13 +196,9 @@ class SpriteAtlas extends Evented {
     }
 
     setSprite(sprite) {
-        if (sprite) {
-            this.pixelRatio = browser.devicePixelRatio > 1 ? 2 : 1;
-
-            if (this.canvas) {
-                this.canvas.width = this.width * this.pixelRatio;
-                this.canvas.height = this.height * this.pixelRatio;
-            }
+        if (sprite && this.canvas) {
+            this.canvas.width = this.width * this.pixelRatio;
+            this.canvas.height = this.height * this.pixelRatio;
         }
         this.sprite = sprite;
     }
