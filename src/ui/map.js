@@ -179,6 +179,7 @@ class Map extends Camera {
         this._setupPainter();
 
         this.on('move', this._update.bind(this, false));
+        this.on('move', this._redoPlacementOnInterval.bind(this));
         this.on('zoom', this._update.bind(this, true));
         this.on('moveend', () => {
             this.animationLoop.set(300); // text fading
@@ -861,7 +862,6 @@ class Map extends Camera {
 
         this.style.setEventedParent(this, {style: this.style});
 
-        this.on('move', this.style._redoPlacement); // TODO: Too expensive?
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
 
@@ -1487,6 +1487,18 @@ class Map extends Camera {
     _onWindowResize() {
         if (this._trackResize) {
             this.stop().resize()._update();
+        }
+    }
+
+    _redoPlacement() {
+        this._pendingRedoPlacement = false;
+        this.style._redoPlacement();
+    }
+
+    _redoPlacementOnInterval() {
+        if (this.style && !this._pendingRedoPlacement) {
+            this._pendingRedoPlacement = true;
+            setTimeout(this._redoPlacement.bind(this), 300);
         }
     }
 
