@@ -104,7 +104,8 @@ function applyOperations(map, operations, callback) {
 
     } else if (operation[0] === 'addImage') {
         const img = PNG.sync.read(fs.readFileSync(path.join(__dirname, './integration', operation[2])));
-        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: 1});
+        const pixelRatio = operation.length > 3 ? operation[3] : 1;
+        map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: pixelRatio});
         applyOperations(map, operations.slice(1), callback);
 
     } else {

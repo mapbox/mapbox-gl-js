@@ -4,11 +4,13 @@
     "test": {
       "width": 64,
       "height": 64,
+      "pixelRatio": 1,
       "operations": [
         [
           "addImage",
           "marker",
-          "./image/marker.png"
+          "./sprites/2x.png",
+          2
         ],
         [
           "addLayer",
