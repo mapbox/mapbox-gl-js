@@ -139,6 +139,11 @@ test("mapbox", (t) => {
             t.end();
         });
 
+        t.test('concantenates path, ratio, and extension for file:/// scheme', (t) => {
+            t.equal(mapbox.normalizeSpriteURL('file:///path/to/bar', '@2x', '.png'), 'file:///path/to/bar@2x.png');
+            t.end();
+        });
+
         t.test('normalizes non-mapbox:// scheme when query string exists', (t) => {
             t.equal(mapbox.normalizeSpriteURL('http://www.foo.com/bar?fresh=true', '@2x', '.png'), 'http://www.foo.com/bar@2x.png?fresh=true');
             t.end();
