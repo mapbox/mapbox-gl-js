@@ -1044,7 +1044,7 @@ test('camera', (t) => {
                 t.end();
             });
 
-            camera.flyTo({ center: [-170, 0], duration: 10 });
+            camera.flyTo({ center: [-170, 0], duration: 20 });
         });
 
         t.test('pans westward across the antimeridian', (t) => {
