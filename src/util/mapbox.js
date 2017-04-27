@@ -96,7 +96,7 @@ function replaceTempAccessToken(params: Array<string>) {
     }
 }
 
-const urlRe = /^(\w+):\/\/([^/?]+)(\/[^?]+)?\??(.+)?/;
+const urlRe = /^(\w+):\/\/([^/?]*)(\/[^?]+)?\??(.+)?/;
 
 function parseUrl(url: string): UrlObject {
     const parts = url.match(urlRe);
