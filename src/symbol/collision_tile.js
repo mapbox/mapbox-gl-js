@@ -139,6 +139,9 @@ class CollisionTile {
             // In order to detect collisions that only happen while underzoomed,
             // we have to query a larger portion of the grid.
             // This extra work is offset by having a lower 'maxScale' bound
+            // Note that this adjustment ONLY affects the bounding boxes
+            // in the grid. It doesn't affect the boxes used for the
+            // minPlacementScale calculations.
             const x1 = x + box.x1 * this.perspectiveRatio;
             const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
             const x2 = x + box.x2 * this.perspectiveRatio;
