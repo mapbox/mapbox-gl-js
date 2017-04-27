@@ -597,7 +597,7 @@ class SymbolBucket {
             // Insert final placement into collision tree and add glyphs/icons to buffers
 
             if (hasText) {
-                collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement'], layer.getLayoutValue('text-pitch-scale'));
+                collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement'], layer.getLayoutValue('text-pitch-scaling'));
                 if (glyphScale <= maxScale) {
                     const textSizeData = getSizeVertexData(layer,
                         this.zoom,
@@ -619,7 +619,7 @@ class SymbolBucket {
             }
 
             if (hasIcon) {
-                collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement'], layer.getLayoutValue('icon-pitch-scale'));
+                collisionTile.insertCollisionFeature(iconCollisionFeature, iconScale, layout['icon-ignore-placement'], layer.getLayoutValue('icon-pitch-scaling'));
                 if (iconScale <= maxScale) {
                     const iconSizeData = getSizeVertexData(
                         layer,

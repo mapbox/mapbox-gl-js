@@ -195,8 +195,8 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
     gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
-    gl.uniform1f(program.u_pitch_scale, layer.getLayoutValue(isText ? 'text-pitch-scale' : 'icon-pitch-scale'));
-    gl.uniform1f(program.u_collision_pitch_scale, minimumPitchScaling);
+    gl.uniform1f(program.u_pitch_scaling, layer.getLayoutValue(isText ? 'text-pitch-scaling' : 'icon-pitch-scaling'));
+    gl.uniform1f(program.u_collision_pitch_scaling, minimumPitchScaling);
     gl.uniform1f(program.u_max_camera_distance, layer.getLayoutValue('max-camera-distance'));
 }
 

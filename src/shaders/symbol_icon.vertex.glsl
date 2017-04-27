@@ -11,8 +11,8 @@ uniform mediump float u_layout_size; // used when size is feature constant
 uniform mediump float u_camera_to_center_distance;
 uniform mediump float u_max_camera_distance;
 uniform mediump float u_pitch;
-uniform mediump float u_pitch_scale;
-uniform mediump float u_collision_pitch_scale;
+uniform mediump float u_pitch_scaling;
+uniform mediump float u_collision_pitch_scaling;
 uniform mediump float u_collision_y_stretch;
 
 #pragma mapbox: define lowp float opacity
@@ -84,7 +84,7 @@ void main() {
     } else {
         gl_Position = u_matrix * vec4(a_pos, 0, 1);
         camera_to_anchor_distance = gl_Position.w;
-        perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
+        perspective_ratio += (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
         extrude *= perspective_ratio;
         gl_Position += vec4(extrude, 0, 0);
     }
@@ -97,7 +97,7 @@ void main() {
     // See comments in symbol_sdf.vertex
     highp float incidence_stretch  = camera_to_anchor_distance / (u_camera_to_center_distance * cos(u_pitch));
     highp float collision_adjustment = max(1.0, incidence_stretch / u_collision_y_stretch);
-    highp float collision_perspective_ratio = 1.0 + (1.0 - u_collision_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
+    highp float collision_perspective_ratio = 1.0 + (1.0 - u_collision_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
     highp float perspective_zoom_adjust = log2(collision_perspective_ratio * collision_adjustment)*10.0 / 255.0;
     v_fade_tex = vec2((a_labelminzoom / 255.0) + perspective_zoom_adjust, 0.0);

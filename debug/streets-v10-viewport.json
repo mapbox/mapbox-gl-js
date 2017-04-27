@@ -2976,8 +2976,8 @@
       "layout": {
         "text-size": 9,
         "icon-image": "{shield}-{reflen}",
-        "icon-pitch-scale": 0.1,
-        "text-pitch-scale": 0.1,
+        "icon-pitch-scaling": 0.1,
+        "text-pitch-scaling": 0.1,
         "icon-rotation-alignment": "viewport",
         "text-max-angle": 38,
         "symbol-spacing": { "base": 1, "stops": [ [ 11, 150 ], [ 14, 200 ] ] },
@@ -3573,7 +3573,7 @@
       "filter": [ "all", [ "!in", "scalerank", 0, 1, 2, 3, 4, 5 ], [ "==", "type", "city" ] ],
       "layout": {
         "text-size": { "base": 1, "stops": [ [ 6, 12 ], [ 14, 22 ] ] },
-        "text-pitch-scale": 0.1,
+        "text-pitch-scaling": 0.1,
         "icon-image": "dot-9",
         "text-font": {
           "base": 1,
@@ -3620,7 +3620,7 @@
           ]
         },
         "text-size": { "base": 0.9, "stops": [ [ 5, 12 ], [ 12, 22 ] ] },
-        "text-pitch-scale": 0.1
+        "text-pitch-scaling": 0.1
       },
       "paint": {
         "text-halo-width": 1,
@@ -3657,7 +3657,7 @@
         "text-field": "{name_en}",
         "text-max-width": 7,
         "text-size": { "base": 0.9, "stops": [ [ 5, 12 ], [ 12, 22 ] ] },
-        "text-pitch-scale": 0.1
+        "text-pitch-scaling": 0.1
       },
       "paint": {
         "text-color": "hsl(0, 0%, 0%)",
@@ -3695,7 +3695,7 @@
         "text-field": "{name_en}",
         "text-max-width": 7,
         "text-size": { "base": 0.9, "stops": [ [ 4, 12 ], [ 10, 22 ] ] },
-        "text-pitch-scale": 0.1
+        "text-pitch-scaling": 0.1
       },
       "paint": {
         "text-color": "hsl(0, 0%, 0%)",
@@ -3732,7 +3732,7 @@
         "text-anchor": { "base": 1, "stops": [ [ 7, "bottom" ], [ 8, "center" ] ] },
         "text-field": "{name_en}",
         "text-max-width": 7,
-        "text-pitch-scale": 0.1,
+        "text-pitch-scaling": 0.1,
         "text-size": { "base": 0.9, "stops": [ [ 4, 12 ], [ 10, 22 ] ] }
       },
       "paint": {

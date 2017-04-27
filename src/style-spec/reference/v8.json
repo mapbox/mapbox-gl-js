@@ -827,7 +827,7 @@
         }
       }
     },
-    "icon-pitch-scale": {
+    "icon-pitch-scaling": {
       "type": "number",
       "default": 1,
       "minimum": 0,
@@ -1173,7 +1173,7 @@
         }
       }
     },
-    "text-pitch-scale": {
+    "text-pitch-scaling": {
       "type": "number",
       "default": 1,
       "minimum": 0,
