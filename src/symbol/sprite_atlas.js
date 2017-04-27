@@ -83,7 +83,6 @@ class SpriteAtlas extends Evented {
             sdf: false,
             pixelRatio: pixelRatio / this.pixelRatio
         };
-        console.log(`computed pixelratio - ${image.pixelRatio}`);
         this.images[name] = image;
 
         this.copy(pixels, width, rect, {pixelRatio, x: 0, y: 0, width, height}, false);
