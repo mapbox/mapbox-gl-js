@@ -104,7 +104,7 @@ void main() {
 
     vec4 projectedPoint = u_matrix * vec4(a_label_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
-    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);;
+    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
     // pitch-alignment: map
     // rotation-alignment: map | viewport
