@@ -9,6 +9,7 @@ uniform mediump float u_size_t; // used to interpolate between zoom stops when s
 uniform mediump float u_size; // used when size is both zoom and feature constant
 uniform mediump float u_layout_size; // used when size is feature constant
 uniform mediump float u_camera_to_center_distance;
+uniform mediump float u_max_camera_distance;
 uniform mediump float u_pitch;
 uniform mediump float u_pitch_scale;
 uniform mediump float u_collision_pitch_scale;
@@ -86,6 +87,10 @@ void main() {
         perspective_ratio += (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
         extrude *= perspective_ratio;
         gl_Position += vec4(extrude, 0, 0);
+    }
+
+    if (camera_to_anchor_distance > u_max_camera_distance * u_camera_to_center_distance) {
+        gl_Position.z += gl_Position.w;
     }
 
     v_tex = a_tex / u_texsize;

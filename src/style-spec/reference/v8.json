@@ -1189,6 +1189,22 @@
         "data-driven styling": {}
       }
     },
+    "max-camera-distance": {
+      "type": "number",
+      "default": 10,
+      "minimum": 1,
+      "maximum": 20,
+      "doc": "This value defines a multiple of the distance from the camera to the center of the map. Any labels beyond this distance will not be displayed on the map.",
+      "requires": [
+        "text-field"
+      ],
+      "sdk-support": {
+        "basic functionality": {
+          "js": "0.34.0"
+        },
+        "data-driven styling": {}
+      }
+    },
     "text-max-width": {
       "type": "number",
       "default": 10,

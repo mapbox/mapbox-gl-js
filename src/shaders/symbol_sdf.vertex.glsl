@@ -36,6 +36,7 @@ uniform mediump float u_pitch;
 uniform mediump float u_bearing;
 uniform mediump float u_aspect_ratio;
 uniform mediump float u_camera_to_center_distance;
+uniform mediump float u_max_camera_distance;
 uniform mediump float u_pitch_scale;
 uniform mediump float u_collision_pitch_scale;
 uniform mediump float u_collision_y_stretch;
@@ -105,7 +106,6 @@ void main() {
     highp float camera_to_anchor_distance = projectedPoint.w;
     highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scale)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);;
 
-    //mediump float z = clipUnusedGlyphAngles(v_size, layoutSize, a_minzoom, a_maxzoom);
     // pitch-alignment: map
     // rotation-alignment: map | viewport
     if (u_pitch_with_map) {
@@ -149,6 +149,10 @@ void main() {
     } else {
         vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (a_offset / 64.0);
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
+    }
+
+    if (camera_to_anchor_distance > u_max_camera_distance * u_camera_to_center_distance) {
+        gl_Position.z += gl_Position.w;
     }
 
     v_gamma_scale = gl_Position.w / perspective_ratio;
