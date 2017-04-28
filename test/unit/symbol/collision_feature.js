@@ -111,7 +111,7 @@ test('CollisionFeature', (t) => {
         const line = [new Point(0, 0), new Point(500, 100), new Point(510, 90), new Point(700, 0)];
         const anchor = new Anchor(505, 95, 0, 1);
         const cf = new CollisionFeature(collisionBoxArray, line, anchor, 0, 0, 0, shapedText, 1, 0, true);
-        t.ok(cf.boxEndIndex - cf.boxStartIndex < 30);
+        t.ok(cf.boxEndIndex - cf.boxStartIndex < 45);
         t.end();
     });
 
