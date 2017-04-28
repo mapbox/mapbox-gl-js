@@ -33,7 +33,6 @@
       "type": "symbol",
       "source": "geojson",
       "layout": {
-        "icon-image": "dog-park-12",
         "text-field": "{name}",
         "text-font": [
           "NotoCJK"
