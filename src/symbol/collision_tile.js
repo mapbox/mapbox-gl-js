@@ -23,12 +23,14 @@ class CollisionTile {
             cameraToCenterDistance = serialized.cameraToCenterDistance;
             cameraToTileDistance = serialized.cameraToTileDistance;
             this.minimumPitchScaling = serialized.minimumPitchScaling;
+            this.maximumPitchScaling = serialized.maximumPitchScaling;
             this.grid = new Grid(serialized.grid);
             this.ignoredGrid = new Grid(serialized.ignoredGrid);
         } else {
             this.grid = new Grid(EXTENT, 12, 6);
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
             this.minimumPitchScaling = 1;
+            this.maximumPitchScaling = 0;
         }
 
         this.perspectiveRatio = 1 +
@@ -106,6 +108,7 @@ class CollisionTile {
             cameraToTileDistance: this.cameraToTileDistance,
             cameraToCenterDistance: this.cameraToCenterDistance,
             minimumPitchScaling: this.minimumPitchScaling,
+            maximumPitchScaling: this.maximumPitchScaling,
             grid: grid,
             ignoredGrid: ignoredGrid
         };
@@ -329,6 +332,7 @@ class CollisionTile {
      */
     insertCollisionFeature(collisionFeature, minPlacementScale, ignorePlacement, pitchScaling) {
         this.minimumPitchScaling = Math.min(pitchScaling, this.minimumPitchScaling);
+        this.maximumPitchScaling = Math.max(pitchScaling, this.maximumPitchScaling);
 
         const grid = ignorePlacement ? this.ignoredGrid : this.grid;
         const collisionBoxArray = this.collisionBoxArray;

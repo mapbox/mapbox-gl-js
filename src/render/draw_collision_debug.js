@@ -27,7 +27,8 @@ function drawCollisionDebug(painter, sourceCache, layer, coords) {
         gl.uniform1f(program.u_collision_y_stretch, tile.collisionTile.yStretch);
         gl.uniform1f(program.u_pitch, painter.transform.pitch / 360 * 2 * Math.PI);
         gl.uniform1f(program.u_camera_to_center_distance, painter.transform.cameraToCenterDistance);
-        gl.uniform1f(program.u_pitch_scaling, tile.collisionTile.minimumPitchScaling);
+        gl.uniform1f(program.u_minimum_pitch_scaling, tile.collisionTile.minimumPitchScaling);
+        gl.uniform1f(program.u_maximum_pitch_scalng, tile.collisionTile.maximumPitchScaling);
 
         for (const segment of buffers.segments) {
             segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, null, segment.vertexOffset);

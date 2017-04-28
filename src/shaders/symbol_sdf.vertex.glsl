@@ -38,7 +38,8 @@ uniform mediump float u_aspect_ratio;
 uniform mediump float u_camera_to_center_distance;
 uniform mediump float u_max_camera_distance;
 uniform mediump float u_pitch_scaling;
-uniform mediump float u_collision_pitch_scaling;
+uniform mediump float u_minimum_pitch_scaling;
+uniform mediump float u_maximum_pitch_scaling;
 uniform mediump float u_collision_y_stretch;
 uniform vec2 u_extrude_scale;
 
@@ -180,7 +181,10 @@ void main() {
     // with an unscaled (large) label even though this particular label is highly scaled (and thus small).
     // Note that this same conservatism doesn't apply to the minzoom/maxzoom for line-following glyphs: those
     //  zoom bounds are independent of other labels on the tile.
-    highp float collision_perspective_ratio = 1.0 + (1.0 - u_collision_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
+    mediump float collision_pitch_scaling = (camera_to_anchor_distance > u_camera_to_center_distance) ? u_minimum_pitch_scaling : u_maximum_pitch_scaling;
+    highp float collision_perspective_ratio = 1.0 +
+          (1.0 - collision_pitch_scaling)
+        * ((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
     highp float perspective_zoom_adjust = log2(collision_perspective_ratio * collision_adjustment)*10.0 / 255.0;
     v_fade_tex = vec2((a_labelminzoom / 255.0) + perspective_zoom_adjust, 0.0);
