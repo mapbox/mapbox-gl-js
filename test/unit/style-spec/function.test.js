@@ -715,6 +715,23 @@ test('categorical function', (t) => {
         t.end();
     });
 
+    t.test('string zoom-and-property function default', (t) => {
+        const f = createFunction({
+            property: 'foo',
+            type: 'categorical',
+            stops: [[{zoom: 0, value: 'bar'}, 'zero']],
+            default: 'default'
+        }, {
+            type: 'string'
+        });
+
+        t.equal(f(0, {}), 'default');
+        t.equal(f(0, {foo: 3}), 'default');
+        t.equal(f(0, {foo: 'bar'}), 'zero');
+
+        t.end();
+    });
+
     t.test('strict type checking', (t) => {
         const numberKeys = createFunction({
             property: 'foo',

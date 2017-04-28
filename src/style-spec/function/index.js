@@ -108,6 +108,7 @@ function createFunction(parameters, propertySpec) {
                         zoom: zoom,
                         type: parameters.type,
                         property: parameters.property,
+                        default: parameters.default,
                         stops: []
                     };
                     zoomStops.push(zoom);
