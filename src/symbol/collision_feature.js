@@ -1,10 +1,5 @@
 'use strict';
 
-// We calculate line collision boxes out to 150% of what would normally be our
-// max size, to allow collision detection to work on labels that expand as
-// they move into the distance
-const pitchExpansionFactor = 1.5;
-
 /**
  * A CollisionFeature represents the area of the tile covered by a single label.
  * It is used with CollisionTile to check if the label overlaps with any
@@ -37,7 +32,7 @@ class CollisionFeature {
         if (alignLine) {
 
             let height = y2 - y1;
-            const length = (x2 - x1) * pitchExpansionFactor;
+            const length = x2 - x1;
 
             if (height > 0) {
                 // set minimum box height to avoid very many small labels
@@ -77,34 +72,52 @@ class CollisionFeature {
     _addLineCollisionBoxes(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
         const step = boxSize / 2;
         const nBoxes = Math.floor(labelLength / step);
+        // We calculate line collision boxes out to 150% of what would normally be our
+        // max size, to allow collision detection to work on labels that expand as
+        // they move into the distance
+        const nPitchPaddingBoxes = Math.floor(nBoxes / 2);
 
         // offset the center of the first box by half a box so that the edge of the
         // box is at the edge of the label.
         const firstBoxOffset = -boxSize / 2;
 
-        const bboxes = this.boxes;
-
         let p = anchor;
         let index = segment + 1;
         let anchorDistance = firstBoxOffset;
+        const labelStartDistance = -labelLength / 2;
+        const paddingStartDistance = labelStartDistance - labelLength / 4;
 
         // move backwards along the line to the first segment the label appears on
         do {
             index--;
 
-            // there isn't enough room for the label after the beginning of the line
-            // checkMaxAngle should have already caught this
-            if (index < 0) return bboxes;
-
-            anchorDistance -= line[index].dist(p);
-            p = line[index];
-        } while (anchorDistance > -labelLength / 2);
+            if (index < 0) {
+                if (anchorDistance > labelStartDistance) {
+                    // there isn't enough room for the label after the beginning of the line
+                    // checkMaxAngle should have already caught this
+                    return;
+                } else {
+                    // The line doesn't extend far enough back for all of our padding,
+                    // but we got far enough to show the label under most conditions.
+                    index = 0;
+                    break;
+                }
+            } else {
+                anchorDistance -= line[index].dist(p);
+                p = line[index];
+            }
+        } while (anchorDistance > paddingStartDistance);
 
         let segmentLength = line[index].dist(line[index + 1]);
 
-        for (let i = 0; i < nBoxes; i++) {
+        for (let i = -nPitchPaddingBoxes; i < nBoxes + nPitchPaddingBoxes; i++) {
             // the distance the box will be from the anchor
             const boxDistanceToAnchor = -labelLength / 2 + i * step;
+            if (boxDistanceToAnchor < anchorDistance) {
+                // The line doesn't extend far enough back for this box, skip it
+                // (This could allow for line collisions on distant tiles)
+                continue;
+            }
 
             // the box is not on the current segment. Move to the next segment.
             while (anchorDistance + segmentLength < boxDistanceToAnchor) {
@@ -112,7 +125,7 @@ class CollisionFeature {
                 index++;
 
                 // There isn't enough room before the end of the line.
-                if (index + 1 >= line.length) return bboxes;
+                if (index + 1 >= line.length) return;
 
                 segmentLength = line[index].dist(line[index + 1]);
             }
@@ -125,15 +138,13 @@ class CollisionFeature {
             const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
             const distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
-            const maxScale = labelLength / 2 / distanceToInnerEdge / pitchExpansionFactor;
+            const maxScale = labelLength / 2 / distanceToInnerEdge;
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                     -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,
                     featureIndex, sourceLayerIndex, bucketIndex,
                     0, 0, 0, 0, 0);
         }
-
-        return bboxes;
     }
 }
 
