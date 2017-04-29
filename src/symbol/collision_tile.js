@@ -14,7 +14,7 @@ const intersectionTests = require('../util/intersection_tests');
  * @private
  */
 class CollisionTile {
-    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, collisionBoxArray) {
+    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, pitchScaling, collisionBoxArray) {
         if (typeof angle === 'object') {
             const serialized = angle;
             collisionBoxArray = pitch;
@@ -29,12 +29,14 @@ class CollisionTile {
         } else {
             this.grid = new Grid(EXTENT, 12, 6);
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
-            this.minimumPitchScaling = 1;
-            this.maximumPitchScaling = 0;
+            this.minimumPitchScaling = pitchScaling.minimum;
+            this.maximumPitchScaling = pitchScaling.maximum;
         }
 
+        const tilePitchScaling = cameraToTileDistance > cameraToCenterDistance ? this.minimumPitchScaling : this.maximumPitchScaling;
+
         this.perspectiveRatio = 1 +
-            (1.0 - this.minimumPitchScaling) * ((cameraToTileDistance / cameraToCenterDistance) - 1);
+            (1.0 - tilePitchScaling) * ((cameraToTileDistance / cameraToCenterDistance) - 1);
 
         // High perspective ratio means we're effectively "underzooming"
         // the tile. Adjust the minScale and maxScale range accordingly
@@ -58,7 +60,7 @@ class CollisionTile {
         // purposes, but we still want to use the yStretch approximation
         // here because we can't adjust the aspect ratio of the collision
         // boxes at render time.
-        this.yStretch = cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI));
+        this.yStretch = Math.max(1, cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI)));
 
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {

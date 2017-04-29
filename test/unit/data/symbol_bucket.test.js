@@ -21,7 +21,7 @@ const glyphs = JSON.parse(fs.readFileSync(path.join(__dirname, '/../../fixtures/
 
 /*eslint new-cap: 0*/
 const collisionBoxArray = new CollisionBoxArray();
-const collision = new CollisionTile(0, 0, 1, 1, collisionBoxArray);
+const collision = new CollisionTile(0, 0, 1, 1, { minimum: 1, maximum: 1 }, collisionBoxArray);
 const atlas = new GlyphAtlas();
 for (const id in glyphs) {
     glyphs[id].bitmap = true;

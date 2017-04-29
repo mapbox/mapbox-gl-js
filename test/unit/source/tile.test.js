@@ -249,7 +249,7 @@ function createVectorData(options) {
     const collisionBoxArray = new CollisionBoxArray();
     return util.extend({
         collisionBoxArray: collisionBoxArray.serialize(),
-        collisionTile: (new CollisionTile(0, 0, 1, 1, collisionBoxArray)).serialize(),
+        collisionTile: (new CollisionTile(0, 0, 1, 1, { minimum: 1, maximum: 1 }, collisionBoxArray)).serialize(),
         featureIndex: (new FeatureIndex(new TileCoord(1, 1, 1))).serialize(),
         buckets: []
     }, options);

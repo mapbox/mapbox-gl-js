@@ -309,7 +309,7 @@ class SymbolBucket {
         });
     }
 
-    prepare(stacks, icons) {
+    prepare(stacks, icons, pitchScaling) {
         this.symbolInstances = [];
 
         const tileSize = 512 * this.overscaling;
@@ -370,6 +370,8 @@ class SymbolBucket {
                     [WritingMode.horizontal]: shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, WritingMode.horizontal),
                     [WritingMode.vertical]: allowsVerticalWritingMode && textAlongLine && shapeText(feature.text, stacks[fontstack], maxWidth, lineHeight, horizontalAlign, verticalAlign, justify, spacing, textOffset, oneEm, WritingMode.vertical)
                 };
+                pitchScaling.minimum = Math.min(pitchScaling.minimum, this.layers[0].getLayoutValue('text-pitch-scaling'));
+                pitchScaling.maximum = Math.max(pitchScaling.maximum, this.layers[0].getLayoutValue('text-pitch-scaling'));
             } else {
                 shapedTextOrientations = {};
             }
@@ -379,6 +381,8 @@ class SymbolBucket {
                 const image = icons[feature.icon];
                 const iconOffset = this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties);
                 shapedIcon = shapeIcon(image, iconOffset);
+                pitchScaling.minimum = Math.min(pitchScaling.minimum, this.layers[0].getLayoutValue('icon-pitch-scaling'));
+                pitchScaling.maximum = Math.max(pitchScaling.maximum, this.layers[0].getLayoutValue('icon-pitch-scaling'));
 
                 if (image) {
                     if (this.sdfIcons === undefined) {

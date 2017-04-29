@@ -20,6 +20,7 @@ class WorkerTile {
         this.cameraToCenterDistance = params.cameraToCenterDistance;
         this.cameraToTileDistance = params.cameraToTileDistance;
         this.showCollisionBoxes = params.showCollisionBoxes;
+        this.pitchScaling = { minimum: 1, maximum: 0 };
     }
 
     parse(data, layerIndex, actor, callback) {
@@ -128,7 +129,7 @@ class WorkerTile {
         }
 
         if (this.symbolBuckets.length === 0) {
-            return done(new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray));
+            return done(new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.pitchScaling, this.collisionBoxArray));
         }
 
         let deps = 0;
@@ -139,12 +140,20 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
-                const collisionTile = new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray);
-
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
-                    bucket.prepare(stacks, icons);
+                    bucket.prepare(stacks, icons, this.pitchScaling);
+                }
+
+                const collisionTile = new CollisionTile(this.angle,
+                                                        this.pitch,
+                                                        this.cameraToCenterDistance,
+                                                        this.cameraToTileDistance,
+                                                        this.pitchScaling,
+                                                        this.collisionBoxArray);
+
+                for (const bucket of this.symbolBuckets) {
                     bucket.place(collisionTile, this.showCollisionBoxes);
                 }
 
@@ -181,7 +190,12 @@ class WorkerTile {
             return {};
         }
 
-        const collisionTile = new CollisionTile(this.angle, this.pitch, this.cameraToCenterDistance, this.cameraToTileDistance, this.collisionBoxArray);
+        const collisionTile = new CollisionTile(this.angle,
+                                                this.pitch,
+                                                this.cameraToCenterDistance,
+                                                this.cameraToTileDistance,
+                                                this.pitchScaling,
+                                                this.collisionBoxArray);
 
         for (const bucket of this.symbolBuckets) {
             recalculateLayers(bucket, this.zoom);
