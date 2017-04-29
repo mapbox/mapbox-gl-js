@@ -536,6 +536,10 @@ class SymbolBucket {
         const layer = this.layers[0];
         const layout = layer.layout;
 
+        // Symbols that don't show until greater than the CollisionTile's maxScale won't even be added
+        // to the buffers. Even though pan operations on a tilted map might cause the symbol to be
+        // displayable, we have to stay conservative here because the CollisionTile didn't consider
+        // this scale range.
         const maxScale = collisionTile.maxScale;
 
         const textAlongLine = layout['text-rotation-alignment'] === 'map' && layout['symbol-placement'] === 'line';
@@ -652,7 +656,7 @@ class SymbolBucket {
 
         }
 
-        if (showCollisionBoxes) this.addToDebugBuffers(collisionTile);
+        if (showCollisionBoxes) this.addToDebugBuffers(collisionTile, maxScale);
     }
 
     addSymbols(arrays, quads, scale, sizeVertex, keepUpright, alongLine, placementAngle, featureProperties, writingModes, labelAnchor) {
@@ -707,7 +711,7 @@ class SymbolBucket {
         arrays.populatePaintArrays(featureProperties);
     }
 
-    addToDebugBuffers(collisionTile) {
+    addToDebugBuffers(collisionTile, maxScale) {
         const arrays = this.arrays.collisionBox;
         const layoutVertexArray = arrays.layoutVertexArray;
         const elementArray = arrays.elementArray;
@@ -734,6 +738,12 @@ class SymbolBucket {
 
                     const maxZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.maxScale) / Math.LN2));
                     const placementZoom = Math.max(0, Math.min(25, this.zoom + Math.log(box.placementScale) / Math.LN2));
+
+                    if (box.placementScale > maxScale) {
+                        // We're not adding the glyphs/icons to the vertex buffers above, so don't add collision
+                        // boxes here.
+                        continue;
+                    }
 
                     const segment = arrays.prepareSegment(4);
                     const index = segment.vertexLength;
