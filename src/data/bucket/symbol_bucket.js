@@ -61,9 +61,10 @@ const symbolInterfaces = {
     },
     collisionBox: { // used to render collision boxes for debugging purposes
         layoutAttributes: [
-            {name: 'a_pos',     components: 2, type: 'Int16'},
-            {name: 'a_extrude', components: 2, type: 'Int16'},
-            {name: 'a_data',    components: 2, type: 'Uint8'}
+            {name: 'a_pos',        components: 2, type: 'Int16'},
+            {name: 'a_anchor_pos', components: 2, type: 'Int16'},
+            {name: 'a_extrude',    components: 2, type: 'Int16'},
+            {name: 'a_data',       components: 2, type: 'Uint8'}
         ],
         elementArrayType: createElementArrayType(2)
     }
@@ -100,11 +101,14 @@ function addVertex(array, x, y, ox, oy, labelX, labelY, tx, ty, sizeVertex, minz
     );
 }
 
-function addCollisionBoxVertex(layoutVertexArray, point, extrude, maxZoom, placementZoom) {
+function addCollisionBoxVertex(layoutVertexArray, point, anchor, extrude, maxZoom, placementZoom) {
     return layoutVertexArray.emplaceBack(
         // pos
         point.x,
         point.y,
+        // a_anchor_pos
+        anchor.x,
+        anchor.y,
         // extrude
         Math.round(extrude.x),
         Math.round(extrude.y),
@@ -721,7 +725,7 @@ class SymbolBucket {
 
                 for (let b = feature.boxStartIndex; b < feature.boxEndIndex; b++) {
                     const box = this.collisionBoxArray.get(b);
-                    const anchorPoint = box.anchorPoint;
+                    const boxAnchorPoint = box.anchorPoint;
 
                     const tl = new Point(box.x1, box.y1 * yStretch)._rotate(angle);
                     const tr = new Point(box.x2, box.y1 * yStretch)._rotate(angle);
@@ -734,10 +738,10 @@ class SymbolBucket {
                     const segment = arrays.prepareSegment(4);
                     const index = segment.vertexLength;
 
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tl, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, tr, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, br, maxZoom, placementZoom);
-                    addCollisionBoxVertex(layoutVertexArray, anchorPoint, bl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tl, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, tr, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, br, maxZoom, placementZoom);
+                    addCollisionBoxVertex(layoutVertexArray, boxAnchorPoint, symbolInstance.anchor, bl, maxZoom, placementZoom);
 
                     elementArray.emplaceBack(index, index + 1);
                     elementArray.emplaceBack(index + 1, index + 2);
