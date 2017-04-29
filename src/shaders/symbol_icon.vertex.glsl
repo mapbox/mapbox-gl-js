@@ -1,4 +1,5 @@
 attribute vec4 a_pos_offset;
+attribute vec2 a_label_pos;
 attribute vec4 a_data;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
@@ -75,19 +76,17 @@ void main() {
     // result: z = 0 if a_minzoom <= adjustedZoom < a_maxzoom, and 1 otherwise
     mediump float z = 2.0 - step(a_minzoom, adjustedZoom) - (1.0 - step(a_maxzoom, adjustedZoom));
 
-    highp float perspective_ratio = 1.0;
-    highp float camera_to_anchor_distance;
+    vec4 projectedPoint = u_matrix * vec4(a_label_pos, 0, 1);
+    highp float camera_to_anchor_distance = projectedPoint.w;
+    highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
+
     vec2 extrude = fontScale * u_extrude_scale * (a_offset / 64.0);
     if (u_rotate_with_map) {
         gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
-        camera_to_anchor_distance = gl_Position.w;
         gl_Position.z += z * gl_Position.w;
     } else {
-        gl_Position = u_matrix * vec4(a_pos, 0, 1);
-        camera_to_anchor_distance = gl_Position.w;
-        perspective_ratio += (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
         extrude *= perspective_ratio;
-        gl_Position += vec4(extrude, 0, 0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
     if (camera_to_anchor_distance > u_max_camera_distance * u_camera_to_center_distance) {
