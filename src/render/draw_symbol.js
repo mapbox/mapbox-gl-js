@@ -93,7 +93,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             program = painter.useProgram(isSDF ? 'symbolSDF' : 'symbolIcon', programConfiguration);
             programConfiguration.setUniforms(gl, program, layer, {zoom: painter.transform.zoom});
 
-            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData, tile.collisionTile.minimumPitchScaling, tile.collisionTile.maximumPitchScaling);
+            setSymbolDrawState(program, painter, layer, coord.z, isText, isSDF, rotateWithMap, pitchWithMap, bucket.fontstack, bucket.iconsNeedLinear, sizeData);
         }
 
         painter.enableTileClippingMask(coord);
@@ -101,6 +101,9 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
+        gl.uniform1f(program.u_pitch_scaling, layer.getLayoutValue(isText ? 'text-pitch-scaling' : 'icon-pitch-scaling'));
+        gl.uniform1f(program.u_minimum_pitch_scaling, tile.collisionTile.minimumPitchScaling);
+        gl.uniform1f(program.u_maximum_pitch_scaling, tile.collisionTile.maximumPitchScaling);
         gl.uniform1f(program.u_collision_y_stretch, tile.collisionTile.yStretch);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
@@ -112,7 +115,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     if (!depthOn) gl.enable(gl.DEPTH_TEST);
 }
 
-function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeData, minimumPitchScaling, maximumPitchScaling) {
+function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, rotateWithMap, pitchWithMap, fontstack, iconsNeedLinear, sizeData) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -195,9 +198,6 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
     gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
-    gl.uniform1f(program.u_pitch_scaling, layer.getLayoutValue(isText ? 'text-pitch-scaling' : 'icon-pitch-scaling'));
-    gl.uniform1f(program.u_minimum_pitch_scaling, minimumPitchScaling);
-    gl.uniform1f(program.u_maximum_pitch_scaling, maximumPitchScaling);
     gl.uniform1f(program.u_max_camera_distance, layer.getLayoutValue('max-camera-distance'));
 }
 
