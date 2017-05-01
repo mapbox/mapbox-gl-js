@@ -46,6 +46,8 @@ class CollisionTile {
 
         this.angle = angle;
         this.pitch = pitch;
+        this.cameraToTileDistance = cameraToTileDistance;
+        this.cameraToCenterDistance = cameraToCenterDistance;
 
         const sin = Math.sin(angle),
             cos = Math.cos(angle);
@@ -210,6 +212,7 @@ class CollisionTile {
         const sourceLayerFeatures = {};
         const result = [];
 
+        // TODO: What is this.grid.length === 0 supposed to be testing? GridIndex.length is undefined...
         if (queryGeometry.length === 0 || (this.grid.length === 0 && this.ignoredGrid.length === 0)) {
             return result;
         }
