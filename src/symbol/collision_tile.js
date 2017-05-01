@@ -14,12 +14,14 @@ const intersectionTests = require('../util/intersection_tests');
  * @private
  */
 class CollisionTile {
-    constructor(angle, pitch, collisionBoxArray) {
+    constructor(angle, pitch, cameraToCenterDistance, cameraToTileDistance, collisionBoxArray) {
         if (typeof angle === 'object') {
             const serialized = angle;
             collisionBoxArray = pitch;
             angle = serialized.angle;
             pitch = serialized.pitch;
+            cameraToCenterDistance = serialized.cameraToCenterDistance;
+            cameraToTileDistance = serialized.cameraToTileDistance;
             this.grid = new Grid(serialized.grid);
             this.ignoredGrid = new Grid(serialized.ignoredGrid);
         } else {
@@ -27,8 +29,14 @@ class CollisionTile {
             this.ignoredGrid = new Grid(EXTENT, 12, 0);
         }
 
-        this.minScale = 0;
-        this.maxScale = 2;
+        this.perspectiveRatio = 1 +
+            (1.0 - this.minimumPitchScaling) * ((cameraToTileDistance / cameraToCenterDistance) - 1);
+
+        // High perspective ratio means we're effectively "underzooming"
+        // the tile. Adjust the minScale and maxScale range accordingly
+        // to constrain the number of collision calculations
+        this.minScale = .5 / this.perspectiveRatio;
+        this.maxScale = 2 / this.perspectiveRatio;
 
         this.angle = angle;
         this.pitch = pitch;
@@ -41,16 +49,14 @@ class CollisionTile {
         this.reverseRotationMatrix = [cos, sin, -sin, cos];
 
         // Stretch boxes in y direction to account for the map tilt.
-        this.yStretch = 1 / Math.cos(pitch / 180 * Math.PI);
-
         // The amount the map is squished depends on the y position.
-        // Sort of account for this by making all boxes a bit bigger.
+        // We can only approximate here based on the y position of the tile
         // The shaders calculate a more accurate "incidence_stretch"
         // at render time to calculate an effective scale for collision
         // purposes, but we still want to use the yStretch approximation
         // here because we can't adjust the aspect ratio of the collision
         // boxes at render time.
-        this.yStretch = Math.pow(this.yStretch, 1.3);
+        this.yStretch = cameraToTileDistance / (cameraToCenterDistance * Math.cos(pitch / 180 * Math.PI));
 
         this.collisionBoxArray = collisionBoxArray;
         if (collisionBoxArray.length === 0) {
@@ -125,16 +131,15 @@ class CollisionTile {
             const x = anchorPoint.x;
             const y = anchorPoint.y;
 
-            // 'startBig'=8 forces calculation to account for how the tile would look up to 3
-            // zoom levels further out. This effectively prevents grid-index from saving us
-            // calculations... so it's probably not a very performant solution.
-            // Experimenting with placement time in the Washington DC area, I see placement
-            // taking about 4x longer with this change.
-            const startBig = 8;
-            const x1 = x + box.x1 * startBig;
-            const y1 = y + box.y1 * yStretch * startBig;
-            const x2 = x + box.x2 * startBig;
-            const y2 = y + box.y2 * yStretch * startBig;
+            // When the 'perspectiveRatio' is high, we're effectively underzooming
+            // the tile because it's in the distance.
+            // In order to detect collisions that only happen while underzoomed,
+            // we have to query a larger portion of the grid.
+            // This extra work is offset by having a lower 'maxScale' bound
+            const x1 = x + box.x1 * this.perspectiveRatio;
+            const y1 = y + box.y1 * yStretch * this.perspectiveRatio;
+            const x2 = x + box.x2 * this.perspectiveRatio;
+            const y2 = y + box.y2 * yStretch * this.perspectiveRatio;
 
             box.bbox0 = x1;
             box.bbox1 = y1;

@@ -861,6 +861,7 @@ class Map extends Camera {
 
         this.style.setEventedParent(this, {style: this.style});
 
+        this.on('move', this.style._redoPlacement); // TODO: Too expensive?
         this.on('rotate', this.style._redoPlacement);
         this.on('pitch', this.style._redoPlacement);
 

@@ -152,6 +152,8 @@ class Tile {
             source: source.id,
             angle: source.map.transform.angle,
             pitch: source.map.transform.pitch,
+            cameraToTileDistance: source.map.transform.cameraToTileDistance(this),
+            cameraToCenterDistance: source.map.transform.cameraToCenterDistance,
             showCollisionBoxes: source.map.showCollisionBoxes
         }, (_, data) => {
             this.reloadSymbolData(data, source.map.style);

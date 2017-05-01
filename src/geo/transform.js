@@ -380,7 +380,12 @@ class Transform {
      * @param {TileCoord} tileCoord
      * @param {number} maxZoom maximum source zoom to account for overscaling
      */
+
     calculatePosMatrix(tileCoord: TileCoord, maxZoom: number) {
+        return new Float32Array(this._calculatePosMatrix(tileCoord, maxZoom));
+    }
+
+    _calculatePosMatrix(tileCoord, maxZoom) {
         // if z > maxzoom then the tile is actually a overscaled maxzoom tile,
         // so calculate the matrix the maxzoom tile would use.
         const coord = tileCoord.toCoordinate(maxZoom);
@@ -392,6 +397,17 @@ class Transform {
         mat4.multiply(posMatrix, this.projMatrix, posMatrix);
 
         return new Float32Array(posMatrix);
+    }
+
+    /**
+     * Calculate the distance from the center of a tile to the camera
+     * @param {Tile} tile
+     */
+    cameraToTileDistance(tile) {
+        const posMatrix = this._calculatePosMatrix(tile.coord, tile.sourceMaxZoom);
+        const tileCenter = [tile.tileSize / 2, tile.tileSize / 2, 0, 1];
+        vec4.transformMat4(tileCenter, tileCenter, posMatrix);
+        return tileCenter[3];
     }
 
     _constrain() {
