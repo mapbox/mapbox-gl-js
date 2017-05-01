@@ -57,7 +57,9 @@ const defaultOptions = {
 
     renderWorldCopies: true,
 
-    refreshExpiredTiles: true
+    refreshExpiredTiles: true,
+
+    redoPlacementOnPan: true
 };
 
 /**
@@ -179,7 +181,9 @@ class Map extends Camera {
         this._setupPainter();
 
         this.on('move', this._update.bind(this, false));
-        this.on('move', this._redoPlacementOnInterval.bind(this));
+        if (options.redoPlacementOnPan) {
+            this.on('move', this._redoPlacementOnInterval.bind(this));
+        }
         this.on('zoom', this._update.bind(this, true));
         this.on('moveend', () => {
             this.animationLoop.set(300); // text fading
