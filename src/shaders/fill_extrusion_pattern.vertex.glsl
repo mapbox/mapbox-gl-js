@@ -19,7 +19,6 @@ attribute float a_edgedistance;
 varying vec2 v_pos_a;
 varying vec2 v_pos_b;
 varying vec4 v_lighting;
-varying float v_directional;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height

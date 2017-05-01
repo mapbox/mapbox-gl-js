@@ -6,6 +6,8 @@ const loadGeometry = require('../load_geometry');
 const EXTENT = require('../extent');
 const earcut = require('earcut');
 const classifyRings = require('../../util/classify_rings');
+const lineclip = require('lineclip');
+const Point = require('point-geometry');
 const assert = require('assert');
 const EARCUT_MAX_RINGS = 500;
 
@@ -61,27 +63,31 @@ class FillExtrusionBucket extends Bucket {
             const holeIndices = [];
             const indices = [];
 
-            for (const ring of polygon) {
+            let i = -1;
+            for (const _ring of polygon) {
+                i++;
+                const ring = lineclip.polygon(_ring.map(p => [p.x, p.y]), [0, 0, EXTENT, EXTENT]).map(p => Point.convert(p)._round());
                 if (ring.length === 0) {
                     continue;
                 }
+                ring.push(ring[0]);
 
-                if (ring !== polygon[0]) {
+                if (i !== 0) {
                     holeIndices.push(flattened.length / 2);
                 }
 
                 let edgeDistance = 0;
 
                 for (let p = 0; p < ring.length; p++) {
-                    const p1 = ring[p];
+                    let p1 = ring[p];
 
                     addVertex(arrays.layoutVertexArray, p1.x, p1.y, 0, 0, 1, 1, 0);
                     indices.push(segment.vertexLength++);
 
                     if (p >= 1) {
-                        const p2 = ring[p - 1];
+                        let p2 = ring[p - 1];
 
-                        if (!isBoundaryEdge(p1, p2)) {
+                        if (!isClipped(p1, p2, _ring)) {
                             const perp = p1.sub(p2)._perp()._unit();
 
                             addVertex(arrays.layoutVertexArray, p1.x, p1.y, perp.x, perp.y, 0, 0, edgeDistance);
@@ -129,7 +135,7 @@ FillExtrusionBucket.programInterface = fillExtrusionInterface;
 
 module.exports = FillExtrusionBucket;
 
-function isBoundaryEdge(p1, p2) {
-    return (p1.x === p2.x && (p1.x < 0 || p1.x > EXTENT)) ||
-        (p1.y === p2.y && (p1.y < 0 || p1.y > EXTENT));
+
+function isClipped(p1, p2, ring) {
+    return !ring.some(p => (p.equals(p1) || p.equals(p2))) && (p1.x == p2.x || p1.y == p2.y);
 }
