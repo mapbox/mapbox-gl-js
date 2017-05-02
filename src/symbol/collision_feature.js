@@ -75,7 +75,7 @@ class CollisionFeature {
         // We calculate line collision boxes out to 150% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
-        const nPitchPaddingBoxes = Math.floor(nBoxes / 2);
+        const nPitchPaddingBoxes = 0; //Math.floor(nBoxes / 2);
 
         // offset the center of the first box by half a box so that the edge of the
         // box is at the edge of the label.
@@ -85,7 +85,7 @@ class CollisionFeature {
         let index = segment + 1;
         let anchorDistance = firstBoxOffset;
         const labelStartDistance = -labelLength / 2;
-        const paddingStartDistance = labelStartDistance - labelLength / 4;
+        const paddingStartDistance = labelStartDistance; //labelStartDistance - labelLength / 4;
 
         // move backwards along the line to the first segment the label appears on
         do {
