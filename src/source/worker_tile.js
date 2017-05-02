@@ -3,6 +3,7 @@
 const FeatureIndex = require('../data/feature_index');
 const CollisionTile = require('../symbol/collision_tile');
 const CollisionBoxArray = require('../symbol/collision_box');
+const initializeEdgeCollisionBoxes = require('../symbol/edge_collision_boxes');
 const DictionaryCoder = require('../util/dictionary_coder');
 const util = require('../util/util');
 const assert = require('assert');
@@ -140,6 +141,9 @@ class WorkerTile {
             if (err) return callback(err);
             deps++;
             if (deps === 2) {
+                // bucket.prepare will add features to the collision box array
+                // "edge" boxes used by collision tile need to be added first
+                initializeEdgeCollisionBoxes(this.collisionBoxArray);
                 for (const bucket of this.symbolBuckets) {
                     recalculateLayers(bucket, this.zoom);
 
