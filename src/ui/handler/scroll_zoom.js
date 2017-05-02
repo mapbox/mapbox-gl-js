@@ -154,7 +154,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired just before the map begins a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as {@link Map#flyTo}.
  *
  * @event zoomstart
  * @memberof Map
@@ -164,7 +164,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired repeatedly during an animated transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as {@link Map#flyTo}.
  *
  * @event zoom
  * @memberof Map
@@ -175,7 +175,7 @@ module.exports = ScrollZoomHandler;
 
 /**
  * Fired just after the map completes a transition from one zoom level to another,
- * as the result of either user interaction or methods such as [Map#flyTo](#Map#flyTo).
+ * as the result of either user interaction or methods such as {@link Map#flyTo}.
  *
  * @event zoomend
  * @memberof Map

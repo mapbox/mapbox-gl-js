@@ -74,43 +74,57 @@ category: api
   <div class='contain margin3 col9'>
     <div class='round doc clip space-bottom4 fill-white'>
       <section class='pad4 contain'>
-      <h1 class=''>Mapbox GL JS</h1>
-      <div class='pad1y quiet small'>Current version: <span class='round fill-light pad0'><a class='' href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{{site.data.package.version}}</a></span></div>
-      <div class='prose space-bottom2'>
-        <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a href='{{site.baseurl}}/style-spec'>Mapbox styles</a>.
-        It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a>, which includes <a href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings for desktop and mobile platforms.</p>
-        <div class='col12 fill-light round pad2 clearfix space-top2'>
-        <div class='space-bottom2 space-left1 space-top1 contain'>
-          <div class='icon inline dark pad0 round fill-green space-bottom1 github space-right1'></div>
-          <div class='pin-left pad0x space-left4'>
-            <a class='block line-height15' href='https://github.com/mapbox/mapbox-gl-js'>Project on Github</a>
-            <span class='quiet small'>View source code and contribute</span>
-          </div>
+        <h1 class=''>Mapbox GL JS</h1>
+        <div class='pad1y quiet small'>Current version:
+          <span class='round fill-light pad0'><a href='https://github.com/mapbox/mapbox-gl-js/releases'>mapbox-gl.js v{{site.data.package.version}}</a></span>
         </div>
-         <div class='space-bottom2 space-left1 contain'>
-          <div class='icon inline dark pad0 round fill-blue space-bottom1 document space-right1'></div>
-          <div class='pin-left pad0x space-left4'>
-            <a class='block line-height15' href='https://www.mapbox.com/help/mapbox-gl-js-fundamentals/'>GL JS Fundamentals</a>
-            <span class='quiet small'>Essential functions and common patterns</span>
-          </div>
-        </div>
-         <div class='contain space-left1'>
-          <div class='icon inline dark pad0 round fill-red space-bottom1 globe space-right1'></div>
-          <div class='pin-left pad0x space-left4'>
-            <a class='block line-height15' href='https://www.mapbox.com/gallery/'>Gallery</a>
-            <span class='quiet small'>Project showcase</span>
-          </div>
-        </div>
+        <div class='prose space-bottom2'>
+          <p class='space-bottom2 pad1y'>Mapbox GL JS is a JavaScript library that uses WebGL to render interactive maps
+            from <a href='{{site.url}}/help/define-vector-tiles'>vector tiles</a> and <a
+                    href='{{site.baseurl}}/style-spec'>Mapbox styles</a>.
+            It is part of the <a href='https://github.com/mapbox/mapbox-gl'>Mapbox GL ecosystem</a>, which includes <a
+                    href='{{site.url}}/mobile/'>Mapbox Mobile</a>, a compatible renderer written in C++ with bindings
+            for desktop and mobile platforms.</p>
+          <div class='col12 fill-light round pad2 clearfix space-top2'>
+            <div class='space-bottom2 space-left1 space-top1 contain'>
+              <div class='icon inline dark pad0 round fill-green space-bottom1 github space-right1'></div>
+              <div class='pin-left pad0x space-left4'>
+                <a class='block line-height15' href='https://github.com/mapbox/mapbox-gl-js'>Project on Github</a>
+                <span class='quiet small'>View source code and contribute</span>
+              </div>
+            </div>
+            <div class='space-bottom2 space-left1 contain'>
+              <div class='icon inline dark pad0 round fill-blue space-bottom1 document space-right1'></div>
+              <div class='pin-left pad0x space-left4'>
+                <a class='block line-height15' href='https://www.mapbox.com/help/mapbox-gl-js-fundamentals/'>GL JS
+                  Fundamentals</a>
+                <span class='quiet small'>Essential functions and common patterns</span>
+              </div>
+            </div>
+            <div class='contain space-left1'>
+              <div class='icon inline dark pad0 round fill-red space-bottom1 globe space-right1'></div>
+              <div class='pin-left pad0x space-left4'>
+                <a class='block line-height15' href='https://www.mapbox.com/gallery/'>Gallery</a>
+                <span class='quiet small'>Project showcase</span>
+              </div>
+            </div>
 
+          </div>
+          <h2 class='strong'>Quickstart</h2>
+          <div class='space-bottom1'>To get started, you need to obtain an <a
+                  href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a
+                  href='https://www.mapbox.com/help/define-style-url/'>style URL</a>. You can choose from one of our <a
+                  href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create
+            your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.
+          </div>
+          <div class='rounded-toggle space-bottom2 inline' id='method-toggle'>
+            <a class='method-toggle active' data-target='quickstart-cdn' href='#'>Mapbox CDN</a>
+            <a class='method-toggle' data-target='quickstart-bundler' href='#'>module bundler</a>
+          </div>
+          <div id='quickstart-cdn'>{% include quickstart-cdn.html %}</div>
+          <div id='quickstart-bundler' class='hidden'>{% include quickstart-bundler.html %}</div>
+          {% include quickstart-csp.html %}
         </div>
-           <h2 class='strong'>Quickstart</h2>
-           <div class='space-bottom1'>To get started, you need to obtain an <a href='https://www.mapbox.com/help/create-api-access-token/'>access token</a> and a <a href='https://www.mapbox.com/help/define-style-url/'>style URL</a>. You can choose from one of our <a href='https://www.mapbox.com/api-documentation/#styles'>professionally designed styles</a> or create your own using <a href="https://www.mapbox.com/studio">Mapbox Studio</a>.</div>
-           <div class='rounded-toggle space-bottom2 inline' id='method-toggle'>
-             <a class='method-toggle active' data-target='quickstart-cdn' href='#'>Mapbox CDN</a>
-             <a class='method-toggle' data-target='quickstart-bundler'  href='#'>module bundler</a>
-           </div>
-           <div id='quickstart-cdn'>{% include quickstart-cdn.html %}</div>
-           <div id='quickstart-bundler' class='hidden'>{% include quickstart-bundler.html %}</div>
       </section>
     </div>
 

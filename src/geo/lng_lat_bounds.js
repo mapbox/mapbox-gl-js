@@ -9,8 +9,8 @@ const LngLat = require('./lng_lat');
  * If no arguments are provided to the constructor, a `null` bounding box is created.
  *
  * Note that any Mapbox GL method that accepts a `LngLatBounds` object as an argument or option
- * can also accept an `Array` of two [`LngLatLike`](#LngLatLike) constructs and will perform an implicit conversion.
- * This flexible type is documented as [`LngLatBoundsLike`](#LngLatBoundsLike).
+ * can also accept an `Array` of two {@link LngLatLike} constructs and will perform an implicit conversion.
+ * This flexible type is documented as {@link LngLatBoundsLike}.
  *
  * @param {LngLatLike} [sw] The southwest corner of the bounding box.
  * @param {LngLatLike} [ne] The northeast corner of the bounding box.
