@@ -1,8 +1,32 @@
 ## master
 
+## 0.37.0 (May 2nd, 2017)
+
 #### :warning: Breaking changes
 
 - Removed `LngLat#wrapToBestWorld`
+
+#### New features :rocket:
+
+- Improve popup/marker positioning #4577
+- Add `Map#isStyleLoaded` and `Map#areTilesLoaded` events #4321
+- Support offline sprites using `file:` protocol #4649 @oscarfonts
+
+#### Bug fixes :bug:
+
+- Fix fullscreen control in Firefox #4666
+- Fix rendering artifacts that caused tile boundaries to be visible in some cases #4636
+- Fix default calculation for categorical zoom-and-property functions #4657
+- Fix scaling of images on retina screens #4645
+- Rendering error when a transparent image is added via `Map#addImage` #4644
+- Fix an issue with rendering lines with duplicate points #4634
+- Fix error when switching from data-driven styles to a constant paint value #4611
+- Add check to make sure invalid bounds on tilejson don't error out #4641
+
+#### Development workflow improvements :computer:
+
+- Add flowtype interfaces and definitions @vicapow
+- Add stylelinting to ensure `mapboxgl-` prefix on all classes #4584 @asantos3026
 
 ## 0.36.0 (April 19, 2017)
 
