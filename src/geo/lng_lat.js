@@ -9,7 +9,7 @@ const wrap = require('../util/util').wrap;
  *
  * Note that any Mapbox GL method that accepts a `LngLat` object as an argument or option
  * can also accept an `Array` of two numbers and will perform an implicit conversion.
- * This flexible type is documented as [`LngLatLike`](#LngLatLike).
+ * This flexible type is documented as {@link LngLatLike}.
  *
  * @param {number} lng Longitude, measured in degrees.
  * @param {number} lat Latitude, measured in degrees.

@@ -21,7 +21,7 @@ const defaultOptions = {
  * @param {boolean} [options.closeOnClick=true] If `true`, the popup will closed when the
  *   map is clicked.
  * @param {string} [options.anchor] - A string indicating the popup's location relative to
- *   the coordinate set via [Popup#setLngLat](#Popup#setLngLat).
+ *   the coordinate set via {@link Popup#setLngLat}.
  *   Options are `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`,
  *   `'top-right'`, `'bottom-left'`, and `'bottom-right'`. If unset the anchor will be
  *   dynamically set to ensure the popup falls within the map container with a preference
@@ -29,8 +29,8 @@ const defaultOptions = {
  * @param {number|PointLike|Object} [options.offset] -
  *  A pixel offset applied to the popup's location specified as:
  *   - a single number specifying a distance from the popup's location
- *   - a [`PointLike`](#PointLike) specifying a constant offset
- *   - an object of [`PointLike`](#PointLike)s specifing an offset for each anchor position
+ *   - a {@link PointLike} specifying a constant offset
+ *   - an object of {@link Point}s specifing an offset for each anchor position
  *  Negative offsets indicate left and up.
  * @example
  * var markerHeight = 50, markerRadius = 10, linearOffset = 25;
@@ -167,7 +167,7 @@ class Popup extends Evented {
      * Sets the popup's content to the HTML provided as a string.
      *
      * This method does not perform HTML filtering or sanitization, and must be
-     * used only with trusted content. Consider [`setText`](#Popup#setText) if
+     * used only with trusted content. Consider {@link Popup#setText} if
      * the content is an untrusted text string.
      *
      * @param {string} html A string representing HTML content for the popup.
