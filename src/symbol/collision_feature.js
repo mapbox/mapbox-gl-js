@@ -72,10 +72,10 @@ class CollisionFeature {
     _addLineCollisionBoxes(collisionBoxArray, line, anchor, segment, labelLength, boxSize, featureIndex, sourceLayerIndex, bucketIndex) {
         const step = boxSize / 2;
         const nBoxes = Math.floor(labelLength / step);
-        // We calculate line collision boxes out to 150% of what would normally be our
+        // We calculate line collision boxes out to 125% of what would normally be our
         // max size, to allow collision detection to work on labels that expand as
         // they move into the distance
-        const nPitchPaddingBoxes = 0; //Math.floor(nBoxes / 2);
+        const nPitchPaddingBoxes = Math.floor(nBoxes / 4);
 
         // offset the center of the first box by half a box so that the edge of the
         // box is at the edge of the label.
@@ -85,7 +85,7 @@ class CollisionFeature {
         let index = segment + 1;
         let anchorDistance = firstBoxOffset;
         const labelStartDistance = -labelLength / 2;
-        const paddingStartDistance = labelStartDistance; //labelStartDistance - labelLength / 4;
+        const paddingStartDistance = labelStartDistance - labelLength / 8;
 
         // move backwards along the line to the first segment the label appears on
         do {
@@ -112,7 +112,7 @@ class CollisionFeature {
 
         for (let i = -nPitchPaddingBoxes; i < nBoxes + nPitchPaddingBoxes; i++) {
             // the distance the box will be from the anchor
-            const boxDistanceToAnchor = -labelLength / 2 + i * step;
+            const boxDistanceToAnchor = labelStartDistance + i * step;
             if (boxDistanceToAnchor < anchorDistance) {
                 // The line doesn't extend far enough back for this box, skip it
                 // (This could allow for line collisions on distant tiles)
@@ -137,8 +137,29 @@ class CollisionFeature {
             const p1 = line[index + 1];
             const boxAnchorPoint = p1.sub(p0)._unit()._mult(segmentBoxDistance)._add(p0)._round();
 
+            // Distance from label anchor point to inner (towards center) edge of this box
+            // The tricky thing here is that box positioning doesn't change with scale,
+            // but box size does change with scale.
+            // Technically, distanceToInnerEdge should be:
+            // Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - (step / scale), 0);
+            // But using that formula would make solving for maxScale more difficult, so we
+            // approximate with scale=2.
+            // This makes our calculation spot-on at scale=2, and on the conservative side for
+            // lower scales
             const distanceToInnerEdge = Math.max(Math.abs(boxDistanceToAnchor - firstBoxOffset) - step / 2, 0);
-            const maxScale = labelLength / 2 / distanceToInnerEdge;
+            let maxScale = labelLength / 2 / distanceToInnerEdge;
+
+            // The box maxScale calculations are designed to be conservative on collisions in the scale range
+            // [1,2]. At scale=1, each box has 50% overlap, and at scale=2, the boxes are lined up edge
+            // to edge (beyond scale 2, gaps start to appear, which could potentially allow missed collisions).
+            // We add "pitch padding" boxes to the left and right to handle effective underzooming
+            // (scale < 1) when labels are in the distance. The overlap approximation could cause us to use
+            // these boxes when the scale is greater than 1, but we prevent that because we know
+            // they're only necessary for scales less than one.
+            // This preserves the pre-pitch-padding behavior for unpitched maps.
+            if (i < 0 || i >= nBoxes) {
+                maxScale = Math.min(maxScale, 0.99);
+            }
 
             collisionBoxArray.emplaceBack(boxAnchorPoint.x, boxAnchorPoint.y,
                     -boxSize / 2, -boxSize / 2, boxSize / 2, boxSize / 2, maxScale,
