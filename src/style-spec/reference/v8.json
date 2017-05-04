@@ -1194,7 +1194,7 @@
       "default": 10,
       "minimum": 1,
       "maximum": 20,
-      "doc": "This value defines a multiple of the distance from the camera to the center of the map. Any labels beyond this distance will not be displayed on the map.",
+      "doc": "On a pitched map, scale is a function of the ratio between 'distance from the camera to the item' and 'distance from the camera to the center of the map'. This value controls the maximum camera distance at which this item will be visible. The value is defined as a multiple of the distance from the camera to the center of the map. With the default field of view and a pitch of 60 degrees, the most distant items on the map end up being about twice as far from the camera as items in the center. Use this property to prevent the distant field from getting too cluttered on pitched maps.",
       "requires": [
         "text-field"
       ],
