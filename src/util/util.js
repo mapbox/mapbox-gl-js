@@ -471,10 +471,10 @@ function applyTransform(container, transform) {
  *
  * @param container target DOM element
  * @param transform new transform
- * @param deferred if true, transform will be applied on next `Painter.render`.
- *  If false, transform will be applied immediately.
+ * @param immediate if false, transform will be applied on next `Painter.render`.
+ *  If true, transform will be applied immediately.
  */
-exports.pushTransform = function(container, transform, immediate) {
+exports.pushTransform = function(container: Node, transform: string, immediate: boolean) {
     if (immediate === true) {
         applyTransform(container, transform);
     } else {
