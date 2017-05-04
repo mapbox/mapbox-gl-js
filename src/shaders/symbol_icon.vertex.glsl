@@ -80,12 +80,11 @@ void main() {
     highp float camera_to_anchor_distance = projectedPoint.w;
     highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
-    vec2 extrude = fontScale * u_extrude_scale * (a_offset / 64.0);
+    vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (a_offset / 64.0);
     if (u_rotate_with_map) {
         gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
         gl_Position.z += z * gl_Position.w;
     } else {
-        extrude *= perspective_ratio;
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
