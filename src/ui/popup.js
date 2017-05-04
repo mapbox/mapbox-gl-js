@@ -75,7 +75,7 @@ class Popup extends Evented {
         if (this.options.closeOnClick) {
             this._map.on('click', this._onClickClose);
         }
-        this._update();
+        this._update(null, true);
         return this;
     }
 
@@ -229,7 +229,7 @@ class Popup extends Evented {
         }
     }
 
-    _update() {
+    _update(ev, instantiating) {
         if (!this._map || !this._lngLat || !this._content) { return; }
 
         if (!this._container) {
@@ -272,7 +272,13 @@ class Popup extends Evented {
             }
         }
 
-        const offsetedPos = this._pos.add(offset[anchor]).round();
+        let offsetedPos = this._pos.add(offset[anchor])
+
+        //snap to interger offset if this is last tick of an easing 
+        //animation, or if this event didn't come from easing loop
+        if(ev && (ev.finalEasingTick === true || ev.easing !== true)){
+            offsetedPos = offsetedPos.round();
+        }
 
         const anchorTranslate = {
             'top': 'translate(-50%,0)',
@@ -291,7 +297,11 @@ class Popup extends Evented {
         }
         classList.add(`mapboxgl-popup-anchor-${anchor}`);
 
-        DOM.setTransform(this._container, `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`);
+        const transform = `${anchorTranslate[anchor]} translate(${offsetedPos.x}px,${offsetedPos.y}px)`;
+
+        //defer transform updates except when the DOM is instantiated
+        //this ensures transform updates happen simultaneously with canvas flip
+        DOM.setTransform(this._container, transform, instantiating===true);
     }
 
     _onClickClose() {

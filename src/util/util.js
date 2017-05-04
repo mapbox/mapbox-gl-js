@@ -455,3 +455,34 @@ exports.parseCacheControl = function(cacheControl: string): Object {
 
     return header;
 };
+
+
+exports.transformStack = [];
+
+function applyTransform(container, transform){
+    container.style['transform', 'WebkitTransform'] = transform;
+}
+
+
+/**
+ * Stages a DOM transform update
+ *
+ * @param container target DOM element
+ * @param transform new transform
+ * @param deferred if true, transform will be applied on next `Painter.render`.
+ *  If false, transform will be applied immediately. 
+ */
+exports.pushTransform = function(container, transform, immediate){
+    if(immediate === true){
+        applyTransform(container, transform);
+    }else{
+        exports.transformStack.push([container, transform]);
+    }
+}
+
+exports.applyTransforms = function(){
+    for(let row of exports.transformStack){
+        applyTransform(row[0], row[1]);
+    }
+    exports.transformStack = [];
+}

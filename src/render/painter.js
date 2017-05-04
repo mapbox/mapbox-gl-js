@@ -229,6 +229,8 @@ class Painter {
                 draw.debug(this, sourceCache, sourceCache.getVisibleCoordinates());
             }
         }
+
+        util.applyTransforms();
     }
 
     renderPass() {

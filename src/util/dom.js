@@ -2,6 +2,7 @@
 
 const Point = require('point-geometry');
 const window = require('./window');
+const util = require('./util');
 
 exports.create = function (tagName, className, container) {
     const el = window.document.createElement(tagName);
@@ -35,9 +36,9 @@ exports.enableDrag = function () {
     }
 };
 
-const transformProp = testProp(['transform', 'WebkitTransform']);
-exports.setTransform = function(el, value) {
-    el.style[transformProp] = value;
+exports.setTransform = function(el, value, immediate) {
+    immediate = (immediate === undefined) ? true : immediate;    
+    util.pushTransform(el, value, immediate);
 };
 
 // Suppress the next click, but only if it's immediate.
