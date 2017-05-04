@@ -18,7 +18,7 @@ varying float v_perspective_zoom_adjust;
 void main() {
     vec4 projectedPoint = u_matrix * vec4(a_anchor_pos, 0, 1);
     highp float camera_to_anchor_distance = projectedPoint.w;
-    mediump float collision_pitch_scaling = (camera_to_anchor_distance > u_camera_to_center_distance) ? u_minimum_pitch_scaling : u_maximum_pitch_scaling;
+    highp float collision_pitch_scaling = (camera_to_anchor_distance > u_camera_to_center_distance) ? u_minimum_pitch_scaling : u_maximum_pitch_scaling;
     highp float collision_perspective_ratio = 1.0 +
           (1.0 - collision_pitch_scaling)
         * ((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);

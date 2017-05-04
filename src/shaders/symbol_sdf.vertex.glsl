@@ -15,9 +15,9 @@ attribute vec4 a_data;
 attribute vec3 a_size;
 uniform bool u_is_size_zoom_constant;
 uniform bool u_is_size_feature_constant;
-uniform mediump float u_size_t; // used to interpolate between zoom stops when size is a composite function
-uniform mediump float u_size; // used when size is both zoom and feature constant
-uniform mediump float u_layout_size; // used when size is feature constant
+uniform highp float u_size_t; // used to interpolate between zoom stops when size is a composite function
+uniform highp float u_size; // used when size is both zoom and feature constant
+uniform highp float u_layout_size; // used when size is feature constant
 
 #pragma mapbox: define highp vec4 fill_color
 #pragma mapbox: define highp vec4 halo_color
@@ -29,18 +29,18 @@ uniform mediump float u_layout_size; // used when size is feature constant
 uniform mat4 u_matrix;
 
 uniform bool u_is_text;
-uniform mediump float u_zoom;
+uniform highp float u_zoom;
 uniform bool u_rotate_with_map;
 uniform bool u_pitch_with_map;
-uniform mediump float u_pitch;
-uniform mediump float u_bearing;
-uniform mediump float u_aspect_ratio;
-uniform mediump float u_camera_to_center_distance;
-uniform mediump float u_max_camera_distance;
-uniform mediump float u_pitch_scaling;
-uniform mediump float u_minimum_pitch_scaling;
-uniform mediump float u_maximum_pitch_scaling;
-uniform mediump float u_collision_y_stretch;
+uniform highp float u_pitch;
+uniform highp float u_bearing;
+uniform highp float u_aspect_ratio;
+uniform highp float u_camera_to_center_distance;
+uniform highp float u_max_camera_distance;
+uniform highp float u_pitch_scaling;
+uniform highp float u_minimum_pitch_scaling;
+uniform highp float u_maximum_pitch_scaling;
+uniform highp float u_collision_y_stretch;
 uniform vec2 u_extrude_scale;
 
 uniform vec2 u_texsize;
@@ -52,11 +52,14 @@ varying float v_size;
 
 // Used below to move the vertex out of the clip space for when the current
 // zoom is out of the glyph's zoom range.
-float clipUnusedGlyphAngles(const float renderSize, const float layoutSize, const float minZoom, const float maxZoom) {
-    float zoomAdjust = log2(renderSize / layoutSize);
-    float adjustedZoom = (u_zoom - zoomAdjust) * 10.0;
-    // result: 0 if minZoom <= adjustedZoom < maxZoom, and 1 otherwise
-    return 2.0 - step(minZoom, adjustedZoom) - (1.0 - step(maxZoom, adjustedZoom));
+highp float clipUnusedGlyphAngles(const highp float render_size,
+                                  const highp float layout_size,
+                                  const highp float min_zoom,
+                                  const highp float max_zoom) {
+    highp float zoom_adjust = log2(render_size / layout_size);
+    highp float adjusted_zoom = (u_zoom - zoom_adjust) * 10.0;
+    // result: 0 if min_zoom <= adjusted_zoom < max_zoom, and 1 otherwise
+    return 2.0 - step(min_zoom, adjusted_zoom) - (1.0 - step(max_zoom, adjusted_zoom));
 }
 
 void main() {
@@ -71,12 +74,12 @@ void main() {
 
     vec2 a_tex = a_data.xy;
 
-    mediump vec2 label_data = unpack_float(a_data[2]);
-    mediump float a_labelminzoom = label_data[0];
-    mediump float a_lineangle = (label_data[1] / 256.0 * 2.0 * PI);
-    mediump vec2 a_zoom = unpack_float(a_data[3]);
-    mediump float a_minzoom = a_zoom[0];
-    mediump float a_maxzoom = a_zoom[1];
+    highp vec2 label_data = unpack_float(a_data[2]);
+    highp float a_labelminzoom = label_data[0];
+    highp float a_lineangle = (label_data[1] / 256.0 * 2.0 * PI);
+    highp vec2 a_zoom = unpack_float(a_data[3]);
+    highp float a_minzoom = a_zoom[0];
+    highp float a_maxzoom = a_zoom[1];
 
     // In order to accommodate placing labels around corners in
     // symbol-placement: line, each glyph in a label could have multiple
@@ -86,7 +89,7 @@ void main() {
     // currently rendered zoom level if text-size is zoom-dependent.
     // Thus, we compensate for this difference by calculating an adjustment
     // based on the scale of rendered text size relative to layout text size.
-    mediump float layoutSize;
+    highp float layoutSize;
     if (!u_is_size_zoom_constant && !u_is_size_feature_constant) {
         v_size = mix(a_size[0], a_size[1], u_size_t) / 10.0;
         layoutSize = a_size[2] / 10.0;
@@ -110,9 +113,9 @@ void main() {
     // pitch-alignment: map
     // rotation-alignment: map | viewport
     if (u_pitch_with_map) {
-        lowp float angle = u_rotate_with_map ? a_lineangle : u_bearing;
-        lowp float asin = sin(angle);
-        lowp float acos = cos(angle);
+        highp float angle = u_rotate_with_map ? a_lineangle : u_bearing;
+        highp float asin = sin(angle);
+        highp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, asin, -1.0 * asin, acos);
         vec2 offset = RotationMatrix * a_offset;
         vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (offset / 64.0);
@@ -125,18 +128,18 @@ void main() {
         // foreshortening factor to apply on pitched maps
         // as a label goes from horizontal <=> vertical in angle
         // it goes from 0% foreshortening to up to around 70% foreshortening
-        lowp float pitchfactor = 1.0 - cos(u_pitch * sin(u_pitch * 0.75));
+        highp float pitchfactor = 1.0 - cos(u_pitch * sin(u_pitch * 0.75));
 
         // use the lineangle to position points a,b along the line
         // project the points and calculate the label angle in projected space
         // this calculation allows labels to be rendered unskewed on pitched maps
         vec4 a = u_matrix * vec4(a_pos, 0, 1);
         vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_lineangle),sin(a_lineangle)), 0, 1);
-        lowp float angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
-        lowp float asin = sin(angle);
-        lowp float acos = cos(angle);
+        highp float angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
+        highp float asin = sin(angle);
+        highp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, -1.0 * asin, asin, acos);
-        mediump float foreshortening = (1.0-pitchfactor)+(pitchfactor*cos(angle*2.0));
+        highp float foreshortening = (1.0-pitchfactor)+(pitchfactor*cos(angle*2.0));
 
         vec2 offset = RotationMatrix * (vec2(foreshortening, 1.0) * a_offset);
         vec2 extrude = fontScale * u_extrude_scale * (offset / 64.0);
@@ -181,7 +184,7 @@ void main() {
     // with an unscaled (large) label even though this particular label is highly scaled (and thus small).
     // Note that this same conservatism doesn't apply to the minzoom/maxzoom for line-following glyphs: those
     //  zoom bounds are independent of other labels on the tile.
-    mediump float collision_pitch_scaling = (camera_to_anchor_distance > u_camera_to_center_distance) ? u_minimum_pitch_scaling : u_maximum_pitch_scaling;
+    highp float collision_pitch_scaling = (camera_to_anchor_distance > u_camera_to_center_distance) ? u_minimum_pitch_scaling : u_maximum_pitch_scaling;
     highp float collision_perspective_ratio = 1.0 +
           (1.0 - collision_pitch_scaling)
         * ((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
