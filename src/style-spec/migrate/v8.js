@@ -63,7 +63,7 @@ function eachProperty(style, options, callback) {
     options.paint = options.paint === undefined ? true : options.paint;
 
     function inner(layer, properties) {
-        Object.keys(properties).forEach((key) => {
+        Object.keys(properties).forEach(function(key) {
             callback({
                 key: key,
                 value: properties[key],
@@ -77,12 +77,12 @@ function eachProperty(style, options, callback) {
 
     eachLayer(style, (layer) => {
         if (options.paint) {
-            eachPaint(layer, (paint) => {
+            eachPaint(layer, function(paint) {
                 inner(layer, paint);
             });
         }
         if (options.layout) {
-            eachLayout(layer, (layout) => {
+            eachLayout(layer, function(layout) {
                 inner(layer, layout);
             });
         }
@@ -101,7 +101,7 @@ module.exports = function(style) {
     style.version = 8;
 
     // Rename properties, reverse coordinates in source and layers
-    eachSource(style, (source) => {
+    eachSource(style, function(source) {
         if (source.type === 'video' && source.url !== undefined) {
             renameProperty(source, 'url', 'urls');
         }
@@ -113,13 +113,13 @@ module.exports = function(style) {
     });
 
     eachLayer(style, (layer) => {
-        eachLayout(layer, (layout) => {
+        eachLayout(layer, function(layout) {
             if (layout['symbol-min-distance'] !== undefined) {
                 renameProperty(layout, 'symbol-min-distance', 'symbol-spacing');
             }
         });
 
-        eachPaint(layer, (paint) => {
+        eachPaint(layer, function(paint) {
             if (paint['background-image'] !== undefined) {
                 renameProperty(paint, 'background-image', 'background-pattern');
             }
@@ -133,11 +133,11 @@ module.exports = function(style) {
     });
 
     // Inline Constants
-    eachProperty(style, (property) => {
+    eachProperty(style, function(property) {
         const value = resolveConstant(style, property.value);
 
         if (isFunction(value)) {
-            value.stops.forEach((stop) => {
+            value.stops.forEach(function(stop) {
                 stop[1] = resolveConstant(style, stop[1]);
             });
         }
@@ -146,17 +146,17 @@ module.exports = function(style) {
     });
     delete style.constants;
 
-    eachLayer(style, (layer) => {
+    eachLayer(style, function(layer) {
         // get rid of text-max-size, icon-max-size
         // turn text-size, icon-size into layout properties
         // https://github.com/mapbox/mapbox-gl-style-spec/issues/255
 
-        eachLayout(layer, (layout) => {
+        eachLayout(layer, function(layout) {
             delete layout['text-max-size'];
             delete layout['icon-max-size'];
         });
 
-        eachPaint(layer, (paint) => {
+        eachPaint(layer, function(paint) {
             if (paint['text-size']) {
                 if (!layer.layout) layer.layout = {};
                 layer.layout['text-size'] = paint['text-size'];
@@ -205,7 +205,7 @@ module.exports = function(style) {
 
     function migrateFontStack(font) {
         function splitAndTrim(string) {
-            return string.split(',').map((s) => {
+            return string.split(',').map(function(s) {
                 return s.trim();
             });
         }
@@ -218,7 +218,7 @@ module.exports = function(style) {
             return splitAndTrim(font);
 
         } else if (typeof font === 'object') {
-            font.stops.forEach((stop) => {
+            font.stops.forEach(function(stop) {
                 stop[1] = splitAndTrim(stop[1]);
             });
             return font;
@@ -228,8 +228,8 @@ module.exports = function(style) {
         }
     }
 
-    eachLayer(style, (layer) => {
-        eachLayout(layer, (layout) => {
+    eachLayer(style, function(layer) {
+        eachLayout(layer, function(layout) {
             if (layout['text-font']) {
                 layout['text-font'] = migrateFontStack(layout['text-font']);
             }
