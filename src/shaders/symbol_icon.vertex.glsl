@@ -1,5 +1,5 @@
 attribute vec4 a_pos_offset;
-attribute vec2 a_label_pos;
+attribute vec4 a_curve_info;
 attribute vec4 a_data;
 
 // icon-size data (see symbol_sdf.vertex.glsl for more)
@@ -25,7 +25,8 @@ uniform mat4 u_matrix;
 uniform bool u_is_text;
 uniform highp float u_zoom;
 uniform bool u_rotate_with_map;
-uniform vec2 u_extrude_scale;
+uniform vec2 u_pitched_extrude_scale;
+uniform vec2 u_unpitched_extrude_scale;
 
 uniform vec2 u_texsize;
 
@@ -36,7 +37,8 @@ void main() {
     #pragma mapbox: initialize lowp float opacity
 
     vec2 a_pos = a_pos_offset.xy;
-    vec2 a_offset = a_pos_offset.zw;
+    vec2 a_offset = a_pos_offset.zw + a_curve_info.zw;
+    vec2 a_label_pos = a_curve_info.xy;
 
     vec2 a_tex = a_data.xy;
     highp vec2 label_data = unpack_float(a_data[2]);
@@ -80,12 +82,12 @@ void main() {
     highp float camera_to_anchor_distance = projectedPoint.w;
     highp float perspective_ratio = 1.0 + (1.0 - u_pitch_scaling)*((camera_to_anchor_distance / u_camera_to_center_distance) - 1.0);
 
-    vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (a_offset / 64.0);
+    vec2 extrude = fontScale * perspective_ratio * (a_offset / 64.0);
     if (u_rotate_with_map) {
-        gl_Position = u_matrix * vec4(a_pos + extrude, 0, 1);
+        gl_Position = u_matrix * vec4(a_pos + extrude * u_pitched_extrude_scale, 0, 1);
         gl_Position.z += z * gl_Position.w;
     } else {
-        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
+        gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude * u_unpitched_extrude_scale, 0, 0);
     }
 
     gl_Position.z +=

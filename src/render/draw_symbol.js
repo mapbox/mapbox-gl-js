@@ -206,15 +206,12 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
     const gl = painter.gl;
     const tr = painter.transform;
 
-    if (pitchWithMap) {
-        const s = pixelsToTileUnits(tile, 1, tr.zoom);
-        gl.uniform2f(program.u_extrude_scale, s, s);
-    } else {
-        const s = tr.cameraToCenterDistance;
-        gl.uniform2f(program.u_extrude_scale,
-            tr.pixelsToGLUnits[0] * s,
-            tr.pixelsToGLUnits[1] * s);
-    }
+    const sPitched = pixelsToTileUnits(tile, 1, tr.zoom);
+    gl.uniform2f(program.u_pitched_extrude_scale, sPitched, sPitched);
+    const sUnpitched = tr.cameraToCenterDistance;
+    gl.uniform2f(program.u_unpitched_extrude_scale,
+                 tr.pixelsToGLUnits[0] * sUnpitched,
+                 tr.pixelsToGLUnits[1] * sUnpitched);
 
     if (isSDF) {
         const haloWidthProperty = `${isText ? 'text' : 'icon'}-halo-width`;
