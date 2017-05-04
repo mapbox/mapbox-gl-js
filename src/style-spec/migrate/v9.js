@@ -15,7 +15,7 @@ module.exports = function(style) {
     style.layers = deref(style.layers);
 
     // remove class-specific paint properties
-    eachLayer(style, (layer) => {
+    eachLayer(style, function(layer) {
         for (const k in layer) {
             if (/paint\..*/.test(k)) {
                 delete layer[k];
