@@ -20,9 +20,9 @@
 var style =   {
     "version": 8,
     "sources": {
-        "vtiles": {
-            "type": "vector",
-            "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
+        "rasterTerrain": {
+            "type": "raster-terrain",
+            "tiles": [ "https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=pk.eyJ1IjoibW9sbHltZXJwIiwiYSI6ImNpazdqbGtiZTAxbGNocm0ybXJ3MnNzOHAifQ.5_kJrEENbBWtqTZEv7g1-w"  ]
         }
     },
     "layers": [
@@ -35,8 +35,7 @@ var style =   {
         },
         {
             "id": "terrain",
-            "source": "vtiles",
-            "source-layer": "elevation",
+            "source": "rasterTerrain",
             "type": "terrain"
         }
     ]

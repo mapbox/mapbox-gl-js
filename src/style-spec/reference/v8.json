@@ -122,6 +122,9 @@
         },
         "raster": {
             "doc": "A raster tile source."
+        },
+        "raster-terrain": {
+            "doc": "Mapbox Terrain RGB elevation raster tiles"
         }
       },
       "doc": "The data type of the tile source."
@@ -370,6 +373,14 @@
           }
         },
         "terrain": {
+            "doc": "Terrain visualization based on DEM data.",
+            "sdk-support": {
+              "basic functionality": {
+                "js": "vnext"
+              }
+            }
+        },
+        "terrain-raster": {
             "doc": "Terrain visualization based on DEM data.",
             "sdk-support": {
               "basic functionality": {

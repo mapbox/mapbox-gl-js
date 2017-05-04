@@ -5,6 +5,7 @@ const util = require('../util/util');
 const sourceTypes = {
     'vector': require('../source/vector_tile_source'),
     'raster': require('../source/raster_tile_source'),
+    'raster-terrain': require('../source/raster_terrain_tile_source'),
     'geojson': require('../source/geojson_source'),
     'video': require('../source/video_source'),
     'image': require('../source/image_source'),
