@@ -134,20 +134,18 @@ void main() {
         // project the points and calculate the label angle in projected space
         // this calculation allows labels to be rendered unskewed on pitched maps
         vec4 a = u_matrix * vec4(a_pos, 0, 1);
-        vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_lineangle),sin(a_lineangle)), 0, 1);
-        highp float angle = atan((b[1]/b[3] - a[1]/a[3])/u_aspect_ratio, b[0]/b[3] - a[0]/a[3]);
+        vec4 b = u_matrix * vec4(a_pos + vec2(cos(a_lineangle), sin(a_lineangle)), 0, 1);
+        highp float angle = atan((b[1] / b[3] - a[1] / a[3]) / u_aspect_ratio, b[0] / b[3] - a[0] / a[3]);
         highp float asin = sin(angle);
         highp float acos = cos(angle);
         mat2 RotationMatrix = mat2(acos, -1.0 * asin, asin, acos);
-        highp float foreshortening = (1.0-pitchfactor)+(pitchfactor*cos(angle*2.0));
+        highp float foreshortening = (1.0 - pitchfactor) + (pitchfactor * cos(angle * 2.0));
 
         vec2 offset = RotationMatrix * (vec2(foreshortening, 1.0) * a_offset);
-        vec2 extrude = fontScale * u_extrude_scale * (offset / 64.0);
-
-        extrude *= perspective_ratio;
+        vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (offset / 64.0);
 
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
-        gl_Position.z += clipUnusedGlyphAngles(v_size*perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
+        gl_Position.z += clipUnusedGlyphAngles(v_size * perspective_ratio, layoutSize, a_minzoom, a_maxzoom) * gl_Position.w;
     // pitch-alignment: viewport
     // rotation-alignment: viewport
     } else {
@@ -155,9 +153,8 @@ void main() {
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
-    if (camera_to_anchor_distance > u_max_camera_distance * u_camera_to_center_distance) {
-        gl_Position.z += gl_Position.w;
-    }
+    gl_Position.z +=
+        step(u_max_camera_distance * u_camera_to_center_distance, camera_to_anchor_distance) * gl_Position.w;
 
     v_gamma_scale = gl_Position.w / perspective_ratio;
 

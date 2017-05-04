@@ -89,9 +89,8 @@ void main() {
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
 
-    if (camera_to_anchor_distance > u_max_camera_distance * u_camera_to_center_distance) {
-        gl_Position.z += gl_Position.w;
-    }
+    gl_Position.z +=
+        step(u_max_camera_distance * u_camera_to_center_distance, camera_to_anchor_distance) * gl_Position.w;
 
     v_tex = a_tex / u_texsize;
     // See comments in symbol_sdf.vertex
