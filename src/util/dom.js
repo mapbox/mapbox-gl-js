@@ -37,7 +37,7 @@ exports.enableDrag = function () {
 };
 
 exports.setTransform = function(el, value, immediate) {
-    immediate = (immediate === undefined) ? true : immediate;    
+    immediate = (immediate === undefined) ? true : immediate;
     util.pushTransform(el, value, immediate);
 };
 

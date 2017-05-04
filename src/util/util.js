@@ -459,10 +459,12 @@ exports.parseCacheControl = function(cacheControl: string): Object {
 
 exports.transformStack = [];
 
-function applyTransform(container, transform){
-    container.style['transform', 'WebkitTransform'] = transform;
+function applyTransform(container, transform) {
+    //this should be testProp(['transform', 'WebkitTransform']);
+    //but this code is run before window.document.documentElement.style is defined
+    container.style['transform'] = transform;
+    container.style['WebkitTransform'] = transform;
 }
-
 
 /**
  * Stages a DOM transform update
@@ -470,19 +472,19 @@ function applyTransform(container, transform){
  * @param container target DOM element
  * @param transform new transform
  * @param deferred if true, transform will be applied on next `Painter.render`.
- *  If false, transform will be applied immediately. 
+ *  If false, transform will be applied immediately.
  */
-exports.pushTransform = function(container, transform, immediate){
-    if(immediate === true){
+exports.pushTransform = function(container, transform, immediate) {
+    if (immediate === true) {
         applyTransform(container, transform);
-    }else{
+    } else {
         exports.transformStack.push([container, transform]);
     }
-}
+};
 
-exports.applyTransforms = function(){
-    for(let row of exports.transformStack){
+exports.applyTransforms = function() {
+    for (const row of exports.transformStack) {
         applyTransform(row[0], row[1]);
     }
     exports.transformStack = [];
-}
+};

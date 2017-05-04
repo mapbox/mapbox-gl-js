@@ -272,11 +272,10 @@ class Popup extends Evented {
             }
         }
 
-        let offsetedPos = this._pos.add(offset[anchor])
-
-        //snap to interger offset if this is last tick of an easing 
+        let offsetedPos = this._pos.add(offset[anchor]);
+        //snap to interger offset if this is last tick of an easing
         //animation, or if this event didn't come from easing loop
-        if(ev && (ev.finalEasingTick === true || ev.easing !== true)){
+        if (ev && (ev.finalEasingTick === true || ev.easing !== true)) {
             offsetedPos = offsetedPos.round();
         }
 
@@ -301,7 +300,7 @@ class Popup extends Evented {
 
         //defer transform updates except when the DOM is instantiated
         //this ensures transform updates happen simultaneously with canvas flip
-        DOM.setTransform(this._container, transform, instantiating===true);
+        DOM.setTransform(this._container, transform, instantiating === true);
     }
 
     _onClickClose() {
