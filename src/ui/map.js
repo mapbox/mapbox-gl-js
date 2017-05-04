@@ -182,7 +182,7 @@ class Map extends Camera {
 
         this.on('move', this._update.bind(this, false));
         if (options.redoPlacementOnPan) {
-            this.on('move', this._redoPlacementOnInterval.bind(this));
+            this.on('move', this._redoPlacementOnPan.bind(this));
         }
         this.on('zoom', this._update.bind(this, true));
         this.on('moveend', () => {
@@ -1501,8 +1501,8 @@ class Map extends Camera {
         }
     }
 
-    _redoPlacementOnInterval() {
-        if (this.style && !this._pendingRedoPlacement) {
+    _redoPlacementOnPan() {
+        if (this.style && !this._pendingRedoPlacement && this.transform.pitch > 25) {
             this._pendingRedoPlacement = true;
             setTimeout(this._redoPlacement.bind(this), 300);
         }
