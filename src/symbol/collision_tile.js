@@ -47,8 +47,8 @@ class CollisionTile {
 
         this.angle = angle;
         this.pitch = pitch;
-        this.cameraToTileDistance = cameraToTileDistance;
         this.cameraToCenterDistance = cameraToCenterDistance;
+        this.cameraToTileDistance = cameraToTileDistance;
 
         const sin = Math.sin(angle),
             cos = Math.cos(angle);
@@ -87,8 +87,8 @@ class CollisionTile {
         return {
             angle: this.angle,
             pitch: this.pitch,
-            cameraToTileDistance: this.cameraToTileDistance,
             cameraToCenterDistance: this.cameraToCenterDistance,
+            cameraToTileDistance: this.cameraToTileDistance,
             minimumPitchScaling: this.minimumPitchScaling,
             maximumPitchScaling: this.maximumPitchScaling,
             grid: grid,

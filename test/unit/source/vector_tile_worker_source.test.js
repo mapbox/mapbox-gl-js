@@ -53,7 +53,7 @@ test('redoPlacement', (t) => {
     t.test('on loaded tile', (t) => {
         const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
         const tile = {
-            redoPlacement: function(angle, pitch, cameraToTileDistance, cameraToCenterDistance, showCollisionBoxes) {
+            redoPlacement: function(angle, pitch, cameraToCenterDistance, cameraToTileDistance, showCollisionBoxes) {
                 t.equal(angle, 60);
                 t.equal(pitch, 30);
                 t.equal(showCollisionBoxes, false);
@@ -70,8 +70,8 @@ test('redoPlacement', (t) => {
             source: 'mapbox',
             angle: 60,
             pitch: 30,
-            cameraToTileDistance: 1,
             cameraToCenterDistance: 1,
+            cameraToTileDistance: 1,
             showCollisionBoxes: false
         }, (err, result, transferables) => {
             t.error(err);

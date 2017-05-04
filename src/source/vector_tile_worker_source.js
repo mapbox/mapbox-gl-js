@@ -39,8 +39,8 @@ class VectorTileWorkerSource {
      * @param {number} params.overscaling
      * @param {number} params.angle
      * @param {number} params.pitch
-     * @param {number} params.cameraToTileDistance
      * @param {number} params.cameraToCenterDistance
+     * @param {number} params.cameraToTileDistance
      * @param {boolean} params.showCollisionBoxes
      */
     loadTile(params, callback) {
