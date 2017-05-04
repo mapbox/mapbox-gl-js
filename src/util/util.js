@@ -474,7 +474,7 @@ function applyTransform(container, transform) {
  * @param immediate if false, transform will be applied on next `Painter.render`.
  *  If true, transform will be applied immediately.
  */
-exports.pushTransform = function(container: Node, transform: string, immediate: boolean) {
+exports.pushTransform = function(container: Object, transform: string, immediate: boolean) {
     if (immediate === true) {
         applyTransform(container, transform);
     } else {
