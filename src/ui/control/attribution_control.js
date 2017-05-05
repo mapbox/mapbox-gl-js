@@ -66,11 +66,14 @@ class AttributionControl {
     }
 
     _updateEditLink() {
-        if (!this._editLink) this._editLink = this._container.querySelector('.mapboxgl-improve-map');
+        if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
             this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
-                    center.lng}/${center.lat}/${Math.round(this._map.getZoom() + 1)}`;
+                    Math.round(center.lng * 1000) / 1000}/${Math.round(center.lat * 1000) / 1000}/${Math.round(this._map.getZoom())}`;
+            if (this.styleOwner && this.styleId) {
+                this._editLink.href += `?owner=${this.styleOwner}&id=${this.styleId}`;
+            }
         }
     }
 
@@ -84,6 +87,12 @@ class AttributionControl {
     _updateAttributions() {
         if (!this._map.style) return;
         let attributions = [];
+
+        if (this._map.style.stylesheet) {
+            const stylesheet = this._map.style.stylesheet;
+            this.styleOwner = stylesheet.owner;
+            this.styleId = stylesheet.id;
+        }
 
         const sourceCaches = this._map.style.sourceCaches;
         for (const id in sourceCaches) {

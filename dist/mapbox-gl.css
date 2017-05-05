@@ -161,11 +161,12 @@ a.mapboxgl-ctrl-logo {
     color: inherit;
     text-decoration: underline;
 }
-.mapboxgl-ctrl-attrib .mapboxgl-improve-map {
+/* stylelint-disable */
+.mapboxgl-ctrl-attrib .mapbox-improve-map {
     font-weight: bold;
     margin-left: 2px;
 }
-
+/*stylelint-enable*/
 .mapboxgl-ctrl-scale {
     background-color: rgba(255,255,255,0.75);
     font-size: 10px;
@@ -318,8 +319,11 @@ a.mapboxgl-ctrl-logo {
     border: 2px dotted #202020;
     opacity: 0.5;
 }
+
 @media print {
-    .mapboxgl-improve-map {
+/* stylelint-disable */
+    .mapbox-improve-map {
         display:none;
     }
+/* stylelint-enable */
 }
