@@ -106,7 +106,8 @@ function prepareTerrain(painter, tile, layer) {
     const terrainBucket = tile.getBucket(layer);
     // set up terrain prepare textures
 
-    const levels = populateLevelPixels(terrainBucket.buffers.terrainArray, tile);
+    const levels = terrainBucket ? populateLevelPixels(terrainBucket.buffers.terrainArray, tile) : tile.dem;
+    console.log(levels);
     const dem = gl.createTexture();
 
     gl.activeTexture(gl.TEXTURE1);

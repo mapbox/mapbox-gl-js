@@ -412,6 +412,7 @@ class SourceCache extends Evented {
      * @private
      */
     addTile(coord) {
+
         let tile = this._tiles[coord.id];
         if (tile)
             return tile;

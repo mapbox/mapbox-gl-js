@@ -17,7 +17,7 @@
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
-var style =   {
+var raster =   {
     "version": 8,
     "sources": {
         "rasterTerrain": {
@@ -41,11 +41,36 @@ var style =   {
     ]
 };
 
+var vector =   {
+    "version": 8,
+    "sources": {
+      "vtiles": {
+        "type": "vector",
+        "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
+      }
+    },
+    "layers": [
+      {
+        "id": "background",
+        "type": "background",
+        "paint": {
+          "background-color": "#FFF"
+        }
+      },
+      {
+        "id": "terrain",
+        "source": "vtiles",
+        "source-layer": "elevation",
+        "type": "terrain"
+      }
+    ]
+  }
+
 var map = window.map = new mapboxgl.Map({
     container: 'map',
     zoom: 12,
     center: [-112.9487, 36.2628],
-    style: style,
+    style: vector,
     hash: true
 });
 
