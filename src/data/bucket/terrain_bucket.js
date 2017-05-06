@@ -10,10 +10,10 @@ const {DEMPyramid, Level} = require('../../geo/dem_pyramid');
 
 // not sure if we need this.... :thinkingface:
 const terrainInterface = {
-    layoutVertexArrayType: createVertexArrayType([
+    layoutAttributes: [
         {name: 'a_pos',         components: 2, type: 'Int16'},
         {name: 'a_texture_pos', components: 2, type: 'Uint16'}
-    ]),
+    ],
     paintAttributes: [
         {property: 'terrain-shadow-color',          type: 'Uint8'},
         {property: 'terrain-highlight-color',       type: 'Uint8'},

@@ -106,14 +106,16 @@ function prepareTerrain(painter, tile, layer) {
     const terrainBucket = tile.getBucket(layer);
     // set up terrain prepare textures
 
-    const levels = terrainBucket ? populateLevelPixels(terrainBucket.buffers.terrainArray, tile) : tile.dem;
-    console.log(levels);
+    const levels = terrainBucket ? populateLevelPixels(terrainBucket.buffers.terrainArray, tile) : tile.dem.levels.map((l, i)=> {
+        if (i > 7) return {width: l.width, height: l.height, data: new Uint8Array(l.data.buffer)};
+        return {width: l.width * 2, height: l.height*2, data: new Uint8Array(l.data.buffer)};
+    });
+
     const dem = gl.createTexture();
 
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, dem);
     for (let i = 0; i < levels.length; i++) {
-        // console.log(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE);
         gl.texImage2D(gl.TEXTURE_2D, i, gl.RGBA, levels[i].width, levels[i].height, 0, gl.RGBA, gl.UNSIGNED_BYTE, levels[i].data);
     }
     // TODO add texParameteri bindings here

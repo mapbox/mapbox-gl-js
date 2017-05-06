@@ -103,7 +103,7 @@ class DEMPyramid {
 
     loadFromImage(data) {
         // Build level 0
-        this.levels = [ new Level(data.width, data.height, 1) ];
+        this.levels = [ new Level(data.width, data.height, 128) ];
         const level = this.levels[0];
         const pixels = data.data;
 
