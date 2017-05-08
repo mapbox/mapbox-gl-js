@@ -1,5 +1,8 @@
 const float PI = 3.141592653589793;
 
+// NOTE: attribute locations in this shader are currently manually bound (see https://github.com/mapbox/mapbox-gl-js/issues/4607).
+// If adding or removing attributes from this shader, modify the bindings in painter.js accordingly, making sure the attrib at
+// position 0 is always used.
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
 

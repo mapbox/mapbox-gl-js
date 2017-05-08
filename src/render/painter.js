@@ -393,16 +393,31 @@ class Painter {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
 
+        const result = {program};
+
+        // Manually determine the order of attributes for the symbol program (see https://github.com/mapbox/mapbox-gl-js/issues/4607).
+        // We bind a_data to position 0 as it is always used (binding a_size can cause rendering to fail).
+        if (name === 'symbolSDF') {
+            result.numAttributes = 3;
+            ['a_data', 'a_pos_offset', 'a_size'].forEach((name, i) => {
+                gl.bindAttribLocation(program, i, name);
+                result[name] = i;
+            });
+        }
+
         gl.linkProgram(program);
         assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
 
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-        const result = {program, numAttributes};
 
-        for (let i = 0; i < numAttributes; i++) {
-            const attribute = gl.getActiveAttrib(program, i);
-            result[attribute.name] = gl.getAttribLocation(program, attribute.name);
+        if (name !== 'symbolSDF') {
+            result.numAttributes = numAttributes;
+            for (let i = 0; i < numAttributes; i++) {
+                const attribute = gl.getActiveAttrib(program, i);
+                result[attribute.name] = gl.getAttribLocation(program, attribute.name);
+            }
         }
+
         const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(program, i);
