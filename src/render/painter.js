@@ -395,14 +395,12 @@ class Painter {
 
         const result = {program};
 
-        // Manually determine the order of attributes for the symbol program (see https://github.com/mapbox/mapbox-gl-js/issues/4607).
-        // We bind a_data to position 0 as it is always used (binding a_size can cause rendering to fail).
+        // For the symbol program, manually ensure the attrib bound to position 0 is always used (either a_data or a_pos_offset would work here).
+        // This is needed to fix https://github.com/mapbox/mapbox-gl-js/issues/4607 — otherwise a_size can be bound first, causing rendering to fail.
+        // All remaining attribs will be bound dynamically below.
         if (name === 'symbolSDF') {
-            result.numAttributes = 3;
-            ['a_data', 'a_pos_offset', 'a_size'].forEach((name, i) => {
-                gl.bindAttribLocation(program, i, name);
-                result[name] = i;
-            });
+            gl.bindAttribLocation(program, 0, 'a_data');
+            result['a_data'] = 0;
         }
 
         gl.linkProgram(program);
@@ -410,12 +408,10 @@ class Painter {
 
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
 
-        if (name !== 'symbolSDF') {
-            result.numAttributes = numAttributes;
-            for (let i = 0; i < numAttributes; i++) {
-                const attribute = gl.getActiveAttrib(program, i);
-                result[attribute.name] = gl.getAttribLocation(program, attribute.name);
-            }
+        result.numAttributes = numAttributes;
+        for (let i = 0; i < numAttributes; i++) {
+            const attribute = gl.getActiveAttrib(program, i);
+            result[attribute.name] = gl.getAttribLocation(program, attribute.name);
         }
 
         const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
