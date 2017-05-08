@@ -393,27 +393,24 @@ class Painter {
         assert(gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS), gl.getShaderInfoLog(vertexShader));
         gl.attachShader(program, vertexShader);
 
-        const result = {program};
 
         // For the symbol program, manually ensure the attrib bound to position 0 is always used (either a_data or a_pos_offset would work here).
         // This is needed to fix https://github.com/mapbox/mapbox-gl-js/issues/4607 — otherwise a_size can be bound first, causing rendering to fail.
         // All remaining attribs will be bound dynamically below.
         if (name === 'symbolSDF') {
             gl.bindAttribLocation(program, 0, 'a_data');
-            result['a_data'] = 0;
         }
 
         gl.linkProgram(program);
         assert(gl.getProgramParameter(program, gl.LINK_STATUS), gl.getProgramInfoLog(program));
 
         const numAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+        const result = {program, numAttributes};
 
-        result.numAttributes = numAttributes;
         for (let i = 0; i < numAttributes; i++) {
             const attribute = gl.getActiveAttrib(program, i);
             result[attribute.name] = gl.getAttribLocation(program, attribute.name);
         }
-
         const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
         for (let i = 0; i < numUniforms; i++) {
             const uniform = gl.getActiveUniform(program, i);
