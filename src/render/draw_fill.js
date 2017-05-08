@@ -42,6 +42,8 @@ function drawFill(painter, sourceCache, layer, coords) {
 }
 
 function drawFillTiles(painter, sourceCache, layer, coords, drawFn) {
+    if (pattern.isPatternMissing(layer.paint['fill-pattern'], painter)) return;
+
     let firstTile = true;
     for (const coord of coords) {
         const tile = sourceCache.getTile(coord);
