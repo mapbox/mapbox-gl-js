@@ -4,17 +4,7 @@
     "test": {
       "height": 64,
       "width": 64,
-      "operations": [
-        [
-          "wait"
-        ],
-        [
-          "showCollisionBoxes"
-        ],
-        [
-          "wait"
-        ]
-      ]
+      "collisionDebug":true
     }
   },
   "center": [ 0, 0 ],
