@@ -69,11 +69,9 @@ class AttributionControl {
         if (!this._editLink) this._editLink = this._container.querySelector('.mapbox-improve-map');
         if (this._editLink) {
             const center = this._map.getCenter();
-            this._editLink.href = `https://www.mapbox.com/map-feedback/#/${
+            const styleParams = (this.styleOwner && this.styleId) ? `?owner=${this.styleOwner}&id=${this.styleId}` : '';
+            this._editLink.href = `https://www.mapbox.com/feedback/${styleParams}#/${
                     Math.round(center.lng * 1000) / 1000}/${Math.round(center.lat * 1000) / 1000}/${Math.round(this._map.getZoom())}`;
-            if (this.styleOwner && this.styleId) {
-                this._editLink.href += `?owner=${this.styleOwner}&id=${this.styleId}`;
-            }
         }
     }
 
