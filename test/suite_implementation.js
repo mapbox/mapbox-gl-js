@@ -108,6 +108,9 @@ function applyOperations(map, operations, callback) {
         map.addImage(operation[1], img.data, {height: img.height, width: img.width, pixelRatio: pixelRatio});
         applyOperations(map, operations.slice(1), callback);
 
+    } else if (operation[0] === 'showCollisionBoxes') {
+        map[operation[0]] = true;
+        applyOperations(map, operations.slice(1), callback);
     } else {
         map[operation[0]].apply(map, operation.slice(1));
         applyOperations(map, operations.slice(1), callback);
