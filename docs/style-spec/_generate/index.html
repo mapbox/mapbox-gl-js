@@ -849,9 +849,16 @@ navigation:
                 <dt><var>identity</var></dt>
                 <dd>functions return their input as their output.</dd>
                 <dt><var>exponential</var></dt>
-                <dd>functions generate an output by interpolating between stops just less than and just greater than the function input. The domain must be numeric. This is the default for properties marked with <span class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span>, the "exponential" symbol.</dd>
+                <dd>functions generate an output by interpolating between stops just less than and just greater than the
+                    function input. The domain (input value) must be numeric, and the style property must support
+                    interpolation. Style properties that support interpolation are marked marked with <span
+                        class='icon smooth-ramp quiet micro space-right indivne' title='continuous'></span>, the
+                    "exponential" symbol, and <var>exponential</var> is the default function type for these properties.</dd>
                 <dt><var>interval</var></dt>
-                <dd>functions return the output value of the stop just less than the function input. The domain must be numeric. This is the default for properties marked with <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span>, the "interval" symbol.</dd>
+                <dd>functions return the output value of the stop just less than the function input. The domain (input
+                    value) must be numeric. Any style property may use interval functions. For properties marked with
+                    <span class='icon step-ramp quiet micro space-right indivne' title='discrete'></span>, the "interval"
+                    symbol, this is the default function type.</dd>
                 <dt><var>categorical</var></dt>
                 <dd>functions return the output value of the stop equal to the function input.</dd>
               </dl>
