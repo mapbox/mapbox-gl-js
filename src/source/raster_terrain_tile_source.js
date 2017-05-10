@@ -9,7 +9,7 @@ const TileBounds = require('./tile_bounds');
 const browser = require('../util/browser');
 const DEMPyramid = require('../geo/dem_pyramid').DEMPyramid;
 
-class RasterTileSource extends Evented {
+class RasterTerrainTileSource extends Evented {
 
     constructor(id, options, dispatcher, eventedParent) {
         super();
@@ -17,7 +17,7 @@ class RasterTileSource extends Evented {
         this.dispatcher = dispatcher;
         this.setEventedParent(eventedParent);
 
-        this.type = 'raster';
+        this.type = 'raster-terrain';
         this.minzoom = 0;
         this.maxzoom = 22;
         this.roundZoom = true;
@@ -101,7 +101,6 @@ class RasterTileSource extends Evented {
             delete img.expires;
 
             tile.state = 'loaded';
-
             callback(null);
         }
     }
@@ -118,4 +117,4 @@ class RasterTileSource extends Evented {
     }
 }
 
-module.exports = RasterTileSource;
+module.exports = RasterTerrainTileSource;

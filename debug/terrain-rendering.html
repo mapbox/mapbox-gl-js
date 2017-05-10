@@ -44,27 +44,27 @@ var raster =   {
 var vector =   {
     "version": 8,
     "sources": {
-      "vtiles": {
-        "type": "vector",
-        "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
-      }
+        "vtiles": {
+            "type": "vector",
+            "tiles": [ "http://localhost:3001/tiles/{z}/{x}/{y}.mvt" ]
+        }
     },
     "layers": [
-      {
-        "id": "background",
-        "type": "background",
-        "paint": {
-          "background-color": "#FFF"
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#FFF"
+            }
+        },
+        {
+            "id": "terrain",
+            "source": "vtiles",
+            "source-layer": "elevation",
+            "type": "terrain"
         }
-      },
-      {
-        "id": "terrain",
-        "source": "vtiles",
-        "source-layer": "elevation",
-        "type": "terrain"
-      }
     ]
-  }
+};
 
 var map = window.map = new mapboxgl.Map({
     container: 'map',

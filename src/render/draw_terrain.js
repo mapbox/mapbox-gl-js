@@ -36,7 +36,7 @@ function drawTerrain(painter, sourceCache, layer, coords) {
 }
 
 // TODO create OffscreenTexture class for extrusions + terrain
-// preprocessing
+// preprocessing ?
 class TerrainTexture {
     constructor (gl, painter, layer) {
         this.gl = gl;
@@ -53,7 +53,7 @@ class TerrainTexture {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        // TODO do I need to call generateMipMap?
+
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         this.texture.width = this.width;
         this.texture.height = this.height;
@@ -110,7 +110,7 @@ function prepareTerrain(painter, tile, layer) {
 
     const levels = terrainBucket ? populateLevelPixels(terrainBucket.buffers.terrainArray, tile) : tile.dem.levels.map((l, i)=> {
         if (i > 7) return {width: l.width, height: l.height, data: new Uint8Array(l.data.buffer)};
-        return {width: l.width * 2, height: l.height*2, data: new Uint8Array(l.data.buffer)};
+        return {width: l.width * 2, height: l.height * 2, data: new Uint8Array(l.data.buffer)};
     });
 
     const dem = gl.createTexture();
@@ -155,7 +155,7 @@ function prepareTerrain(painter, tile, layer) {
     tile.prepared = true;
 }
 
-function populateLevelPixels(terrainArray, tile) {
+function populateLevelPixels(terrainArray) {
     const levels = [];
     let levelSize = TERRAIN_TILE_WIDTH;
     let prevIndex = 0;
