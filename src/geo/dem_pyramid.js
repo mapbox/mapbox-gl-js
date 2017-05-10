@@ -115,14 +115,39 @@ class DEMPyramid {
                 level.set(x, y, this.scale * ((pixels[j] * 256 * 256 + pixels[j + 1] * 256.0 + pixels[j + 2]) / 10.0 - 10000.0));
             }
         }
-
         this.buildLevels();
-
         this.loaded = true;
+    }
+
+    backfillBorders(borderTile, dx, dy) {
+        for (var l = 0; l < this.levels.length; l++) {
+            var t = this.levels[l];
+            var o = borderTile.levels[l];
+
+            if (t.width !== o.width) throw new Error('level mismatch (width)');
+            if (t.height !== o.height) throw new Error('level mismatch (height)');
+
+            const x_min = clamp(dx * t.width, -t.border, t.width + t.border);
+            const x_max = clamp(dx * t.width + t.width, -t.border, t.width + t.border);
+            const y_min = clamp(dy * t.height, -t.border, t.height + t.border);
+            const y_max = clamp(dy * t.height + t.height, -t.border, t.height + t.border);
+
+            const ox = -dx * t.width;
+            const oy = -dy * t.height;
+
+            for (var y = y_min; y < y_max; y++) {
+                for (var x = x_min; x < x_max; x++) {
+                    t.set(x, y, o.get(x + ox, y + oy));
+                }
+            }
+        }
     }
 
 }
 
+function clamp(value, min, max) {
+    return value < min ? min : (value > max ? max : value);
+}
 
 
 module.exports = {DEMPyramid, Level};

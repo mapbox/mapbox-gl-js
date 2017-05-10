@@ -168,17 +168,78 @@ class SourceCache extends Evented {
             if (err.status !== 404) this._source.fire('error', {tile: tile, error: err});
             return;
         }
-
         tile.sourceCache = this;
         tile.timeAdded = new Date().getTime();
         if (previousState === 'expired') tile.refreshedUponExpiration = true;
         this._setTileReloadTimer(id, tile);
-        this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
+        if (this._source.type === 'raster-terrain') {
+            this._source.fire('dataloading', {dataType: 'source', tile: tile, coord: tile.coord});
+            // need all visible tiles to be loaded for the DEM to be backfilled correctly
+            if (this.loaded()) this._backfillDEM();
+        } else {
+            this._source.fire('data', {dataType: 'source', tile: tile, coord: tile.coord});
+        }
 
         // HACK this is necessary to fix https://github.com/mapbox/mapbox-gl-js/issues/2986
         if (this.map) this.map.painter.tileExtentVAO.vao = null;
     }
 
+
+    /**
+     * For raster terrain source, backfill DEM to eliminate visible tile boundaries
+     * @private
+     */
+    _backfillDEM() {
+        for (let key in this._tiles) {
+            const {z, x, y, w} = TileCoord.fromID(key);
+            const centerTile = this._tiles[key];
+
+            var dim = Math.pow(2, z);
+            var px = (x - 1 + dim) % dim;
+            var nx = (x + 1 + dim) % dim;
+
+            var tiles = [
+                { z: z, x: x, y: y },
+                { z: z, x: px, y: y },
+                { z: z, x: nx, y: y }
+            ];
+            // Add upper tiles
+            if (y > 0) {
+                tiles.push({ z: z, x: px, y: y - 1 });
+                tiles.push({ z: z, x: x, y: y - 1 });
+                tiles.push({ z: z, x: nx, y: y - 1 });
+            }
+            // Add lower tiles
+            if (y + 1 < dim) {
+                tiles.push({ z: z, x: px, y: y + 1 });
+                tiles.push({ z: z, x: x, y: y + 1 });
+                tiles.push({ z: z, x: nx, y: y + 1 });
+            }
+
+            for (let i=1; i < tiles.length; i++) {
+                const borderTile = this._tiles[((dim * dim * w + dim * tiles[i].y + tiles[i].x) * 32) + tiles[i].z];
+                // check if bordering tile is on the screen with the tilecoord id
+                // formula. no need to backfill the tile boundaries unless
+                // the boundary is on the screen.
+                if (!borderTile) continue;
+                var dx = borderTile.coord.x - centerTile.coord.x;
+                var dy = borderTile.coord.y - centerTile.coord.y;
+                if (dx == 0 && dy == 0) continue;
+
+                if (Math.abs(dy) > 1) {
+                    continue;
+                }
+                if (Math.abs(dx) > 1) {
+                    // Adjust the delta coordinate for world wraparound.
+                    if (Math.abs(dx + dim) === 1) { dx += dim; }
+                    else if (Math.abs(dx - dim) === 1) { dx -= dim; }
+                }
+                if (!borderTile.dem || !centerTile.dem) continue;
+                centerTile.dem.backfillBorders(borderTile.dem, dx, dy);
+            }
+            this._source.fire('data', {dataType: 'source', tile: centerTile, coord: centerTile.coord});
+        }
+    }
     /**
      * Get a specific tile by TileCoordinate
      * @param {TileCoordinate} coord
