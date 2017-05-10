@@ -34,6 +34,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
     painter.setDepthSublayer(0);
     painter.depthMask(false);
 
+    /*
     drawLayerSymbols(painter, sourceCache, layer, coords, false,
         layer.paint['icon-translate'],
         layer.paint['icon-translate-anchor'],
@@ -42,6 +43,7 @@ function drawSymbols(painter, sourceCache, layer, coords) {
         // and we simply inherit the rotation alignment
         layer.layout['icon-rotation-alignment']
     );
+    */
 
     drawLayerSymbols(painter, sourceCache, layer, coords, true,
         layer.paint['text-translate'],
