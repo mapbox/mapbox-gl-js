@@ -159,7 +159,7 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
 
         let glyphInstances;
         let labelMinScale = minScale;
-        if (alongLine) {
+        if (false && alongLine) {
             glyphInstances = [];
             labelMinScale = getLineGlyphs(glyphInstances, anchor, centerX, line, anchor.segment, false);
             if (keepUpright) {

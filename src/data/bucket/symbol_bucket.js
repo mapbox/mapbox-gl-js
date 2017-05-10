@@ -21,12 +21,38 @@ const CollisionFeature = require('../../symbol/collision_feature');
 const findPoleOfInaccessibility = require('../../util/find_pole_of_inaccessibility');
 const classifyRings = require('../../util/classify_rings');
 const VectorTileFeature = require('vector-tile').VectorTileFeature;
+const createStructArrayType = require('../../util/struct_array');
 
 const shapeText = Shaping.shapeText;
 const shapeIcon = Shaping.shapeIcon;
 const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
+
+const VertexTransformArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'anchorX' },
+        { type: 'Int16', name: 'anchorY' },
+        { type: 'Int16', name: 'glyphOffsetX' },
+        { type: 'Int16', name: 'glyphOffsetY' },
+        { type: 'Int16', name: 'cornerOffsetX' },
+        { type: 'Int16', name: 'cornerOffsetY' },
+        { type: 'Uint32', name: 'lineIndex' },
+        { type: 'Uint16', name: 'segment' }
+    ]});
+
+const LineArray = createStructArrayType({
+    members: [
+        { type: 'Uint32', name: 'startIndex' },
+        { type: 'Uint32', name: 'length' }
+    ]
+});
+
+const LineVertexArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'x' },
+        { type: 'Int16', name: 'y' }
+    ]});
 
 const elementArrayType = createElementArrayType();
 
@@ -434,7 +460,10 @@ class SymbolBucket {
             symbolPlacement = layout['symbol-placement'],
             textRepeatDistance = symbolMinDistance / 2;
 
+        let lineIndex = 0;
+
         const addSymbolInstance = (line, anchor) => {
+            line.index = lineIndex++;
             const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
             if (avoidEdges && !inside) return;
@@ -520,6 +549,11 @@ class SymbolBucket {
 
         this.createArrays();
 
+        this.vertexTransformArray = new VertexTransformArray();
+        this.lineArray = new LineArray();
+        this.lineVertexArray = new LineVertexArray();
+        const lineIndexMap = {};
+
         const layer = this.layers[0];
         const layout = layer.layout;
 
@@ -594,6 +628,34 @@ class SymbolBucket {
             if (hasText) {
                 collisionTile.insertCollisionFeature(textCollisionFeature, glyphScale, layout['text-ignore-placement']);
                 if (glyphScale <= maxScale) {
+
+
+                    const line = symbolInstance.line;
+                    let lineArrayIndex = lineIndexMap[line.index];
+                    if (lineArrayIndex === undefined) {
+                        const start = this.lineVertexArray.length;
+                        for (let i = 0; i < line.length; i++) {
+                            this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
+                        }
+                        const length = this.lineVertexArray.length - start;
+                        lineArrayIndex = this.lineArray.emplaceBack(start, length);
+                        lineIndexMap[line.index] = lineArrayIndex;
+                    }
+
+                    const glyphOffsetX = 0;
+                    const glyphOffsetY = 0;
+                    const cornerOffsetX = 0;
+                    const cornerOffsetY = 0;
+                    this.vertexTransformArray.emplaceBack(
+                            symbolInstance.anchor.x,
+                            symbolInstance.anchor.y,
+                            glyphOffsetX,
+                            glyphOffsetY,
+                            cornerOffsetX,
+                            cornerOffsetY,
+                            lineArrayIndex,
+                            symbolInstance.anchor.segment);
+
                     const textSizeData = getSizeVertexData(layer,
                         this.zoom,
                         this.textSizeData.coveringZoomRange,
@@ -804,6 +866,7 @@ class SymbolBucket {
             glyphQuads,
             iconQuads,
             anchor,
+            line,
             featureIndex,
             featureProperties,
             writingModes
