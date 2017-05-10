@@ -3,7 +3,6 @@
 const Bucket = require('../bucket');
 const util = require('../../util/util');
 const Pbf = require('pbf');
-const createVertexArrayType = require('../vertex_array_type');
 const createElementArrayType = require('../element_array_type');
 const createTerrainArrayType = require('../terrain_array_type');
 const {DEMPyramid, Level} = require('../../geo/dem_pyramid');
@@ -61,14 +60,14 @@ class TerrainBucket extends Bucket {
         const pbf = new Pbf(this.terrainTile._pbf.buf);
         pbf.readFields((tag)=>{
             if (tag === 3 /* layers */) {
-                var extent = 0;
-                pbf.readMessage(function(tag) {
+                let extent = 0;
+                pbf.readMessage((tag) => {
                     if (tag === 5 /* extent */) {
                         extent = pbf.readVarint();
                     } else if (tag === 2 /* feature */) {
-                        var bytes, type;
-                        pbf.readMessage(function(tag) {
-                            if (tag == 3 /* type */) {
+                        let bytes, type;
+                        pbf.readMessage((tag) => {
+                            if (tag === 3 /* type */) {
                                 type = pbf.readVarint();
                             } else if (tag === 4 /* geometry */) {
                                 bytes = pbf.readBytes();
@@ -96,7 +95,7 @@ class TerrainBucket extends Bucket {
                     }
                 });
             }
-        })
+        });
 
 
         pyramid.loaded = true;

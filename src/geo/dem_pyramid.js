@@ -120,23 +120,23 @@ class DEMPyramid {
     }
 
     backfillBorders(borderTile, dx, dy) {
-        for (var l = 0; l < this.levels.length; l++) {
-            var t = this.levels[l];
-            var o = borderTile.levels[l];
+        for (let l = 0; l < this.levels.length; l++) {
+            const t = this.levels[l];
+            const o = borderTile.levels[l];
 
             if (t.width !== o.width) throw new Error('level mismatch (width)');
             if (t.height !== o.height) throw new Error('level mismatch (height)');
 
-            const x_min = clamp(dx * t.width, -t.border, t.width + t.border);
-            const x_max = clamp(dx * t.width + t.width, -t.border, t.width + t.border);
-            const y_min = clamp(dy * t.height, -t.border, t.height + t.border);
-            const y_max = clamp(dy * t.height + t.height, -t.border, t.height + t.border);
+            const xMin = clamp(dx * t.width, -t.border, t.width + t.border);
+            const xMax = clamp(dx * t.width + t.width, -t.border, t.width + t.border);
+            const yMin = clamp(dy * t.height, -t.border, t.height + t.border);
+            const yMax = clamp(dy * t.height + t.height, -t.border, t.height + t.border);
 
             const ox = -dx * t.width;
             const oy = -dy * t.height;
 
-            for (var y = y_min; y < y_max; y++) {
-                for (var x = x_min; x < x_max; x++) {
+            for (let y = yMin; y < yMax; y++) {
+                for (let x = xMin; x < xMax; x++) {
                     t.set(x, y, o.get(x + ox, y + oy));
                 }
             }

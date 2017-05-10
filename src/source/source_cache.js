@@ -190,15 +190,15 @@ class SourceCache extends Evented {
      * @private
      */
     _backfillDEM() {
-        for (let key in this._tiles) {
+        for (const key in this._tiles) {
             const {z, x, y, w} = TileCoord.fromID(key);
             const centerTile = this._tiles[key];
 
-            var dim = Math.pow(2, z);
-            var px = (x - 1 + dim) % dim;
-            var nx = (x + 1 + dim) % dim;
+            const dim = Math.pow(2, z);
+            const px = (x - 1 + dim) % dim;
+            const nx = (x + 1 + dim) % dim;
 
-            var tiles = [
+            const tiles = [
                 { z: z, x: x, y: y },
                 { z: z, x: px, y: y },
                 { z: z, x: nx, y: y }
@@ -216,23 +216,22 @@ class SourceCache extends Evented {
                 tiles.push({ z: z, x: nx, y: y + 1 });
             }
 
-            for (let i=1; i < tiles.length; i++) {
+            for (let i = 1; i < tiles.length; i++) {
                 const borderTile = this._tiles[((dim * dim * w + dim * tiles[i].y + tiles[i].x) * 32) + tiles[i].z];
                 // check if bordering tile is on the screen with the tilecoord id
                 // formula. no need to backfill the tile boundaries unless
                 // the boundary is on the screen.
                 if (!borderTile) continue;
-                var dx = borderTile.coord.x - centerTile.coord.x;
-                var dy = borderTile.coord.y - centerTile.coord.y;
-                if (dx == 0 && dy == 0) continue;
+                let dx = borderTile.coord.x - centerTile.coord.x;
+                const dy = borderTile.coord.y - centerTile.coord.y;
+                if (dx === 0 && dy === 0) continue;
 
                 if (Math.abs(dy) > 1) {
                     continue;
                 }
                 if (Math.abs(dx) > 1) {
                     // Adjust the delta coordinate for world wraparound.
-                    if (Math.abs(dx + dim) === 1) { dx += dim; }
-                    else if (Math.abs(dx - dim) === 1) { dx -= dim; }
+                    if (Math.abs(dx + dim) === 1) { dx += dim; }                    else if (Math.abs(dx - dim) === 1) { dx -= dim; }
                 }
                 if (!borderTile.dem || !centerTile.dem) continue;
                 centerTile.dem.backfillBorders(borderTile.dem, dx, dy);
