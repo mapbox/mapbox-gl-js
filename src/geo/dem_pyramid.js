@@ -1,8 +1,6 @@
 'use strict';
-const window = require('../util/window');
 const assert = require('assert');
-const browser = require('../util/browser');
-
+// const getImageData = require('../util/browser.js').getImageData;
 
 class Level {
     constructor(width, height, border) {
@@ -67,47 +65,10 @@ class DEMPyramid {
         this.levels.push(new Level(1, 1, 0));
     }
 
-    decodeBleed(pbf) {
-        for (let l = 0; l < this.levels.length; l++) {
-            const level = this.levels[l];
-            if (level.width <= 2 || level.height <= 2) {
-                break;
-            }
-
-            let x = -1;
-            let y = -1;
-            let prev = 0;
-            // Encode left column
-            while (y < level.height) {
-                level.set(x, y, (prev = pbf.readSVarint() + prev));
-                y++;
-            }
-
-            // Encode bottom row
-            while (x < level.width) {
-                level.set(x, y, (prev = pbf.readSVarint() + prev));
-                x++;
-            }
-
-            // Encode right column
-            while (y > -1) {
-                level.set(x, y, (prev = pbf.readSVarint() + prev));
-                y--;
-            }
-
-            // Encode top row
-            while (x > -1) {
-                level.set(x, y, (prev = pbf.readSVarint() + prev));
-                x--;
-            }
-        }
-    }
-
-    loadFromImage(img) {
+    loadFromImage(data) {
         // Build level 0
-        this.levels = [ new Level(img.width, img.height, 1) ];
+        this.levels = [ new Level(data.width, data.height, 128) ];
         const level = this.levels[0];
-        const data = browser.getImageData(0, 0, canvas.width, canvas.height);
         const pixels = data.data;
 
         // unpack
