@@ -29,7 +29,7 @@ const minScale = 0.5; // underscale by 1 zoom level
  * @class SymbolQuad
  * @private
  */
-function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode) {
+function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, minScale, maxScale, writingMode, glyphOffsetX, glyphOffsetY) {
     this.anchorPoint = anchorPoint;
     this.tl = tl;
     this.tr = tr;
@@ -41,6 +41,8 @@ function SymbolQuad(anchorPoint, tl, tr, bl, br, tex, anchorAngle, glyphAngle, m
     this.minScale = minScale;
     this.maxScale = maxScale;
     this.writingMode = writingMode;
+    this.glyphOffsetX = glyphOffsetX;
+    this.glyphOffsetY = glyphOffsetY;
 }
 
 /**
@@ -122,7 +124,7 @@ function getIconQuads(anchor, shapedIcon, boxScale, line, layer, alongLine, shap
         br = br.matMult(matrix);
     }
 
-    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity)];
+    return [new SymbolQuad(new Point(anchor.x, anchor.y), tl, tr, bl, br, shapedIcon.image.rect, 0, 0, minScale, Infinity, undefined, 0, 0)];
 }
 
 /**
@@ -176,8 +178,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             }];
         }
 
-        const x1 = positionedGlyph.x + glyph.left;
-        const y1 = positionedGlyph.y - glyph.top;
+        const x1 = glyph.left;
+        const y1 = -glyph.top;
         const x2 = x1 + rect.w;
         const y2 = y1 + rect.h;
 
@@ -220,7 +222,8 @@ function getGlyphQuads(anchor, shaping, boxScale, line, layer, alongLine, global
             //  which is used at placement time to determine which set to show
             const anchorAngle = (anchor.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
             const glyphAngle = (instance.angle + (instance.upsideDown ? Math.PI : 0.0) + 2 * Math.PI) % (2 * Math.PI);
-            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode));
+            quads.push(new SymbolQuad(instance.anchorPoint, tl, tr, bl, br, rect, anchorAngle, glyphAngle, glyphMinScale, instance.maxScale, shaping.writingMode,
+                        positionedGlyph.x, positionedGlyph.y));
         }
     }
 

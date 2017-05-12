@@ -745,12 +745,10 @@ class SymbolBucket {
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
 
-            // glyph offset, then corner offset
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, 0, 0, tl.x, tl.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, 0, 0, tr.x, tr.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, 0, 0, tl.x, tl.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, 0, 0, br.x, br.y, lineArrayIndex, anchor.segment);
-
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, lineArrayIndex, anchor.segment);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tr.x, tr.y, lineArrayIndex, anchor.segment);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, bl.x, bl.y, lineArrayIndex, anchor.segment);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, br.x, br.y, lineArrayIndex, anchor.segment);
 
         }
 

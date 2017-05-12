@@ -104,8 +104,10 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
+        const buffer = projectSymbolVertices(bucket, coord.posMatrix, painter);
+
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
-                pitchWithMap, bucket);
+                pitchWithMap, buffer);
 
         prevFontstack = bucket.fontstack;
     }
@@ -197,7 +199,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     }
 }
 
-function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap, bucket) {
+function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap, buffer) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -220,20 +222,18 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
 
         if (hasHalo && false) { // Draw halo underneath the text.
             gl.uniform1f(program.u_is_halo, 1);
-            drawSymbolElements(buffers, layer, gl, program, bucket);
+            drawSymbolElements(buffers, layer, gl, program, buffer);
         }
 
         gl.uniform1f(program.u_is_halo, 0);
     }
 
-    drawSymbolElements(buffers, layer, gl, program, bucket);
+    drawSymbolElements(buffers, layer, gl, program, buffer);
 }
 
-function drawSymbolElements(buffers, layer, gl, program, bucket) {
+function drawSymbolElements(buffers, layer, gl, program, buffer) {
     const layerData = buffers.layerData[layer.id];
     const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
-
-    const buffer = projectSymbolVertices(bucket);
 
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset);
