@@ -38,6 +38,7 @@ uniform highp float u_pitch;
 uniform highp float u_bearing;
 uniform highp float u_aspect_ratio;
 uniform highp float u_camera_to_center_distance;
+uniform highp float u_max_camera_distance;
 uniform highp float u_collision_y_stretch;
 uniform vec2 u_extrude_scale;
 
@@ -150,6 +151,9 @@ void main() {
         vec2 extrude = fontScale * u_extrude_scale * perspective_ratio * (a_offset / 64.0);
         gl_Position = u_matrix * vec4(a_pos, 0, 1) + vec4(extrude, 0, 0);
     }
+
+    gl_Position.z +=
+        step(u_max_camera_distance * u_camera_to_center_distance, camera_to_anchor_distance) * gl_Position.w;
 
     v_gamma_scale = gl_Position.w / perspective_ratio;
 
