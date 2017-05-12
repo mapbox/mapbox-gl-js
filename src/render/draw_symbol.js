@@ -7,6 +7,15 @@ const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
 
+const Buffer = require('../data/buffer');
+const createStructArrayType = require('../util/struct_array');
+
+const VertexPositionArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'a_projected_pos', components: 2 }
+    ]
+});
+
 module.exports = drawSymbols;
 
 function drawSymbols(painter, sourceCache, layer, coords) {
@@ -68,7 +77,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
     const rotateWithMap = rotationAlignment === 'map';
     const pitchWithMap = pitchAlignment === 'map';
 
-    const depthOn = pitchWithMap;
+    const depthOn = false && pitchWithMap;
 
     if (depthOn) {
         gl.enable(gl.DEPTH_TEST);
@@ -104,7 +113,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
-                pitchWithMap);
+                pitchWithMap, bucket);
 
         prevFontstack = bucket.fontstack;
     }
@@ -196,7 +205,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
     }
 }
 
-function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
+function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap, bucket) {
 
     const gl = painter.gl;
     const tr = painter.transform;
@@ -217,23 +226,42 @@ function drawTileSymbols(program, programConfiguration, painter, layer, tile, bu
         const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) : 1) * tr.cameraToCenterDistance;
         gl.uniform1f(program.u_gamma_scale, gammaScale);
 
-        if (hasHalo) { // Draw halo underneath the text.
+        if (hasHalo && false) { // Draw halo underneath the text.
             gl.uniform1f(program.u_is_halo, 1);
-            drawSymbolElements(buffers, layer, gl, program);
+            drawSymbolElements(buffers, layer, gl, program, bucket);
         }
 
         gl.uniform1f(program.u_is_halo, 0);
     }
 
-    drawSymbolElements(buffers, layer, gl, program);
+    drawSymbolElements(buffers, layer, gl, program, bucket);
 }
 
-function drawSymbolElements(buffers, layer, gl, program) {
+function drawSymbolElements(buffers, layer, gl, program, bucket) {
     const layerData = buffers.layerData[layer.id];
     const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
 
+    const vertexPositions = new VertexPositionArray();
+    for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
+        const k = i % 4;
+        if (k === 0) {
+            vertexPositions.emplaceBack(-1, -1);
+        } else if (k === 1) {
+            vertexPositions.emplaceBack(1, -1);
+        } else if (k === 2) {
+            vertexPositions.emplaceBack(-1, 1);
+        } else if (k === 3) {
+            vertexPositions.emplaceBack(1, 1);
+        }
+    }
+
+    const buffer = new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
+
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset);
+        buffer.bind(gl);
+        buffer.enableAttributes(gl, program);
+        buffer.setVertexAttribPointers(gl, program, segment.vertexOffset);
         gl.drawElements(gl.TRIANGLES, segment.primitiveLength * 3, gl.UNSIGNED_SHORT, segment.primitiveOffset * 3 * 2);
     }
 }

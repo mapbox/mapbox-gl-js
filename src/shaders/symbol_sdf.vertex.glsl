@@ -2,6 +2,7 @@ const float PI = 3.141592653589793;
 
 attribute vec4 a_pos_offset;
 attribute vec4 a_data;
+attribute vec4 a_projected_pos;
 
 // contents of a_size vary based on the type of property value
 // used for {text,icon}-size.
@@ -138,6 +139,7 @@ void main() {
     }
 
     v_gamma_scale = gl_Position.w;
+    gl_Position = vec4(a_projected_pos.xy *0.1, 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;
     v_fade_tex = vec2(a_labelminzoom / 255.0, 0.0);
