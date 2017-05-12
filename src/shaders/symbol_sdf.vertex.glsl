@@ -139,7 +139,6 @@ void main() {
     }
 
     v_gamma_scale = gl_Position.w;
-    v_gamma_scale = 0.0;
     gl_Position = vec4(a_projected_pos.xy / 1000.0, 0.0, 1.0);
 
     v_tex = a_tex / u_texsize;

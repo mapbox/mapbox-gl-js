@@ -468,10 +468,7 @@ class SymbolBucket {
             symbolPlacement = layout['symbol-placement'],
             textRepeatDistance = symbolMinDistance / 2;
 
-        let lineIndex = 0;
-
         const addSymbolInstance = (line, anchor) => {
-            line.index = lineIndex++;
             const inside = !(anchor.x < 0 || anchor.x > EXTENT || anchor.y < 0 || anchor.y > EXTENT);
 
             if (avoidEdges && !inside) return;
@@ -639,16 +636,16 @@ class SymbolBucket {
 
 
                     const line = symbolInstance.line;
-                    let lineArrayIndex = lineIndexMap[line.index];
-                    if (lineArrayIndex === undefined) {
-                        const start = this.lineVertexArray.length;
-                        for (let i = 0; i < line.length; i++) {
-                            this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
-                        }
-                        const length = this.lineVertexArray.length - start;
-                        lineArrayIndex = this.lineArray.emplaceBack(start, length);
-                        lineIndexMap[line.index] = lineArrayIndex;
+                    //let lineArrayIndex = lineIndexMap[line.index];
+                    //if (lineArrayIndex === undefined) {
+                    const start = this.lineVertexArray.length;
+                    for (let i = 0; i < line.length; i++) {
+                        this.lineVertexArray.emplaceBack(line[i].x, line[i].y);
                     }
+                    const length = this.lineVertexArray.length - start;
+                    const lineArrayIndex = this.lineArray.emplaceBack(start, length);
+                        //lineIndexMap[line.index] = lineArrayIndex;
+                    //}
 
                     const textSizeData = getSizeVertexData(layer,
                         this.zoom,

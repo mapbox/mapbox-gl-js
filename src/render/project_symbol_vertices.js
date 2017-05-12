@@ -15,8 +15,8 @@ const VertexPositionArray = createStructArrayType({
 
 module.exports = projectSymbolVertices;
 
-function project(x, y, matrix) {
-    const pos = [x, y, 0, 1];
+function project(point, matrix) {
+    const pos = [point.x, point.y, 0, 1];
     vec4.transformMat4(pos, pos, matrix);
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
@@ -32,11 +32,51 @@ function projectSymbolVertices(bucket, tileMatrix, painter) {
     const vertexPositions = new VertexPositionArray();
     for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
         const vert = bucket.vertexTransformArray.get(i);
+        const line = bucket.lineArray.get(vert.lineIndex);
 
-        const p = project(vert.anchorX, vert.anchorY, pixelMatrix);
+        const fontScale = 0.8;
+        let prev = project(new Point(vert.anchorX, vert.anchorY), pixelMatrix);
+        let angle = 0;
 
-        p.x += (vert.glyphOffsetX + vert.cornerOffsetX);
-        p.y += (vert.glyphOffsetY + vert.cornerOffsetY);
+        if (line.length > 1) {
+
+            let dir, numVertices, start;
+
+            if (vert.glyphOffsetX > 0) {
+                dir = 1;
+                numVertices = line.length - vert.segment;
+                start = line.startIndex + vert.segment + 1;
+            } else {
+                dir = -1;
+                numVertices = vert.segment;
+                start = line.startIndex + vert.segment;
+                angle = Math.PI;
+            }
+
+            let distanceRemaining = Math.abs(vert.glyphOffsetX) * fontScale;
+            for (let i = 0; i < numVertices; i++) {
+                const next_ = bucket.lineVertexArray.get(start + i * dir);
+                const next = project(new Point(next_.x, next_.y), pixelMatrix);
+
+                const d = prev.dist(next);
+
+                if (distanceRemaining < d) {
+                    prev = next.sub(prev)._mult(distanceRemaining / d)._add(prev);
+                    angle += Math.atan2(next.y - prev.y, next.x - prev.x);
+                    break;
+
+                } else {
+                    distanceRemaining -= d;
+                    prev = next;
+                }
+            }
+        } else {
+            prev.x += vert.glyphOffsetX * fontScale;
+        }
+
+
+        const p = prev;
+        p._add(new Point(vert.cornerOffsetX * fontScale, (vert.glyphOffsetY + vert.cornerOffsetY) * fontScale)._rotate(angle));
 
 
         const glx = p.x / tr.width * 2 - 1;
