@@ -19,7 +19,7 @@ class RasterTerrainTileSource extends Evented {
 
         this.type = 'raster-terrain';
         this.minzoom = 0;
-        this.maxzoom = 22;
+        this.maxzoom = 15;
         this.roundZoom = true;
         this.scheme = 'xyz';
         this.tileSize = 512;

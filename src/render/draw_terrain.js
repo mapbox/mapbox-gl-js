@@ -14,8 +14,9 @@ function drawTerrain(painter, sourceCache, layer, coords) {
     if (painter.isOpaquePass) return;
 
     const gl = painter.gl;
-    gl.disable(gl.STENCIL_TEST);
-    gl.enable(gl.DEPTH_TEST);
+    // gl.disable(gl.STENCIL_TEST);
+    gl.enable(gl.BLEND);
+    gl.disable(gl.DEPTH_TEST);
     painter.depthMask(true);
 
     // Change depth function to prevent double drawing in areas where tiles overlap.

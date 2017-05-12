@@ -17,12 +17,14 @@
 <script src='/dist/mapbox-gl-dev.js'></script>
 <script src='/debug/access_token_generated.js'></script>
 <script>
+
 var raster =   {
     "version": 8,
     "sources": {
         "rasterTerrain": {
             "type": "raster-terrain",
-            "tiles": [ "https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=pk.eyJ1IjoibW9sbHltZXJwIiwiYSI6ImNpazdqbGtiZTAxbGNocm0ybXJ3MnNzOHAifQ.5_kJrEENbBWtqTZEv7g1-w"  ]
+            "tiles": [ `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${mapboxgl.accessToken}`]
+            // "url": "mapbox://mapbox.terrain-rgb"
         }
     },
     "layers": [
