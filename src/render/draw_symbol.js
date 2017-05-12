@@ -194,6 +194,21 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         gl.uniform1f(program.u_size, sizeData.layoutSize);
     }
     gl.uniform1f(program.u_camera_to_center_distance, tr.cameraToCenterDistance);
+    if (layer.layout['symbol-placement'] === 'line' &&
+        layer.layout['text-rotation-alignment'] === 'map' &&
+        layer.layout['text-pitch-alignment'] === 'viewport' &&
+        layer.layout['text-field']) {
+        // We hide line labels with viewport alignment as they move into the distance
+        // because the approximations we use for drawing their glyphs get progressively worse
+        // The "1.5" here means we start hiding them when the distance from the label
+        // to the camera is 50% greater than the distance from the center of the map
+        // to the camera. Depending on viewport properties, you might expect this to filter
+        // the top third of the screen at pitch 60, and do almost nothing at pitch 45
+        gl.uniform1f(program.u_max_camera_distance, 1.5);
+    } else {
+        // "10" is effectively infinite at any pitch we support
+        gl.uniform1f(program.u_max_camera_distance, 10);
+    }
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
