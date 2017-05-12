@@ -6,15 +6,7 @@ const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
-
-const Buffer = require('../data/buffer');
-const createStructArrayType = require('../util/struct_array');
-
-const VertexPositionArray = createStructArrayType({
-    members: [
-        { type: 'Int16', name: 'a_projected_pos', components: 2 }
-    ]
-});
+const projectSymbolVertices = require('./project_symbol_vertices');
 
 module.exports = drawSymbols;
 
@@ -241,21 +233,7 @@ function drawSymbolElements(buffers, layer, gl, program, bucket) {
     const layerData = buffers.layerData[layer.id];
     const paintVertexBuffer = layerData && layerData.paintVertexBuffer;
 
-    const vertexPositions = new VertexPositionArray();
-    for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
-        const k = i % 4;
-        if (k === 0) {
-            vertexPositions.emplaceBack(-1, -1);
-        } else if (k === 1) {
-            vertexPositions.emplaceBack(1, -1);
-        } else if (k === 2) {
-            vertexPositions.emplaceBack(-1, 1);
-        } else if (k === 3) {
-            vertexPositions.emplaceBack(1, 1);
-        }
-    }
-
-    const buffer = new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
+    const buffer = projectSymbolVertices(bucket);
 
     for (const segment of buffers.segments) {
         segment.vaos[layer.id].bind(gl, program, buffers.layoutVertexBuffer, buffers.elementBuffer, paintVertexBuffer, segment.vertexOffset);
