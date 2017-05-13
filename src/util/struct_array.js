@@ -316,14 +316,18 @@ function createStructArrayType(options: StructArrayTypeParameters): Class<Struct
 
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
-            const name = member.name + (member.components === 1 ? '' : c);
+            let name = member.name;
+            if (member.components > 1) {
+                name += c;
+            }
             if (name in StructType.prototype) {
                 throw new Error(`${name} is a reserved name and cannot be used as a member name.`);
             }
-            Object.defineProperty(StructType.prototype, name, {
-                get: createGetter(member, c),
-                set: createSetter(member, c)
-            });
+            Object.defineProperty(
+                StructType.prototype,
+                name,
+                createAccessors(member, c)
+            );
         }
     }
 
@@ -400,10 +404,10 @@ function createMemberComponentString(member, component) {
     return `this._structArray.${getArrayViewName(member.type)}[${index}]`;
 }
 
-function createGetter(member, c) {
-    return new Function(`return ${createMemberComponentString(member, c)};`);
-}
-
-function createSetter(member, c) {
-    return new Function('x', `${createMemberComponentString(member, c)} = x;`);
+function createAccessors(member, c) {
+    const code = createMemberComponentString(member, c);
+    return {
+        get: new Function(`return ${code};`),
+        set: new Function('x', `${code} = x;`)
+    };
 }
