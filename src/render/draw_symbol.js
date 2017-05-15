@@ -104,7 +104,8 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         gl.uniformMatrix4fv(program.u_matrix, false,
                 painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor));
 
-        const buffer = projectSymbolVertices(bucket, coord.posMatrix, painter);
+        const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        const buffer = projectSymbolVertices(bucket, coord.posMatrix, painter, pitchWithMap, s);
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap, buffer);

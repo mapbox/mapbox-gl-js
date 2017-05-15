@@ -21,21 +21,46 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function projectSymbolVertices(bucket, tileMatrix, painter) {
+function projectSymbolVertices(bucket, tileMatrix, painter, pitchWithMap, pixelsToTileUnits) {
+
+    // matrix for converting from tile coordinates to the label plane
+    const labelPlaneMatrix = new Float64Array(16);
+    // matrix for converting from the lable plane to gl coords
+    const glCoordMatrix = new Float64Array(16);
+
+    const fontSize = 13;
+    const fontScale = fontSize / 24;
 
     const tr = painter.transform;
-    const m = mat4.create();
-    mat4.scale(m, m, [tr.width / 2, -tr.height / 2, 1]);
-    mat4.translate(m, m, [1, -1, 0]);
-    const pixelMatrix = mat4.multiply(new Float64Array(16), m, tileMatrix);
+
+    if (true || pitchWithMap) {
+        const s = 1 / pixelsToTileUnits;
+        mat4.identity(labelPlaneMatrix);
+        mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [s, s, 1]);
+
+        mat4.identity(glCoordMatrix);
+        mat4.multiply(glCoordMatrix, glCoordMatrix, tileMatrix);
+        mat4.scale(glCoordMatrix, glCoordMatrix, [1 / s, 1 / s, 1]);
+
+    } else {
+        const m = mat4.create();
+        mat4.scale(m, m, [tr.width / 2, -tr.height / 2, 1]);
+        mat4.translate(m, m, [1, -1, 0]);
+        mat4.multiply(labelPlaneMatrix, m, tileMatrix);
+
+        mat4.identity(glCoordMatrix);
+        mat4.scale(glCoordMatrix, glCoordMatrix, [1, -1, 1]);
+        mat4.translate(glCoordMatrix, glCoordMatrix, [-1, -1, 0]);
+        mat4.scale(glCoordMatrix, glCoordMatrix, [2 / tr.width, 2 / tr.height, 1]);
+    }
+
 
     const vertexPositions = new VertexPositionArray();
     for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
         const vert = bucket.vertexTransformArray.get(i);
         const line = bucket.lineArray.get(vert.lineIndex);
 
-        const fontScale = 0.8;
-        let prev = project(new Point(vert.anchorX, vert.anchorY), pixelMatrix);
+        let prev = project(new Point(vert.anchorX, vert.anchorY), labelPlaneMatrix);
         let angle = 0;
 
         if (line.length > 1) {
@@ -56,7 +81,7 @@ function projectSymbolVertices(bucket, tileMatrix, painter) {
             let distanceRemaining = Math.abs(vert.glyphOffsetX) * fontScale;
             for (let i = 0; i < numVertices; i++) {
                 const next_ = bucket.lineVertexArray.get(start + i * dir);
-                const next = project(new Point(next_.x, next_.y), pixelMatrix);
+                const next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
 
                 const d = prev.dist(next);
 
@@ -78,11 +103,9 @@ function projectSymbolVertices(bucket, tileMatrix, painter) {
         const p = prev;
         p._add(new Point(vert.cornerOffsetX * fontScale, (vert.glyphOffsetY + vert.cornerOffsetY) * fontScale)._rotate(angle));
 
+        const glPoint = project(p, glCoordMatrix);
 
-        const glx = p.x / tr.width * 2 - 1;
-        const gly = (tr.height - p.y) / tr.height * 2 - 1;
-
-        vertexPositions.emplaceBack(glx, gly);
+        vertexPositions.emplaceBack(glPoint.x, glPoint.y);
     }
 
     return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
