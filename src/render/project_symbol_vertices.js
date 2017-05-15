@@ -21,7 +21,7 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function projectSymbolVertices(bucket, tileMatrix, painter, pitchWithMap, pixelsToTileUnits) {
+function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits) {
 
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = new Float64Array(16);
@@ -33,7 +33,7 @@ function projectSymbolVertices(bucket, tileMatrix, painter, pitchWithMap, pixels
 
     const tr = painter.transform;
 
-    if (true || pitchWithMap) {
+    if (pitchWithMap) {
         const s = 1 / pixelsToTileUnits;
         mat4.identity(labelPlaneMatrix);
         mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [s, s, 1]);
@@ -41,6 +41,11 @@ function projectSymbolVertices(bucket, tileMatrix, painter, pitchWithMap, pixels
         mat4.identity(glCoordMatrix);
         mat4.multiply(glCoordMatrix, glCoordMatrix, tileMatrix);
         mat4.scale(glCoordMatrix, glCoordMatrix, [1 / s, 1 / s, 1]);
+
+        if (!rotateWithMap) {
+            mat4.rotateZ(labelPlaneMatrix, labelPlaneMatrix, tr.angle);
+            mat4.rotateZ(glCoordMatrix, glCoordMatrix, -tr.angle);
+        }
 
     } else {
         const m = mat4.create();
