@@ -48,7 +48,7 @@ function projectSymbolVertices(bucket, tileMatrix, painter) {
                 start = line.startIndex + vert.segment + 1;
             } else {
                 dir = -1;
-                numVertices = vert.segment;
+                numVertices = vert.segment + 1;
                 start = line.startIndex + vert.segment;
                 angle = Math.PI;
             }
