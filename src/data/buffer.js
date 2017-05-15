@@ -9,7 +9,8 @@ const AttributeType = {
     Int8:   'BYTE',
     Uint8:  'UNSIGNED_BYTE',
     Int16:  'SHORT',
-    Uint16: 'UNSIGNED_SHORT'
+    Uint16: 'UNSIGNED_SHORT',
+    Float32: 'FLOAT'
 };
 
 /**

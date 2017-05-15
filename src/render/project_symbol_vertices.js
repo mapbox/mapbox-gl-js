@@ -9,7 +9,7 @@ const vec4 = require('@mapbox/gl-matrix').vec4;
 
 const VertexPositionArray = createStructArrayType({
     members: [
-        { type: 'Int16', name: 'a_projected_pos', components: 2 }
+        { type: 'Float32', name: 'a_projected_pos', components: 2 }
     ]
 });
 
@@ -82,9 +82,7 @@ function projectSymbolVertices(bucket, tileMatrix, painter) {
         const glx = p.x / tr.width * 2 - 1;
         const gly = (tr.height - p.y) / tr.height * 2 - 1;
 
-        vertexPositions.emplaceBack(
-                glx * 1000,
-                gly * 1000);
+        vertexPositions.emplaceBack(glx, gly);
     }
 
     return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
