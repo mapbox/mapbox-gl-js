@@ -198,6 +198,7 @@ class Painter {
     }
 
     render(style, options) {
+        this.projectionTime = 0;
         this.style = style;
         this.options = options;
 
@@ -222,6 +223,7 @@ class Painter {
         this.renderPass();
         this.isOpaquePass = false;
         this.renderPass();
+        console.log(this.projectionTime);
 
         if (this.options.showTileBoundaries) {
             const sourceCache = this.style.sourceCaches[Object.keys(this.style.sourceCaches)[0]];
