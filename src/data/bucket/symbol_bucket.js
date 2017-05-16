@@ -38,7 +38,9 @@ const VertexTransformArray = createStructArrayType({
         { type: 'Int16', name: 'cornerOffsetX' },
         { type: 'Int16', name: 'cornerOffsetY' },
         { type: 'Uint32', name: 'lineIndex' },
-        { type: 'Uint16', name: 'segment' }
+        { type: 'Uint16', name: 'segment' },
+        { type: 'Uint32', name: 'sizeStopStart' },
+        { type: 'Uint32', name: 'sizeStopEnd' }
     ]});
 
 const LineArray = createStructArrayType({
@@ -53,6 +55,13 @@ const LineVertexArray = createStructArrayType({
         { type: 'Int16', name: 'x' },
         { type: 'Int16', name: 'y' }
     ]});
+
+const ZoomStopArray = createStructArrayType({
+    members: [
+        { type: 'Float32', name: 'z' },
+        { type: 'Float32', name: 'size' }
+    ]
+});
 
 const elementArrayType = createElementArrayType();
 
@@ -209,6 +218,7 @@ class SymbolBucket {
             this.vertexTransformArray = new VertexTransformArray(options.vertexTransformArray);
             this.lineArray = new LineArray(options.lineArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
+            this.zoomStopArray = new ZoomStopArray(options.zoomStopArray);
 
         } else {
             this.textSizeData = getSizeData(this.zoom, layer, 'text-size');
@@ -319,6 +329,7 @@ class SymbolBucket {
             vertexTransformArray: this.vertexTransformArray.serialize(transferables),
             lineArray: this.lineArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
+            zoomStopArray: this.zoomStopArray.serialize(transferables),
             arrays: util.mapObject(this.arrays, (a) => a.isEmpty() ? null : a.serialize(transferables))
         };
     }
@@ -557,6 +568,7 @@ class SymbolBucket {
         this.vertexTransformArray = new VertexTransformArray();
         this.lineArray = new LineArray();
         this.lineVertexArray = new LineVertexArray();
+        this.zoomStopArray = new ZoomStopArray();
         const lineIndexMap = {};
 
         const layer = this.layers[0];
@@ -651,7 +663,8 @@ class SymbolBucket {
                         this.zoom,
                         this.textSizeData.coveringZoomRange,
                         'text-size',
-                        symbolInstance.featureProperties);
+                        symbolInstance.featureProperties,
+                        this.zoomStopArray);
                     this.addSymbols(
                         this.arrays.glyph,
                         symbolInstance.glyphQuads,
@@ -742,10 +755,12 @@ class SymbolBucket {
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
 
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tr.x, tr.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, bl.x, bl.y, lineArrayIndex, anchor.segment);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, br.x, br.y, lineArrayIndex, anchor.segment);
+            const s = sizeVertex ? sizeVertex.start : 0;
+            const e = sizeVertex ? sizeVertex.end : 0;
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, lineArrayIndex, anchor.segment, s, e);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tr.x, tr.y, lineArrayIndex, anchor.segment, s, e);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, bl.x, bl.y, lineArrayIndex, anchor.segment, s, e);
+            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, br.x, br.y, lineArrayIndex, anchor.segment, s, e);
 
         }
 
@@ -945,25 +960,38 @@ function getSizeAttributeDeclarations(layer, sizeProperty) {
     return [];
 }
 
-function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties) {
+function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featureProperties, zoomStopArray) {
+    const start = zoomStopArray.length;
     if (
         layer.isLayoutValueZoomConstant(sizeProperty) &&
         !layer.isLayoutValueFeatureConstant(sizeProperty)
     ) {
         // source function
-        return [
+        zoomStopArray.emplaceBack(-1, layer.getLayoutValue(sizeProperty, {}, featureProperties));
+        const ret = [
             10 * layer.getLayoutValue(sizeProperty, {}, featureProperties)
         ];
+        ret.start = start;
+        ret.end = zoomStopArray.length;
+        return ret;
     } else if (
         !layer.isLayoutValueZoomConstant(sizeProperty) &&
         !layer.isLayoutValueFeatureConstant(sizeProperty)
     ) {
+        const levels = layer.getLayoutValueStopZoomLevels(sizeProperty);
+        for (let i = 0; i < levels.length; i++) {
+            const z = levels[i];
+            zoomStopArray.emplaceBack(z, layer.getLayoutValue(sizeProperty, {zoom: z}, featureProperties));
+        }
         // composite function
-        return [
+        const ret = [
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[0]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: stopZoomLevels[1]}, featureProperties),
             10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
         ];
+        ret.start = start;
+        ret.end = zoomStopArray.length;
+        return ret;
     }
     // camera function or constant
     return null;

@@ -21,19 +21,19 @@ function project(point, matrix) {
     return new Point(pos[0] / pos[3], pos[1] / pos[3]);
 }
 
-function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits) {
+function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitchWithMap, pixelsToTileUnits, layer) {
+
+    const partiallyEvaluatedSize = evaluateSizeForZoom(bucket, layer, painter.transform);
 
     // matrix for converting from tile coordinates to the label plane
     const labelPlaneMatrix = new Float64Array(16);
     // matrix for converting from the lable plane to gl coords
     const glCoordMatrix = new Float64Array(16);
 
-    const fontSize = 13;
-    const fontScale = fontSize / 24;
 
     const tr = painter.transform;
 
-    if (pitchWithMap) {
+    if (false && pitchWithMap) {
         const s = 1 / pixelsToTileUnits;
         mat4.identity(labelPlaneMatrix);
         mat4.scale(labelPlaneMatrix, labelPlaneMatrix, [s, s, 1]);
@@ -64,6 +64,9 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
     for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
         const vert = bucket.vertexTransformArray.get(i);
         const line = bucket.lineArray.get(vert.lineIndex);
+
+        const size = evaluateSizeForFeature(partiallyEvaluatedSize);
+        const fontScale = size / 24;
 
         let prev = project(new Point(vert.anchorX, vert.anchorY), labelPlaneMatrix);
         let angle = 0;
@@ -114,4 +117,22 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
     }
 
     return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
+}
+
+function evaluateSizeForZoom(bucket, layer, transform) {
+    const sizeProperty = 'text-size';
+    const sizeData = bucket.textSizeData;
+    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
+        return { size: 8 };
+    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
+        return { size: layer.getLayoutValue(sizeProperty, { zoom: transform.zoom }) };
+    } else if (!sizeData.isFeatureconstant && sizeData.isZoomConstant) {
+        return { size: 8 };
+    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
+        return { size: 8 };
+    }
+}
+
+function evaluateSizeForFeature(partiallyEvaluatedSize) {
+    return partiallyEvaluatedSize.size;
 }
