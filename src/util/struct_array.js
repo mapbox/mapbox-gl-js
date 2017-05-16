@@ -294,6 +294,9 @@ function createStructArrayType(options: {|
     for (const member of members) {
         for (let c = 0; c < member.components; c++) {
             const name = member.name + (member.components === 1 ? '' : c);
+            if (name in StructType.prototype) {
+                throw new Error(`${name} is a reserved name and cannot be used as a member name.`);
+            }
             Object.defineProperty(StructType.prototype, name, {
                 get: createGetter(member, c),
                 set: createSetter(member, c)
