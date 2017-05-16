@@ -77,8 +77,8 @@ function addVertex(array, x, y, ox, oy, tx, ty, sizeVertex, minzoom, maxzoom, la
         Math.round(oy * 64),
 
         // a_data
-        tx / 4, // x coordinate of symbol on glyph atlas texture
-        ty / 4, // y coordinate of symbol on glyph atlas texture
+        tx, // x coordinate of symbol on glyph atlas texture
+        ty, // y coordinate of symbol on glyph atlas texture
         packUint8ToFloat(
             (labelminzoom || 0) * 10, // labelminzoom
             labelangle % 256 // labelangle

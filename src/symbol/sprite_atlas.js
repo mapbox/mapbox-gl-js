@@ -5,6 +5,7 @@ const browser = require('../util/browser');
 const util = require('../util/util');
 const window = require('../util/window');
 const Evented = require('../util/evented');
+const padding = 1;
 
 // The SpriteAtlas class is responsible for turning a sprite and assorted
 // other images added at runtime into a texture that can be consumed by WebGL.
@@ -26,18 +27,10 @@ class SpriteAtlas extends Evented {
     }
 
     allocateImage(pixelWidth, pixelHeight) {
-        pixelWidth = pixelWidth / this.pixelRatio;
-        pixelHeight = pixelHeight / this.pixelRatio;
+        const width = pixelWidth / this.pixelRatio + 2 * padding;
+        const height = pixelHeight / this.pixelRatio + 2 * padding;
 
-        // Increase to next number divisible by 4, but at least 1.
-        // This is so we can scale down the texture coordinates and pack them
-        // into 2 bytes rather than 4 bytes.
-        // Pad icons to prevent them from polluting neighbours during linear interpolation
-        const padding = 2;
-        const packWidth = pixelWidth + padding + (4 - (pixelWidth + padding) % 4);
-        const packHeight = pixelHeight + padding + (4 - (pixelHeight + padding) % 4);// + 4;
-
-        const rect = this.shelfPack.packOne(packWidth, packHeight);
+        const rect = this.shelfPack.packOne(width, height);
         if (!rect) {
             util.warnOnce('SpriteAtlas out of space.');
             return null;
@@ -148,7 +141,6 @@ class SpriteAtlas extends Evented {
 
         const width = image.width * image.pixelRatio;
         const height = image.height * image.pixelRatio;
-        const padding = 1;
 
         return {
             size: [image.width, image.height],
@@ -172,8 +164,6 @@ class SpriteAtlas extends Evented {
     copy(srcImg, srcImgWidth, dstPos, srcPos, wrap) {
         this.allocate();
         const dstImg = this.data;
-
-        const padding = 1;
 
         copyBitmap(
             /* source buffer */  srcImg,

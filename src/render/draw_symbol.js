@@ -130,7 +130,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         if (!glyphAtlas) return;
 
         glyphAtlas.updateTexture(gl);
-        gl.uniform2f(program.u_texsize, glyphAtlas.width / 4, glyphAtlas.height / 4);
+        gl.uniform2f(program.u_texsize, glyphAtlas.width, glyphAtlas.height);
     } else {
         const mapMoving = painter.options.rotating || painter.options.zooming;
         const iconSizeScaled = !layer.isLayoutValueFeatureConstant('icon-size') ||
@@ -139,7 +139,7 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         const iconScaled = iconSizeScaled || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
         const iconTransformed = pitchWithMap || tr.pitch;
         painter.spriteAtlas.bind(gl, isSDF || mapMoving || iconScaled || iconTransformed);
-        gl.uniform2f(program.u_texsize, painter.spriteAtlas.width / 4, painter.spriteAtlas.height / 4);
+        gl.uniform2f(program.u_texsize, painter.spriteAtlas.width, painter.spriteAtlas.height);
     }
 
     gl.activeTexture(gl.TEXTURE1);
