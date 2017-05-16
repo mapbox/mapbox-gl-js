@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapbox GL JS debug page</title>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel='stylesheet' href='/dist/mapbox-gl.css' />
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+
+<body>
+<div id='map'></div>
+
+<script src='/dist/mapbox-gl-dev.js'></script>
+<script src='/debug/access_token_generated.js'></script>
+<script>
+
+var style = {
+    sprite: "mapbox://sprites/mapbox/streets-v10",
+    glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    sources: {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "FeatureCollection",
+                "features": [{"type":"Feature","properties":{"x":-10,"y":-10},"geometry":{"type":"Point","coordinates":[-10,-10]}},{"type":"Feature","properties":{"x":-10,"y":-6},"geometry":{"type":"Point","coordinates":[-10,-6]}},{"type":"Feature","properties":{"x":-10,"y":-2},"geometry":{"type":"Point","coordinates":[-10,-2]}},{"type":"Feature","properties":{"x":-10,"y":2},"geometry":{"type":"Point","coordinates":[-10,2]}},{"type":"Feature","properties":{"x":-10,"y":6},"geometry":{"type":"Point","coordinates":[-10,6]}},{"type":"Feature","properties":{"x":-10,"y":10},"geometry":{"type":"Point","coordinates":[-10,10]}},{"type":"Feature","properties":{"x":-6,"y":-10},"geometry":{"type":"Point","coordinates":[-6,-10]}},{"type":"Feature","properties":{"x":-6,"y":-6},"geometry":{"type":"Point","coordinates":[-6,-6]}},{"type":"Feature","properties":{"x":-6,"y":-2},"geometry":{"type":"Point","coordinates":[-6,-2]}},{"type":"Feature","properties":{"x":-6,"y":2},"geometry":{"type":"Point","coordinates":[-6,2]}},{"type":"Feature","properties":{"x":-6,"y":6},"geometry":{"type":"Point","coordinates":[-6,6]}},{"type":"Feature","properties":{"x":-6,"y":10},"geometry":{"type":"Point","coordinates":[-6,10]}},{"type":"Feature","properties":{"x":-2,"y":-10},"geometry":{"type":"Point","coordinates":[-2,-10]}},{"type":"Feature","properties":{"x":-2,"y":-6},"geometry":{"type":"Point","coordinates":[-2,-6]}},{"type":"Feature","properties":{"x":-2,"y":-2},"geometry":{"type":"Point","coordinates":[-2,-2]}},{"type":"Feature","properties":{"x":-2,"y":2},"geometry":{"type":"Point","coordinates":[-2,2]}},{"type":"Feature","properties":{"x":-2,"y":6},"geometry":{"type":"Point","coordinates":[-2,6]}},{"type":"Feature","properties":{"x":-2,"y":10},"geometry":{"type":"Point","coordinates":[-2,10]}},{"type":"Feature","properties":{"x":2,"y":-10},"geometry":{"type":"Point","coordinates":[2,-10]}},{"type":"Feature","properties":{"x":2,"y":-6},"geometry":{"type":"Point","coordinates":[2,-6]}},{"type":"Feature","properties":{"x":2,"y":-2},"geometry":{"type":"Point","coordinates":[2,-2]}},{"type":"Feature","properties":{"x":2,"y":2},"geometry":{"type":"Point","coordinates":[2,2]}},{"type":"Feature","properties":{"x":2,"y":6},"geometry":{"type":"Point","coordinates":[2,6]}},{"type":"Feature","properties":{"x":2,"y":10},"geometry":{"type":"Point","coordinates":[2,10]}},{"type":"Feature","properties":{"x":6,"y":-10},"geometry":{"type":"Point","coordinates":[6,-10]}},{"type":"Feature","properties":{"x":6,"y":-6},"geometry":{"type":"Point","coordinates":[6,-6]}},{"type":"Feature","properties":{"x":6,"y":-2},"geometry":{"type":"Point","coordinates":[6,-2]}},{"type":"Feature","properties":{"x":6,"y":2},"geometry":{"type":"Point","coordinates":[6,2]}},{"type":"Feature","properties":{"x":6,"y":6},"geometry":{"type":"Point","coordinates":[6,6]}},{"type":"Feature","properties":{"x":6,"y":10},"geometry":{"type":"Point","coordinates":[6,10]}},{"type":"Feature","properties":{"x":10,"y":-10},"geometry":{"type":"Point","coordinates":[10,-10]}},{"type":"Feature","properties":{"x":10,"y":-6},"geometry":{"type":"Point","coordinates":[10,-6]}},{"type":"Feature","properties":{"x":10,"y":-2},"geometry":{"type":"Point","coordinates":[10,-2]}},{"type":"Feature","properties":{"x":10,"y":2},"geometry":{"type":"Point","coordinates":[10,2]}},{"type":"Feature","properties":{"x":10,"y":6},"geometry":{"type":"Point","coordinates":[10,6]}},{"type":"Feature","properties":{"x":10,"y":10},"geometry":{"type":"Point","coordinates":[10,10]}}]
+            }
+        }
+    },
+    layers: [
+        {
+            id: 'circle',
+            type: 'circle',
+            source: 'geojson',
+            paint: {
+                'circle-radius': {
+                    type: 'expression',
+                    expression: [
+                        '*',
+                        [ '^', 2, {ref: 'map', key: 'zoom'} ],
+                        0.125,
+                        [
+                            '+',
+                            20,
+                            {ref: 'feature', key: 'x'},
+                            {ref: 'feature', key: 'y'}
+                        ]
+                    ]
+                },
+                'circle-opacity': {
+                    type: 'expression',
+                    expression: [ '/', [ '+', 10, {ref: 'feature', key: 'x'} ], 30 ]
+                },
+                'circle-color': {
+                    type: 'expression',
+                    expression: [
+                        'concat',
+                        'rgb(',
+                            [ '+', 128, [ '*', 10, {ref: 'feature', key: 'x'} ] ],
+                            ',',
+                            [ '+', 128, [ '*', 10, {ref: 'feature', key: 'y'} ] ],
+                            ',',
+                            128,
+                        ')'
+                    ]
+                }
+            }
+        }
+    ],
+    version: 8
+}
+
+var map = window.map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 0,
+    center: [0, 0],
+    style: style,
+    hash: true
+});
+
+</script>
+</body>
+</html>

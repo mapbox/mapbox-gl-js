@@ -1624,6 +1624,10 @@
     "doc": "The geometry type for the filter to select."
   },
   "function": {
+    "expression": {
+      "type": "*",
+      "doc": "A function expression"
+    },
     "stops": {
       "type": "array",
       "doc": "An array of stops.",
@@ -1654,6 +1658,9 @@
           },
           "categorical": {
               "doc": "Return the output value of the stop equal to the function input."
+          },
+          "expression": {
+              "doc": "Return the output value of the given function expression."
           }
       },
       "doc": "The interpolation strategy to use in function evaluation.",

@@ -39,7 +39,7 @@ module.exports = function validateFunction(options) {
         errors.push(new ValidationError(options.key, options.value, 'missing required property "property"'));
     }
 
-    if (functionType !== 'identity' && !options.value.stops) {
+    if (functionType !== 'identity' && functionType !== 'expression' && !options.value.stops) {
         errors.push(new ValidationError(options.key, options.value, 'missing required property "stops"'));
     }
 

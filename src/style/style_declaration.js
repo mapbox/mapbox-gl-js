@@ -24,18 +24,32 @@ class StyleDeclaration {
         if (!this.isFeatureConstant && !this.isZoomConstant) {
             this.stopZoomLevels = [];
             const interpolationAmountStops = [];
-            for (const stop of this.value.stops) {
-                const zoom = stop[0].zoom;
-                if (this.stopZoomLevels.indexOf(zoom) < 0) {
-                    this.stopZoomLevels.push(zoom);
-                    interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
+
+            let base;
+            if (this.value.type === 'expression') {
+                // generate "pseudo stops" for the function expression at
+                // integer zoom levels so that we can interpolate the
+                // render-time value the same way as for stop-based functions.
+                base = this.value.zoomInterpolationBase || 1;
+                for (let z = 0; z < 30; z++) {
+                    this.stopZoomLevels.push(z);
+                    interpolationAmountStops.push([z, interpolationAmountStops.length]);
+                }
+            } else {
+                base = this.value.base;
+                for (const stop of this.value.stops) {
+                    const zoom = stop[0].zoom;
+                    if (this.stopZoomLevels.indexOf(zoom) < 0) {
+                        this.stopZoomLevels.push(zoom);
+                        interpolationAmountStops.push([zoom, interpolationAmountStops.length]);
+                    }
                 }
             }
 
             this._functionInterpolationT = createFunction({
                 type: 'exponential',
                 stops: interpolationAmountStops,
-                base: value.base
+                base: base
             }, {
                 type: 'number'
             });
