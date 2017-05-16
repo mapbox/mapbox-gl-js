@@ -59,7 +59,7 @@ const LineVertexArray = createStructArrayType({
 const ZoomStopArray = createStructArrayType({
     members: [
         { type: 'Float32', name: 'z' },
-        { type: 'Float32', name: 'size' }
+        { type: 'Float32', name: 'textSize' }
     ]
 });
 

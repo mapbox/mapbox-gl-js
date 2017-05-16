@@ -3,6 +3,7 @@
 const Point = require('point-geometry');
 const Buffer = require('../data/buffer');
 const createStructArrayType = require('../util/struct_array');
+const interpolate = require('../style-spec/util/interpolate');
 
 const mat4 = require('@mapbox/gl-matrix').mat4;
 const vec4 = require('@mapbox/gl-matrix').vec4;
@@ -65,7 +66,7 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
         const vert = bucket.vertexTransformArray.get(i);
         const line = bucket.lineArray.get(vert.lineIndex);
 
-        const size = evaluateSizeForFeature(partiallyEvaluatedSize);
+        const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, vert);
         const fontScale = size / 24;
 
         let prev = project(new Point(vert.anchorX, vert.anchorY), labelPlaneMatrix);
@@ -122,17 +123,29 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
 function evaluateSizeForZoom(bucket, layer, transform) {
     const sizeProperty = 'text-size';
     const sizeData = bucket.textSizeData;
-    if (!sizeData.isZoomConstant && !sizeData.isFeatureConstant) {
-        return { size: 8 };
-    } else if (sizeData.isFeatureConstant && !sizeData.isZoomConstant) {
+    if (sizeData.isFeatureConstant) {
         return { size: layer.getLayoutValue(sizeProperty, { zoom: transform.zoom }) };
-    } else if (!sizeData.isFeatureconstant && sizeData.isZoomConstant) {
-        return { size: 8 };
-    } else if (sizeData.isFeatureConstant && sizeData.isZoomConstant) {
-        return { size: 8 };
+    } else {
+        if (sizeData.isZoomConstant) {
+            return {};
+        } else {
+            return { t: layer.getLayoutInterpolationT(sizeProperty, { zoom: transform.zoom }) };
+        }
     }
 }
 
-function evaluateSizeForFeature(partiallyEvaluatedSize) {
-    return partiallyEvaluatedSize.size;
+function evaluateSizeForFeature(bucket, partiallyEvaluatedSize, vert) {
+    const sizeData = bucket.textSizeData;
+    if (sizeData.isFeatureConstant) {
+        return partiallyEvaluatedSize.size;
+    } else {
+        if (sizeData.isZoomConstant) {
+            return bucket.zoomStopArray.get(vert.sizeStopStart).textSize;
+        } else {
+            const offset = vert.sizeStopStart;
+            const a = bucket.zoomStopArray.get(offset + Math.floor(partiallyEvaluatedSize.t));
+            const b = bucket.zoomStopArray.get(offset + Math.ceil(partiallyEvaluatedSize.t));
+            return interpolate.number(a.textSize, b.textSize, partiallyEvaluatedSize.t % 1);
+        }
+    }
 }
