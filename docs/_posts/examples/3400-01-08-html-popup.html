@@ -1,0 +1,100 @@
+---
+layout: example
+category: example
+title: Custom HTML popups
+description: Create popups when markers are clicked
+permalink: /examples/html-popups
+---
+
+<div id='map'></div>
+
+<script>
+// Create the map.
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://mapbox.basic-v7.json',
+  center: [-96, 27.8],
+  zoom: 1
+});
+
+map.on("style.load", function() {
+  // Add a GeoJSON source with marker data.
+  map.addSource("markers", {
+    "type": "geojson",
+    "data": {
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-77.032, 38.913]
+        },
+        "properties": {
+          "title": "Mapbox DC",
+          "address1": "1714 14th St NW, Rear Entrance",
+          "address2": "Washington, DC 20009"
+        }
+      }, {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-122.414, 37.776]
+        },
+        "properties": {
+          "title": "Mapbox SF",
+          "address1": "149 9th St, Suite 404",
+          "address2": "San Francisco, CA 94103"
+        }
+      }, {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-74.225, -13.160]
+        },
+        "properties": {
+          "title": "Mapbox Ayacucho",
+          "address1": "Jr. José Santos Chocano Nº 416",
+          "address2": "Jesús Nazareno, Ayacucho"
+        }
+      }]
+    }
+  });
+
+  // Add a new layer that displays the markers.
+  map.addLayer({
+    "id": "markers",
+    "type": "symbol",
+    "source": "markers",
+    "layout": {
+      "icon-image": "dot.sdf"
+    },
+    "paint": {
+      "icon-color": "#993379",
+      "icon-halo-color": "white",
+      "icon-halo-width": 2
+    }
+  });
+
+  // Bind an event listener that opens a popup whenever a marker is clicked.
+  map.on('click', 'markers', function(e) {
+    (new mapboxgl.Popup())
+      .setLatLng(e.features[0].geometry.coordinates)
+      .setHTML(popupHTML(e.features[0].properties))
+      .addTo(map);
+  });
+
+  function popupHTML(properties) {
+    var content = document.getElementById("popup-template").content.cloneNode(true);
+    content.querySelector(".title").textContent = properties.title;
+    content.querySelector(".address1").textContent = properties.address1;
+    content.querySelector(".address2").textContent = properties.address2;
+    return content;
+  }
+});
+</script>
+
+<template id="popup-template">
+  <strong class="title"></strong><br>
+  <span class="address1"></span><br>
+  <span class="address2"></span>
+</template>
