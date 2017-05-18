@@ -16,17 +16,14 @@ test('expressions', (t) => {
     });
 
     t.test('feature property lookup', (t) => {
-        let f = createFunction({ ref: 'feature', key: 'x', defaultValue: 12 });
-        t.equal(f({}, {}), 12);
+        const f = createFunction(['data', 'x', 42]);
         t.equal(f({}, { properties: { x: 42 } }), 42);
-
-        f = createFunction({ ref: 'feature', key: 'x' });
-        t.equal(f({}, {}), 0);
+        t.equal(f({}, {}), undefined);
         t.end();
     });
 
     t.test('map property lookup', (t) => {
-        const f = createFunction({ ref: 'map', key: 'zoom' });
+        const f = createFunction(['zoom']);
         t.equal(f({ zoom: 7 }, {}), 7);
         t.end();
     });
@@ -35,17 +32,10 @@ test('expressions', (t) => {
         let f = createFunction([ '+', 1, 2 ]);
         t.equal(f({}, {}), 3);
 
-        f = createFunction([
-            '*', 2,
-            { ref: 'feature', key: 'x' }
-        ]);
+        f = createFunction([ '*', 2, ['data', 'x'] ]);
         t.equal(f({}, { properties: { x: 42 } }), 84);
 
-        f = createFunction([
-            '/',
-            { ref: 'feature', key: 'y' },
-            { ref: 'feature', key: 'x' }
-        ]);
+        f = createFunction([ '/', [ 'data', 'y' ], [ 'data', 'x' ] ]);
         t.equal(f({}, { properties: { x: -1, y: 12 } }), -12);
 
         t.end();
@@ -57,9 +47,7 @@ test('expressions', (t) => {
         t.equal(f(), 'abc');
 
         f = createFunction([
-            'concat',
-            {ref: 'feature', key: 'name'},
-            ' (', {ref: 'feature', key: 'name_en'}, ')'
+            'concat', ['data', 'name'], ' (', ['data', 'name_en'], ')'
         ]);
 
         t.equal(
@@ -76,8 +64,8 @@ test('expressions', (t) => {
             [ 'has', 'x' ],
             [
                 '*',
-                { ref: 'feature', key: 'y' },
-                { ref: 'feature', key: 'x' }
+                ['data', 'y'],
+                ['data', 'x']
             ],
             'NONE'
         ]);
@@ -86,20 +74,24 @@ test('expressions', (t) => {
         t.equal(f({}, { properties: { y: 12 } }), 'NONE');
 
         f = createFunction([
-            'if', [ 'all', [ 'has', 'name_en' ], ['has', 'name'] ],
+            'if', [ '&&', [ 'has', 'name_en' ], ['has', 'name'] ],
             [
                 'concat',
-                {ref: 'feature', key: 'name'},
-                ' (', {ref: 'feature', key: 'name_en'}, ')'
+                ['data', 'name'],
+                ' (', ['data', 'name_en'], ')'
             ],
             [
-                'if', [ 'all', ['has', 'name_fr'], ['has', 'name'] ],
+                'if', [ '&&', ['has', 'name_fr'], ['has', 'name'] ],
                 [
                     'concat',
-                    {ref: 'feature', key: 'name'},
-                    ' (', {ref: 'feature', key: 'name_fr'}, ')'
+                    ['data', 'name'],
+                    ' (', ['data', 'name_fr'], ')'
                 ],
-                {ref: 'feature', key: 'name', defaultValue: 'unnamed'}
+                [
+                    'if', ['has', 'name'],
+                    ['data', 'name'],
+                    'unnamed'
+                ]
             ]
         ]);
 

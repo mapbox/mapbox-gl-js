@@ -20,11 +20,12 @@
 
 **Boolean:**
 - `[ "has", key_expr ]`
-- `[ "==", expr1, expr2]`
+- `[ "==", expr1, expr2]` (similar for `!=`)
 - `[ ">", lhs_expr, rhs_expr ]` (similar for <, >=, <=)
 - `[ "between", value_expr, lower_bound_expr, upper_bound_expr ]`
 - `[ "in", value_expr, item1_expr, item2_expr, ... ]`
-- `[ "all", boolean_expr1, boolean_expr2, ... ]` (similar for any, none)
+- `[ "&&", boolean_expr1, boolean_expr2, ... ]` (similar for `||`)
+- `[ "!", boolean_expr]`
 
 **String:**
 - `["concat", expr1, expr2, …]`
