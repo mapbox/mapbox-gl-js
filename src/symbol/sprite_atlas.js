@@ -144,8 +144,8 @@ class SpriteAtlas extends Evented {
 
         return {
             size: [image.width, image.height],
-            tl: [(rect.x + padding)         / this.width, (rect.y + padding)          / this.height],
-            br: [(rect.x + padding + width) / this.width, (rect.y + padding + height) / this.height]
+            tl: [(rect.x + padding),         (rect.y + padding)],
+            br: [(rect.x + padding + width), (rect.y + padding + height)]
         };
     }
 

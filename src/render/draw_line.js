@@ -79,6 +79,7 @@ function drawLineTile(program, painter, tile, buffers, layer, coord, layerData, 
 
             gl.uniform2f(program.u_pattern_size_a, imagePosA.size[0] * image.fromScale / tileRatio, imagePosB.size[1]);
             gl.uniform2f(program.u_pattern_size_b, imagePosB.size[0] * image.toScale / tileRatio, imagePosB.size[1]);
+            gl.uniform2f(program.u_texsize, painter.spriteAtlas.width, painter.spriteAtlas.height);
         }
 
         gl.uniform2f(program.u_gl_units_to_pixels, 1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]);

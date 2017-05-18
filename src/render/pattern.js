@@ -28,6 +28,7 @@ exports.prepare = function (image, painter, program) {
     gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
     gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
     gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
+    gl.uniform2f(program.u_texsize, painter.spriteAtlas.width, painter.spriteAtlas.height);
     gl.uniform1f(program.u_mix, image.t);
     gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
     gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
