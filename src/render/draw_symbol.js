@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const util = require('../util/util');
-const browser = require('../util/browser');
 const drawCollisionDebug = require('./draw_collision_debug');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const interpolationFactor = require('../style-spec/function').interpolationFactor;
@@ -136,10 +135,10 @@ function setSymbolDrawState(program, painter, layer, tileZoom, isText, isSDF, ro
         const iconSizeScaled = !layer.isLayoutValueFeatureConstant('icon-size') ||
             !layer.isLayoutValueZoomConstant('icon-size') ||
             layer.getLayoutValue('icon-size', { zoom: tr.zoom }) !== 1;
-        const iconScaled = iconSizeScaled || browser.devicePixelRatio !== painter.spriteAtlas.pixelRatio || iconsNeedLinear;
+        const iconScaled = iconSizeScaled || iconsNeedLinear;
         const iconTransformed = pitchWithMap || tr.pitch;
         painter.spriteAtlas.bind(gl, isSDF || mapMoving || iconScaled || iconTransformed);
-        gl.uniform2f(program.u_texsize, painter.spriteAtlas.width, painter.spriteAtlas.height);
+        gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
     }
 
     gl.activeTexture(gl.TEXTURE1);

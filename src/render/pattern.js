@@ -11,16 +11,16 @@ const pixelsToTileUnits = require('../source/pixels_to_tile_units');
  */
 exports.isPatternMissing = function(image, painter) {
     if (!image) return false;
-    const imagePosA = painter.spriteAtlas.getPosition(image.from, true);
-    const imagePosB = painter.spriteAtlas.getPosition(image.to, true);
+    const imagePosA = painter.spriteAtlas.getPattern(image.from);
+    const imagePosB = painter.spriteAtlas.getPattern(image.to);
     return !imagePosA || !imagePosB;
 };
 
 exports.prepare = function (image, painter, program) {
     const gl = painter.gl;
 
-    const imagePosA = painter.spriteAtlas.getPosition(image.from, true);
-    const imagePosB = painter.spriteAtlas.getPosition(image.to, true);
+    const imagePosA = painter.spriteAtlas.getPattern(image.from);
+    const imagePosB = painter.spriteAtlas.getPattern(image.to);
     assert(imagePosA && imagePosB);
 
     gl.uniform1i(program.u_image, 0);
@@ -28,10 +28,10 @@ exports.prepare = function (image, painter, program) {
     gl.uniform2fv(program.u_pattern_br_a, imagePosA.br);
     gl.uniform2fv(program.u_pattern_tl_b, imagePosB.tl);
     gl.uniform2fv(program.u_pattern_br_b, imagePosB.br);
-    gl.uniform2f(program.u_texsize, painter.spriteAtlas.width, painter.spriteAtlas.height);
+    gl.uniform2fv(program.u_texsize, painter.spriteAtlas.getPixelSize());
     gl.uniform1f(program.u_mix, image.t);
-    gl.uniform2fv(program.u_pattern_size_a, imagePosA.size);
-    gl.uniform2fv(program.u_pattern_size_b, imagePosB.size);
+    gl.uniform2fv(program.u_pattern_size_a, imagePosA.displaySize);
+    gl.uniform2fv(program.u_pattern_size_b, imagePosB.displaySize);
     gl.uniform1f(program.u_scale_a, image.fromScale);
     gl.uniform1f(program.u_scale_b, image.toScale);
 

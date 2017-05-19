@@ -131,7 +131,7 @@ test('SymbolBucket#getPaintPropertyStatistics()', (t) => {
 
     bucket.populate([feature], options);
     bucket.prepare(stacks, {
-        dot: { width: 10, height: 10, pixelRatio: 1, rect: { w: 10, h: 10 } }
+        dot: { displaySize: () => [10, 10], textureRect: { x: 0, y: 0, w: 10, h: 10 }, pixelRatio: 1 }
     });
     bucket.place(collision);
 
