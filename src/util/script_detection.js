@@ -17,6 +17,23 @@ module.exports.allowsVerticalWritingMode = function(chars) {
     return false;
 };
 
+module.exports.allowsLetterSpacing = function(chars) {
+    for (const char of chars) {
+        if (!exports.charAllowsLetterSpacing(char.charCodeAt(0))) return false;
+    }
+    return true;
+};
+
+module.exports.charAllowsLetterSpacing = function(char) {
+    if (isChar['Arabic'](char)) return false;
+    if (isChar['Arabic Supplement'](char)) return false;
+    if (isChar['Arabic Extended-A'](char)) return false;
+    if (isChar['Arabic Presentation Forms-A'](char)) return false;
+    if (isChar['Arabic Presentation Forms-B'](char)) return false;
+
+    return true;
+};
+
 module.exports.charAllowsIdeographicBreaking = function(char) {
     // Return early for characters outside all ideographic ranges.
     if (char < 0x2E80) return false;
