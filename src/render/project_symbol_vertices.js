@@ -74,15 +74,12 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
         const end = symbol.verticesStart + symbol.verticesLength;
         for (let vertexIndex = symbol.verticesStart; vertexIndex < end; vertexIndex++) {
             const vertex = bucket.vertexTransformArray.get(vertexIndex);
-            if (vertex.offsetX > 0) {
+            if (vertex.offsetX >= 0) {
                 glyphsForward.push(vertex);
             } else {
                 glyphsBackward.push(vertex);
             }
         }
-
-        glyphsForward.sort(ascendingOffsetX);
-        glyphsBackward.sort(ascendingOffsetX);
 
         processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
         processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
@@ -175,8 +172,4 @@ function evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol) {
             return interpolate.number(a.textSize, b.textSize, partiallyEvaluatedSize.t % 1);
         }
     }
-}
-
-function ascendingOffsetX(a, b) {
-    return Math.abs(a.offsetX) - Math.abs(b.offsetX);
 }
