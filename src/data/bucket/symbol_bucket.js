@@ -373,16 +373,15 @@ class SymbolBucket {
             let shapedIcon;
             if (feature.icon) {
                 const image = icons[feature.icon];
-                const iconOffset = this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties);
-                shapedIcon = shapeIcon(image, iconOffset);
-
                 if (image) {
+                    shapedIcon = shapeIcon(image,
+                        this.layers[0].getLayoutValue('icon-offset', {zoom: this.zoom}, feature.properties));
                     if (this.sdfIcons === undefined) {
                         this.sdfIcons = image.sdf;
                     } else if (this.sdfIcons !== image.sdf) {
                         util.warnOnce('Style sheet warning: Cannot mix SDF and non-SDF icons in one buffer');
                     }
-                    if (image.pixelRatio !== 1) {
+                    if (!image.isNativePixelRatio) {
                         this.iconsNeedLinear = true;
                     } else if (layout['icon-rotate'] !== 0 || !this.layers[0].isLayoutValueFeatureConstant('icon-rotate')) {
                         this.iconsNeedLinear = true;
