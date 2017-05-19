@@ -108,6 +108,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const a = window.performance.now();
         const buffer = projectSymbolVertices(bucket, coord.posMatrix, painter, rotateWithMap, pitchWithMap, s, layer);
         painter.projectionTime += window.performance.now() - a;
+        painter.count++;
 
         drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF,
                 pitchWithMap, buffer);

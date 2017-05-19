@@ -29,18 +29,26 @@ const WritingMode = Shaping.WritingMode;
 const getGlyphQuads = Quads.getGlyphQuads;
 const getIconQuads = Quads.getIconQuads;
 
-const VertexTransformArray = createStructArrayType({
+const PlacedSymbolArray = createStructArrayType({
     members: [
         { type: 'Int16', name: 'anchorX' },
         { type: 'Int16', name: 'anchorY' },
-        { type: 'Int16', name: 'glyphOffsetX' },
-        { type: 'Int16', name: 'glyphOffsetY' },
-        { type: 'Int16', name: 'cornerOffsetX' },
-        { type: 'Int16', name: 'cornerOffsetY' },
+        { type: 'Uint16', name: 'verticesStart' },
+        { type: 'Uint16', name: 'verticesLength' },
         { type: 'Uint32', name: 'lineIndex' },
         { type: 'Uint16', name: 'segment' },
         { type: 'Uint32', name: 'sizeStopStart' },
-        { type: 'Uint32', name: 'sizeStopEnd' }
+    ]
+});
+
+const VertexTransformArray = createStructArrayType({
+    members: [
+        { type: 'Int16', name: 'offsetX' },
+        { type: 'Int16', name: 'offsetY' },
+        { type: 'Int16', name: 'tlX' },
+        { type: 'Int16', name: 'tlY' },
+        { type: 'Int16', name: 'brX' },
+        { type: 'Int16', name: 'brY' }
     ]});
 
 const LineArray = createStructArrayType({
@@ -215,6 +223,7 @@ class SymbolBucket {
             this.textSizeData = options.textSizeData;
             this.iconSizeData = options.iconSizeData;
 
+            this.placedSymbolArray = new PlacedSymbolArray(options.placedSymbolArray);
             this.vertexTransformArray = new VertexTransformArray(options.vertexTransformArray);
             this.lineArray = new LineArray(options.lineArray);
             this.lineVertexArray = new LineVertexArray(options.lineVertexArray);
@@ -326,6 +335,7 @@ class SymbolBucket {
             textSizeData: this.textSizeData,
             iconSizeData: this.iconSizeData,
             fontstack: this.fontstack,
+            placedSymbolArray: this.placedSymbolArray.serialize(transferables),
             vertexTransformArray: this.vertexTransformArray.serialize(transferables),
             lineArray: this.lineArray.serialize(transferables),
             lineVertexArray: this.lineVertexArray.serialize(transferables),
@@ -565,6 +575,7 @@ class SymbolBucket {
 
         this.createArrays();
 
+        this.placedSymbolArray = new PlacedSymbolArray();
         this.vertexTransformArray = new VertexTransformArray();
         this.lineArray = new LineArray();
         this.lineVertexArray = new LineVertexArray();
@@ -714,6 +725,20 @@ class SymbolBucket {
         const zoom = this.zoom;
         const placementZoom = Math.max(Math.log(scale) / Math.LN2 + zoom, 0);
 
+        const vertexStart = this.vertexTransformArray.length;
+
+        quads.sort(function(sa, sb) {
+            const a = sa.glyphOffsetX;
+            const b = sb.glyphOffsetX;
+            if (a < 0 === b < 0) {
+                return Math.abs(a) - Math.abs(b);
+            } else if (a < 0) {
+                return 1;
+            } else if (b < 0) {
+                return -1;
+            }
+        });
+
         for (const symbol of quads) {
             // drop incorrectly oriented glyphs
             const a = (symbol.anchorAngle + placementAngle + Math.PI) % (Math.PI * 2);
@@ -755,14 +780,12 @@ class SymbolBucket {
             segment.vertexLength += 4;
             segment.primitiveLength += 2;
 
-            const s = sizeVertex ? sizeVertex.start : 0;
-            const e = sizeVertex ? sizeVertex.end : 0;
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, lineArrayIndex, anchor.segment, s, e);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, tr.x, tr.y, lineArrayIndex, anchor.segment, s, e);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, bl.x, bl.y, lineArrayIndex, anchor.segment, s, e);
-            this.vertexTransformArray.emplaceBack(anchor.x, anchor.y, symbol.glyphOffsetX, symbol.glyphOffsetY, br.x, br.y, lineArrayIndex, anchor.segment, s, e);
-
+            this.vertexTransformArray.emplaceBack(symbol.glyphOffsetX, symbol.glyphOffsetY, tl.x, tl.y, br.x, br.y);
         }
+
+        this.placedSymbolArray.emplaceBack(anchor.x, anchor.y,
+                vertexStart, this.vertexTransformArray.length - vertexStart,
+                lineArrayIndex, anchor.segment, sizeVertex ? sizeVertex.start : 0);
 
         arrays.populatePaintArrays(featureProperties);
     }
@@ -972,7 +995,6 @@ function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featur
             10 * layer.getLayoutValue(sizeProperty, {}, featureProperties)
         ];
         ret.start = start;
-        ret.end = zoomStopArray.length;
         return ret;
     } else if (
         !layer.isLayoutValueZoomConstant(sizeProperty) &&
@@ -990,7 +1012,6 @@ function getSizeVertexData(layer, tileZoom, stopZoomLevels, sizeProperty, featur
             10 * layer.getLayoutValue(sizeProperty, {zoom: 1 + tileZoom}, featureProperties)
         ];
         ret.start = start;
-        ret.end = zoomStopArray.length;
         return ret;
     }
     // camera function or constant

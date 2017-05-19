@@ -31,7 +31,6 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
     // matrix for converting from the lable plane to gl coords
     const glCoordMatrix = new Float64Array(16);
 
-
     const tr = painter.transform;
 
     if (false && pitchWithMap) {
@@ -60,64 +59,92 @@ function projectSymbolVertices(bucket, tileMatrix, painter, rotateWithMap, pitch
         mat4.scale(glCoordMatrix, glCoordMatrix, [2 / tr.width, 2 / tr.height, 1]);
     }
 
-
     const vertexPositions = new VertexPositionArray();
-    for (let i = 0; i < bucket.vertexTransformArray.length; i++) {
-        const vert = bucket.vertexTransformArray.get(i);
-        const line = bucket.lineArray.get(vert.lineIndex);
 
-        const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, vert);
+    const placedSymbols = bucket.placedSymbolArray;
+    for (let s = 0; s < placedSymbols.length; s++) {
+        const symbol = placedSymbols.get(s);
+        const line = bucket.lineArray.get(symbol.lineIndex);
+        const size = evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol);
         const fontScale = size / 24;
 
-        let prev = project(new Point(vert.anchorX, vert.anchorY), labelPlaneMatrix);
-        let angle = 0;
+        const glyphsForward = [];
+        const glyphsBackward = [];
 
-        if (line.length > 1) {
-
-            let dir, numVertices, start;
-
-            if (vert.glyphOffsetX > 0) {
-                dir = 1;
-                numVertices = line.length - vert.segment;
-                start = line.startIndex + vert.segment + 1;
+        const end = symbol.verticesStart + symbol.verticesLength;
+        for (let vertexIndex = symbol.verticesStart; vertexIndex < end; vertexIndex++) {
+            const vertex = bucket.vertexTransformArray.get(vertexIndex);
+            if (vertex.offsetX > 0) {
+                glyphsForward.push(vertex);
             } else {
-                dir = -1;
-                numVertices = vert.segment + 1;
-                start = line.startIndex + vert.segment;
-                angle = Math.PI;
+                glyphsBackward.push(vertex);
             }
-
-            let distanceRemaining = Math.abs(vert.glyphOffsetX) * fontScale;
-            for (let i = 0; i < numVertices; i++) {
-                const next_ = bucket.lineVertexArray.get(start + i * dir);
-                const next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
-
-                const d = prev.dist(next);
-
-                if (distanceRemaining < d) {
-                    prev = next.sub(prev)._mult(distanceRemaining / d)._add(prev);
-                    angle += Math.atan2(next.y - prev.y, next.x - prev.x);
-                    break;
-
-                } else {
-                    distanceRemaining -= d;
-                    prev = next;
-                }
-            }
-        } else {
-            prev.x += vert.glyphOffsetX * fontScale;
         }
 
+        glyphsForward.sort(ascendingOffsetX);
+        glyphsBackward.sort(ascendingOffsetX);
 
-        const p = prev;
-        p._add(new Point(vert.cornerOffsetX * fontScale, (vert.glyphOffsetY + vert.cornerOffsetY) * fontScale)._rotate(angle));
-
-        const glPoint = project(p, glCoordMatrix);
-
-        vertexPositions.emplaceBack(glPoint.x, glPoint.y);
+        processDirection(glyphsForward, 1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
+        processDirection(glyphsBackward, -1, symbol, line, bucket.lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale);
     }
-
     return new Buffer(vertexPositions.serialize(), VertexPositionArray.serialize(), Buffer.BufferType.VERTEX);
+}
+
+function processDirection(glyphs, dir, symbol, line, lineVertexArray, vertexPositions, labelPlaneMatrix, glCoordMatrix, fontScale) {
+    const anchor = project(new Point(symbol.anchorX, symbol.anchorY), labelPlaneMatrix);
+    if (line.length > 1) {
+        let prev = anchor;
+        let next = prev;
+        let vertexIndex = 0;
+        let previousDistance = 0;
+        let segmentDistance = 0;
+        let segmentAngle = 0;
+
+        let numVertices, vertexStartIndex, angle;
+        if (dir === 1) {
+            numVertices = line.length - symbol.segment;
+            vertexStartIndex = line.startIndex + symbol.segment + 1;
+            angle = 0;
+        } else {
+            numVertices = symbol.segment + 1;
+            vertexStartIndex = line.startIndex + symbol.segment;
+            angle = Math.PI;
+        }
+
+        for (const glyph of glyphs) {
+            const offsetX = Math.abs(glyph.offsetX) * fontScale;
+            while (offsetX >= segmentDistance + previousDistance && vertexIndex < numVertices) {
+                previousDistance += segmentDistance;
+                prev = next;
+                const next_ = lineVertexArray.get(vertexStartIndex + vertexIndex);
+                vertexIndex++;
+                next = project(new Point(next_.x, next_.y), labelPlaneMatrix);
+                segmentAngle = angle + Math.atan2(next.y - prev.y, next.x - prev.x);
+                segmentDistance = prev.dist(next);
+            }
+
+            const p = next.sub(prev)._mult((offsetX - previousDistance) / segmentDistance)._add(prev);
+            addGlyph(p, glyph, fontScale, segmentAngle, vertexPositions, glCoordMatrix);
+        }
+    } else {
+        const angle = 0;
+        for (const glyph of glyphs) {
+            const p = anchor.clone();
+            p.x += glyph.offsetX * fontScale;
+            addGlyph(p, glyph, fontScale, angle, vertexPositions, glCoordMatrix);
+        }
+    }
+}
+
+function addGlyph(p, glyph, fontScale, angle, vertexPositions, glCoordMatrix) {
+    const tl = project(p.add(new Point(glyph.tlX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
+    const tr = project(p.add(new Point(glyph.brX, glyph.offsetY + glyph.tlY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
+    const bl = project(p.add(new Point(glyph.tlX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
+    const br = project(p.add(new Point(glyph.brX, glyph.offsetY + glyph.brY)._mult(fontScale)._rotate(angle)), glCoordMatrix);
+    vertexPositions.emplaceBack(tl.x, tl.y);
+    vertexPositions.emplaceBack(tr.x, tr.y);
+    vertexPositions.emplaceBack(bl.x, bl.y);
+    vertexPositions.emplaceBack(br.x, br.y);
 }
 
 function evaluateSizeForZoom(bucket, layer, transform) {
@@ -134,18 +161,22 @@ function evaluateSizeForZoom(bucket, layer, transform) {
     }
 }
 
-function evaluateSizeForFeature(bucket, partiallyEvaluatedSize, vert) {
+function evaluateSizeForFeature(bucket, partiallyEvaluatedSize, symbol) {
     const sizeData = bucket.textSizeData;
     if (sizeData.isFeatureConstant) {
         return partiallyEvaluatedSize.size;
     } else {
         if (sizeData.isZoomConstant) {
-            return bucket.zoomStopArray.get(vert.sizeStopStart).textSize;
+            return bucket.zoomStopArray.get(symbol.sizeStopStart).textSize;
         } else {
-            const offset = vert.sizeStopStart;
+            const offset = symbol.sizeStopStart;
             const a = bucket.zoomStopArray.get(offset + Math.floor(partiallyEvaluatedSize.t));
             const b = bucket.zoomStopArray.get(offset + Math.ceil(partiallyEvaluatedSize.t));
             return interpolate.number(a.textSize, b.textSize, partiallyEvaluatedSize.t % 1);
         }
     }
+}
+
+function ascendingOffsetX(a, b) {
+    return Math.abs(a.offsetX) - Math.abs(b.offsetX);
 }
