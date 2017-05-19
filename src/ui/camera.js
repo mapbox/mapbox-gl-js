@@ -689,7 +689,7 @@ class Camera extends Evented {
             startBearing = this.getBearing(),
             startPitch = this.getPitch();
 
-        const zoom = 'zoom' in options ?  +options.zoom : startZoom;
+        const zoom = 'zoom' in options ? util.clamp(+options.zoom, tr.minZoom, tr.maxZoom) : startZoom;
         const bearing = 'bearing' in options ? this._normalizeBearing(options.bearing, startBearing) : startBearing;
         const pitch = 'pitch' in options ? +options.pitch : startPitch;
 
