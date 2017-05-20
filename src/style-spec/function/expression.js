@@ -3,20 +3,32 @@
 const assert = require('assert');
 
 const Type = {
-    None: {},
-    Any: {},
-    Number: {},
-    String: {},
-    Boolean: {},
-    Color: {}
+    None: 'none',
+    Any: 'any',
+    Number: 'number',
+    String: 'string',
+    Boolean: 'boolean',
+    Color: 'color'
 };
 
-Type.Array = {
-    [Type.Any]: {},
-    [Type.Number]: {},
-    [Type.String]: {},
-    [Type.Boolean]: {},
-    [Type.Color]: {}
+class NArgs {
+    constructor(itemType) {
+        this.itemType = itemType;
+        this.isNArgs = true;
+    }
+
+    toString() {
+        return `${this.itemType}, ${this.itemType}, ...`;
+    }
+}
+
+Type.NArgs = {
+    none: new NArgs(Type.None),
+    any: new NArgs(Type.Any),
+    number: new NArgs(Type.Number),
+    string: new NArgs(Type.String),
+    boolean: new NArgs(Type.Boolean),
+    color: new NArgs(Type.Color)
 };
 
 module.exports = compileExpression;
@@ -49,13 +61,25 @@ const functions = {
         input: [],
         output: Type.Number,
     },
-    'data': {
+    'boolean_data': {
         input: [Type.String],
-        output: Type.Any,
+        output: Type.Boolean,
+    },
+    'string_data': {
+        input: [Type.String],
+        output: Type.String,
+    },
+    'number_data': {
+        input: [Type.String],
+        output: Type.Number,
     },
     'has': {
         input: [Type.String],
         output: Type.Boolean
+    },
+    'typeof': {
+        input: [Type.String],
+        output: Type.String
     },
     '+': {
         input: [Type.Number, Type.Number],
@@ -147,12 +171,12 @@ const functions = {
         math: true
     },
     'min': {
-        input: [Type.Array[Type.Number]],
+        input: [Type.NArgs[Type.Number]],
         output: Type.Number,
         math: true
     },
     'max': {
-        input: [Type.Array[Type.Number]],
+        input: [Type.NArgs[Type.Number]],
         output: Type.Number,
         math: true
     },
@@ -193,7 +217,7 @@ const functions = {
         output: [Type.Boolean]
     },
     'concat': {
-        input: [Type.Array[Type.Any]],
+        input: [Type.NArgs[Type.Any]],
         output: Type.String
     },
     'upcase': {
@@ -206,7 +230,7 @@ const functions = {
     },
     'if': {
         input: [Type.Boolean, Type.Any, Type.Any],
-        output: Type.Any
+        output: null // determined at type-check time
     }
 };
 
@@ -241,18 +265,18 @@ function compile(expr) {
 
     assert(Array.isArray(expr));
     const op = expr[0];
-    const subExpressions = expr.slice(1).map(compile);
-    const args = subExpressions.map(s => `(${s.compiledExpression})`);
+    const argExpressions = expr.slice(1).map(compile);
+    const args = argExpressions.map(s => `(${s.compiledExpression})`);
 
     if (!functions[op]) {
         throw new Error(`Unknown function ${op}`);
     }
 
-    checkArgumentTypes(functions[op].input, subExpressions);
+    const type = checkType(op, argExpressions.map(e => e.type));
 
     let compiled;
-    let isFeatureConstant = subExpressions.reduce((memo, e) => memo && e.isFeatureConstant, true);
-    let isZoomConstant = subExpressions.reduce((memo, e) => memo && e.isZoomConstant, true);
+    let isFeatureConstant = argExpressions.reduce((memo, e) => memo && e.isFeatureConstant, true);
+    let isZoomConstant = argExpressions.reduce((memo, e) => memo && e.isZoomConstant, true);
 
     if (op === 'e') {
         compiled = `Math.E`;
@@ -260,15 +284,31 @@ function compile(expr) {
         compiled = `Math.LN2`;
     } else if (op === 'pi') {
         compiled = `Math.PI`;
-    } else if (op === 'data') {
-        compiled = `props[${args[0]}]`;
+    } else if (op === 'number_data') {
+        compiled = `Number(props[${args[0]}])`;
+        isFeatureConstant = false;
+    } else if (op === 'string_data') {
+        compiled = `String(props[${args[0]}] || '')`;
+        isFeatureConstant = false;
+    } else if (op === 'boolean_data') {
+        compiled = `Boolean(props[${args[0]}])`;
+        isFeatureConstant = false;
+    } else if (op === 'typeof') {
+        compiled = `
+            !(${args[0]} in props) ? 'none'
+            : typeof props[${args[0]}] === 'number' ? 'number'
+            : typeof props[${args[0]}] === 'string' ? 'string'
+            : typeof props[${args[0]}] === 'boolean' ? 'boolean'
+            : Array.isArray(props[${args[0]}]) ? 'array'
+            : 'object'
+        `;
+        isFeatureConstant = false;
+    } else if (op === 'has') {
+        compiled = `${args[0]} in props`;
         isFeatureConstant = false;
     } else if (op === 'zoom') {
         compiled = `mapProperties.zoom`;
         isZoomConstant = false;
-    } else if (op === 'has') {
-        compiled = `${args[0]} in props`;
-        isFeatureConstant = false;
     } else if (op === 'concat') {
         compiled = `[${args.join(',')}].join('')`;
     } else if (op === 'upcase') {
@@ -293,12 +333,48 @@ function compile(expr) {
         compiledExpression: compiled,
         isFeatureConstant,
         isZoomConstant,
-        type: functions[op].type
+        type
     };
 }
 
-function checkArgumentTypes() {
-    // TODO
-    return;
+function checkType(op, argTypes) {
+    const input = functions[op].input;
+    let i = 0;
+    for (const t of input) {
+        if (t.isNArgs) {
+            while (i < argTypes.length) {
+                assert(match(t.itemType, argTypes[i]),
+                    `Expected ${t} but found ${argTypes[i]}`);
+                i++;
+            }
+        } else {
+            assert(match(t, argTypes[i]), `Expected ${t} but found ${argTypes[i]}`);
+            i++;
+        }
+    }
+
+    if (op === 'if') {
+        assert(match(argTypes[1], argTypes[2]),
+            `Expected both branches of 'if' to have the same type, but ${argTypes[1]} and ${argTypes[2]} do not match.`);
+        return argTypes[1];
+    } else if (
+        op === '==' ||
+        op === '!=' ||
+        op === '>' ||
+        op === '<' ||
+        op === '>=' ||
+        op === '<='
+    ) {
+        assert(match(argTypes[0], argTypes[1]),
+            `Comparison operator ${op} requires two expressions of matching types, but ${argTypes[0]} and ${argTypes[1]} do not match.`);
+    }
+
+    return functions[op].output;
+
+    function match(t1, t2) {
+        return t1 === Type.Any ||
+            t2 === Type.Any ||
+            t1 === t2;
+    }
 }
 
