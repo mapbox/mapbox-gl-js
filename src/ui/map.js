@@ -537,8 +537,8 @@ class Map extends Camera {
      * a visible portion of the specified layer from outside that layer or outside the map canvas. `mouseleave`
      * and `mouseout` events are triggered when the cursor leaves a visible portion of the specified layer, or leaves
      * the map canvas.
-     * @param {string} layer The ID of a style layer. Only events whose location is within a visible
-     * feature in this layer will trigger the listener. The event will have a `features` property containing
+     * @param {Array<string>|string} layer The ID or IDs of a style layers. Only events whose location is within a visible
+     * feature in this layers will trigger the listener. The event will have a `features` property containing
      * an array of the matching features.
      * @param {Function} listener The function to be called when the event is fired.
      * @returns {Map} `this`
@@ -548,11 +548,12 @@ class Map extends Camera {
             return super.on(type, layer);
         }
 
+        const layers = Array.isArray(layer) ? layer : [layer];
         const delegatedListener = (() => {
             if (type === 'mouseenter' || type === 'mouseover') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.queryRenderedFeatures(e.point, {layers});
                     if (!features.length) {
                         mousein = false;
                     } else if (!mousein) {
@@ -563,11 +564,11 @@ class Map extends Camera {
                 const mouseout = () => {
                     mousein = false;
                 };
-                return {layer, listener, delegates: {mousemove, mouseout}};
+                return {layers, listener, delegates: {mousemove, mouseout}};
             } else if (type === 'mouseleave' || type === 'mouseout') {
                 let mousein = false;
                 const mousemove = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.queryRenderedFeatures(e.point, {layers});
                     if (features.length) {
                         mousein = true;
                     } else if (mousein) {
@@ -581,15 +582,15 @@ class Map extends Camera {
                         listener.call(this, util.extend({}, e, {type}));
                     }
                 };
-                return {layer, listener, delegates: {mousemove, mouseout}};
+                return {layers, listener, delegates: {mousemove, mouseout}};
             } else {
                 const delegate = (e) => {
-                    const features = this.queryRenderedFeatures(e.point, {layers: [layer]});
+                    const features = this.queryRenderedFeatures(e.point, {layers});
                     if (features.length) {
                         listener.call(this, util.extend({features}, e));
                     }
                 };
-                return {layer, listener, delegates: {[type]: delegate}};
+                return {layers, listener, delegates: {[type]: delegate}};
             }
         })();
 
@@ -620,7 +621,7 @@ class Map extends Camera {
      * Removes an event listener for layer-specific events previously added with `Map#on`.
      *
      * @param {string} type The event type previously used to install the listener.
-     * @param {string} layer The layer ID previously used to install the listener.
+     * @param {Array<string>|string} layer The ID or IDs of layers previously used to install the listener.
      * @param {Function} listener The function previously installed as a listener.
      * @returns {Map} `this`
      */
@@ -630,10 +631,13 @@ class Map extends Camera {
         }
 
         if (this._delegatedListeners && this._delegatedListeners[type]) {
+            const layers = Array.isArray(layer) ? layer : [layer];
             const listeners = this._delegatedListeners[type];
             for (let i = 0; i < listeners.length; i++) {
                 const delegatedListener = listeners[i];
-                if (delegatedListener.layer === layer && delegatedListener.listener === listener) {
+
+                const isSameLayers = layers.every((l, index) => delegatedListener.layers[index] === l);
+                if (isSameLayers && delegatedListener.listener === listener) {
                     for (const event in delegatedListener.delegates) {
                         this.off(event, delegatedListener.delegates[event]);
                     }

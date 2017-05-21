@@ -59,6 +59,28 @@ test('Map#on adds a listener for an event on a given layer', (t) => {
     t.end();
 });
 
+test('Map#on adds a listener for an event on a given layers', (t) => {
+    const map = createMap();
+    const features = [{}];
+
+    t.stub(map, 'queryRenderedFeatures').callsFake((point, options) => {
+        t.deepEqual(options, {layers: ['layer1', 'layer2']});
+        return features;
+    });
+
+    const spy = t.spy(function (e) {
+        t.equal(this, map);
+        t.equal(e.type, 'click');
+        t.equal(e.features, features);
+    });
+
+    map.on('click', ['layer1', 'layer2'], spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.calledOnce);
+    t.end();
+});
+
 test('Map#on adds a listener not triggered for events not matching any features', (t) => {
     const map = createMap();
     const features = [];
@@ -151,6 +173,21 @@ test('Map#off removes a delegated event listener', (t) => {
 
     map.on('click', 'layer', spy);
     map.off('click', 'layer', spy);
+    simulate.click(map.getCanvas());
+
+    t.ok(spy.notCalled);
+    t.end();
+});
+
+test('Map#off removes a delegated event listeners', (t) => {
+    const map = createMap();
+
+    t.stub(map, 'queryRenderedFeatures').returns([{}]);
+
+    const spy = t.spy();
+
+    map.on('click', ['layer1', 'layer2'], spy);
+    map.off('click', ['layer1', 'layer2'], spy);
     simulate.click(map.getCanvas());
 
     t.ok(spy.notCalled);
