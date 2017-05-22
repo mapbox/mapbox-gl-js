@@ -25,8 +25,6 @@
 **Comparison and boolean operations:**
 - `[ "==", expr1, expr2]` (similar for `!=`)
 - `[ ">", lhs_expr, rhs_expr ]` (similar for <, >=, <=)
-- `[ "between", value_expr, lower_bound_expr, upper_bound_expr ]`
-- `[ "in", value_expr, item1_expr, item2_expr, ... ]`
 - `[ "&&", boolean_expr1, boolean_expr2, ... ]` (similar for `||`)
 - `[ "!", boolean_expr]`
 
