@@ -1147,6 +1147,46 @@ test('camera', (t) => {
             camera.flyTo(options);
         });
 
+        t.test('respects transform\'s maxZoom', (t) => {
+
+            const transform = new Transform(2, 10, false);
+            transform.resize(512, 512);
+
+            const camera = new Camera(transform, {});
+
+            camera.on('moveend', () => {
+                t.equalWithPrecision(camera.getZoom(), 10, 1e-10);
+                const { lng, lat } = camera.getCenter();
+                t.equalWithPrecision(lng, 12, 1e-10);
+                t.equalWithPrecision(lat, 34, 1e-10);
+
+                t.end();
+            });
+
+            const flyOptions = { center: [12, 34], zoom: 30};
+            camera.flyTo(flyOptions);
+        });
+
+        t.test('respects transform\'s minZoom', (t) => {
+
+            const transform = new Transform(2, 10, false);
+            transform.resize(512, 512);
+
+            const camera = new Camera(transform, {});
+
+            camera.on('moveend', () => {
+                t.equalWithPrecision(camera.getZoom(), 2, 1e-10);
+                const { lng, lat } = camera.getCenter();
+                t.equalWithPrecision(lng, 12, 1e-10);
+                t.equalWithPrecision(lat, 34, 1e-10);
+
+                t.end();
+            });
+
+            const flyOptions = { center: [12, 34], zoom: 1};
+            camera.flyTo(flyOptions);
+        });
+
         t.end();
     });
 
