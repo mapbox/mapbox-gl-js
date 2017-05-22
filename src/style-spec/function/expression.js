@@ -40,7 +40,7 @@ module.exports = compileExpression;
  * {
  *   isFeatureConstant: boolean,
  *   isZoomConstant: boolean,
- *   compiledExpression: string,
+ *   expressionString: string,
  *   function: Function,
  *   errors: Array<{expression, error}>
  * }
@@ -55,7 +55,7 @@ function compileExpression(expr) {
 mapProperties = mapProperties || {};
 feature = feature || {};
 var props = feature.properties || {};
-return (${compiled.compiledExpression})
+return (${compiled.expressionString})
 `);
     }
     return compiled;
@@ -281,7 +281,7 @@ const functions = {
 
 function compile(expr) {
     if (!expr) return {
-        compiledExpression: 'undefined',
+        expressionString: 'undefined',
         isFeatureConstant: true,
         isZoomConstant: true,
         type: Type.None,
@@ -289,7 +289,7 @@ function compile(expr) {
     };
 
     if (typeof expr === 'string') return {
-        compiledExpression: JSON.stringify(expr),
+        expressionString: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
         type: Type.String,
@@ -297,7 +297,7 @@ function compile(expr) {
     };
 
     if (typeof expr === 'number') return {
-        compiledExpression: JSON.stringify(expr),
+        expressionString: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
         type: Type.Number,
@@ -305,7 +305,7 @@ function compile(expr) {
     };
 
     if (typeof expr === 'boolean') return {
-        compiledExpression: JSON.stringify(expr),
+        expressionString: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
         type: Type.Boolean,
@@ -318,7 +318,7 @@ function compile(expr) {
     assert(Array.isArray(expr));
     const op = expr[0];
     const argExpressions = expr.slice(1).map(compile);
-    const args = argExpressions.map(s => `(${s.compiledExpression})`);
+    const args = argExpressions.map(s => `(${s.expressionString})`);
 
     if (!functions[op]) {
         errors.push({ expression: expr, error: `Unknown function ${op}`});
@@ -326,7 +326,7 @@ function compile(expr) {
 
     const type = checkType(expr, argExpressions.map(e => e.type), errors);
 
-    if (argExpressions.some(s => !s.compiledExpression)) {
+    if (argExpressions.some(s => !s.expressionString)) {
         return { errors, expression: expr };
     }
 
@@ -393,7 +393,7 @@ function compile(expr) {
     }
 
     return {
-        compiledExpression: compiled,
+        expressionString: compiled,
         errors,
         isFeatureConstant,
         isZoomConstant,
