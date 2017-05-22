@@ -1639,6 +1639,12 @@
       "minimum": 0,
       "doc": "The exponential base of the interpolation curve. It controls the rate at which the result increases. Higher values make the result increase more towards the high end of the range. With `1` the stops are interpolated linearly."
     },
+    "zoomInterpolationBase": {
+      "type": "number",
+      "default": 2,
+      "minimum": 0,
+      "doc": "The exponential base used to interpolate expression-based functions that are zoom-and-property-dependent."
+    },
     "property": {
       "type": "string",
       "doc": "The name of a feature property to use as the function input.",

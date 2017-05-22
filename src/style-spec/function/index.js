@@ -26,11 +26,14 @@ function createFunction(parameters, propertySpec) {
         fun.isFeatureConstant = true;
         fun.isZoomConstant = true;
     } else if (parameters.type === 'expression') {
-        const expressionFunction = compileExpression(parameters.expression).function;
+        const compiled = compileExpression(parameters.expression);
         fun = function(zoom, featureProperties) {
-            const result = expressionFunction({zoom}, {properties: featureProperties});
+            const result = compiled.function({zoom}, {properties: featureProperties});
             return isColor ? parseColor(result) : result;
         };
+        fun.isFeatureConstant = compiled.isFeatureConstant;
+        fun.isZoomConstant = compiled.isZoomConstant;
+        fun.zoomInterpolationBase = parameters.zoomInterpolationBase;
     } else {
         const zoomAndFeatureDependent = parameters.stops && typeof parameters.stops[0][0] === 'object';
         const featureDependent = zoomAndFeatureDependent || parameters.property !== undefined;
