@@ -26,7 +26,7 @@ function createFunction(parameters, propertySpec) {
         fun.isFeatureConstant = true;
         fun.isZoomConstant = true;
     } else if (parameters.type === 'expression') {
-        const expressionFunction = compileExpression(parameters.expression);
+        const expressionFunction = compileExpression(parameters.expression).function;
         fun = function(zoom, featureProperties) {
             const result = expressionFunction({zoom}, {properties: featureProperties});
             return isColor ? parseColor(result) : result;

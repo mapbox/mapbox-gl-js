@@ -33,17 +33,32 @@ Type.NArgs = {
 
 module.exports = compileExpression;
 
+/**
+ *
+ * Given a style function expression object, returns:
+ * ```
+ * {
+ *   isFeatureConstant: boolean,
+ *   isZoomConstant: boolean,
+ *   compiledExpression: string,
+ *   function: Function,
+ *   errors: Array<{expression, error}>
+ * }
+ * ```
+ *
+ * @private
+ */
 function compileExpression(expr) {
     const compiled = compile(expr);
-    const fun = new Function('mapProperties', 'feature', `
+    if (compiled.errors.length === 0) {
+        compiled.function = new Function('mapProperties', 'feature', `
 mapProperties = mapProperties || {};
 feature = feature || {};
 var props = feature.properties || {};
 return (${compiled.compiledExpression})
 `);
-    fun.isFeatureConstant = compiled.isFeatureConstant;
-    fun.isZoomConsant = compiled.isZoomConstant;
-    return fun;
+    }
+    return compiled;
 }
 
 const functions = {
@@ -269,29 +284,36 @@ function compile(expr) {
         compiledExpression: 'undefined',
         isFeatureConstant: true,
         isZoomConstant: true,
-        type: Type.None
+        type: Type.None,
+        errors: []
     };
 
     if (typeof expr === 'string') return {
         compiledExpression: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
-        type: Type.String
+        type: Type.String,
+        errors: []
     };
 
     if (typeof expr === 'number') return {
         compiledExpression: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
-        type: Type.Number
+        type: Type.Number,
+        errors: []
     };
 
     if (typeof expr === 'boolean') return {
         compiledExpression: JSON.stringify(expr),
         isFeatureConstant: true,
         isZoomConstant: true,
-        type: Type.Boolean
+        type: Type.Boolean,
+        errors: []
     };
+
+    let compiled;
+    const errors = [];
 
     assert(Array.isArray(expr));
     const op = expr[0];
@@ -299,12 +321,15 @@ function compile(expr) {
     const args = argExpressions.map(s => `(${s.compiledExpression})`);
 
     if (!functions[op]) {
-        throw new Error(`Unknown function ${op}`);
+        errors.push({ expression: expr, error: `Unknown function ${op}`});
     }
 
-    const type = checkType(op, argExpressions.map(e => e.type));
+    const type = checkType(expr, argExpressions.map(e => e.type), errors);
 
-    let compiled;
+    if (argExpressions.some(s => !s.compiledExpression)) {
+        return { errors, expression: expr };
+    }
+
     let isFeatureConstant = argExpressions.reduce((memo, e) => memo && e.isFeatureConstant, true);
     let isZoomConstant = argExpressions.reduce((memo, e) => memo && e.isZoomConstant, true);
 
@@ -369,31 +394,34 @@ function compile(expr) {
 
     return {
         compiledExpression: compiled,
+        errors,
         isFeatureConstant,
         isZoomConstant,
         type
     };
 }
 
-function checkType(op, argTypes) {
+function checkType(expr, argTypes, errors) {
+    const op = expr[0];
     const input = functions[op].input;
     let i = 0;
     for (const t of input) {
         if (t.isNArgs) {
             while (i < argTypes.length) {
-                assert(match(t.itemType, argTypes[i]),
-                    `Expected ${t} but found ${argTypes[i]}`);
+                if (!match(t.itemType, argTypes[i]))
+                    errors.push({expression: expr, error: `Expected ${t} but found ${argTypes[i]}`});
                 i++;
             }
         } else {
-            assert(match(t, argTypes[i]), `Expected ${t} but found ${argTypes[i]}`);
+            if (!match(t, argTypes[i]))
+                errors.push({expression: expr, error: `Expected ${t} but found ${argTypes[i]}`});
             i++;
         }
     }
 
     if (op === 'if') {
-        assert(match(argTypes[1], argTypes[2]),
-            `Expected both branches of 'if' to have the same type, but ${argTypes[1]} and ${argTypes[2]} do not match.`);
+        if (!match(argTypes[1], argTypes[2]))
+            errors.push({expression: expr, error: `Expected both branches of 'if' to have the same type, but ${argTypes[1]} and ${argTypes[2]} do not match.`});
         return argTypes[1];
     } else if (
         op === '==' ||
@@ -403,8 +431,8 @@ function checkType(op, argTypes) {
         op === '>=' ||
         op === '<='
     ) {
-        assert(match(argTypes[0], argTypes[1]),
-            `Comparison operator ${op} requires two expressions of matching types, but ${argTypes[0]} and ${argTypes[1]} do not match.`);
+        if (!match(argTypes[0], argTypes[1]))
+            errors.push({expression: expr, error: `Comparison operator ${op} requires two expressions of matching types, but ${argTypes[0]} and ${argTypes[1]} do not match.`});
     }
 
     return functions[op].output;
