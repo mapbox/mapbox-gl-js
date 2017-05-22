@@ -228,6 +228,22 @@ const functions = {
         input: [Type.String],
         output: Type.String
     },
+    'rgb': {
+        input: [Type.Number, Type.Number, Type.Number],
+        output: Type.Color
+    },
+    'rgba': {
+        input: [Type.Number, Type.Number, Type.Number, Type.Number],
+        output: Type.Color
+    },
+    'hsl': {
+        input: [Type.Number, Type.Number, Type.Number],
+        output: Type.Color
+    },
+    'hsla': {
+        input: [Type.Number, Type.Number, Type.Number, Type.Number],
+        output: Type.Color
+    },
     'if': {
         input: [Type.Boolean, Type.Any, Type.Any],
         output: null // determined at type-check time
@@ -325,6 +341,8 @@ function compile(expr) {
         compiled = `!(${args[0]})`;
     } else if (functions[op].math) {
         compiled = `Math.${op}(${args.join(', ')})`;
+    } else if (op === 'rgb' || op === 'rgba' || op === 'hsl' || op === 'hsla') {
+        compiled = `"${op}(" + ${args.join(' + "," + ')} + ")"`;
     } else {
         compiled = args.join(op);
     }

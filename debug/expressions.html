@@ -40,31 +40,27 @@ var style = {
                     type: 'expression',
                     expression: [
                         '*',
-                        [ '^', 2, {ref: 'map', key: 'zoom'} ],
+                        [ '^', 2, ['zoom'] ],
                         0.125,
                         [
                             '+',
                             20,
-                            {ref: 'feature', key: 'x'},
-                            {ref: 'feature', key: 'y'}
+                            [ 'number_data', 'x' ],
+                            [ 'number_data', 'y' ]
                         ]
                     ]
                 },
                 'circle-opacity': {
                     type: 'expression',
-                    expression: [ '/', [ '+', 10, {ref: 'feature', key: 'x'} ], 30 ]
+                    expression: [ '/', [ '+', 10, ['number_data', 'x'] ], 30 ]
                 },
                 'circle-color': {
                     type: 'expression',
                     expression: [
-                        'concat',
-                        'rgb(',
-                            [ '+', 128, [ '*', 10, {ref: 'feature', key: 'x'} ] ],
-                            ',',
-                            [ '+', 128, [ '*', 10, {ref: 'feature', key: 'y'} ] ],
-                            ',',
-                            128,
-                        ')'
+                        'rgb',
+                            [ '+', 128, [ '*', 10, ['number_data', 'x'] ] ],
+                            [ '+', 128, [ '*', 10, ['number_data', 'y'] ] ],
+                            128
                     ]
                 }
             }

@@ -177,6 +177,17 @@ test('expressions', (t) => {
         t.end();
     });
 
+    t.test('color functions', (t) => {
+        const f = createFunction([
+            'rgb',
+            [ '+', 128, [ '*', 10, ['number_data', 'x'] ] ],
+            [ '+', 128, [ '*', 10, ['number_data', 'y'] ] ],
+            128
+        ]);
+        t.equal(f({}, {properties: {x: -5, y: 5}}), 'rgb(78,178,128)');
+        t.end();
+    });
+
     t.test('if', (t) => {
         let f = createFunction([
             'if',
