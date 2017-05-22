@@ -15,6 +15,7 @@
   - `[ "boolean_data", key_expr ]` reads `feature.properties[key_expr]`, coercing it to a boolean if necessary, with `0`, `''`, `null`, and missing properties mapping to `false`, and all other values mapping to `true`.
   - `[ "has", key_expr ]` returns `true` if the property is present, false otherwise.
   - `[ "typeof", key_expr ]` yields the data type of `feature.properties[key_expr]`: one of `'string'`, `'number'`, `'boolean'`, `'object'`, `'array'`, or, in the case that the property is not present, `'none'`.
+- `[ "geometry_type" ]` returns the value of `feature.geometry.type`.
 
 **Map property:**
   - `[ "zoom" ]` (Note: expressions that refer to the map zoom level are only evaluated at integer zoomslevels. When the map is at non-integer zoom levels, the expression's value will be approximated using linear or exponential interpolation.)

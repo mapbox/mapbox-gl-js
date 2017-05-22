@@ -54,6 +54,13 @@ test('expressions', (t) => {
         t.end();
     });
 
+    t.test('geometry_type', (t) => {
+        const f = createFunction(['geometry_type']);
+        t.equal(f({}, { geometry: { type: 'LineString' }}), 'LineString');
+        t.equal(f(), undefined);
+        t.end();
+    });
+
     t.test('has', (t) => {
         const f = createFunction(['has', 'x']);
         t.equal(f({}, { properties: { x: 'foo' } }), true);

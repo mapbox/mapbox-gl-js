@@ -81,6 +81,10 @@ const functions = {
         input: [Type.String],
         output: Type.String
     },
+    'geometry_type': {
+        input: [],
+        output: Type.String
+    },
     '+': {
         input: [Type.Number, Type.Number],
         output: Type.Number
@@ -322,6 +326,8 @@ function compile(expr) {
     } else if (op === 'has') {
         compiled = `${args[0]} in props`;
         isFeatureConstant = false;
+    } else if (op === 'geometry_type') {
+        compiled = `(feature && feature.geometry) ? feature.geometry.type : undefined`;
     } else if (op === 'zoom') {
         compiled = `mapProperties.zoom`;
         isZoomConstant = false;
