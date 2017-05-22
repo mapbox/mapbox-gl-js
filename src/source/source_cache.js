@@ -213,7 +213,7 @@ class SourceCache extends Evented {
      * Recursively find children of the given tile (up to maxCoveringZoom) that are already loaded;
      * adds found tiles to retain object; returns true if any child is found.
      *
-     * @param {Coordinate} coord
+     * @param {TileCoord} coord
      * @param {number} maxCoveringZoom
      * @param {boolean} retain
      * @returns {boolean} whether the operation was complete
@@ -256,7 +256,7 @@ class SourceCache extends Evented {
      * Find a loaded parent of the given tile (up to minCoveringZoom);
      * adds the found tile to retain object and returns the tile if found
      *
-     * @param {Coordinate} coord
+     * @param {TileCoord} coord
      * @param {number} minCoveringZoom
      * @param {boolean} retain
      * @returns {Tile} tile object
@@ -407,8 +407,8 @@ class SourceCache extends Evented {
 
     /**
      * Add a tile, given its coordinate, to the pyramid.
-     * @param {Coordinate} coord
-     * @returns {Coordinate} the coordinate.
+     * @param {TileCoord} coord
+     * @returns {Tile} the added Tile.
      * @private
      */
     addTile(coord) {
@@ -595,7 +595,8 @@ SourceCache.maxUnderzooming = 3;
 
 /**
  * Convert a coordinate to a point in a tile's coordinate space.
- * @param {Coordinate} tileCoord
+ * @param {TileCoord} tileCoord
+ * @param {number} sourceMaxZoom
  * @param {Coordinate} coord
  * @returns {Object} position
  * @private
