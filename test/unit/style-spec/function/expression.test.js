@@ -61,6 +61,20 @@ test('expressions', (t) => {
         t.end();
     });
 
+    t.test('string_id', (t) => {
+        const f = createFunction(['string_id']);
+        t.equal(f({}, { id: 1 }), '1');
+        t.equal(f(), '');
+        t.end();
+    });
+
+    t.test('number_id', (t) => {
+        const f = createFunction(['number_id']);
+        t.equal(f({}, { id: 1 }), 1);
+        t.ok(isNaN(f()));
+        t.end();
+    });
+
     t.test('has', (t) => {
         const f = createFunction(['has', 'x']);
         t.equal(f({}, { properties: { x: 'foo' } }), true);

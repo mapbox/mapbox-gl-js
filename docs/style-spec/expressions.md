@@ -16,6 +16,7 @@
   - `[ "has", key_expr ]` returns `true` if the property is present, false otherwise.
   - `[ "typeof", key_expr ]` yields the data type of `feature.properties[key_expr]`: one of `'string'`, `'number'`, `'boolean'`, `'object'`, `'array'`, or, in the case that the property is not present, `'none'`.
 - `[ "geometry_type" ]` returns the value of `feature.geometry.type`.
+- `[ "string_id" ]`, `[ "number_id" ]` returns the value of `feature.id`.
 
 **Map property:**
   - `[ "zoom" ]` (Note: expressions that refer to the map zoom level are only evaluated at integer zoomslevels. When the map is at non-integer zoom levels, the expression's value will be approximated using linear or exponential interpolation.)

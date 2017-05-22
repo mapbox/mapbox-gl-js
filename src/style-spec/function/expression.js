@@ -36,7 +36,9 @@ module.exports = compileExpression;
 function compileExpression(expr) {
     const compiled = compile(expr);
     const fun = new Function('mapProperties', 'feature', `
-var props = (feature && feature.properties || {});
+mapProperties = mapProperties || {};
+feature = feature || {};
+var props = feature.properties || {};
 return (${compiled.compiledExpression})
 `);
     fun.isFeatureConstant = compiled.isFeatureConstant;
@@ -84,6 +86,14 @@ const functions = {
     'geometry_type': {
         input: [],
         output: Type.String
+    },
+    'string_id': {
+        input: [],
+        output: Type.String
+    },
+    'number_id': {
+        input: [],
+        output: Type.Number
     },
     '+': {
         input: [Type.Number, Type.Number],
@@ -327,7 +337,11 @@ function compile(expr) {
         compiled = `${args[0]} in props`;
         isFeatureConstant = false;
     } else if (op === 'geometry_type') {
-        compiled = `(feature && feature.geometry) ? feature.geometry.type : undefined`;
+        compiled = `feature.geometry ? feature.geometry.type : undefined`;
+    } else if (op === 'string_id') {
+        compiled = 'String(feature.id || \'\')';
+    } else if (op === 'number_id') {
+        compiled = 'Number(feature.id)';
     } else if (op === 'zoom') {
         compiled = `mapProperties.zoom`;
         isZoomConstant = false;
