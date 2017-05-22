@@ -145,6 +145,37 @@ test('expressions', (t) => {
         t.end();
     });
 
+    t.test('!', (t) => {
+        const f = createFunction(['!', ['==', ['number_data', 'x'], 1]]);
+        t.equal(f({}, {properties: {x: 1}}), false);
+        t.end();
+    });
+
+    t.test('&&', (t) => {
+        const f = createFunction([
+            '&&',
+            [ '==', [ 'number_data', 'x' ], 1 ],
+            [ '==', [ 'string_data', 'y' ], '2' ],
+            [ '==', [ 'string_data', 'z' ], '3' ]
+        ]);
+        t.equal(f({}, {properties: {x: 1, y: 2, z: 3}}), true);
+        t.equal(f({}, {properties: {x: 1, y: 0, z: 3}}), false);
+        t.end();
+    });
+
+    t.test('||', (t) => {
+        const f = createFunction([
+            '||',
+            [ '==', [ 'number_data', 'x' ], 1 ],
+            [ '==', [ 'string_data', 'y' ], '2' ],
+            [ '==', [ 'string_data', 'z' ], '3' ]
+        ]);
+        t.equal(f({}, {properties: {x: 1, y: 2, z: 3}}), true);
+        t.equal(f({}, {properties: {x: 1, y: 0, z: 3}}), true);
+        t.equal(f({}, {properties: {x: 0, y: 0, z: 0}}), false);
+        t.end();
+    });
+
     t.test('upcase', (t) => {
         const f = createFunction(['upcase', ['string_data', 'x']]);
         t.equal(f({}, {properties: {x: 'aBc'}}), 'ABC');
