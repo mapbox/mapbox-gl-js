@@ -1156,9 +1156,9 @@ test('camera', (t) => {
 
             camera.on('moveend', () => {
                 t.equalWithPrecision(camera.getZoom(), 10, 1e-10);
-                const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
+                const center = camera.getCenter();
+                t.equalWithPrecision(center.lng, 12, 1e-10);
+                t.equalWithPrecision(center.lat, 34, 1e-10);
 
                 t.end();
             });
@@ -1176,9 +1176,9 @@ test('camera', (t) => {
 
             camera.on('moveend', () => {
                 t.equalWithPrecision(camera.getZoom(), 2, 1e-10);
-                const { lng, lat } = camera.getCenter();
-                t.equalWithPrecision(lng, 12, 1e-10);
-                t.equalWithPrecision(lat, 34, 1e-10);
+                const center = camera.getCenter();
+                t.equalWithPrecision(center.lng, 12, 1e-10);
+                t.equalWithPrecision(center.lat, 34, 1e-10);
 
                 t.end();
             });
