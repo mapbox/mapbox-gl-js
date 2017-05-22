@@ -15,6 +15,16 @@ test('expressions', (t) => {
         t.end();
     });
 
+    t.test('constants', (t) => {
+        let f = createFunction([ 'ln2' ]);
+        t.equal(f(), Math.LN2);
+        f = createFunction([ 'pi' ]);
+        t.equal(f(), Math.PI);
+        f = createFunction([ 'e' ]);
+        t.equal(f(), Math.E);
+        t.end();
+    });
+
     t.test('number_data', (t) => {
         const f = createFunction(['number_data', 'x']);
         t.equal(f({}, { properties: { x: 42 } }), 42);
